@@ -174,40 +174,37 @@ void
 avtXolotlFileFormat::PopulateNetworkGroupMetaData()
 {
     // We need to stash the networkGroup attributes
-    hid_t normalSizeAttr = H5Aopen(networkGroup, "normalSize", H5P_DEFAULT);
-    if (normalSizeAttr < 0)
+    herr_t networkArrributeStatus = H5Aexists(networkGroup, "normalSize");
+    if (networkArrributeStatus > 0)
     {
-        FreeUpResources();
-        EXCEPTION1(InvalidDBTypeException, "No 'normalSize' attribute.");
+        hid_t normalSizeAttr = H5Aopen(networkGroup, "normalSize", H5P_DEFAULT);
+        H5Aread(normalSizeAttr, H5T_NATIVE_INT, &normalSize);
+        H5Aclose(normalSizeAttr);
+
     }
 
-    hid_t superSizeAttr = H5Aopen(networkGroup, "superSize", H5P_DEFAULT);
-    if (superSizeAttr < 0)
+    networkArrributeStatus = H5Aexists(networkGroup, "superSize");
+    if (networkArrributeStatus > 0)
     {
-        FreeUpResources();
-        EXCEPTION1(InvalidDBTypeException, "No 'superSize' attribute.");
+        hid_t superSizeAttr = H5Aopen(networkGroup, "superSize", H5P_DEFAULT);
+        H5Aread(superSizeAttr, H5T_NATIVE_INT, &superSize);
+        H5Aclose(superSizeAttr);
     }
 
-    int err2 = -1;
-    err2 = H5Aread(normalSizeAttr, H5T_NATIVE_INT, &normalSize);
-    if (err2 < 0)
+    networkArrributeStatus = H5Aexists(networkGroup, "totalSize");
+    if (networkArrributeStatus > 0)
     {
-        FreeUpResources();
-        EXCEPTION1(InvalidDBTypeException, "cannot read 'normalSize' var.");
+        hid_t totalSizeAttr = H5Aopen(networkGroup, "totalSize", H5P_DEFAULT);
+        H5Aread(totalSizeAttr, H5T_NATIVE_INT, &totalSize);
+        H5Aclose(totalSizeAttr);
     }
-    err2 = H5Aread(superSizeAttr, H5T_NATIVE_INT, &superSize);
-    if (err2 < 0)
-    {
-        FreeUpResources();
-        EXCEPTION1(InvalidDBTypeException, "cannot read 'superSize' var.");
-    }
+
     debug1 << "normalSize="<<normalSize<<endl;
     debug1 << "superSize="<<superSize<<endl;
+    debug1 << "totalSize="<<totalSize<<endl;
 
     // close and cleanup
     H5Gclose(networkGroup);
-    H5Aclose(normalSizeAttr);
-    H5Aclose(superSizeAttr);
 }
 
 
@@ -425,12 +422,6 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
         EXCEPTION1(InvalidDBTypeException, "cannot read 'nz' var.");
     }
 
-    // Figure out file dimensionality
-    if (nx > 1)
-        dimension = 1;
-    else
-        dimension = 0;
-
     debug1 << "hx=" <<hx << endl;
     debug1 << "hy=" <<hy << endl;
     debug1 << "hz=" <<hz << endl;
@@ -438,7 +429,6 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
     debug1 << "ny=" <<ny << endl;
     debug1 << "nz=" <<nz << endl;
     debug1 << "dimension=" << dimension << endl;
-
 
     // close the attributes and group
     H5Aclose(hxAttr);
@@ -449,62 +439,95 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
     H5Aclose(nzAttr);
     H5Gclose(headerGroup);
 
-    //
-    // Now we need to get the data ranges from the composition table
-    //
-    hid_t compositionDataSet = H5Dopen(fileId, "headerGroup/composition", H5P_DEFAULT);
-    if (compositionDataSet < 0)
+    // Figure out file dimensionality
+    if (nx > 1)
+        dimension = 1;
+    else
+        dimension = 0;
+
+    // Determine if we are visualizing concentrations or phasespace by
+    // checking for the composition table
+    herr_t compositionDataSetStatus = H5Lexists(fileId, "headerGroup/composition", H5P_DEFAULT);
+    if (compositionDataSetStatus <= 0)
     {
-        FreeUpResources();
-        EXCEPTION1(InvalidDBTypeException, "No 'headerGroup/composition'.");
+        // We are visualizing phasespace
+        dimension = 3;
+
+        // Now we need to get the grid
+        hid_t gridDataSet = H5Dopen(fileId, "headerGroup/grid", H5P_DEFAULT);
+        if (gridDataSet < 0)
+        {
+            FreeUpResources();
+            EXCEPTION1(InvalidDBTypeException, "No 'headerGroup/grid'.");
+        }
+
+        hid_t sid = H5Dget_space(gridDataSet);
+        hsize_t headerGrid_dims[1];
+        hid_t ndims = H5Sget_simple_extent_dims(sid, headerGrid_dims, NULL);
+        debug1 << "dimensions " <<
+          (unsigned long)(headerGrid_dims[0]) <<
+          " ndims " << ndims << endl;
+
+        // Create a grid double the dimensions since this is phase-space
+        for (int i = 0; i < headerGrid_dims[0] * 2; i++)
+        {
+            oneDGrid.push_back(0);
+        }
+
+        // cleanup and close
+        H5Sclose(sid);
+        H5Dclose(gridDataSet);
     }
-
-    hid_t sid = H5Dget_space(compositionDataSet);
-    hsize_t composition_dims[2];
-    hid_t ndims = H5Sget_simple_extent_dims(sid, composition_dims, NULL);
-    debug1 << "dimensions " <<
-      (unsigned long)(composition_dims[0]) << " x " <<
-      (unsigned long)(composition_dims[1]) <<
-      " ndims " << ndims << endl;
-
-    int *data = new int[composition_dims[0]*composition_dims[1]];
-    H5Dread(compositionDataSet, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)data);
-
-    int maximumHeliumDimension =       data[0];
-    int maximumDeuteriumDimension =    data[1];
-    int maximumTritiumDimension =      data[2];
-    int maximumVacancyDimension =      data[3];
-    int maximumInterstitialDimension = data[4];
-    for (int i = 1; i < composition_dims[0]; i++)
+    else
     {
-        int baseIndex = i * composition_dims[1];
-        if (data[baseIndex] > maximumHeliumDimension)
-            maximumHeliumDimension = data[baseIndex];
-        if (data[baseIndex + 1] > maximumDeuteriumDimension)
-            maximumDeuteriumDimension = data[baseIndex + 1];
-        if (data[baseIndex + 2] > maximumTritiumDimension)
-            maximumTritiumDimension = data[baseIndex + 2];
-        if (data[baseIndex + 3] > maximumVacancyDimension)
-            maximumVacancyDimension = data[baseIndex + 3];
-        if (data[baseIndex + 4] > maximumInterstitialDimension)
-            maximumInterstitialDimension = data[baseIndex + 4];
-    }
-    delete [] data;
-    varMaxes[0] = maximumHeliumDimension;
-    varMaxes[1] = maximumDeuteriumDimension;
-    varMaxes[2] = maximumTritiumDimension;
-    varMaxes[3] = maximumVacancyDimension;
-    varMaxes[4] = maximumInterstitialDimension;
+        // We are visualizing concentrations
+        // Now we need to get the data ranges from
+        hid_t compositionDataSet = H5Dopen(fileId, "headerGroup/composition", H5P_DEFAULT);
+        hid_t sid = H5Dget_space(compositionDataSet);
+        hsize_t composition_dims[2];
+        hid_t ndims = H5Sget_simple_extent_dims(sid, composition_dims, NULL);
+        debug1 << "dimensions " <<
+          (unsigned long)(composition_dims[0]) << " x " <<
+          (unsigned long)(composition_dims[1]) <<
+          " ndims " << ndims << endl;
 
-    // close HDF resources
-    H5Sclose(sid);
-    H5Dclose(compositionDataSet);
+        int *data = new int[composition_dims[0]*composition_dims[1]];
+        H5Dread(compositionDataSet, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)data);
+
+        int maximumHeliumDimension =       data[0];
+        int maximumDeuteriumDimension =    data[1];
+        int maximumTritiumDimension =      data[2];
+        int maximumVacancyDimension =      data[3];
+        int maximumInterstitialDimension = data[4];
+        for (int i = 1; i < composition_dims[0]; i++)
+        {
+            int baseIndex = i * composition_dims[1];
+            if (data[baseIndex] > maximumHeliumDimension)
+                maximumHeliumDimension = data[baseIndex];
+            if (data[baseIndex + 1] > maximumDeuteriumDimension)
+                maximumDeuteriumDimension = data[baseIndex + 1];
+            if (data[baseIndex + 2] > maximumTritiumDimension)
+                maximumTritiumDimension = data[baseIndex + 2];
+            if (data[baseIndex + 3] > maximumVacancyDimension)
+                maximumVacancyDimension = data[baseIndex + 3];
+            if (data[baseIndex + 4] > maximumInterstitialDimension)
+                maximumInterstitialDimension = data[baseIndex + 4];
+        }
+        delete [] data;
+        varMaxes[0] = maximumHeliumDimension;
+        varMaxes[1] = maximumDeuteriumDimension;
+        varMaxes[2] = maximumTritiumDimension;
+        varMaxes[3] = maximumVacancyDimension;
+        varMaxes[4] = maximumInterstitialDimension;
+
+        // close HDF resources
+        H5Sclose(sid);
+        H5Dclose(compositionDataSet);
+    }
 
     if (dimension == 1)
     {
-        //
         // Now we need to get grid since this is a 1D file
-        //
         hid_t gridDataSet = H5Dopen(fileId, "headerGroup/grid", H5P_DEFAULT);
         if (gridDataSet < 0)
         {
@@ -602,19 +625,17 @@ avtXolotlFileFormat::Initialize()
     PopulateConcentrationGroupMetaData();
 
 
-    if (dimension == 1)
+    //
+    // Read the network
+    //
+    networkGroup = H5Gopen(fileId, "networkGroup", H5P_DEFAULT);
+    if (networkGroup<0)
     {
-        //
-        // Read the network
-        //
-        networkGroup = H5Gopen(fileId, "networkGroup", H5P_DEFAULT);
-        if (networkGroup<0)
-        {
-            FreeUpResources();
-            EXCEPTION1(InvalidDBTypeException, "No 'networkGroup'.");
-        }
-        PopulateNetworkGroupMetaData();
+        FreeUpResources();
+        EXCEPTION1(InvalidDBTypeException, "No 'networkGroup'.");
     }
+    PopulateNetworkGroupMetaData();
+
 }
 
 
@@ -634,7 +655,7 @@ avtXolotlFileFormat::Initialize()
 void
 avtXolotlFileFormat::FreeUpResources(void)
 {
-    if (concentrationsGroup >=0)
+    if (concentrationsGroup >=0 )
         H5Gclose(concentrationsGroup);
 
     if (fileId >= 0)
@@ -740,7 +761,277 @@ avtXolotlFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
     }
     else
     {
-        //TODO
+/*        string meshname = "Phase-Space";
+        avtMeshType mt = AVT_RECTILINEAR_MESH;
+        int nblocks = 1;
+        int block_origin = 0;
+        int spatial_dimension = 3;
+        int topological_dimension = 3;
+        double *extents = NULL;
+*/
+
+        avtMeshType mt = AVT_RECTILINEAR_MESH;
+        int nblocks = 1;
+        int block_origin = 0;
+        int spatial_dimension = 3;
+        int topological_dimension = 3;
+        double *extents = NULL;
+
+        string meshname;
+        avtMeshMetaData *mmd;
+        // Phase-Space Helium vars
+        meshname = "Phase-Space Helium/Deuterium/Tritium";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Deuterium/Tritium", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Deuterium";
+        mmd->zLabel = "Tritium";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Helium/Deuterium/Vacancies";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Deuterium/Vacancies", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Deuterium";
+        mmd->zLabel = "Vacancies";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Helium/Deuterium/Interstitial";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Deuterium/Interstitial", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Deuterium";
+        mmd->zLabel = "Interstitial";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Helium/Tritium/Deuterium";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Tritium/Deuterium", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Tritium";
+        mmd->zLabel = "Deuterium";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Helium/Tritium/Vacancies";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Tritium/Vacancies", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Tritium";
+        mmd->zLabel = "Vacancies";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Helium/Tritium/Interstitial";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Tritium/Interstitial", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Tritium";
+        mmd->zLabel = "Interstitial";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Helium/Vacancies/Deuterium";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Vacancies/Deuterium", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Vacancies";
+        mmd->zLabel = "Deuterium";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Helium/Vacancies/Tritium";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Vacancies/Tritium", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Vacancies";
+        mmd->zLabel = "Tritium";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Helium/Vacancies/Interstitial";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Vacancies/Interstitial", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Vacancies";
+        mmd->zLabel = "Interstitial";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Helium/Interstitial/Deuterium";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Interstitial/Deuterium", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Interstitial";
+        mmd->zLabel = "Deuterium";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Helium/Interstitial/Tritium";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Interstitial/Tritium", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Interstitial";
+        mmd->zLabel = "Tritium";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Helium/Interstitial/Vacancies";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Helium/Interstitial/Vacancies", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Helium";
+        mmd->yLabel = "Interstitial";
+        mmd->zLabel = "Vacancies";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        // Phase-Space Deuterium vars
+        meshname = "Phase-Space Deuterium/Tritium/Vacancies";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Deuterium/Tritium/Vacancies", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Deuterium";
+        mmd->yLabel = "Tritium";
+        mmd->zLabel = "Vacancies";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Deuterium/Tritium/Interstitial";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Deuterium/Tritium/Interstitial", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Deuterium";
+        mmd->yLabel = "Tritium";
+        mmd->zLabel = "Interstitial";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Deuterium/Vacancies/Tritium";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Deuterium/Vacancies/Tritium", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Deuterium";
+        mmd->yLabel = "Vacancies";
+        mmd->zLabel = "Tritium";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Deuterium/Vacancies/Interstitial";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Deuterium/Vacancies/Interstitial", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Deuterium";
+        mmd->yLabel = "Vacancies";
+        mmd->zLabel = "Interstitial";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Deuterium/Interstitial/Tritium";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Deuterium/Interstitial/Tritium", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Deuterium";
+        mmd->yLabel = "Interstitial";
+        mmd->zLabel = "Tritium";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Deuterium/Interstitial/Vacancies";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Deuterium/Interstitial/Vacancies", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Deuterium";
+        mmd->yLabel = "Interstitial";
+        mmd->zLabel = "Vacancies";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        // Phase-Space Tritium vars
+        meshname = "Phase-Space Tritium/Vacancies/Interstitial";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Tritium/Vacancies/Interstitial", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Tritium";
+        mmd->yLabel = "Vacancies";
+        mmd->zLabel = "Interstitial";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        meshname = "Phase-Space Tritium/Interstitial/Vacancies";
+        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+        AddScalarVarToMetaData(md, "Tritium/Interstitial/Vacancies", meshname, AVT_ZONECENT);
+        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+        mmd->xLabel = "Tritium";
+        mmd->yLabel = "Interstitial";
+        mmd->zLabel = "Vacancies";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+/*        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
+                          spatial_dimension, topological_dimension);
+
+
+        avtMeshMetaData *mmd = new avtMeshMetaData(
+                                meshname, 1, 1, 1, 0, 3, 3, mt);
+        mmd->xLabel = "helium";
+        mmd->yLabel = "tritium";
+        mmd->zLabel = "vacancy";
+        mmd->hideFromGUI = true;
+        md->Add(mmd);
+
+        // Phase-Space Helium vars
+        AddScalarVarToMetaData(md, "Helium/Deuterium", meshname, AVT_ZONECENT);
+        AddScalarVarToMetaData(md, "Helium/Tritium", meshname, AVT_ZONECENT);
+        AddScalarVarToMetaData(md, "Helium/Vacancies", meshname, AVT_ZONECENT);
+        AddScalarVarToMetaData(md, "Helium/Interstitial", meshname, AVT_ZONECENT);
+
+        // Phase-Space Deuterium vars
+        AddScalarVarToMetaData(md, "Deuterium/Tritium", meshname, AVT_ZONECENT);
+        AddScalarVarToMetaData(md, "Deuterium/Vacancies", meshname, AVT_ZONECENT);
+        AddScalarVarToMetaData(md, "Deuterium/Interstitial", meshname, AVT_ZONECENT);
+
+        // Phase-Space Tritium vars
+        AddScalarVarToMetaData(md, "Tritium/Vacancies", meshname, AVT_ZONECENT);
+        AddScalarVarToMetaData(md, "Tritium/Interstitial", meshname, AVT_ZONECENT);
+
+        // Phase-Space Vacancy vars
+        AddScalarVarToMetaData(md, "Vacancies/Interstitial", meshname, AVT_ZONECENT);
+        */
     }
 }
 
@@ -885,6 +1176,38 @@ avtXolotlFileFormat::GetMesh(int timestate, const char *meshname)
         zc->Delete();
         return rgrid;
     }
+    else if (dimension == 3)
+    {
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
+        vtkFloatArray *xc = vtkFloatArray::New();
+        vtkFloatArray *yc = vtkFloatArray::New();
+        vtkFloatArray *zc = vtkFloatArray::New();
+
+        nx = oneDGrid.size();
+        ny = oneDGrid.size();
+        nz = oneDGrid.size();
+
+        xc->SetNumberOfTuples(nx);
+        for (int i = 0; i < nx; i++)
+            xc->SetComponent(i, 0, 1.0*i);
+
+        yc->SetNumberOfTuples(ny);
+        for (int i = 0; i < ny; i++)
+            yc->SetComponent(i, 0, 1.0*i);
+
+        zc->SetNumberOfTuples(nz);
+        for (int i = 0; i < nz; i++)
+            zc->SetComponent(i, 0, 1.0*i);
+
+        rgrid->SetDimensions(nx, ny, nz);
+        rgrid->SetXCoordinates(xc);
+        rgrid->SetYCoordinates(yc);
+        rgrid->SetZCoordinates(zc);
+        xc->Delete();
+        yc->Delete();
+        zc->Delete();
+        return rgrid;
+    }
 
     return nullptr;
 }
@@ -907,60 +1230,38 @@ avtXolotlFileFormat::GetMesh(int timestate, const char *meshname)
 void
 avtXolotlFileFormat::GetPositionsOfVariableFromCompositionTable(int *variableIndexes, const char *vn)
 {
-    if (strncmp(vn, "Helium", strlen("Helium")) == 0)
-    {
-        variableIndexes[0] = 0;
-    }
-    else if (strncmp(vn, "Deuterium", strlen("Deuterium")) == 0)
-    {
-        variableIndexes[0] = 1;
-    }
-    else if (strncmp(vn, "Tritium", strlen("Tritium")) == 0)
-    {
-        variableIndexes[0] = 2;
-    }
-    else if (strncmp(vn, "Vacancies", strlen("Vacancies")) == 0)
-    {
-        variableIndexes[0] = 3;
-    }
-    else if (strncmp(vn, "Interstitial", strlen("Interstitial")) == 0)
-    {
-        variableIndexes[0] = 4;
-    }
-    else
-    {
-        EXCEPTION1(InvalidVariableException, vn);
-    }
+    char *token, *str, *tofree;
+    tofree = str = strdup(vn);
 
-    // If this is a 0D file, we need a second dimension
-    if (dimension == 0)
+    int currentVariableNumber = 0;
+    while ((token = strsep(&str, "/")))
     {
-        // Get position of second variable
-        const char *slash = strrchr(vn, '/');
-        if (slash && !strcmp(slash, "/Helium"))
+        if (strncmp(token, "Helium", strlen("Helium")) == 0)
         {
-            variableIndexes[1] = 0;
+            variableIndexes[currentVariableNumber] = 0;
         }
-        else if (slash && !strcmp(slash, "/Deuterium"))
+        else if (strncmp(token, "Deuterium", strlen("Deuterium")) == 0)
         {
-            variableIndexes[1] = 1;
+            variableIndexes[currentVariableNumber] = 1;
         }
-        else if (slash && !strcmp(slash, "/Tritium"))
+        else if (strncmp(token, "Tritium", strlen("Tritium")) == 0)
         {
-            variableIndexes[1] = 2;
+            variableIndexes[currentVariableNumber] = 2;
         }
-        else if (slash && !strcmp(slash, "/Vacancies"))
+        else if (strncmp(token, "Vacancies", strlen("Vacancies")) == 0)
         {
-            variableIndexes[1] = 3;
+            variableIndexes[currentVariableNumber] = 3;
         }
-        else if (slash && !strcmp(slash, "/Interstitial"))
+        else if (strncmp(token, "Interstitial", strlen("Interstitial")) == 0)
         {
-            variableIndexes[1] = 4;
+            variableIndexes[currentVariableNumber] = 4;
         }
         else
         {
             EXCEPTION1(InvalidVariableException, vn);
         }
+
+        currentVariableNumber++;
     }
 }
 
@@ -1000,120 +1301,227 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
     // Translate the timestate into a real cycle number
     int realTime = cycleNumbers[timestate];
 
-    // Open the concentration group for this particular timestate
-    char varname[100];
-    snprintf(varname, 100, "concentration_%d", realTime);
-    hid_t currentConcentration = H5Gopen(concentrationsGroup, varname, H5P_DEFAULT);
-    if (currentConcentration < 0)
+    // Check if we are doing Phase-Space or cluster vis
+    if (dimension != 3)
     {
-        FreeUpResources();
-        snprintf(varname, 100, "No 'concentration_%d' group found", realTime);
-        EXCEPTION1(InvalidDBTypeException, varname);
-    }
-
-    // Read the concentration datasets
-    hid_t concDset = H5Dopen(currentConcentration, "concs", H5P_DEFAULT);
-    if (concDset < 0)
-    {
-        FreeUpResources();
-        EXCEPTION1(InvalidDBTypeException, "No 'concs' group.");
-    }
-
-    hsize_t dims[1];
-    hid_t  memtype = H5Tcreate(H5T_COMPOUND, sizeof (concentrationTypeStruct));
-    H5Tinsert (memtype, "ConcType.first",
-             HOFFSET(concentrationTypeStruct,clusterNumber), H5T_NATIVE_INT);
-    H5Tinsert (memtype, "ConcType.second",
-             HOFFSET(concentrationTypeStruct,concentration), H5T_NATIVE_FLOAT);
-    hid_t space   = H5Dget_space(concDset);
-    hid_t tyid    = H5Dget_type(concDset);
-    hsize_t hsize = H5Dget_storage_size(concDset);
-    hid_t conc_ndims = H5Sget_simple_extent_dims(space, dims, NULL);
-
-    int rDataSize = dims[0];
-    concentrationTypeStruct *rdata;
-    rdata = (concentrationTypeStruct *) malloc (rDataSize * sizeof (concentrationTypeStruct));
-    hid_t status = H5Dread (concDset, memtype, H5S_ALL, H5S_ALL, H5P_DEFAULT, rdata);
-
-    // Read the indices dataset
-    hid_t indexDset = H5Dopen(currentConcentration, "concs_startingIndices", H5P_DEFAULT);
-    if (indexDset < 0)
-    {
-        FreeUpResources();
-        EXCEPTION1(InvalidDBTypeException, "No 'concs_startingIndices' group.");
-    }
-
-    hid_t indexSpace = H5Dget_space(indexDset);
-    hsize_t index_dims[1];
-    hid_t index_ndims = H5Sget_simple_extent_dims(indexSpace, index_dims, NULL);
-
-    int *indicies = new int[index_dims[0]];
-    H5Dread(indexDset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)indicies);
-
-    // Read the composition index to know which cluster is what
-    hid_t compGetExtents = H5Dopen(fileId, "headerGroup/composition", H5P_DEFAULT);
-    if (compGetExtents < 0)
-    {
-        FreeUpResources();
-        EXCEPTION1(InvalidDBTypeException, "No 'headerGroup/composition'.");
-    }
-
-    hid_t sid = H5Dget_space(compGetExtents);
-    hsize_t composition_dims[2];
-    hid_t ndims = H5Sget_simple_extent_dims(sid, composition_dims, NULL);
-
-    int *data = new int[composition_dims[0]*composition_dims[1]];
-    H5Dread(compGetExtents, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)data);
-
-    // Take the requested variable and turn that into an index into our composition table
-    int variableIndexes[2] = {0,0};
-    GetPositionsOfVariableFromCompositionTable(variableIndexes, vn);
-
-    if (dimension == 0)
-    {
-        // Set nx and ny since they may not yet be set correctly
-        nx = varMaxes[variableIndexes[0]] + 2;
-        ny = varMaxes[variableIndexes[1]] + 2;
-
-        // Since data is saved sparsely, all unsaved points are this special "ZERO"
-        int nvals = (nx-1) * (ny-1);
-        float zero = 1.0e-20;
-        rv->SetNumberOfTuples(nvals);
-        for (int i = 0; i < nvals; i++)
+        // Open the concentration group for this particular timestate
+        char varname[100];
+        snprintf(varname, 100, "concentration_%d", realTime);
+        hid_t currentConcentration = H5Gopen(concentrationsGroup, varname, H5P_DEFAULT);
+        if (currentConcentration < 0)
         {
-            rv->SetTuple1(i, zero);
+            FreeUpResources();
+            snprintf(varname, 100, "No 'concentration_%d' group found", realTime);
+            EXCEPTION1(InvalidDBTypeException, varname);
         }
 
-        // Loop on the concentrations
-        for (int i = indicies[0]; i < indicies[1]; i++)
+        // Read the concentration datasets
+        hid_t concDset = H5Dopen(currentConcentration, "concs", H5P_DEFAULT);
+        if (concDset < 0)
         {
-            // Skip the temperature which is appened at end of concs table
-            if (rdata[i].clusterNumber > composition_dims[0] - 1)
+            FreeUpResources();
+            EXCEPTION1(InvalidDBTypeException, "No 'concs' group.");
+        }
+
+        hsize_t dims[1];
+        hid_t  memtype = H5Tcreate(H5T_COMPOUND, sizeof (concentrationTypeStruct));
+        H5Tinsert (memtype, "ConcType.first",
+                 HOFFSET(concentrationTypeStruct,clusterNumber), H5T_NATIVE_INT);
+        H5Tinsert (memtype, "ConcType.second",
+                 HOFFSET(concentrationTypeStruct,concentration), H5T_NATIVE_FLOAT);
+        hid_t space   = H5Dget_space(concDset);
+        hid_t tyid    = H5Dget_type(concDset);
+        hsize_t hsize = H5Dget_storage_size(concDset);
+        hid_t conc_ndims = H5Sget_simple_extent_dims(space, dims, NULL);
+
+        int rDataSize = dims[0];
+        concentrationTypeStruct *rdata;
+        rdata = (concentrationTypeStruct *) malloc (rDataSize * sizeof (concentrationTypeStruct));
+        hid_t status = H5Dread (concDset, memtype, H5S_ALL, H5S_ALL, H5P_DEFAULT, rdata);
+
+        // Read the indices dataset
+        hid_t indexDset = H5Dopen(currentConcentration, "concs_startingIndices", H5P_DEFAULT);
+        if (indexDset < 0)
+        {
+            FreeUpResources();
+            EXCEPTION1(InvalidDBTypeException, "No 'concs_startingIndices' group.");
+        }
+
+        hid_t indexSpace = H5Dget_space(indexDset);
+        hsize_t index_dims[1];
+        hid_t index_ndims = H5Sget_simple_extent_dims(indexSpace, index_dims, NULL);
+
+        int *indicies = new int[index_dims[0]];
+        H5Dread(indexDset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)indicies);
+
+        // Read the composition index to know which cluster is what
+        hid_t compGetExtents = H5Dopen(fileId, "headerGroup/composition", H5P_DEFAULT);
+        if (compGetExtents < 0)
+        {
+            FreeUpResources();
+            EXCEPTION1(InvalidDBTypeException, "No 'headerGroup/composition'.");
+        }
+
+        hid_t sid = H5Dget_space(compGetExtents);
+        hsize_t composition_dims[2];
+        hid_t ndims = H5Sget_simple_extent_dims(sid, composition_dims, NULL);
+
+        int *data = new int[composition_dims[0]*composition_dims[1]];
+        H5Dread(compGetExtents, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)data);
+
+        // Take the requested variable and turn that into an index into our composition table
+        int variableIndexes[3] = {0,0,0};
+        GetPositionsOfVariableFromCompositionTable(variableIndexes, vn);
+
+        if (dimension == 0)
+        {
+            // Set nx and ny since they may not yet be set correctly
+            nx = varMaxes[variableIndexes[0]] + 2;
+            ny = varMaxes[variableIndexes[1]] + 2;
+
+            // Since data is saved sparsely, all unsaved points are this special "ZERO"
+            int nvals = (nx-1) * (ny-1);
+            float zero = 1.0e-20;
+            rv->SetNumberOfTuples(nvals);
+            for (int i = 0; i < nvals; i++)
             {
-                continue;
+                rv->SetTuple1(i, zero);
             }
-            // Get the x and y sizes of this cluster
-            int base = int(rdata[i].clusterNumber) * composition_dims[1];
-            float xSize = data[base + variableIndexes[0]];
-            float ySize = data[base + variableIndexes[1]];
-            int pos = (ySize * (nx - 1)) + xSize; // The coordinates had to be flipped here
-            rv->SetTuple1(pos, (rv->GetTuple1(pos) + rdata[i].concentration));
+
+            // Loop on the concentrations
+            for (int i = indicies[0]; i < indicies[1]; i++)
+            {
+                // Skip the temperature which is appened at end of concs table
+                if (rdata[i].clusterNumber > composition_dims[0] - 1)
+                {
+                    continue;
+                }
+                // Get the x and y sizes of this cluster
+                int base = int(rdata[i].clusterNumber) * composition_dims[1];
+                float xSize = data[base + variableIndexes[0]];
+                float ySize = data[base + variableIndexes[1]];
+                int pos = (ySize * (nx - 1)) + xSize; // The coordinates had to be flipped here
+                rv->SetTuple1(pos, (rv->GetTuple1(pos) + rdata[i].concentration));
+            }
         }
+        else if (dimension == 1)
+        {
+            // Set nx and ny since they may not yet be set correctly
+            nx = oneDGrid.size();
+            ny = varMaxes[0] + 2;
+            nz = 1;
+
+            // Since data is saved sparsely, all unsaved points are this special "ZERO"
+            int nvals = (nx-1) * (ny-1);
+            float zero = 1.0e-20;
+            rv->SetNumberOfTuples(nvals);
+            for (int i = 0; i < nvals; i++)
+            {
+                rv->SetTuple1(i, zero);
+            }
+
+            //Open the network for reading
+            networkGroup = H5Gopen(fileId, "networkGroup", H5P_DEFAULT);
+            if (networkGroup < 0)
+            {
+                FreeUpResources();
+                EXCEPTION1(InvalidDBTypeException, "No 'networkGroup'.");
+            }
+
+            //Loop over the grid
+            for (int j = 0; j < oneDGrid.size(); j++)
+            {
+                // Loop on the concentrations
+                for (int i = indicies[j]; i < indicies[j + 1]; i++)
+                {
+                    // Skip the temperature value(s)
+                    if (rdata[i].clusterNumber > composition_dims[0] - 1)
+                    {
+                        continue;
+                    }
+
+                    //Take care of the normal clustetrs
+                    if(rdata[i].clusterNumber < normalSize)
+                    {
+                        // Get the x sizes of this cluster
+                        // variableIndexes tells us either Helium, Deuterium, Tritium, Vacancies
+                        float xSize = data[int(rdata[i].clusterNumber)*composition_dims[1] + variableIndexes[0]];
+                        int pos = (xSize * (nx - 1)) + j;
+                        rv->SetTuple1(pos, (rv->GetTuple1(pos) + rdata[i].concentration));
+                    }
+                    else // Take care of the super clusters
+                    {
+                        // Loop on the number of clusters it contains
+                        // Open the network group for this particular cluster
+                        char clusterName[100];
+                        snprintf(clusterName, 100, "%d", rdata[i].clusterNumber);
+                        hid_t currentCluster = H5Gopen(networkGroup, clusterName, H5P_DEFAULT);
+                        if (currentCluster < 0)
+                        {
+                            FreeUpResources();
+                            snprintf(varname, 100, "No '%d' network found", rdata[i].clusterNumber);
+                            EXCEPTION1(InvalidDBTypeException, clusterName);
+                        }
+
+                        // Read the heVList
+                        hid_t heVList = H5Dopen(currentCluster, "heVList", H5P_DEFAULT);
+                        if (heVList < 0)
+                        {
+                            FreeUpResources();
+                            EXCEPTION1(InvalidDBTypeException, "No 'heVList' group.");
+                        }
+
+                        hsize_t vListDims[1];
+                        hid_t heVListSpace   = H5Dget_space(heVList);
+                        hid_t heVList_ndims = H5Sget_simple_extent_dims(heVListSpace, vListDims, NULL);
+
+                        // Read the values in the heVList table
+                        int *heVListTableData = new int[vListDims[0] * 4];
+                        H5Dread(heVList, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)heVListTableData);
+
+                        for ( int k = 0; k < vListDims[0]; k++)
+                        {
+                            float xSize = heVListTableData[k * 4 + variableIndexes[0]];
+                            int pos = (xSize * (nx - 1)) + j;
+                            rv->SetTuple1(pos, (rv->GetTuple1(pos) + rdata[i].concentration));
+                        }
+
+                        H5Sclose(heVListSpace);
+                        H5Dclose(heVList);
+                        H5Gclose(currentCluster);
+                        delete [] heVListTableData;
+                    }
+                }
+            }
+        }
+
+        // Cleanup everything that was opened
+        delete [] data;
+        delete [] indicies;
+        H5Sclose(indexSpace);
+        H5Sclose(space);
+        H5Sclose(memtype);
+        H5Dclose(concDset);
+        H5Dclose(indexDset);
+        H5Gclose(currentConcentration);
+        H5Sclose(sid);
+        H5Dclose(compGetExtents);
+        free(rdata);
+        rdata = NULL;
     }
-    else if (dimension == 1)
+    else //dimension == 3
     {
         // Set nx and ny since they may not yet be set correctly
         nx = oneDGrid.size();
-        ny = varMaxes[0] + 2;
-        nz = 1;
+        ny = oneDGrid.size();
+        nz = oneDGrid.size();
 
-        // Since data is saved sparsely, all unsaved points are this special "ZERO"
-        int nvals = (nx-1) * (ny-1);
-        float zero = 1.0e-20;
+        // Since data is saved sparsely, zero out the array
+        int nvals = (nx-1) * (nx-1) * (nz-1);
         rv->SetNumberOfTuples(nvals);
         for (int i = 0; i < nvals; i++)
         {
-            rv->SetTuple1(i, zero);
+            rv->SetTuple1(i, 0);
         }
 
         //Open the network for reading
@@ -1124,85 +1532,66 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
             EXCEPTION1(InvalidDBTypeException, "No 'networkGroup'.");
         }
 
+        // Take the requested variable and turn that into an index into our currentBoundsArray
+        int variableIndexes[3] = {0,0,0};
+        GetPositionsOfVariableFromCompositionTable(variableIndexes, vn);
+
         //Loop over the grid
-        for (int j = 0; j < oneDGrid.size(); j++)
+        for (int j = 0; j < totalSize; j++)
         {
-            // Loop on the concentrations
-            for (int i = indicies[j]; i < indicies[j + 1]; i++)
+            // Open the network group for this itteration
+            char clusterName[100];
+            snprintf(clusterName, 100, "%d", j);
+            hid_t currentCluster = H5Gopen(networkGroup, clusterName, H5P_DEFAULT);
+            if (currentCluster < 0)
             {
-                // Skip the temperature value(s)
-                if (rdata[i].clusterNumber > composition_dims[0] - 1)
+                FreeUpResources();
+                snprintf(clusterName, 100, "No '%d' network found", j);
+                EXCEPTION1(InvalidDBTypeException, clusterName);
+            }
+
+            // read the cluster bounds
+            int *currentBoundsArray = new int[9];
+            hid_t boundsAttr = H5Aopen(currentCluster, "bounds", H5P_DEFAULT);
+            H5Aread(boundsAttr, H5T_NATIVE_INT, (void*)currentBoundsArray);
+
+            //index order H[0/1] - D[2/3] - T[4/5] - V[6/7] - I[8/9]
+
+            //h/t +v
+            int firstIndex = variableIndexes[0] + variableIndexes[0];
+            int secondIndex = variableIndexes[1] + variableIndexes[1];
+            int thirdIndex = variableIndexes[2] + variableIndexes[2];
+            cerr << variableIndexes[0] << " " << variableIndexes[1] << " " << variableIndexes[2] << endl;
+
+            for (int m = currentBoundsArray[thirdIndex]; m <= currentBoundsArray[thirdIndex + 1]; m++)
+            {
+                for (int k = currentBoundsArray[secondIndex]; k <= currentBoundsArray[secondIndex + 1]; k++)
                 {
-                    continue;
-                }
-
-                //Take care of the normal clustetrs
-                if(rdata[i].clusterNumber < normalSize)
-                {
-                    // Get the x sizes of this cluster
-                    // variableIndexes tells us either Helium, Deuterium, Tritium, Vacancies
-                    float xSize = data[int(rdata[i].clusterNumber)*composition_dims[1] + variableIndexes[0]];
-                    int pos = (xSize * (nx - 1)) + j;
-                    rv->SetTuple1(pos, (rv->GetTuple1(pos) + rdata[i].concentration));
-                }
-                else // Take care of the super clusters
-                {
-                    // Loop on the number of clusters it contains
-                    // Open the network group for this particular cluster
-                    char clusterName[100];
-                    snprintf(clusterName, 100, "%d", rdata[i].clusterNumber);
-                    hid_t currentCluster = H5Gopen(networkGroup, clusterName, H5P_DEFAULT);
-                    if (currentCluster < 0)
+                    for (int l = currentBoundsArray[firstIndex]; l <= currentBoundsArray[firstIndex + 1]; l++)
                     {
-                        FreeUpResources();
-                        snprintf(varname, 100, "No '%d' network found", rdata[i].clusterNumber);
-                        EXCEPTION1(InvalidDBTypeException, clusterName);
+                        int pos = (l * (ny - 1) * (nx - 1)) + (nz - 1) * k;
+                        rv->SetTuple1(pos, 100);
                     }
-
-                    // Read the heVList
-                    hid_t heVList = H5Dopen(currentCluster, "heVList", H5P_DEFAULT);
-                    if (heVList < 0)
-                    {
-                        FreeUpResources();
-                        EXCEPTION1(InvalidDBTypeException, "No 'heVList' group.");
-                    }
-
-                    hsize_t vListDims[1];
-                    hid_t heVListSpace   = H5Dget_space(heVList);
-                    hid_t heVList_ndims = H5Sget_simple_extent_dims(heVListSpace, vListDims, NULL);
-
-                    // Read the values in the heVList table
-                    int *heVListTableData = new int[vListDims[0] * 4];
-                    H5Dread(heVList, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)heVListTableData);
-
-                    for ( int k = 0; k < vListDims[0]; k++)
-                    {
-                        float xSize = heVListTableData[k * 4 + variableIndexes[0]];
-                        int pos = (xSize * (nx - 1)) + j;
-                        rv->SetTuple1(pos, (rv->GetTuple1(pos) + rdata[i].concentration));
-                    }
-
-                    H5Sclose(heVListSpace);
-                    H5Dclose(heVList);
-                    H5Gclose(currentCluster);
-                    delete [] heVListTableData;
                 }
             }
+            /*if (currentBoundsArray[2] == 0)
+            {
+                for (int k = currentBoundsArray[0]; k <= currentBoundsArray[1]; k++)
+                {
+                    for (int l = currentBoundsArray[6]; l <= currentBoundsArray[7]; l++)
+                    {
+                        int pos = (l * (nx - 1)) + k;
+                        rv->SetTuple1(pos, 100);
+                    }
+                }
+            }*/
+
+            H5Aclose(boundsAttr);
+            H5Gclose(currentCluster);
+            delete [] currentBoundsArray;
         }
     }
-    delete [] indicies;
-    delete [] data;
-    // Cleanup everything that was opened
-    H5Sclose(sid);
-    H5Sclose(indexSpace);
-    H5Sclose(space);
-    H5Sclose(memtype);
-    H5Dclose(concDset);
-    H5Dclose(indexDset);
-    H5Dclose(compGetExtents);
-    H5Gclose(currentConcentration);
-    free(rdata);
-    rdata = NULL;
+
     return rv;
 }
 

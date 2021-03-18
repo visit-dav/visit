@@ -58,7 +58,7 @@ class avtXolotlFileFormat : public avtMTSDFileFormat
     int                    nx, ny, nz;
     int                    hx, hy, hz;
     int                    varMaxes[5];
-    int                    normalSize, superSize;
+    int                    normalSize = 0, superSize = 0, totalSize = 0;
 
     std::vector<int>       isurface;
     std::vector<int>       cycleNumbers;
