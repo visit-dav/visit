@@ -39,9 +39,9 @@ of aspects of Google's
 `Site Reliability Engineering <https://landing.google.com/sre/sre-book/toc/>`__ (SRE)
 process (sometimes also called
 `Systems Reliability Engineering or Services Reliability Engineering <https://www.cio.com/article/3192531/why-you-need-a-systems-reliability-engineer.html>`_)
-and maybe aspects of either
+and aspects of
 `User Experience Regression Testing <https://www.uxmatters.com/mt/archives/2019/04/reining-in-ux-regression.php>`_
-or
+and/or
 `User Experience Driven Development (UXDD) <https://docs.microsoft.com/en-us/archive/msdn-magazine/2016/february/cutting-edge-architecture-spinoffs-of-uxdd>`_.
 
 For mature DOE software projects with wide reach and many users, SRE activity
@@ -49,8 +49,10 @@ represents a brand of effort wholly different from conventional software product
 development, planning and execution. Like most DOE software projects, VisIt_ has
 no dedicated SRE resources. Instead, developers themselves must also support SRE
 work. Nonetheless,
-`managing SRE work effectively and efficiently is an essential part of maintaining the overall productivity and sustainability of the software <https://beyondphilosophy.com/15-statistics-that-should-change-the-business-world-but-havent>`_
-as well as the productivity of both users and developers of the software alike.
+`managing SRE work effectively <https://beyondphilosophy.com/15-statistics-that-should-change-the-business-world-but-havent>`_
+and efficiently is an essential part of maintaining the overall productivity and
+sustainability of the software as well as the productivity of both users and developers
+of the software alike.
 
 Goals
 -----
@@ -91,6 +93,15 @@ through Friday excluding
 `LLNL holidays <https://supplychain.llnl.gov/poattach/pdf/llnl_holidays.pdf>`_
 and response time may be as much as four hours due to team members having to
 multi-task among many responsibilities.
+
+Developer Away Notifications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As an aside but nonetheless related to the SRE response time goal of four hours,
+developers agree to notify the team if, during normal business hours, they will
+unexpectedly be away from their desk for periods longer than four hours. This is
+true whether working on or off site. Being away for periods shorter than four
+hours does not require such notification.
 
 The Basic Process
 -----------------
@@ -258,10 +269,9 @@ of advantages over other options such as email including better search/browse as
 as support for attachments. For this reason, a number of steps were taken to integrate
 the ``visit-users@elist.ornl.gov`` email list with this issues-only repository.
 
-The SRE issue shall be closed when the associated inquiry is
-:ref:`resolved <sre_response_vs_resolution>`. Or, it will be closed and labeled
-``wontfix`` after 21 days pass since the user last engaged in any conversation with
-VisIt_ developers to reach a resolution.
+Given this integration of ``visit-users`` emails with GitHub conversations, for the
+remainder of this document we simply use the term *conversation* to refer to the
+communication involved in an active SRE issue.
 
 Upon receiving a *new* inquiry on the ``visit-users`` email list, telephone hotline
 call, or walk-in (with the exception of walk-ins involving classified information),
@@ -283,9 +293,10 @@ of work to resolve, there should be an associated issue for tracking that work.
 Tracking even the trivial issues will help to build a database of issues we
 may be able to later mine to identify patterns and further process improvements.
 
-Given this integration of ``visit-users`` emails with GitHub conversations, for the
-remainder of this document we simply use the term *conversation* to refer to the
-communication involved in an active SRE issue.
+An SRE issue is closed when the associated inquiry is
+:ref:`resolved <sre_response_vs_resolution>`. Or, it is closed and labeled
+``wontfix`` if 21 days pass since the user last engaged in any conversation with
+VisIt_ developers to reach a resolution.
 
 Supported Methods of Contact
 ----------------------------
