@@ -134,12 +134,20 @@ function build_icet
         -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
         -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
-        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}"\
-        -DMPI_COMPILER:PATH="${PAR_COMPILER}"\
-        -DBUILD_TESTING:BOOL=OFF\
+        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}" \
+        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}" \
+        -DMPI_COMPILER:PATH="${PAR_COMPILER}" \
+        -DBUILD_TESTING:BOOL=OFF \
         .
     else
+        mesa_opts=""
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            mesa_opts="${mesa_opts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/include"
+            mesa_opts="${mesa_opts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
+        elif [[ "$DO_OSMESA" == "yes" ]] ; then
+            mesa_opts="${mesa_opts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/include"
+            mesa_opts="${mesa_opts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
+        fi
         ${CMAKE_BIN} \
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
@@ -148,11 +156,10 @@ function build_icet
         -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
         -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
-        -DOPENGL_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESAGL_VERSION}/${VISITARCH}/include"\
-        -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESAGL_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}"\
-        -DMPI_COMPILER:PATH="${PAR_COMPILER}"\
-        -DBUILD_TESTING:BOOL=OFF\
+        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}" \
+        -DMPI_COMPILER:PATH="${PAR_COMPILER}" \
+        -DBUILD_TESTING:BOOL=OFF \
+        ${mesa_opts} \
         .
     fi
 
