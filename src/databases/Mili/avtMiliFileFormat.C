@@ -216,7 +216,7 @@ ReadMiliResults(Famid  &dbid,
 //  Modifications
 //
 //      Alister Maguire, Wed Mar 24 14:17:42 PDT 2021
-//      Added DBOptionsAttribtues and add checks for setting the
+//      Added DBOptionsAttribtues and added checks for setting the
 //      globalIntegrationPoint value. Options are "Inner", "Middle",
 //      and "Outer".
 //
