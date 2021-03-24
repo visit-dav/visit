@@ -562,7 +562,7 @@ MiliElementSetMetaData::MiliElementSetMetaData(string sName,
         char received[128];
         snprintf(expected, 128, "A global integration point of 'Middle', "
             "'Inner', or 'Outer'.");
-        snprintf(received, 128, "%s", globalIntPt);
+        snprintf(received, 128, "%s", globalIntPt.c_str());
         EXCEPTION2(UnexpectedValueException, expected, received);
     }
 
