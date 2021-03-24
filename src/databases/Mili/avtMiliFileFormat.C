@@ -2106,6 +2106,9 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 //
 //  Modifications
 //
+//      Alister Maguire, Wed Mar 24 15:20:59 PDT 2021
+//      Get the integration point index from the meta data now.
+//
 // ****************************************************************************
 
 void
