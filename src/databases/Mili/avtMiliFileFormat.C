@@ -2747,66 +2747,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
                     derivedPath = "Derived/" + varPath;
                 }
 
-                Expression pressure;
-                pressure.SetName(derivedPath + "/pressure");
-                pressure.SetDefinition("-trace(<" + varPath + ">)/3");
-                pressure.SetType(Expression::ScalarMeshVar);
-                md->AddExpression(&pressure);
-
-                Expression effTensor;
-                effTensor.SetName(derivedPath + "/eff_" + varName.c_str());
-                effTensor.SetDefinition("effective_tensor(<" +
-                    varPath + ">)");
-                effTensor.SetType(Expression::ScalarMeshVar);
-                md->AddExpression(&effTensor);
-
-                Expression pDev1;
-                pDev1.SetName(derivedPath + "/prin_dev_" +
-                    varName.c_str() + "/1");
-                pDev1.SetDefinition("principal_deviatoric_tensor(<" +
-                    varPath + ">)[0]");
-                pDev1.SetType(Expression::ScalarMeshVar);
-                md->AddExpression(&pDev1);
-
-                Expression pDev2;
-                pDev2.SetName(derivedPath + "/prin_dev_" +
-                    varName.c_str() + "/2");
-                pDev2.SetDefinition("principal_deviatoric_tensor(<" +
-                    varPath + ">)[1]");
-                pDev2.SetType(Expression::ScalarMeshVar);
-                md->AddExpression(&pDev2);
-
-                Expression pDev3;
-                pDev3.SetName(derivedPath + "/prin_dev_" +
-                    varName.c_str() + "/3");
-                pDev3.SetDefinition("principal_deviatoric_tensor(<" +
-                    varPath + ">)[2]");
-                pDev3.SetType(Expression::ScalarMeshVar);
-                md->AddExpression(&pDev3);
-
-                Expression maxShear;
-                maxShear.SetName(derivedPath + "/max_shear_" +
-                    varName.c_str());
-                maxShear.SetDefinition("tensor_maximum_shear(<" +
-                    varPath + ">)");
-                maxShear.SetType(Expression::ScalarMeshVar);
-                md->AddExpression(&maxShear);
-
-                Expression pTensor2;
-                pTensor2.SetName(derivedPath + "/prin_" +
-                    varName.c_str() + "/2");
-                pTensor2.SetDefinition("principal_tensor(<" +
-                    varPath + ">)[1]");
-                pTensor2.SetType(Expression::ScalarMeshVar);
-                md->AddExpression(&pTensor2);
-
-                Expression pTensor3;
-                pTensor3.SetName(derivedPath + "/prin_" +
-                    varName.c_str() + "/3");
-                pTensor3.SetDefinition("principal_tensor(<" +
-                    varPath + ">)[2]");
-                pTensor3.SetType(Expression::ScalarMeshVar);
-                md->AddExpression(&pTensor3);
+                AddStressStrainDerivatives(md, varName, varPath, derivedPath);
             }
         }
     }
@@ -4203,4 +4144,79 @@ avtMiliFileFormat::ScalarExpressionFromVec(const char *vecPath,
     snprintf(def, 256, "<%s>[%d]", vecPath, dim);
     Expression::ExprType eType = Expression::ScalarMeshVar;
     return CreateGenericExpression(scalarPath, def, eType);
+}
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::AddStressStrainDerivaties
+//
+//  Purpose:
+//      Add derivatives for stress or strain variables.
+//
+//  Arguments:
+//    md            A pointer to the atDatabaseMetaData.
+//    varName       The name of the stress/strain variable.
+//    varPath       The VisIt path of the stress/strain variable.
+//    derivedPath   The path for the derived variables.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    March 25, 2021
+//
+//  Modifications
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::AddStressStrainDerivatives(avtDatabaseMetaData *md,
+                                              std::string varName,
+                                              std::string varPath,
+                                              std::string derivedPath)
+{
+    Expression pressure;
+    pressure.SetName(derivedPath + "/pressure");
+    pressure.SetDefinition("-trace(<" + varPath + ">)/3");
+    pressure.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pressure);
+
+    Expression effTensor;
+    effTensor.SetName(derivedPath + "/eff_" + varName.c_str());
+    effTensor.SetDefinition("effective_tensor(<" + varPath + ">)");
+    effTensor.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&effTensor);
+
+    Expression pDev1;
+    pDev1.SetName(derivedPath + "/prin_dev_" + varName.c_str() + "/1");
+    pDev1.SetDefinition("principal_deviatoric_tensor(<" + varPath + ">)[0]");
+    pDev1.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pDev1);
+
+    Expression pDev2;
+    pDev2.SetName(derivedPath + "/prin_dev_" + varName.c_str() + "/2");
+    pDev2.SetDefinition("principal_deviatoric_tensor(<" + varPath + ">)[1]");
+    pDev2.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pDev2);
+
+    Expression pDev3;
+    pDev3.SetName(derivedPath + "/prin_dev_" + varName.c_str() + "/3");
+    pDev3.SetDefinition("principal_deviatoric_tensor(<" + varPath + ">)[2]");
+    pDev3.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pDev3);
+
+    Expression maxShear;
+    maxShear.SetName(derivedPath + "/max_shear_" + varName.c_str());
+    maxShear.SetDefinition("tensor_maximum_shear(<" + varPath + ">)");
+    maxShear.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&maxShear);
+
+    Expression pTensor2;
+    pTensor2.SetName(derivedPath + "/prin_" + varName.c_str() + "/2");
+    pTensor2.SetDefinition("principal_tensor(<" + varPath + ">)[1]");
+    pTensor2.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pTensor2);
+
+    Expression pTensor3;
+    pTensor3.SetName(derivedPath + "/prin_" + varName.c_str() + "/3");
+    pTensor3.SetDefinition("principal_tensor(<" + varPath + ">)[2]");
+    pTensor3.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pTensor3);
 }
