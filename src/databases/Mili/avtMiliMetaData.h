@@ -261,6 +261,11 @@ class MiliVariableMetaData
 //
 //  Modifications:
 //
+//      Alister Maguire, Wed Mar 24 14:17:42 PDT 2021
+//      Added support for a global integration point. Current options
+//      are "Inner", "Middle", and "Outer". NOTE: this may change in
+//      the near future.
+//
 // ****************************************************************************
 
 class MiliElementSetMetaData : public MiliVariableMetaData
@@ -269,6 +274,7 @@ class MiliElementSetMetaData : public MiliVariableMetaData
   public:
 
                       MiliElementSetMetaData(string,
+                                             string,
                                              string,
                                              string,
                                              string,
@@ -324,9 +330,13 @@ class MiliElementSetMetaData : public MiliVariableMetaData
     intVector                       GetGroupComponentIdxs(string);
     intVector                       GetGroupComponentIdxs(int);
 
+    int                             GetIntegrationPointIdx(void)
+                                        { return integrationPointIdx; };
+
   private:
 
     int                             numGroups;
+    int                             integrationPointIdx;
     stringVector                    groupShortNames;
     intVector                       groupVecSizes;
     intVector                       groupAvtTypes;

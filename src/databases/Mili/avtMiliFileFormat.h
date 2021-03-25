@@ -30,6 +30,7 @@ class vtkUnstructuredGrid;
 class vtkFloatArray;
 class vtkPoints;
 class vtkElementLabelArray;
+class DBOptionsAttributes;
 
 using std::string;
 
@@ -56,6 +57,10 @@ typedef std::unordered_map<string, int> StrToIntMap;
 //    Alister Maguire, Wed Jul 15 13:16:38 PDT 2020
 //    Added AddMiliDerivedVariables.
 //
+//    Alister Maguire, Wed Mar 24 14:17:42 PDT 2021
+//    Updated the constructor to take in DBOptionsAttributes, and added
+//    the globalIntegrationPoint variable.
+//
 //    Alister Maguire, Fri Mar 26 10:02:15 PDT 2021
 //    Added methods AddStressStrainDerivations, and
 //    AddSymmetricTensorComponentExpressions.
@@ -65,7 +70,8 @@ typedef std::unordered_map<string, int> StrToIntMap;
 class avtMiliFileFormat : public avtMTMDFileFormat
 {
   public:
-                           avtMiliFileFormat(const char *);
+                           avtMiliFileFormat(const char *,
+                                             const DBOptionsAttributes *);
 
     virtual               ~avtMiliFileFormat();
 
@@ -242,6 +248,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     doubleVector           times;
     boolVector             meshRead;
     std::vector<Famid>     dbid;
+    std::string            globalIntegrationPoint;
 };
 
 #endif
