@@ -2773,6 +2773,93 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
             break;
         }
     }
+
+    if (mustDeriveStrain)
+    {
+        std::string initCoordsName = meshPath +
+            "Derived/strain/initial_strain_coords";
+        Expression initCoordsExpr;
+        initCoordsExpr.SetName(initCoordsName);
+        initCoordsExpr.SetDefinition("conn_cmfe(coord(<[0]i:" +
+            meshName + ">)," + meshName + ")");
+        initCoordsExpr.SetType(Expression::VectorMeshVar);
+        initCoordsExpr.SetHidden(true);
+        md->AddExpression(&initCoordsExpr);
+
+        std::string varName;
+        std::string varPath;
+        std::string derivedPath;
+        std::string varPathBase = "Derived/strain";
+
+        //
+        // Green lagrange strain.
+        //
+        varName = "green_lagrange";
+        varPath = meshPath + varPathBase + varName;
+        derivedPath = varPath + "/";
+
+        Expression strainGreen;
+        strainGreen.SetName(varPath);
+        strainGreen.SetDefinition("strain_green_lagrange(" + meshName +
+            ",<" + initCoordsName + ">)");
+        strainGreen.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainGreen);
+
+        //FIXME: add vector components.
+        AddStressStrainDerivatives(md, varName, varPath, derivedPath);
+
+        //
+        // Infinitesimal strain.
+        //
+        varName = "infinitesimal";
+        varPath = meshPath + varPathBase + varName;
+        derivedPath = varPath + "/";
+
+        Expression strainInfinitesimal;
+        strainInfinitesimal.SetName(varPath);
+        strainInfinitesimal.SetDefinition("strain_infinitesimal(" + meshName +
+            ",<" + initCoordsName + ">)");
+        strainInfinitesimal.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainInfinitesimal);
+
+        //FIXME: add vector components.
+        AddStressStrainDerivatives(md, varName, varPath, derivedPath);
+
+        //
+        // Almansi strain.
+        //
+        varName = "almansi";
+        varPath = meshPath + varPathBase + varName;
+        derivedPath = varPath + "/";
+
+        Expression strainAlmansi;
+        strainAlmansi.SetName(varPath);
+        strainAlmansi.SetDefinition("strain_almansi(" + meshName +
+            ",<" + initCoordsName + ">)");
+        strainAlmansi.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainAlmansi);
+
+        //FIXME: add vector components.
+        AddStressStrainDerivatives(md, varName, varPath, derivedPath);
+
+        //
+        // Strain rate.
+        //
+        std::string nodeVelName = meshPath + "Primal/node/nodvel";
+        varName = "rate";
+        varPath = meshPath + varPathBase + varName;
+        derivedPath = varPath + "/";
+
+        Expression strainRate;
+        strainRate.SetName(varPath);
+        strainRate.SetDefinition("strain_rate(" + meshName +
+            ",<" + nodeVelName + ">)");
+        strainRate.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainRate);
+
+        //FIXME: add vector components.
+        AddStressStrainDerivatives(md, varName, varPath, derivedPath);
+    }
 }
 
 
