@@ -2645,7 +2645,18 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
                                            const int meshId,
                                            const std::string meshName)
 {
-    std::string derivedNodePath = "Derived/node";
+    //
+    // If this is the sand mesh, we need to put it into that path.
+    //
+    std::string meshPath = "";
+    std::size_t sandPos  = meshName.find("sand_mesh");
+
+    if (sandPos != std::string::npos)
+    {
+        meshPath = "sand_mesh/";
+    }
+
+    std::string derivedNodePath = meshPath + "Derived/node";
 
     //
     // First, check if node displacement exists. If not, add it now.
@@ -2705,7 +2716,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
     // If strain isn't defined in the dataset, we need to derive it ourselves.
     //
     bool mustDeriveStrain = false;
-    if (varMDVecs[0].size == 0)
+    if (varMDVecs[0].size() == 0)
     {
         mustDeriveStrain = true;
     }
@@ -2745,11 +2756,12 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 
             if (primalPos != std::string::npos)
             {
-                derivedPath = "Derived/" + varPath.substr(primalPos + 7);
+                derivedPath = meshPath + "Derived/" +
+                    varPath.substr(primalPos + 7);
             }
             else
             {
-                derivedPath = "Derived/" + varPath;
+                derivedPath = meshPath + "Derived/" + varPath;
             }
 
             AddStressStrainDerivatives(md, (*mdItr)->GetShortName(),
@@ -2881,6 +2893,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             sandMesh->hasSpatialExtents    = false;
 
             md->Add(sandMesh);
+            AddMiliDerivedVariables(md, meshId, std::string(sandMeshName));
         }
 
         //
