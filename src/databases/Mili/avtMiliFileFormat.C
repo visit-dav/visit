@@ -2635,6 +2635,9 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //
 //  Modifications
 //
+//      Alister Maguire, Thu Mar 25 13:55:53 PDT 2021
+//      Added support for stress and strain derivations.
+//
 // ****************************************************************************
 
 void
@@ -2684,6 +2687,127 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
                                                       name,
                                                       d);
             md->AddExpression(&expr);
+        }
+    }
+
+    //
+    // Next, lets tackle derivations of stress and strain. NOTE: both stress
+    // and strain can be defined as shared variables, meaning that they
+    // will exist across mulitple Classes. They could also be defined
+    // as non-shared variables => we need to loop over all clases to check
+    // for all cases.
+    //
+    std::vector<MiliClassMetaData *> cellClassMD;
+    miliMetaData[meshId]->GetCellBasedClassMD(cellClassMD);
+
+    for (std::vector<MiliClassMetaData *>::iterator mdItr = cellClassMD.begin();
+         mdItr != cellClassMD.end(); ++mdItr)
+    {
+        std::string className = (*mdItr)->GetShortName();
+
+        std::vector<std::string> targetVars;
+        targetVars.push_back("stress");
+        targetVars.push_back("strain");
+
+        for (std::vector<std::string>::iterator targetItr = targetVars.begin();
+             targetItr != targetVars.end(); ++targetItr)
+        {
+            std::string varName = *targetItr;
+
+            MiliVariableMetaData *varMD = miliMetaData[meshId]->
+                GetVarMDByShortName(varName.c_str(), className.c_str());
+
+            if (varMD != NULL)
+            {
+                std::string varPath = varMD->GetPath();
+
+                //
+                // If the variable is shared, only one of them will have a
+                // defined path within VisIt. Since they're all included in that
+                // one path, we can skip the ones without paths.
+                //
+                if (varPath == "")
+                {
+                    continue;
+                }
+
+                //
+                // To construct the derived path, we replace "Primal" with
+                // "Derived".
+                //
+                std::size_t primalPos = varPath.find("Primal/");
+                std::string derivedPath;
+
+                if (primalPos != std::string::npos)
+                {
+                    derivedPath = "Derived/" + varPath.substr(primalPos + 7);
+                }
+                else
+                {
+                    derivedPath = "Derived/" + varPath;
+                }
+
+                Expression pressure;
+                pressure.SetName(derivedPath + "/pressure");
+                pressure.SetDefinition("-trace(<" + varPath + ">)/3");
+                pressure.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&pressure);
+
+                Expression effTensor;
+                effTensor.SetName(derivedPath + "/eff_" + varName.c_str());
+                effTensor.SetDefinition("effective_tensor(<" +
+                    varPath + ">)");
+                effTensor.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&effTensor);
+
+                Expression pDev1;
+                pDev1.SetName(derivedPath + "/prin_dev_" +
+                    varName.c_str() + "/1");
+                pDev1.SetDefinition("principal_deviatoric_tensor(<" +
+                    varPath + ">)[0]");
+                pDev1.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&pDev1);
+
+                Expression pDev2;
+                pDev2.SetName(derivedPath + "/prin_dev_" +
+                    varName.c_str() + "/2");
+                pDev2.SetDefinition("principal_deviatoric_tensor(<" +
+                    varPath + ">)[1]");
+                pDev2.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&pDev2);
+
+                Expression pDev3;
+                pDev3.SetName(derivedPath + "/prin_dev_" +
+                    varName.c_str() + "/3");
+                pDev3.SetDefinition("principal_deviatoric_tensor(<" +
+                    varPath + ">)[2]");
+                pDev3.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&pDev3);
+
+                Expression maxShear;
+                maxShear.SetName(derivedPath + "/max_shear_" +
+                    varName.c_str());
+                maxShear.SetDefinition("tensor_maximum_shear(<" +
+                    varPath + ">)");
+                maxShear.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&maxShear);
+
+                Expression pTensor2;
+                pTensor2.SetName(derivedPath + "/prin_" +
+                    varName.c_str() + "/2");
+                pTensor2.SetDefinition("principal_tensor(<" +
+                    varPath + ">)[1]");
+                pTensor2.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&pTensor2);
+
+                Expression pTensor3;
+                pTensor3.SetName(derivedPath + "/prin_" +
+                    varName.c_str() + "/3");
+                pTensor3.SetDefinition("principal_tensor(<" +
+                    varPath + ">)[2]");
+                pTensor3.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&pTensor3);
+            }
         }
     }
 }
