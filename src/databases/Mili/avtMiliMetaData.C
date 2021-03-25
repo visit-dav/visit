@@ -1786,10 +1786,10 @@ avtMiliMetaData::AddClassMD(int classIdx,
     if (classIdx < 0 || classIdx >= numClasses)
     {
         char expected[128];
-        char recieved[128];
+        char receive[128];
         snprintf(expected, 128, "an index betwen 0 and %d", numClasses - 1);
-        snprintf(recieved, 128, "%d", classIdx);
-        EXCEPTION2(UnexpectedValueException, expected, recieved);
+        snprintf(receive, 128, "%d", classIdx);
+        EXCEPTION2(UnexpectedValueException, expected, receive);
     }
 
     if (miliClasses == NULL)
