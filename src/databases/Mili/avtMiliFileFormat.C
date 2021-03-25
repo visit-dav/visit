@@ -2691,64 +2691,74 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
     }
 
     //
-    // Next, lets tackle derivations of stress and strain. NOTE: both stress
-    // and strain can be defined as shared variables, meaning that they
-    // will exist across mulitple Classes. They could also be defined
-    // as non-shared variables => we need to loop over all clases to check
-    // for all cases.
+    // Next, let's handle derivations of stress and strain. If they already
+    // exist in the database, we can build off of them.
+    // NOTE: since stress and strain can be shared, they might exist across
+    // multiple Classes. We need to grab them all and look for the one that
+    // contains the VisIt path.
     //
-    std::vector<MiliClassMetaData *> cellClassMD;
-    miliMetaData[meshId]->GetCellBasedClassMD(cellClassMD);
+    std::vector< std::vector<MiliVariableMetaData *> > varMDVecs;
+    varMDVecs.push_back(miliMetaData[meshId]->GetVarMDByShortName("stress"));
+    varMDVecs.push_back(miliMetaData[meshId]->GetVarMDByShortName("strain"));
 
-    for (std::vector<MiliClassMetaData *>::iterator mdItr = cellClassMD.begin();
-         mdItr != cellClassMD.end(); ++mdItr)
+    //
+    // If strain isn't defined in the dataset, we need to derive it ourselves.
+    //
+    bool mustDeriveStrain = false;
+    if (varMDVecs[0].size == 0)
     {
-        std::string className = (*mdItr)->GetShortName();
+        mustDeriveStrain = true;
+    }
 
-        std::vector<std::string> targetVars;
-        targetVars.push_back("stress");
-        targetVars.push_back("strain");
+    //
+    // Iterate over stress and strain meta data vectors.
+    //
+    for (std::vector< std::vector<MiliVariableMetaData *> >::iterator vecIt =
+         varMDVecs.begin(); vecIt != varMDVecs.end(); ++vecIt)
+    {
 
-        for (std::vector<std::string>::iterator targetItr = targetVars.begin();
-             targetItr != targetVars.end(); ++targetItr)
+        //
+        // Iterate over the variable metadata. If shared, these will be multiple
+        // Classes containing the same variable.
+        //
+        for (std::vector<MiliVariableMetaData *>::iterator mdItr =
+             vecIt->begin(); mdItr != vecIt->end(); ++mdItr)
         {
-            std::string varName = *targetItr;
+            std::string varPath = (*mdItr)->GetPath();
 
-            MiliVariableMetaData *varMD = miliMetaData[meshId]->
-                GetVarMDByShortName(varName.c_str(), className.c_str());
-
-            if (varMD != NULL)
+            //
+            // If the variable is shared, only one of them will have a
+            // defined path within VisIt. Since they're all included in that
+            // one path, we can skip the ones without paths.
+            //
+            if (varPath == "")
             {
-                std::string varPath = varMD->GetPath();
-
-                //
-                // If the variable is shared, only one of them will have a
-                // defined path within VisIt. Since they're all included in that
-                // one path, we can skip the ones without paths.
-                //
-                if (varPath == "")
-                {
-                    continue;
-                }
-
-                //
-                // To construct the derived path, we replace "Primal" with
-                // "Derived".
-                //
-                std::size_t primalPos = varPath.find("Primal/");
-                std::string derivedPath;
-
-                if (primalPos != std::string::npos)
-                {
-                    derivedPath = "Derived/" + varPath.substr(primalPos + 7);
-                }
-                else
-                {
-                    derivedPath = "Derived/" + varPath;
-                }
-
-                AddStressStrainDerivatives(md, varName, varPath, derivedPath);
+                continue;
             }
+
+            //
+            // To construct the derived path, we replace "Primal" with
+            // "Derived".
+            //
+            std::size_t primalPos = varPath.find("Primal/");
+            std::string derivedPath;
+
+            if (primalPos != std::string::npos)
+            {
+                derivedPath = "Derived/" + varPath.substr(primalPos + 7);
+            }
+            else
+            {
+                derivedPath = "Derived/" + varPath;
+            }
+
+            AddStressStrainDerivatives(md, (*mdItr)->GetShortName(),
+                varPath, derivedPath);
+
+            //
+            // If we've added one, we've added them all.
+            //
+            break;
         }
     }
 }
