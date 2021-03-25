@@ -193,7 +193,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     vtkElementLabelArray  *GenerateLabelArray(int,
                                               int,
                                               const stringVector *,
-                                             std::vector<MiliClassMetaData *>);
+                                              std::vector<MiliClassMetaData *>);
 
     //
     // Expression helpers.
