@@ -1581,7 +1581,7 @@ avtMiliFileFormat::GetVar(int timestep,
 {
     if (fltArray == NULL)
     {
-        debug1 << "MILI: GetVar recieved a null array?! "
+        debug1 << "MILI: GetVar received a null array?! "
                << "This shouldn't happen...";
         char msg[128];
         snprintf(msg, 128, "Data array must be initialized!");
@@ -1632,7 +1632,7 @@ avtMiliFileFormat::GetVar(int timestep,
         //   and we must apply each of those values to their respective
         //   materials.
         // Global variables:
-        //   We recieve a single value that is applied to all cells.
+        //   We receive a single value that is applied to all cells.
         //
         int dBuffSize = 0;
         bool isMatVar = varMD->IsMatVar();
@@ -2228,7 +2228,7 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
     }
 
     //
-    // Loop over the subrecords, and retreive the variable
+    // Loop over the subrecords, and retrieve the variable
     // data from mili.
     //
     for (int i = 0 ; i < SRIds.size(); i++)
