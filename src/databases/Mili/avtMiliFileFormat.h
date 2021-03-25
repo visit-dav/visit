@@ -206,6 +206,11 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                                    const char *,
                                                    int);
 
+    void                   AddStressStrainDerivatives(avtDatabaseMetaData *,
+                                                      std::string,
+                                                      std::string,
+                                                      std::string);
+
     //
     // Protected data.
     //
