@@ -57,7 +57,7 @@ typedef std::unordered_map<string, int> StrToIntMap;
 //    Added AddMiliDerivedVariables.
 //
 //    Alister Maguire, Fri Mar 26 10:02:15 PDT 2021
-//    Added methods AddStressStrainDerivatives, and
+//    Added methods AddStressStrainDerivations, and
 //    AddSymmetricTensorComponentExpressions.
 //
 // ****************************************************************************
@@ -210,7 +210,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
                                                    const char *,
                                                    int);
 
-    void                   AddStressStrainDerivatives(avtDatabaseMetaData *,
+    void                   AddStressStrainDerivations(avtDatabaseMetaData *,
                                                       std::string,
                                                       std::string,
                                                       std::string,
