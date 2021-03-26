@@ -7,6 +7,7 @@
 // ************************************************************************* //
 
 #include <avtMiliFileFormat.h>
+#include <avtMiliOptions.h>
 
 #include <limits>
 #include <visitstream.h>
@@ -27,6 +28,7 @@
 #include <avtGhostData.h>
 #include <avtMaterial.h>
 #include <avtCommonDataFunctions.h>
+#include <DBOptionsAttributes.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -206,15 +208,22 @@ ReadMiliResults(Famid  &dbid,
 //
 //  Arguments:
 //    fpath      The path to a .mili json file.
+//    opts       The database read options.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    Jan 15, 2019
 //
 //  Modifications
 //
+//      Alister Maguire, Wed Mar 24 14:17:42 PDT 2021
+//      Added DBOptionsAttribtues and added checks for setting the
+//      globalIntegrationPoint value. Options are "Inner", "Middle",
+//      and "Outer".
+//
 // ****************************************************************************
 
-avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
+avtMiliFileFormat::avtMiliFileFormat(const char *fpath,
+                                     const DBOptionsAttributes *opts)
     : avtMTMDFileFormat(fpath)
 {
     dims       = 0;
@@ -223,6 +232,29 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fpath)
     nTimesteps = 0;
     datasets   = NULL;
     materials  = NULL;
+    globalIntegrationPoint = "Middle";
+
+    if (opts != NULL)
+    {
+        for (int i = 0; i < opts->GetNumberOfOptions(); ++i)
+        {
+            if (opts->GetName(i) == MiliDBOptions::MILI_READ_OPT_INTEGRATION_POINT)
+            {
+                int ipEnum = opts->GetEnum(
+                    MiliDBOptions::MILI_READ_OPT_INTEGRATION_POINT);
+
+                std::vector<std::string> enumStrings = opts->GetEnumStrings(
+                    MiliDBOptions::MILI_READ_OPT_INTEGRATION_POINT);
+
+                globalIntegrationPoint = enumStrings[ipEnum];
+            }
+            else
+            {
+                debug1 << "Ignoring unknown option \"" << opts->GetName(i)
+                       << "\"" << endl;
+            }
+        }
+    }
 
     LoadMiliInfoJson(fpath);
 
@@ -2074,6 +2106,9 @@ avtMiliFileFormat::GetVectorVar(int timestep,
 //
 //  Modifications
 //
+//      Alister Maguire, Wed Mar 24 15:20:59 PDT 2021
+//      Get the integration point index from the meta data now.
+//
 // ****************************************************************************
 
 void
@@ -2139,13 +2174,8 @@ avtMiliFileFormat::GetElementSetVar(int timestep,
         groupName);
 
     int retVecSize = compIdxs.size();
-
-    //
-    //TODO: we need to determine how to let the user choose
-    //      the integration point.
-    //      Let's take the mid integration point for now.
-    //
-    int targetIP = (int)(compDims / 2);
+    int targetIP   = ((MiliElementSetMetaData *) varMD)->
+        GetIntegrationPointIdx();
 
     for (int i = 0 ; i < nCells; i++)
     {
@@ -3186,6 +3216,10 @@ avtMiliFileFormat::GetAuxiliaryData(const char *varName,
 //
 //  Modifications:
 //
+//      Alister Maguire, Wed Mar 24 14:17:42 PDT 2021
+//      When we create metadata for element sets, we now pass in a global
+//      integration point. NOTE: This may change in the near future.
+//
 // ****************************************************************************
 
 MiliVariableMetaData *
@@ -3332,6 +3366,7 @@ avtMiliFileFormat::ExtractJsonVariable(const rapidjson::Document &jDoc,
                                               longName,
                                               cShortName,
                                               cLongName,
+                                              globalIntegrationPoint,
                                               isMulti,
                                               isMatVar,
                                               isGlobal,
