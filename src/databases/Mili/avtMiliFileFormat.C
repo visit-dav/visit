@@ -4229,7 +4229,7 @@ avtMiliFileFormat::ScalarExpressionFromVec(const char *vecPath,
 
 
 // ****************************************************************************
-//  Method:  avtMiliFileFormat::AddStressStrainDerivaties
+//  Method:  avtMiliFileFormat::AddStressStrainDerivations
 //
 //  Purpose:
 //      Add derivatives for stress or strain variables.
