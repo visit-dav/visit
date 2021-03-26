@@ -376,7 +376,7 @@ def TestDerivedVariables():
 
     AddPlot("Pseudocolor", "sand_mesh/Derived/Shared/strain/rate/yz")
     DrawPlots()
-    Test("mili_derived_10")
+    Test("mili_derived_11")
     DeleteAllPlots()
 
     AddPlot("Tensor", "Derived/Shared/strain/green_lagrange")
