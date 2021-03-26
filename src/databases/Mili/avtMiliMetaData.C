@@ -1786,10 +1786,10 @@ avtMiliMetaData::AddClassMD(int classIdx,
     if (classIdx < 0 || classIdx >= numClasses)
     {
         char expected[128];
-        char recieved[128];
+        char receive[128];
         snprintf(expected, 128, "an index betwen 0 and %d", numClasses - 1);
-        snprintf(recieved, 128, "%d", classIdx);
-        EXCEPTION2(UnexpectedValueException, expected, recieved);
+        snprintf(receive, 128, "%d", classIdx);
+        EXCEPTION2(UnexpectedValueException, expected, receive);
     }
 
     if (miliClasses == NULL)
@@ -2278,6 +2278,43 @@ avtMiliMetaData::GetVarMDByShortName(const char *vName,
 
 
 // ***************************************************************************
+//  Method: GetVarMDByShortName
+//
+//  Purpose:
+//      Get a vector of all MiliVariableMetaData from our container that
+//      match the given shortname.
+//
+//  Arguments:
+//      vName    The shortname of our desired variable.
+//
+//  Returns:
+//      A vector containing all MiliVariableMetaData that match the given
+//      shortname.
+//
+//  Programmer: Alister Maguire
+//  Creation:   March 25, 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+std::vector<MiliVariableMetaData *>
+avtMiliMetaData::GetVarMDByShortName(const char *vName)
+{
+    std::vector<MiliVariableMetaData *> varMD;
+    std::vector<int> idxs = GetVarMDIdxByShortName(vName);
+
+    for (std::vector<int>::iterator idxItr = idxs.begin();
+         idxItr != idxs.end(); ++idxItr)
+    {
+        varMD.push_back(miliVariables[*idxItr]);
+    }
+
+    return varMD;
+}
+
+
+// ***************************************************************************
 //  Method: avtMiliMetaData::GetVarMDByPath
 //
 //  Purpose:
@@ -2420,6 +2457,73 @@ avtMiliMetaData::GetVarMDIdxByShortName(const char *vName,
         }
     }
     return -1;
+}
+
+
+// ***************************************************************************
+//  Method: GetVarMDIdxByShortName
+//
+//  Purpose:
+//      Get a vector of container indices to the MiliVariableMetaData having
+//      the given name.
+//
+//  Arguments:
+//      vName    The variable name.
+//
+//  Returns:
+//      A vector of indices.
+//
+//  Programmer: Alister Maguire
+//  Creation:   March 25, 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+std::vector<int>
+avtMiliMetaData::GetVarMDIdxByShortName(const char *vName)
+{
+    std::vector<int> idxs;
+
+    if (miliVariables == NULL)
+    {
+        return idxs;
+    }
+
+    for (int i = 0; i < numVariables; ++i)
+    {
+        if (miliVariables[i] != NULL)
+        {
+            if (miliVariables[i]->GetShortName() == vName)
+            {
+                idxs.push_back(i);
+            }
+            else if (miliVariables[i]->IsElementSet())
+            {
+                //
+                // If this is an element set, we need to check against
+                // all of its group names. IMPORTANT: we must check the
+                // group names after we've checked the short name (above)
+                // so that users can still request the element set itself
+                // (v.s. one of it's groups). Taking the lazy route...
+                //
+                stringVector groupNames =
+                    ((MiliElementSetMetaData *)miliVariables[i])->
+                    GetGroupShortNames();
+
+                for (stringVector::iterator gItr = groupNames.begin();
+                     gItr != groupNames.end(); ++gItr)
+                {
+                    if (vName == (*gItr))
+                    {
+                        idxs.push_back(i);
+                    }
+                }
+            }
+        }
+    }
+
+    return idxs;
 }
 
 
