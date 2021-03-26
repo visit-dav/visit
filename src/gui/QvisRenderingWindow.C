@@ -27,7 +27,7 @@
 // ****************************************************************************
 // Method: QvisRenderingWindow::QvisRenderingWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisRenderingWindow class.
 //
 // Arguments:
@@ -42,7 +42,7 @@
 //
 //   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //   Changed name of scalableThreshold to scalrenActivationMode
-//   
+//
 //   Hank Childs, Sun May  9 15:54:29 PDT 2004
 //   Initialize dlMode.
 //
@@ -77,14 +77,14 @@ QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
 // ****************************************************************************
 // Method: QvisRenderingWindow::~QvisRenderingWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the QvisRenderingWindow class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 23 14:47:29 PST 2002
 //
 // Modifications:
-//   
+//
 //   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //   Changed name of scalableThreshold to scalrenActivationMode
 //
@@ -386,12 +386,12 @@ QvisRenderingWindow::CreateBasicPage()
 // ****************************************************************************
 // Method: QvisRenderingWindow::CreateAdvancedPage
 //
-// Purpose: 
+// Purpose:
 //   Creates the advanced page widgets
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
 // Note:       Moved from CreateWindowContents.
 //
@@ -404,7 +404,7 @@ QvisRenderingWindow::CreateBasicPage()
 //
 //   Garrett Morrison, Fri May 11 17:57:47 PDT 2018
 //   Added OSPRay option default values
-//   
+//
 // ****************************************************************************
 
 QWidget *
@@ -549,7 +549,7 @@ QvisRenderingWindow::CreateAdvancedPage()
     connect(depthCueingEndEdit, SIGNAL(returnPressed()),
             this, SLOT(depthCueingEndChanged()));
     row++;
-    
+
     // Create color texturing options.
     colorTexturingToggle = new QCheckBox(tr("Apply color using textures"), advancedOptions);
     connect(colorTexturingToggle, SIGNAL(toggled(bool)),
@@ -613,20 +613,20 @@ QvisRenderingWindow::CreateAdvancedPage()
 // ****************************************************************************
 // Method: QvisRenderingWindow::CreateInformationPage
 //
-// Purpose: 
+// Purpose:
 //   Creates the information page.
 //
 // Arguments:
 //
 // Returns:    The information page.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 19 13:18:51 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QWidget *
@@ -698,7 +698,7 @@ QvisRenderingWindow::CreateInformationPage()
 // ****************************************************************************
 // Method: QvisRenderingWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   This method creates all of the window's widgets.
 //
 // Programmer: Brad Whitlock
@@ -735,7 +735,7 @@ QvisRenderingWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisRenderingWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method updates the window's widgets when its subjects update.
 //
 // Arguments:
@@ -760,7 +760,7 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisRenderingWindow::UpdateOptions
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets that control the rendering options.
 //
 // Arguments:
@@ -773,8 +773,8 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Thu Oct 24 13:35:22 PST 2002
 //   I added code to enable/disable the stereo rendering buttons.
 //
-//   Kathleen Bonnell, Wed Dec  4 18:42:48 PST 2002 
-//   Renumber switch cases, to reflect antialisingFrames removed from atts. 
+//   Kathleen Bonnell, Wed Dec  4 18:42:48 PST 2002
+//   Renumber switch cases, to reflect antialisingFrames removed from atts.
 //
 //   Jeremy Meredith, Fri Nov 14 17:44:35 PST 2003
 //   Added specular options.
@@ -795,7 +795,7 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //   Fixed problem with updating scalable auto threshold
 //
-//   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005 
+//   Kathleen Bonnell, Thu Jun 30 15:29:55 PDT 2005
 //   Added redgreen radiobutton.
 //
 //   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
@@ -922,7 +922,7 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             break;
         case RenderingAttributes::ID_scalableAutoThreshold:
             { // new scope
-            QString suffix;           
+            QString suffix;
             int step, widgetVal;
             int actualVal = renderAtts->GetScalableAutoThreshold();
             InterpretScalableAutoThreshold(actualVal, &step, &suffix, &widgetVal);
@@ -1049,7 +1049,7 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 //
 //    Cyrus Harrison, Mon Jul 28 15:23:05 PDT 2008
 //    I added code to enable/disable the scalable auto threshold spin box based
-//    on the scalable rendering mode. 
+//    on the scalable rendering mode.
 //
 //    Jeremy Meredith, Fri Apr 30 15:04:34 EDT 2010
 //    Added an automatic start/end setting capability for depth cueing.
@@ -1108,7 +1108,7 @@ QvisRenderingWindow::UpdateWindowSensitivity()
 // ****************************************************************************
 // Method: QvisRenderingWindow::UpdateInformation
 //
-// Purpose: 
+// Purpose:
 //   Updates the information labels with statistics from the viewer.
 //
 // Arguments:
@@ -1120,7 +1120,7 @@ QvisRenderingWindow::UpdateWindowSensitivity()
 // Modifications:
 //   Eric Brugger, Fri Apr 18 11:52:33 PDT 2003
 //   I removed auto center view.
-//   
+//
 //   Jeremy Meredith, Tue Nov 16 11:39:53 PST 2004
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
@@ -1135,13 +1135,16 @@ QvisRenderingWindow::UpdateWindowSensitivity()
 //   Added a break; statement after case label 16
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//   Added seconds per frame for < 1 fps cases 
+//   Added seconds per frame for < 1 fps cases
 //
 //   Brad Whitlock, Mon Dec 17 10:30:33 PST 2007
 //   Made it use ids.
 //
 //   Brad Whitlock, Tue Apr  8 15:26:49 PDT 2008
 //   Support for internationalization.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg and QString.setNum
 //
 // ****************************************************************************
 
@@ -1193,7 +1196,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
                 fps = 1. / windowInfo->GetLastRenderMin();
             else
                 fps = 0.;
-            tmp.asprintf("%1.3g", fps);
+            tmp = QString("%1").arg(fps,0,'g',3);
             fpsMaxLabel->setText(tmp);
             break;
         case WindowInformation::ID_lastRenderAvg:
@@ -1211,7 +1214,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             {
                 fpsLabel->setText(tr("Frames per second:"));
             }
-            tmp.asprintf("%1.3g", fps);
+            tmp = QString("%1").arg(fps,0,'g',3);
             fpsAvgLabel->setText(tmp);
             break;
         case WindowInformation::ID_lastRenderMax:
@@ -1220,11 +1223,11 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
                 fps = 1. / windowInfo->GetLastRenderMax();
             else
                 fps = 0.;
-            tmp.asprintf("%1.3g", fps);
+            tmp = QString("%1").arg(fps,0,'g',3);
             fpsMinLabel->setText(tmp);
             break;
         case WindowInformation::ID_numPrimitives:
-            tmp.asprintf("%d", windowInfo->GetNumPrimitives());
+            tmp.setNum(windowInfo->GetNumPrimitives());
             approxNumPrimitives->setText(tmp);
             break;
         case WindowInformation::ID_extents:
@@ -1241,14 +1244,14 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
         case WindowInformation::ID_windowSize:
         case WindowInformation::ID_winMode:
             break;
-        }            
+        }
     }
 }
 
 // ****************************************************************************
 // Method: QvisRenderingWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to apply the rendering attributes.
 //
 // Arguments:
@@ -1259,7 +1262,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
 // Creation:   Mon Sep 23 14:49:19 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1277,7 +1280,7 @@ QvisRenderingWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisRenderingWindow::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   This method makes sure that we don't Detach from the subject if it is
 //   destroyed first.
 //
@@ -1288,7 +1291,7 @@ QvisRenderingWindow::Apply(bool ignore)
 // Creation:   Mon Sep 23 14:50:04 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1303,7 +1306,7 @@ QvisRenderingWindow::SubjectRemoved(Subject *TheRemovedSubject)
 // ****************************************************************************
 // Method: QvisRenderingWindow::ConnectRenderingAttributes
 //
-// Purpose: 
+// Purpose:
 //   Makes this window observe the rendering attributes.
 //
 // Arguments:
@@ -1313,7 +1316,7 @@ QvisRenderingWindow::SubjectRemoved(Subject *TheRemovedSubject)
 // Creation:   Mon Sep 23 14:51:11 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1326,7 +1329,7 @@ QvisRenderingWindow::ConnectRenderingAttributes(RenderingAttributes *w)
 // ****************************************************************************
 // Method: QvisRenderingWindow::ConnectWindowInformation
 //
-// Purpose: 
+// Purpose:
 //   Makes this window observe the window information.
 //
 // Arguments:
@@ -1336,7 +1339,7 @@ QvisRenderingWindow::ConnectRenderingAttributes(RenderingAttributes *w)
 // Creation:   Mon Sep 23 14:51:11 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1353,7 +1356,7 @@ QvisRenderingWindow::ConnectWindowInformation(WindowInformation *w)
 // ****************************************************************************
 // Method: QvisRenderingWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function is called by clicking the apply button.
 //
 // Programmer: Brad Whitlock
@@ -1362,7 +1365,7 @@ QvisRenderingWindow::ConnectWindowInformation(WindowInformation *w)
 // Modifications:
 //   Jeremy Meredith, Wed Aug 29 15:27:16 EDT 2007
 //   Added call to GetCurrentValues.
-//   
+//
 // ****************************************************************************
 
 void
@@ -1375,7 +1378,7 @@ QvisRenderingWindow::apply()
 // ****************************************************************************
 // Method: QvisRenderingWindow::antialiasingToggled
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function is called when the antialiasing checkbox is clicked.
 //
 // Arguments:
@@ -1385,7 +1388,7 @@ QvisRenderingWindow::apply()
 // Creation:   Mon Sep 23 14:52:07 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1527,7 +1530,7 @@ QvisRenderingWindow::updateAlphaCompositeBlocking()
 // ****************************************************************************
 // Method: QvisRenderingWindow::multiresolutionModeToggled
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function is called when the multiresolution mode checkbox is
 //   clicked.
 //
@@ -1538,7 +1541,7 @@ QvisRenderingWindow::updateAlphaCompositeBlocking()
 // Creation:   Tue Oct 25 12:32:40 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1553,7 +1556,7 @@ QvisRenderingWindow::multiresolutionModeToggled(bool val)
 // ****************************************************************************
 // Method: QvisRenderingWindow::processMultiresolutionSmallestCellText
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function is called when the multiresolution smallest
 //   cell text is changed.
 //
@@ -1563,7 +1566,7 @@ QvisRenderingWindow::multiresolutionModeToggled(bool val)
 // Creation:   Tue Oct 25 12:32:40 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1584,7 +1587,7 @@ QvisRenderingWindow::processMultiresolutionSmallestCellText()
 // ****************************************************************************
 // Method: QvisRenderingWindow::processMultiresolutionSmallestCellText
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function is called when the multiresolution smallest
 //   cell text is changed.
 //
@@ -1594,7 +1597,7 @@ QvisRenderingWindow::processMultiresolutionSmallestCellText()
 // Creation:   Tue Oct 25 12:32:40 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1615,7 +1618,7 @@ QvisRenderingWindow::processMultiresolutionSmallestCellText(const QString &tols)
 // ****************************************************************************
 // Method: QvisRenderingWindow::objectRepresentationChanged
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function is called when we change surface representations.
 //
 // Arguments:
@@ -1625,7 +1628,7 @@ QvisRenderingWindow::processMultiresolutionSmallestCellText(const QString &tols)
 // Creation:   Mon Sep 23 14:53:28 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1640,7 +1643,7 @@ QvisRenderingWindow::objectRepresentationChanged(int val)
 // ****************************************************************************
 // Method: QvisRenderingWindow::stereoToggled
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function is called when we change turn stereo on/off.
 //
 // Arguments:
@@ -1650,7 +1653,7 @@ QvisRenderingWindow::objectRepresentationChanged(int val)
 // Creation:   Mon Sep 23 14:54:52 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1663,7 +1666,7 @@ QvisRenderingWindow::stereoToggled(bool val)
 // ****************************************************************************
 // Method: QvisRenderingWindow::stereoTypeChanged
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function is called when the stereo type changes.
 //
 // Arguments:
@@ -1673,7 +1676,7 @@ QvisRenderingWindow::stereoToggled(bool val)
 // Creation:   Mon Sep 23 14:55:32 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1687,7 +1690,7 @@ QvisRenderingWindow::stereoTypeChanged(int val)
 // ****************************************************************************
 // Method: QvisRenderingWindow::renderNotifyToggled
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function is called when the "Query after render" toggle
 //   button is clicked.
 //
@@ -1698,7 +1701,7 @@ QvisRenderingWindow::stereoTypeChanged(int val)
 // Creation:   Mon Sep 23 14:56:12 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1712,21 +1715,21 @@ QvisRenderingWindow::renderNotifyToggled(bool val)
 // ****************************************************************************
 // Method: QvisRenderingWindow::scalrenActivationModeChanged
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function is called when the scalable activation mode changes.
 //
 // Arguments:
 //   val : The new scalable activation mode flag.
 //         0 = Auto, 1 = Always, 2 = Never
 //
-// Programmer: Mark C. Miller 
-// Creation:   Wed Nov 20 17:09:59 PST 2002 
+// Programmer: Mark C. Miller
+// Creation:   Wed Nov 20 17:09:59 PST 2002
 //
 // Modifications:
 //
 //   Mark C. Miller, Tue Apr 27 14:41:35 PDT 2004
 //   Added scalrenAutoThreshold spinbox and geometry label
-//   
+//
 //   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //   Changed scalable rendering controls to use activation mode and auto
 //   threshold
@@ -1763,10 +1766,10 @@ QvisRenderingWindow::scalrenActivationModeChanged(int val)
 // ****************************************************************************
 // Method: QvisRenderingWindow::InterpretScalableAutoThreshold
 //
-// Purpose: Determine widget controls given scalable auto threshold 
+// Purpose: Determine widget controls given scalable auto threshold
 //
-// Programmer: Mark C. Miller 
-// Creation:   January 4, 2005 
+// Programmer: Mark C. Miller
+// Creation:   January 4, 2005
 //
 // ****************************************************************************
 void
@@ -1786,7 +1789,7 @@ QvisRenderingWindow::InterpretScalableAutoThreshold(int actualVal,
     // compute the divisor for the displayed value in the GUI
     int div;
     if      (*suffix == " KPolys") div = (int) 1e3;
-    else if (*suffix == " MPolys") div = (int) 1e6; 
+    else if (*suffix == " MPolys") div = (int) 1e6;
     else if (*suffix == " GPolys") div = (int) 1e9;
     else                          div = 1;
 
@@ -1796,18 +1799,18 @@ QvisRenderingWindow::InterpretScalableAutoThreshold(int actualVal,
 // ****************************************************************************
 // Method: QvisRenderingWindow::scalrenAutoThresholdChanged
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot function is called when the scalable rendering automatic
 //   polygon count threshold changes.
 //
 // Arguments:
 //   val : The new polygon count threshold.
 //
-// Programmer: Mark C. Miller 
-// Creation:   Wed Apr 21 22:42:57 PDT 2004 
+// Programmer: Mark C. Miller
+// Creation:   Wed Apr 21 22:42:57 PDT 2004
 //
 // Modifications:
-//   
+//
 //   Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //   Changed scalable rendering controls to use activation mode and auto
 //   threshold
@@ -1907,7 +1910,7 @@ QvisRenderingWindow::compactDomainsActivationModeChanged(int mode)
         renderAtts->SetCompactDomainsActivationMode(RenderingAttributes::Always);
     else
         renderAtts->SetCompactDomainsActivationMode(RenderingAttributes::Never);
-    
+
     SetUpdate(false);
     Apply();
     UpdateWindowSensitivity();
@@ -1917,7 +1920,7 @@ QvisRenderingWindow::compactDomainsActivationModeChanged(int mode)
 // Method: QvisRenderingWindow::scalrenCompressModeChanged
 //
 // Programmer: Mark C. Miller
-// Creation:   November 2, 2005 
+// Creation:   November 2, 2005
 //
 // ****************************************************************************
 
@@ -2073,7 +2076,7 @@ QvisRenderingWindow::specularPowerChanged(int val, const void*)
 // ****************************************************************************
 // Method: QvisRenderingWindow::colorTexturingToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the colorTexturing check
 //   box is toggled.
 //
@@ -2084,7 +2087,7 @@ QvisRenderingWindow::specularPowerChanged(int val, const void*)
 // Creation:   Mon Sep 18 10:52:30 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2161,7 +2164,7 @@ QvisRenderingWindow::depthCueingAutoToggled(bool val)
 //    Triggered when return is pressed in the depth cueing start point widget.
 //
 //  Arguments:
-//    
+//
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2007
@@ -2250,14 +2253,14 @@ QvisRenderingWindow::GetCurrentValues()
 // ****************************************************************************
 // Method: QvisRenderingWindow::osprayRenderingToggled
 //
-// Purpose: 
+// Purpose:
 //    Triggered when ospray rendering is toggled.
 //
 // Programmer:  Garrett Morrison
 // Creation:    Wed May 16 17:42:42 PDT 2018
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2272,17 +2275,17 @@ QvisRenderingWindow::osprayRenderingToggled(bool val)
 // ****************************************************************************
 // Method: QvisRenderingWindow::ospraySPPChanged
 //
-// Purpose: 
+// Purpose:
 //    Triggered when ospray samples per pixel are changed.
 //
 //  Arguments:
-//    val        the new value 
+//    val        the new value
 //
 // Programmer:  Garrett Morrison
 // Creation:    Wed May 16 17:42:42 PDT 2018
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2297,17 +2300,17 @@ QvisRenderingWindow::ospraySPPChanged(int val)
 // ****************************************************************************
 // Method: QvisRenderingWindow::osprayAOChanged
 //
-// Purpose: 
+// Purpose:
 //    Triggered when ospray ambient occlusion samples are changed.
 //
 //  Arguments:
-//    val        the new value 
+//    val        the new value
 //
 // Programmer:  Garrett Morrison
 // Creation:    Wed May 16 17:42:42 PDT 2018
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2322,14 +2325,14 @@ QvisRenderingWindow::osprayAOChanged(int val)
 // ****************************************************************************
 // Method: QvisRenderingWindow::osprayShadowsToggled
 //
-// Purpose: 
+// Purpose:
 //    Triggered when ospray shadows are toggled.
 //
 // Programmer:  Garrett Morrison
 // Creation:    Wed May 16 17:42:42 PDT 2018
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

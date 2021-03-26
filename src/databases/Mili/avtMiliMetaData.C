@@ -462,6 +462,7 @@ MiliVariableMetaData::PrintSelf(void)
 //      lName        The long name.
 //      cSName       The class short name.
 //      cLName       The class long name.
+//      globalIntPt  The global integration point (Middle, Inner, or Outer).
 //      isMultiM     Is multi mesh or not.
 //      isMat        Is a material var.
 //      isGlob       Is global.
@@ -483,12 +484,16 @@ MiliVariableMetaData::PrintSelf(void)
 //
 //  Modifications:
 //
+//      Alister Maguire, Wed Mar 24 14:17:42 PDT 2021
+//      Set the integration point index based on the global integration point.
+//
 // ****************************************************************************
 
 MiliElementSetMetaData::MiliElementSetMetaData(string sName,
                                                string lName,
                                                string cSName,
                                                string cLName,
+                                               string globalIntPt,
                                                bool isMultiM,
                                                bool isMat,
                                                bool isGlob,
@@ -526,12 +531,40 @@ MiliElementSetMetaData::MiliElementSetMetaData(string sName,
                        cDims,
                        vComps)
 {
-    groupShortNames = gNames;
-    groupVecSizes   = gVSizes;
-    groupAvtTypes   = gAvtTypes;
-    groupMiliTypes  = gMiliTypes;
-    groupIsShared   = gIsShared;
-    numGroups       = groupShortNames.size();
+    groupShortNames     = gNames;
+    groupVecSizes       = gVSizes;
+    groupAvtTypes       = gAvtTypes;
+    groupMiliTypes      = gMiliTypes;
+    groupIsShared       = gIsShared;
+    numGroups           = groupShortNames.size();
+
+    //
+    // Our current integration point options are
+    //     1. Middle: Choose the mid component.
+    //     2. Inner: Choose the first component.
+    //     3. Outer: Choose the last component.
+    //
+    if (globalIntPt == "Middle")
+    {
+        integrationPointIdx = (int)(componentDims / 2.0);
+    }
+    else if (globalIntPt == "Inner")
+    {
+        integrationPointIdx = 0;
+    }
+    else if (globalIntPt == "Outer")
+    {
+        integrationPointIdx = componentDims - 1;
+    }
+    else
+    {
+        char expected[128];
+        char received[128];
+        snprintf(expected, 128, "A global integration point of 'Middle', "
+            "'Inner', or 'Outer'.");
+        snprintf(received, 128, "%s", globalIntPt.c_str());
+        EXCEPTION2(UnexpectedValueException, expected, received);
+    }
 
     groupComponentIdxs.reserve(numGroups);
 
@@ -1786,10 +1819,10 @@ avtMiliMetaData::AddClassMD(int classIdx,
     if (classIdx < 0 || classIdx >= numClasses)
     {
         char expected[128];
-        char recieved[128];
+        char received[128];
         snprintf(expected, 128, "an index betwen 0 and %d", numClasses - 1);
-        snprintf(recieved, 128, "%d", classIdx);
-        EXCEPTION2(UnexpectedValueException, expected, recieved);
+        snprintf(received, 128, "%d", classIdx);
+        EXCEPTION2(UnexpectedValueException, expected, received);
     }
 
     if (miliClasses == NULL)

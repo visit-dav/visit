@@ -11,19 +11,24 @@
 #    Kathleen Biagas, Tue Jan 24 11:06:12 PST 2017
 #    Add support for Qt5.
 #
+#    Kathleen Biagas, Tue Jun 30 13:19:18 PDT 2020
+#    Update for pyside2-qt-5.14.2.
+#
+#    Cyrus Harrison, Wed Feb 24 16:06:36 PST 2021
+#    A few small changes for pyside2
+#
 #*****************************************************************************
 
+# PYSIDE_ADD_MODULE handles the qt include paths
+
 set(pyside_gui_include_paths
-    ${CMAKE_CURRENT_SOURCE_DIR}
     ${SHIBOKEN_INCLUDE_DIR}
-    ${SHIBOKEN_PYTHON_INCLUDE_DIR}
-    ${PYSIDE_INCLUDE_DIR}
-    ${pyside_qt_includes}
     ${PYSIDE_INCLUDE_DIR}
     ${PYSIDE_INCLUDE_DIR}/QtCore
     ${PYSIDE_INCLUDE_DIR}/QtGui
     ${PYSIDE_INCLUDE_DIR}/QtOpenGL
     ${PYSIDE_INCLUDE_DIR}/QtWidgets
+    ${VISIT_BINARY_DIR}/include
     ${VISIT_SOURCE_DIR}/gui/
     ${VISIT_SOURCE_DIR}/gui/main
     ${VISIT_SOURCE_DIR}/viewer/subjectproxy
@@ -48,13 +53,7 @@ set(pyside_gui_include_paths
 )
 
 set(pyside_gui_link_libs
-    #gui
     guiwrapper
-    #viewersubjectproxy
-    #${SHIBOKEN_PYTHON_LIBRARIES}
-    #${SHIBOKEN_LIBRARY}
-    #${PYSIDE_LIBRARY}
-    #${QT_QTCORE_LIBRARY}
     ${QWT_LIBRARY}
     )
 
@@ -74,7 +73,7 @@ IF(OSMESA_FOUND)
 ENDIF()
 
 PYSIDE_ADD_MODULE(pyside_gui
-                  site-packages/visit
+                  site-packages/visit_utils/builtin
                   pyside_gui_sources
                   pyside_gui_gen_sources
                   pyside_gui_include_paths

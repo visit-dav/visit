@@ -286,7 +286,11 @@ endif(VISIT_MPICH_INSTALL)
 
 # Fix some third-party include paths that are different on windows than unix.
 if(UNIX)
-   set(python_include_relative_path "/python/include/python${PYTHON_VERSION}")
+   # python3's include dir has an 'm' after the version. For ease of 
+   # use with future versions, and to save having to figure this out again
+   # get and use the last part of the PYTHON_INCLUDE_DIR
+   get_filename_component(py_inc_base ${PYTHON_INCLUDE_DIR} NAME)
+   set(python_include_relative_path "/python/include/${py_inc_base}")
    set(exodusii_include_relative_path "/exodusii/inc")
    set(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 else(UNIX)

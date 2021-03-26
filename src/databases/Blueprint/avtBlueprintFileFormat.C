@@ -14,6 +14,10 @@
 #include "avtDatabaseMetaData.h"
 #include "avtResolutionSelection.h"
 
+#include "avtMaterial.h"
+#include "avtMixedVariable.h"
+#include "avtVariableCache.h"
+
 #include "DebugStream.h"
 #include "StringHelpers.h"
 #include "TimingsManager.h"
@@ -506,8 +510,8 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
         }
     }
 
-    Node &bp_index_field = m_root_node["blueprint_index"][mesh_name]["fields"][varname];
-    BP_PLUGIN_INFO(bp_index_field.to_json());
+    const Node &bp_index_field = m_root_node["blueprint_index"][mesh_name]["fields"][varname];
+    BP_PLUGIN_INFO(bp_index_field.to_yaml());
 
     string topo_tag  = bp_index_field["topology"].as_string();
 
@@ -540,6 +544,98 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
 
 
 // ****************************************************************************
+//  Method: avtBlueprintFileFormat::ReadBlueprintMatset
+//
+//  Purpose:
+//      Reads matset info for the given domain into the `out` conduit Node.
+//
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Wed Dec  9 13:02:46 PST 2020
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
+                                            const string &abs_matsetname,
+                                            Node &out)
+{
+    BP_PLUGIN_INFO("ReadBlueprintMatsetVolFracs: " << abs_matsetname
+                   << " [domain " << domain << "]");
+
+    string abs_matsetname_str(abs_matsetname);
+    // replace colons, etc
+    abs_matsetname_str = sanitize_var_name(abs_matsetname_str);
+
+    // we need to know what mesh name this matset is associated with
+    const Node &mset_info = m_matset_info[abs_matsetname_str];
+    
+    string abs_meshname = mset_info["full_mesh_name"].as_string();
+
+    BP_PLUGIN_INFO("matset " << abs_matsetname << " is defined on mesh " << abs_meshname);
+
+    string mesh_name = mset_info["mesh_name"].as_string();
+    string topo_name = mset_info["topo_name"].as_string();
+    string matset_name = mset_info["matset_name"].as_string();
+    const Node &n_mat_names = mset_info["matnames"];
+
+    BP_PLUGIN_INFO("mesh name: " << mesh_name);
+    BP_PLUGIN_INFO("topo name: " << topo_name);
+    BP_PLUGIN_INFO("matset name: " << matset_name);
+    BP_PLUGIN_INFO("matnames: " << n_mat_names.to_yaml());
+
+    if (!m_root_node["blueprint_index"].has_child(mesh_name))
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "mesh " << mesh_name << " not found in blueprint index");
+    }
+
+    if (!m_root_node["blueprint_index"][mesh_name]["matsets"].has_child(matset_name))
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "matset " << matset_name << " not found in blueprint index");
+    }
+
+    const Node &bp_index_matset = m_root_node["blueprint_index"][mesh_name]["matsets"][matset_name];
+    BP_PLUGIN_INFO(bp_index_matset.to_yaml());
+
+    string topo_tag  = bp_index_matset["topology"].as_string();
+
+    string file_pattern = FileFunctions::Dirname(GetFilename()) +
+                          string("/") +
+                          m_root_node["file_pattern"].as_string();
+
+    string tree_pattern = m_root_node["tree_pattern"].as_string();
+    string data_path    = bp_index_matset["path"].as_string();
+
+
+    try
+    {
+        m_tree_cache->FetchBlueprintTree(domain,
+                                         data_path,
+                                         out);
+
+        BP_PLUGIN_INFO("done loading conduit data for " 
+                        << abs_matsetname << " [domain "<< domain << "]" );
+    }
+    catch(InvalidVariableException)
+    {
+        BP_PLUGIN_WARNING("failed to load conduit data for "
+                           << abs_matsetname << " [domain "<< domain << "]"
+                           << " -- skipping field for this domain");
+        // if something went wrong, reset the output node to
+        // signal the read failed, and return.
+        out.reset();
+    }
+
+    // provide material_map
+    out["matnames"] = n_mat_names;
+}
+
+
+// ****************************************************************************
 // helper method used to add the meta data for a blueprint mesh.
 // ****************************************************************************
 //  Modifications:
@@ -558,7 +654,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
     {
         BP_PLUGIN_INFO("Skipping mesh named \"" << mesh_name << "\"" << endl
                        << "blueprint::mesh::index::verify failed " << endl
-                       << verify_info.to_json());
+                       << verify_info.to_yaml());
         return;
     }
 
@@ -654,7 +750,7 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         topo_dims[topo_name] = ndims;
 
         BP_PLUGIN_INFO("coordinate system: "
-                       << n_coords["coord_system"].to_json()
+                       << n_coords["coord_system"].to_yaml()
                        << " (ndims=" << ndims << ")");
 
         avtMeshMetaData *mmd = new avtMeshMetaData(mesh_topo_name,
@@ -746,6 +842,137 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
     }
 }
 
+
+// ****************************************************************************
+// helper method used to add materials meta data for a blueprint mesh.
+//
+// Cyrus Harrison, Tue Dec  8 10:29:21 PST 2020
+// ****************************************************************************
+void
+avtBlueprintFileFormat::AddBlueprintMaterialsMetadata(avtDatabaseMetaData *md,
+                                                      string const &mesh_name,
+                                                      const Node &n_mesh_info)
+{
+    if (!n_mesh_info.has_child("matsets"))
+        return;
+
+    BP_PLUGIN_INFO("adding materials for " <<  mesh_name);
+
+    NodeConstIterator msets_itr = n_mesh_info["matsets"].children();
+
+    while (msets_itr.has_next())
+    {
+        const Node &n_mset = msets_itr.next();
+        string mset_name = msets_itr.name();
+
+        // the material names are in the "materials" or "material_map" index
+        // entries
+        if( !n_mset.has_child("materials") && 
+            !n_mset.has_child("material_map") )
+        {
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " matset index: "
+                           << mset_name
+                           << " missing `material_map` or `materials`,"
+                           << " skipping matset" );
+            return;
+        }
+
+        // we also need the associated topo
+        if (!n_mset.has_child("topology"))
+        {
+            BP_PLUGIN_INFO("mesh: "
+                           << mesh_name
+                           << " matset index: "
+                           << mset_name
+                           << " missing `topology`,"
+                           << " skipping matset" );
+            return;
+        }
+
+        std::string topo_name = n_mset["topology"].as_string();
+        string mesh_topo_name = mesh_name + "_" + topo_name;
+
+        string mesh_matset_name = mesh_topo_name + "_" + mset_name;
+
+        BP_PLUGIN_INFO("adding material set "
+                        <<  mesh_topo_name << " " <<  mesh_matset_name);
+
+        if ( n_mset.has_child("material_map") )
+        {
+            BP_PLUGIN_INFO("material map " << n_mset["material_map"].to_yaml());
+        
+            NodeConstIterator itr = n_mset["material_map"].children();
+
+            // construct material map in matset order
+            // NOTE: This assumes ids are [0,N)
+            Node &mid_to_name = m_matset_info[mesh_matset_name]["material_ids_to_name"];
+
+            while (itr.has_next())
+            {
+                const Node &curr_mat = itr.next();
+                mid_to_name.append();
+            }
+
+            itr.to_front();
+            while (itr.has_next())
+            {
+                const Node &curr_mat = itr.next();
+                int32 mat_id = curr_mat.to_int32();
+                mid_to_name[mat_id] = itr.name();
+            }
+
+            // now create a material mapp where the child order matches
+            // the id order
+            itr = mid_to_name.children();
+            while (itr.has_next())
+            {
+                itr.next();
+                std::string mat_name = itr.node().as_string();
+                int mat_id = itr.index();
+                m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
+            }
+        }
+        else // "materials" case, old path
+        {
+            BP_PLUGIN_INFO("material names " << n_mset["materials"].to_yaml());
+
+            NodeConstIterator itr = n_mset["materials"].children();
+            while (itr.has_next())
+            {
+                itr.next();
+                int32 mat_id = itr.index();
+                std::string mat_name = itr.name();
+                // cache mat names and idx (implied order)
+                m_matset_info[mesh_matset_name]["matnames"][mat_name] = mat_id;
+            }
+        }
+
+        // get matnames vec in sorted order.
+        std::vector<string>  matnames = m_matset_info[mesh_matset_name]["matnames"].child_names();
+
+        m_matset_info[mesh_matset_name]["full_mesh_name"] = mesh_topo_name;
+        m_matset_info[mesh_matset_name]["mesh_name"] = mesh_name;
+        m_matset_info[mesh_matset_name]["topo_name"] = topo_name;
+        m_matset_info[mesh_matset_name]["matset_name"] = mset_name;
+        
+        BP_PLUGIN_INFO("Matset Info for "
+                       << mesh_matset_name
+                       << " : " << m_matset_info[mesh_matset_name].to_yaml())
+
+        avtMaterialMetaData *mmd = new avtMaterialMetaData(mesh_matset_name,
+                                                           mesh_topo_name,
+                                                           matnames.size(),
+                                                           matnames);
+
+        mmd->validVariable = true;
+        mmd->hideFromGUI = false;
+        md->Add(mmd);
+    }
+}
+
+
 // ****************************************************************************
 // helper method used to add expression meta data for a blueprint mesh.
 //
@@ -834,61 +1061,6 @@ AddBlueprintExpressionMetadata(avtDatabaseMetaData *md, string const &mesh_name,
 
 
 // ****************************************************************************
-//  Method: is_hdf5_file()
-//
-//  Purpose:  Check if passed path is an HDF5 file.
-//
-//  Note: This is a helper that will be moved into conduit in the future.
-//
-//  Programmer: Cyrus Harrison,
-//  Creation:  Fri Aug 24 14:01:50 PDT 2018
-//
-//  Modifications:
-//
-//    Cyrus Harrison, Mon Mar  9 15:37:28 PDT 2020
-//    Change to use H5F_ACC_RDONLY since that is compatible with our
-//    other H5Fopen calls.
-//
-// ****************************************************************************
-bool
-is_hdf5_file(const std::string &file_path)
-{
-    // callback used for hdf5 error interface
-    H5E_auto2_t  herr_func;
-    // data container for hdf5 error interface callback
-    void         *herr_func_client_data;
-
-    // mute hdf5 error stack handlers
-    H5Eget_auto(H5E_DEFAULT,
-                &herr_func,
-                &herr_func_client_data);
-
-    H5Eset_auto(H5E_DEFAULT,
-                NULL,
-                NULL);
-
-    bool res = false;
-    // open the hdf5 file for read + write
-    hid_t h5_file_id = H5Fopen(file_path.c_str(),
-                               H5F_ACC_RDONLY,
-                               H5P_DEFAULT);
-
-    if( h5_file_id >= 0)
-    {
-        res = true;
-        H5Fclose(h5_file_id);
-    }
-
-    // restore hdf5 error stack handlers
-    H5Eset_auto(H5E_DEFAULT,
-                herr_func,
-                herr_func_client_data);
-
-    return res;
-}
-
-
-// ****************************************************************************
 //  Method: avtBlueprintFileFormat::ReadRootFile
 //
 //  Purpose: Read contents of the root file
@@ -935,39 +1107,11 @@ avtBlueprintFileFormat::ReadRootFile()
         if (PAR_Rank() == 0)
 #endif
         {
-
-            char buff[5] = {0,0,0,0,0};
-
-            // heuristic, if json, we expect to see "{" in the first 5 chars of the file.
-            ifstream ifs;
-            ifs.open(root_fname.c_str());
-            if(!ifs.is_open())
-            {
-               error =1;
-            }
-            ifs.read((char *)buff,5);
-            ifs.close();
-
-            std::string test_str(buff);
-
-            if(test_str.find("{") != std::string::npos)
-            {
-               root_protocol = "json";
-            }
-
-            // TODO Add YAML heuristic
-
-            // note: ".root" may be associated with with binary files
-            // that are not hdf5
-
-            // if we are using the hdf5 protocol, first check if this
-            // is an hdf5 file, and if so -- fast fail if we don't see
-            // the "file_pattern" entry
+            conduit::relay::io::identify_file_type(root_fname,root_protocol);
 
             if(root_protocol.find("hdf5") != std::string::npos)
             {
-               //if(relay::io::is_hdf5_file(root_fname))
-               if(is_hdf5_file(root_fname))
+               if(conduit::relay::io::is_hdf5_file(root_fname))
                {
 
                    // fast fail check for if this is a valid blueprint root file
@@ -993,6 +1137,12 @@ avtBlueprintFileFormat::ReadRootFile()
                   error = 1;
                }
             }
+        }
+
+        if(root_protocol == "unknown")
+        {
+            error_msg = root_fname + " could not determine root file type (hdf5, json, or yaml )\n";
+            error = 1;
         }
 
 // check for error reading root file
@@ -1061,9 +1211,8 @@ avtBlueprintFileFormat::ReadRootFile()
         {
             BP_PLUGIN_EXCEPTION1(InvalidFilesException,
                                  "Failed to find a valid Mesh Blueprint Index\n"
-                                 << n_verify_info.to_json());
+                                 << n_verify_info.to_yaml());
         }
-
 }
 
 // ****************************************************************************
@@ -1174,13 +1323,14 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     m_mfem_mesh_map.clear();
     // clear full mesh to bp mesh and topo name map
     m_mesh_and_topo_info.reset();
+    // clear full matset to info map
+    m_matset_info.reset();
 
     try
     {
         ReadRootFile();
 
-        //std::cout << "Root file contents" << endl << m_root_node.to_json() << std::endl;
-        BP_PLUGIN_INFO("Root file contents" << endl << m_root_node.to_json());
+        BP_PLUGIN_INFO("Root file contents" << endl << m_root_node.to_yaml());
 
         m_protocol = "hdf5";
 
@@ -1191,7 +1341,7 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
         if (DebugStream::Level5())
         {
-            m_root_node.to_json_stream(DebugStream::Stream5());
+            m_root_node.to_yaml_stream(DebugStream::Stream5());
         }
 
         BP_PLUGIN_INFO("Using protocol: " << m_protocol);
@@ -1220,6 +1370,7 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         {
             const Node &n = itr.next();
             AddBlueprintMeshAndFieldMetadata(metadata, itr.name(), n);
+            AddBlueprintMaterialsMetadata(metadata, itr.name(), n);
         }
 
         // Process all expressions *after* all fields. This
@@ -1356,9 +1507,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("blueprint::mesh::verify failed for mesh "
                        << abs_meshname << " [domain " << domain << "]" << endl
                        << "Verify Info " << endl
-                       << verify_info.to_json() << endl
+                       << verify_info.to_yaml() << endl
                        << "Data Schema " << endl
-                       << data.schema().to_json());
+                       << data.schema().to_yaml());
 
         BP_PLUGIN_INFO("warning: "
                        "avtBlueprintFileFormat::GetMesh returning NULL "
@@ -1369,7 +1520,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         return NULL;
     }
 
-    BP_PLUGIN_INFO(data.schema().to_json());
+    BP_PLUGIN_INFO(data.schema().to_yaml());
 
     // prepare result vtk dataset
     vtkDataSet *res = NULL;
@@ -1466,9 +1617,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             BP_PLUGIN_INFO("blueprint::mesh::verify failed for field "
                            << abs_meshname << " [domain " << domain << "]" << endl
                            << "Verify Info " << endl
-                           << verify_info.to_json() << endl
+                           << verify_info.to_yaml() << endl
                            << "Data Schema " << endl
-                           << n_mesh.schema().to_json());
+                           << n_mesh.schema().to_yaml());
             return NULL;
         }
 
@@ -1502,9 +1653,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         BP_PLUGIN_INFO("blueprint::mesh::field::verify failed for field "
                        << abs_varname_str << " [domain " << domain << "]" << endl
                        << "Verify Info " << endl
-                       << verify_info.to_json() << endl
+                       << verify_info.to_yaml() << endl
                        << "Data Schema " << endl
-                       << n_field.schema().to_json());
+                       << n_field.schema().to_yaml());
         return NULL;
     }
 
@@ -1534,16 +1685,15 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             return NULL;
         }
 
-
         Node verify_info;
         if(!blueprint::mesh::verify(n_mesh,verify_info))
         {
             BP_PLUGIN_INFO("blueprint::mesh::verify failed for field "
                            << abs_meshname << " [domain " << domain << "]" << endl
                            << "Verify Info " << endl
-                           << verify_info.to_json() << endl
+                           << verify_info.to_yaml() << endl
                            << "Data Schema " << endl
-                           << n_mesh.schema().to_json());
+                           << n_mesh.schema().to_yaml());
             return NULL;
         }
 
@@ -1561,6 +1711,69 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         // cleanup mfem data
         delete gf;
         delete mesh;
+    }
+
+    // check to see if we have matset_values multi-material data
+    // if so, provide them as AUXILIARY_DATA_MIXED_VARIABLE
+    if(n_field.has_child("matset"))
+    {
+        // get mesh and topo for var:
+        //  - abs_varname_str
+        
+        // replace colons, etc
+        abs_varname_str = sanitize_var_name(abs_varname_str);
+        string abs_meshname = metadata->MeshForVar(abs_varname_str);
+
+        BP_PLUGIN_INFO("field " << abs_varname << " is defined on mesh " << abs_meshname);
+
+        string mesh_name;
+        string topo_name;
+        FetchMeshAndTopoNames(std::string(abs_meshname),
+                              mesh_name,
+                              topo_name);
+
+        std::string matset_name = n_field["matset"].as_string();
+        std::string mat_name = mesh_name + "_" + topo_name + "_" + matset_name;
+
+        BP_PLUGIN_INFO("mesh name: " << mesh_name);
+        BP_PLUGIN_INFO("topo name: " << topo_name);
+        BP_PLUGIN_INFO("materials name: " << mat_name);
+
+        // get the matset
+        // do the xform on the matset and the matset_values
+        Node n_matset;
+        ReadBlueprintMatset(domain,
+                            mat_name,
+                            n_matset);
+
+        Node n_silo_matset;
+        conduit::blueprint::mesh::field::to_silo(n_field,
+                                                 n_matset,
+                                                 n_silo_matset);
+
+        int mix_len  = (int) n_silo_matset["field_mixvar_values"].dtype().number_of_elements();
+
+        float *mixvals_ptr = NULL;
+        if(n_silo_matset["field_mixvar_values"].dtype().is_float())
+        {
+            mixvals_ptr = n_silo_matset["field_mixvar_values"].as_float_ptr();
+        }
+        else
+        {
+            n_silo_matset["field_mixvar_values"].to_float_array(
+                                        n_silo_matset["field_mixvar_values_float"]);
+            mixvals_ptr = n_silo_matset["field_mixvar_values_float"].as_float_ptr();
+        }
+
+        avtMixedVariable *mvar = new avtMixedVariable(mixvals_ptr,
+                                                      mix_len,
+                                                      abs_varname_str);
+        void_ref_ptr mvar_ref = void_ref_ptr(mvar, avtMixedVariable::Destruct);
+        cache->CacheVoidRef(abs_varname_str.c_str(),
+                            AUXILIARY_DATA_MIXED_VARIABLE,
+                            timestep,
+                            domain,
+                            mvar_ref);
     }
 
     return res;
@@ -1593,6 +1806,151 @@ avtBlueprintFileFormat::GetVectorVar(int domain, const char *varname)
     return GetVar(domain,varname);
 }
 
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::GetAuxiliaryData
+//
+//  Purpose:
+//      Gets the auxiliary data from a Blueprint Database.
+//
+//  Arguments:
+//      var        The variable of interest.
+//      domain     The domain of interest.
+//      type       The type of auxiliary data.
+//      <unnamed>  The arguments for that -- not used
+//
+//  Returns:    The auxiliary data.  Throws an exception if this is not a
+//              supported data type.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   December 8, 2020
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+void *
+avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
+                                         int domain,
+                                         const char *type,
+                                         void * /* args (unused) */,
+                                         DestructorFunction &df)
+{
+    void *rv = NULL;
+
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    {
+        rv = (void *) GetMaterial(domain, var);
+        df = avtMaterial::Destruct;
+    }
+
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtBlueprintFileFormat::GetMaterial
+//
+//  Purpose:
+//      Gets the auxiliary data from a Blueprint Database.
+//
+//  Arguments:
+//      domain     The domain of interest.
+//      mat_name   The material of interest.
+//
+//  Returns:    The auxiliary data.  Throws an exception if this is not a
+//              supported data type.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   December 8, 2020
+//
+//  Modifications:
+//
+//
+// ****************************************************************************
+avtMaterial *
+avtBlueprintFileFormat::GetMaterial(int domain,
+                                    const char *mat_name)
+{
+    BP_PLUGIN_INFO("avtBlueprintFileFormat::GetMaterial " 
+                    << domain << " "
+                    << mat_name);
+
+    Node n_matset;
+    ReadBlueprintMatset(domain,
+                        mat_name,
+                        n_matset);
+
+    std::vector<std::string> matnames = n_matset["matnames"].child_names();
+
+    // use to_silo util to convert from bp to the mixslot rep
+    // that silo and visit use
+
+    Node n_silo_matset;
+    conduit::blueprint::mesh::matset::to_silo(n_matset,
+                                              n_silo_matset);
+
+    int nmats = (int) matnames.size();
+    int nzones = (int) n_silo_matset["matlist"].dtype().number_of_elements();
+
+    int *matlist  = NULL;
+    int *mix_mat  = NULL;
+    int *mix_next = NULL;
+
+    // we need int ptrs for the avtMaterial object,
+    // convert if needed
+
+    Node n_tmp;
+    if(!n_silo_matset["matlist"].dtype().is_int())
+    {
+        n_silo_matset["matlist"].to_int_array(n_tmp["matlist"]);
+        n_silo_matset["mix_mat"].to_int_array(n_tmp["mix_mat"]);
+        n_silo_matset["mix_next"].to_int_array(n_tmp["mix_next"]);
+        matlist  = n_tmp["matlist"].as_int_ptr();
+        mix_mat  = n_tmp["mix_mat"].as_int_ptr();
+        mix_next = n_tmp["mix_next"].as_int_ptr();
+    }
+    else
+    {
+        matlist  = n_silo_matset["matlist"].as_int_ptr();
+        mix_mat  = n_silo_matset["mix_mat"].as_int_ptr();
+        mix_next = n_silo_matset["mix_next"].as_int_ptr();
+    }
+
+    // we need to adjust the matlist.
+    for(int i=0;i<nzones;i++)
+    {
+        if(matlist[i] > 0 )
+        {
+            matlist[i]--;
+        }
+    }
+
+    int mix_len  = (int) n_silo_matset["mix_mat"].dtype().number_of_elements();
+
+    float *mix_vf = NULL;
+    if(n_silo_matset["mix_vf"].dtype().is_float())
+    {
+        mix_vf = n_silo_matset["mix_vf"].as_float_ptr();
+    }
+    else
+    {
+        n_silo_matset["mix_vf"].to_float_array(n_silo_matset["mix_vf_float"]);
+        mix_vf = n_silo_matset["mix_vf_float"].as_float_ptr();
+    }
+
+    avtMaterial *mat = new avtMaterial(nmats,    // The number of materials in mats.
+                                       matnames, // material names
+                                       nzones,   // number of zones (len of matlist)
+                                       matlist,  // matlist
+                                       mix_len,  // length of mix arrays
+                                       mix_mat,  // mix_mat array
+                                       mix_next, // mix_next array
+                                       NULL,     // mix_zone array (OPTIONAL)
+                                       mix_vf    // mix_vf array
+                                       );
+
+    return mat;
+}
 
 // ****************************************************************************
 //  Method: avtBlueprintFileFormat::RegisterDataSelections

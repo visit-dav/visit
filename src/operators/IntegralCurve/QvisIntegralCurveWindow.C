@@ -465,7 +465,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     numberOfRandomSamplesLabel = new QLabel(tr("Number of random samples"), samplingGroup);
     samplingLayout->addWidget(numberOfRandomSamplesLabel, sRow, 0, 1, 2);
     numberOfRandomSamples = new QSpinBox(samplingGroup);
-    numberOfRandomSamples->setKeyboardTracking(true);
+    numberOfRandomSamples->setKeyboardTracking(false);
     numberOfRandomSamples->setMinimum(1);
     numberOfRandomSamples->setMaximum(100000000);
     connect(numberOfRandomSamples, SIGNAL(valueChanged(int)), this, SLOT(numberOfRandomSamplesChanged(int)));
@@ -474,7 +474,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     randomSeedLabel = new QLabel(tr("Random number seed"), samplingGroup);
     samplingLayout->addWidget(randomSeedLabel, sRow, 3, 1, 2);
     randomSeed = new QSpinBox(samplingGroup);
-    randomSeed->setKeyboardTracking(true);
+    randomSeed->setKeyboardTracking(false);
     randomSeed->setMinimum(0);
     randomSeed->setMaximum(100000000);
     connect(randomSeed, SIGNAL(valueChanged(int)), this, SLOT(randomSeedChanged(int)));
@@ -489,15 +489,15 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     sampleDensity[0] = new QSpinBox(samplingGroup);
     sampleDensity[1] = new QSpinBox(samplingGroup);
     sampleDensity[2] = new QSpinBox(samplingGroup);
-    sampleDensity[0]->setKeyboardTracking(true);
+    sampleDensity[0]->setKeyboardTracking(false);
     sampleDensity[0]->setMinimum(1);
     sampleDensity[0]->setMaximum(10000000);
     sampleDensity[0]->setValue(atts->GetSampleDensity0());
-    sampleDensity[1]->setKeyboardTracking(true);
+    sampleDensity[1]->setKeyboardTracking(false);
     sampleDensity[1]->setMinimum(1);
     sampleDensity[1]->setMaximum(10000000);
     sampleDensity[1]->setValue(atts->GetSampleDensity1());
-    sampleDensity[2]->setKeyboardTracking(true);
+    sampleDensity[2]->setKeyboardTracking(false);
     sampleDensity[2]->setMinimum(1);
     sampleDensity[2]->setMaximum(10000000);
     sampleDensity[2]->setValue(atts->GetSampleDensity2());
@@ -970,7 +970,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     maxSLCountLabel = new QLabel(tr("Communication threshold"), algoGrp);
     maxSLCount = new QSpinBox(algoGrp);
-    maxSLCount->setKeyboardTracking(true);
+    maxSLCount->setKeyboardTracking(false);
     maxSLCount->setMinimum(1);
     maxSLCount->setMaximum(100000);
     connect(maxSLCount, SIGNAL(valueChanged(int)),
@@ -980,7 +980,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     maxDomainCacheLabel = new QLabel(tr("Domain cache size"), algoGrp);
     maxDomainCache = new QSpinBox(algoGrp);
-    maxDomainCache->setKeyboardTracking(true);
+    maxDomainCache->setKeyboardTracking(false);
     maxDomainCache->setMinimum(1);
     maxDomainCache->setMaximum(100000);
     connect(maxDomainCache, SIGNAL(valueChanged(int)),
@@ -990,7 +990,7 @@ QvisIntegralCurveWindow::CreateAdvancedTab(QWidget *pageAdvanced)
 
     workGroupSizeLabel = new QLabel(tr("Work group size"), algoGrp);
     workGroupSize = new QSpinBox(algoGrp);
-    workGroupSize->setKeyboardTracking(true);
+    workGroupSize->setKeyboardTracking(false);
     workGroupSize->setMinimum(2);
     workGroupSize->setMaximum(1000000);
     connect(workGroupSize, SIGNAL(valueChanged(int)),

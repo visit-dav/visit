@@ -11,7 +11,11 @@
 #
 #
 # Modifications:
+#  Cyrus Harrison, Mon Feb 22 12:39:10 PST 2021
+#  Use relative import to get pyside modules. 
 #
+#  Cyrus Harrison, Wed Feb 24 16:12:25 PST 2021
+#  Move PySide KeyHandler and hook into this module.
 #
 ###############################################################################
 
@@ -22,14 +26,30 @@ from threading import Event, Thread
 using_pyside = False
 
 try:
+    import PySide2
     from PySide2.QtWidgets import QApplication
-    import pyside_hook
-    import pyside_gui
+    from . import pyside_hook
+    from . import pyside_gui
     using_pyside = True
 except ImportError:
     pass
 
-__all__ = ["LaunchPyViewer","SetupTimer","GetRenderWindow","GetRenderWindowIds","GetUIWindow","GetPlotWindow","GetOperatorWindow", "GetOtherWindow", "GetOtherWindowNames", "GetTimeSliderWindow", "GetSourceManagerWindow", "GetPlotWindows", "GetOperatorWindows", "GetOtherWindows"]
+__all__ = ["LaunchPyViewer",
+           "SetupTimer",
+           "GetRenderWindow",
+           "GetRenderWindowIds",
+           "GetUIWindow",
+           "GetPlotWindow",
+           "GetOperatorWindow",
+           "GetOtherWindow",
+           "GetOtherWindowNames",
+           "GetTimeSliderWindow",
+           "GetSourceManagerWindow",
+           "GetPlotWindows",
+           "GetOperatorWindows",
+           "GetOtherWindows",
+           "KeyPressEater"]
+
 __pyside_viewer_instance__ = None
 
 # this is a function that polls for keyboard input,
@@ -197,3 +217,25 @@ def GetOtherWindows():
             return inst.GetOtherWindows()
     return None
 
+class KeyPressEater(PySide2.QtCore.QObject):
+    def eventFilter(self, obj, event):
+        if event.type() == PySide2.QtCore.QEvent.KeyPress:
+            return True
+        elif event.type() == PySide2.QtCore.QEvent.MouseButtonPress:
+            return True
+        elif event.type() == PySide2.QtCore.QEvent.MouseButtonRelease:
+            return True
+        elif event.type() == PySide2.QtCore.QEvent.MouseButtonDblClick:
+            return True
+        elif event.type() == PySide2.QtCore.QEvent.MouseMove:
+            return True
+        else:
+            return PySide2.QtCore.QObject.eventFilter(self, obj, event)
+
+def __VisIt_PySide_Idle_Hook__():
+    a = KeyPressEater()
+    app = PySide2.QtCore.QEventLoop();
+    PySide2.QtCore.QCoreApplication.instance().installEventFilter(a)
+    app.processEvents(PySide2.QtCore.QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents);
+    PySide2.QtCore.QCoreApplication.instance().removeEventFilter(a)
+  

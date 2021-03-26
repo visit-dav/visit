@@ -11,10 +11,13 @@ notes:   Ported/refactored from 'Testing.py'
 """
 # ----------------------------------------------------------------------------
 #  Modifications:
-#
+#    Kathleen Biagas, Tue Feb 9, 2021
+#    When creating text diff output use difflib.context_diff instead of
+#    *nix 'diff', so content can be generated on Windows.
 # ----------------------------------------------------------------------------
 
 import atexit
+import difflib
 import glob
 import gzip
 import json
@@ -1806,7 +1809,6 @@ def TestText(case_name, inText, baseText=None, numdifftol=None):
 
     # diff the baseline and current text files
     d = HtmlDiff.Differencer(base, cur)
-    # change to use difflib
     (nchanges, nlines) = d.Difference(out_path("html","%s.html"%case_name), case_name)
 
     # Copy the text file itself to "html" dir if there are diffs
@@ -1814,14 +1816,17 @@ def TestText(case_name, inText, baseText=None, numdifftol=None):
     if nchanges > 0:
         shutil.copy(cur, out_path("html", "c_%s.txt"%case_name))
 
-    # save the diff output
-    # TODO_WINDOWS THIS WONT WORK ON WINDOWS
-    # we can use difflib
-    diff_cmd = "diff " + base + " " + cur
-    res = sexe(diff_cmd,ret_output = True)
-    fout = open(diff, 'w')
-    fout.write(res["output"])
-    fout.close()
+    # save the diff output using difflib.context_diff
+
+    # open ... as handles close
+    with open(base) as bfile:
+        blines=bfile.readlines()
+    with open(cur) as cfile:
+        clines=cfile.readlines()
+
+    res = difflib.context_diff(blines, clines, base, cur) 
+    with open(diff, 'w') as fout:
+        fout.writelines(res)
 
     # did the test fail?
     failed = (nchanges > 0)
@@ -2302,7 +2307,8 @@ class Simulation(object):
             # For now...
             import socket
             if "pascal" in socket.gethostname() or \
-               "cab" in socket.gethostname() or \
+               "quartz" in socket.gethostname() or \
+               "ruby" in socket.gethostname() or \
                "syrah" in socket.gethostname():
                 do_submit = 0
                 if do_submit:
@@ -2339,12 +2345,14 @@ class Simulation(object):
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE,
+                                      universal_newlines=True,
                                       close_fds=True)
         else:
             self.p = subprocess.Popen(args,
                                       stdin=subprocess.PIPE,
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE,
+                                      universal_newlines=True,
                                       close_fds=False)
 
         return self.p != None
@@ -2795,6 +2803,7 @@ SILO_MODE = TestEnv.SILO_MODE
 # Run our test script using "Source"
 #
 import visit
-visit.Source(TestEnv.params["script"])
+from pathlib import Path
+visit.Source(Path(TestEnv.params["script"]).as_posix())
 
 

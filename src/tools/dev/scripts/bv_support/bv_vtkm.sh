@@ -205,11 +205,13 @@ function build_vtkm
     vopts="${vopts} -DVTKm_USE_64BIT_IDS:BOOL=OFF"
     vopts="${vopts} -DVTKm_USE_DOUBLE_PRECISION:BOOL=ON"
     vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
-    if [[ -d $CUDA_HOME ]]; then
-        echo "Building with CUDA support."
-        vopts="${vopts} -DVTKm_ENABLE_CUDA:BOOL=ON"
-        vopts="${vopts} -DVTKm_CUDA_Architecture=kepler"
-    fi
+    # Disable CUDA support for now since it requires using the CUDA compiler
+    # to build all of VisIt, which we don't want to do.
+    #if [[ -d $CUDA_HOME ]]; then
+    #    echo "Building with CUDA support."
+    #    vopts="${vopts} -DVTKm_ENABLE_CUDA:BOOL=ON"
+    #    vopts="${vopts} -DVTKm_CUDA_Architecture=kepler"
+    #fi
 
     #
     # Several platforms have had problems with the VTK cmake configure
