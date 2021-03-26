@@ -4280,7 +4280,7 @@ avtMiliFileFormat::AddStressStrainDerivations(avtDatabaseMetaData *md,
 
 
 // ****************************************************************************
-//  Method:  avtMiliFileFormat::AddSymmTensorComponentExpressions
+//  Method:  avtMiliFileFormat::AddSymmetricTensorComponentExpressions
 //
 //  Purpose:
 //      Create expression variables for all components of a symmetric tensor.
