@@ -22,9 +22,6 @@
 #    Alister Maguire, Wed Jul 15 13:38:17 PDT 2020
 #    Added test sections and derived variable test.
 #
-#    Alister Maguire, Wed Mar 24 16:06:33 PDT 2021
-#    Added a test for setting/changing the global integration point.
-#
 #    Alister Maguire, Fri Mar 26 10:25:08 PDT 2021
 #    Added more tests for derived variables (stress, strain, sand mesh).
 #
