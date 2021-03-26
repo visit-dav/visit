@@ -2740,7 +2740,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
     if (mustDeriveStrain)
     {
         std::string initCoordsName = meshPath +
-            "Derived/strain/initial_strain_coords";
+            "Derived/Shared/strain/initial_strain_coords";
         Expression initCoordsExpr;
         initCoordsExpr.SetName(initCoordsName);
         initCoordsExpr.SetDefinition("conn_cmfe(coord(<[0]i:" +
@@ -2751,7 +2751,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 
         std::string varName;
         std::string varPath;
-        std::string varPathBase = "Derived/strain/";
+        std::string varPathBase = "Derived/Shared/strain/";
 
         std::vector<std::string> tensorCompNames;
         tensorCompNames.push_back("x");
