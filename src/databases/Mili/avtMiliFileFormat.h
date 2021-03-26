@@ -209,7 +209,14 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     void                   AddStressStrainDerivatives(avtDatabaseMetaData *,
                                                       std::string,
                                                       std::string,
-                                                      std::string);
+                                                      std::string,
+                                                      bool);
+
+    void                   AddSymmetricTensorComponentExpressions(
+                                                     avtDatabaseMetaData *,
+                                                     std::string,
+                                                     stringVector,
+                                                     intVector = intVector());
 
     //
     // Protected data.
