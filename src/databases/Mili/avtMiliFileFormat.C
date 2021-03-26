@@ -2355,6 +2355,10 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
 //
 //  Modifications
 //
+//      Alister Maguire, Fri Mar 26 10:02:15 PDT 2021
+//      Simplified the process for creating symmetric tensor component
+//      expressions. They are now function calls.
+//
 // ****************************************************************************
 
 void

@@ -61,6 +61,10 @@ typedef std::unordered_map<string, int> StrToIntMap;
 //    Updated the constructor to take in DBOptionsAttributes, and added
 //    the globalIntegrationPoint variable.
 //
+//    Alister Maguire, Fri Mar 26 10:02:15 PDT 2021
+//    Added methods AddStressStrainDerivatives, and
+//    AddSymmetricTensorComponentExpressions.
+//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
