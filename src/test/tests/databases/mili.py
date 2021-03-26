@@ -378,7 +378,7 @@ def TestDerivedVariables():
 
     AddPlot("Tensor", "Derived/Shared/strain/green_lagrange")
     DrawPlots()
-    Test("mili_derived_11")
+    Test("mili_derived_12")
     DeleteAllPlots()
 
 
