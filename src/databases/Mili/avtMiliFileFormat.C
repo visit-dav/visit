@@ -2484,48 +2484,11 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                 AddSymmetricTensorVarToMetaData(avtMD, mPath,
                     meshNames[i], centering, 9);
 
-                //
-                // Now we add the individual components.
-                //
-                int multDimIdxs[] = {1, 2, 0};
+                AddSymmetricTensorComponentExpressions(avtMD,
+                                                       mPath,
+                                                       vComps,
+                                                       compIdxs);
 
-                for (int j = 0; j < 3; ++j)
-                {
-                    int cIdx = compIdxs[j];
-
-                    //
-                    // First, get the "single-dim" values: xx, yy, zz.
-                    //
-                    Expression singleDim;
-                    singleDim.SetType(Expression::ScalarMeshVar);
-
-                    char singleDef[256];
-                    snprintf(singleDef, 256, "<%s>[%d][%d]",
-                        mPath.c_str(), cIdx, cIdx);
-                    singleDim.SetDefinition(singleDef);
-
-                    string singleName = mPath + "/" + vComps[cIdx];
-                    singleDim.SetName(singleName);
-
-                    avtMD->AddExpression(&singleDim);
-
-                    //
-                    // Next, get the "multi-dim" values: xy, yz, zx
-                    //
-                    int mltDIdx = cIdx + 3;
-                    Expression multDim;
-                    multDim.SetType(Expression::ScalarMeshVar);
-
-                    char multDef[256];
-                    snprintf(multDef, 256, "<%s>[%d][%d]", mPath.c_str(),
-                        cIdx, multDimIdxs[cIdx]);
-                    multDim.SetDefinition(multDef);
-
-                    string multName = mPath + "/" + vComps[mltDIdx];
-                    multDim.SetName(multName);
-
-                    avtMD->AddExpression(&multDim);
-                }
             }
             break;
         }
@@ -2538,45 +2501,10 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                 AddTensorVarToMetaData(avtMD, mPath,
                     meshNames[i], centering, vecSize);
 
-                //
-                // Now we add the individual components.
-                //
-                int multDimIdxs[] = {1, 2, 0};
-
-                for (int j = 0; j < 3; ++j)
-                {
-                    int cIdx = compIdxs[j];
-
-                    //
-                    // First, get the "single-dim" values: xx, yy, zz.
-                    //
-                    Expression singleDim;
-                    singleDim.SetType(Expression::ScalarMeshVar);
-
-                    char singleDef[256];
-                    snprintf(singleDef, 256, "<%s>[%d][%d]",
-                        mPath.c_str(), cIdx, cIdx);
-                    singleDim.SetDefinition(singleDef);
-
-                    string singleName = mPath + "/" + vComps[cIdx];
-                    singleDim.SetName(singleName);
-
-                    avtMD->AddExpression(&singleDim);
-
-                    //
-                    // Next, get the "multi-dim" values: xy, yz, zx
-                    //
-                    int mltDIdx = cIdx + 3;
-                    Expression multDim;
-                    char multDef[256];
-                    snprintf(multDef, 256, "<%s>[%d][%d]", mPath.c_str(),
-                        cIdx, multDimIdxs[cIdx]);
-                    string multName = mPath + "/" + vComps[mltDIdx];
-                    multDim.SetName(multName);
-                    multDim.SetDefinition(multDef);
-                    multDim.SetType(Expression::ScalarMeshVar);
-                    avtMD->AddExpression(&multDim);
-                }
+                AddSymmetricTensorComponentExpressions(avtMD,
+                                                       mPath,
+                                                       vComps,
+                                                       compIdxs);
             }
             break;
         }
@@ -2709,6 +2637,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
     // contains the VisIt path.
     //
     std::vector< std::vector<MiliVariableMetaData *> > varMDVecs;
+    varMDVecs.reserve(2);
     varMDVecs.push_back(miliMetaData[meshId]->GetVarMDByShortName("stress"));
     varMDVecs.push_back(miliMetaData[meshId]->GetVarMDByShortName("strain"));
 
@@ -2716,7 +2645,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
     // If strain isn't defined in the dataset, we need to derive it ourselves.
     //
     bool mustDeriveStrain = false;
-    if (varMDVecs[0].size() == 0)
+    if (varMDVecs[1].size() == 0)
     {
         mustDeriveStrain = true;
     }
@@ -2765,7 +2694,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
             }
 
             AddStressStrainDerivatives(md, (*mdItr)->GetShortName(),
-                varPath, derivedPath);
+                varPath, derivedPath, true);
 
             //
             // If we've added one, we've added them all.
@@ -2788,15 +2717,21 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 
         std::string varName;
         std::string varPath;
-        std::string derivedPath;
-        std::string varPathBase = "Derived/strain";
+        std::string varPathBase = "Derived/strain/";
+
+        std::vector<std::string> tensorCompNames;
+        tensorCompNames.push_back("x");
+        tensorCompNames.push_back("y");
+        tensorCompNames.push_back("z");
+        tensorCompNames.push_back("xy");
+        tensorCompNames.push_back("xz");
+        tensorCompNames.push_back("yz");
 
         //
         // Green lagrange strain.
         //
         varName = "green_lagrange";
         varPath = meshPath + varPathBase + varName;
-        derivedPath = varPath + "/";
 
         Expression strainGreen;
         strainGreen.SetName(varPath);
@@ -2805,15 +2740,14 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         strainGreen.SetType(Expression::TensorMeshVar);
         md->AddExpression(&strainGreen);
 
-        //FIXME: add vector components.
-        AddStressStrainDerivatives(md, varName, varPath, derivedPath);
+        AddStressStrainDerivatives(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
 
         //
         // Infinitesimal strain.
         //
         varName = "infinitesimal";
         varPath = meshPath + varPathBase + varName;
-        derivedPath = varPath + "/";
 
         Expression strainInfinitesimal;
         strainInfinitesimal.SetName(varPath);
@@ -2822,15 +2756,14 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         strainInfinitesimal.SetType(Expression::TensorMeshVar);
         md->AddExpression(&strainInfinitesimal);
 
-        //FIXME: add vector components.
-        AddStressStrainDerivatives(md, varName, varPath, derivedPath);
+        AddStressStrainDerivatives(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
 
         //
         // Almansi strain.
         //
         varName = "almansi";
         varPath = meshPath + varPathBase + varName;
-        derivedPath = varPath + "/";
 
         Expression strainAlmansi;
         strainAlmansi.SetName(varPath);
@@ -2839,8 +2772,8 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         strainAlmansi.SetType(Expression::TensorMeshVar);
         md->AddExpression(&strainAlmansi);
 
-        //FIXME: add vector components.
-        AddStressStrainDerivatives(md, varName, varPath, derivedPath);
+        AddStressStrainDerivatives(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
 
         //
         // Strain rate.
@@ -2848,7 +2781,6 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         std::string nodeVelName = meshPath + "Primal/node/nodvel";
         varName = "rate";
         varPath = meshPath + varPathBase + varName;
-        derivedPath = varPath + "/";
 
         Expression strainRate;
         strainRate.SetName(varPath);
@@ -2857,8 +2789,8 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         strainRate.SetType(Expression::TensorMeshVar);
         md->AddExpression(&strainRate);
 
-        //FIXME: add vector components.
-        AddStressStrainDerivatives(md, varName, varPath, derivedPath);
+        AddStressStrainDerivatives(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
     }
 }
 
@@ -4280,13 +4212,21 @@ void
 avtMiliFileFormat::AddStressStrainDerivatives(avtDatabaseMetaData *md,
                                               std::string varName,
                                               std::string varPath,
-                                              std::string derivedPath)
+                                              std::string derivedPath,
+                                              bool includePressure)
 {
-    Expression pressure;
-    pressure.SetName(derivedPath + "/pressure");
-    pressure.SetDefinition("-trace(<" + varPath + ">)/3");
-    pressure.SetType(Expression::ScalarMeshVar);
-    md->AddExpression(&pressure);
+    //
+    // We can only include pressure if the stress/strain variables
+    // are not derived.
+    //
+    if (includePressure)
+    {
+        Expression pressure;
+        pressure.SetName(derivedPath + "/pressure");
+        pressure.SetDefinition("-trace(<" + varPath + ">)/3");
+        pressure.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&pressure);
+    }
 
     Expression effTensor;
     effTensor.SetName(derivedPath + "/eff_" + varName.c_str());
@@ -4329,4 +4269,97 @@ avtMiliFileFormat::AddStressStrainDerivatives(avtDatabaseMetaData *md,
     pTensor3.SetDefinition("principal_tensor(<" + varPath + ">)[2]");
     pTensor3.SetType(Expression::ScalarMeshVar);
     md->AddExpression(&pTensor3);
+}
+
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::AddSymmTensorComponentExpressions
+//
+//  Purpose:
+//      Create expression variables for all components of a symmetric tensor.
+//
+//      NOTE: the components will be added in the following order:
+//          {0, 0}
+//          {1, 1}
+//          {2, 2}
+//          {0, 1}
+//          {0, 2}
+//          {1, 2}
+//
+//  Arguments:
+//    md             A pointer to the atDatabaseMetaData.
+//    varPath        The VisIt path of the tensor variable.
+//    compNames      The names for each component.
+//    firstCompIdxs  An optional vector containing the first dimension's
+//                   indices. If empty, the 0 dimension indices are assumed
+//                   to match those in the description.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    March 26, 2021
+//
+//  Modifications
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::AddSymmetricTensorComponentExpressions(
+                                                     avtDatabaseMetaData *md,
+                                                     std::string varPath,
+                                                     stringVector compNames,
+                                                     intVector firstCompIdxs)
+{
+    //
+    // In the general case, we're working with a standard tensor and
+    // we'll assume the standard layout.
+    //
+    if (firstCompIdxs.size() == 0)
+    {
+        firstCompIdxs.push_back(0);
+        firstCompIdxs.push_back(1);
+        firstCompIdxs.push_back(2);
+        firstCompIdxs.push_back(0);
+        firstCompIdxs.push_back(0);
+        firstCompIdxs.push_back(1);
+    }
+
+    //
+    // Now we add the individual components.
+    //
+    int multDimIdxs[] = {1, 2, 0};
+
+    for (int j = 0; j < 3; ++j)
+    {
+        int cIdx = firstCompIdxs[j];
+
+        //
+        // First, get the "single-dim" values: xx, yy, zz.
+        //
+        Expression singleDim;
+        singleDim.SetType(Expression::ScalarMeshVar);
+
+        char singleDef[256];
+        snprintf(singleDef, 256, "<%s>[%d][%d]",
+            varPath.c_str(), cIdx, cIdx);
+        singleDim.SetDefinition(singleDef);
+
+        string singleName = varPath + "/" + compNames[cIdx];
+        singleDim.SetName(singleName);
+
+        md->AddExpression(&singleDim);
+
+        //
+        // Next, get the "multi-dim" values: xy, yz, zx
+        //
+        int mltDIdx = cIdx + 3;
+        Expression multDim;
+        char multDef[256];
+        snprintf(multDef, 256, "<%s>[%d][%d]", varPath.c_str(),
+            cIdx, multDimIdxs[cIdx]);
+        string multName = varPath + "/" + compNames[mltDIdx];
+        multDim.SetName(multName);
+        multDim.SetDefinition(multDef);
+        multDim.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&multDim);
+    }
 }
