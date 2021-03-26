@@ -4351,7 +4351,7 @@ avtMiliFileFormat::AddSymmetricTensorComponentExpressions(
                                                      intVector firstCompIdxs)
 {
     //
-    // In the general case, we're working with a standard tensor and
+    // In the general case, we're working with a standard symmetric tensor and
     // we'll assume the standard layout.
     //
     if (firstCompIdxs.size() == 0)
