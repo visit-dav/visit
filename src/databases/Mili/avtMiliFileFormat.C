@@ -2727,7 +2727,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
                 derivedPath = meshPath + "Derived/" + varPath;
             }
 
-            AddStressStrainDerivatives(md, (*mdItr)->GetShortName(),
+            AddStressStrainDerivations(md, (*mdItr)->GetShortName(),
                 varPath, derivedPath, true);
 
             //
@@ -2774,7 +2774,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         strainGreen.SetType(Expression::TensorMeshVar);
         md->AddExpression(&strainGreen);
 
-        AddStressStrainDerivatives(md, varName, varPath, varPath, false);
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
         AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
 
         //
@@ -2790,7 +2790,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         strainInfinitesimal.SetType(Expression::TensorMeshVar);
         md->AddExpression(&strainInfinitesimal);
 
-        AddStressStrainDerivatives(md, varName, varPath, varPath, false);
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
         AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
 
         //
@@ -2806,7 +2806,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         strainAlmansi.SetType(Expression::TensorMeshVar);
         md->AddExpression(&strainAlmansi);
 
-        AddStressStrainDerivatives(md, varName, varPath, varPath, false);
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
         AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
 
         //
@@ -2823,7 +2823,7 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
         strainRate.SetType(Expression::TensorMeshVar);
         md->AddExpression(&strainRate);
 
-        AddStressStrainDerivatives(md, varName, varPath, varPath, false);
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
         AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
     }
 }
@@ -4248,7 +4248,7 @@ avtMiliFileFormat::ScalarExpressionFromVec(const char *vecPath,
 // ****************************************************************************
 
 void
-avtMiliFileFormat::AddStressStrainDerivatives(avtDatabaseMetaData *md,
+avtMiliFileFormat::AddStressStrainDerivations(avtDatabaseMetaData *md,
                                               std::string varName,
                                               std::string varPath,
                                               std::string derivedPath,
