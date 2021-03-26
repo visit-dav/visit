@@ -2598,7 +2598,7 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //  Modifications
 //
 //      Alister Maguire, Thu Mar 25 13:55:53 PDT 2021
-//      Added support for stress and strain derivations.
+//      Added support for stress and strain derivations and the sand mesh.
 //
 // ****************************************************************************
 
