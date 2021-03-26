@@ -4200,10 +4200,12 @@ avtMiliFileFormat::ScalarExpressionFromVec(const char *vecPath,
 //      Add derivatives for stress or strain variables.
 //
 //  Arguments:
-//    md            A pointer to the atDatabaseMetaData.
-//    varName       The name of the stress/strain variable.
-//    varPath       The VisIt path of the stress/strain variable.
-//    derivedPath   The path for the derived variables.
+//    md               A pointer to the atDatabaseMetaData.
+//    varName          The name of the stress/strain variable.
+//    varPath          The VisIt path of the stress/strain variable.
+//    derivedPath      The path for the derived variables.
+//    includePressure  Should we include the pressure derivation? This should
+//                     only be true when stress/strain comes from the database.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    March 25, 2021
