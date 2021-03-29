@@ -104,6 +104,11 @@ avtMultipleInputMathExpression::~avtMultipleInputMathExpression()
 //  Programmer: Eddie Rusu
 //  Creation:   Tue Sep 24 09:07:44 PDT 2019
 //
+//  Modifications:
+//
+//      Alister Maguire, Mon Mar 29 11:17:07 PDT 2021
+//      Clear our containers after we've performed our work.
+//
 // ****************************************************************************
 
 vtkDataArray*
@@ -122,6 +127,15 @@ avtMultipleInputMathExpression::DeriveVariable(vtkDataSet* in_ds, int dummy)
 
     RecenterData(in_ds);
     vtkDataArray* output = DoOperation();
+
+    //
+    // Before we leave, we need to clear out our data containers. There are
+    // times when an instantiation of this class will be used more than once
+    // (like with domain decomposed data), and we can't have old information
+    // hanging around.
+    //
+    dataArrays.clear();
+    centerings.clear();
 
     debug3 << "Exiting  avtMultipleInputMathExpression::DeriveVariable("
             "vtkDataSet*, int)" << std::endl;
