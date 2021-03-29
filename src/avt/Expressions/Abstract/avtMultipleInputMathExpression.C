@@ -116,7 +116,7 @@ avtMultipleInputMathExpression::DeriveVariable(vtkDataSet* in_ds, int dummy)
     for (int i = 0; i < nProcessedArgs; ++i)
     {
         avtCentering currentCenter;
-        dataArrays.push_back(ExractCenteredData(&currentCenter, in_ds, varnames[i]));
+        dataArrays.push_back(ExtractCenteredData(&currentCenter, in_ds, varnames[i]));
         centerings.push_back(currentCenter);
     }
 
@@ -129,7 +129,7 @@ avtMultipleInputMathExpression::DeriveVariable(vtkDataSet* in_ds, int dummy)
 }
 
 // ****************************************************************************
-//  Method: avtMultipleInputMathExpression::ExractCenteredData
+//  Method: avtMultipleInputMathExpression::ExtractCenteredData
 //
 //  Purpose:
 //      Determines the centering of an input variable and outputs the
@@ -148,10 +148,10 @@ avtMultipleInputMathExpression::DeriveVariable(vtkDataSet* in_ds, int dummy)
 // ****************************************************************************
 
 vtkDataArray*
-avtMultipleInputMathExpression::ExractCenteredData(avtCentering *centering_out,
+avtMultipleInputMathExpression::ExtractCenteredData(avtCentering *centering_out,
         vtkDataSet *in_ds, const char *varname)
 {
-    debug5 << "Entering avtMultipleInputMathExpression::ExractCenteredData("
+    debug5 << "Entering avtMultipleInputMathExpression::ExtractCenteredData("
             "avtCentering*, vtkDataSet*, const char*)" << std::endl;
     debug5 << "\t For " << varname << std::endl;
     vtkDataArray* out = in_ds->GetCellData()->GetArray(varname);
@@ -168,7 +168,7 @@ avtMultipleInputMathExpression::ExractCenteredData(avtCentering *centering_out,
         {
             *(centering_out) = AVT_NODECENT;
             debug5 << "Exiting  "
-                    "avtMultipleInputMathExpression::ExractCenteredData("
+                    "avtMultipleInputMathExpression::ExtractCenteredData("
                     "avtCentering*, vtkDataSet*, const char*)" << std::endl;
             return out;
         }
@@ -176,7 +176,7 @@ avtMultipleInputMathExpression::ExractCenteredData(avtCentering *centering_out,
     else
     {
         *(centering_out) = AVT_ZONECENT;
-        debug5 << "Exiting  avtMultipleInputMathExpression::ExractCenteredData("
+        debug5 << "Exiting  avtMultipleInputMathExpression::ExtractCenteredData("
                 "avtCentering*, vtkDataSet*, const char*)" << std::endl;
         return out;
     }
