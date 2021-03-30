@@ -346,6 +346,8 @@ fi
 rm -f kickit
 cat <<EOF > kickit
 #!/bin/sh
+export PATH=/usr/gapps/gcc/gcc-9.1/bin:\$PATH
+export LD_LIBRARY_PATH=/usr/gapps/gcc/gcc-9.1/lib64
 if test ! -e /home/$user/kickit ; then
    mkdir /home/$user/kickit
 fi
