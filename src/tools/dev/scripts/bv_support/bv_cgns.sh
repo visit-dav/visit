@@ -28,12 +28,12 @@ function bv_cgns_depends_on
 
 function bv_cgns_info
 {
-    export CGNS_FILE=${CGNS_FILE:-"CGNS-4.1.2.tar.gz"}
-    export CGNS_VERSION=${CGNS_VERSION:-"4.1.2"}
+    export CGNS_FILE=${CGNS_FILE:-"CGNS-4.1.0.tar.gz"}
+    export CGNS_VERSION=${CGNS_VERSION:-"4.1.0"}
     export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"4.1"}
-    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"CGNS-4.1.2/src"}
-    export CGNS_MD5_CHECKSUM="771d9c5b64d9764dc1f5afb42ee1984d"
-    export CGNS_SHA256_CHECKSUM="951653956f509b8a64040f1440c77f5ee0e6e2bf0a9eef1248d370f60a400050"
+    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"CGNS-4.1.0/src"}
+    export CGNS_MD5_CHECKSUM="f90b85ae10693d4db0825c7ce61c6f73"
+    export CGNS_SHA256_CHECKSUM="b4584e4d0fa52c737a0fb4738157a88581df251c8c5886175ee287e1777e99fd"
 }
 
 function bv_cgns_print
@@ -87,12 +87,12 @@ function bv_cgns_dry_run
     fi
 }
 
-function apply_cgns_412_patch
+function apply_cgns_410_patch
 {
     patch -p0 << \EOF
-diff -c CGNS-4.1.2/src/configure.orig CGNS-4.1.2/src/configure
-*** CGNS-4.1.2/src/configure.orig	Thu Feb 11 17:51:22 2021
---- CGNS-4.1.2/src/configure	Fri Feb 12 07:55:02 2021
+diff -c CGNS-4.1.0/src/configure.orig CGNS-4.1.0/src/configure
+*** CGNS-4.1.0/src/configure.orig	Thu Feb 11 17:51:22 2021
+--- CGNS-4.1.0/src/configure	Fri Feb 12 07:55:02 2021
 ***************
 *** 5939,5945 ****
     $as_echo_n "(cached) " >&6
@@ -273,8 +273,8 @@ EOF
 
 function apply_cgns_patch
 {
-    if [[ ${CGNS_VERSION} == "4.1.2" ]] ; then
-        apply_cgns_412_patch
+    if [[ ${CGNS_VERSION} == "4.1.0" ]] ; then
+        apply_cgns_410_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi

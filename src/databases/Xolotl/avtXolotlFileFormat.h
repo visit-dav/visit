@@ -63,15 +63,16 @@ class avtXolotlFileFormat : public avtMTSDFileFormat
     std::vector<int>       isurface;
     std::vector<int>       cycleNumbers;
     std::vector<double>    times;
-    std::vector<double>    network;
     std::vector<double>    oneDGrid;
     std::vector< std::vector<double> >    concentrations;
     hsize_t                networkSize;
     hsize_t                networkParams;
     hid_t                  concentrationsGroup;
+    hid_t                  networkGroup;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     void                   PopulateHeaderGroupMetaData();
+    void                   PopulateNetworkGroupMetaData();
     void                   PopulateConcentrationGroupMetaData();
     void                   GetPositionsOfVariableFromCompositionTable(int *variableIndexes, const char *vn);
     static int             GroupInfo(hid_t loc_id, const char *name, const H5L_info_t *linfo, void *opdata);

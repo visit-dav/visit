@@ -14,12 +14,12 @@
 #    Kathleen Biagas, Tue Jun 30 13:19:18 PDT 2020
 #    Update for pyside2-qt-5.14.2.
 #
+#    Cyrus Harrison, Wed Feb 24 16:06:36 PST 2021
+#    A few small changes for pyside2
+#
 #*****************************************************************************
 
-get_property(QT_CORE_INCLUDE_DIRS TARGET Qt5::Core PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-get_property(QT_GUI_INCLUDE_DIRS TARGET Qt5::Gui PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-get_property(QT_OPENGL_INCLUDE_DIRS TARGET Qt5::OpenGL PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
-get_property(QT_WIDGETS_INCLUDE_DIRS TARGET Qt5::Widgets PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+# PYSIDE_ADD_MODULE handles the qt include paths
 
 set(pyside_gui_include_paths
     ${SHIBOKEN_INCLUDE_DIR}
@@ -28,10 +28,6 @@ set(pyside_gui_include_paths
     ${PYSIDE_INCLUDE_DIR}/QtGui
     ${PYSIDE_INCLUDE_DIR}/QtOpenGL
     ${PYSIDE_INCLUDE_DIR}/QtWidgets
-    ${QT_CORE_INCLUDE_DIRS}
-    ${QT_GUI_INCLUDE_DIRS}
-    ${QT_OPENGL_INCLUDE_DIRS}
-    ${QT_WIDGETS_INCLUDE_DIRS}
     ${VISIT_BINARY_DIR}/include
     ${VISIT_SOURCE_DIR}/gui/
     ${VISIT_SOURCE_DIR}/gui/main
@@ -57,13 +53,7 @@ set(pyside_gui_include_paths
 )
 
 set(pyside_gui_link_libs
-    #gui
     guiwrapper
-    #viewersubjectproxy
-    #${SHIBOKEN_PYTHON_LIBRARIES}
-    #${SHIBOKEN_LIBRARY}
-    #${PYSIDE_LIBRARY}
-    #${QT_QTCORE_LIBRARY}
     ${QWT_LIBRARY}
     )
 
@@ -83,7 +73,7 @@ IF(OSMESA_FOUND)
 ENDIF()
 
 PYSIDE_ADD_MODULE(pyside_gui
-                  site-packages/visit
+                  site-packages/visit_utils/builtin
                   pyside_gui_sources
                   pyside_gui_gen_sources
                   pyside_gui_include_paths

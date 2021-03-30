@@ -180,12 +180,65 @@ EOF
     return 0
 }
 
+function apply_pyside_5142_mesagl_patch
+{
+    info "Patching Pyside2 5.14.2 for mesagl"
+    patch -p0 << \EOF
+diff -c ./sources/pyside2/cmake/Macros/PySideModules.cmake.orig ./sources/pyside2/cmake/Macros/PySideModules.cmake
+*** ./sources/pyside2/cmake/Macros/PySideModules.cmake.orig     2021-03-22 18:05:51.200000000 +0000
+--- ./sources/pyside2/cmake/Macros/PySideModules.cmake  2021-03-22 18:05:02.630000000 +0000
+***************
+*** 91,97 ****
+      list(REMOVE_DUPLICATES total_type_system_files)
+
+      # Contains include directories to pass to shiboken's preprocessor.
+!     set(shiboken_include_dirs ${pyside2_SOURCE_DIR}${PATH_SEP}${QT_INCLUDE_DIR})
+      set(shiboken_framework_include_dirs_option "")
+      if(CMAKE_HOST_APPLE)
+          set(shiboken_framework_include_dirs "${QT_FRAMEWORK_INCLUDE_DIR}")
+--- 91,97 ----
+      list(REMOVE_DUPLICATES total_type_system_files)
+
+      # Contains include directories to pass to shiboken's preprocessor.
+!     set(shiboken_include_dirs ${pyside2_SOURCE_DIR}${PATH_SEP}${QT_INCLUDE_DIR}${PATH_SEP}${VISITDIR}/mesagl/${MESAGL_VERSION}/${VISITARCH}/include)
+      set(shiboken_framework_include_dirs_option "")
+      if(CMAKE_HOST_APPLE)
+          set(shiboken_framework_include_dirs "${QT_FRAMEWORK_INCLUDE_DIR}")
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Pyside2 mesagl patch failed."
+        return 1
+    fi
+
+    ##
+    ## I couldn't get the bash variables to expand in the patch, so I
+    ## did it with sed after the fact. The first sed command contains
+    ## bash magic since VISITDIR contains imbedded slashes. The link
+    ## that explains the magic is at:
+    ## https://stackoverflow.com/questions/27787536/how-to-pass-a-variable-containing-slashes-to-sed/27787551
+    ##
+    sed -i -e "s/\${VISITDIR}/${VISITDIR//\//\\/}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
+    sed -i -e "s/\${MESAGL_VERSION}/${MESAGL_VERSION}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
+    sed -i -e "s/\${VISITARCH}/${VISITARCH}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
+
+    return 0
+}
+
 function apply_pyside_patch
 {
     if [[ ${PYSIDE_VERSION} == 5.14.2 ]] ; then
         apply_pyside_5142_patch
         if [[ $? != 0 ]] ; then
             return 1
+        fi
+
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            if [[ "$OPSYS" == "Linux" ]]; then
+                apply_pyside_5142_mesagl_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
         fi
     fi
 
@@ -281,11 +334,21 @@ function build_pyside
         info "Configuring pyside . . ."
 
         # Note:
-        # the pyside build process needs to resolve OpenGL libs several times 
-        # if we are using mesa as gl, we need to provide the proper path 
-        # to gl via LD_LIBRARY_PATH
+        # The pyside build process needs to resolve OpenGL libs several
+        # times. If we are using mesa as gl, we need to provide the proper
+        # path to gl via LD_LIBRARY_PATH
         if [[ "$DO_MESAGL" == "yes" ]] ; then
             export LD_LIBRARY_PATH=${MESAGL_LIB_DIR}:${LD_LIBRARY_PATH}
+        fi
+
+        # If we are using our own llvm, then we need to provide the path
+        # to libLLVM.
+        if [[ "$DO_LLVM" == "yes" ]] ; then
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                export DYLD_LIBRARY_PATH="$VISITDIR/llvm/$BV_LLVM_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+            else
+                export LD_LIBRARY_PATH="$VISITDIR/llvm/$BV_LLVM_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+            fi
         fi
 
         echo "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh

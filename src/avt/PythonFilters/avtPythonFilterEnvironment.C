@@ -14,6 +14,10 @@
 #include <StringHelpers.h>
 #include <InstallationFunctions.h>
 
+#ifdef PARALLEL
+    #include <mpi.h>
+#endif
+
 using namespace std;
 
 // static vars
@@ -88,6 +92,9 @@ avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 //    Cyrus Harrison, Thu Feb 18 16:06:46 PST 2021
 //    Change the way the import works for parallel case to support Python 3.
 //
+//    Cyrus Harrison, Tue Feb 23 17:04:32 PST 2021
+//    Use MPI_Comm_c2f handle to init mpicom module.
+//
 // ****************************************************************************
 
 bool
@@ -116,10 +123,13 @@ avtPythonFilterEnvironment::Initialize()
     // init mpicom w/ visit's communicator
     if(!pyi->RunScript("import mpicom.mpicom as mpicom\n"))
         return false;
+
+    // pass mpi comm via fortran handle (which is an int)
+    int mpi_comm_id =  MPI_Comm_c2f(VISIT_MPI_COMM);
     ostringstream oss;
-    oss << (void*)VISIT_MPI_COMM_PTR;
-    string comm_addy = oss.str();
-    if(!pyi->RunScript("mpicom.init(caddy='" + comm_addy + "')\n"))
+    oss << mpi_comm_id;
+    string comm_id_str = oss.str();
+    if(!pyi->RunScript("mpicom.init(comm_id=" + comm_id_str + ")\n"))
         return false;
 #else
     // import pyavt.mpistub as mpicom
