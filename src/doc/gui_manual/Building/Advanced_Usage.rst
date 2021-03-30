@@ -70,7 +70,7 @@ OpenGL, HDF5, etc.) come pre-installed. Why can't a user just use those
 pre-installed libraries to build VisIt_?
 
 Its complicated. There is a chance it *might* work. But, more than likely
-it won't. Upon report of an issue, our first question will be, how was VisIt_
+it won't. Next, upon report of any issues, our first question will be, how was VisIt_
 configured/built? If you have built VisIt_ in a way that is not consistent with
 how developers routinely build and run and test it, we may not be able to reproduce
 your issue, debug it and provide the support you may need.
@@ -82,7 +82,17 @@ These include
 * Version incompatabilities: For example, VTK major versions are generally not
 compatable. Sometimes even minor versions are not. So, having VTK pre-installed
 on your system does not mean
-* VisIt_-specific patches.
+* VisIt_-specific patches: In some cases, the libraries VisIt_ needs are patched to
+work around various issues. These patches are almost certainly not in any pre-installed
+version of the library.
+* Configuration compatability
+* Dependence compatability
+applies recursively to any dependent libs
+
+Bottom line, with multiple libraries with interdependencies and with various build
+options, the number of ways to build libraries such that they only partially work
+or don't work at all is highly likely. 
+
 
 version 9 is not compatable with
 VTK version 8. Python 3 is not necessarily compatable with Python 2.
