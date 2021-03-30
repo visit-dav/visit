@@ -62,6 +62,32 @@ instead of the system OpenGL.
 
   ./build_visit3_0_1 --mesagl
 
+Building with Pre-Installed (e.g. System) Libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On most systems, many of the libraries VisIt_ needs (e.g. Qt, VTK, Python
+OpenGL, HDF5, etc.) come pre-installed. Why can't a user just use those
+pre-installed libraries to build VisIt_?
+
+Its complicated. There is a chance it *might* work. But, more than likely
+it won't. Upon report of an issue, our first question will be, how was VisIt_
+configured/built? If you have built VisIt_ in a way that is not consistent with
+how developers routinely build and run and test it, we may not be able to reproduce
+your issue, debug it and provide the support you may need.
+
+Apart from the general issue of reproducibility and providing support, there
+are many reasons building VisIt_ with pre-installed libraries may not work.
+These include
+
+* Version incompatabilities: For example, VTK major versions are generally not
+compatable. Sometimes even minor versions are not. So, having VTK pre-installed
+on your system does not mean
+* VisIt_-specific patches.
+
+version 9 is not compatable with
+VTK version 8. Python 3 is not necessarily compatable with Python 2.
+
+
 The difference between ``--mesagl`` and ``--osmesa``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
