@@ -62,31 +62,46 @@ instead of the system OpenGL.
 
   ./build_visit3_0_1 --mesagl
 
-Building with Pre-Installed (e.g. System) Libraries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Building VisIt_ with Pre-Installed (e.g. System) Libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-On most systems, many of the libraries VisIt_ needs (e.g. Qt, VTK, Python
-OpenGL, HDF5, etc.) come pre-installed. Why can't a user just use those
-pre-installed libraries to build VisIt_?
+On many systems, some of the libraries VisIt_ needs (e.g. Qt, VTK, Python OpenGL, HDF5, etc.) come pre-installed.
+Can a user just use those pre-installed libraries to build VisIt_?
 
-Its complicated. There is a chance it *might* work. But, more than likely
-it won't. Next, upon report of any issues, our first question will be, how was VisIt_
-configured/built? If you have built VisIt_ in a way that is not consistent with
-how developers routinely build and run and test it, we may not be able to reproduce
-your issue, debug it and provide the support you may need.
+**Please don't!**
+On the off chance it actually works (which it almost certainly will not) upon reporting any issues, our first question will be, how was VisIt_ configured/built?
+If VisIt_ is built in a way that is not consistent with how developers routinely build, run and test it, we will not be able to reproduce the issue, debug it and provide support.
 
-Apart from the general issue of reproducibility and providing support, there
-are many reasons building VisIt_ with pre-installed libraries may not work.
-These include
+Apart from the general issues of reproducibility and support, there are many reasons building VisIt_ with pre-installed libraries will likely not work.
+Below, we breifly summarize various compatability issues encountered when trying to use pre-installed libraries.
 
-* Version incompatabilities: For example, VTK major versions are generally not
-compatable. Sometimes even minor versions are not. So, having VTK pre-installed
-on your system does not mean
-* VisIt_-specific patches: In some cases, the libraries VisIt_ needs are patched to
-work around various issues. These patches are almost certainly not in any pre-installed
-version of the library.
-* Configuration compatability
-* Dependence compatability
+Version Compatability : Pre-installed libraries are not the same version VisIt_ requires
+    Often, users notice a *newer* version of a library VisIt_ needs is pre-installed on their system and expect VisIt_ will run *better* with this newer version.
+    However, having a newer version of VTK, for example, pre-installed does not mean VisIt_ will compile or execute properly with that version.
+    Major versions of VTK, for example, (e.g. 8.0 and 9.0) are not compatable.
+    Incompatabilities sometimes exist even between minor versions of some libraries.
+    Incorrect library versions may cause VisIt_ to either fail to build or fail to run properly.
+
+Patch Compatability : Pre-installed libaries are missing patches VisIt_ requires
+    In some cases, the libraries VisIt_ needs are patched to work around various build-time or run-time issues.
+    Such patches are almost certainly not in any pre-installed version of the library.
+    Missing patches may cause VisIt_ to either fail to build or fail to run properly.
+
+Configuration Compatability : Pre-installed libraries are not configured in a way VisIt_ requires
+    Libraries often have many build-time options which enable or disable certain features.
+    The Qt library, for example, has hundreds of build-time options.
+    Some build options, VisIt_ may not care about.
+    However, VisIt_ may require other options to be enabled and still other options to be disabled.
+    Incorrect library configuration may cause VisIt_ to either fail to build or fail to run properly.
+
+Dependency Compatability : Pre-installed libraries aren't built with dependencies VisIt requires
+    Libraries often have dependencies on still other libraries.
+    For example, Qt and VTK can both depend on OpenGL.
+    In some cases, however, VisIt_ may require a specific implementation of OpenGL called MesaGL.
+    
+Compiler Run-Time Compatability : Pre-installed libraries aren't built with compatable compiler run-times
+
+
 applies recursively to any dependent libs
 
 Bottom line, with multiple libraries with interdependencies and with various build
