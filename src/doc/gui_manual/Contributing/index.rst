@@ -99,22 +99,22 @@ use of Sphinx as we move forward. These are discussed at the
 * Avoid contractions such as ``isn't``, ``can't`` and ``you've``.
 * Avoid hyphenation of words.
 * Use ``VisIt_`` or ``VisIt_'s`` when referring to VisIt_ by name.
-* Use upper case for all letters in acronyms (:abbr:`MPI (Message Passing Interface)`, VTK)
-* Use case conventions of product names (QuickTime, TotalView, Valgrind).
-* Bracket word(s) with two stars (``**some words**``) for **bold**.
+* Use upper case for all letters in acronyms (:abbr:`IDE (Integrated Development Environment)`, GUI)
+* Use case conventions of product names (MPI, VTK, QuickTime, TotalView, Valgrind).
 * Bracket word(s) with one star (``*word*``) for *italics*.
+* Bracket word(s) with two stars (``**some words**``) for **bold**.
 * Bracket word(s) with two backticks (:samp:`\ ``some words```) for ``literal``.
+* Use ``literals`` for code, commands, arguments, file names, etc.
 * Bracketed word(s) should not span line breaks.
 * Use **bold** to refer to VisIt_ **Widget**, **Operator** or **Plot**
   names and other named objects part of VisIt_'s interface(s).
+* Avoid use of **bold** for other purposes. Instead use *italics*.
 * Use the following terminology when referring to widget names.
 
 .. figure:: images/GUIWidgetNames.png
 
 .. figure:: images/GUIWidgetNames2.png
 
-* Avoid use of **bold** for other purposes. Instead use *italics*.
-* Use ``literals`` for code, commands, arguments, file names, etc.
 * Use :samp:`\ :t\ erm:`glossary term`` at least for the *first* use of a
   glossary term in a section.
 * Use :samp:`\ :a\ bbr:`ABR (Long Form)`` at least for the *first* use of an
@@ -204,10 +204,11 @@ More recently, we've decided that we should not impose any absolute character co
 Some lines will be very short.
 Other lines can be very long, especially if they include long URLs like `this one <https://chart.apis.google.com/chart?chs=500x500&chma=0,0,100,100&cht=p&chco=FF0000%2CFFFF00%7CFF8000%2C00FF00%7C00FF00%2C0000FF&chd=t%3A122%2C42%2C17%2C10%2C8%2C7%2C7%2C7%2C7%2C6%2C6%2C6%2C6%2C5%2C5&chl=122%7C42%7C17%7C10%7C8%7C7%7C7%7C7%7C7%7C6%7C6%7C6%7C6%7C5%7C5&chdl=android%7Cjava%7Cstack-trace%7Cbroadcastreceiver%7Candroid-ndk%7Cuser-agent%7Candroid-webview%7Cwebview%7Cbackground%7Cmultithreading%7Candroid-source%7Csms%7Cadb%7Csollections%7Cactivity>`_.
 There are many advantages to using a single sentence per line mostly having to do with the way diffing tools compute and display diffs.
+
 This practice, of course, does not apply to source code.
-It applies only to ascii files that are intended to represent, more or less, human readable text.
-Going forward, we do not plan to reformat existing documentation to a sentence per line.
-However, we will encourage developers to follow this practice when making updates to documentation by requesting changes in PRs when it is not followed.
+It applies only to ascii files that are intended to represent, more or less, human readable prose.
+Going forward, we will not reformat existing documentation to a sentence per line en masse.
+However, when updates to documentation are made we will encourage developers to follow this practice and request changes in PRs when it is not followed.
 
 More on Images
 --------------
