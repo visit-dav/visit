@@ -96,6 +96,8 @@ use of Sphinx as we move forward. These are discussed at the
   Note that the files listed in the ``.. toctree::`` block do not include
   their ``.rst`` extensions.
 
+* Do not break full sentences by *wrapping* them on arbitrary column boundaries.
+  Instead, keep each full sentence to its own :ref:`single line <contributing_line_length>`, regardless of line length.
 * Avoid contractions such as ``isn't``, ``can't`` and ``you've``.
 * Avoid hyphenation of words.
 * Use ``VisIt_`` or ``VisIt_'s`` when referring to VisIt_ by name.
@@ -194,7 +196,7 @@ use of Sphinx as we move forward. These are discussed at the
   `on-line, real-time reStructuredText Renderer <http://rst.ninjs.org>`_
   to quickly try different things and see how they work.
 
-.. _contributing_images:
+.. _contributing_line_length:
 
 About Line Length
 -----------------
@@ -209,6 +211,8 @@ This practice, of course, does not apply to source code.
 It applies only to ascii files that are intended to represent, more or less, human readable prose.
 Going forward, we will not reformat existing documentation to a sentence per line en masse.
 However, when updates to documentation are made we will encourage developers to follow this practice and request changes in PRs when it is not followed.
+
+.. _contributing_images:
 
 More on Images
 --------------
