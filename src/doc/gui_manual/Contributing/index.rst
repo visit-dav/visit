@@ -20,7 +20,7 @@ You can then browse the root of the manual by pointing your browser to
 :file:`./_build/index.html`.  The ``-a`` forces a re-build of everything.
 Remove it when you are constantly revising and rebuilding.
 
-Your changes to any files ``.rst`` files in :file:`visit/src/doc` will go live
+Your changes to any ``.rst`` files in :file:`visit/src/doc` will go live
 `here <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/>`_
 soon after you push them. If `RTD <https://readthedocs.org>`_ resources are
 busy, a rebuild of the docs may take as long as 15 minutes. If you are working
