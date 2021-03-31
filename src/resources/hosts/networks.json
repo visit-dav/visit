@@ -324,9 +324,6 @@
           "name": "customlauncher"
         },
         {
-          "name": "host_ornl_photon.xml"
-        },
-        {
           "name": "host_ornl_andes.xml"
         },
         {
