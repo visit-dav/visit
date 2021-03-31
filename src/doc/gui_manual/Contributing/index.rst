@@ -104,8 +104,8 @@ use of Sphinx as we move forward. These are discussed at the
 * Bracket word(s) with one star (``*word*``) for *italics*.
 * Bracket word(s) with two stars (``**some words**``) for **bold**.
 * Bracket word(s) with two backticks (:samp:`\ ``some words```) for ``literal``.
-* Use ``literals`` for code, commands, arguments, file names, etc.
 * Bracketed word(s) should not span line breaks.
+* Use ``literals`` for code, commands, arguments, file names, etc.
 * Use **bold** to refer to VisIt_ **Widget**, **Operator** or **Plot**
   names and other named objects part of VisIt_'s interface(s).
 * Avoid use of **bold** for other purposes. Instead use *italics*.
