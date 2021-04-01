@@ -108,7 +108,7 @@ Compiler Compatability : Pre-installed libraries aren't built with a compiler Vi
 There are likely other subtle compatability issues that can arise which we have neglected to mention here.
 A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenSSL, OpenGL, MPI to name a few) on any particular platform.
 Bottom line, the number of ways pre-installed libraries can be built such that they will cause VisIt_ to either fail to build or fail to run properly are almost boundless.
-For this reason, we discourage users from attempting to build VisIt_ using pre-installed libraries.
+For this reason, we discourage users from attempting to build VisIt_ using pre-installed libraries and warn users that in all likelihood we will not have sufficient resources to help address any resulting issues that may arise.
 
 The difference between ``--mesagl`` and ``--osmesa``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
