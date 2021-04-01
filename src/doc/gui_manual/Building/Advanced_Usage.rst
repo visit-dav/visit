@@ -62,6 +62,15 @@ instead of the system OpenGL.
 
   ./build_visit3_0_1 --mesagl
 
+The difference between ``--mesagl`` and ``--osmesa``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When you specify ``--mesagl`` VTK will be built against Mesa 3D. When you 
+specify ``--osmesa`` VTK is built against the system OpenGL and the Mesa 3D
+library is substituted at run time for OpenGL when running the parallel
+engine to enable scalable rendering. If you specify ``--mesagl`` then
+``--osmesa`` is unnecessary and ignored if specified.
+
 Building VisIt_ with Pre-Installed (e.g. System) Libraries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -109,15 +118,6 @@ There are likely other subtle compatability issues that can arise which we have 
 A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenSSL, OpenGL, MPI to name a few) on any particular platform.
 Bottom line, the number of ways pre-installed libraries can be built such that they will cause VisIt_ to either fail to build or fail to run properly are almost boundless.
 For this reason, we discourage users from attempting to build VisIt_ using pre-installed libraries and warn users that in all likelihood we will not have sufficient resources to help address any resulting issues that may arise.
-
-The difference between ``--mesagl`` and ``--osmesa``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-When you specify ``--mesagl`` VTK will be built against Mesa 3D. When you 
-specify ``--osmesa`` VTK is built against the system OpenGL and the Mesa 3D
-library is substituted at run time for OpenGL when running the parallel
-engine to enable scalable rendering. If you specify ``--mesagl`` then
-``--osmesa`` is unnecessary and ignored if specified.
 
 Building on a system without internet access
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
