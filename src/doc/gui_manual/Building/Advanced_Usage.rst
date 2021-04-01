@@ -103,7 +103,7 @@ Dependency Compatability : Pre-installed libraries aren't built with dependencie
 
 Compiler Compatability : Pre-installed libraries aren't built with a compiler VisIt_ requires
     For some situations, building VisIt_ and its dependencies requires a specific compiler.
-    The compiler used for pre-installed libraries may be compatable with the compiler VisIt_ requires.
+    The compiler used for pre-installed libraries may not be compatable with the compiler VisIt_ requires.
 
 There are likely other subtle compatability issues that can arise which we have neglected to mention here.
 A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenSSL, OpenGL, MPI to name a few) on any particular platform.
