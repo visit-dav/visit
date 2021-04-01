@@ -94,24 +94,21 @@ Configuration Compatability : Pre-installed libraries are not configured in a wa
     However, VisIt_ may require other options to be enabled and still other options to be disabled.
     Incorrect library configuration may cause VisIt_ to either fail to build or fail to run properly.
 
-Dependency Compatability : Pre-installed libraries aren't built with dependencies VisIt requires
+Dependency Compatability : Pre-installed libraries aren't built with dependencies VisIt_ requires
     Libraries often have dependencies on still other libraries.
     For example, Qt and VTK can both depend on OpenGL.
     In some cases, however, VisIt_ may require a specific implementation of OpenGL called MesaGL.
-    
-Compiler Run-Time Compatability : Pre-installed libraries aren't built with compatable compiler run-times
+    Incorrect dependencies may cause VisIt_ to either fail to build or fail to run properly.
+    Such dependencies complicate things significantly because it means all of the aforementioned compatability issues apply, recursively, to any libraries a pre-installed library is dependent on.
 
+Compiler Compatability : Pre-installed libraries aren't built with a compiler VisIt_ requires
+    For some situations, building VisIt_ and its dependencies requires a specific compiler.
+    The compiler used for pre-installed libraries may be compatable with the compiler VisIt_ requires.
 
-applies recursively to any dependent libs
-
-Bottom line, with multiple libraries with interdependencies and with various build
-options, the number of ways to build libraries such that they only partially work
-or don't work at all is highly likely. 
-
-
-version 9 is not compatable with
-VTK version 8. Python 3 is not necessarily compatable with Python 2.
-
+There are likely other subtle compatability issues that can arise which we have neglected to mention here.
+A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenSSL, OpenGL, MPI to name a few) on any particular platform.
+Bottom line, the number of ways pre-installed libraries can be built such that they will cause VisIt_ to either fail to build or fail to run properly are almost boundless.
+For this reason, we discourage users from attempting to build VisIt_ using pre-installed libraries.
 
 The difference between ``--mesagl`` and ``--osmesa``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
