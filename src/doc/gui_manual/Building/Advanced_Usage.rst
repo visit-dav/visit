@@ -104,16 +104,16 @@ Configuration Compatability : Pre-installed libraries are not configured in a wa
     However, VisIt_ may require other options to be enabled and still other options to be disabled.
     Incorrect library configuration may cause VisIt_ to either fail to build or fail to run properly.
 
-Dependency Compatability : Pre-installed libraries aren't built with dependencies VisIt_ requires
+Dependency Compatability : Pre-installed libraries are not built with dependencies VisIt_ requires
     Libraries often have dependencies on still other libraries.
     For example, Qt and VTK can both depend on OpenGL.
     In some cases, however, VisIt_ may require a specific implementation of OpenGL called MesaGL.
     Incorrect dependencies may cause VisIt_ to either fail to build or fail to run properly.
     Such dependencies complicate things significantly because it means all of the aforementioned compatability issues apply, recursively, to any libraries a pre-installed library depends on.
 
-Compiler Compatability : Pre-installed libraries aren't built with a compiler VisIt_ requires
+Compiler (Run-Time) Compatability : Pre-installed libraries are not built with a compiler (run-time) VisIt_ requires
     For some situations, building VisIt_ and its dependencies requires a specific compiler.
-    The compiler used for pre-installed libraries may not be compatable with the compiler VisIt_ requires.
+    The compiler (run-time) used for pre-installed libraries may not be compatable with the compiler (run-time) VisIt_ requires.
 
 There are likely other subtle compatability issues that can arise which we have neglected to mention here.
 A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenSSL, OpenGL, MPI to name a few) on any particular platform.
