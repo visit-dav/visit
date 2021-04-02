@@ -8436,7 +8436,7 @@ QvisGUIApplication::SaveMovieMain()
                     "redblue", "redgreen"};
                 int si = (stereos[i] < 0 || stereos[i] > 3) ? 0 : stereos[i];
                 QString order =
-                    QString("    movie.RequestFormat(\"%1\", %2, %3 \"%4\")\n")
+                    QString("    movie.RequestFormat(\"%1\", %2, %3, \"%4\")\n")
                     .arg(formats[i].c_str())
                     .arg(widths[i])
                     .arg(heights[i])
