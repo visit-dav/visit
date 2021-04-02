@@ -79,7 +79,7 @@ Can a user just use those pre-installed libraries to build VisIt_?
 
 **Please don't!**
 In all likelihood this will not work at all or, worse, it will only partially work and fail in subtle ways that are nearly impossible to diagnose.
-In the unlikely chance it actually does work upon reporting any issues, our first question will be, how was VisIt_ configured/built?
+In the unlikely chance it appears to work upon reporting any issues our first question will be, how was VisIt_ configured/built?
 If VisIt_ is built in a way that is not consistent with how developers routinely build, run and test it, we will not be able to reproduce the issue, debug it, identify work-arounds or otherwise provide sufficient support.
 
 Apart from the general issues of reproducibility and support, there are many reasons building VisIt_ with pre-installed libraries will likely not work.
@@ -93,7 +93,7 @@ Version Compatability : Pre-installed libraries are not the version VisIt_ requi
     Incorrect library versions may cause VisIt_ to either fail to build or fail to run properly.
 
 Patch Compatability : Pre-installed libaries are missing patches VisIt_ requires
-    In some cases, the libraries VisIt_ needs are patched to work around various building or running VisIt_.
+    In some cases, the libraries VisIt_ needs are patched to work around various issues building or running VisIt_.
     Such patches are almost certainly not in any pre-installed version of the library.
     Missing patches may cause VisIt_ to either fail to build or fail to run properly.
 
@@ -101,7 +101,7 @@ Configuration Compatability : Pre-installed libraries are not configured in a wa
     Libraries often have many build options which enable or disable certain features.
     The Qt library, for example, has hundreds of build options.
     Some build options VisIt_ may not care about.
-    However, VisIt_ may require other options to be enabled and still other options to be disabled.
+    Other build options, however, VisIt_ may require to be enabled and still other options to be disabled.
     Incorrect library configuration may cause VisIt_ to either fail to build or fail to run properly.
 
 Dependency Compatability : Pre-installed libraries are not built with dependencies VisIt_ requires
