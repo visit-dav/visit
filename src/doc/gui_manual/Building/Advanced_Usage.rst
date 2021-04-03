@@ -71,6 +71,55 @@ library is substituted at run time for OpenGL when running the parallel
 engine to enable scalable rendering. If you specify ``--mesagl`` then
 ``--osmesa`` is unnecessary and ignored if specified.
 
+Building VisIt_ with Pre-Installed (e.g. System) Libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+On many systems, some libraries VisIt_ needs (e.g. Qt, VTK, Python OpenGL, HDF5, etc.) come pre-installed.
+Can a user just use those pre-installed libraries to build VisIt_?
+
+**Please don't!**
+In all likelihood this will not work at all or, worse, it will only partially work and fail in subtle ways that are nearly impossible to diagnose.
+In the unlikely chance it appears to work upon reporting any issues our first question will be, how was VisIt_ configured/built?
+If VisIt_ is built in a way that is not consistent with how developers routinely build, run and test it, we will not be able to reproduce the issue, debug it, identify work-arounds or otherwise provide sufficient support.
+
+Apart from the general issues of reproducibility and support, there are many reasons building VisIt_ with pre-installed libraries will likely not work.
+Below, we breifly summarize various compatability issues with trying to use pre-installed libraries.
+
+Version Compatability : Pre-installed libraries are not the version VisIt_ requires
+    Often, users notice a *newer* version of a library VisIt_ needs is pre-installed on their system and expect VisIt_ will run *better* with this newer version.
+    However, having a newer version of VTK, for example, pre-installed does not mean VisIt_ will build or run properly with that version.
+    Major versions of VTK, for example, (e.g. 8.0 and 9.0) are not compatable.
+    Incompatabilities sometimes exist even between minor versions of some libraries.
+    Incorrect library versions may cause VisIt_ to either fail to build or fail to run properly.
+
+Patch Compatability : Pre-installed libaries are missing patches VisIt_ requires
+    In some cases, the libraries VisIt_ needs are patched to work around various issues building or running VisIt_.
+    Such patches are almost certainly not in any pre-installed version of the library.
+    Missing patches may cause VisIt_ to either fail to build or fail to run properly.
+
+Configuration Compatability : Pre-installed libraries are not configured in a way VisIt_ requires
+    Libraries often have many build options which enable or disable certain features.
+    The Qt library, for example, has hundreds of build options.
+    Some build options VisIt_ may not care about.
+    Other build options, however, VisIt_ may require to be enabled and still other options to be disabled.
+    Incorrect library configuration may cause VisIt_ to either fail to build or fail to run properly.
+
+Dependency Compatability : Pre-installed libraries are not built with dependencies VisIt_ requires
+    Libraries often have dependencies on still other libraries.
+    For example, Qt and VTK can both depend on OpenGL.
+    In some cases, however, VisIt_ may require a specific implementation of OpenGL called MesaGL.
+    Incorrect dependencies may cause VisIt_ to either fail to build or fail to run properly.
+    Such dependencies complicate things significantly because it means all of the aforementioned compatability issues apply, recursively, to any libraries a pre-installed library depends on.
+
+Compiler (Run-Time) Compatability : Pre-installed libraries are not built with a compiler (run-time) VisIt_ requires
+    For some situations, building VisIt_ and its dependencies requires a specific compiler.
+    The compiler (run-time) used for pre-installed libraries may not be compatable with the compiler (run-time) VisIt_ requires.
+
+There are likely other subtle compatability issues that can arise which we have neglected to mention here.
+A fully featured build of VisIt_ can involve 35+ libraries, many of which may come pre-installed (Qt, VTK, Python, HDF5, netCDF, OpenSSL, OpenGL, MPI to name a few) on any particular platform.
+Bottom line, the number of ways pre-installed libraries can be built such that they will cause VisIt_ to either fail to build or fail to run properly are almost boundless.
+For this reason, we discourage users from attempting to build VisIt_ using pre-installed libraries and warn users that in all likelihood we will not have sufficient resources to help address any resulting issues that may arise.
+
 Building on a system without internet access
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
