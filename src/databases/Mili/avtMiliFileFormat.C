@@ -2570,6 +2570,9 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //      Alister Maguire, Thu Mar 25 13:55:53 PDT 2021
 //      Added support for stress and strain derivations and the sand mesh.
 //
+//      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
+//      Only add pressure for stress.
+//
 // ****************************************************************************
 
 void
@@ -2697,8 +2700,18 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
                 derivedPath = meshPath + "Derived/" + varPath;
             }
 
+            bool needPressure = false;
+
+            //
+            // Currently, we only add pressure for stress.
+            //
+            if ((*mdItr)->GetShortName() == "stress")
+            {
+                needPressure = true;
+            }
+
             AddStressStrainDerivations(md, (*mdItr)->GetShortName(),
-                varPath, derivedPath, true);
+                varPath, derivedPath, needPressure);
 
             //
             // If we've added one, we've added them all.
@@ -4212,6 +4225,9 @@ avtMiliFileFormat::ScalarExpressionFromVec(const char *vecPath,
 //
 //  Modifications
 //
+//      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
+//      Added missing component (1) for the principal tensor expressions.
+//
 // ****************************************************************************
 
 void
@@ -4263,6 +4279,12 @@ avtMiliFileFormat::AddStressStrainDerivations(avtDatabaseMetaData *md,
     maxShear.SetDefinition("tensor_maximum_shear(<" + varPath + ">)");
     maxShear.SetType(Expression::ScalarMeshVar);
     md->AddExpression(&maxShear);
+
+    Expression pTensor1;
+    pTensor1.SetName(derivedPath + "/prin_" + varName.c_str() + "/1");
+    pTensor1.SetDefinition("principal_tensor(<" + varPath + ">)[0]");
+    pTensor1.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pTensor1);
 
     Expression pTensor2;
     pTensor2.SetName(derivedPath + "/prin_" + varName.c_str() + "/2");
