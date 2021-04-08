@@ -22,6 +22,9 @@
 #    Alister Maguire, Wed Jul 15 13:38:17 PDT 2020
 #    Added test sections and derived variable test.
 #
+#    Alister Maguire, Wed Mar 24 16:06:33 PDT 2021
+#    Added a test for setting/changing the global integration point.
+#
 #    Alister Maguire, Fri Mar 26 10:25:08 PDT 2021
 #    Added more tests for derived variables (stress, strain, sand mesh).
 #
@@ -382,6 +385,41 @@ def TestDerivedVariables():
     DeleteAllPlots()
 
 
+def TestGlobalIntegrationPoint():
+    TestSection("Global integration point")
+
+    db_path = single_domain_path + "/d3samp6.plt.mili"
+    OpenDatabase(db_path)
+    v = GetView3D()
+    v.viewNormal = (0.9, 0.35, -0.88)
+    SetView3D(v)
+    SetTimeSliderState(90)
+
+    AddPlot("Pseudocolor", "Primal/Shared/strain/exy")
+    DrawPlots()
+
+    mili_options = GetDefaultFileOpenOptions("Mili")
+    mili_options["Global integration point"] = "Inner"
+    SetDefaultFileOpenOptions("Mili", mili_options)
+    ReOpenDatabase(db_path)
+    Test("mili_global_ip_00")
+
+    mili_options = GetDefaultFileOpenOptions("Mili")
+    mili_options["Global integration point"] = "Middle"
+    SetDefaultFileOpenOptions("Mili", mili_options)
+    ReOpenDatabase(db_path)
+    Test("mili_global_ip_01")
+
+    mili_options = GetDefaultFileOpenOptions("Mili")
+    mili_options["Global integration point"] = "Outer"
+    SetDefaultFileOpenOptions("Mili", mili_options)
+    ReOpenDatabase(db_path)
+    Test("mili_global_ip_02")
+
+    DeleteAllPlots()
+    CloseDatabase(db_path)
+
+
 def Main():
     TestComponentVis()
     TestNonSharedElementSets()
@@ -398,6 +436,7 @@ def Main():
     TestSciNotation()
     TestMultiSubrecRead()
     TestDerivedVariables()
+    TestGlobalIntegrationPoint()
 
 Main()
 Exit()
