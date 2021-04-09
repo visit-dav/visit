@@ -454,7 +454,7 @@ function build_qt
     qt_flags="${qt_flags} -qt-libpng"
 
     if [[ "$OPSYS" == "Linux" ]] ; then
-        qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes"
+        qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes -xcb-native-painting"
     fi
 
     if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
