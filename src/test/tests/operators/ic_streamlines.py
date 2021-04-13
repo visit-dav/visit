@@ -38,7 +38,7 @@ SetView3D(View3DAtts)
 PseudocolorAtts = PseudocolorAttributes()
 PseudocolorAtts.scaling = PseudocolorAtts.Linear  # Linear, Log, Skew
 PseudocolorAtts.skewFactor = 1
-PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, CurrentPlot
+PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, ActualData
 PseudocolorAtts.minFlag = 0
 PseudocolorAtts.min = 0
 PseudocolorAtts.maxFlag = 0

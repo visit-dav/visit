@@ -25,7 +25,7 @@ def remap(cells, type = 0):
 
 def setPseudoOptions():
     PseudocolorAtts = PseudocolorAttributes()
-    PseudocolorAtts.limitsMode = PseudocolorAtts.CurrentPlot
+    PseudocolorAtts.limitsMode = PseudocolorAtts.ActualData
     SetPlotOptions(PseudocolorAtts)
     
 def set3DView():
