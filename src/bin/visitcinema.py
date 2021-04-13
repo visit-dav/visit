@@ -32,9 +32,7 @@ class VisItCinema(object):
             "static",
             "phi-theta"
         )
-        # disable 'C' specification until it is fixed
-        #self.specifications = ("A", "C", "D")
-        self.specifications = ("A", "D")
+        self.specifications = ("A", "C", "D")
 
         self.specification = "A"
         self.cameraMode = "static"
@@ -53,8 +51,7 @@ class VisItCinema(object):
         self.debug_real = [0,0,0,0,0]
         self.sessionFile = None
         self.scriptFile = None
-        # disable composite, which can only be used with C specification until it is fixed
-        #self.composite = False
+        self.composite = False
         self.vars = []
 
         # Try and open debug logs
@@ -113,9 +110,7 @@ class VisItCinema(object):
         print("                     [-start index] [-end index] [-stride step]")
         print("                     [-theta n] [-phi n] [-camera mode]")
         print("                     [-sessionfile name | -scriptfile name] ")
-        # disable C specification and composite until C-spec is fixed.
-        #print "                     [-specification A|C|D] [-docomposite] [-var varname]"
-        print("                     [-specification A|D]")
+        print("                     [-specification A|C|D] [-docomposite] [-var varname]")
         print("")
         print("OPTIONS")
         print("    The following options are recognized by visit -cinema")
@@ -158,14 +153,13 @@ class VisItCinema(object):
         print("                     movie.")
         print("")
         # disable C specification and composite until C-spec is fixed.
-        #print "-specification spec  Set the database specification to A, C, D"
-        print("-specification spec  Set the database specification to A, D")
+        print("-specification spec  Set the database specification to A, C, D")
         print("")
-        #print "-docomposite         Tell the script to produce composite images."
-        #print "                     In composite mode, images that store luminance, Z, "
-        #print "                     and value images are produced."
-        #print ""
-        #print "-var varname         Add a variable to the list of variables (composite only)."
+        print("-docomposite         Tell the script to produce composite images.")
+        print("                     In composite mode, images that store luminance, Z, ")
+        print("                     and value images are produced.")
+        print("")
+        print("-var varname         Add a variable to the list of variables (composite only).")
 
     ###########################################################################
     # Method: Log
@@ -393,16 +387,15 @@ class VisItCinema(object):
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
-            # disable composite , which can only be used with C specification, until it is fixed
-            #elif(commandLine[i] == "-composite" or commandLine[i] == "-docomposite"):
-            #    self.composite = True
-            #elif(commandLine[i] == "-var"):
-            #    if((i+1) < len(commandLine)):
-            #        self.vars = self.vars + [commandLine[i+1]]
-            #        i = i + 1
-            #    else:
-            #        self.PrintUsage()
-            #        sys.exit(-1)
+            elif(commandLine[i] == "-composite" or commandLine[i] == "-docomposite"):
+                self.composite = True
+            elif(commandLine[i] == "-var"):
+                if((i+1) < len(commandLine)):
+                    self.vars = self.vars + [commandLine[i+1]]
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
 
             # On to the next argument.
             i = i + 1
@@ -415,12 +408,12 @@ class VisItCinema(object):
             self.log = 0
 
         # Do a little checking.
-        #if self.composite and self.specification != "C":
-        #    print "Composite images can only be selected with specification C."
-        #    self.composite = False
-        #if self.screenCaptureImages and self.specification == "C":
-        #    print "Screen capture cannot be used with specification C."
-        #    self.screenCaptureImages = 0
+        if self.composite and self.specification != "C":
+            print("Composite images can only be selected with specification C.")
+            self.composite = False
+        if self.screenCaptureImages and self.specification == "C":
+            print("Screen capture cannot be used with specification C.")
+            self.screenCaptureImages = 0
 
     ###########################################################################
     # Method: SaveImage
@@ -446,7 +439,7 @@ class VisItCinema(object):
         s.fileName = os.path.basename(filename)
         s.outputToCurrentDirectory = 0
         s.outputDirectory = os.path.dirname(filename)
-        if 0: #self.composite:
+        if self.composite:
             s.pixelData = 4|8|16 #FIXME: s.Luminance | s.Value | s.Depth
         else:
             s.pixelData = 1 #s.ColorRGB
@@ -667,9 +660,7 @@ class VisItCinema(object):
         print("Phi:            ", self.phi)
         print("Width:          ", self.width)
         print("Height:         ", self.height)
-        # disable Composite, which can only be used with C specification,
-        # until C spec is fixed.
-        #print "Composite:      ", self.composite
+        print("Composite:      ", self.composite)
         print("Screen Capture: ", self.screenCaptureImages)
         print("Filename:       ", self.fileName)
         print("Frame Start:    ", self.frameStart)
@@ -711,7 +702,7 @@ class VisItCinema(object):
 
         # Use the plots that are currently set up. Iterate over all of
         # the frames and save them out.
-        if 0: #self.composite:
+        if self.composite:
             # We turn off more things if composite images.
             annot.axes3D.visible = 0
             annot.axes3D.bboxFlag = 0
