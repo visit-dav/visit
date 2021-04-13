@@ -620,7 +620,7 @@ avtOpacityMap::AddRange(double lo, double hi, RGBA &rgba)
     {
         table[i].R = rgba.R;
         table[i].G = rgba.G;
-        table[i].B = rgba.G;
+        table[i].B = rgba.B;
         table[i].A = rgba.A;
     }
 }
