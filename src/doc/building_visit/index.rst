@@ -16,5 +16,5 @@ the most simple case and moving then moving to more complex use cases.
     Basic_Usage
     Advanced_Usage
     Common_Build_Scenarios
-    Building_On_Windows/index
-    Building_On_Mac/index
+    BuildingOnWindows/index
+    BuildingOnMac/index
