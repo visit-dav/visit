@@ -37,8 +37,9 @@
 #include <vtkSmartPointer.h>
 #include <vtk_glew.h>
 
+// PRE_VTK8 way re-enabled KSB 4-13-2021.
 // We'd do it another way in VTK8
-//#define VALUE_IMAGE_RENDERING_PRE_VTK8
+#define VALUE_IMAGE_RENDERING_PRE_VTK8
 #ifdef VALUE_IMAGE_RENDERING_PRE_VTK8
 #include <vtkVisItDataSetMapper.h>
 #include <vtkProperty.h>
