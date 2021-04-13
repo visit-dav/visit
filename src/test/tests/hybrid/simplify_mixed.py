@@ -66,7 +66,7 @@ m.forceMIR = 1
 SetMaterialAttributes(m)
 AddPlot("Pseudocolor", "den")
 p = PseudocolorAttributes()
-p.limitsMode = p.CurrentPlot
+p.limitsMode = p.ActualData
 SetPlotOptions(p)
 DrawPlots()
 Test("simplify_mixed04")

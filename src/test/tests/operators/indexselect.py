@@ -438,7 +438,7 @@ atts.zIncr = 1
 atts.useWholeCollection = 1
 SetOperatorOptions(atts)
 pc = PseudocolorAttributes()
-pc.limitsMode = pc.CurrentPlot
+pc.limitsMode = pc.ActualData
 SetPlotOptions(pc)
 DrawPlots()
 ResetView()
@@ -474,7 +474,7 @@ atts.yIncr = 1
 atts.zIncr = 1
 SetOperatorOptions(atts)
 pc = PseudocolorAttributes()
-pc.limitsMode = pc.CurrentPlot
+pc.limitsMode = pc.ActualData
 SetPlotOptions(pc)
 DrawPlots()
 ResetView()

@@ -536,7 +536,7 @@ Things To Consider Going Forward
    SaveBBoxedImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_window.png')
 
    # Make a change to another PC att, capture and save it
-   pcatts.limitsMode = pcatts.CurrentPlot
+   pcatts.limitsMode = pcatts.ActualData
    SetPlotOptions(pcatts) # Causes widget to map due to state change
    gui_image = pyscreenshot.grab()
    SaveBBoxedImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_limit_mode_window.png')

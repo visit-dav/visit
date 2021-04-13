@@ -52,7 +52,7 @@ SetDefaultOperatorOptions(t)
 AddOperator("Threshold")
 
 pc_atts = PseudocolorAttributes()
-pc_atts.limitsMode = pc_atts.CurrentPlot
+pc_atts.limitsMode = pc_atts.ActualData
 SetPlotOptions(pc_atts)
 DrawPlots()
 Test("conditional_02")
