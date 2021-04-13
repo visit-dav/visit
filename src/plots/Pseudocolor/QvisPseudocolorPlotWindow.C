@@ -293,7 +293,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
 
     limitsSelect = new QComboBox(central);
     limitsSelect->addItem(tr("Use Original Data"));
-    limitsSelect->addItem(tr("Use Current Plot"));
+    limitsSelect->addItem(tr("Use Actual Data"));
     connect(limitsSelect, SIGNAL(activated(int)),
             this, SLOT(limitsSelectChanged(int)));
     limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
