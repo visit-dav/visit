@@ -229,6 +229,9 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 //    Kathleen Biagas, Wed Dec 26 13:07:02 PST 2018
 //    Add color buttons for values < min and > max.
 //
+//    Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+//    Changed Use Current Plot to Use Actual Data.
+//
 // ****************************************************************************
 
 void

@@ -5,6 +5,10 @@
 #
 #  Programmer: Olivier Cessenat
 #  Tue May  8 21:49:21 PDT 2018
+#
+#  Modifications:
+#     Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+#     Changed Pseudocolor CurrentPlot to ActualData.
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations()
 

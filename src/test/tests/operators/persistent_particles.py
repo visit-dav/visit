@@ -6,6 +6,10 @@
 #  Programmer: Hank Childs
 #  Date:       October 15, 2010
 #
+#  Modifications:
+#     Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+#     Changed Pseudocolor CurrentPlot to ActualData.
+#
 # ----------------------------------------------------------------------------
 
 OpenDatabase(data_path("synergia_test_data/vis_particles_* database"),0, "Vs")

@@ -59,6 +59,9 @@
 #    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
 #    Use FilledBoundary plot for materials instead of Subset.
 #
+#    Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+#    Changed Pseudocolor CurrentPlot to ActualData.
+#
 # ----------------------------------------------------------------------------
 
 
