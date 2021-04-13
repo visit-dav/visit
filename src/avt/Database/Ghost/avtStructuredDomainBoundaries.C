@@ -252,7 +252,13 @@ BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
             mi = FindMatchIndex(d1,d2);
         }
         if (mi < 0 || mi >= sdb->boundary[d2].neighbors.size())
-            EXCEPTION1(VisItException,"Bad Neighbor Index");
+        {
+            char msg[256];
+            snprintf(msg, 256,
+                "Bad Neighbor Index: domain %d missing neighbor for %d.",
+                d2, d1);
+            EXCEPTION1(VisItException, msg);
+        }
 
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
         int *n2extents = (isPointData ? n2->nextents : n2->zextents);
@@ -342,7 +348,13 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
             mi = FindMatchIndex(d1,d2);
         }
         if (mi < 0 || mi >= sdb->boundary[d2].neighbors.size())
-            EXCEPTION1(VisItException,"Bad Neighbor Index");
+        {
+            char msg[256];
+            snprintf(msg, 256,
+                "Bad Neighbor Index: domain %d missing neighbor for %d.",
+                d2, d1);
+            EXCEPTION1(VisItException, msg);
+        }
 
         // get the other neis list
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
@@ -444,7 +456,13 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
             mi = FindMatchIndex(d1,d2);
         }
         if (mi < 0 || mi >= sdb->boundary[d2].neighbors.size())
-            EXCEPTION1(VisItException,"Bad Neighbor Index");
+        {
+            char msg[256];
+            snprintf(msg, 256,
+                "Bad Neighbor Index: domain %d missing neighbor for %d.",
+                d2, d1);
+            EXCEPTION1(VisItException, msg);
+        }
 
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
         int *n2extents = n2->zextents;
@@ -543,7 +561,7 @@ BoundaryHelperFunctions<T>::FindMatchIndex(int src_domain,
         }
     }
     if (res_match == -1)
-            EXCEPTION1(VisItException,"Bad Neighbor Index");
+        EXCEPTION1(VisItException,"Bad Neighbor Index");
 
     return res_match;
 }
@@ -1215,7 +1233,13 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
             mi = FindMatchIndex(d1,d2);
         }
         if (mi < 0 || mi >= sdb->boundary[d2].neighbors.size())
-            EXCEPTION1(VisItException,"Bad Neighbor Index");
+        {
+            char msg[256];
+            snprintf(msg, 256,
+                "Bad Neighbor Index: domain %d missing neighbor for %d.",
+                d2, d1);
+            EXCEPTION1(VisItException, msg);
+        }
 
         T *data = bnddata[d2][mi];
         if (!data)
@@ -1300,7 +1324,13 @@ BoundaryHelperFunctions<T>::SetNewRectilinearBoundaryData(int d1,
             mi = FindMatchIndex(d1,d2);
         }
         if (mi < 0 || mi >= sdb->boundary[d2].neighbors.size())
-            EXCEPTION1(VisItException,"Bad Neighbor Index");
+        {
+            char msg[256];
+            snprintf(msg, 256,
+                "Bad Neighbor Index: domain %d missing neighbor for %d.",
+                d2, d1);
+            EXCEPTION1(VisItException, msg);
+        }
 
         T *data = coord[d2][mi];
         if (!data)
