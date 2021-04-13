@@ -11,10 +11,10 @@ party libraries. This chapter describes how to build VisIt_, starting with
 the most simple case and moving then moving to more complex use cases.
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     Basic_Usage
     Advanced_Usage
     Common_Build_Scenarios
-    BuildingOnWindows/*
-    BuildingOnMac/*
+    BuildingOnWindows/index
+    BuildingOnMac/index
