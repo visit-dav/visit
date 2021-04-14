@@ -360,6 +360,7 @@ cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 /usr/gapps/visit/thirdparty_shared/3.2.0/opengl/cmake/3.14.7/linux-x86_64_gcc-9.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+sed -i "s/CMAKE_INSTALL_DO_STRIP/CMAKE_INSTALL_DO_STRIP_SKIP/" visit_vtk/offscreen/cmake_install.cmake
 make manuals >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
@@ -380,6 +381,7 @@ rm -rf $dist
 gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
 cd $dist/src
 /usr/gapps/visit/thirdparty_shared/3.2.0/mesagl/cmake/3.14.7/linux-x86_64_gcc-9.1/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_ENABLE_XDB:BOOL=ON -DVISIT_PARADIS:BOOL=ON -DVISIT_CONFIG_SITE="config-site/kickit.mesagl.cmake" >> ../../buildlog 2>&1
+sed -i "s/CMAKE_INSTALL_DO_STRIP/CMAKE_INSTALL_DO_STRIP_SKIP/" visit_vtk/offscreen/cmake_install.cmake
 make manuals >> ../../buildlog 2>&1
 make -j 4 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../../visit\$ver2.linux-x86_64-wmesa.tar.gz
