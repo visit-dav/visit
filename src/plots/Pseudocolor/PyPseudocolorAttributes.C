@@ -67,15 +67,15 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
 
     snprintf(tmpStr, 1000, "%sskewFactor = %g\n", prefix, atts->GetSkewFactor());
     str += tmpStr;
-    const char *limitsMode_names = "OriginalData, CurrentPlot";
+    const char *limitsMode_names = "OriginalData, ActualData";
     switch (atts->GetLimitsMode())
     {
       case PseudocolorAttributes::OriginalData:
           snprintf(tmpStr, 1000, "%slimitsMode = %sOriginalData  # %s\n", prefix, prefix, limitsMode_names);
           str += tmpStr;
           break;
-      case PseudocolorAttributes::CurrentPlot:
-          snprintf(tmpStr, 1000, "%slimitsMode = %sCurrentPlot  # %s\n", prefix, prefix, limitsMode_names);
+      case PseudocolorAttributes::ActualData:
+          snprintf(tmpStr, 1000, "%slimitsMode = %sActualData  # %s\n", prefix, prefix, limitsMode_names);
           str += tmpStr;
           break;
       default:
@@ -465,7 +465,7 @@ PseudocolorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid limitsMode value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
-                        "OriginalData, CurrentPlot.");
+                        "OriginalData, ActualData.");
         return NULL;
     }
 
@@ -2114,8 +2114,8 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         return PseudocolorAttributes_GetLimitsMode(self, NULL);
     if(strcmp(name, "OriginalData") == 0)
         return PyInt_FromLong(long(PseudocolorAttributes::OriginalData));
-    if(strcmp(name, "CurrentPlot") == 0)
-        return PyInt_FromLong(long(PseudocolorAttributes::CurrentPlot));
+    if(strcmp(name, "ActualData") == 0)
+        return PyInt_FromLong(long(PseudocolorAttributes::ActualData));
 
     if(strcmp(name, "minFlag") == 0)
         return PseudocolorAttributes_GetMinFlag(self, NULL);
