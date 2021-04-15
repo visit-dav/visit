@@ -65,6 +65,9 @@
 #   Removed InitVTKRenderingConfig.h.in, it only defined VISIT_MANTA which is
 #   no longer used.
 #
+#   Kathleen Biagas, Tue Apr 13 2021
+#   Add vtk/vtkVisItDatasetMapper.
+# 
 #****************************************************************************/
 
 SET(AVTPLOTTER_OPENGL_SOURCES
@@ -88,6 +91,7 @@ vtk/vtkVectorFontCharacterData.C
 vtk/vtkVisItAxisActor.C 
 vtk/vtkVisItAxisActor2D.C 
 vtk/vtkVisItCubeAxesActor.C 
+vtk/vtkVisItDataSetMapper.C 
 vtk/vtkVisItScalarBarActor.C 
 vtk/vtkVisItScalarBarWithOpacityActor.C 
 vtk/vtkVisItTextActor.C

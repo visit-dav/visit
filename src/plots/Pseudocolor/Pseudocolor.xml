@@ -19,7 +19,7 @@
       </Enum>
       <Enum name="LimitsMode">
         OriginalData
-        CurrentPlot
+        ActualData
       </Enum>
       <Enum name="Centering">
         Natural

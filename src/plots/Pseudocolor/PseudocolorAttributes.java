@@ -34,7 +34,7 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     public final static int SCALING_SKEW = 2;
 
     public final static int LIMITSMODE_ORIGINALDATA = 0;
-    public final static int LIMITSMODE_CURRENTPLOT = 1;
+    public final static int LIMITSMODE_ACTUALDATA = 1;
 
     public final static int CENTERING_NATURAL = 0;
     public final static int CENTERING_NODAL = 1;
@@ -978,8 +978,8 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         str = str + indent + "limitsMode = ";
         if(limitsMode == LIMITSMODE_ORIGINALDATA)
             str = str + "LIMITSMODE_ORIGINALDATA";
-        if(limitsMode == LIMITSMODE_CURRENTPLOT)
-            str = str + "LIMITSMODE_CURRENTPLOT";
+        if(limitsMode == LIMITSMODE_ACTUALDATA)
+            str = str + "LIMITSMODE_ACTUALDATA";
         str = str + "\n";
         str = str + boolToString("minFlag", minFlag, indent) + "\n";
         str = str + doubleToString("min", min, indent) + "\n";

@@ -15,6 +15,7 @@
 #include <visitstream.h>
 #include <string>
 #include <vector>
+#include <visit-config.h> // for DEBUG_MEMORY_LEAKS, if defined
 
 #include <cstring>
 
@@ -52,11 +53,19 @@ DatabasePluginManager::DatabasePluginManager() : PluginManager("database")
 //    Brad Whitlock, Wed Jun 25 10:27:17 PDT 2008
 //    Call UnloadPlugins here since it calls virtual methods for this class.
 //
+//    Kathleen Biagas, Thu Mar 11 2021
+//    Only unload plugins when debugging memory leaks.
+//    There is a crash during the unloading of the plugins at exit, causing
+//    mdserver memory dump files to be silently generated, sometimes even
+//    resulting in a Windows error dialog popping up on exit.
+//
 // ****************************************************************************
 
 DatabasePluginManager::~DatabasePluginManager()
 {
+#if defined(DEBUG_MEMORY_LEAKS)
     UnloadPlugins();
+#endif
 }
 
 // ****************************************************************************

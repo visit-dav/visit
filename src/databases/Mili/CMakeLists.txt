@@ -19,6 +19,7 @@ MiliMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtMiliFileFormat.C
 avtMiliMetaData.C
+avtMiliOptions.C
 )
 
 SET(LIBE_SOURCES
@@ -26,6 +27,7 @@ MiliEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtMiliFileFormat.C
 avtMiliMetaData.C
+avtMiliOptions.C
 )
 
 INCLUDE_DIRECTORIES(
