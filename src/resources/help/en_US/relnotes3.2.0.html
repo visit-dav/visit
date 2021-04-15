@@ -99,6 +99,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with DataBinning (and DDFs) where it did not exclude Ghost Zones when binning.</li>
   <li>Fixed a bug preventing the Min/Max expressions from working with domain decomposed datasets.</li>
   <li>Fixed a bug that caused some LibSim examples to crash.</li>
+  <li>Fixed a bug where the VisIt compute engine would crash generating ghost zone information when it had incorrect structured domain boundary information. In particular, the compute engine would crash when a pair of neighbors didn't list each other as neighbors. VisIt now generates a "Bad Neighbor Index" exception when it encounters the situation.</li>
+  <li>Fixed a bug with Cinema-C and re-enabled it.</li>
+
 </ul>
 
 <a name="Configuration_changes"></a>

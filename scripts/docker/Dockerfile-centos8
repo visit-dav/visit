@@ -25,6 +25,7 @@ RUN dnf -y upgrade \
     libxcb-devel \
     libxkbcommon-devel \
     libXext-devel \
+    libXrender-devel \
     libXt-devel \
     freetype-devel \
     fontconfig \

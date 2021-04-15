@@ -23,6 +23,7 @@ RUN dnf -y upgrade && dnf -y install \
     libxcb-devel \
     libxkbcommon-devel \
     libXext-devel \
+    libXrender-devel \
     libXt-devel \
     freetype-devel \
     fontconfig \

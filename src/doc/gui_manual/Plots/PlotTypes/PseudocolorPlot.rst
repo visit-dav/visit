@@ -64,10 +64,10 @@ colors to that data range.
 
 To set the limits for the **Pseudocolor** plot, you must first select the limit
 mode. The limit mode determines whether the original data extents (data extents
-before any portions of the plot are removed), are used or the current plot data
+before any portions of the plot are removed), are used or the actual data
 extents (data extents after any portions of the plot are removed), are used. To
 select the limit mode, choose either **Use Original Data** or
-**Use Current Plot** from the **Limits** menu.
+**Use Actual Data** from the **Limits** menu.
 
 The limits for the **Pseudocolor** plot consist of a minimum value and a maximum
 value. You may set these limits, and turn them on and off, independently of one
