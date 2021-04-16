@@ -9,6 +9,10 @@
 #
 #  Programmer: Eddie Rusu
 #  Date:       Fri Feb  1 11:16:24 PST 2019
+#
+#  Modifications:
+#     Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+#     Changed Pseudocolor CurrentPlot to ActualData.
 # ----------------------------------------------------------------------------
 
 def remap(cells, type = 0):
@@ -25,7 +29,7 @@ def remap(cells, type = 0):
 
 def setPseudoOptions():
     PseudocolorAtts = PseudocolorAttributes()
-    PseudocolorAtts.limitsMode = PseudocolorAtts.CurrentPlot
+    PseudocolorAtts.limitsMode = PseudocolorAtts.ActualData
     SetPlotOptions(PseudocolorAtts)
     
 def set3DView():

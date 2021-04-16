@@ -50,7 +50,7 @@ PseudocolorAttributes::Scaling_FromString(const std::string &s, PseudocolorAttri
 //
 
 static const char *LimitsMode_strings[] = {
-"OriginalData", "CurrentPlot"};
+"OriginalData", "ActualData"};
 
 std::string
 PseudocolorAttributes::LimitsMode_ToString(PseudocolorAttributes::LimitsMode t)

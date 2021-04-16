@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
     libx11-xcb-dev \
     libxcb-dri2-0-dev \
     libxcb-xfixes0-dev \
+    libxkbcommon-dev \
     xutils-dev \
     xorg-dev \
     libfreetype6-dev \
@@ -37,6 +38,8 @@ RUN apt-get update && apt-get install -y \
     bison \
     flex \
     cpio \
+    libegl1 \
+    libegl1-mesa-dev \
  && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt-get install -y libffi-dev && rm -rf /var/lib/apt/lists/*
@@ -46,6 +49,8 @@ RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* 
 ENV LANG en_US.utf8
 
 RUN cd /usr/include && ln -s freetype2 freetype
+
+RUN cd /usr && ln -s lib lib64
 
 RUN groupadd -r visit && useradd -ms /bin/bash --no-log-init -r -g visit visit
 USER visit

@@ -174,6 +174,9 @@ extern "C" void cli_runscript(const char *);
 //    source run with "Source" to use the Python 2 to 3 translator
 //    before execution.
 //
+//    Cyrus Harrison, Wed Feb 24 16:09:45 PST 2021
+//    Adjustments for Pyside 2 support. 
+//
 // ****************************************************************************
 
 int
@@ -573,13 +576,14 @@ main(int argc, char *argv[])
         if(pyside || pyside_gui)
         {
             int error = 0;
+            if(!error) error |= PyRun_SimpleString((char*)"import PySide2");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtCore import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtGui import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtOpenGL import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtUiTools import *");
 
-            if(!error) error |= PyRun_SimpleString((char*)"import visit.pyside_support");
-            if(!error) error |= PyRun_SimpleString((char*)"import visit.pyside_hook");
+            if(!error) error |= PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_support");
+            if(!error) error |= PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_hook");
 
             if(error)
             {
@@ -589,8 +593,10 @@ main(int argc, char *argv[])
             }
             else
             {
-                PyRun_SimpleString((char*)"visit.pyside_support.SetupTimer()");
-                PyRun_SimpleString((char*)"visit.pyside_hook.SetHook()");
+                // Cyrus Note, Wed Feb 24 10:15:52 PST 2021
+                // This Event handler seems to make the CLI unusable.
+                PyRun_SimpleString((char*)"visit_utils.builtin.pyside_support.SetupTimer()");
+                PyRun_SimpleString((char*)"visit_utils.builtin.pyside_hook.SetHook()");
             }
         }
 
@@ -599,7 +605,7 @@ main(int argc, char *argv[])
             //pysideviewer needs to be executed before visit import
             //so that visit will use the window..
             // we will only have one instance, init it
-            int error = PyRun_SimpleString((char*)"import visit.pyside_gui");
+            int error = PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_gui");
 
             if(error)
             {
@@ -611,15 +617,15 @@ main(int argc, char *argv[])
             PyRun_SimpleString((char*)"args = sys.argv");
             if(uifile) //if external file then start VisIt in embedded mode
                 PyRun_SimpleString((char*)"args.append('-pyuiembedded')"); //default to embedded
-            PyRun_SimpleString((char*)"tmp = visit.pyside_gui.PySideGUI.instance(args)");
+            PyRun_SimpleString((char*)"tmp = visit_utils.builtin.pyside_gui.PySideGUI.instance(args)");
             PyRun_SimpleString((char*)"visit.InitializeViewerProxy(tmp.GetViewerProxyPtr())");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindowIds");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetUIWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetPlotWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetOperatorWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindowNames");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetRenderWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetRenderWindowIds");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetUIWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetPlotWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOperatorWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOtherWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOtherWindowNames");
 
             if(!uifile && !pyside_viewer)
                 PyRun_SimpleString((char*)"GetUIWindow().show()");

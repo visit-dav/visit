@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="hostNickname" type="string">ORNL_Rhea</Field>
-    <Field name="host" type="string">rhea.ccs.ornl.gov</Field>
+    <Field name="hostNickname" type="string">ORNL_Andes</Field>
+    <Field name="host" type="string">andes.olcf.ornl.gov</Field>
     <Field name="userName" type="string">notset</Field>
-    <Field name="hostAliases" type="string">rhea-login#g</Field>
-    <Field name="directory" type="string">/sw/rhea/visit</Field>
+    <Field name="hostAliases" type="string">andes-login#g</Field>
+    <Field name="directory" type="string">/sw/andes/visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
@@ -21,7 +21,7 @@
     <Field name="maximumProcessors" type="int">1</Field>
     <Object name="LaunchProfile">
         <Field name="timeout" type="int">480</Field>
-        <Field name="numProcessors" type="int">16</Field>
+        <Field name="numProcessors" type="int">8</Field>
         <Field name="numNodesSet" type="bool">true</Field>
         <Field name="numNodes" type="int">1</Field>
         <Field name="partitionSet" type="bool">true</Field>

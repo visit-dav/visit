@@ -30,9 +30,7 @@
         char** QApplicationArgValues;
         Shiboken::listToArgcArgv(%1, &amp;QApplicationArgCount, &amp;QApplicationArgValues, "PySideApp");
         PySideGUI *cppResult = PySideGUI::instance(QApplicationArgCount,QApplicationArgValues);
-<!--
-        pyResult = Shiboken::Converter&lt; ::PySideGUI * &gt;::toPython(cppResult);
--->
+        pyResult = %CONVERTTOPYTHON[PySideGUI*](cppResult);
     </inject-code>
     </add-function>
     </object-type>

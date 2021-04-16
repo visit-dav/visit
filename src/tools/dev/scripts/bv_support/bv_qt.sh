@@ -454,7 +454,7 @@ function build_qt
     qt_flags="${qt_flags} -qt-libpng"
 
     if [[ "$OPSYS" == "Linux" ]] ; then
-        qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes"
+        qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes -xcb-native-painting"
     fi
 
     if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
@@ -480,36 +480,26 @@ function build_qt
         return 1
     fi
 
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        if [[ ${QT_VERSION} == 5.10.1 ]] ; then
-            if [[ "$OPSYS" == "Linux" ]]; then
-                sed -i 's/-o Makefile/-o Makefile -after "QMAKE_LIBS_OPENGL+=-lLLVM"/' Makefile
+    #
+    # When running Ubuntu 18 under WSL (Windows Subsystem for Linux), for
+    # whatever reason, the libQt5Core.so library has something in it that
+    # misidentifies the system and the file is not recognized. I first
+    # build the library and then strip out the offending information.
+    # I found the fix at https://github.com/microsoft/WSL/issues/3023.
+    #
+    if [[ "$OPSYS" == "Linux" ]] ; then
+        if [[ "$REL" == *"Microsoft" ]] ; then
+            cd qtbase
+            bin/qmake -o Makefile qtbase.pro
+            if [[ "${DO_QT_SILENT}" == "yes" ]] ; then
+                $MAKE -s $MAKE_OPT_FLAGS
+            else
+                $MAKE $MAKE_OPT_FLAGS
             fi
+            strip --remove-section=.note.ABI-tag lib/libQt5Core.so.5
+            cd ..
         fi
     fi
-
-    #
-    # Figure out if configure found the OpenGL libraries
-    #
-    #if [[ "${DO_DBIO_ONLY}" != "yes" && "${DO_ENGINE_ONLY}" != "yes" && "${DO_SERVER_COMPONENTS_ONLY}" != "yes" ]] ; then
-    #    HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'  | cut -c 1-3`
-    #    if [[ "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
-    #        warn "Qt configure did not find OpenGL." \
-    #             "VisIt needs Qt with enabled OpenGL support. Giving up.\n" \
-    #             "Here are some common reasons why Qt will not build with GL support.\n" \
-    #             "\t- The OpenGL development environment is not installed.\n" \
-    #             "\t  (You can check this by searching for /usr/include/GL/GL.h)\n" \
-    #             "\t- libGLU is not available\n"\
-    #             "\t- libGLU is available, but only as a shared library\n"\
-    #             "You can learn more about exactly why Qt failed by doing the following:\n"\
-    #             "\t- cd $QT_BUILD_DIR\n" \
-    #             "\t- ./configure -opengl -verbose\n" \
-    #             "\t  (this will produce the details of the failed OpenGL tests.)\n" \
-    #             "\t  (also note you will need to respond with \"o\" to opt for\n" \
-    #             "\t   the open source license and \"yes\" to accept.)\n"
-    #        return 1
-    #    fi
-    #fi
 
     #
     # Build Qt. Config options above make sure we only build the libs & tools.
