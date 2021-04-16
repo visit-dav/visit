@@ -1,32 +1,32 @@
 Regression Testing
-============================
+==================
 
 Overview
 --------
 VisIt_ has a large and continually growing test suite. VisIt_'s test
 suite involves a combination python scripts
-in `src/test`, raw data and data generation sources in `src/testdata`
+in ``src/test``, raw data and data generation sources in ``src/testdata``
 and of course the VisIt_ sources themselves. Regression tests are
 run on a nightly basis. Testing exercises VisIt_'s viewer,
 mdserver, engine and cli but not the GUI.
 
 
 Running regression tests
---------------------------------
+------------------------
 
 Where nightly regression tests are run
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The regression suite is run on `LLNL's Pascal Cluster <https://hpc.llnl.gov/hardware/platforms/pascal>`_. Pascal runs the TOSS3 operating system, which is a flavor of Linux. If you are going to run the regression suite yourself you should run on a similar system or there will be differences due to numeric precision issues.
 
 The regression suite is run on Pascal using a cron job that checks out VisIt_ source code, builds it, and then runs the tests.
 
 How to run the regression tests manually
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The regression suite relies on having a working VisIt_ build and test data available on your local computer.
 Our test data and baselines are stored using git lfs, so you need to setup git lfs and pull to have all the necessary files. 
 
-The test suite is written in python and to source is in `src/test`. 
+The test suite is written in python and to source is in ``src/test``. 
 When you configure VisIt_, a bash script is generated in the build directory that you can use to run the test
 suite out of source with all the proper data and baseline directory arguments. ::
 
@@ -34,7 +34,7 @@ suite out of source with all the proper data and baseline directory arguments. :
     ./run_visit_test_suite.sh
 
 
-Here is an example of the contents of the generated `run_visit_test_suite.sh` script ::
+Here is an example of the contents of the generated ``run_visit_test_suite.sh`` script ::
 
     /Users/harrison37/Work/github/visit-dav/visit/build-mb-develop-darwin-10.13-x86_64/thirdparty_shared/third_party/python/2.7.14/darwin-x86_64/bin/python2.7  
     /Users/harrison37/Work/github/visit-dav/visit/src/test/visit_test_suite.py \
@@ -44,42 +44,37 @@ Here is an example of the contents of the generated `run_visit_test_suite.sh` sc
        -e /Users/harrison37/Work/github/visit-dav/visit/build-mb-develop-darwin-10.13-x86_64/build-debug/bin/visit "$@"
 
 
-Once the test suite has run, the results can be found in the `output/html` directory. Open `output/html/index.html` in a web browser to view the test suite results.
+Once the test suite has run, the results can be found in the ``output/html`` directory. Open ``output/html/index.html`` in a web browser to view the test suite results.
 
 Accessing regression test results
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The nightly test suite results are posted to: http://portal.nersc.gov/project/visit/.
 
 In the event of failure on the nightly run
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If any tests
 fail, ''all'' developers who updated the code from the last time all
 tests successfully passed will receive an email indicating what failed.
 In addition, failed results should be available on the web.  
 
-If the results fail to post, the visit group on NERSC's systems may be over quota.
-If you have a NERSC account you can check usage by sshing to NERSC and running the following command::
-
-    prjquota visit
-
 How regression testing works
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------
 
-The workhorse script that manages the testing is `visit_test_suite.py` in 
-`src/test`. Tests can be run in a variety of ways called *modes*.
-For example, VisIt_'s nightly testing is run in `serial`, `parallel`
-and `scalable,parallel` modes. Each of these modes represents a fundamental and
+The workhorse script that manages the testing is ``visit_test_suite.py`` in 
+``src/test``. Tests can be run in a variety of ways called *modes*.
+For example, VisIt_'s nightly testing is run in ``serial``, ``parallel``
+and ``scalable,parallel`` modes. Each of these modes represents a fundamental and
 relatively global change in the way VisIt_ is doing business
 under the covers during its testing. For example, the difference
-between `parallel` and `scalable,parallel` modes is whether the scalable
-renderer is being used to render images. In the `parallel` mode,
-rendering is done in the viewer. In `scalable,parallel` mode, it
+between ``parallel`` and ``scalable,parallel`` modes is whether the scalable
+renderer is being used to render images. In the ``parallel`` mode,
+rendering is done in the viewer. In ``scalable,parallel`` mode, it
 is done, in parallel, on the engine and images from each processor
 are composited. Typically, the entire test suite is run in each
 mode specified by the regression test policy.
 
 There are a number
-of command-line options to the test suite. `./run_visit_test_suite.sh -help`
+of command-line options to the test suite. ``./run_visit_test_suite.sh -help``
 will give you details about these options. Until we are
 able to get re-baselined on the systems available outside of LLNL firewalls,
 options enabling some filtering of image differences will be very useful.
@@ -91,13 +86,13 @@ filtering image differences.
 
 There are a number of different categories of tests. The test
 categories are the names of all the directories under
-`src/test/tests`. The .py files in this directory tree are all
+``src/test/tests``. The .py files in this directory tree are all
 the actual test driver files that drive VisIt_'s CLI and
 generate images and text to compare with baselines. In addition,
-the `src/test/visit_test_main.py` file defines a number of helper Python
+the ``src/test/visit_test_main.py`` file defines a number of helper Python
 functions that facilitate testing including two key functions;
-`Test()` for testing image outputs and `TestText()` for testing text
-outputs. Of course, all the .py files in `src/test/tests` subtree
+``Test()`` for testing image outputs and ``TestText()`` for testing text
+outputs. Of course, all the .py files in ``src/test/tests`` subtree
 are excellent examples of test scripts.
 
 When the test suite 
@@ -110,14 +105,14 @@ actual pixel differences themselves. This is to facilitate
 identifying the location and cause of the differences.
 
 Adding a test involves a) adding a .py file to the appropriate
-subdirectory in `src/test/tests`, b) adding the expected baselines
-to `test/baselines` and, depending on the test, c) adding
-any necessary input data files to `src/testdata`. 
+subdirectory in ``src/test/tests``, b) adding the expected baselines
+to ``test/baselines`` and, depending on the test, c) adding
+any necessary input data files to ``src/testdata``. 
 The test suite will find your added .py files the next time it runs. 
 So, you don't have to do anything special other than adding the .py file.
 
 One subtlety about the current test modality is what we call
-`mode specific baselines`. In theory, it should not matter what
+*mode specific baselines*. In theory, it should not matter what
 mode VisIt_ is run in to produce an image. The image should be
 identical across modes. In practice there is a long list of
 things that can contribute to a handful of pixel differences
@@ -133,10 +128,86 @@ not in others. Or, we temporarily disable a test by skipping it
 until a given problem in the code is resolved. This is handled
 by the ``--skiplist`` argument to the test suite. We maintained list of the
 tests we currently skip and update it as necessary.
-The default skip list file is `src/test/skip.json`.
+The default skip list file is ``src/test/skip.json``.
+
+Three Types of Test Results
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+VisIt_'s testing system, ``visit_test_main.py``, uses three different methods
+to process and check results.
+
+* ``Test()`` which processes ``.png`` image files.
+* ``TestText()`` which process ``.txt`` text files.
+* ``TestValueXX()`` (where ``XX``==>``EQ``, ``LT``, ``LE``, etc.) which processes no files
+  and simply checks *actual* and *expected* values passed as arguments.
+
+The ``Test()`` and ``TestText()`` methods both take the name of a file. To process a
+test result, these methods output a file produced by the *current* test run and
+then compare it to a blessed *baseline* file stored in
+`test/baseline <https://github.com/visit-dav/visit/tree/develop/test/baseline>`_.
+When they can be used, the ``TestValueXX()`` are a little more convenient because
+they do not involve storing data in files and having to maintain separate
+baseline files. Instead the ``TestTextXX()`` methods take both an *actual*
+(current) and *expected* (baseline) result as arguments directly coded in the
+calling ``.py`` file.
+
+As VisIt_ testing has evolved over the past twenty years, understanding and
+improving productivity related to test design has not been a priority. As a 
+result, there are likely far more image test results than are truly needed to
+fully vet all of VisIt_'s plotting features. Or, image tests are used
+unecessarily to confirm non-visual behavior like that a given database reader
+is working. Some text tests are better handled as ``TestValueXX()`` tests and
+other text tests often contain 90% *noise* text unrelated to the functionality
+being tested. This has made maintaining and ensuring portability of the test
+suite more laborious.
+
+Because image tests tend to be the most difficult to make portable, a better
+design would minimize image tests to only those needed to validate visual behaviors,
+text tests would involve only the *essenteial* text of the test and a majority
+of tests would involve *value* type tests.
+
+The above explanation is offered as a rational to justify that whenever possible
+adding *new* tests to the test suite should use the ``TestValueXX()`` approach as
+much as practical.
+
+More About TestValueXX Type Tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``TestValueXX()`` methods are similar in spirit to ``Test()`` and
+``TestText()`` except operates on Python *values* passed as args both for the
+*current* (actual) and the *baseline* (expected) results. The values can be any
+Python object. When they are floats or ints or strings of floats or ints or
+lists/tuples of the same, these methods will round the arguments to the desired
+precision and do the comparisons numerically. Otherwise they will compare them as
+strings.
+
+``TestValueEQ(case_name, actual, expected, prec=5)`` :
+    Passes if ``actual == expected`` within specific precision otherwise fails.
+
+``TestValueNE(case_name, actual, expected, prec=5)`` :
+    Passes if ``actual != expected`` within specific precision otherwise fails.
+
+``TestValueLT(case_name, actual, expected, prec=5)`` :
+    Passes if ``actual < expected`` within specific precision otherwise fails.
+
+``TestValueLE(case_name, actual, expected, prec=5)`` :
+    Passes if ``actual <= expected`` within specific precision otherwise fails.
+
+``TestValueGT(case_name, actual, expected, prec=5)`` :
+    Passes if ``actual > expected`` within specific precision otherwise fails.
+
+``TestValueGE(case_name, actual, expected, prec=5)`` :
+    Passes if ``actual >= expected`` within specific precision otherwise fails.
+
+``TestValueIN(case_name, bucket, expected, eqoper=operator.eq, prec=5)`` :
+    Passes if bucket *contains* expected according to ``eqoper`` equality operator.
+    Fails otherwise.
+
+For some examples, see
+`test_values_simple.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/test_value_simple.py>`_.
 
 Filtering Image Differences
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 There are many alternative ways for both compiling and even running VisIt_ to
 produce any given image or textual output. Nonetheless, we expect results to
 be nearly if not perfectly identical. For example, we expect VisIt_ running on
@@ -290,11 +361,20 @@ changes using an exact match methodology.
 Tips on writing regression tests 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Whenever possible, add only new ``TestValueXX()`` type tests.
+
 * Test images in which plots occupy a small portion of the total image are fraught with peril and should be avoided. Images with poor coverage are more likely to produce false positives (e.g. passes that should have failed) or to exhibit somewhat random differences as test scenario is varied.
 
 * Except in cases where annotations are being specifically tested, remember to call TurnOffAllAnnotations() as one of the first actions in your test script. Otherwise, you can wind up producing images containing machine-specific annotations which will produce differences on other platforms.
 
-* When writing tests involving text differences and file pathnames, be sure that all pathnames in the text strings passed to `TestText()` are absolute. Internally, VisIt_ testing system will filter these out and replace the machine-specific part of the path with `VISIT_TOP_DIR` to facilitate comparison with baseline text. In fact, the .txt files that get generated in the `current` dir will have been filtered and all pathnames modified to have `VISIT_TOP_DIR` in them.
+* When setting plot and operator options, take care to decide whether you need to work from *default* or *current* attributes.
+  Methods to obtain plot and operator attributes optionally take an additional ``1`` argument to indicate that *current*,
+  rather that *default* attributes are desired. For example ``CurveAttributes()`` returns *default* **Curve** plot
+  attributes wherease ``CurveAttributes(1)`` returns *current* **Curve** plot attributes which will be the currently
+  active plot, if it is a **Curve** plot or the first **Curve** plot in the plot list of the currently active window
+  whether it is active or hidden. If there is no **Curve** plot available, it will return the *default* attributes.
+
+* When writing tests involving text differences and file pathnames, be sure that all pathnames in the text strings passed to ``TestText()`` are absolute. Internally, VisIt_ testing system will filter these out and replace the machine-specific part of the path with ``VISIT_TOP_DIR`` to facilitate comparison with baseline text. In fact, the .txt files that get generated in the *current* dir will have been filtered and all pathnames modified to have ``VISIT_TOP_DIR`` in them.
 
 * Here is a table of python tests scripts which serve as examples of some interesting and lesser known VisIt_/Python scripting practices:
 
@@ -317,20 +397,20 @@ Tips on writing regression tests
 
 
 Rebaselining Test Results
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-A python script, `rebase.py`, in the `test/baseline` dir can be used to rebaseline large numbers of results.
+~~~~~~~~~~~~~~~~~~~~~~~~~
+A python script, ``rebase.py``, in the ``test/baseline`` dir can be used to rebaseline large numbers of results.
 In particular, this script enables a developer to rebase test results without requiring access to the test
 platform where testing is performed. This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test
-results dashboard are suitable for using as baseline results. To use this script, run `./rebase.py --help.`
-Once you've completed using `rebase.py` to update image baselines, don't forget to commit your changes back
+results dashboard are suitable for using as baseline results. To use this script, run ``./rebase.py --help.``
+Once you've completed using ``rebase.py`` to update image baselines, don't forget to commit your changes back
 to the repository.
 
  
 Using VisIt_ Test Suite for Sim Code Testing
-----------------------------------------------
+--------------------------------------------
 VisIt_'s testing infrastructure can also be used from a VisIt_ install by simulation codes 
 how want to write their own Visit-based tests.
-For more details about this, see:  `Leveraging VisIt_ in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_ 
+For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_ 
 
 
 .. CYRUS NOTE: This info seems to old to be relevant, but keeping here commented out just in case. 
@@ -434,4 +514,3 @@ For more details about this, see:  `Leveraging VisIt_ in Sim Code RegressionTest
 .. To re-basline the warning count for a given source file, simply edit the <tt>compiler_warnings_by_file.txt</tt> file as appropriate. Its structure is designed for easy editing with any text editor.
 ..
 .. To ''fix'' a new warning, there are several options. The first is to adjust the code that generated the warning. Its probably something minor and probably should be fixed. However, if the warning is itself unhelpful and fixing it will not improve the code, you can add the warning to a skip list. There is a file, <tt>compiler_warning_skips.json</tt> which contains skips for specific source files and skips for all (e.g. global) source files. This json file is read in as a python dictionary. You can simply cut the text for the warning that gets posted in the html to this file. Finally, as a last resort, you can also elect to bump up the warning count for the given source file. But, these later actions should be taken with care and perhaps vetted with other developers first.
-

@@ -35,8 +35,8 @@ class QvisSubdivideQuadsWindow : public QvisOperatorWindow
   public:
     QvisSubdivideQuadsWindow(const int type,
                          SubdivideQuadsAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisSubdivideQuadsWindow();
     virtual void CreateWindowContents();

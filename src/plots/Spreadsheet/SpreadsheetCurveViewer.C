@@ -66,7 +66,7 @@ SpreadsheetCurveViewer::SpreadsheetCurveViewer(ViewerPlot *p, QWidget *parent) :
 #endif
 
     curveText = new QTextEdit(top);
-    curveText->setMinimumWidth(fontMetrics().width("X") * 55);
+    curveText->setMinimumWidth(fontMetrics().horizontalAdvance("X") * 55);
     curveText->setMinimumHeight(fontMetrics().height() * 20);
     topLayout->addWidget(curveText);
 

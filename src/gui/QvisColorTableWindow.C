@@ -43,7 +43,7 @@
 // ****************************************************************************
 // Method: QvisColorTableWindow::QvisColorTableWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisColorTableWindow class.
 //
 // Arguments:
@@ -87,7 +87,7 @@ QvisColorTableWindow::QvisColorTableWindow(
 // ****************************************************************************
 // Method: QvisColorTableWindow::~QvisColorTableWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisColorTableWindow class.
 //
 // Programmer: Brad Whitlock
@@ -108,7 +108,7 @@ QvisColorTableWindow::~QvisColorTableWindow()
 // ****************************************************************************
 // Method: QvisColorTableWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Brad Whitlock
@@ -130,7 +130,7 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //
 //   Jeremy Meredith, Fri Aug 11 17:14:32 EDT 2006
 //   Refactoring of color grid widget caused index to lose "color" in names.
-//   
+//
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
@@ -159,6 +159,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //
 //   Kathleen Biagas, Mon Jun 22 10:08:41 PDT 2020
 //   Change colorNumColors spin box max to 256.
+//
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Remove unused var 'QString n'.
 //
 // ****************************************************************************
 
@@ -201,7 +204,7 @@ QvisColorTableWindow::CreateWindowContents()
     colorTableWidgetGroup->setTitle(tr("Manager"));
     topLayout->addWidget(colorTableWidgetGroup,5);
     QVBoxLayout *innerColorTableLayout = new QVBoxLayout(colorTableWidgetGroup);
-    
+
     // Create the color management widgets.
     QGridLayout *mgLayout = new QGridLayout();
     innerColorTableLayout->addLayout(mgLayout);
@@ -242,7 +245,7 @@ QvisColorTableWindow::CreateWindowContents()
     colorWidgetGroup->setTitle(tr("Editor"));
     topLayout->addWidget(colorWidgetGroup, 100);
     QVBoxLayout *innerColorLayout = new QVBoxLayout(colorWidgetGroup);
-    
+
     // Create controls to set the number of colors in the color table.
     QGridLayout *colorInfoLayout = new QGridLayout();
     innerColorLayout->addLayout(colorInfoLayout);
@@ -267,12 +270,12 @@ QvisColorTableWindow::CreateWindowContents()
     colorInfoLayout->addWidget(rb, 1, 2);
     connect(colorTableTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(setColorTableType(int)));
-    
+
 
     // Create the buttons that help manipulate the spectrum bar.
     QHBoxLayout *seLayout = new QHBoxLayout();
     innerColorLayout->addLayout(seLayout);
-    
+
     alignPointButton = new QPushButton(tr("Align"), colorWidgetGroup);
     connect(alignPointButton, SIGNAL(clicked()),
             this, SLOT(alignControlPoints()));
@@ -350,20 +353,16 @@ QvisColorTableWindow::CreateWindowContents()
     cnames[3] = tr("Alpha");
     for(int j = 0; j < 4; ++j)
     {
-        QString n;
-        n.sprintf("componentSliders[%d]", j);
         componentSliders[j] = new QSlider(Qt::Horizontal,colorWidgetGroup);
         componentSliders[j]->setRange(0, 255);
         componentSliders[j]->setPageStep(10);
         componentSliders[j]->setValue(0);
-        
+
         discreteLayout->addWidget(componentSliders[j], j, 1);
 
-        n.sprintf("componentLabels[%d]", j);
         componentLabels[j] = new QLabel(cnames[j], colorWidgetGroup);
         discreteLayout->addWidget(componentLabels[j], j, 0);
 
-        n.sprintf("discreteLineEdits[%d]", j);
         componentSpinBoxes[j] = new QSpinBox(colorWidgetGroup);
         componentSpinBoxes[j]->setKeyboardTracking(false);
         componentSpinBoxes[j]->setRange(0,255);
@@ -417,7 +416,7 @@ QvisColorTableWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisColorTableWindow::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   Saves the windows settings.
 //
 // Arguments:
@@ -438,7 +437,7 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
     // Call the base class's method to save the generic window attributes.
     QvisPostableWindowSimpleObserver::CreateNode(parentNode);
 
-    if(saveWindowDefaults && 
+    if(saveWindowDefaults &&
        !currentColorTable.isEmpty() &&
        currentColorTable != "none")
     {
@@ -453,7 +452,7 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 // Method: QvisColorTableWindow::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Gets the window's settings.
 //
 // Programmer: Brad Whitlock
@@ -486,7 +485,7 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // ****************************************************************************
 // Method: QvisColorTableWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the window's subject is changed. The
 //   subject tells this window what attributes changed and we put the
 //   new values into those widgets.
@@ -495,9 +494,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //   doAll : If this flag is true, update all the widgets regardless
 //           of whether or not they are selected.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 11 12:07:55 PDT 2001
@@ -624,7 +623,7 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisColorTableWindow::UpdateEditor
 //
-// Purpose: 
+// Purpose:
 //   Updates the editor area of the window.
 //
 // Programmer: Brad Whitlock
@@ -698,7 +697,7 @@ QvisColorTableWindow::UpdateEditor()
 // ****************************************************************************
 // Method: QvisColorTableWindow::UpdateNames
 //
-// Purpose: 
+// Purpose:
 //   This method takes the list of names in the color table attributes and
 //   puts it into the color table name list box.
 //
@@ -812,7 +811,7 @@ QvisColorTableWindow::UpdateNames()
 // ****************************************************************************
 // Method: QvisColorTableWindow::GetActiveColorControlPoints
 //
-// Purpose: 
+// Purpose:
 //   Returns a const pointer to the color control points of our active
 //   color table.
 //
@@ -823,7 +822,7 @@ QvisColorTableWindow::UpdateNames()
 // Creation:   Thu Nov 21 14:19:43 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const ColorControlPointList *
@@ -835,7 +834,7 @@ QvisColorTableWindow::GetActiveColorControlPoints() const
 // ****************************************************************************
 // Method: QvisColorTableWindow::GetActiveColorControlPoints
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the color control points of our active
 //   color table.
 //
@@ -846,7 +845,7 @@ QvisColorTableWindow::GetActiveColorControlPoints() const
 // Creation:   Thu Nov 21 14:19:43 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ColorControlPointList *
@@ -858,7 +857,7 @@ QvisColorTableWindow::GetActiveColorControlPoints()
 // ****************************************************************************
 // Method: QvisColorTableWindow::UpdateColorControlPoints
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the color control points must be updated.
 //
 // Programmer: Brad Whitlock
@@ -912,7 +911,7 @@ QvisColorTableWindow::UpdateColorControlPoints()
                 spectrumBar->setControlPointColor(i, ctmp);
                 spectrumBar->setControlPointPosition(i, cpts[i].GetPosition());
             }
-    
+
             // We need to add control points.
             for(i = spectrumBar->numControlPoints(); i < cpts.GetNumControlPoints(); ++i)
             {
@@ -979,7 +978,7 @@ QvisColorTableWindow::UpdateColorControlPoints()
 // ****************************************************************************
 // Method: QvisColorTableWindow::UpdateDiscreteSettings
 //
-// Purpose: 
+// Purpose:
 //   Updates the widgets associated with discrete color tables.
 //
 // Programmer: Brad Whitlock
@@ -1055,7 +1054,7 @@ QvisColorTableWindow::UpdateDiscreteSettings()
 // ****************************************************************************
 // Method: QvisColorTableWindow::PopupColorSelect
 //
-// Purpose: 
+// Purpose:
 //   This is method pops up the color selection widget.
 //
 // Arguments:
@@ -1103,7 +1102,7 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
     else if(menuY + menuH > QApplication::desktop()->height())
         menuY -= ((menuY + menuH) - QApplication::desktop()->height());
 
-    // Show the popup menu.         
+    // Show the popup menu.
     colorSelect->move(menuX, menuY);
     colorSelect->show();
 }
@@ -1111,7 +1110,7 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
 // ****************************************************************************
 // Method: QvisColorTableWindow::ShowSelectedColor
 //
-// Purpose: 
+// Purpose:
 //   Makes the discrete color widgets display the specified color.
 //
 // Arguments:
@@ -1123,7 +1122,7 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
 // Modifications:
 //    Jeremy Meredith, Fri Aug 11 17:14:32 EDT 2006
 //    Refactoring of color grid widget caused index to lose "color" in names.
-//   
+//
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
 //
@@ -1179,7 +1178,7 @@ QvisColorTableWindow::ShowSelectedColor(const QColor &c)
 // ****************************************************************************
 // Method: QvisColorTableWindow::ChangeSelectedColor
 //
-// Purpose: 
+// Purpose:
 //   Change the active discrete color to the specified color.
 //
 // Arguments:
@@ -1191,7 +1190,7 @@ QvisColorTableWindow::ShowSelectedColor(const QColor &c)
 // Modifications:
 //    Jeremy Meredith, Fri Aug 11 17:14:32 EDT 2006
 //    Refactoring of color grid widget caused index to lose "color" in names.
-//   
+//
 //    Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //    Added alpha channel support.
 //
@@ -1207,7 +1206,7 @@ QvisColorTableWindow::ChangeSelectedColor(const QColor &c)
         int index;
 
         if(ccpl->GetDiscreteFlag())
-        { 
+        {
             // Use the selected color in the discreteColors widget to determine
             // which color needs to be replaced in the color control point list.
             index = discreteColors->selectedIndex();
@@ -1244,7 +1243,7 @@ QvisColorTableWindow::ChangeSelectedColor(const QColor &c)
 // ****************************************************************************
 // Method: QvisColorTableWindow::GetNextColor
 //
-// Purpose: 
+// Purpose:
 //   Returns the next color in the sequence.
 //
 // Returns:    A color.
@@ -1253,7 +1252,7 @@ QvisColorTableWindow::ChangeSelectedColor(const QColor &c)
 // Creation:   Wed Feb 26 15:11:49 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QColor
@@ -1283,7 +1282,7 @@ QvisColorTableWindow::GetNextColor()
 // ****************************************************************************
 // Method: QvisColorTableWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values from certain widgets and stores the values in the
 //   state object.
 //
@@ -1393,7 +1392,7 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisColorTableWindow::Apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the Apply button is clicked.
 //
 // Programmer: Brad Whitlock
@@ -1429,7 +1428,7 @@ QvisColorTableWindow::Apply(bool ignore)
 // ****************************************************************************
 // Method: QvisColorTableWindow::apply
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window's Apply
 //   button is clicked.
 //
@@ -1437,7 +1436,7 @@ QvisColorTableWindow::Apply(bool ignore)
 // Creation:   Mon Jun 11 13:42:22 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1449,7 +1448,7 @@ QvisColorTableWindow::apply()
 // ****************************************************************************
 // Method: QvisColorTableWindow::alignControlPoints
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the spectrum bar to align its
 //   control points.
 //
@@ -1479,7 +1478,7 @@ QvisColorTableWindow::alignControlPoints()
 // ****************************************************************************
 // Method: QvisColorTableWindow::controlPointMoved
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the spectrum bar's control
 //   points are moved.
 //
@@ -1487,7 +1486,7 @@ QvisColorTableWindow::alignControlPoints()
 // Creation:   Mon Jun 11 11:39:32 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1502,7 +1501,7 @@ QvisColorTableWindow::controlPointMoved(int, float)
 // ****************************************************************************
 // Method: QvisColorTableWindow::chooseContinuousColor
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a color control point
 //   in the spectrum bar is clicked such that the color selection widget
 //   needs to be activated in order to select a new color.
@@ -1515,7 +1514,7 @@ QvisColorTableWindow::controlPointMoved(int, float)
 // Creation:   Thu Nov 21 13:06:47 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1528,7 +1527,7 @@ QvisColorTableWindow::chooseContinuousColor(int index, const QPoint &p)
 // ****************************************************************************
 // Method: QvisColorTableWindow::chooseDiscreteColor
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a discrete color is clicked
 //   such that the color selection widget needs to be activated in order to
 //   select a new color.
@@ -1541,7 +1540,7 @@ QvisColorTableWindow::chooseContinuousColor(int index, const QPoint &p)
 // Creation:   Thu Nov 21 13:06:47 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1555,7 +1554,7 @@ QvisColorTableWindow::chooseDiscreteColor(const QColor &c, int, int,
 // ****************************************************************************
 // Method: QvisColorTableWindow::selectedColor
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called by the color popup menu when
 //   a new color has been selected.
 //
@@ -1602,7 +1601,7 @@ QvisColorTableWindow::selectedColor(const QColor &color)
 // ****************************************************************************
 // Method: QvisColorTableWindow::smoothingMethodChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window's smooth
 //   combobox is activated.
 //
@@ -1632,15 +1631,15 @@ QvisColorTableWindow::smoothingMethodChanged(int val)
 // ****************************************************************************
 // Method: QvisColorTableWindow::showIndexHintsToggled
 //
-// Purpose: 
-//   This is a Qt slot function that is called when the window's 
+// Purpose:
+//   This is a Qt slot function that is called when the window's
 //   show index hints toggle is clicked.
 //
 // Programmer: Jeremy Meredith
 // Creation:   December 31, 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1652,7 +1651,7 @@ QvisColorTableWindow::showIndexHintsToggled(bool val)
 // ****************************************************************************
 // Method: QvisColorTableWindow::equalSpacingToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the window's equal spacing
 //   toggle is clicked.
 //
@@ -1660,7 +1659,7 @@ QvisColorTableWindow::showIndexHintsToggled(bool val)
 // Creation:   Mon Jun 11 15:38:06 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1680,7 +1679,7 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // ****************************************************************************
 // Method: QvisColorTableWindow::addColorTable
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that adds a new color table that, if possible,
 //   is based on the current colortable.
 //
@@ -1747,8 +1746,8 @@ QvisColorTableWindow::addColorTable()
     else
     {
         QString tmp;
-        tmp = tr("The color table ") + 
-              QString("\"") + currentColorTable + QString("\"") + 
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
               tr(" is already in the color table list. You must provide a "
                  "unique name for the new color table before it can be added.");
         Error(tmp);
@@ -1758,7 +1757,7 @@ QvisColorTableWindow::addColorTable()
 // ****************************************************************************
 // Method: QvisColorTableWindow::deleteColorTable
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called to delete a color table.
 //
 // Programmer: Brad Whitlock
@@ -1786,7 +1785,7 @@ QvisColorTableWindow::deleteColorTable()
 // ****************************************************************************
 // Method: QvisColorTableWindow::highlightColorTable
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a color table is
 //   highligted. It serves to make the highlighted plot the new active color
 //   table.
@@ -1832,7 +1831,7 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 // ****************************************************************************
 // Method: QvisColorTableWindow::setColorTableType
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the type of the color table.
 //
 // Arguments:
@@ -1842,7 +1841,7 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 // Creation:   Wed Feb 26 11:10:52 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1863,7 +1862,7 @@ QvisColorTableWindow::setColorTableType(int index)
 // ****************************************************************************
 // Method: QvisColorTableWindow::activateContinuousColor
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we click on a new
 //   color control point in the spectrum bar. This function updates the
 //   color sliders to the right values when we select a new control point.
@@ -1875,7 +1874,7 @@ QvisColorTableWindow::setColorTableType(int index)
 // Creation:   Mon Nov 25 12:49:41 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1887,7 +1886,7 @@ QvisColorTableWindow::activateContinuousColor(int index)
 // ****************************************************************************
 // Method: QvisColorTableWindow::activateDiscreteColor
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we click on a discrete
 //   color thus making it active.
 //
@@ -1900,7 +1899,7 @@ QvisColorTableWindow::activateContinuousColor(int index)
 // Creation:   Thu Nov 21 14:43:38 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1912,7 +1911,7 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 // ****************************************************************************
 // Method: QvisColorTableWindow::redValueChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the active discrete color
 //   changes due to the red slider or spin box.
 //
@@ -1925,7 +1924,7 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
-//   
+//
 // ****************************************************************************
 
 void
@@ -1949,7 +1948,7 @@ QvisColorTableWindow::redValueChanged(int r)
 // ****************************************************************************
 // Method: QvisColorTableWindow::greenValueChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the active discrete color
 //   changes due to the green slider or spin box.
 //
@@ -1962,7 +1961,7 @@ QvisColorTableWindow::redValueChanged(int r)
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
-//   
+//
 // ****************************************************************************
 
 void
@@ -1986,7 +1985,7 @@ QvisColorTableWindow::greenValueChanged(int g)
 // ****************************************************************************
 // Method: QvisColorTableWindow::blueValueChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the active discrete color
 //   changes due to the blue slider or spin box.
 //
@@ -1999,7 +1998,7 @@ QvisColorTableWindow::greenValueChanged(int g)
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
-//   
+//
 // ****************************************************************************
 
 void
@@ -2023,7 +2022,7 @@ QvisColorTableWindow::blueValueChanged(int b)
 // ****************************************************************************
 // Method: QvisColorTableWindow::alphaValueChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the active discrete color
 //   changes due to the alpha slider or spin box.
 //
@@ -2034,7 +2033,7 @@ QvisColorTableWindow::blueValueChanged(int b)
 // Creation:   February 20, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2058,7 +2057,7 @@ QvisColorTableWindow::alphaValueChanged(int a)
 // ****************************************************************************
 // Method: QvisColorTableWindow::sliderPressed
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the window that the slider is
 //   being dragged so we can prevent the window from sending Updates to the
 //   viewer for each grad event.
@@ -2067,7 +2066,7 @@ QvisColorTableWindow::alphaValueChanged(int a)
 // Creation:   Mon Nov 25 10:53:43 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2079,7 +2078,7 @@ QvisColorTableWindow::sliderPressed()
 // ****************************************************************************
 // Method: QvisColorTableWindow::sliderReleased
 //
-// Purpose: 
+// Purpose:
 //   Tells the window that the slider was released and that changes were made
 //   so we should update.
 //
@@ -2087,7 +2086,7 @@ QvisColorTableWindow::sliderPressed()
 // Creation:   Mon Nov 25 10:55:18 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2101,7 +2100,7 @@ QvisColorTableWindow::sliderReleased()
 // ****************************************************************************
 // Method: QvisColorTableWindow::setActiveContinuous
 //
-// Purpose: 
+// Purpose:
 //   This is Qt slot function that sets the active continuous color table.
 //
 // Arguments:
@@ -2111,7 +2110,7 @@ QvisColorTableWindow::sliderReleased()
 // Creation:   Mon Nov 25 10:55:53 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2124,7 +2123,7 @@ QvisColorTableWindow::setActiveContinuous(const QString &ct)
 // ****************************************************************************
 // Method: QvisColorTableWindow::setActiveDiscrete
 //
-// Purpose: 
+// Purpose:
 //   This is Qt slot function that sets the active discrete color table.
 //
 // Arguments:
@@ -2134,7 +2133,7 @@ QvisColorTableWindow::setActiveContinuous(const QString &ct)
 // Creation:   Mon Nov 25 10:55:53 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2147,7 +2146,7 @@ QvisColorTableWindow::setActiveDiscrete(const QString &ct)
 // ****************************************************************************
 // Method: QvisColorTableWindow::resizeColorTable
 //
-// Purpose: 
+// Purpose:
 //   This routine resizes the color table.
 //
 // Arguments:
@@ -2191,7 +2190,7 @@ QvisColorTableWindow::resizeColorTable(int size)
                 }
 
                 colorAtts->SelectColorTables();
-                Apply();   
+                Apply();
             }
             else if(size > ccpl->GetNumControlPoints())
             {
@@ -2235,7 +2234,7 @@ QvisColorTableWindow::resizeColorTable(int size)
 
                 GetCurrentValues(0);
                 SetUpdate(false);
-                Apply();   
+                Apply();
             }
             else if(size > spectrumBar->numControlPoints())
             {
@@ -2253,13 +2252,13 @@ QvisColorTableWindow::resizeColorTable(int size)
                 Apply();
             }
         }
-    }    
+    }
 }
 
 // ****************************************************************************
 // Method: QvisColorTableWindow::exportColorTable
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells the viewer to export the currently
 //   selected color table.
 //
@@ -2267,7 +2266,7 @@ QvisColorTableWindow::resizeColorTable(int size)
 // Creation:   Tue Jul 1 16:40:39 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2280,14 +2279,14 @@ QvisColorTableWindow::exportColorTable()
 // ****************************************************************************
 // Method: QvisColorTableWindow::groupingToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that tells modifies the grouping.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   August 8, 2013 
+// Programmer: Kathleen Biagas
+// Creation:   August 8, 2013
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2301,14 +2300,14 @@ QvisColorTableWindow::groupingToggled(bool val)
 // ****************************************************************************
 // Method: QvisColorTableWindow::ApplyCategoryChange
 //
-// Purpose: 
+// Purpose:
 //   Ensures the color control points use the correct category.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   August 8, 2013 
+// Programmer: Kathleen Biagas
+// Creation:   August 8, 2013
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

@@ -169,6 +169,14 @@ extern "C" void cli_runscript(const char *);
 //     1) Switch to using args after "-s" as sys.argv
 //     2) add "-ni"  + "-non-interactive" command line switches.
 //
+//    Cyrus Harrison, Wed Jan  6 11:39:57 PST 2021
+//    Added py2to3 option. When enabled, auto converts any python
+//    source run with "Source" to use the Python 2 to 3 translator
+//    before execution.
+//
+//    Cyrus Harrison, Wed Feb 24 16:09:45 PST 2021
+//    Adjustments for Pyside 2 support. 
+//
 // ****************************************************************************
 
 int
@@ -179,6 +187,7 @@ main(int argc, char *argv[])
     bool bufferDebug = false;
     bool verbose = false;
     bool s_found = false;
+    bool py2to3 = false;
     bool pyside = false;
     bool pyside_gui = false;
     bool pyside_viewer = false;
@@ -359,6 +368,10 @@ main(int argc, char *argv[])
         //     // Skip the rate that comes along with -fps.
         //     ++i;
         // }
+        else if(strcmp(argv[i], "-py2to3") == 0)
+        {
+            py2to3 = true;
+        }
         else if(strcmp(argv[i], "-pyside") == 0)
         {
             pyside = true;
@@ -536,8 +549,16 @@ main(int argc, char *argv[])
         PyRun_SimpleString((char*)"import visit_utils");
         PyRun_SimpleString((char*)"from visit_utils.builtin import *");
 
+        // enable auto 2to3 support for passed scripts
+        if(py2to3)
+        {
+            // let folks know this is on:
+            std::cout << "VisIt CLI: Automatic Python 2to3 Conversion Enabled"
+                      << std::endl;
+            PyRun_SimpleString("visit_utils.builtin.SetAutoPy2to3(True)");
+        }
 
-        // add original args to visit.argv_full, just in case 
+        // add original args to visit.argv_full, just in case
         // some one needs to access them.
         
         PyObject *visit_module = PyImport_AddModule("visit"); //borrowed
@@ -555,13 +576,14 @@ main(int argc, char *argv[])
         if(pyside || pyside_gui)
         {
             int error = 0;
+            if(!error) error |= PyRun_SimpleString((char*)"import PySide2");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtCore import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtGui import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtOpenGL import *");
             if(!error) error |= PyRun_SimpleString((char*)"from PySide2.QtUiTools import *");
 
-            if(!error) error |= PyRun_SimpleString((char*)"import visit.pyside_support");
-            if(!error) error |= PyRun_SimpleString((char*)"import visit.pyside_hook");
+            if(!error) error |= PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_support");
+            if(!error) error |= PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_hook");
 
             if(error)
             {
@@ -571,8 +593,10 @@ main(int argc, char *argv[])
             }
             else
             {
-                PyRun_SimpleString((char*)"visit.pyside_support.SetupTimer()");
-                PyRun_SimpleString((char*)"visit.pyside_hook.SetHook()");
+                // Cyrus Note, Wed Feb 24 10:15:52 PST 2021
+                // This Event handler seems to make the CLI unusable.
+                PyRun_SimpleString((char*)"visit_utils.builtin.pyside_support.SetupTimer()");
+                PyRun_SimpleString((char*)"visit_utils.builtin.pyside_hook.SetHook()");
             }
         }
 
@@ -581,7 +605,7 @@ main(int argc, char *argv[])
             //pysideviewer needs to be executed before visit import
             //so that visit will use the window..
             // we will only have one instance, init it
-            int error = PyRun_SimpleString((char*)"import visit.pyside_gui");
+            int error = PyRun_SimpleString((char*)"import visit_utils.builtin.pyside_gui");
 
             if(error)
             {
@@ -593,15 +617,15 @@ main(int argc, char *argv[])
             PyRun_SimpleString((char*)"args = sys.argv");
             if(uifile) //if external file then start VisIt in embedded mode
                 PyRun_SimpleString((char*)"args.append('-pyuiembedded')"); //default to embedded
-            PyRun_SimpleString((char*)"tmp = visit.pyside_gui.PySideGUI.instance(args)");
+            PyRun_SimpleString((char*)"tmp = visit_utils.builtin.pyside_gui.PySideGUI.instance(args)");
             PyRun_SimpleString((char*)"visit.InitializeViewerProxy(tmp.GetViewerProxyPtr())");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetRenderWindowIds");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetUIWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetPlotWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetOperatorWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindow");
-            PyRun_SimpleString((char*)"from visit.pyside_support import GetOtherWindowNames");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetRenderWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetRenderWindowIds");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetUIWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetPlotWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOperatorWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOtherWindow");
+            PyRun_SimpleString((char*)"from visit_utils.builtin.pyside_support import GetOtherWindowNames");
 
             if(!uifile && !pyside_viewer)
                 PyRun_SimpleString((char*)"GetUIWindow().show()");
@@ -657,7 +681,7 @@ main(int argc, char *argv[])
             
             if(split.size() == 2)
             {
-                command << "OpenDatabase(\"" << split[0] << ", 0, \"" << split[1] << "\")";
+                command << "OpenDatabase(\"" << split[0] << "\", 0, \"" << split[1] << "\")";
             }  
             else
             {

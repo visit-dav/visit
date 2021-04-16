@@ -38,7 +38,7 @@ public:
     enum LimitsMode
     {
         OriginalData,
-        CurrentPlot
+        ActualData
     };
     enum Centering
     {

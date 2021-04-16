@@ -104,15 +104,18 @@ double CellIdentifierFromID( T id )
 //   variables. We cache the histograms and make them available to the named
 //   selection extension object that creates this filter.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Dec 17 14:50:16 PST 2010
 //
 // Modifications:
-//     Eric Brugger, Wed Aug 20 16:13:09 PDT 2014
-//     Modified the class to work with avtDataRepresentation.
-//   
+//    Eric Brugger, Wed Aug 20 16:13:09 PDT 2014
+//    Modified the class to work with avtDataRepresentation.
+//
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 #define NBINS 256 // number of bins for the histogram.
@@ -231,7 +234,7 @@ protected:
                        << std::endl;
 
                 // Get the local histogram for this rank.
-                std::vector<VISIT_LONG_LONG> hist_in(NBINS, 0);
+                std::vector<long long> hist_in(NBINS, 0);
 
                 if(!avtDatasetExaminer::CalculateHistogram(ds,
                     it->first, minmax[0], minmax[1], hist_in))
@@ -240,7 +243,7 @@ protected:
                 }
 
                 // Get the global histograms acrosss all ranks.
-                std::vector<VISIT_LONG_LONG> hist_out(NBINS, 0);
+                std::vector<long long> hist_out(NBINS, 0);
                 
                 SumLongLongArrayAcrossAllProcessors( &(hist_in[0]),
                                                      &(hist_out[0]), NBINS);
@@ -3087,7 +3090,7 @@ CumulativeQueryNamedSelectionExtension::GetSelection(avtDataObject_p dob,
     }
     else if(props.GetIdVariableType() == SelectionProperties::UseGlobalZoneIDForID)
     {
-        // This one might be VISIT_LONG_LONG for the index type. Check it...
+        // This one might be long long for the index type. Check it...
         CQFilter<CumulativeQuery<CQVariableId, CQVariableIdSelection>,
                  CQVariableIdSelection> cqFilter;
         

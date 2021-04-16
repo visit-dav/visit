@@ -204,7 +204,6 @@ Plotting streamlines of velocity
 7. Set *Samples along line* to "10".
 8. Click *Apply* and *Dismiss*.
 9. Click *Draw* on the Main GUI
-10. In IntegralCurve operator attributes, click *Apply* again (for good measure) and then *Dismiss*.
 
 .. figure:: images/PotentialFlow-Streamline-Atts.png
 

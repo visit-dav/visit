@@ -1,5 +1,5 @@
 
-curves = [PropertyTree() for i in xrange(1)]
+curves = [PropertyTree() for i in range(1)]
 curves[0].file = "$SOURCE_FILE"
 curves[0].index = 0
 
@@ -31,7 +31,7 @@ scene.labels.titles_font.size=20
 scene.labels.titles_font.bold=True
 
 
-scene.plots       = [PropertyTree() for i in xrange(5) ]
+scene.plots       = [PropertyTree() for i in range(5) ]
 
 scene.plots[0].type="area"
 scene.plots[0].curve = curves[0]
@@ -60,7 +60,7 @@ scene.plots[4].tracer_x = 16
 scene.plots[4].tracer_orientation = 2
 
 
-scene.annotations = [PropertyTree() for i in xrange(1) ]
+scene.annotations = [PropertyTree() for i in range(1) ]
 
 scene.annotations[0].type="text"
 scene.annotations[0].text="Here"

@@ -44,8 +44,8 @@ class GUI_API QvisAnimationWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisAnimationWindow(AnimationAttributes *subj,
-                        const QString &caption = QString::null,
-                        const QString &shortName = QString::null,
+                        const QString &caption = QString(),
+                        const QString &shortName = QString(),
                         QvisNotepadArea *notepad = 0);
     virtual ~QvisAnimationWindow();
     virtual void CreateWindowContents();

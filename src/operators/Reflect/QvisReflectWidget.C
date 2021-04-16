@@ -244,16 +244,16 @@ QvisReflectWidget::createSharedElements()
                          SPHERE_ON_RAD, 1., 0., 1.);
         initializeSphere(offSphere, SPHERE_OFF_XDIM, SPHERE_OFF_YDIM,
                          SPHERE_OFF_RAD,
-                         float(palette().background().color().red()) / 255.,
-                         float(palette().background().color().green()) / 255.,
-                         float(palette().background().color().blue()) / 255.);
+                         float(palette().window().color().red()) / 255.,
+                         float(palette().window().color().green()) / 255.,
+                         float(palette().window().color().blue()) / 255.);
 
         initializeCube(onCube, CUBE_ON_NX, CUBE_ON_NY, CUBE_ON_SIZE,
                        0., 1., 0.);
         initializeCube(offCube, CUBE_OFF_NX, CUBE_OFF_NY, CUBE_OFF_SIZE,
-                       float(palette().background().color().red()) / 255.,
-                       float(palette().background().color().green()) / 255.,
-                       float(palette().background().color().blue()) / 255.);
+                       float(palette().window().color().red()) / 255.,
+                       float(palette().window().color().green()) / 255.,
+                       float(palette().window().color().blue()) / 255.);
         initializeArrow();
 
         sharedElementsCreated = true;
@@ -362,10 +362,10 @@ QvisReflectWidget::redrawScene2D(QPainter *painter)
     vector3 x1 = renderer.transform_world_point(vec_create(axes_size, 0, axes_size));
     vector3 y0 = renderer.transform_world_point(vec_create(0, axes_size, axes_size));
     vector3 y1 = renderer.transform_world_point(vec_create(0, -axes_size, axes_size));
-    painter->setPen(palette().foreground().color());
+    painter->setPen(palette().windowText().color());
     const char *x = "+X";
     painter->drawText((int) x0.x, (int) (x0.y + h), "-X");
-    painter->drawText((int) (x1.x - fontMetrics().width(x)), (int) (x1.y + h), x);
+    painter->drawText((int) (x1.x - fontMetrics().horizontalAdvance(x)), (int) (x1.y + h), x);
     painter->drawText((int) (y0.x + 5), (int) (y0.y + h), "+Y");
     painter->drawText((int) (y1.x + 5), (int) (y1.y), "-Y");
 }
@@ -927,9 +927,9 @@ QvisReflectWidget::initializeAxes()
 
     axes.set_default_line_style(DOT_LINE);
     color c;
-    c.r = float(palette().foreground().color().red()) / 255.;
-    c.r = float(palette().foreground().color().green()) / 255.;
-    c.b = float(palette().foreground().color().blue()) / 255.;
+    c.r = float(palette().windowText().color().red()) / 255.;
+    c.r = float(palette().windowText().color().green()) / 255.;
+    c.b = float(palette().windowText().color().blue()) / 255.;
 
     axes.set_default_color(c);
     axes.add_line_c(-s,-s,-s,  -s,-s, s);

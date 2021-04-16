@@ -118,6 +118,11 @@ avtConnCMFEExpression::PerformCMFE(avtDataTree_p in1, avtDataTree_p in2,
 //    I modified the logic that determines if a mesh is a point mesh to
 //    include poly data.
 //
+//    Eric Brugger, Thu Oct 22 13:12:05 PDT 2020
+//    I added additional special handling for the case where we are mapping
+//    cell data from a polyhedral mesh onto a point mesh when the mesh was
+//    material selected.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -204,8 +209,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
                 in_ds2->GetPointData()->GetArray(invar.c_str()) == NULL &&
                 in_ds2->GetCellData()->GetArray(invar.c_str()) != NULL;
 
-            if ( ( (orig1 == NULL && orig2 != NULL) || 
-                   (orig1 != NULL && orig2 == NULL) ) && isCell)
+            if ( (orig1 != NULL || orig2 != NULL) && isCell)
             {
                 if (orig1 != NULL)
                 {
@@ -395,14 +399,37 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
             //
             addvar = var2->NewInstance();
             addvar->SetName(outvar.c_str());
-            addvar->SetNumberOfTuples(nRealCells1);
             vtkDataArray *orig1 =
                 in_ds1->GetCellData()->GetArray("avtOriginalCellNumbers");
             vtkDataArray *orig2 =
                 in_ds2->GetCellData()->GetArray("avtOriginalCellNumbers");
-            if (orig2 != NULL)
+            if (orig1 != NULL && orig2 != NULL)
+            {
+                // Material selected mesh.
+                int ntuples1 = orig1->GetNumberOfTuples();
+                int ntuples2 = orig2->GetNumberOfTuples();
+                if (ntuples1 < ntuples2)
+                {
+                    // Polyhedral mesh onto a point mesh.
+                    addvar->SetNumberOfTuples(ntuples1);
+                    vtkIdType *map = new vtkIdType[nRealCells1];
+                    for (vtkIdType i = 0; i < nRealCells1; ++i)
+                        map[i] = 0;
+                    for (vtkIdType i = 0; i < ntuples1; ++i)
+                        map[static_cast<vtkIdType>(orig1->GetTuple2(i)[1])] = i;
+                    for (vtkIdType src = 0; src < ntuples2; ++src)
+                    {
+                        vtkIdType dst =
+                            map[static_cast<vtkIdType>(orig2->GetTuple2(src)[1])];
+                        addvar->SetTuple(dst, src, var2);
+                    }
+                    delete [] map;
+                }
+            }
+            else if (orig2 != NULL)
             {
                 // Polyhedral mesh onto a point mesh.
+                addvar->SetNumberOfTuples(nRealCells1);
                 int ntuples = orig2->GetNumberOfTuples();
                 for (vtkIdType src = 0; src < ntuples; ++src)
                 {
@@ -414,6 +441,7 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
             else
             {
                 // Point mesh onto a polyhedral mesh.
+                addvar->SetNumberOfTuples(nRealCells1);
                 int ntuples = orig1->GetNumberOfTuples();
                 for (vtkIdType dst = 0; dst < ntuples; ++dst)
                 {

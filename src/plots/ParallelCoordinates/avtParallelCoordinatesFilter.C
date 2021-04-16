@@ -1325,6 +1325,9 @@ avtParallelCoordinatesFilter::InitializeDataTupleInput()
 //    Jeremy Meredith, Wed Feb 25 16:40:56 EST 2009
 //    Port to trunk.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // *****************************************************************************
 
 void
@@ -1343,7 +1346,7 @@ avtParallelCoordinatesFilter::CountDataTupleFocus(int ts, const floatVector &inp
     
     for (int axisID = 0; axisID < axisCount-1; axisID++)
     {
-        VISIT_LONG_LONG *counts = histogramsForSelectedRegion[ts][axisID].GetCounts();
+        long long *counts = histogramsForSelectedRegion[ts][axisID].GetCounts();
         int nparts0 = histogramsForSelectedRegion[ts][axisID].GetNumberOfBins()[0];
         int nparts1 = histogramsForSelectedRegion[ts][axisID].GetNumberOfBins()[1];
 
@@ -1408,6 +1411,9 @@ avtParallelCoordinatesFilter::CountDataTupleFocus(int ts, const floatVector &inp
 //    Jeremy Meredith, Wed Feb 25 16:41:11 EST 2009
 //    Port to trunk.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // *****************************************************************************
 
 void
@@ -1416,7 +1422,7 @@ avtParallelCoordinatesFilter::CountDataTupleContext(int ts, const floatVector &i
     int axisID;
     for (axisID = 0; axisID < axisCount-1; axisID++)
     {
-        VISIT_LONG_LONG *counts = histograms[ts][axisID].GetCounts();
+        long long *counts = histograms[ts][axisID].GetCounts();
         int nparts0 = histograms[ts][axisID].GetNumberOfBins()[0];
         int nparts1 = histograms[ts][axisID].GetNumberOfBins()[1];
 
@@ -1529,6 +1535,9 @@ avtParallelCoordinatesFilter::DrawContext(int ts)
 //    This function can now draw either the context or focus histograms
 //    based on the right settings, and has been renamed DrawHistogram
 //    and is called from the old DrawFocus and DrawContext methods
+//
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
 //
 // ****************************************************************************
 
@@ -1682,7 +1691,7 @@ avtParallelCoordinatesFilter::DrawHistogram(int ts, bool focus)
     int axis0index = 0;
     for (int axis = 0; axis < axisCount-1; axis++)
     {
-        VISIT_LONG_LONG *counts = hist[ts][axis].GetCounts();
+        long long *counts = hist[ts][axis].GetCounts();
         int nparts0 = hist[ts][axis].GetNumberOfBins()[0];
         int nparts1 = hist[ts][axis].GetNumberOfBins()[1];
 

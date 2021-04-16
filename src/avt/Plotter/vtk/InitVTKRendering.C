@@ -5,6 +5,7 @@
 #include <InitVTKRendering.h>
 
 #include <vtkToolkits.h>
+#include <vtkVisItDataSetMapper.h>
 #include <vtkVisItRectilinearGrid.h>
 #include <vtkVisItStructuredGrid.h>
 #include <vtkOpenGLPointMapper.h>
@@ -52,6 +53,7 @@ vtkStandardNewMacro(vtkVisItGraphicsFactory)
 //
 // Necessary for each object that will override a vtkObject.
 //
+VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
 VTK_CREATE_CREATE_FUNCTION(vtkOpenGLPointMapper);
@@ -107,9 +109,16 @@ vtkVisItGraphicsFactory::GetVTKSourceVersion()
 //    Kathleen Biagas, Wed Aug 17 09:27:12 PDT 2016
 //    Add vtkOpenGLPointMapper.
 //
+//    Kathleen Biagas, Tue Apr 13 2021
+//    Add vtkVisItDataSetMapper.
+//
 
 vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 {
+  this->RegisterOverride("vtkDataSetMapper", "vtkVisItDataSetMapper",
+                         "vtkVisItDataSetMapper override vtkDataSetMapper",
+                         1,
+                         vtkObjectFactoryCreatevtkVisItDataSetMapper);
   this->RegisterOverride("vtkRectilinearGrid", "vtkVisItRectilinearGrid",
                          "vtkVisItRectilinearGrid override vtkRectilinearGrid",
                          1,

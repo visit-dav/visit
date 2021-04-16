@@ -275,6 +275,10 @@ QvisLine3DInterface::GetMenuText(const AnnotationObject &annot) const
 //   Kathleen Biagas, Tue Jul 14 16:39:07 PDT 2015
 //   Add support for arrow and tube style lines.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg, and QString.setNum
+//   for simpler cases.
+//
 // ****************************************************************************
 
 void
@@ -282,18 +286,17 @@ QvisLine3DInterface::UpdateControls()
 {
     // Set the start position.
     const MapNode &opts = annot->GetOptions();
-    QString pos;
-    pos.sprintf("%lg %lg %lg",
-        annot->GetPosition()[0],
-        annot->GetPosition()[1],
-        annot->GetPosition()[2]);
+    QString pos = QString("%1 %2 %3")
+        .arg(annot->GetPosition()[0])
+        .arg(annot->GetPosition()[1])
+        .arg(annot->GetPosition()[2]);
     point1Edit->setText(pos);
 
     // Set the end position.
-    pos.sprintf("%lg %lg %lg",
-        annot->GetPosition2()[0],
-        annot->GetPosition2()[1],
-        annot->GetPosition2()[2]);
+    pos = QString("%1 %2 %3")
+        .arg(annot->GetPosition2()[0])
+        .arg(annot->GetPosition2()[1])
+        .arg(annot->GetPosition2()[2]);
     point2Edit->setText(pos);
 
     lineType->blockSignals(true);
@@ -318,7 +321,7 @@ QvisLine3DInterface::UpdateControls()
     tubeQuality->blockSignals(false);
 
     tubeRadius->blockSignals(true);
-    pos.sprintf("%lg", opts.GetEntry("tubeRadius")->AsDouble());
+    pos.setNum(opts.GetEntry("tubeRadius")->AsDouble());
     tubeRadius->setText(pos);
     tubeRadius->setEnabled(lineType->currentIndex() == 1);
     tubeRadius->setVisible(lineType->currentIndex() == 1);
@@ -370,14 +373,14 @@ QvisLine3DInterface::UpdateControls()
 
 
     arrow1Radius->blockSignals(true);
-    pos.sprintf("%lg", opts.GetEntry("arrow1Radius")->AsDouble());
+    pos.setNum(opts.GetEntry("arrow1Radius")->AsDouble());
     arrow1Radius->setText(pos);
     arrow1Radius->setEnabled(beginArrow->isChecked());
     rad1Label->setEnabled(beginArrow->isChecked());
     arrow1Radius->blockSignals(false);
 
     arrow1Height->blockSignals(true);
-    pos.sprintf("%lg", opts.GetEntry("arrow1Height")->AsDouble());
+    pos.setNum(opts.GetEntry("arrow1Height")->AsDouble());
     arrow1Height->setText(pos);
     arrow1Height->setEnabled(beginArrow->isChecked());
     height1Label->setEnabled(beginArrow->isChecked());
@@ -394,7 +397,7 @@ QvisLine3DInterface::UpdateControls()
     arrow2Resolution->blockSignals(false);
 
     arrow2Radius->blockSignals(true);
-    pos.sprintf("%lg", opts.GetEntry("arrow2Radius")->AsDouble());
+    pos.setNum(opts.GetEntry("arrow2Radius")->AsDouble());
     arrow2Radius->setText(pos);
     arrow2Radius->setEnabled(endArrow->isChecked());
     rad2Label->setEnabled(endArrow->isChecked());
@@ -403,7 +406,7 @@ QvisLine3DInterface::UpdateControls()
     arrow2Height->blockSignals(true);
     if (opts.HasEntry("arrow2Height"))
     {
-        pos.sprintf("%lg", opts.GetEntry("arrow2Height")->AsDouble());
+        pos.setNum(opts.GetEntry("arrow2Height")->AsDouble());
         arrow2Height->setText(pos);
     }
     else

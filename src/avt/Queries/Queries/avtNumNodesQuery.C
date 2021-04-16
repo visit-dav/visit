@@ -86,6 +86,9 @@ avtNumNodesQuery::GetDefaultInputParams(MapNode &params)
 //    Added flag to count original nodes only (may be needed for arbpoly
 //    data that was split by the DB reader.
 //
+//    Kathleen Biagas, Wed Nov 18 2020
+//    Replace VISIT_LONG_LONG with long long.
+//
 // ****************************************************************************
 
 void
@@ -110,8 +113,8 @@ avtNumNodesQuery::PerformQuery(QueryAttributes *qA)
             !GetInput()->GetInfo().GetValidity().GetZonesPreserved() &&
              GetInput()->GetInfo().GetAttributes().GetContainsOriginalNodes();
 
-    VISIT_LONG_LONG totalNodes[2] = {0, 0};
-    VISIT_LONG_LONG tn[2] = {0, 0};
+    long long totalNodes[2] = {0, 0};
+    long long tn[2] = {0, 0};
     char msg[200];
     if (usedDomains)
     {

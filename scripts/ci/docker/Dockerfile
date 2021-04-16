@@ -1,12 +1,13 @@
 # Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 MAINTAINER Cyrus Harrison <cyrush@llnl.gov>
 
 # fetch build env
 RUN apt-get update && apt-get install -y \
     git \
+    git-lfs \
     wget \
     curl \
     p7zip \
@@ -33,9 +34,17 @@ RUN apt-get update && apt-get install -y \
     m4 \
     automake \
     libxml2 \
+    libxml2-dev \
     vim \
     emacs \
+    bison \
+    flex \
+    cpio \
+    locales \
  && rm -rf /var/lib/apt/lists/*
+
+RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ENV LANG en_US.utf8
 
 RUN cd /usr/include && ln -s freetype2 freetype
 
@@ -53,6 +62,9 @@ RUN mkdir -p /masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/
 COPY visit.build_visit.docker.src.tar /masonry
 COPY masonry_docker_ci_cleanup.py /
 RUN cd /masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/ && tar -xzf /masonry/visit.build_visit.docker.src.tar
+
+# ensure build_visit script is executable
+RUN cd /masonry/build-mb-develop-ci-smoke/visit/src/tools/dev/scripts/ && chmod u+x build_visit
 
 # call masonry to build tpls
 RUN cd masonry && python bootstrap_visit.py opts/mb-develop-ci-smoke.json

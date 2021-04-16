@@ -360,24 +360,7 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
     atts = *(const CurveAttributes*)a;
 
     double curveRgb[4];
-    if (atts.GetCurveColorSource() == CurveAttributes::Cycle)
-    {
-        unsigned char rgb[3] = {0,0,0};
-        unsigned char bg[3] = {static_cast<unsigned char>(bgColor[0]*255),
-                               static_cast<unsigned char>(bgColor[1]*255),
-                               static_cast<unsigned char>(bgColor[2]*255)};
-        avtColorTables *ct = avtColorTables::Instance();
-        if (! ct->GetJNDControlPointColor(ct->GetDefaultDiscreteColorTable(),
-                                          this->instanceIndex, bg, rgb))
-            ct->GetJNDControlPointColor("distinct", this->instanceIndex, bg, rgb);
-        double drgb[4] = {rgb[0]/255.0,rgb[1]/255.0,rgb[2]/255.0,255.0};
-        std::copy(drgb,drgb+4,curveRgb);
-    }
-    else
-    {
-        atts.GetCurveColor().GetRgb(curveRgb);
-    }
-
+    atts.GetCurveColor().GetRgb(curveRgb);
     curveLegend->SetColor(curveRgb);
     mapper->SetColor(curveRgb);
     mapper->SetDrawCurve(atts.GetShowLines());
@@ -442,32 +425,6 @@ avtCurvePlot::SetLineWidth(int lw)
     mapper->SetLineWidth(Int2LineWidth(lw));
 }
 
-// ****************************************************************************
-//  Method: avtCurvePlot::SetBackgroundColor
-//
-//  Purpose: Sets the background color.
-//
-//  Returns: True if using this color will require the plot to be redrawn.
-//
-//  Mark C. Miller, Wed Jun 19 11:05:40 PDT 2019
-// ****************************************************************************
-
-bool
-avtCurvePlot::SetBackgroundColor(const double *bg)
-{
-    bool retVal = false;
-
-    if (bgColor[0] != bg[0] || bgColor[1] != bg[1] || bgColor[2] != bg[2])
-    {
-        bgColor[0] = bg[0];
-        bgColor[1] = bg[1];
-        bgColor[2] = bg[2];
-        retVal = true;
-    }
-
-    return retVal;
-}
- 
 // ****************************************************************************
 //  Method: avtCurvePlot::ReleaseData
 //

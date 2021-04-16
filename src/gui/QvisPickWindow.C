@@ -1032,6 +1032,9 @@ QvisPickWindow::UpdateTimeOptions()
 //   Added call to ResizeTabs, in case user changed #tabs without clicking
 //   'Apply' before perfoming picks.  It's a no-op if #tabs hasn't changed.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -1053,7 +1056,7 @@ QvisPickWindow::UpdatePage()
 
         // Change the tab heading.
         lastLetter = pickLetter;
-        temp.sprintf(" %s ", pickAtts->GetPickLetter().c_str());
+        temp = QString(" %1 ").arg(pickAtts->GetPickLetter().c_str());
         resultsTabWidget->setTabText(nextPage, temp);
 
         //
@@ -2105,6 +2108,9 @@ QvisPickWindow::ResizeTabs()
 //   Kathleen Biagas, Wed Oct 29 11:59:46 PDT 2014
 //   Add PickLetter (tab text) to output, add newlines between picks.
 //
+//   Kathleen Biagas, Thu Jan 21, 2021
+//   Replace QString.asprintf with QString.arg.
+//
 // ****************************************************************************
 
 void
@@ -2113,8 +2119,7 @@ QvisPickWindow::savePickText()
     QString saveExtension(".txt");
 
     // Create the name of a VisIt save file to use.
-    QString defaultFile;
-    defaultFile.sprintf("visit%04d", saveCount);
+    QString defaultFile=QString("visit%1").arg(saveCount,4,10,QLatin1Char('0'));
     defaultFile += saveExtension;
 
     QString useDir;

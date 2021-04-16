@@ -25,7 +25,7 @@
 VTK_MODULE_INIT(vtkRenderingOpenGL2);
 
 
-#ifdef Q_OS_OSX
+#ifdef Q_OS_MAC
 #include "osxHelper.h"
 #include <QSysInfo>
 #endif

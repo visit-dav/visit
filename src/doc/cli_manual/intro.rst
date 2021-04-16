@@ -85,7 +85,7 @@ interface (CLI) is essentially a Python interpreter where the VisIt
 Python Interface is built-in. The CLI is provided to simplify the
 process of running VisIt Python scripts.
 
-.. _architecuture:
+.. _architecture:
 
 .. figure:: images/architecture.png
    :alt: VisIt_'s architecture
@@ -135,6 +135,71 @@ Here is how to import all functions into a "visit" module namespace:
 
     import visit
     visit.Launch()
+
+
+Python 3 vs Python 2
+---------------------
+
+Python 2 has reached end of life and Python 3 is now preferred.
+VisIt was ported to use Python 3 as part of VisIt's 3.2 release.
+Some Python 2 syntax and common patterns no longer work in Python 3.
+
+For example, this is no longer valid in Python 3:
+
+::
+
+    print "Hello from VisIt"
+
+In Python 3 you must call ``print`` like a function:
+
+::
+
+    print("Hello from VisIt")
+
+Since many VisIt scripts in the wild are written for Python 2 we provide
+limited on-the-fly support to convert Python 2 style scripts to valid
+Python 3 and execute them. The CLI command line option ``-py2to3`` enables
+this automatic conversion logic.
+
+When ``-py2to3`` is used, VisIt will attempt to convert the input script
+passed with ``-s`` and any scripts run using ``visit.Source()`` on-the-fly.
+For example, if you create script called ``hello_visit.py``
+that includes the Python 2 style print above and run it as follows:
+
+::
+
+    visit -nowin -cli -py2to3 -s hello_visit.py
+
+On-the-fly conversion and execution will succeed and you will see:
+
+::
+
+    Running: cli -dv -nowin -py2to3 -s hello_visit.py
+    VisIt CLI: Automatic Python 2to3 Conversion Enabled
+    Running: viewer -dv -nowin -noint -host 127.0.0.1 -port 5600
+    Hello from VisIt
+
+You can also toggle this support in VisIt's CLI using:
+
+::
+
+    visit_utils.builtin.SetAutoPy2to3(True) # or False
+
+You can check the current value using:
+
+::
+
+    visit_utils.builtin.GetAutoPy2to3()
+
+We want to emphasize the limited aspect of the automatic support.
+The best long term path is to port your Python 2 style scripts to Python 3.
+
+Python 3 installs provide a utility called ``2to3`` that you can use to
+help automate porting, see https://docs.python.org/3/library/2to3.htm
+for more details.
+
+If you need help porting your trusty (or favorite) VisIt script, please
+reach out to the VisIt team.
 
 Getting started
 ---------------

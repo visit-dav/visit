@@ -34,8 +34,8 @@ class QvisIsovolumeWindow : public QvisOperatorWindow
   public:
     QvisIsovolumeWindow(const int type,
                          IsovolumeAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisIsovolumeWindow();
     virtual void CreateWindowContents();

@@ -1,3 +1,7 @@
+.. |br| raw:: html
+
+   <br>
+
 Query
 -----
 
@@ -110,12 +114,19 @@ Area Between Curves
     has been calculated, the result is printed to the **Query results**.
 
 Centroid
-    This query will calculate the centroid of a dataset. The contribution of
-    each cell is calculated assuming its mass all lies at the center of the
-    cell. If the query is performed on a Pseudocolor plot, the plot's variable
-    will be assumed to be density. If the query is performed on a plot such as
-    a Mesh plot or FilledBoundary plot, uniform density will be used. The
-    results are print to the **Query results**. 
+    This query can calculate a centroid (geometric center) or center-of-mass
+    of a dataset depending on the plot (and variable) upon which the query is
+    performed. On a Pseudocolor plot, the plot's variable will be treated as
+    a *density* field. The value of this field at the *center* of each cell
+    will be multiplied by the cell's volume to compute a cell-centered mass
+    contribution for each cell. If the plot's variable is indeed a true
+    density variable, then the result will be the center-of-mass. If the
+    plot's variable is not a true density variable (e.g. temperature), the
+    result may be nonsensical. If the plot's variable is constant over the
+    whole object, the result will be a centroid (geometric center). If the
+    query is performed on a Mesh or FilledBoundary plot, constant density will
+    be assumed and the result will be a centroid. The results are printed to
+    the **Query results**. 
 
 Connected Component Centroid
     Performs the same operation as either *Centroid* query except individually
@@ -330,6 +341,271 @@ Connected Component Weighted Variable Sum
     Performs the same operation as *Weighted Variable Sum* query except
     individually for each *component* of a disconnected mesh. The query
     result is a list of values, one for each component.
+
+XRay Image
+    Generates a simulated radiograph by tracing rays through a volume using
+    an absorbtivity and emissivity variable. The absorbtivity and emmisivity
+    variables must be zone centered and can be either scalar variables or
+    array variables. If using an array variable it will generate an image
+    per array variable component.
+
+    The query operates on 2D R-Z meshes and 3D meshes. In the case of 2D
+    R-Z meshes, the mesh is revolved around the Z axis.
+ 
+    The query performs the following integration as it traces the rays through
+    the volume.
+
+        decay[i] = exp(-a[i] * seglength[i]) |br|
+        intensity[i] = intensity[i-1] * decay[i] + e[i] * (1. - decay[i])
+
+    If the *divide_emis_by_absorb* is set, then the following integration is
+    performed.
+
+        decay[i] = exp(-a[i] * seglength[i]) |br|
+        intensity[i] = intensity[i-1] * decay[i] + (e[i] / a[i]) * (1. - decay[i])
+
+    When making a simulated radiograph the emissivity variable must contain
+    non zero values or you will need to specify a background intensity using
+    either *background_intensity* or *background_intensities*. If neither of
+    these is the case you will get a very boring all white image. A non zero
+    emissivity variable would correspond to an object emitting radiation
+    and a non zero background intensity would correspond to constant backlit
+    radiation, such as when x raying an object.
+
+    The query takes the following arguments:
+
+    +------+-------------------+----------------------------------------------+
+    | *vars*                   | An array of the names of the absorbtivity    |
+    |                          | and emissivity variables.                    |
+    +------+-------------------+----------------------------------------------+
+    | *background_intensity*   | The background intensity if ray tracing      |
+    |                          | scalar variables. The default is 0.          |
+    +------+-------------------+----------------------------------------------+
+    | *background_intensities* | The background intensities if ray tracing    |
+    |                          | array variables. The default is 0.           |
+    +------+-------------------+----------------------------------------------+
+    | *divide_emis_by_absorb*  | Described above.                             |
+    +------+-------------------+----------------------------------------------+
+    | *output_type*            | The format of the image. The default is PNG. |
+    +------+-------------------+----------------------------------------------+
+    |      | "bmp" or 0        | BMP image format.                            |
+    +------+-------------------+----------------------------------------------+
+    |      | "jpeg" or 1       | JPEG image format.                           |
+    +------+-------------------+----------------------------------------------+
+    |      | "png" or 2        | PNG image format.                            |
+    +------+-------------------+----------------------------------------------+
+    |      | "tif" or 3        | TIFF image format.                           |
+    +------+-------------------+----------------------------------------------+
+    |      | "rawfloats" or 4  | File of 32 bit floating point values in IEEE |
+    |      |                   | format.                                      |
+    +------+-------------------+----------------------------------------------+
+    |      | "bov" or 5        | BOV (Brick Of Values) format, which consists |
+    |      |                   | of a text header |br| file describing a      |
+    |      |                   | rawfloats file.                              |
+    +------+-------------------+----------------------------------------------+
+    | *family_files*           | A flag indicating if the output files should |
+    |                          | be familied. The default is |br| off. If it  |
+    |                          | is off then the output file is output.ext,   |
+    |                          | where "ext" is the file |br| extension. If   |
+    |                          | the file exists it will overwrite the file.  |
+    |                          | If it is on, then |br| the output file is    |
+    |                          | outputXXXX.ext, where XXXX is chosen to be   |
+    |                          | the |br| smallest integer not to overwrite   |
+    |                          | any existing files.                          |
+    +------+-------------------+----------------------------------------------+
+    | *image_size*             | The width and height of the image in pixels. |
+    |                          | The default is 200 x 200.                    |
+    +------+-------------------+----------------------------------------------+
+    | *debug_ray*              | The ray index for which to output ray        |
+    |                          | tracing information. The default is |br| -1, |
+    |                          | which turns it off.                          |
+    +------+-------------------+----------------------------------------------+
+    | *output_ray_bounds*      | Output the ray bounds as a bounding box in a |
+    |                          | VTK file. The default is off. |br| The name  |
+    |                          | of the file is "ray_bounds.vtk".             |
+    +------+-------------------+----------------------------------------------+
+    
+    The query also takes arguments that specify the orientation of the camera
+    in 3 dimensions. This can take 2 forms. The first is a simplified
+    specification that gives limited control over the camera and a complete
+    specification that matches the 3D image viewing parameters. The simplified
+    version consists of:
+    
+    +--------------+----------------------------------------------------------+
+    | *width*      | The width of the image in physical space.                |
+    +--------------+----------------------------------------------------------+
+    | *height*     | The height of the image in physical space.               |
+    +--------------+----------------------------------------------------------+
+    | *origin*     | The point in 3D corrensponding to the center of the      |
+    |              | image.                                                   |
+    +--------------+----------------------------------------------------------+
+    | *theta* |br| | The orientation angles. The default is 0. 0. and is      |
+    | *phi*        | looking down the Z axis. Theta |br| moves around the     |
+    |              | Y axis toward the X axis. Phi moves around the Z axis.   |
+    |              | When |br| looking at an R-Z mesh, phi has no effect      |
+    |              | because of symmetry.                                     |
+    +--------------+----------------------------------------------------------+
+    | *up_vector*  | The up vector.                                           |
+    +--------------+----------------------------------------------------------+
+
+    If any of the above properties are specified in the parameters it will use
+    the simplified version.
+
+    The complete version consists of:
+
+    +------------------+------------------------------------------------------+
+    | *focus*          | The focal point. The default is (0., 0., 0.).        |
+    +------------------+------------------------------------------------------+
+    | *view_up*        | The up vector. The default is (0., 1., 0.).          |
+    +------------------+------------------------------------------------------+
+    | *normal*         | The view normal. The default is (0., 0., 1.).        |
+    +------------------+------------------------------------------------------+
+    | *view_angle*     | The view angle. The default is 30.                   |
+    +------------------+------------------------------------------------------+
+    | *parallel_scale* | The parallel scale. The default is 0.5.              |
+    +------------------+------------------------------------------------------+
+    | *near_plane*     | The near clipping plane. The default is -0.5.        |
+    +------------------+------------------------------------------------------+
+    | *far_plane*      | The far clipping plane. The default is 0.5.          |
+    +------------------+------------------------------------------------------+
+    | *image_pan*      | The image pan in the X and Y directions. The default |
+    |                  | is (0., 0.).                                         |
+    +------------------+------------------------------------------------------+
+    | *image_zoom*     | The absolute image zoom factor. The default is 1.    |
+    |                  | A value of 2. zooms the |br| image closer by scaling |
+    |                  | the image by a factor of 2 in the X and Y            |
+    |                  | directions. |br| A value of 0.5 zooms the image      |
+    |                  | further away by scaling the image by a factor |br|   |
+    |                  | of 0.5 in the X and Y directions.                    |
+    +------------------+------------------------------------------------------+
+    | *perspective*    | Flag indicating if doing a parallel or perspective   |
+    |                  | projection. |br| 0 indicates parallel projection.    |
+    |                  | 1 indicates perspective projection.                  |
+    +------------------+------------------------------------------------------+
+
+    Lets look at some examples, starting with some simulated x rays using
+    curv2d.silo, which contains a 2D R-Z mesh. Here is a pseudocolor plot
+    of the data.
+
+.. figure:: images/xray00.png
+
+    The 2D R-Z data
+
+    Now we'll show the Python code to generate a simulated x ray looking
+    down the Z Axis and the resulting image. ::
+
+      params = GetQueryParameters("XRay Image")
+      params['image_size'] = (300, 300)
+      params['divide_emis_by_absorb'] = 1
+      params['width'] = 10.
+      params['height'] = 10.
+      params['vars'] = ("d", "p")
+      Query("XRay Image", params)
+
+.. figure:: images/xray01.png
+
+    The resulting x ray image
+
+    Here is the Python code to generate the same image but looking at it
+    from the side. ::
+
+      params = GetQueryParameters("XRay Image")
+      params['image_size'] = (300, 300)
+      params['divide_emis_by_absorb'] = 1
+      params['width'] = 10.
+      params['height'] = 10.
+      params['theta'] = 90.
+      params['phi'] = 0.
+      params['vars'] = ("d", "p")
+      Query("XRay Image", params)
+
+.. figure:: images/xray02.png
+
+    The resulting x ray image
+
+    Here is the same Python code with the addition of an origin that
+    moves the image down and to the right by 1. ::
+
+      params = GetQueryParameters("XRay Image")
+      params['image_size'] = (300, 300)
+      params['divide_emis_by_absorb'] = 1
+      params['width'] = 10.
+      params['height'] = 10.
+      params['theta'] = 90.
+      params['phi'] = 0.
+      params['origin'] = (0., 1., 1.)
+      params['vars'] = ("d", "p")
+      Query("XRay Image", params)
+
+.. figure:: images/xray03.png
+
+    The resulting x ray image
+
+    Now we'll switch to a 3D example using globe.silo. Globe.silo is an
+    unstructured mesh consisting of tetrahedra, pyramids, prisms and hexahedra
+    forming a globe. Here is an image of the tetrahedra at the center of
+    the globe that form 2 cones.
+
+.. figure:: images/xray04.png
+
+    The tetrahedra at the center of the globe
+
+    Here is the Python code for generating an x ray image from the same
+    orientation. Note that we have defined some expressions so that the
+    x ray image shows some variation. ::
+
+      DefineScalarExpression("u1", 'recenter(((u+10.)*0.01), "zonal")')
+      DefineScalarExpression("v1", 'recenter(((v+10.)*0.01*matvf(mat1,1)), "zonal")')
+      DefineScalarExpression("v2", 'recenter(((v+10.)*0.01*matvf(mat1,2)), "zonal")')
+      DefineScalarExpression("v3", 'recenter(((v+10.)*0.01*matvf(mat1,3)), "zonal")')
+      DefineScalarExpression("v4", 'recenter(((v+10.)*0.01*matvf(mat1,4)), "zonal")')
+      DefineScalarExpression("w1", 'recenter(((w+10.)*0.01), "zonal")')
+
+      params = GetQueryParameters("XRay Image")
+      params['image_size'] = (300, 300)
+      params['divide_emis_by_absorb'] = 1
+      params['width'] = 4.
+      params['height'] = 4.
+      params['theta'] = 90.
+      params['phi'] = 0.
+      params['vars'] = ("w1", "v1")
+      Query("XRay Image", params)
+
+.. figure:: images/xray05.png
+
+    The resulting x ray image
+
+    Now we'll look at the pyramids in the center of the globe.
+
+.. figure:: images/xray06.png
+
+    The pyramids at the center of the globe
+
+    Here is the Python code for generating an x ray image from the same
+    orientation using the full view specification. The view specification
+    was merely copied from the 3D tab on the View window. Note that we
+    have created the dictionary from scratch, rather than starting with
+    the default ones. This is necessary to use the full view specification. ::
+
+      params = dict(output_type="png")
+      params['image_size'] = (300, 300)
+      params['divide_emis_by_absorb'] = 1
+      params['focus'] = (0., 0., 0.)
+      params['view_up'] = (-0.0651, 0.775, 0.628)
+      params['normal'] = (-0.840, -0.383, 0.385)
+      params['view_angle'] = 30.
+      params['parallel_scale'] = 17.3205
+      params['near_plane'] = -34.641
+      params['far_plane'] = 34.641
+      params['image_pan'] = (0., 0.)
+      params['image_zoom'] = 8
+      params['perspective'] = 0
+      params['vars'] = ("w1", "v2")
+      Query("XRay Image", params)
+
+.. figure:: images/xray07.png
+
+    The resulting x ray image
 
 ZoneCenter
     The ZoneCenter query calculates the zone center for a certain cell in the

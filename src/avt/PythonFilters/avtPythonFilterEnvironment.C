@@ -14,6 +14,10 @@
 #include <StringHelpers.h>
 #include <InstallationFunctions.h>
 
+#ifdef PARALLEL
+    #include <mpi.h>
+#endif
+
 using namespace std;
 
 // static vars
@@ -85,6 +89,12 @@ avtPythonFilterEnvironment::~avtPythonFilterEnvironment()
 //    Kathleen Biagas, Fri May 4 14:08:12 PDT 2012 
 //    Call GetVisItLibraryDirectory instead of GetVisItArchitectureDirectory.
 //
+//    Cyrus Harrison, Thu Feb 18 16:06:46 PST 2021
+//    Change the way the import works for parallel case to support Python 3.
+//
+//    Cyrus Harrison, Tue Feb 23 17:04:32 PST 2021
+//    Use MPI_Comm_c2f handle to init mpicom module.
+//
 // ****************************************************************************
 
 bool
@@ -111,12 +121,15 @@ avtPythonFilterEnvironment::Initialize()
 
 #ifdef PARALLEL
     // init mpicom w/ visit's communicator
-    if(!pyi->RunScript("import mpicom\n"))
+    if(!pyi->RunScript("import mpicom.mpicom as mpicom\n"))
         return false;
+
+    // pass mpi comm via fortran handle (which is an int)
+    int mpi_comm_id =  MPI_Comm_c2f(VISIT_MPI_COMM);
     ostringstream oss;
-    oss << (void*)VISIT_MPI_COMM_PTR;
-    string comm_addy = oss.str();
-    if(!pyi->RunScript("mpicom.init(caddy='" + comm_addy + "')\n"))
+    oss << mpi_comm_id;
+    string comm_id_str = oss.str();
+    if(!pyi->RunScript("mpicom.init(comm_id=" + comm_id_str + ")\n"))
         return false;
 #else
     // import pyavt.mpistub as mpicom
@@ -232,6 +245,7 @@ avtPythonFilterEnvironment::WrapVTKObject(void *obj,
     return res;
 }
 
+
 // ****************************************************************************
 //  Method: avtPythonFilterEnvironment::UnwrapVTKObject
 //
@@ -285,7 +299,6 @@ avtPythonFilterEnvironment::UnwrapVTKObject(PyObject *obj,
 
     return (void*) addy;
 }
-
 
 
 // ****************************************************************************
@@ -356,16 +369,24 @@ avtPythonFilterEnvironment::Pickle(PyObject *py_obj)
 //  Programmer:   Cyrus Harrison
 //  Creation:     Fri Jul  9 13:54:40 PDT 2010
 //
+//  Modifications:
+//    Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//    Modified to take a char vector instead of a string.
+//
 // ****************************************************************************
 
 PyObject *
-avtPythonFilterEnvironment::Unpickle(const std::string &s)
+avtPythonFilterEnvironment::Unpickle(const std::vector<char> &v)
 {
     PyObject *res = NULL;
     if(!pickleReady)
         PickleInit();
 
-    PyObject *py_str_obj = PyString_FromString(s.c_str());
+    char *str = new char[v.size()];
+    for (int i = 0; i < v.size(); i++)
+        str[i] = v[i];
+    PyObject *py_str_obj = PyBytes_FromStringAndSize(str, v.size());
+    delete [] str;
     res = PyObject_CallFunctionObjArgs(pickleLoads,py_str_obj,NULL);
 
     if(res == NULL)
@@ -377,6 +398,7 @@ avtPythonFilterEnvironment::Unpickle(const std::string &s)
     Py_DECREF(py_str_obj);
     return res;
 }
+
 
 // ****************************************************************************
 //  Method: avtPythonScriptExpression::PickleInit

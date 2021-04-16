@@ -27,11 +27,11 @@ function bv_vtkh_initialize_vars
 
 function bv_vtkh_info
 {
-    export VTKH_VERSION=${VTKH_VERSION:-"2ce3fa"}
+    export VTKH_VERSION=${VTKH_VERSION:-"v0.6.6"}
     export VTKH_FILE=${VTKH_FILE:-"vtkh-${VTKH_VERSION}.tar.gz"}
     export VTKH_BUILD_DIR=${VTKH_BUILD_DIR:-"vtkh-${VTKH_VERSION}"}
-    export VTKH_MD5_CHECKSUM="993cbd4b7a1bc5d5c0e9ff900ec2eacc"
-    export VTKH_SHA256_CHECKSUM="ad3ed46ba9f435d367572bc3015ce0c546800b5cdf470dd494f1584142f48dbc"
+    export VTKH_MD5_CHECKSUM="ec9bead5d3bcc317149fb273f7c5a4af"
+    export VTKH_SHA256_CHECKSUM="5fe8bae5f55dbeb3047a37499cc41f3b548e4d86f0058993069f1df57f7915a1"
 }
 
 function bv_vtkh_print
@@ -156,14 +156,21 @@ function build_vtkh
     vopts=""
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/vtkh/${VTKH_VERSION}/${VISITARCH}"
     vopts="${vopts} -DVTKM_DIR=${VISITDIR}/vtkm/${VTKM_VERSION}/${VISITARCH}"
-    vopts="${vopts} -DBUILD_SHARED_LIBS=ON"
     vopts="${vopts} -DENABLE_MPI=OFF"
     vopts="${vopts} -DENABLE_OPENMP=OFF"
     vopts="${vopts} -DCMAKE_BUILD_TYPE=${VISIT_BUILD_MODE}"
-    if [[ -d $CUDA_HOME ]]; then
-        echo "Building with CUDA support."
-        vopts="${vopts} -DENABLE_CUDA=ON"
-    fi
+    # Disable CUDA support for now since it requires using the CUDA compiler
+    # to build all of VisIt, which we don't want to do.
+    #if [[ -d $CUDA_HOME ]]; then
+    #    # Turn off shared libraries with CUDA support, since VTKm
+    #    # requires static libraries with CUDA.
+    #    echo "Building with CUDA support."
+    #    vopts="${vopts} -DENABLE_CUDA=ON"
+    #    vopts="${vopts} -DBUILD_SHARED_LIBS=OFF"
+    #else
+    #    vopts="${vopts} -DBUILD_SHARED_LIBS=ON"
+    #fi
+    vopts="${vopts} -DBUILD_SHARED_LIBS=ON"
 
     #
     # Several platforms have had problems with the VTK cmake configure

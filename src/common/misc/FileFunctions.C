@@ -19,6 +19,11 @@
 #include <userenv.h> // for GetProfilesDirectory
 #include <direct.h>
 #include <Shlwapi.h> // PathIsRelative
+// std::filesystem available in MSVC, it is unclear at the moment which gcc
+// (or other compiler) versions support this or std::experimental::filesystem
+// But using std::filesystem::path will make things like Dirname and basename
+// so much easier
+#include <filesystem>
 #else
 #include <unistd.h>
 #include <dirent.h>
@@ -647,17 +652,50 @@ basename(char const *path, int& start, char const *suffix=0)
    }
 }
 
+// **************************************************************************
+//  Modifications:
+//    Kathleen Biagas, Thu Nov 12, 2020
+//    Use std::filesystem::path on Windows, it does the right thing
+//    regardless of the type of path separator used.
+//
+// **************************************************************************
+
 char const *
 FileFunctions::Basename(char const *path, char const *suffix)
 {
+#ifdef _WIN32
+    std::string suffString;
+    if (suffix)
+    {
+        suffString = suffix;
+    }
+    std::string fbn = Basename(std::string(path), suffString);
+    strcpy(StaticStringBuf, fbn.c_str());
+    return StaticStringBuf;
+#else
    int dummy1;
    return basename(path, dummy1, suffix);
+#endif
 }
 
 std::string
 FileFunctions::Basename(const std::string &path, const std::string &suffix)
 {
+#ifdef _WIN32
+    std::filesystem::path fsp(path);
+    std::string fbn = fsp.filename().string();
+    if (!suffix.empty())
+    {
+        if (fbn !=suffix && fbn.size() > suffix.size() &&
+            fbn.substr(fbn.size() - suffix.size()) == suffix)
+        {
+            fbn = fbn.substr(0, fbn.size() - suffix.size());
+        }
+    }
+    return fbn;
+#else
     return Basename(path.c_str(), suffix.c_str());
+#endif
 }
 
 // ****************************************************************************
@@ -681,10 +719,30 @@ FileFunctions::Basename(const std::string &path, const std::string &suffix)
 //    Mark C. Miller, Wed Jul 11 20:03:16 PDT 2012
 //    Fixed the special case where the only part of the string left after
 //    eliminating the basename part is a single slash char at index zero.
+//
+//    Kathleen Biagas, Thu Nov 12, 2020
+//    Use std::filesystem::path on Windows, as the current logic is slightly
+//    flawed for Windows (it strips off trailing slash and returns 'C:'
+//    instead of 'C:\' for paths like 'C:\users'.
+//
 // ****************************************************************************
 const char *
 FileFunctions::Dirname(const char *path)
 {
+#ifdef _WIN32
+    std::filesystem::path fsp(path);
+    if (fsp.parent_path().empty())
+    {
+        // preserve the previous assumption of 'current directory' if 'path'
+        // contains no directory information
+        strcpy(StaticStringBuf, ".");
+    }
+    else
+    {
+        strcpy(StaticStringBuf, fsp.parent_path().string().c_str());
+    }
+    return StaticStringBuf;
+#else
     int start;
 
     // ok, figure out the basename
@@ -712,12 +770,28 @@ FileFunctions::Dirname(const char *path)
             StaticStringBuf[i] = '\0';
         return StaticStringBuf;
     }
+#endif
 }
 
 std::string
 FileFunctions::Dirname(const std::string &path)
 {
+#ifdef _WIN32
+    std::filesystem::path fsp(path);
+    if (fsp.parent_path().empty())
+    {
+        // preserve the previous assumption of 'current directory' if 'path'
+        // contains no directory information 
+        strcpy(StaticStringBuf, ".");
+        return StaticStringBuf;
+    }
+    else
+    {
+        return fsp.parent_path().string();
+    }
+#else
     return Dirname(path.c_str());
+#endif
 }
 
 // ****************************************************************************

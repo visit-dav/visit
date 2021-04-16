@@ -372,7 +372,7 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     //
 #define CREATE_PIXMAP(pixobj, name, xpm) \
     QPixmap pixobj; \
-    if(!QPixmapCache::find(name, pixobj)) \
+    if(!QPixmapCache::find(name, &pixobj)) \
     { \
         char *augmentedData[35], augmentedForeground[15]; \
         for(int i = 0; i < 35; ++i) \
@@ -754,15 +754,12 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
             break;
           case CurveAttributes::ID_curveColor:
             { // new scope
-              if (curveColor->isEnabled())
-              {
                 QColor temp(atts->GetCurveColor().Red(),
                             atts->GetCurveColor().Green(),
                             atts->GetCurveColor().Blue());
                 curveColor->blockSignals(true);
                 curveColor->setButtonColor(temp);
                 curveColor->blockSignals(false);
-              }
             }
             break;
           case CurveAttributes::ID_showLegend:

@@ -464,6 +464,16 @@
 #    For Apple, copied manuals directory to the install directory so it can
 #    be found by the packaging target.
 #
+#    Kathleen Biagas, Wed Oct 21, 2020
+#    Removed VISIT_SPHINX, moved Python-3 doc generation logic into doc
+#    subdir's CMakeLists.txt
+#
+#    Kathleen Biagas, Mon Oct 26, 2020
+#    Add VISIT_ENABLE_UNIT_TESTS option (on by default).
+#
+#    Kathleen Biagas, Thu Feb 18, 2021
+#    Added logic to support codesigning Windows releases.
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -682,6 +692,9 @@ IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
     SET(VISIT_OUT_OF_SOURCE_BUILD 0)
 ELSE("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
     SET(VISIT_OUT_OF_SOURCE_BUILD 1)
+    # Have to make this or an executable is made of this name.
+    # Suspect makemili_driver
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/exe")
 ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
 
 #-----------------------------------------------------------------------------
@@ -766,7 +779,6 @@ OPTION(VISIT_NOLINK_MPI_WITH_LIBRARIES "Do not link MPI with VisIt's parallel sh
 OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that forwards VisIt's socket connection between engine and component launcher" ON)
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
-OPTION(VISIT_SPHINX "Enable ability to build sphinx documentation" OFF)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
@@ -800,6 +812,7 @@ OPTION(VISIT_ENABLE_EXAMPLES  "Enable building of examples" ON)
 OPTION(VISIT_ENABLE_LIBSIM "Enable building of libsim." ON)
 OPTION(VISIT_ENABLE_MANUALS  "Enable building of manuals (requires python3)" ON)
 OPTION(VISIT_ENABLE_SILO_TOOLS "Enable building of silo tools (mrgtree2dot, add_visit_searchpath)" ON)
+OPTION(VISIT_ENABLE_UNIT_TESTS "Enable building of unit tests (like MRUCache_test, StringHelpers_test)" ON)
 OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # OFF for now
 
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
@@ -873,7 +886,6 @@ VISIT_3RDPARTY_VAR(CONDUIT_DIR   "Path containing the Conduit library's include 
 VISIT_3RDPARTY_DEP(CONDUIT_LIBDEP "Conduit library dependencies")
 VISIT_3RDPARTY_VAR(DAMARIS_DIR   "Path containing the Damaris library's include and lib")
 VISIT_3RDPARTY_VAR(FMS_DIR       "Path containing the FMS library's include and lib")
-VISIT_3RDPARTY_DEP(FMS_INCDEP    "FMS include dependencies")
 VISIT_3RDPARTY_DEP(FMS_LIBDEP    "FMS library dependencies")
 VISIT_3RDPARTY_VAR(GDAL_DIR      "Path containing the GDAL library's include and lib")
 VISIT_3RDPARTY_VAR(GFORTRAN_DIR  "Path containing the GFortran library's include and lib")
@@ -888,6 +900,7 @@ VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(LLVM_DIR      "Path containing the LLVM library's include and lib")
 VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
 VISIT_3RDPARTY_DEP(MFEM_INCDEP   "MFEM include dependencies")
+VISIT_3RDPARTY_DEP(MFEM_LIBDEP   "MFEM library dependencies")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
 VISIT_3RDPARTY_VAR(NEKTAR++_DIR  "Path containing the Nektar++ library's include and lib")
 VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP "Nektar++ library dependencies")
@@ -2183,9 +2196,7 @@ if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT BUILD_CTES
       add_subdirectory(test)
 endif()
 
-IF(VISIT_SPHINX)
-    ADD_SUBDIRECTORY(doc)
-ENDIF()
+add_subdirectory(doc)
 
 #-----------------------------------------------------------------------------
 # CPack -- This leverages our install targets to provide a "make package" that
@@ -2238,6 +2249,9 @@ ELSE (NOT WIN32)
         FILE(TO_NATIVE_PATH ${VISIT_WINDOWS_DIR} VWD_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} CIP_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CBD_NATIVE)
+        if(CODESIGN_HASH)
+           set(codesign "/DCODESIGN_HASH=${CODESIGN_HASH}")
+        endif()
         ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
             COMMAND ${MAKENSIS}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
@@ -2246,6 +2260,7 @@ ELSE (NOT WIN32)
                     /DBIN_DIR=${CBD_NATIVE}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
             COMMAND ${MAKENSIS}
+                    ${codesign}
                     /DVisItVersion=${VISIT_VERSION}
                     /DCOMPILER=${VISIT_MSVC_VERSION}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
@@ -2258,8 +2273,12 @@ ELSE (NOT WIN32)
                     ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
         )
         ADD_CUSTOM_TARGET(_PACKAGE ALL DEPENDS visit${VISIT_VERSION}.exe)
-        ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P cmake_install.cmake)
+        if(NOT CODESIGN_HASH)
+          # not building a signed release
+          # make INSTALL be a prereq for _PACKAGE.
+          ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD
+              COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P cmake_install.cmake)
+        endif()
         SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES
                               EXCLUDE_FROM_DEFAULT_BUILD 1
                               EXCLUDE_FROM_ALL 1 )
@@ -2286,53 +2305,6 @@ ELSE (NOT WIN32)
       ENDIF(${MAKENSIS_FOUND})
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
-
-if(VISIT_PYTHON3_DIR AND VISIT_ENABLE_MANUALS)
-  if(WIN32)
-    # Need a different path for windows because sphinx-build
-    # is in a different location.
-
-    # don't pollute the src repo, build the docs in the binary dir.
-    # This doesn't allow the manuals to be found if running a dev build,
-    # so location may need to be rethought, but other than building them
-    # in exe/Release and in exe/Debug, thought this location was best.
-    add_custom_target(manuals
-        COMMAND ${VISIT_PYTHON3_DIR}/python.exe
-                ${VISIT_PYTHON3_DIR}/Scripts/sphinx-build-script.py
-        -b html ${VISIT_SOURCE_DIR}/doc 
-        ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
-    # Add command to ensure the manuals are installed to the correct location
-    install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual
-        DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}/help/en_US/
-        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                         GROUP_READ GROUP_WRITE
-                         WORLD_READ
-        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                              WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
-  elseif(APPLE)
-    add_custom_target(manuals
-                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
-                  -b html ${VISIT_SOURCE_DIR}/doc
-                  ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
-    # Add command to ensure the manuals are installed to the correct location
-    install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual
-        DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}/help/en_US/
-        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                         GROUP_READ GROUP_WRITE
-                         WORLD_READ
-        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                              WORLD_READ             WORLD_EXECUTE
-        CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
-  else()
-    add_custom_target(manuals
-                  COMMAND ${VISIT_PYTHON3_DIR}/bin/sphinx-build
-                  -b html ${VISIT_SOURCE_DIR}/doc
-                  ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
-  endif()
-endif()
 
 #CMake add subdirectory forces this action to go last
 #todo: find way for this function to execute as last

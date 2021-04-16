@@ -577,7 +577,7 @@ KeyframeDataModel::data(const QModelIndex &index, int role) const
                 {
                     s.start = plotList->GetPlots(s.id).GetBeginFrame();
                     s.end = plotList->GetPlots(s.id).GetEndFrame();
-                    retval = qVariantFromValue(s);
+                    retval = QVariant::fromValue(s);
                 }
             }
             else
@@ -596,7 +596,7 @@ KeyframeDataModel::data(const QModelIndex &index, int role) const
                     const intVector &kf = windowInfo->GetViewKeyframes();
                     for(size_t i = 0; i < kf.size(); ++i)
                         s.idToIndex[kf[i]] = kf[i];
-                    retval = qVariantFromValue(s);
+                    retval = QVariant::fromValue(s);
                 }
                 else if(rowInfo[id]->delegateType() == PlotAttsDelegate)
                 {
@@ -605,7 +605,7 @@ KeyframeDataModel::data(const QModelIndex &index, int role) const
                         const intVector &kf = plotList->GetPlots(s.id).GetKeyframes();
                         for(size_t i = 0; i < kf.size(); ++i)
                             s.idToIndex[kf[i]] = kf[i];
-                        retval = qVariantFromValue(s);
+                        retval = QVariant::fromValue(s);
                     }
                 }
                 else if(rowInfo[id]->delegateType() == PlotStateDelegate)
@@ -615,13 +615,13 @@ KeyframeDataModel::data(const QModelIndex &index, int role) const
                         const intVector &kf = plotList->GetPlots(s.id).GetDatabaseKeyframes();
                         for(size_t i = 0; i < kf.size(); ++i)
                             s.idToIndex[kf[i]] = kf[i];
-                        retval = qVariantFromValue(s);
+                        retval = QVariant::fromValue(s);
                     }
                 }
                 else if(rowInfo[id]->delegateType() == CurrentFrameDelegate)
                 {
                     s.idToIndex[0] = currentIndex();
-                    retval = qVariantFromValue(s);
+                    retval = QVariant::fromValue(s);
                 }
             }
         }

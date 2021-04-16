@@ -21,39 +21,20 @@ Configuration
 
 2. Open the JSON configuration file (see :numref:`Figure %s<masonry_config_file>`)  created in **step 1** and modify or add the following options as needed:
    
-``version``: **required** 
-   The version of VisIt you are building.
-
-``build_types``: **required** 
-   A list of builds for masonry to create.
-
-``build_dir``: **optional** 
-   The directory to place all of the files generated from the build process. If this option isn't specified the build directory will default to ``build-<json_base>`` (e.g., build-mb-3.1.2-darwin-10.14-x86_64-release) in your current working directory. 
-
-``branch``: **required** 
-   The git branch to checkout and build.
-
 ``arch``: **required**
    The build architecture (e.g., darwin-x86_64).
-
-``cert``: **optional** 
-   The Developer ID signing certificate **Common Name**.
-
-``make_nthreads``: **optional** 
-   The number of parallel threads to use when building the source code.
-
-``skip_checkout``: **optional**
-   if you have to restart masonry and already have the source code checked out you can skip that step by setting this option to *yes*. 
 
 ``boost_dir``: **optional**
    The path to boost if installed on your system. This also triggers the setting of two CMake options (**VISIT_USE_BOOST:BOOL** and **BOOST_ROOT:PATH**).
 
-``git``: **required** 
-   ``mode``: **required** - set this option to **ssh** or **https**
+``branch``: **required** 
+   The git branch to checkout and build.
    
-   ``git_uname``: **optional** - github username
-
-   ``depth``: **optional** - specify an integer value for a shallow clone with a history truncated to the specified number of commits.
+``build_dir``: **optional** 
+   The directory to place all of the files generated from the build process. If this option isn't specified the build directory will default to ``build-<json_base>`` (e.g., build-mb-3.1.2-darwin-10.14-x86_64-release) in your current working directory. 
+   
+``build_types``: **required** 
+   A list of builds for masonry to create.
 
 ``build_visit``: **required** 
    Allows you to set the ``build_visit`` options.
@@ -66,20 +47,11 @@ Configuration
 
    ``make_flags``: **optional** - Make flags
 
-``force_clean``: **optional**
-   Removes all files and directories from your build folder.
-
-``c_compiler``: **optional**
-   Specify the C compiler
-
-``cxx_compiler``: **optional**
-   Specify the C++ compiler
-
-``tarball``: **optional**
-   Specify the path to the source tar file. This option is currently not being used.
-
 ``build_xdb``: **optional**
    Set the **VISIT_ENABLE_XDB:BOOL** option to *ON* if true. 
+
+``cert``: **required for signing/notarization** 
+   The Developer ID signing certificate **Common Name**.
 
 ``cmake_extra_args``: **optional**
    Specify extra arguments for CMake.
@@ -87,8 +59,50 @@ Configuration
 ``config_site``: **optional**
    Specify a path for the config site file.
 
+``cxx_compiler``: **optional**
+   Specify the C++ compiler
+
+``c_compiler``: **optional**
+   Specify the C compiler
+
+``entitlements``: **required for notarization**
+   Specify the location of VisIt's entitlements file. The one used for VisIt releases is located in the ``opts`` directory and is named **visit.entitlements**. See `Hardened Runtime <https://developer.apple.com/documentation/security/hardened_runtime>`_ for more details on entitlements.
+
+``force_clean``: **optional**
+   Removes all files and directories from your build folder.
+
+``git``: **required** 
+   ``mode``: **required** - set this option to **ssh** or **https**
+   
+   ``git_uname``: **optional** - github username
+
+   ``depth``: **optional** - specify an integer value for a shallow clone with a history truncated to the specified number of commits.
+
+``make_nthreads``: **optional** 
+   The number of parallel threads to use when building the source code.
+
+``notarize``: **required for notarization**
+   Specify the options needed for notarization.
+
+   ``username``: - Apple ID email
+
+   ``password``: - App-specific password or keychain string containing the App-specific password
+
+   ``asc_provider``: - Provider short name
+
+   ``bundle_id``: - VisIt's bundle identifier
+
 ``platform``: **optional**
    Specify the platform (**osx** or **linux**)
+
+``skip_checkout``: **optional**
+   if you have to restart masonry and already have the source code checked out you can skip that step by setting this option to *yes*. 
+
+``tarball``: **optional**
+   Specify the path to the source tar file. This option is currently not being used.
+
+``version``: **required** 
+   The version of VisIt you are building.
 
 .. _masonry_config_file:
 
@@ -120,3 +134,12 @@ To `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_ind
 
    Xcode Manage Certificates Dialog
 
+App-Specific Password
+~~~~~~~~~~~~~~~~~~~~~
+To create an app-specific password go to: `https://appleid.apple.com/account/manage <https://appleid.apple.com/account/manage>`_ . Generate the app-specific password by navigating to: *Security->App-Specific Password*.
+
+To avoid having a plain-text password in your config file, you can add the app-specific password to your macOS keychain. To do this, run the following command:
+
+``security add-generic-password -a "apple-id-email" -w "app-specific password" -s "notarizing-name"``
+
+The ``-s`` parameter is the name that this item will have in your keychain. Apple's documentation on `Customizing the Notarization Workflow <https://developer.apple.com/documentation/xcode/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow>`_ provides a good overview of the notarization process and a `link <https://support.apple.com/en-us/HT204397>`_ detailing how to generate and manage app-specific passwords.

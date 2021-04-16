@@ -102,8 +102,8 @@ class QvisPseudocolorPlotWindow : public QvisPostableWindowObserver
     Q_OBJECT
 public:
     QvisPseudocolorPlotWindow(const int type, PseudocolorAttributes *_pcAtts,
-                              const QString &caption = QString::null,
-                              const QString &shortName = QString::null,
+                              const QString &caption = QString(),
+                              const QString &shortName = QString(),
                               QvisNotepadArea *notepad = 0);
     virtual ~QvisPseudocolorPlotWindow();
     virtual void CreateWindowContents();

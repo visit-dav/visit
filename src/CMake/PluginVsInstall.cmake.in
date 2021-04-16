@@ -88,6 +88,10 @@
 #   Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
 #   Removed FastBit and FastQuery
 #
+#   Kathleen Biagas, Mon Jan  4 18:14:23 PST 2021
+#   Use @filtered_VTKm_INCLUDE_DIRS@  for setting VTKm_INCLUDE_DIRS
+#   instead of setting manually.
+#
 #****************************************************************************/
 
 ##
@@ -313,8 +317,13 @@ if(VISIT_PARALLEL)
     set(CONDUIT_MPI_LIB @CONDUIT_MPI_LIB@)
 endif()
 
+
+set(FMS_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/fms/include)
+set(FMS_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
+set(FMS_LIB @FMS_LIB@)
+
 # mfem include, fudge because we know that the includes should be
-set(MFEM_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_DIR};${ZLIB_INCLUDE_DIR})
+set(MFEM_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/mfem/include;${CONDUIT_INCLUDE_DIR};${FMS_INCLUDE_DIR};${ZLIB_INCLUDE_DIR})
 set(MFEM_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(MFEM_LIB @MFEM_LIB@)
 
@@ -323,8 +332,7 @@ set(OPENEXR_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(OPENEXR_LIB @OPENEXR_LIB@)
 
 set(VTKh_INCLUDE_DIRS  ${VISIT_INCLUDE_DIR}/vtkh/include)
-set(VTKm_INCLUDE_DIRS  ${VISIT_INCLUDE_DIR}/vtkm/include/vtkm-@VTKm_VERSION_MAJOR@.@VTKm_VERSION_MINOR@
-                       ${VISIT_INCLUDE_DIR}/vtkm/include/vtkm-@VTKm_VERSION_MAJOR@.@VTKm_VERSION_MINOR@/vtkm/thirdparty/taotuple)
+set(VTKm_INCLUDE_DIRS  @filtered_VTKm_INCLUDE_DIRS@)
 
 include(${VISIT_INCLUDE_DIR}/VisItMacros.cmake)
 

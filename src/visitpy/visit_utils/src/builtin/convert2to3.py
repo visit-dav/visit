@@ -19,6 +19,17 @@
 
 from lib2to3 import refactor
 
+# this class holds static state
+class AutoPy2to3Flag:
+    enabled = False
+
+
+def SetAutoPy2to3(val):
+    AutoPy2to3Flag.enabled = val
+
+def GetAutoPy2to3():
+    return AutoPy2to3Flag.enabled
+
 def ConvertPy2to3(py_script_text):
     """
     Converts contents of input string py_script_text to python 3 using lib2to3

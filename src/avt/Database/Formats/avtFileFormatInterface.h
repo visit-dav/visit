@@ -197,6 +197,9 @@ class    QueryOverTimeAttributes;
 //    Alister Maguire, Tue Sep 24 11:15:10 MST 2019
 //    Added QOT methods as well as GetCycles and GetTimes.
 //
+//    Alister Maguire, Mon Oct 12 14:04:09 PDT 2020
+//    Changed GetQOTMesh to GetQOTPointMesh, and added GetQOTCoordMesh.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormatInterface
@@ -215,10 +218,16 @@ class DATABASE_API avtFileFormatInterface
     //
     // Query over time specific methods. 
     //
-    virtual vtkDataSet     *GetQOTMesh(const QueryOverTimeAttributes *,
-                                       int,
-                                       int *, 
-                                       int);
+    virtual vtkDataSet     *GetQOTPointMesh(const QueryOverTimeAttributes *,
+                                            int,
+                                            int *, 
+                                            int);
+    virtual vtkDataSet     *GetQOTCoordMesh(const QueryOverTimeAttributes *,
+                                            int,
+                                            int,
+                                            int *, 
+                                            int,
+                                            const char *);
     virtual vtkDataArray   *GetQOTVar(int,
                                       const char *, 
                                       int, 

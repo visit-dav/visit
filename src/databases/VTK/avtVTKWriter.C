@@ -212,6 +212,11 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //    Mark C. Miller, Mon Mar  9 19:50:57 PDT 2020
 //    Add output of expressions
+//
+//    Kathleen Biagas, Fri Mar 12, 2021
+//    Remove deletion of ds when tetrahedralizing, as it causes engine to
+//    crash when deleting plots after an export.
+//
 // ****************************************************************************
 
 void
@@ -298,7 +303,6 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
             tf->Update();
             vtkDataSet *_ds = (vtkDataSet*) tf->GetOutput();
             _ds->Register(NULL);
-            ds->Delete();
             tf->Delete();
             ds = _ds;
             debug1 << ds->GetNumberOfPoints() << " points, " << ds->GetNumberOfCells() << " cells." << endl;;

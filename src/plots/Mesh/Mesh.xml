@@ -92,6 +92,10 @@
       </Function>
       <Function name="CreateCompatible" user="false" member="true">
       </Function>
+      <Function name="MeshViewerEnginePluginInfo::InitializePlotAtts" user="false" member="true">
+      </Function>
+      <Function name="MeshViewerEnginePluginInfo::SetAutonomousColors" user="true" member="true">
+      </Function>
       <Include file="source" quoted="false">
         PointGlyphAttributes.h
       </Include>

@@ -264,7 +264,7 @@ QvisKeyframeWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisKeyframeWindow::GetCurrentFrame
 //
-// Purpose: 
+// Purpose:
 //   Returns the current frame for animation.
 //
 // Returns:    The current animation frame.
@@ -321,6 +321,9 @@ QvisKeyframeWindow::GetCurrentFrame() const
 //    Brad Whitlock, Mon Nov 10 11:36:20 PST 2008
 //    Qt 4.
 //
+//    Kathleen Biagas, Thu Jan 21, 2021
+//    Replace QString.asprintf with simpler QString.setNum.
+//
 // ****************************************************************************
 
 void
@@ -345,7 +348,7 @@ QvisKeyframeWindow::UpdateWindowInformation()
     {
         numFrames = 1;
     }
-    temp.sprintf("%d", numFrames);
+    temp.setNum(numFrames);
     nFrames->blockSignals(true);
     nFrames->setText(temp);
     nFrames->blockSignals(false);
@@ -629,9 +632,9 @@ QvisKeyframeWindow::apply()
 // ****************************************************************************
 // Method: QvisKeyframeWindow::userSetNFrames
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the number of frames
-//   changes. The purpose is only to record that the user entered a number 
+//   changes. The purpose is only to record that the user entered a number
 //   of frames so it is not okay to automatically calculate a number of
 //   frames.
 //
@@ -639,7 +642,7 @@ QvisKeyframeWindow::apply()
 // Creation:   Tue Apr 6 23:50:53 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -695,14 +698,14 @@ QvisKeyframeWindow::keyframeEnabledToggled(bool k)
 // ****************************************************************************
 // Method: QvisKeyframeWindow::addViewKeyframe
 //
-// Purpose: 
+// Purpose:
 //   Add a view keyframe.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov  4 16:48:16 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -714,14 +717,14 @@ QvisKeyframeWindow::addViewKeyframe()
 // ****************************************************************************
 // Method: QvisKeyframeWindow::useViewKFClicked
 //
-// Purpose: 
+// Purpose:
 //   Tells VisIt to use the view keyframes for setting the view.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Nov 10 14:02:26 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

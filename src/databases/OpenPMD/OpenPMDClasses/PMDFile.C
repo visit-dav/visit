@@ -217,8 +217,7 @@ void PMDFile::ScanFileAttributes()
             // Read attribute
             H5Aread (attrId, atype, buffer);  // not NULL-terminated
             buffer[size] = '\0';
-
-            this->meshesPath = buffer;
+            this->meshesPath = buffer; // string copy
             delete [] buffer;
 
         }
@@ -229,9 +228,7 @@ void PMDFile::ScanFileAttributes()
             // Read attribute
             H5Aread (attrId, atype, buffer);  // not NULL-terminated
             buffer[size] = '\0';
-
-            this->particlesPath = buffer;
-
+            this->particlesPath = buffer; // string copy
             delete [] buffer;
         }
     }

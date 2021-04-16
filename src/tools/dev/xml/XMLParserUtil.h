@@ -127,7 +127,7 @@ Bool2Text(bool b)
 inline QString
 Int2Text(int i)
 {
-    return QString().sprintf("%d",i);
+    return QString().asprintf("%d",i);
 }
 
 // ****************************************************************************

@@ -60,8 +60,8 @@ class QvisTransformWindow : public QvisOperatorWindow
   public:
     QvisTransformWindow(const int type,
                          TransformAttributes *subj,
-                         const QString &caption = QString::null,
-                         const QString &shortName = QString::null,
+                         const QString &caption = QString(),
+                         const QString &shortName = QString(),
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisTransformWindow();
     virtual void CreateWindowContents();

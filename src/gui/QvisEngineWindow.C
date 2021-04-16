@@ -24,7 +24,7 @@ using std::vector;
 // ****************************************************************************
 // Method: QvisEngineWindow::QvisEngineWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisEngineWindow class.
 //
 // Programmer: Brad Whitlock
@@ -50,7 +50,7 @@ QvisEngineWindow::QvisEngineWindow(EngineList *engineList,
 // ****************************************************************************
 // Method: QvisEngineWindow::~QvisEngineWindow
 //
-// Purpose: 
+// Purpose:
 //   This is the destructor for the QvisEngineWindow class.
 //
 // Programmer: Brad Whitlock
@@ -65,15 +65,15 @@ QvisEngineWindow::QvisEngineWindow(EngineList *engineList,
 QvisEngineWindow::~QvisEngineWindow()
 {
     // Delete the status attributes in the status map.
-    
+
     QMapIterator<QString, StatusAttributes*> itr(statusMap);
-    
+
     while(itr.hasNext())
     {
         itr.next();
         delete itr.value();
     }
-    
+
     // Detach from the status atts if they are still around.
     if(statusAtts)
         statusAtts->Detach(this);
@@ -82,7 +82,7 @@ QvisEngineWindow::~QvisEngineWindow()
 // ****************************************************************************
 // Method: QvisEngineWindow::CreateWindowContents
 //
-// Purpose: 
+// Purpose:
 //   Creates the widgets for the window.
 //
 // Programmer: Brad Whitlock
@@ -112,6 +112,9 @@ QvisEngineWindow::~QvisEngineWindow()
 //
 //    Brad Whitlock, Mon Oct 10 12:55:52 PDT 2011
 //    I added some information.
+//
+//    Alister Maguire, Thu Nov 12 09:58:35 PST 2020
+//    Removed the interrupt engine logic as it is no longer used.
 //
 // ****************************************************************************
 
@@ -193,11 +196,6 @@ QvisEngineWindow::CreateWindowContents()
 
     QHBoxLayout *buttonLayout1 = new QHBoxLayout();
     topLayout->addLayout(buttonLayout1);
-    
-    interruptEngineButton = new QPushButton(tr("Interrupt"), central);
-    connect(interruptEngineButton, SIGNAL(clicked()), this, SLOT(interruptEngine()));
-    interruptEngineButton->setEnabled(false);
-    buttonLayout1->addWidget(interruptEngineButton);
 
     clearCacheButton = new QPushButton(tr("Clear cache"), central);
     connect(clearCacheButton, SIGNAL(clicked()), this, SLOT(clearCache()));
@@ -215,7 +213,7 @@ QvisEngineWindow::CreateWindowContents()
 // ****************************************************************************
 // Method: QvisEngineWindow::Update
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the subjects that the window observes are
 //   modified.
 //
@@ -243,7 +241,7 @@ QvisEngineWindow::Update(Subject *TheChangedSubject)
 // ****************************************************************************
 // Method: QvisEngineWindow::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the subjects observed by the window are
 //   destructed.
 //
@@ -254,7 +252,7 @@ QvisEngineWindow::Update(Subject *TheChangedSubject)
 // Creation:   Wed May 2 16:33:44 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -269,7 +267,7 @@ QvisEngineWindow::SubjectRemoved(Subject *TheRemovedSubject)
 // ****************************************************************************
 // Method: QvisEngineWindow::UpdateWindow
 //
-// Purpose: 
+// Purpose:
 //   This method is called to update the window's widgets when the subjects
 //   change.
 //
@@ -289,14 +287,20 @@ QvisEngineWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Jeremy Meredith, Mon Apr  4 16:02:22 PDT 2005
 //   I made better names for simulations.
 //
-//   Kathleen Bonnell, Tue Apr 26 16:42:17 PDT 2005 
-//   Don't enable interruptEngineButton until the process has been fixed. 
+//   Kathleen Bonnell, Tue Apr 26 16:42:17 PDT 2005
+//   Don't enable interruptEngineButton until the process has been fixed.
 //
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
 //
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
+//
+//   Alister Maguire, Thu Nov 12 09:58:35 PST 2020
+//   Remove interrupt engine logic.
+//
+//   Kathlen Biagas, Thu Jan 21, 2021
+//   Replace QString::asprintf with QString::arg as suggested in Qt docs.
 //
 // ****************************************************************************
 
@@ -340,11 +344,9 @@ QvisEngineWindow::UpdateWindow(bool doAll)
             {
                 current = 0;
                 engineCombo->setCurrentIndex(0);
-                if (sim[0]=="")
-                    activeEngine = QString().sprintf("%s",host[0].c_str());
-                else
-                    activeEngine = QString().sprintf("%s:%s",host[0].c_str(),
-                                                     sim[0].c_str());
+                activeEngine = QString(host[0].c_str()); 
+                if (sim[0]!="")
+                    activeEngine += QString(":%1").arg(sim[0].c_str());
 
                 // Add an entry if needed.
                 AddStatusEntry(activeEngine);
@@ -366,9 +368,6 @@ QvisEngineWindow::UpdateWindow(bool doAll)
         // Update the engine information.
         UpdateInformation(current);
 
-        // Set the enabled state of the various widgets.
-        // KSB: When INTERRUPT ENGINE has been fixed, uncomment the next line.
-        //interruptEngineButton->setEnabled(host.size() > 0);
         closeEngineButton->setEnabled(host.size() > 0);
         clearCacheButton->setEnabled(host.size() > 0);
         engineCombo->setEnabled(host.size() > 0);
@@ -379,7 +378,7 @@ QvisEngineWindow::UpdateWindow(bool doAll)
         QString key(statusAtts->GetSender().c_str());
 
         if(key != QString("viewer"))
-        {    
+        {
             UpdateStatusEntry(key);
 
             // If the sender of the status message is the engine that we're
@@ -395,7 +394,7 @@ QvisEngineWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisEngineWindow::UpdateInformation
 //
-// Purpose: 
+// Purpose:
 //   Updates the engine information.
 //
 // Arguments:
@@ -446,7 +445,7 @@ QvisEngineWindow::UpdateInformation(int index)
 
         if(props.GetNumNodes() == -1)
             engineNN->setText(tr("Default"));
-        else 
+        else
             engineNN->setText(QString("%1").arg(props.GetNumNodes()));
 
         engineNP->setText(QString("%1").arg(props.GetNumProcessors()));
@@ -470,8 +469,8 @@ QvisEngineWindow::UpdateInformation(int index)
 // ****************************************************************************
 // Method: QvisEngineWindow::UpdateStatusArea
 //
-// Purpose: 
-//   Updates the window so it reflects the status information for the 
+// Purpose:
+//   Updates the window so it reflects the status information for the
 //   currently selected engine.
 //
 // Programmer: Brad Whitlock
@@ -481,7 +480,7 @@ QvisEngineWindow::UpdateInformation(int index)
 //    Jeremy Meredith, Fri Jun 29 15:12:08 PDT 2001
 //    Separated the single status/progress bar into one which reports
 //    total status and one which reports current stage progress.
-//   
+//
 //    Jeremy Meredith, Thu Jul  5 12:40:30 PDT 2001
 //    Added an explicit cast to avoid a warning.
 //
@@ -491,15 +490,18 @@ QvisEngineWindow::UpdateInformation(int index)
 //    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //    Initial Qt4 Port.
 //
+//    Kathleen Biagas, Tue Mar  2 15:49:07 PST 2021
+//    Fix QString arg indexing.
+//
 // ****************************************************************************
 
 void
 QvisEngineWindow::UpdateStatusArea()
 {
-    
+
     if(!statusMap.contains(activeEngine))
         return;
-        
+
     StatusAttributes *s = statusMap[activeEngine];
     if(s->GetClearStatus())
     {
@@ -529,8 +531,7 @@ QvisEngineWindow::UpdateStatusArea()
         }
         else if (s->GetMessageType() == 2)
         {
-            QString msg;
-            msg.sprintf("%d/%d", s->GetCurrentStage(), s->GetMaxStage());
+            QString msg = QString("%1/%2").arg(s->GetCurrentStage()).arg(s->GetMaxStage());
             msg = tr("Total Status: Stage ") + msg;
             totalStatusLabel->setText(msg);
             msg = tr("Stage Status: ") + QString(s->GetCurrentStageName().c_str());
@@ -546,7 +547,7 @@ QvisEngineWindow::UpdateStatusArea()
 // ****************************************************************************
 // Method: QvisEngineWindow::ConnectStatusAttributes
 //
-// Purpose: 
+// Purpose:
 //   Connects the status attributes subject that the window will observe.
 //
 // Arguments:
@@ -556,7 +557,7 @@ QvisEngineWindow::UpdateStatusArea()
 // Creation:   Wed May 2 16:31:48 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -572,7 +573,7 @@ QvisEngineWindow::ConnectStatusAttributes(StatusAttributes *s)
 // ****************************************************************************
 // Method: QvisEngineWindow::AddStatusEntry
 //
-// Purpose: 
+// Purpose:
 //   Adds an engine to the internal status map.
 //
 // Arguments:
@@ -582,7 +583,7 @@ QvisEngineWindow::ConnectStatusAttributes(StatusAttributes *s)
 // Creation:   Wed May 2 16:35:50 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -601,7 +602,7 @@ QvisEngineWindow::AddStatusEntry(const QString &key)
 // ****************************************************************************
 // Method: QvisEngineWindow::RemoveStatusEntry
 //
-// Purpose: 
+// Purpose:
 //   Removes an engine from the internal status map.
 //
 // Arguments:
@@ -621,7 +622,7 @@ QvisEngineWindow::RemoveStatusEntry(const QString &key)
 {
     // If the entry is not in the map, return.
     if(!statusMap.contains(key))
-        return;    
+        return;
 
     // Delete the status attributes that are in the map.
     delete statusMap[key];
@@ -632,7 +633,7 @@ QvisEngineWindow::RemoveStatusEntry(const QString &key)
 // ****************************************************************************
 // Method: QvisEngineWindow::UpdateStatusEntry
 //
-// Purpose: 
+// Purpose:
 //   Makes the specified entry in the status map update to the current status
 //   in the status attributes.
 //
@@ -655,7 +656,7 @@ QvisEngineWindow::UpdateStatusEntry(const QString &key)
     // If the sender is in the status map, copy the status into the map entry.
     // If the sender is not in the map, add it.
     QMapIterator<QString, StatusAttributes*> itr(statusMap);
-    
+
     if(statusMap.contains(activeEngine))
     {
         *statusMap[activeEngine] = *statusAtts;
@@ -671,7 +672,7 @@ QvisEngineWindow::UpdateStatusEntry(const QString &key)
 // ****************************************************************************
 // Method: QvisEngineWindow::closeEngine
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the "Close engine" button
 //   is clicked. Its job is to tell the viewer to close the engine being
 //   displayed by the window.
@@ -728,40 +729,9 @@ QvisEngineWindow::closeEngine()
 }
 
 // ****************************************************************************
-// Method: QvisEngineWindow::interruptEngine
-//
-// Purpose: 
-//   This is a Qt slot function that is called to interrupt the engine that's
-//   displayed in the window.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed May 2 16:38:41 PST 2001
-//
-// Modifications:
-//    Jeremy Meredith, Tue Mar 30 09:34:33 PST 2004
-//    I added support for simulations.
-//   
-//    Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
-//    Initial Qt4 Port.
-//
-// ****************************************************************************
-
-void
-QvisEngineWindow::interruptEngine()
-{
-    int index = engineCombo->currentIndex();
-    if (index < 0)
-        return;
-    string host = engines->GetEngineName()[index];
-    string sim  = engines->GetSimulationName()[index];
-
-    GetViewerProxy()->InterruptComputeEngine(host, sim);
-}
-
-// ****************************************************************************
 // Method: QvisEngineWindow::clearCache
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called to tell the current engine
 //   to clear its cache.
 //
@@ -795,7 +765,7 @@ QvisEngineWindow::clearCache()
 // ****************************************************************************
 // Method: QvisEngineWindow::selectEngine
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when selecting a new engine
 //   to display.
 //
@@ -817,13 +787,9 @@ QvisEngineWindow::clearCache()
 void
 QvisEngineWindow::selectEngine(int index)
 {
-    if (engines->GetSimulationName()[index]=="")
-        activeEngine = QString().sprintf("%s",
-                                         engines->GetEngineName()[index].c_str());
-    else
-        activeEngine = QString().sprintf("%s:%s",
-                                  engines->GetEngineName()[index].c_str(),
-                                  engines->GetSimulationName()[index].c_str());
+    activeEngine = QString(engines->GetEngineName()[index].c_str());
+    if (engines->GetSimulationName()[index]!="")
+        activeEngine += QString(":%1").arg(engines->GetSimulationName()[index].c_str());
 
     // Update the rest of the widgets using the information for the
     // active engine.

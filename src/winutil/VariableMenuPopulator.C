@@ -1267,6 +1267,10 @@ VariableMenuPopulator::ItemEnabled(int varType) const
 //   Mark C. Miller, Tue May  8 18:39:18 PDT 2018
 //   Remove call to parent->addMenu for case where popup is not found becase
 //   the widget is already parented in the constructor where it is created. 
+//
+//   Kathleen Biagas, Fri Oct 23, 2020
+//   Changed StringStringMap, to CIStringStringMap.
+//
 // ****************************************************************************
 
 void
@@ -1282,7 +1286,7 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
     size_t j;
     std::string var;
     bool        validVar;
-    const StringStringMap &originalNameToGroupedName = ginfo->grouping;
+    const CIStringStringMap &originalNameToGroupedName = ginfo->grouping;
     bool shouldUseGrouping = ginfo->required;
     vars.InitTraversal();
     unsigned int hashVal = 0;
@@ -1290,7 +1294,7 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
     {
         if (shouldUseGrouping)
         {
-            StringStringMap::const_iterator it = originalNameToGroupedName.find(var);
+            CIStringStringMap::const_iterator it = originalNameToGroupedName.find(var);
             if(it != originalNameToGroupedName.end())
                  var = it->second;
         }
@@ -1731,11 +1735,16 @@ VariableMenuPopulator::VariableList::Size() const
 //    Mark C. Miller, Wed Jun  5 13:48:56 PDT 2019
 //    Change use of maps for variable lists to multimaps using case-insensitive
 //    comparator function.
+//
+//    Kathleen Biagas, Fri Oct 23, 2020
+//    Changed container names to reflect use of CICompare (case-insensitve
+//    comparator), now defined in maptypes.h
+//
 // ****************************************************************************
 
 bool
 VariableMenuPopulator::VariableList::IsGroupingRequired(
-    StringStringMap& originalNameToGroupedName)
+    CIStringStringMap& originalNameToGroupedName)
 {
     const char *mName = "VariableMenuPopulator::VariableList::IsGroupingRequired";
     int total = visitTimer->StartTimer(); 
@@ -1810,9 +1819,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
     //          and split them up if they are over the grouping threshold.
     //
     int stage2 = visitTimer->StartTimer();
-    typedef std::set<std::string> StringSet;
-    typedef std::map<std::string, StringSet> StringStringSetMap;
-    StringStringSetMap entriesAtPath;
+    StringCIStringSetMap entriesAtPath;
     InitTraversal();
     while(GetNextVariable(var, validVar))
     {
@@ -1824,7 +1831,7 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
         for (size_t j = 0; j < pathvar.size(); j++)
         {
             // Get an iterator to the named set.
-            StringStringSetMap::iterator p2 = entriesAtPath.find(path);
+            StringCIStringSetMap::iterator p2 = entriesAtPath.find(path);
             if (p2 == entriesAtPath.end())
                 entriesAtPath[path].insert(pathvar[j]);
             else
@@ -1835,12 +1842,12 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
     }
     visitTimer->StopTimer(stage2, "Stage 2");
 #ifdef DEBUG_PRINT
-    for(StringStringSetMap::const_iterator it = entriesAtPath.begin();
+    for(StringCIStringSetMap::const_iterator it = entriesAtPath.begin();
         it != entriesAtPath.end(); ++it)
     {
         debug1 << "key = \"" << it->first.c_str() << "\", values(sz="
                << it->second.size() << ") = {";
-        for(StringSet::const_iterator si = it->second.begin();
+        for(CIStringSet::const_iterator si = it->second.begin();
             si != it->second.end(); ++si)
         {
             debug1 << "\"" << si->c_str() << "\", ";
@@ -1859,9 +1866,8 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
     //          have been grouped so we populate the menus correctly.
     //
     int stage3 = visitTimer->StartTimer();
-    typedef std::vector<StringSet> StringSetVector;
-    typedef std::map<std::string, StringSetVector > StringStringSetVectorMap;
-    StringStringSetVectorMap groupsAtPath;
+    typedef std::map<std::string, CIStringSetVector > StringCIStringSetVectorMap;
+    StringCIStringSetVectorMap groupsAtPath;
     InitTraversal();
     while(GetNextVariable(var, validVar))
     {
@@ -1884,13 +1890,13 @@ VariableMenuPopulator::VariableList::IsGroupingRequired(
             {
                 if (groupsAtPath.find(path) == groupsAtPath.end())
                 {
-                    StringSetVector groups;
+                    CIStringSetVector groups;
                     StringHelpers::GroupStringsFixedAlpha(entriesAtPath[path], 20, groups);
                     groupsAtPath[path] = groups;
                 }
 
                 // Find a group that contains pathvar[j].
-                StringStringSetVectorMap::const_iterator g = groupsAtPath.find(path);
+                StringCIStringSetVectorMap::const_iterator g = groupsAtPath.find(path);
                 if(g != groupsAtPath.end())
                 {
                     // g->second points to a StringSetVector. We want to

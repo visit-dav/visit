@@ -114,6 +114,11 @@ if test "$version" != ""; then
     thispython="$dir/../$version/$platform/bin/python"
     if test -x "$thispython"; then
         visitpython="$thispython"
+    else
+        thispython="$dir/../$version/$platform/bin/python3"
+        if test -x "$thispython"; then
+            visitpython="$thispython"
+        fi
     fi
 fi
 
@@ -127,7 +132,7 @@ if test -n "$visitpython"; then
     # next to the python binary we located already.
     pyver=""
     for ver in 2.4 2.5 2.6 2.7 3.6 3.7 3.8 3.9 3.10 3.11 3.12; do
-        if test -x "$visitpython$ver"; then
+        if test -x "$visitdir/bin/python$ver"; then
             pyver=$ver
             break
         fi

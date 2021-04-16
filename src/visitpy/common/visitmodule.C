@@ -254,6 +254,24 @@ static void OperatorPluginAddInterface();
 static void InitializeExtensions();
 static void ExecuteClientMethod(ClientMethod *method, bool onNewThread);
 static int InitializeViewerProxy(ViewerProxy* viewerproxy = NULL);
+
+//
+// VISIT_METHODS_MAX_SIZE Controls the pre-allocated size of 
+// the VisItMethods std::vector.
+//
+// This vector is used to hold structs that are handed to python 
+// as pointers. These structs can't be realloced, or else Python
+// will dance around in memory when trying to call our module
+// methods!
+//
+// As of 2020-12-14, the current number of methods is ~350.
+// 1024 is used as a conservative estimate of future growth.
+//
+// When this number is too small, we show a runtime error
+// at cli startup.
+//
+int VISIT_METHODS_MAX_SIZE = 1024;
+
 //
 // Type definitions
 //
@@ -573,13 +591,32 @@ static void WakeMainThread(Subject *, void *)
 #define THREAD_INIT()
 #endif
 
+// ---------------------------------------------------------------
+//
+// Our PyEval_AcquireLock() solution did not work in Python 3.
+// This lead to CLI crashing whenever a lock was requested
+// (the primary case was command line recording, but there
+//  may be others)
+//
+// Prior locking solution worked fine in Python 2, so we keep
+// it when Python 2 is in play, but provide a new Python 3
+// solution using on PyGILState_Ensure() + PyGILState_Release()
+//
+// ---------------------------------------------------------------
+
+// ---------------------------------------------------------------
 // Locks the Python interpreter by one thread.
-PyThreadState *
+VISIT_PY_THREAD_LOCK_STATE
 VisItLockPythonInterpreter()
 {
+#if defined(IS_PY3K)
+    // python 3 imp
+    return PyGILState_Ensure();
+#else
+    // python 2 imp
+
     // get the global lock
     PyEval_AcquireLock();
-
     // get a reference to the PyInterpreterState
     PyInterpreterState * mainInterpreterState = mainThreadState->interp;
     // create a thread state object for this thread
@@ -587,20 +624,90 @@ VisItLockPythonInterpreter()
     // swap in my thread state
     PyThreadState_Swap(myThreadState);
     return myThreadState;
+#endif
 }
 
+// ---------------------------------------------------------------
 // Unlocks the Python interpreter by one thread.
 void
-VisItUnlockPythonInterpreter(PyThreadState *myThreadState)
+VisItUnlockPythonInterpreter(VISIT_PY_THREAD_LOCK_STATE state)
 {
+#if defined(IS_PY3K)
+    // python 3 imp
+    PyGILState_Release(state);
+#else
+    // python 2 imp
+
     // clear the thread state
     PyThreadState_Swap(NULL);
     // clear out any cruft from thread state object
-    PyThreadState_Clear(myThreadState);
+    PyThreadState_Clear(state);
     // delete my thread state object
-    PyThreadState_Delete(myThreadState);
+    PyThreadState_Delete(state);
     // release our hold on the global interpreter
     PyEval_ReleaseLock();
+#endif
+}
+
+// ****************************************************************************
+// Function: cli_PyRun_SimpleFile
+//
+// Purpose:
+//   Helper to run a script from a file, handling auto 2to3 mode.
+//   Serves as a Drop in replacement for PyRun_SimpleFile.
+//
+// Notes:
+//
+// Programmer: Cyrus Harrison
+// Creation:   Fri Jan  8 09:18:16 PST 2021
+//
+// Modifications:
+//
+// ****************************************************************************
+void 
+cli_PyRun_SimpleFile(FILE *fp, const char *fileName)
+{
+    // check if we are in auto 2to3 mode, which is indicated by:
+    //  visit_utils.builtin.GetAutoPy2to3()
+    
+    // users can change this at any time, so we need to check its current
+    // value
+
+    bool use_py2to3 = false;
+    // read value into temp var
+    std::string pycmd = "__tmp_auto_py2to3 = visit_utils.builtin.GetAutoPy2to3()\n";
+    PyRun_SimpleString(pycmd.c_str());
+    // read result
+    // all refs are borrowed
+    PyObject *main_module = PyImport_AddModule("__main__");
+    PyObject *main_dict   = PyModule_GetDict(main_module);
+    PyObject *res_obj = PyDict_GetItemString(main_dict,"__tmp_auto_py2to3");
+
+    if(res_obj != NULL)
+    {
+        if(PyObject_IsTrue(res_obj))
+        {
+            use_py2to3 = true;
+        }
+
+        // remove temp
+        PyDict_DelItemString(main_dict,"__tmp_auto_py2to3");
+    }
+
+    if(use_py2to3)
+    {
+        // read the script contents, convert and run using exec
+        pycmd = "exec(";
+        pycmd += " visit_utils.ConvertPy2to3(";
+        pycmd += " open(\"" + std::string(fileName) + "\").read()";
+        pycmd += ")";
+        pycmd += ")\n";
+        PyRun_SimpleString(pycmd.c_str());
+    }
+    else // no auto magic, use standard path
+    {
+        PyRun_SimpleFile(fp,(char*)fileName);
+    }
 }
 
 // ****************************************************************************
@@ -11053,7 +11160,7 @@ visit_GetLight(PyObject *self, PyObject *args)
 //   Added book keeping to track execution stack of source files.
 //
 //   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
-//   Added spoofing of __name__ for Source() executiuon so we can use
+//   Added spoofing of __name__ for Source() execution so we can use
 //   standard python check:
 //     if __name__ == "__main__"
 //   To delineate between '-s' and sourced scripts.
@@ -11107,7 +11214,8 @@ visit_Source(PyObject *self, PyObject *args)
     //
     // Execute the commands in the file.
     //
-    PyRun_SimpleFile(fp, (char *)fileName);
+    cli_PyRun_SimpleFile(fp,fileName);
+
     fclose(fp);
 
     // book keeping for source file stack
@@ -12027,6 +12135,9 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
 //   Port to python 3.
 //
+//   Eric Brugger, Tue Jan 26 13:17:19 PST 2021
+//   Modified the python args to be a char vector instead of a string.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12053,7 +12164,7 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     stringVector vars;
-    std::string  args_pickled  = "";
+    charVector   args_pickled;
     std::string  script_source = "";
 
     // if vars were passed in, add them to the variable list
@@ -12075,9 +12186,10 @@ visit_PythonQuery(PyObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
 
-        char *str_val = PyString_AsString(res);
-        args_pickled = std::string(str_val);
-        PyString_AsString_Cleanup(str_val);
+        int size_py_args = PyBytes_Size(res);
+        char *str_py_args = PyBytes_AsString(res);
+        for (int i = 0; i < size_py_args; i++)
+            args_pickled.push_back(str_py_args[i]);
 
         // decref b/c we created a new python string
         Py_DECREF(res);
@@ -16809,7 +16921,7 @@ visit_exec_client_method(void *data)
     ClientMethod *m = (ClientMethod *)cbData[0];
     bool acquireLock = cbData[1] ? true : false;
 
-    PyThreadState *myThreadState = 0;
+    VISIT_PY_THREAD_LOCK_STATE myThreadState;
 
     if(acquireLock)
         myThreadState = VisItLockPythonInterpreter();
@@ -17264,6 +17376,14 @@ std::vector<PyMethodDef> VisItMethods;
 //   Cyrus Harrison, Wed Mar 17 11:16:58 PDT 2010
 //   Use PyCFunction typedef.
 //
+//   Cyrus Harrison, Mon Dec 14 11:28:57 PST 2020
+//   Pre-allocate the std::vector on first call to add.
+//   Since we hand pointers of these structs to python, we need
+//   to make sure the memory backing them isn't re/deallocated as we call
+//   push_back. This was not an issue with python 2 b/c how the module
+//   was inited, but realloc did cause problems with python 3 due 
+//   to required multi-step init.
+//
 // ****************************************************************************
 
 static void
@@ -17271,12 +17391,35 @@ AddMethod(const char *methodName,
           PyCFunction methodImp,
           const char *doc = NULL)
 {
-    PyMethodDef newMethod;
-    newMethod.ml_name  = (char *)methodName;
-    newMethod.ml_meth  = methodImp;
-    newMethod.ml_flags = METH_VARARGS;
-    newMethod.ml_doc   = (char *)doc;
-    VisItMethods.push_back(newMethod);
+    // these structs are passed to python, which uses the pointers
+    // they provide.
+    // the memory backing them can't change!
+
+    if(VisItMethods.size() == 0)
+    {
+        VisItMethods.reserve(VISIT_METHODS_MAX_SIZE);
+    }
+
+    // make sure we don't realloc, error if we hit max
+    if(VisItMethods.size() < VISIT_METHODS_MAX_SIZE)
+    {
+        PyMethodDef newMethod;
+        newMethod.ml_name  = (char *)methodName;
+        newMethod.ml_meth  = methodImp;
+        newMethod.ml_flags = METH_VARARGS;
+        newMethod.ml_doc   = (char *)doc;
+        VisItMethods.push_back(newMethod);
+    }
+    else
+    {
+        // ERROR!
+        std::ostringstream emsg;
+        emsg << "Internal Error: Attempt to add method beyond pre-allocated "
+             << "max VisItMethods.size() = " << VISIT_METHODS_MAX_SIZE 
+             <<  ". A VisIt developer must adjust compiled "
+             << "VISIT_METHODS_MAX_SIZE (in visitmodule.C) .";
+        EXCEPTION1(VisItException,emsg.str());
+    }
 }
 
 // ****************************************************************************
@@ -17295,6 +17438,13 @@ AddMethod(const char *methodName,
 // Creation:   Wed Mar 17 11:04:30 PDT 2010
 //
 // Modifications:
+//   Cyrus Harrison, Mon Dec 14 11:28:57 PST 2020
+//   Pre-allocate the std::vector on first call to add.
+//   Since we hand pointers of these structs to python, we need
+//   to make sure the memory backing them isn't re/deallocated as we call
+//   push_back. This was not an issue with python 2 b/c how the module
+//   was inited, but realloc did cause problems with python 3 due 
+//   to required multi-step init.
 //
 // ****************************************************************************
 
@@ -17303,12 +17453,32 @@ AddMethod(const char *methodName,
           PyCFunctionWithKeywords methodImp,
           const char *doc = NULL)
 {
-    PyMethodDef newMethod;
-    newMethod.ml_name  = (char *)methodName;
-    newMethod.ml_meth  = (PyCFunction)methodImp;
-    newMethod.ml_flags = METH_VARARGS | METH_KEYWORDS;
-    newMethod.ml_doc   = (char *)doc;
-    VisItMethods.push_back(newMethod);
+
+    if(VisItMethods.size() == 0)
+    {
+        VisItMethods.reserve(VISIT_METHODS_MAX_SIZE);
+    }
+
+    // make sure we don't realloc, error if we hit max
+    if(VisItMethods.size() < VISIT_METHODS_MAX_SIZE)
+    {
+        PyMethodDef newMethod;
+        newMethod.ml_name  = (char *)methodName;
+        newMethod.ml_meth  = (PyCFunction)methodImp;
+        newMethod.ml_flags = METH_VARARGS | METH_KEYWORDS;
+        newMethod.ml_doc   = (char *)doc;
+        VisItMethods.push_back(newMethod);
+    }
+    else
+    {
+        // ERROR!
+        std::ostringstream emsg;
+        emsg << "Internal Error: Attempt to add method beyond pre-allocated "
+             << "max VisItMethods.size() = " << VISIT_METHODS_MAX_SIZE 
+             <<  ". A VisIt developer must adjust compiled "
+             << "VISIT_METHODS_MAX_SIZE (in visitmodule.C) .";
+        EXCEPTION1(VisItException,emsg.str());
+    }
 }
 
 
@@ -19396,7 +19566,7 @@ cli_runscript(const char *fileName)
             //
             // Execute the commands in the file.
             //
-            PyRun_SimpleFile(fp, (char *)fileName);
+            cli_PyRun_SimpleFile(fp, (char *)fileName);
             fclose(fp);
 
             // book keeping for source stack
@@ -19628,20 +19798,24 @@ UpdateModuleMethods(PyObject *module,std::vector<PyMethodDef> &methods)
 {
     PyObject *mod_dict = PyModule_GetDict(module);
 
-    // last entry is always NULL to signal the end of valid methods
-    for(int i=0; i < methods.size() -1;i++)
+    for(int i=0; i < methods.size(); i++)
     {
         // check if method exists by doing a dict lookup
         const char *method_name = methods[i].ml_name;
-        PyObject *method_exists = PyDict_GetItemString(mod_dict,
-                                                       method_name);
 
-        // if == NULL, this method is new and we need to add it
-        if(method_exists == NULL)
+        // note: last entry is always NULL to signal the end of valid methods
+        // if name is null, skip lookup
+        if(method_name != NULL)
         {
-            PyObject *method = PyCFunction_New(&methods[i], Py_None);
-            PyDict_SetItemString(mod_dict,methods[i].ml_name, method);
-            Py_DECREF(method);
+            PyObject *method_exists = PyDict_GetItemString(mod_dict,
+                                                           method_name);
+            // if == NULL, this method is new and we need to add it
+            if(method_exists == NULL)
+            {
+                PyObject *method = PyCFunction_New(&methods[i], Py_None);
+                PyDict_SetItemString(mod_dict,methods[i].ml_name, method);
+                Py_DECREF(method);
+            }
         }
     }
 }
@@ -19949,6 +20123,9 @@ visit_eventloop(void *)
 //   Hari Krishnan, Brad Whitlock, Tue Mar 5 14:47:PST 2013
 //   Do not synchronize when using embedded viewer. It will cause deadlock.
 //
+//   Cyrus Harrison, Wed Feb 24 16:09:45 PST 2021
+//   Adjustments for Pyside 2 support. 
+//
 // ****************************************************************************
 
 static int
@@ -19973,7 +20150,7 @@ Synchronize()
 
         /// should only run once?
         while(syncCount != syncAtts->GetSyncTag()) {
-            PyRun_SimpleString("visit.__VisIt_PySide_Idle_Hook__()");
+            PyRun_SimpleString("visit_utils.builtin.pyside_support.__VisIt_PySide_Idle_Hook__()");
         }
         syncCount++;
         return 0;

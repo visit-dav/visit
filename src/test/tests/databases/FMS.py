@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------------
 
 def FilterMetaData(s):
-    lines = string.split(s, "\n")
+    lines = s.split("\n")
     txt = ""
     ignores=("exprList.","#expressions",".enum","simInfo.","blockNameScheme",".missingData","DataExtents =",".rectilinearGrid",".unitCell")
     for line in lines:

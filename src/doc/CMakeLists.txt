@@ -9,60 +9,55 @@
 #
 #   Mark C. Miller, Mon Jun  8 16:45:05 PDT 2020
 #   Added linkcheck builder
+#
+#   Kathleen Biagas, Wed Oct 21, 2020
+#   Replaced old logic with python-3 creation of manuals, which was moved
+#   from root CMakeLists.txt.
+#
+#   Kathleen Biagas, Thu Jan 7, 2021
+#   Merge logic for creating the build and install commands, they are the
+#   same for all platforms, except the sphinx build command which is
+#   different on Windows.  Added logic to ensure sphinx build command exists.
+#
+#   Eric Brugger, Wed Feb 10 15:07:41 PST 2021
+#   Update for switch to Python 3.
+#
 #****************************************************************************
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSphinx.cmake)
+if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS)
+    message(STATUS "Configure manuals targets")
+    set(errmsgtail "Either install sphinx or set VISIT_ENABLE_MANUALS to false.")
+    if(WIN32)
+        # Need a different sphinx build command for windows
+        if(NOT EXISTS ${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py)
+            message(FATAL_ERROR "Manuals are enabled but"
+                   " ${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py"
+                   " does not exist. ${errmsgtail}")
+        endif()
+        set(sphinx_build_cmd "${VISIT_PYTHON_DIR}/python.exe \ "
+              "${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py")
+    else()
+        if(NOT EXISTS ${VISIT_PYTHON_DIR}/bin/sphinx-build)
+            message(FATAL_ERROR "Manuals are enabled but"
+                    " ${VISIT_PYTHON_DIR}/bin/sphinx-build"
+                    " does not exist. ${errmsgtail}")
+        endif()
+        set(sphinx_build_cmd ${VISIT_PYTHON_DIR}/bin/sphinx-build)
+    endif()
 
-if(NOT DEFINED SPHINX_THEME)
-    set(SPHINX_THEME sphinx_rtd_theme)
-endif()
- 
-if(NOT DEFINED SPHINX_THEME_DIR)
-    set(SPHINX_THEME_DIR _themes)
-endif()
- 
-# configured documentation tools and intermediate build results
-#set(BINARY_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/_build")
- 
-# Sphinx cache with pickled ReST documents
-#set(SPHINX_CACHE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_doctrees")
- 
-# HTML output directory
-set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
+    # Add custom target to build the manuals
+    add_custom_target(manuals COMMAND ${sphinx_build_cmd}
+        -b html ${VISIT_SOURCE_DIR}/doc
+        ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
 
-# linkcheck output directory
-set(SPHINX_LINKCHECK_DIR "${CMAKE_CURRENT_BINARY_DIR}/_linkcheck")
-
-if(WIN32)
-    set(sphinx_launcher ${PYTHON_EXECUTABLE})
-endif()
-
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/conf.py"
-    "${CMAKE_CURRENT_BINARY_DIR}/conf.py"
-    @ONLY)
- 
-add_custom_target(user_manuals ALL
-    ${sphinx_launcher}
-    ${SPHINX_EXECUTABLE}
-        -a -q -b html
-        "${CMAKE_CURRENT_SOURCE_DIR}"
-        "${SPHINX_HTML_DIR}"
-    COMMENT "Building Sphinx-HTML documentation for GUI and CLI")
-
-add_custom_target(linkcheck ALL
-    ${sphinx_launcher}
-    ${SPHINX_EXECUTABLE}
-        -a -q -b linkcheck
-        "${CMAKE_CURRENT_SOURCE_DIR}"
-        "${SPHINX_LINKCHECK_DIR}"
-    COMMENT "Running linkcheck builder on Sphinx documentation")
-
-add_custom_command(TARGET linkcheck
-    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_CURRENT_SOURCE_DIR}/check_links.cmake"
-    POST_BUILD
-    )
-
-if(WIN32)
-    unset(sphinx_launcher)
+    # Add command to ensure the manuals are installed to the correct location
+    install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual
+            DESTINATION ${VISIT_INSTALLED_VERSION_RESOURCES}/help/en_US/
+            FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                             GROUP_READ GROUP_WRITE
+                             WORLD_READ
+            DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                  GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                  WORLD_READ             WORLD_EXECUTE
+            CONFIGURATIONS Debug Release RelWithDebInfo MinSizeRel)
 endif()

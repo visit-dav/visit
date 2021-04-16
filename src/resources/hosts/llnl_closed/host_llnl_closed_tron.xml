@@ -4,6 +4,7 @@
     <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="hostAliases" type="string">"tron#.llnl.gov tron##.llnl.gov tron###.llnl.gov tron# tron## tron###"</Field>
     <Field name="hostNickname" type="string">"LLNL Closed Tron"</Field>
+    <Field name="tunnelSSH" type="bool">true</Field>
     <Object name="LaunchProfile">
         <Field name="profileName" type="string">serial</Field>
         <Field name="timeout" type="int">480</Field>

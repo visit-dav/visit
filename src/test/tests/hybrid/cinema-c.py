@@ -14,7 +14,12 @@
 #    Kathleen Biagas, Tue Jun 11 11:44:14 PDT 2019
 #    Pass '-noconfig' to generated command line in GenerateCinema.
 #
+#    Kathleen Biagas, Tue Apr 13 2021
+#    Port to python-3. Fix for Windows: Use abs_path for short_wave.visit,
+#    use 'repr(db)' when writing script file to preserve '\' escapes.
+#
 # ----------------------------------------------------------------------------
+
 import math, os, string, subprocess, zlib
 
 def GenerateCinema(cinemaArgs):
@@ -48,7 +53,7 @@ def ListToString(files):
 
 def GetFile(manyfilenames, filename):
     for f in manyfilenames:
-        if string.find(f, filename) != -1:
+        if f.find(filename) != 0:
             return f
     return ""
 
@@ -155,7 +160,7 @@ def test_composite(testname, imagepath, scalars):
 def test2(db):
     TestSection("Cinema spec C static camera")
     f = open("test2.py", "wt")
-    f.write('OpenDatabase("%s")\n' % db)
+    f.write('OpenDatabase(%s)\n' % repr(db))
     write_setup_plot(f)
     f.write('v = GetView3D()\n')
     f.write('v.viewNormal = (-0.569392, 0.672931, 0.472183)\n')
@@ -200,7 +205,7 @@ def test2(db):
 def test3(db):
     TestSection("Cinema spec C phi-theta camera")
     f = open("test3.py", "wt")
-    f.write('OpenDatabase("%s")\n' % db)
+    f.write('OpenDatabase(%s)\n' % repr(db))
     write_setup_plot(f)
     f.close()
 
@@ -226,7 +231,7 @@ def test3(db):
 
 
 def MakeShortWave(incr):
-    db = "short_wave.visit"
+    db = abs_path("short_wave.visit")
     f = open(db, "wt")
     for i in range(0, 700, incr):
         f.write(silo_data_path("wave%04d.silo" % i) + "\n")

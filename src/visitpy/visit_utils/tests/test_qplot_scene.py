@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 #
-# file: test_basic.py
+# file: test_qplot_scene.py
 # author: cdh
 #
-# Tests for qannote module.
+# Tests for qplot module.
 #
+# Modification:
+#   Kathleen Biagas, Tue Feb 16, 2021
+#   Add encoding='iso-8859-1' to open command when reading.
+#
+#   Kathleen Biagas, Wed Mar 3, 2021
+#   Use pathlib's Path to fix path issues on Windows.
 #
 
 import unittest
@@ -13,6 +19,7 @@ from visit_utils import *
 import unittest
 import os
 from os.path import join as pjoin
+from pathlib import Path
 
 from visit_test import *
 from visit_utils.qplot import *
@@ -22,19 +29,21 @@ try:
 except:
     pass
 
-output_dir  = pjoin(os.path.dirname(__file__),"_output")
-data_dir    = pjoin(os.path.dirname(__file__),"_data")
+output_dir  = Path(os.path.dirname(__file__),"_output")
+data_dir    = Path(os.path.dirname(__file__),"_data")
 
 def patch_scene_input(in_fname,ult_fname):
     #crv_file = os.path.abspath(pjoin(data_dir,"pattern.ult"))
     #qi = open(pjoin(data_dir,"qplot.example.in")).read().replace("$SOURCE_FILE",crv_file)
     #qi_fname = pjoin(output_dir,"qplot.example.in"
     #open(qi_fname,"w").write(qi)
-    crv_file = os.path.abspath(pjoin(data_dir,ult_fname))
-    qi = open(pjoin(data_dir,in_fname)).read().replace("$SOURCE_FILE",crv_file)
-    qi_fname = pjoin(output_dir,in_fname)
-    open(qi_fname,"w").write(qi)
-    return qi_fname
+    crv_file = data_dir/ult_fname
+    dfile    = data_dir/in_fname
+    qi_fname = output_dir/in_fname
+    with dfile.open(encoding="iso-8859-1") as qi:
+        with qi_fname.open("w") as qi_out:
+            qi_out.write(qi.read().replace("$SOURCE_FILE",crv_file.as_posix()))
+    return qi_fname.as_posix()
         
 
 class TestScene(unittest.TestCase):

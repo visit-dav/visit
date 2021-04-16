@@ -26,6 +26,9 @@ class DBOptionsAttributes;
 //
 //    Mark C. Miller, Wed Oct 29 12:32:11 PDT 2008
 //    Made it possible for curves to have any column as the abscissa
+//
+//    Mark C. Miller, Tue Dec  1 13:07:46 PST 2020
+//    Switched to double precision for data
 // ****************************************************************************
 
 class avtPlainTextFileFormat : public avtSTSDFileFormat
@@ -80,7 +83,7 @@ class avtPlainTextFileFormat : public avtSTSDFileFormat
     int ncolumns;
     std::string filename;
     bool fileRead;
-    std::vector< std::vector<float> > data;
+    std::vector< std::vector<double> > data;
     std::vector<std::string> variableNames;
     
 };

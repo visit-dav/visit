@@ -2,8 +2,9 @@ Histogram Plot
 ~~~~~~~~~~~~~~
 
 The Histogram plot divides the data range of a scalar variable into a number
-of bins and groups the variable's values, weighted by cell area or revolved
-volume, into different bins. The values in each bin are then used to create
+of bins and groups the variable's values into different bins. The values can be
+based on frequency, they can be weighed by the area/volume of the cells, or
+they can be weighed by a variable. The values in each bin are then used to create
 a bar graph or curve that represents the distribution of values throughout
 the variable's data range. The Histogram plot can be used to determine where
 data values cluster in the range of a scalar variable. The Histogram plot is
@@ -24,10 +25,10 @@ By default, the Histogram plot profiles a variables entire data range. If you
 want to restrict the Histogram plot so it only takes a subset of a variable's
 data range into consideration when assigning values to bins, you can set the
 minimum and maximum values that will be considered by the Histogram plot. To
-specify a data range, click the **Specify Range** check box and then type in
-floating point numeric values into the **Minimum** and **Maximum** text fields
-in the **Histogram plot attributes window**
-(see :numref:`Figure %s <histogramwindow>`) before clicking its **Apply**
+specify a data range, click the **Minimum** and/or **Maximum** check box and
+then type in floating point numeric values into the **Minimum** and **Maximum**
+text fields in the **Histogram plot attributes window**
+(see :numref:`Figure %s <histogramwindow>`) before clicking the **Apply**
 button. Once the data range is set, the Histogram plot will restrict the values
 that it considers to the specified data range.
 
@@ -52,7 +53,7 @@ Setting the number of bins
 """"""""""""""""""""""""""
 
 The Histogram plot divides a variable's data range into a number of bins and
-then counts the weighted values that fall within each bin. The bins and the
+then counts the values that fall within each bin. The bins and the
 counted data are then used to create a graph that represents the distribution
 of data within the variable's data range. As the Histogram plot uses more bins,
 the graph of data distribution becomes more accurate. However, the graph can
@@ -65,13 +66,11 @@ number of bins for the Histogram plot, type a new number of bins into the
 Setting the histogram calculation method
 """"""""""""""""""""""""""""""""""""""""
 
-When the Histogram plot groups data values into bins, it weights the data value
-by the surface area or revolved volume of the cell so contributions from
-different sizes of cells are compared fairly. To change the calculation method
-used to weight the cells, click on the **Area** radio button to make VisIt use
-surface area or click on the **Revolved volume** radio button to make VisIt use
-the revolved volume of a 2D cell as the weighting multiplier used to group cells
-into the right bins.
+The data values can be based on frequency, they can be weighed by the
+area/volume of the cells, or they can be weighed by a variable. By default,
+**Frequency** is selected under bin contribution. Selecting **Weighted** will
+enable the **Weighting** options, from which one can select
+**Area (2D) / Volume (3D)** or **Variable** to determine the type of weighing.
 
 Data scaling
 """"""""""""
@@ -82,4 +81,3 @@ options are:
   - **Linear**: no scaling is applied. This is the default option. 
   - **Log**: the logarithms of all the scalars are binned.
   - **Square Root**: the square roots of all scalars are binned.
-

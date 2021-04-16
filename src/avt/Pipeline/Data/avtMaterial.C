@@ -416,11 +416,20 @@ avtMaterial::avtMaterial(int nMats, const int *mats, char **names,
 //    Hank Childs, Wed Feb 18 09:36:38 PST 2004
 //    Added the "all materials" list to the Initialize call.
 //
+//    Cyrus Harrison, Wed Feb 17 10:43:50 PST 2021
+//    Formatted the args to make it easer to interpret what data
+//    is needed.
+//
 // ****************************************************************************
 
-avtMaterial::avtMaterial(int nMats, const vector<string> &mats, int nzon,
-                         const int *ml, int mixl, const int *mixm,
-                         const int *mixn, const int *mixz,
+avtMaterial::avtMaterial(int nMats,
+                         const vector<string> &mats,
+                         int nzon,
+                         const int *ml,
+                         int mixl,
+                         const int *mixm,
+                         const int *mixn,
+                         const int *mixz,
                          const float *mixv)
 {
     int i;

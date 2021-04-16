@@ -233,6 +233,11 @@ PyClipAttributes_ToString(const ClipAttributes *atts, const char *prefix)
     else
         snprintf(tmpStr, 1000, "%ssphereInverse = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetCrinkleClip())
+        snprintf(tmpStr, 1000, "%scrinkleClip = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%scrinkleClip = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -866,6 +871,30 @@ ClipAttributes_GetSphereInverse(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ClipAttributes_SetCrinkleClip(PyObject *self, PyObject *args)
+{
+    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the crinkleClip in the object.
+    obj->data->SetCrinkleClip(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ClipAttributes_GetCrinkleClip(PyObject *self, PyObject *args)
+{
+    ClipAttributesObject *obj = (ClipAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetCrinkleClip()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyClipAttributes_methods[CLIPATTRIBUTES_NMETH] = {
@@ -902,6 +931,8 @@ PyMethodDef PyClipAttributes_methods[CLIPATTRIBUTES_NMETH] = {
     {"GetRadius", ClipAttributes_GetRadius, METH_VARARGS},
     {"SetSphereInverse", ClipAttributes_SetSphereInverse, METH_VARARGS},
     {"GetSphereInverse", ClipAttributes_GetSphereInverse, METH_VARARGS},
+    {"SetCrinkleClip", ClipAttributes_SetCrinkleClip, METH_VARARGS},
+    {"GetCrinkleClip", ClipAttributes_GetCrinkleClip, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -976,6 +1007,8 @@ PyClipAttributes_getattr(PyObject *self, char *name)
         return ClipAttributes_GetRadius(self, NULL);
     if(strcmp(name, "sphereInverse") == 0)
         return ClipAttributes_GetSphereInverse(self, NULL);
+    if(strcmp(name, "crinkleClip") == 0)
+        return ClipAttributes_GetCrinkleClip(self, NULL);
 
     return Py_FindMethod(PyClipAttributes_methods, self, name);
 }
@@ -1022,6 +1055,8 @@ PyClipAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ClipAttributes_SetRadius(self, tuple);
     else if(strcmp(name, "sphereInverse") == 0)
         obj = ClipAttributes_SetSphereInverse(self, tuple);
+    else if(strcmp(name, "crinkleClip") == 0)
+        obj = ClipAttributes_SetCrinkleClip(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

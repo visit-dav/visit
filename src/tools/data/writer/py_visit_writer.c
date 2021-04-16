@@ -26,7 +26,7 @@ enum TokenTypes { endOfList = 0, logicalToken, integerToken };
 typedef struct {
     enum TokenTypes type;
     int value;
-    char *string;
+    char *tok_string;
 } visItWriterIntegerTokens;
 
 static int convertDims( PyObject *dims_py, int pts[3] );
@@ -635,7 +635,7 @@ static int getIntegerToken( PyObject *item, visItWriterIntegerTokens *tokens ) {
         s = PyString_AsString( item );
         for( i = 0; tokens[i].type; i++ )
         {
-            if( strcmp( tokens[i].string, s ) == 0 ) return( tokens[i].value );
+            if( strcmp( tokens[i].tok_string, s ) == 0 ) return( tokens[i].value );
         }
         return( -2 );
         PyString_AsString_Cleanup(s);
@@ -800,9 +800,11 @@ static struct PyModuleDef visit_writer_module_def =
 /******************************************************************/
     #if __GNUC__ >= 4
     /* Ensure this function is visible even if -fvisibility=hidden was passed */
-    PyObject * __attribute__ ((visibility("default"))) PyInit_visit( void )
+    __attribute__ ((visibility("default"))) PyObject * PyInit_visit_writer( void )
+    #elif _WIN32
+    __declspec(dllexport) PyObject * PyInit_visit_writer( void )
     #else
-    PyObject * PyInit_visit( void )
+    PyObject * PyInit_visit_writer( void )
     #endif
 /******************************************************************/
 /******************************************************************/
