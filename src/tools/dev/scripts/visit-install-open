@@ -276,9 +276,11 @@ rm -f kickit
 cat <<EOF > kickit
 #!/bin/sh
 ./visit-install -private -c llnl_open -g visit -b wbronze -gw -l $ver linux-x86_64-rhel7 /usr/gapps/visit > installlog 2>&1
-cp /usr/gapps/gcc/gcc-9.1/lib64/libstdc++.so.6.0.26 /usr/gapps/visit/$ver/linux-x86_64/lib
-ln -s libstdc++.so.6.0.26 /usr/gapps/visit/$ver/linux-x86_64/lib/libstdc++.so
-ln -s libstdc++.so.6.0.26 /usr/gapps/visit/$ver/linux-x86_64/lib/libstdc++.so.6
+cp /usr/gapps/gcc/gcc-9.1/lib64/libstdc++.so.6.0.26 /usr/gapps/visit/$ver+/linux-x86_64/lib
+ln -s libstdc++.so.6.0.26 /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so
+ln -s libstdc++.so.6.0.26 /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so.6
+chgrp visit /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so.6.0.26
+chmod 664 /usr/gapps/visit/$ver+/linux-x86_64/lib/libstdc++.so.6.0.26
 rm -f resultlog
 echo "        install of visit on kickit"          > resultlog 2>&1
 echo "       ----------------------------"         >> resultlog 2>&1
