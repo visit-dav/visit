@@ -149,7 +149,7 @@ avtXolotlFileFormat::GroupInfo(hid_t loc_id, const char *name, const H5L_info_t 
 
     std::stringstream ss(name);
     std::string item;
-    while(std::getline(ss, item, '_'))
+    while (std::getline(ss, item, '_'))
     {
         if (!item.empty() && std::all_of(item.begin(), item.end(), ::isdigit))
         {
@@ -164,10 +164,14 @@ avtXolotlFileFormat::GroupInfo(hid_t loc_id, const char *name, const H5L_info_t 
 //  Method: avtXolotlFileFormat::PopulateNetworkGroupMetadata
 //
 //  Purpose:
-//      Gets the ntwork group meta data
+//      Gets the network group meta data
 //
 //  Programmer: James Kress
 //  Creation:   February 19, 2021
+//
+//
+//  James Kress, Friday Apr 9 11:30:30 PDT 2021
+//  Added the ability to visualize phase-space Xolot files.
 //
 // ****************************************************************************
 void
@@ -199,9 +203,93 @@ avtXolotlFileFormat::PopulateNetworkGroupMetaData()
         H5Aclose(totalSizeAttr);
     }
 
-    debug1 << "normalSize="<<normalSize<<endl;
-    debug1 << "superSize="<<superSize<<endl;
-    debug1 << "totalSize="<<totalSize<<endl;
+    networkArrributeStatus = H5Aexists(networkGroup, "phaseSpace");
+    if (networkArrributeStatus > 0)
+    {
+        hid_t phaseSpaceAttr = H5Aopen(networkGroup, "phaseSpace", H5P_DEFAULT);
+
+        // Get the datatype.
+        hid_t  filetype = H5Aget_type(phaseSpaceAttr);
+
+        // Check if the data type is an int, if not we continue reading 'phaseSpace'
+        if(H5Tequal(filetype, H5T_NATIVE_INT) <= 0)
+        {
+            // Get dataspace and allocate memory for read buffer.
+            hsize_t dims[1] = {5};
+            hid_t  space = H5Aget_space (phaseSpaceAttr);
+            int ndims = H5Sget_simple_extent_dims (space, dims, NULL);
+            char **rdata = (char **) malloc (dims[0] * sizeof (char *));
+
+            // Create the memory datatype.
+            hid_t  memtype = H5Tcopy (H5T_C_S1);
+            herr_t status = H5Tset_size (memtype, H5T_VARIABLE);
+
+            // Read the data
+            status = H5Aread (phaseSpaceAttr, memtype, rdata);
+
+            // Output the data to the screen.
+            for (int i=0; i<dims[0]; i++)
+            {
+                if(strcmp(rdata[i],"He") == 0)
+                    variablesInPhaseSpace.push_back("Helium");
+                else if(strcmp(rdata[i],"D") == 0)
+                    variablesInPhaseSpace.push_back("Deuterium");
+                else if(strcmp(rdata[i],"T") == 0)
+                    variablesInPhaseSpace.push_back("Tritium");
+                else if(strcmp(rdata[i],"V") == 0)
+                    variablesInPhaseSpace.push_back("Vacancies");
+                else if(strcmp(rdata[i],"I") == 0)
+                    variablesInPhaseSpace.push_back("Interstitial");
+                debug1 << "variablesInPhaseSpace[" << i << "]: " << variablesInPhaseSpace[i] << endl;
+            }
+
+            free(rdata);
+            rdata = NULL;
+        }
+
+        H5Aclose(phaseSpaceAttr);
+    }
+
+    // Loop over the clusters to get max value in order to set grid dimensions
+    // when visualing phase-space
+    for (int j = 0; j < totalSize; j++)
+    {
+        // Open the network group for this itteration
+        char clusterName[100];
+        snprintf(clusterName, 100, "%d", j);
+        hid_t currentCluster = H5Gopen(networkGroup, clusterName, H5P_DEFAULT);
+        if (currentCluster < 0)
+        {
+            FreeUpResources();
+            snprintf(clusterName, 100, "No '%d' network found", j);
+            EXCEPTION1(InvalidDBTypeException, clusterName);
+        }
+
+        // Read the cluster bounds
+        hid_t boundsAttr = H5Aopen(currentCluster, "bounds", H5P_DEFAULT);
+        hsize_t dims[1] = {0};
+        hid_t  space = H5Aget_space (boundsAttr);
+        int ndims = H5Sget_simple_extent_dims (space, dims, NULL);
+        int *currentBoundsArray = new int[dims[0]-1];
+        H5Aread(boundsAttr, H5T_NATIVE_INT, (void*)currentBoundsArray);
+
+        // Get max value from bounds array
+        for (int m = 0; m < dims[0]; m++)
+        {
+            if(currentBoundsArray[m] > phaseSpaceMaxDims)
+                phaseSpaceMaxDims = currentBoundsArray[m];
+        }
+
+        H5Aclose(boundsAttr);
+        H5Gclose(currentCluster);
+        delete [] currentBoundsArray;
+    }
+
+    debug1 << "normalSize=" << normalSize << endl;
+    debug1 << "superSize=" << superSize << endl;
+    debug1 << "totalSize=" << totalSize << endl;
+    debug1 << "phase-space max grid dimensions=" << phaseSpaceMaxDims << endl;
+    debug1 << "Number of phase space vars=" << variablesInPhaseSpace.size() << endl;
 
     // close and cleanup
     H5Gclose(networkGroup);
@@ -313,6 +401,9 @@ avtXolotlFileFormat::PopulateConcentrationGroupMetaData()
 //   Create 'data' array on the heap. Visual Studio won't compile stack created
 //   arrays unless their size can be determined at compile time.
 //
+//  James Kress, Friday Apr 9 11:30:30 PDT 2021
+//  Added the ability to visualize phase-space Xolot files.
+//
 // ****************************************************************************
 void
 avtXolotlFileFormat::PopulateHeaderGroupMetaData()
@@ -372,7 +463,7 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
         EXCEPTION1(InvalidDBTypeException, "No 'nz' attribute.");
     }
 
-    // read the variables
+    // Read the variables
     int err2 = -1;
     err2 = H5Aread(hxAttr, H5T_NATIVE_DOUBLE, &hx);
     if (err2 < 0)
@@ -430,7 +521,7 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
     debug1 << "nz=" <<nz << endl;
     debug1 << "dimension=" << dimension << endl;
 
-    // close the attributes and group
+    // Close the attributes and group
     H5Aclose(hxAttr);
     H5Aclose(hyAttr);
     H5Aclose(hzAttr);
@@ -445,7 +536,7 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
     else
         dimension = 0;
 
-    // Determine if we are visualizing concentrations or phasespace by
+    // Determine if we are visualizing concentrations or phase-space by
     // checking for the composition table
     herr_t compositionDataSetStatus = H5Lexists(fileId, "headerGroup/composition", H5P_DEFAULT);
     if (compositionDataSetStatus <= 0)
@@ -453,30 +544,11 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
         // We are visualizing phasespace
         dimension = 3;
 
-        // Now we need to get the grid
-        hid_t gridDataSet = H5Dopen(fileId, "headerGroup/grid", H5P_DEFAULT);
-        if (gridDataSet < 0)
-        {
-            FreeUpResources();
-            EXCEPTION1(InvalidDBTypeException, "No 'headerGroup/grid'.");
-        }
-
-        hid_t sid = H5Dget_space(gridDataSet);
-        hsize_t headerGrid_dims[1];
-        hid_t ndims = H5Sget_simple_extent_dims(sid, headerGrid_dims, NULL);
-        debug1 << "dimensions " <<
-          (unsigned long)(headerGrid_dims[0]) <<
-          " ndims " << ndims << endl;
-
         // Create a grid double the dimensions since this is phase-space
-        for (int i = 0; i < headerGrid_dims[0] * 2; i++)
+        for (int i = 0; i <= phaseSpaceMaxDims; i++)
         {
             oneDGrid.push_back(0);
         }
-
-        // cleanup and close
-        H5Sclose(sid);
-        H5Dclose(gridDataSet);
     }
     else
     {
@@ -520,7 +592,7 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
         varMaxes[3] = maximumVacancyDimension;
         varMaxes[4] = maximumInterstitialDimension;
 
-        // close HDF resources
+        // Close HDF resources
         H5Sclose(sid);
         H5Dclose(compositionDataSet);
     }
@@ -558,7 +630,7 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
             oneDGrid.push_back(data[i]);
         }
 
-        // cleanup and close
+        // Cleanup and close
         delete [] data;
         H5Sclose(sid);
         H5Dclose(gridDataSet);
@@ -580,8 +652,11 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
 //   James Kress, Thur Feb 25 17:30:33 PDT 2021
 //   Added a PopulateNetworkGroupMetaData() function to simplify Initialize().
 //
-//   Modified the flow to only do PopulateNetworkGroupMetaData() if reading a
-//   1D xolotl file.
+//
+//  James Kress, Friday Apr 9 11:30:30 PDT 2021
+//  Moved the PopulateNetworkGroupMetaData() call to gather info necessary
+//  for the other method calls.
+//
 // ****************************************************************************
 void
 avtXolotlFileFormat::Initialize()
@@ -599,7 +674,7 @@ avtXolotlFileFormat::Initialize()
     {
         EXCEPTION1(ImproperUseException, "Couldn't set file close access");
     }
-    if((fileId = H5Fopen(filenames[0], H5F_ACC_RDONLY, fileAccessPropListID)) < 0)
+    if ((fileId = H5Fopen(filenames[0], H5F_ACC_RDONLY, fileAccessPropListID)) < 0)
     {
         char error[1024];
         snprintf(error, 1024, "Cannot be a Xolotl file (%s)",filenames[0]);
@@ -608,26 +683,7 @@ avtXolotlFileFormat::Initialize()
     }
     H5Pclose(fileAccessPropListID);
 
-    //
-    // Open the header group and read mesh attributes
-    //
-    PopulateHeaderGroupMetaData();
-
-    //
-    // Open the concentrations group and read the number of time steps
-    //
-    concentrationsGroup = H5Gopen(fileId, "concentrationsGroup", H5P_DEFAULT);
-    if (concentrationsGroup < 0)
-    {
-        FreeUpResources();
-        EXCEPTION1(InvalidDBTypeException, "No 'concentrationsGroup'.");
-    }
-    PopulateConcentrationGroupMetaData();
-
-
-    //
     // Read the network
-    //
     networkGroup = H5Gopen(fileId, "networkGroup", H5P_DEFAULT);
     if (networkGroup<0)
     {
@@ -636,6 +692,17 @@ avtXolotlFileFormat::Initialize()
     }
     PopulateNetworkGroupMetaData();
 
+    // Open the header group and read mesh attributes
+    PopulateHeaderGroupMetaData();
+
+    // Open the concentrations group and read the number of time steps
+    concentrationsGroup = H5Gopen(fileId, "concentrationsGroup", H5P_DEFAULT);
+    if (concentrationsGroup < 0)
+    {
+        FreeUpResources();
+        EXCEPTION1(InvalidDBTypeException, "No 'concentrationsGroup'.");
+    }
+    PopulateConcentrationGroupMetaData();
 }
 
 
@@ -761,15 +828,6 @@ avtXolotlFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
     }
     else
     {
-/*        string meshname = "Phase-Space";
-        avtMeshType mt = AVT_RECTILINEAR_MESH;
-        int nblocks = 1;
-        int block_origin = 0;
-        int spatial_dimension = 3;
-        int topological_dimension = 3;
-        double *extents = NULL;
-*/
-
         avtMeshType mt = AVT_RECTILINEAR_MESH;
         int nblocks = 1;
         int block_origin = 0;
@@ -777,261 +835,394 @@ avtXolotlFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
         int topological_dimension = 3;
         double *extents = NULL;
 
-        string meshname;
         avtMeshMetaData *mmd;
-        // Phase-Space Helium vars
-        meshname = "Phase-Space Helium/Deuterium/Tritium";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Deuterium/Tritium", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Deuterium";
-        mmd->zLabel = "Tritium";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+        string currentVar0, currentVar1 , currentVar2;
+        char meshname[512], variablename[256];
+        string ps0, ps1, ps2, ps3, ps4;
+        ps0 = variablesInPhaseSpace[0];
+        ps1 = variablesInPhaseSpace[1];
+        ps2 = variablesInPhaseSpace[2];
 
-        meshname = "Phase-Space Helium/Deuterium/Vacancies";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Deuterium/Vacancies", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Deuterium";
-        mmd->zLabel = "Vacancies";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+        // Create the variables based on the number of phase-space variables
+        if (variablesInPhaseSpace.size() == 5)
+        {
+            ps3 = variablesInPhaseSpace[3];
+            ps4 = variablesInPhaseSpace[4];
 
-        meshname = "Phase-Space Helium/Deuterium/Interstitial";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Deuterium/Interstitial", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Deuterium";
-        mmd->zLabel = "Interstitial";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            // Phase-Space ps0 vars
+            currentVar0 = ps0;
+            currentVar1 = ps1;
+            currentVar2 = ps2;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        meshname = "Phase-Space Helium/Tritium/Deuterium";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Tritium/Deuterium", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Tritium";
-        mmd->zLabel = "Deuterium";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            currentVar0 = ps0;
+            currentVar1 = ps1;
+            currentVar2 = ps3;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        meshname = "Phase-Space Helium/Tritium/Vacancies";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Tritium/Vacancies", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Tritium";
-        mmd->zLabel = "Vacancies";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            currentVar0 = ps0;
+            currentVar1 = ps1;
+            currentVar2 = ps4;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        meshname = "Phase-Space Helium/Tritium/Interstitial";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Tritium/Interstitial", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Tritium";
-        mmd->zLabel = "Interstitial";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            currentVar0 = ps0;
+            currentVar1 = ps2;
+            currentVar2 = ps1;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        meshname = "Phase-Space Helium/Vacancies/Deuterium";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Vacancies/Deuterium", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Vacancies";
-        mmd->zLabel = "Deuterium";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            currentVar0 = ps0;
+            currentVar1 = ps2;
+            currentVar2 = ps3;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        meshname = "Phase-Space Helium/Vacancies/Tritium";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Vacancies/Tritium", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Vacancies";
-        mmd->zLabel = "Tritium";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            currentVar0 = ps0;
+            currentVar1 = ps2;
+            currentVar2 = ps4;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        meshname = "Phase-Space Helium/Vacancies/Interstitial";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Vacancies/Interstitial", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Vacancies";
-        mmd->zLabel = "Interstitial";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            currentVar0 = ps0;
+            currentVar1 = ps3;
+            currentVar2 = ps1;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        meshname = "Phase-Space Helium/Interstitial/Deuterium";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Interstitial/Deuterium", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Interstitial";
-        mmd->zLabel = "Deuterium";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            currentVar0 = ps0;
+            currentVar1 = ps3;
+            currentVar2 = ps2;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        meshname = "Phase-Space Helium/Interstitial/Tritium";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Interstitial/Tritium", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Interstitial";
-        mmd->zLabel = "Tritium";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            currentVar0 = ps0;
+            currentVar1 = ps3;
+            currentVar2 = ps4;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        meshname = "Phase-Space Helium/Interstitial/Vacancies";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Helium/Interstitial/Vacancies", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Helium";
-        mmd->yLabel = "Interstitial";
-        mmd->zLabel = "Vacancies";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            currentVar0 = ps0;
+            currentVar1 = ps4;
+            currentVar2 = ps1;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        // Phase-Space Deuterium vars
-        meshname = "Phase-Space Deuterium/Tritium/Vacancies";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Deuterium/Tritium/Vacancies", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Deuterium";
-        mmd->yLabel = "Tritium";
-        mmd->zLabel = "Vacancies";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            currentVar0 = ps0;
+            currentVar1 = ps4;
+            currentVar2 = ps2;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        meshname = "Phase-Space Deuterium/Tritium/Interstitial";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Deuterium/Tritium/Interstitial", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Deuterium";
-        mmd->yLabel = "Tritium";
-        mmd->zLabel = "Interstitial";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
-
-        meshname = "Phase-Space Deuterium/Vacancies/Tritium";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Deuterium/Vacancies/Tritium", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Deuterium";
-        mmd->yLabel = "Vacancies";
-        mmd->zLabel = "Tritium";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
-
-        meshname = "Phase-Space Deuterium/Vacancies/Interstitial";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Deuterium/Vacancies/Interstitial", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Deuterium";
-        mmd->yLabel = "Vacancies";
-        mmd->zLabel = "Interstitial";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
-
-        meshname = "Phase-Space Deuterium/Interstitial/Tritium";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Deuterium/Interstitial/Tritium", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Deuterium";
-        mmd->yLabel = "Interstitial";
-        mmd->zLabel = "Tritium";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
-
-        meshname = "Phase-Space Deuterium/Interstitial/Vacancies";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Deuterium/Interstitial/Vacancies", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Deuterium";
-        mmd->yLabel = "Interstitial";
-        mmd->zLabel = "Vacancies";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
-
-        // Phase-Space Tritium vars
-        meshname = "Phase-Space Tritium/Vacancies/Interstitial";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Tritium/Vacancies/Interstitial", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Tritium";
-        mmd->yLabel = "Vacancies";
-        mmd->zLabel = "Interstitial";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
-
-        meshname = "Phase-Space Tritium/Interstitial/Vacancies";
-        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
-        AddScalarVarToMetaData(md, "Tritium/Interstitial/Vacancies", meshname, AVT_ZONECENT);
-        mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
-        mmd->xLabel = "Tritium";
-        mmd->yLabel = "Interstitial";
-        mmd->zLabel = "Vacancies";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
-
-/*        AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
-                          spatial_dimension, topological_dimension);
+            currentVar0 = ps0;
+            currentVar1 = ps4;
+            currentVar2 = ps3;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
 
-        avtMeshMetaData *mmd = new avtMeshMetaData(
-                                meshname, 1, 1, 1, 0, 3, 3, mt);
-        mmd->xLabel = "helium";
-        mmd->yLabel = "tritium";
-        mmd->zLabel = "vacancy";
-        mmd->hideFromGUI = true;
-        md->Add(mmd);
+            // Phase-Space ps1 vars
+            currentVar0 = ps1;
+            currentVar1 = ps2;
+            currentVar2 = ps3;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        // Phase-Space Helium vars
-        AddScalarVarToMetaData(md, "Helium/Deuterium", meshname, AVT_ZONECENT);
-        AddScalarVarToMetaData(md, "Helium/Tritium", meshname, AVT_ZONECENT);
-        AddScalarVarToMetaData(md, "Helium/Vacancies", meshname, AVT_ZONECENT);
-        AddScalarVarToMetaData(md, "Helium/Interstitial", meshname, AVT_ZONECENT);
+            currentVar0 = ps1;
+            currentVar1 = ps2;
+            currentVar2 = ps4;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        // Phase-Space Deuterium vars
-        AddScalarVarToMetaData(md, "Deuterium/Tritium", meshname, AVT_ZONECENT);
-        AddScalarVarToMetaData(md, "Deuterium/Vacancies", meshname, AVT_ZONECENT);
-        AddScalarVarToMetaData(md, "Deuterium/Interstitial", meshname, AVT_ZONECENT);
+            currentVar0 = ps1;
+            currentVar1 = ps3;
+            currentVar2 = ps2;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        // Phase-Space Tritium vars
-        AddScalarVarToMetaData(md, "Tritium/Vacancies", meshname, AVT_ZONECENT);
-        AddScalarVarToMetaData(md, "Tritium/Interstitial", meshname, AVT_ZONECENT);
+            currentVar0 = ps1;
+            currentVar1 = ps3;
+            currentVar2 = ps4;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
 
-        // Phase-Space Vacancy vars
-        AddScalarVarToMetaData(md, "Vacancies/Interstitial", meshname, AVT_ZONECENT);
-        */
+            currentVar0 = ps1;
+            currentVar1 = ps4;
+            currentVar2 = ps2;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+
+            currentVar0 = ps1;
+            currentVar1 = ps4;
+            currentVar2 = ps3;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+
+
+            // Phase-Space ps2 vars
+            currentVar0 = ps2;
+            currentVar1 = ps3;
+            currentVar2 = ps4;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+
+            currentVar0 = ps2;
+            currentVar1 = ps4;
+            currentVar2 = ps3;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+        }
+        else if (variablesInPhaseSpace.size() == 4)
+        {
+            ps3 = variablesInPhaseSpace[3];
+
+            // Phase-Space ps0 vars
+            currentVar0 = ps0;
+            currentVar1 = ps1;
+            currentVar2 = ps2;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+
+            currentVar0 = ps0;
+            currentVar1 = ps1;
+            currentVar2 = ps3;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+
+            currentVar0 = ps0;
+            currentVar1 = ps2;
+            currentVar2 = ps1;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+
+            currentVar0 = ps0;
+            currentVar1 = ps2;
+            currentVar2 = ps3;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+
+            currentVar0 = ps0;
+            currentVar1 = ps3;
+            currentVar2 = ps1;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+
+            currentVar0 = ps0;
+            currentVar1 = ps3;
+            currentVar2 = ps2;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+
+            // Phase-Space ps1 vars
+            currentVar0 = ps1;
+            currentVar1 = ps2;
+            currentVar2 = ps3;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+
+            currentVar0 = ps1;
+            currentVar1 = ps3;
+            currentVar2 = ps2;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+        }
+        else
+        {
+            // Phase-Space ps0 vars
+            currentVar0 = ps0;
+            currentVar1 = ps1;
+            currentVar2 = ps2;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+
+            currentVar0 = ps0;
+            currentVar1 = ps2;
+            currentVar2 = ps1;
+            sprintf(variablename, "%s/%s/%s",currentVar0.c_str(), currentVar1.c_str() , currentVar2.c_str());
+            sprintf(meshname, "Phase-Space %s", variablename);
+            AddScalarVarToMetaData(md, variablename, meshname, AVT_ZONECENT);
+            mmd = new avtMeshMetaData(meshname, 0, 0, 0, 0, 3, 3, mt);
+            mmd->zLabel = currentVar0;
+            mmd->yLabel = currentVar1 ;
+            mmd->xLabel = currentVar2;
+            md->Add(mmd);
+        }
     }
 }
 
@@ -1183,9 +1374,9 @@ avtXolotlFileFormat::GetMesh(int timestate, const char *meshname)
         vtkFloatArray *yc = vtkFloatArray::New();
         vtkFloatArray *zc = vtkFloatArray::New();
 
-        nx = oneDGrid.size();
-        ny = oneDGrid.size();
-        nz = oneDGrid.size();
+        nx = oneDGrid.size() + 1;
+        ny = oneDGrid.size() + 1;
+        nz = oneDGrid.size() + 1;
 
         xc->SetNumberOfTuples(nx);
         for (int i = 0; i < nx; i++)
@@ -1213,6 +1404,71 @@ avtXolotlFileFormat::GetMesh(int timestate, const char *meshname)
 }
 
 // ****************************************************************************
+//  Method: avtXolotlFileFormat::First
+//
+//  Purpose:
+//      if x is present in arr[] then returns the count
+//      of occurrences of x, otherwise returns 0.
+//
+//  Arguments:
+//      arr   Pointer to the 2 element array
+//      x     The size of the array
+//      n     The number of interest
+//
+//  Programmer: James Kress
+//
+// ****************************************************************************
+int
+avtXolotlFileFormat::First(int arr[], int n, int x)
+{
+    int first = -1;
+    for (int i = 0; i < n; i++) {
+        if (x != arr[i])
+            continue;
+        if (first == -1)
+            return i;
+    }
+
+    return -1;
+}
+
+// ****************************************************************************
+//  Method: avtXolotlFileFormat::findInVector
+//
+//  Purpose:
+//      Generic function to find an element in vector and also its position.
+//      It returns a pair of bool & int
+//
+//      bool : Represents if element is present in vector or not.
+//      int : Represents the index of element in vector if its found else -1
+//
+//  Arguments:
+//      vecOfElements   Vector to search
+//      element         The element of interest
+//
+//  Programmer: James Kress
+//
+// ****************************************************************************
+template < typename T> std::pair<bool, int >
+avtXolotlFileFormat::findInVector(const std::vector<T>  & vecOfElements, const T  & element)
+{
+    std::pair<bool, int > result;
+    // Find given element in vector
+    auto it = std::find(vecOfElements.begin(), vecOfElements.end(), element);
+    if (it != vecOfElements.end())
+    {
+        result.second = distance(vecOfElements.begin(), it);
+        result.first = true;
+    }
+    else
+    {
+        result.first = false;
+        result.second = -1;
+    }
+    return result;
+}
+
+// ****************************************************************************
 //  Method: avtXolotlFileFormat::GetPositionsOfVariableFromCompositionTable
 //
 //  Purpose:
@@ -1220,11 +1476,15 @@ avtXolotlFileFormat::GetMesh(int timestate, const char *meshname)
 //      indexes to retrieve the data from an HDF5 dataset.
 //
 //  Arguments:
-//      variableIndes   Pointer to the 2 element array where we are setting
+//      variableIndexes   Pointer to the 2 element array where we are setting
 //                      our indexes
 //      vn              The name of the requested variable
 //
 //  Programmer: James Kress
+//
+//  James Kress, Friday Apr 9 11:30:30 PDT 2021
+//  updated the indexing scheme to support phase-space, which may have
+//  variable numbers of phase-space vars present
 //
 // ****************************************************************************
 void
@@ -1238,23 +1498,53 @@ avtXolotlFileFormat::GetPositionsOfVariableFromCompositionTable(int *variableInd
     {
         if (strncmp(token, "Helium", strlen("Helium")) == 0)
         {
-            variableIndexes[currentVariableNumber] = 0;
+            if (variablesInPhaseSpace.size() > 0)
+            {
+                std::pair<bool, int> res = findInVector(variablesInPhaseSpace, std::string("Helium"));
+                variableIndexes[currentVariableNumber] = res.second;
+            }
+            else
+                variableIndexes[currentVariableNumber] = 0;
         }
         else if (strncmp(token, "Deuterium", strlen("Deuterium")) == 0)
         {
-            variableIndexes[currentVariableNumber] = 1;
+            if (variablesInPhaseSpace.size() > 0)
+            {
+                std::pair<bool, int> res = findInVector(variablesInPhaseSpace, std::string("Deuterium"));
+                variableIndexes[currentVariableNumber] = res.second;
+            }
+            else
+                variableIndexes[currentVariableNumber] = 1;
         }
         else if (strncmp(token, "Tritium", strlen("Tritium")) == 0)
         {
-            variableIndexes[currentVariableNumber] = 2;
+            if (variablesInPhaseSpace.size() > 0)
+            {
+                std::pair<bool, int> res = findInVector(variablesInPhaseSpace, std::string("Tritium"));
+                variableIndexes[currentVariableNumber] = res.second;
+            }
+            else
+                variableIndexes[currentVariableNumber] = 2;
         }
         else if (strncmp(token, "Vacancies", strlen("Vacancies")) == 0)
         {
-            variableIndexes[currentVariableNumber] = 3;
+            if (variablesInPhaseSpace.size() > 0)
+            {
+                std::pair<bool, int> res = findInVector(variablesInPhaseSpace, std::string("Vacancies"));
+                variableIndexes[currentVariableNumber] = res.second;
+            }
+            else
+                variableIndexes[currentVariableNumber] = 3;
         }
         else if (strncmp(token, "Interstitial", strlen("Interstitial")) == 0)
         {
-            variableIndexes[currentVariableNumber] = 4;
+            if (variablesInPhaseSpace.size() > 0)
+            {
+                std::pair<bool, int> res = findInVector(variablesInPhaseSpace, std::string("Interstitial"));
+                variableIndexes[currentVariableNumber] = res.second;
+            }
+            else
+                variableIndexes[currentVariableNumber] = 4;
         }
         else
         {
@@ -1262,6 +1552,21 @@ avtXolotlFileFormat::GetPositionsOfVariableFromCompositionTable(int *variableInd
         }
 
         currentVariableNumber++;
+    }
+
+    // If we are in 3 dimensions we need the array indexs for our unused variables
+    if (dimension == 3)
+    {
+        for (int z = 0; z < 5; z++)
+        {
+            //Check if value for 'z' has been set
+            int result = First(variableIndexes, 5, z);
+            if (result == -1)
+            {
+                variableIndexes[currentVariableNumber] = z;
+                currentVariableNumber++;
+            }
+        }
     }
 }
 
@@ -1289,6 +1594,9 @@ avtXolotlFileFormat::GetPositionsOfVariableFromCompositionTable(int *variableInd
 //  James Kress, Thur Feb 25 17:30:33 PDT 2021
 //  Added the ability to visualize normal and super clusters for
 //  1D Xolotl files.
+//
+//  James Kress, Friday Apr 9 11:30:30 PDT 2021
+//  Added the ability to visualize phase-space Xolot files.
 //
 // ****************************************************************************
 
@@ -1370,7 +1678,7 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
         H5Dread(compGetExtents, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, (void*)data);
 
         // Take the requested variable and turn that into an index into our composition table
-        int variableIndexes[3] = {0,0,0};
+        int variableIndexes[5] = {0,0,0,0,0};
         GetPositionsOfVariableFromCompositionTable(variableIndexes, vn);
 
         if (dimension == 0)
@@ -1420,7 +1728,7 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
                 rv->SetTuple1(i, zero);
             }
 
-            //Open the network for reading
+            // Open the network for reading
             networkGroup = H5Gopen(fileId, "networkGroup", H5P_DEFAULT);
             if (networkGroup < 0)
             {
@@ -1428,7 +1736,7 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
                 EXCEPTION1(InvalidDBTypeException, "No 'networkGroup'.");
             }
 
-            //Loop over the grid
+            // Loop over the grid
             for (int j = 0; j < oneDGrid.size(); j++)
             {
                 // Loop on the concentrations
@@ -1440,8 +1748,8 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
                         continue;
                     }
 
-                    //Take care of the normal clustetrs
-                    if(rdata[i].clusterNumber < normalSize)
+                    // Take care of the normal clustetrs
+                    if (rdata[i].clusterNumber < normalSize)
                     {
                         // Get the x sizes of this cluster
                         // variableIndexes tells us either Helium, Deuterium, Tritium, Vacancies
@@ -1512,19 +1820,19 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
     else //dimension == 3
     {
         // Set nx and ny since they may not yet be set correctly
-        nx = oneDGrid.size();
-        ny = oneDGrid.size();
-        nz = oneDGrid.size();
+        nx = oneDGrid.size() + 1;
+        ny = oneDGrid.size() + 1;
+        nz = oneDGrid.size() + 1;
 
         // Since data is saved sparsely, zero out the array
-        int nvals = (nx-1) * (nx-1) * (nz-1);
+        int nvals = (nx -1) * (ny -1) * (nz -1);
         rv->SetNumberOfTuples(nvals);
         for (int i = 0; i < nvals; i++)
         {
             rv->SetTuple1(i, 0);
         }
 
-        //Open the network for reading
+        // Open the network for reading
         networkGroup = H5Gopen(fileId, "networkGroup", H5P_DEFAULT);
         if (networkGroup < 0)
         {
@@ -1533,10 +1841,10 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
         }
 
         // Take the requested variable and turn that into an index into our currentBoundsArray
-        int variableIndexes[3] = {0,0,0};
+        int variableIndexes[5] = {-1,-1,-1,-1,-1};
         GetPositionsOfVariableFromCompositionTable(variableIndexes, vn);
 
-        //Loop over the grid
+        // Loop over the grid
         for (int j = 0; j < totalSize; j++)
         {
             // Open the network group for this itteration
@@ -1550,41 +1858,71 @@ avtXolotlFileFormat::GetVar(int timestate, const char *vn)
                 EXCEPTION1(InvalidDBTypeException, clusterName);
             }
 
-            // read the cluster bounds
-            int *currentBoundsArray = new int[9];
+            // Read the cluster bounds
             hid_t boundsAttr = H5Aopen(currentCluster, "bounds", H5P_DEFAULT);
+            hsize_t dims[1] = {0};
+            hid_t  space = H5Aget_space (boundsAttr);
+            int ndims = H5Sget_simple_extent_dims (space, dims, NULL);
+            int *currentBoundsArray = new int[dims[0]-1];
             H5Aread(boundsAttr, H5T_NATIVE_INT, (void*)currentBoundsArray);
 
-            //index order H[0/1] - D[2/3] - T[4/5] - V[6/7] - I[8/9]
+            int firstIndex, secondIndex, thirdIndex, fourthIndex, fifthIndex;
+            firstIndex = variableIndexes[0] + variableIndexes[0];
+            secondIndex = variableIndexes[1] + variableIndexes[1];
+            thirdIndex = variableIndexes[2] + variableIndexes[2];
 
-            //h/t +v
-            int firstIndex = variableIndexes[0] + variableIndexes[0];
-            int secondIndex = variableIndexes[1] + variableIndexes[1];
-            int thirdIndex = variableIndexes[2] + variableIndexes[2];
-            cerr << variableIndexes[0] << " " << variableIndexes[1] << " " << variableIndexes[2] << endl;
-
-            for (int m = currentBoundsArray[thirdIndex]; m <= currentBoundsArray[thirdIndex + 1]; m++)
+            // Setup mesh based on number of phase-space vars
+            if (variablesInPhaseSpace.size() == 3)
             {
-                for (int k = currentBoundsArray[secondIndex]; k <= currentBoundsArray[secondIndex + 1]; k++)
+                for (int m = currentBoundsArray[thirdIndex]; m <= currentBoundsArray[thirdIndex + 1]; m++)
                 {
-                    for (int l = currentBoundsArray[firstIndex]; l <= currentBoundsArray[firstIndex + 1]; l++)
+                    for (int k = currentBoundsArray[secondIndex]; k <= currentBoundsArray[secondIndex + 1]; k++)
                     {
-                        int pos = (l * (ny - 1) * (nx - 1)) + (nz - 1) * k;
-                        rv->SetTuple1(pos, 100);
+                        for (int l = currentBoundsArray[firstIndex]; l <= currentBoundsArray[firstIndex + 1]; l++)
+                        {
+                            int pos = (l * (ny - 1) * (nx - 1)) + ((nx - 1) * k) + m;
+                            rv->SetTuple1(pos, 100);
+                        }
+                    }
+              }
+            }
+            else if (variablesInPhaseSpace.size() == 4)
+            {
+                fourthIndex = variableIndexes[3] + variableIndexes[3];
+                if (currentBoundsArray[fourthIndex] == 0)
+                {
+                    for (int m = currentBoundsArray[thirdIndex]; m <= currentBoundsArray[thirdIndex + 1]; m++)
+                    {
+                        for (int k = currentBoundsArray[secondIndex]; k <= currentBoundsArray[secondIndex + 1]; k++)
+                        {
+                            for (int l = currentBoundsArray[firstIndex]; l <= currentBoundsArray[firstIndex + 1]; l++)
+                            {
+                                int pos = (l * (ny - 1) * (nx - 1)) + ((nx - 1) * k) + m;
+                                rv->SetTuple1(pos, 100);
+                            }
+                        }
                     }
                 }
             }
-            /*if (currentBoundsArray[2] == 0)
+            else if (variablesInPhaseSpace.size() == 5)
             {
-                for (int k = currentBoundsArray[0]; k <= currentBoundsArray[1]; k++)
+                fourthIndex = variableIndexes[3] + variableIndexes[3];
+                fifthIndex = variableIndexes[4] + variableIndexes[4];
+                if (currentBoundsArray[fourthIndex] == 0 && currentBoundsArray[fifthIndex] == 0)
                 {
-                    for (int l = currentBoundsArray[6]; l <= currentBoundsArray[7]; l++)
+                    for (int m = currentBoundsArray[thirdIndex]; m <= currentBoundsArray[thirdIndex + 1]; m++)
                     {
-                        int pos = (l * (nx - 1)) + k;
-                        rv->SetTuple1(pos, 100);
+                        for (int k = currentBoundsArray[secondIndex]; k <= currentBoundsArray[secondIndex + 1]; k++)
+                        {
+                            for (int l = currentBoundsArray[firstIndex]; l <= currentBoundsArray[firstIndex + 1]; l++)
+                            {
+                                int pos = (l * (ny - 1) * (nx - 1)) + ((nx - 1) * k) + m;
+                                rv->SetTuple1(pos, 100);
+                            }
+                        }
                     }
                 }
-            }*/
+            }
 
             H5Aclose(boundsAttr);
             H5Gclose(currentCluster);
