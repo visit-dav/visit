@@ -29,9 +29,6 @@ Contents:
    Preferences/index
    Help/index
    StartupOptions/index
-   Building/index
-   BuildingOnWindows/index
-   BuildingOnMac/index
    Acknowledgments/index
    glossary
    Contributing/index

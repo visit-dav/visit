@@ -1,7 +1,7 @@
 .. _Building:
 
-Building
-========
+Building VisIt
+==============
 
 In this chapter, we will discuss how to build visit. The building of VisIt_
 is automated with the ``build_visit`` script. It will build VisIt_ and all of
@@ -16,3 +16,5 @@ the most simple case and moving then moving to more complex use cases.
     Basic_Usage
     Advanced_Usage
     Common_Build_Scenarios
+    BuildingOnWindows/index
+    BuildingOnMac/index
