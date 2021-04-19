@@ -21,6 +21,11 @@ class vtkLookupTable;
 //  This route was part of Brad's original Cinema support, so it was
 //  a quick way to re-enable the Cinema composite functionality.
 //
+//  KSB 04-15-2021
+//  Note: in VisWinRendering.C, OSPRAY creates its own override of
+//  vtkDataSetMapper.  The OSPRAY override was modified to override this
+//  class instead.  If this class is ever removed, the OSPRAY override will
+//  need to be changed back to vtkDataSetMapper.
 
 class PLOTTER_API vtkVisItDataSetMapper : public vtkDataSetMapper
 {
