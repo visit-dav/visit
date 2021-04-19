@@ -403,9 +403,9 @@ then
    if [ $test = no ]
    then
       echo "Building on kickit"
-      scp kickit kickit:kickit_buildit
-      scp $dist.tar.gz kickit:kickit_$dist.tar.gz
-      ssh kickit "chmod 750 kickit_buildit;./kickit_buildit" &
+      cp kickit ~/kickit_buildit
+      cp $dist.tar.gz ~/kickit_$dist.tar.gz
+      echo "cd;chmod 750 kickit_buildit;./kickit_buildit" | bash &
    fi
 fi
 
