@@ -958,6 +958,10 @@ QvisCommandWindow::macroClearClicked()
 //   On windows, escape the rcFileName's backslashes before adding it as an
 //   arg for the command.
 //
+//   Kathleen Biagas, Tue Apr 20 2021
+//   On windows, convert the rcFileName's backslashes to forward slashes
+//   before adding it as an arg for the command. (Python 3 change).
+//
 // ****************************************************************************
 
 void
@@ -981,15 +985,11 @@ QvisCommandWindow::macroUpdateClicked()
            // the changes that have been put into place.
            QString command("ClearMacros()\nSource(\"%1\")\n");
 #ifdef WIN32
-           // On windows, the string passed to the python commands needs to
-           // have it's back-slash's escaped.
-           QString tmp(rcFileName);
-           tmp.replace("\\", "\\\\");
-           command = command.arg(tmp);
-
-#else
-           command = command.arg(rcFileName);
+           // On windows, the path-string passed to the python commands needs
+           // to have it's back-slash's converted.
+           rcFileName.replace("\\", "/");
 #endif
+           command = command.arg(rcFileName);
            emit runCommand(command);
         }
         else

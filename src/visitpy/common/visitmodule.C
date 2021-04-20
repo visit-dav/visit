@@ -8,6 +8,7 @@
 #if !defined(_WIN32)
 #include <strings.h>
 #else
+#include <algorithm>
 #include <process.h> // for _getpid
 #endif
 #include <map>
@@ -19546,6 +19547,9 @@ cli_initvisit(int debugLevel, bool verbose,
 //   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
 //   Added book keeping to track execution stack of source files.
 //
+//   Kathleen Biagas, Tue Apr 20 2021 
+//   On Windows, convert fileName's backslashes to forward (Python 3 change).
+//
 // ****************************************************************************
 
 void
@@ -19557,9 +19561,13 @@ cli_runscript(const char *fileName)
         FILE *fp = fopen(fileName, "r");
         if(fp)
         {
+            std::string fn(fileName);
+#ifdef WIN32
+            std::replace(fn.begin(), fn.end(), '\\', '/');
+#endif
             // book keeping for source stack
             std::string pycmd  = "__visit_source_file__ = ";
-            pycmd += " os.path.abspath('" + std::string(fileName) + "')\n";
+            pycmd += " os.path.abspath('" + fn + "')\n";
             pycmd += "__visit_source_stack__.append(__visit_source_file__)\n";
             PyRun_SimpleString(pycmd.c_str());
 
