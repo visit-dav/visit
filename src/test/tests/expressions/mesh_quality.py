@@ -35,11 +35,6 @@ def TestSideVolume():
     AddPlot("Pseudocolor", "mesh_quality/max_side_volume")
     DrawPlots()
 
-    v = GetView3D()
-    v.viewNormal = (0.3, 0.8, 0.6)
-    SetView3D(v)
-    SetTimeSliderState(10)
-
     Test("max_side_volume_00")
     DeleteAllPlots()
 
