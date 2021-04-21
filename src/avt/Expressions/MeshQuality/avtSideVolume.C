@@ -123,6 +123,9 @@ avtSideVolume::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 //    Hank Childs, Thu Sep 22 15:39:11 PDT 2005
 //    Account for max variant as well.
 //
+//    Alister Maguire, Wed Apr 21 10:55:48 PDT 2021
+//    Fixed a bug that resulted in invalid volumes.
+//
 // ****************************************************************************
  
 double
@@ -206,10 +209,19 @@ avtSideVolume::GetZoneVolume(vtkCell *cell)
         int npts = face->GetNumberOfPoints();
         for (int j = 0 ; j < npts ; j++)
         {
-            int id2 = j;
-            int id1 = (j+1) % npts;
-            double *pt1 = pts->GetPoint(id1);
-            double *pt2 = pts->GetPoint(id2);
+            int id1 = j;
+            int id2 = (j+1) % npts;
+            //
+            // NOTE: using the following method for retrieving a point
+            // was leading to invalid values. It's unclear why (maybe a
+            // vtk bug??), but we should avoid this for now:
+            //
+            //     double *pt = pts->GetPoint(id);
+            //
+            double pt1[3];
+            double pt2[3];
+            pts->GetPoint(id1, pt1);
+            pts->GetPoint(id2, pt2);
 
             //
             // If we represent the tetrahedron as three edge vectors, a, b,
