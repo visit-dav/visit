@@ -37,6 +37,13 @@ vtkTriad2D::vtkTriad2D()
   this->Camera           = NULL;
   this->Origin[0]        = 0.10;
   this->Origin[1]        = 0.10;
+
+  //FIXME: testing
+  //this->Origin[0]        = -0.5;
+  //this->Origin[1]        = -0.2;
+  this->Origin[0]        = -0.3;
+  this->Origin[1]        = -0.2;
+
   this->AxisLength = 0.08;
 
   this->XAxis = vtkVisItAxisActor2D::New();
@@ -47,10 +54,24 @@ vtkTriad2D::vtkTriad2D()
   this->XAxis->SetTitleAtEnd(1);
   this->XAxis->SetTitleJustification(0);
   this->XAxis->SetTitleVerticalJustification(0);
-  this->XAxis->GetPoint1Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
-  this->XAxis->GetPoint2Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
+
+  //FIXME: testing
+  bool nView = false;
+
+  if (nView)
+  {
+      this->XAxis->GetPoint1Coordinate()
+                       ->SetCoordinateSystemToNormalizedViewport();
+      this->XAxis->GetPoint2Coordinate()
+                       ->SetCoordinateSystemToNormalizedViewport();
+  }
+  else
+  {
+      this->XAxis->GetPoint1Coordinate()
+                       ->SetCoordinateSystemToWorld();
+      this->XAxis->GetPoint2Coordinate()
+                       ->SetCoordinateSystemToWorld();
+  }
 
   this->YAxis = vtkVisItAxisActor2D::New();
   this->YAxis->SetTitle("Y");
@@ -60,10 +81,22 @@ vtkTriad2D::vtkTriad2D()
   this->YAxis->SetTitleAtEnd(1);
   this->YAxis->SetTitleJustification(0);
   this->YAxis->SetTitleVerticalJustification(0);
-  this->YAxis->GetPoint1Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
-  this->YAxis->GetPoint2Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
+
+
+  if (nView)
+  {
+      this->YAxis->GetPoint1Coordinate()
+                       ->SetCoordinateSystemToNormalizedViewport();
+      this->YAxis->GetPoint2Coordinate()
+                       ->SetCoordinateSystemToNormalizedViewport();
+  }
+  else
+  {
+      this->YAxis->GetPoint1Coordinate()
+                       ->SetCoordinateSystemToWorld();
+      this->YAxis->GetPoint2Coordinate()
+                       ->SetCoordinateSystemToWorld();
+  }
 
   this->ZAxis = vtkVisItAxisActor2D::New();
   this->ZAxis->SetTitle("Z");
@@ -73,10 +106,21 @@ vtkTriad2D::vtkTriad2D()
   this->ZAxis->SetTitleAtEnd(1);
   this->ZAxis->SetTitleJustification(0);
   this->ZAxis->SetTitleVerticalJustification(0);
-  this->ZAxis->GetPoint1Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
-  this->ZAxis->GetPoint2Coordinate()
-                   ->SetCoordinateSystemToNormalizedViewport(); 
+
+  if (nView)
+  {
+      this->ZAxis->GetPoint1Coordinate()
+                       ->SetCoordinateSystemToNormalizedViewport();
+      this->ZAxis->GetPoint2Coordinate()
+                       ->SetCoordinateSystemToNormalizedViewport();
+  }
+  else
+  {
+      this->ZAxis->GetPoint1Coordinate()
+                       ->SetCoordinateSystemToWorld();
+      this->ZAxis->GetPoint2Coordinate()
+                       ->SetCoordinateSystemToWorld();
+  }
 }
 
 
@@ -221,4 +265,3 @@ void vtkTriad2D::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Z-Axis:\n";
   this->ZAxis->PrintSelf(os, indent.GetNextIndent());
 }
-
