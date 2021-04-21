@@ -209,8 +209,8 @@ avtSideVolume::GetZoneVolume(vtkCell *cell)
         int npts = face->GetNumberOfPoints();
         for (int j = 0 ; j < npts ; j++)
         {
-            int id1 = j;
-            int id2 = (j+1) % npts;
+            int id2 = j;
+            int id1 = (j+1) % npts;
             //
             // NOTE: using the following method for retrieving a point
             // was leading to invalid values. It's unclear why (maybe a
