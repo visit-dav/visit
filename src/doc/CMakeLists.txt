@@ -22,9 +22,12 @@
 #   Eric Brugger, Wed Feb 10 15:07:41 PST 2021
 #   Update for switch to Python 3.
 #
+#   Kathleen Biagas, Thu Apr 22, 2021
+#   Don't build manuals for VISIT_STATIC, as sphinx won't be built.
+#
 #****************************************************************************
 
-if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS)
+if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
     message(STATUS "Configure manuals targets")
     set(errmsgtail "Either install sphinx or set VISIT_ENABLE_MANUALS to false.")
     if(WIN32)
