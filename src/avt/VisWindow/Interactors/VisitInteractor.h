@@ -13,6 +13,7 @@
 
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <avtViewInfo.h>
+#include <cmath>
 
 class VisWindow;
 class VisWindowInteractorProxy;
@@ -292,7 +293,7 @@ VisitInteractor::VectorSubtract(const double v1[3], const double v2[3],
 inline double
 VisitInteractor::VectorLength(const double v[3]) const
 {
-    return sqrt((v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]));
+    return std::sqrt((v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]));
 }
 
 // ****************************************************************************

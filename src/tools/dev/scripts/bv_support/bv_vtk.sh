@@ -76,12 +76,12 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-    export VTK_FILE=${VTK_FILE:-"VTK-9.0.1.tar.gz"}
-    export VTK_VERSION=${VTK_VERSION:-"9.0.1"}
+    export VTK_FILE=${VTK_FILE:-"vtk-master.tar.gz"}
+    export VTK_VERSION=${VTK_VERSION:-"master"}
     export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.0"}
-    export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
-    export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
-    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-9.0.1"}
+    #export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
+    #export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
+    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"vtk-master"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
     #export VTK_MD5_CHECKSUM="fa61cd36491d89a17edab18522bdda49"
     #export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
@@ -155,34 +155,34 @@ function apply_vtkopengloptions_patch
 *** CMake/vtkOpenGLOptions.cmake.orig
 --- CMake/vtkOpenGLOptions.cmake
 ***************
-*** 83,96 ****
-    set(VTK_CAN_DO_HEADLESS FALSE)
-  endif()
-
+*** 112,125 ****
+      "Please set to `OFF` any of these two.")
+  endif ()
+  
 ! if (VTK_OPENGL_HAS_OSMESA AND VTK_CAN_DO_ONSCREEN)
 !   message(FATAL_ERROR
-!     "The `VTK_OPENGL_HAS_OSMESA` is ignored if any of the following is true: "
+!     "The `VTK_OPENGL_HAS_OSMESA` can't be set to `ON` if any of the following is true: "
 !     "the target platform is Windows, `VTK_USE_COCOA` is `ON`, or `VTK_USE_X` "
-!     "is `ON`. OSMesa does not support on-screen rendering and VTK's OpenGL "
-!     "selection is at build time, so the current build configuration is not "
-!     "satisfiable.")
+!     "is `ON` or `VTK_USE_SDL2` is `ON`. OSMesa does not support on-screen "
+!     "rendering and VTK's OpenGL selection is at build time, so the current "
+!     "build configuration is not satisfiable.")
 ! endif ()
-
+  
   cmake_dependent_option(
     VTK_USE_OPENGL_DELAYED_LOAD
---- 83,96 ----
-    set(VTK_CAN_DO_HEADLESS FALSE)
-  endif()
-
+--- 112,125 ----
+      "Please set to `OFF` any of these two.")
+  endif ()
+  
 ! #if (VTK_OPENGL_HAS_OSMESA AND VTK_CAN_DO_ONSCREEN)
 ! #  message(FATAL_ERROR
-! #    "The `VTK_OPENGL_HAS_OSMESA` is ignored if any of the following is true: "
+! #    "The `VTK_OPENGL_HAS_OSMESA` can't be set to `ON` if any of the following is true: "
 ! #    "the target platform is Windows, `VTK_USE_COCOA` is `ON`, or `VTK_USE_X` "
-! #    "is `ON`. OSMesa does not support on-screen rendering and VTK's OpenGL "
-! #    "selection is at build time, so the current build configuration is not "
-! #    "satisfiable.")
+! #    "is `ON` or `VTK_USE_SDL2` is `ON`. OSMesa does not support on-screen "
+! #    "rendering and VTK's OpenGL selection is at build time, so the current "
+! #    "build configuration is not satisfiable.")
 ! #endif ()
-
+  
   cmake_dependent_option(
     VTK_USE_OPENGL_DELAYED_LOAD
 
@@ -201,11 +201,11 @@ function apply_vtkopenfoamreader_header_patch
   # useful for VisIt's plugin.
 
    patch -p0 << \EOF
-*** IO/Geometry/vtkOpenFOAMReader.h.orig
---- IO/Geometry/vtkOpenFOAMReader.h
+*** IO/Geometry/vtkOpenFOAMReader.h.orig	Mon Apr 19 13:46:49 2021
+--- IO/Geometry/vtkOpenFOAMReader.h	Mon Apr 19 13:50:25 2021
 ***************
-*** 48,53 ****
---- 48,58 ----
+*** 50,55 ****
+--- 50,60 ----
   #include "vtkIOGeometryModule.h" // For export macro
   #include "vtkMultiBlockDataSetAlgorithm.h"
   
@@ -218,8 +218,8 @@ function apply_vtkopenfoamreader_header_patch
   class vtkCharArray;
   class vtkDataArraySelection;
 ***************
-*** 348,353 ****
---- 353,380 ----
+*** 350,355 ****
+--- 355,382 ----
   
     friend class vtkOpenFOAMReaderPrivate;
   
@@ -249,8 +249,8 @@ function apply_vtkopenfoamreader_header_patch
     // refresh flag
     bool Refresh;
 ***************
-*** 423,428 ****
---- 450,465 ----
+*** 425,430 ****
+--- 452,467 ----
     // index of the active reader
     int CurrentReaderIndex;
   
@@ -283,103 +283,90 @@ function apply_vtkopenfoamreader_source_patch
   # useful for VisIt's plugin.
 
    patch -p0 << \EOF
-*** IO/Geometry/vtkOpenFOAMReader.cxx.orig
---- IO/Geometry/vtkOpenFOAMReader.cxx
+*** IO/Geometry/vtkOpenFOAMReader.cxx	Thu Apr  8 05:26:53 2021
+--- IO/Geometry/vtkOpenFOAMReader.cxx	Tue Apr 20 16:35:35 2021
 ***************
-*** 4419,4424 ****
---- 4419,4427 ----
-              this->LagrangianFieldFiles->InsertNextValue(fieldFile);
-              // object name
-              pointObjectNames->InsertNextValue(io.GetObjectName());
-+             // added by LLNL
-+             this->Parent->LagrangianArrayClassName[io.GetObjectName()] = cn;
-+             // end added by LLNL
-            }
-          }
-          else
-***************
-*** 4434,4444 ****
---- 4437,4453 ----
-                this->VolFieldFiles->InsertNextValue(fieldFile);
-                // object name
-                cellObjectNames->InsertNextValue(io.GetObjectName());
-+               // added by LLNL
-+               this->Parent->CellArrayClassName[io.GetObjectName()] = cn;
-+               // end added by LLNL
-              }
-              else
-              {
-                this->PointFieldFiles->InsertNextValue(fieldFile);
-                pointObjectNames->InsertNextValue(io.GetObjectName());
-+               // added by LLNL
-+               this->Parent->PointArrayClassName[io.GetObjectName()] = cn;
-+               // end added by LLNL
-              }
-            }
-          }
-***************
-*** 4644,4649 ****
---- 4653,4705 ----
-  
-        delete boundaryDict;
+*** 5058,5063 ****
+--- 5058,5077 ----
+      if (io.Open(tempPath + "/" + fieldFile)) // file exists and readable
+      {
+        this->AddFieldName(fieldFile, io.GetClassName(), isLagrangian);
++       // added by LLNL
++       if(isLagrangian)
++       {
++         this->Parent->LagrangianArrayClassName[io.GetObjectName()] = io.GetClassName();
++       }
++       else
++       {
++         if(io.GetClassName().substr(0,3) == "vol")
++           this->Parent->CellArrayClassName[io.GetObjectName()] = io.GetClassName();
++         else
++           this->Parent->PointArrayClassName[io.GetObjectName()] = io.GetClassName();
++       }
++       // end added by LLNL
++   
+        io.Close();
       }
-+ 
-+     // added by LLNL
-+     if (this->Parent->GetReadZones())
-+     {
-+       vtkFoamDict *dictPtr= this->GatherBlocks("pointZones", true);
-+       if (dictPtr!= NULL)
-+       {
-+         this->Parent->PointZones.clear();
-+         vtkFoamDict &pointZoneDict = *dictPtr;
-+         int nPointZones = static_cast<int>(pointZoneDict.size());
-+ 
-+         for (int i = 0; i < nPointZones; i++)
-+         {
-+           this->Parent->PointZones.push_back(pointZoneDict[i]->GetKeyword().c_str());
-+         }
-+         delete dictPtr;
-+       }
-+ 
-+       dictPtr= this->GatherBlocks("faceZones", true);
-+       if (dictPtr!= NULL)
-+       {
-+         this->Parent->FaceZones.clear();
-+         vtkFoamDict &faceZoneDict = *dictPtr;
-+         int nFaceZones = static_cast<int>(faceZoneDict.size());
-+ 
-+         for (int i = 0; i < nFaceZones; i++)
-+         {
-+           this->Parent->FaceZones.push_back(faceZoneDict[i]->GetKeyword().c_str());
-+         }
-+         delete dictPtr;
-+       }
-+ 
-+       dictPtr= this->GatherBlocks("cellZones", true);
-+       if (dictPtr!= NULL)
-+       {
-+         this->Parent->CellZones.clear();
-+         vtkFoamDict &cellZoneDict = *dictPtr;
-+         int nCellZones = static_cast<int>(cellZoneDict.size());
-+ 
-+         for (int i = 0; i < nCellZones; i++)
-+         {
-+           this->Parent->CellZones.push_back(cellZoneDict[i]->GetKeyword().c_str());
-+         }
-+         delete dictPtr;
-+       }
-+     }
-+     // end added by LLNL
+    }
+***************
+*** 5326,5331 ****
+--- 5340,5389 ----
+      }
     }
   
++   // added by LLNL
++   if (this->Parent->GetReadZones())
++   {
++     auto dictPtr(this->GatherBlocks("pointZones", true));
++     if (dictPtr != nullptr)
++     {
++       this->Parent->PointZones.clear();
++       vtkFoamDict &pointZoneDict = *dictPtr;
++       int nPointZones = static_cast<int>(pointZoneDict.size());
++ 
++       for (int i = 0; i < nPointZones; i++)
++       {
++         this->Parent->PointZones.push_back(pointZoneDict[i]->GetKeyword().c_str());
++       }
++     }
++ 
++     dictPtr= this->GatherBlocks("faceZones", true);
++     if (dictPtr!= NULL)
++     {
++       this->Parent->FaceZones.clear();
++       vtkFoamDict &faceZoneDict = *dictPtr;
++       int nFaceZones = static_cast<int>(faceZoneDict.size());
++ 
++       for (int i = 0; i < nFaceZones; i++)
++       {
++         this->Parent->FaceZones.push_back(faceZoneDict[i]->GetKeyword().c_str());
++       }
++     }
++ 
++     dictPtr= this->GatherBlocks("cellZones", true);
++     if (dictPtr!= NULL)
++     {
++       this->Parent->CellZones.clear();
++       vtkFoamDict &cellZoneDict = *dictPtr;
++       int nCellZones = static_cast<int>(cellZoneDict.size());
++ 
++       for (int i = 0; i < nCellZones; i++)
++       {
++         this->Parent->CellZones.push_back(cellZoneDict[i]->GetKeyword().c_str());
++       }
++     }
++   }
++   // end added by LLNL
++ 
     // Add scalars and vectors to metadata
+    vtkStdString timePath(this->CurrentTimePath());
+    // do not do "RemoveAllArrays()" to accumulate array selections
 ***************
-*** 9344,9346 ****
---- 9400,9519 ----
+*** 9990,9992 ****
+--- 10048,10166 ----
       (static_cast<double>(this->Parent->CurrentReaderIndex) + amount) /
       static_cast<double>(this->Parent->NumberOfReaders));
   }
-+ 
 + 
 + // added by LLNL
 + 
@@ -520,17 +507,18 @@ function apply_vtkopenfoamreader_patch
 
 function apply_vtkprobeopenglversion_patch
 {
-  # patch vtk's Rendering/OpenGL2/CMakeLists.txt to fix a compile problem
+  # patch vtk's Rendering/OpenGL2/CMakeLists.txt to avoid a link error
   # with vtkProbeOpenGLVersion when OSMesa is turned on.
+  # This may not be the best thing to be doing!!
 
    patch -p0 << \EOF
-*** Rendering/OpenGL2/CMakeLists.txt.orig
---- Rendering/OpenGL2/CMakeLists.txt
+*** Rendering/OpenGL2/CMakeLists.txt.orig	Tue Apr 20 16:38:32 2021
+--- Rendering/OpenGL2/CMakeLists.txt	Tue Apr 20 16:38:57 2021
 ***************
-*** 351,372 ****
+*** 378,399 ****
     vtk_module_link(VTK::RenderingOpenGL2 PUBLIC "-framework UIKit")
   endif ()
-
+  
 ! if (NOT ANDROID AND
 !     NOT APPLE_IOS AND
 !     NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten" AND
@@ -550,10 +538,10 @@ function apply_vtkprobeopenglversion_patch
 !     TARGETS vtkProbeOpenGLVersion
 !     MODULES VTK::RenderingOpenGL2)
 ! endif ()
---- 351,372 ----
+--- 378,399 ----
     vtk_module_link(VTK::RenderingOpenGL2 PUBLIC "-framework UIKit")
   endif ()
-
+  
 ! #if (NOT ANDROID AND
 ! #    NOT APPLE_IOS AND
 ! #    NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten" AND
@@ -909,324 +897,6 @@ EOF
 
     if [[ $? != 0 ]] ; then
       warn "vtk patch for vtkOpenGLSphereMapper.cxx failed."
-      return 1
-    fi
-    return 0;
-}
-
-function apply_vtkdatawriter_patch
-{
-  # patch vtk's vtkDataWriter to fix bug when writing non-AOS data arrays
-  # (as used with LibSim).
-
-   patch -p0 << \EOF
-*** IO/Legacy/vtkDataWriter.cxx.orig	Fri Jun 26 06:24:40 2020
---- IO/Legacy/vtkDataWriter.cxx	Thu Apr 15 15:00:41 2021
-***************
-*** 1026,1059 ****
-    *fp << "\n";
-  }
-  
-  // Returns a pointer to the data ordered in original VTK style ordering
-  // of the data. If this is an SOA array it has to allocate the memory
-  // for that in which case the calling function must delete it.
-! template <class T>
-! T* GetArrayRawPointer(vtkAbstractArray* array, T* ptr, int isAOSArray)
-  {
-    if (isAOSArray)
-    {
-!     return ptr;
-!   }
-!   if (vtkSOADataArrayTemplate<T>* typedArray = vtkSOADataArrayTemplate<T>::SafeDownCast(array))
-!   {
-!     T* data = new T[array->GetNumberOfComponents() * array->GetNumberOfTuples()];
-!     typedArray->ExportToVoidPointer(data);
-!     return data;
-    }
-! #ifdef VTK_USE_SCALED_SOA_ARRAYS
-!   else if (vtkScaledSOADataArrayTemplate<T>* typedScaleArray =
-!              vtkScaledSOADataArrayTemplate<T>::SafeDownCast(array))
-!   {
-!     T* data = new T[array->GetNumberOfComponents() * array->GetNumberOfTuples()];
-!     typedScaleArray->ExportToVoidPointer(data);
-!     return data;
-!   }
-! #endif
-!   vtkGenericWarningMacro(
-!     "Do not know how to handle array type " << array->GetClassName() << " in vtkDataWriter");
-!   return nullptr;
-  }
-  
-  } // end anonymous namespace
---- 1026,1056 ----
-    *fp << "\n";
-  }
-  
-+ //------------------------------------------------------------------------------
-+ template <class Value, class Array>
-+ Value* GetPointer(vtkAbstractArray* array)
-+ {
-+   return static_cast<Array*>(array)->GetPointer(0);
-+ }
-+ 
-+ //------------------------------------------------------------------------------
-  // Returns a pointer to the data ordered in original VTK style ordering
-  // of the data. If this is an SOA array it has to allocate the memory
-  // for that in which case the calling function must delete it.
-! template <class T, class Array>
-! T* GetArrayRawPointer(vtkAbstractArray* array, int isAOSArray)
-  {
-    if (isAOSArray)
-    {
-!     return GetPointer<T, Array>(array);
-    }
-! 
-!   auto nc = array->GetNumberOfComponents();
-!   auto nt = array->GetNumberOfTuples();
-! 
-!   T* data = new T[nc * nt];
-!   array->ExportToVoidPointer(data);
-!   return data;
-  }
-  
-  } // end anonymous namespace
-***************
-*** 1108,1115 ****
-      {
-        snprintf(str, sizeof(str), format, "char");
-        *fp << str;
-!       char* s =
-!         GetArrayRawPointer(data, static_cast<vtkCharArray*>(data)->GetPointer(0), isAOSArray);
-  #if VTK_TYPE_CHAR_IS_SIGNED
-        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
-  #else
---- 1105,1111 ----
-      {
-        snprintf(str, sizeof(str), format, "char");
-        *fp << str;
-!       char* s = GetArrayRawPointer<char, vtkCharArray>(data, isAOSArray);
-  #if VTK_TYPE_CHAR_IS_SIGNED
-        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
-  #else
-***************
-*** 1126,1133 ****
-      {
-        snprintf(str, sizeof(str), format, "signed_char");
-        *fp << str;
-!       signed char* s =
-!         GetArrayRawPointer(data, static_cast<vtkSignedCharArray*>(data)->GetPointer(0), isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
-        if (!isAOSArray)
-        {
---- 1122,1128 ----
-      {
-        snprintf(str, sizeof(str), format, "signed_char");
-        *fp << str;
-!       signed char* s = GetArrayRawPointer<signed char, vtkSignedCharArray>(data, isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
-        if (!isAOSArray)
-        {
-***************
-*** 1140,1147 ****
-      {
-        snprintf(str, sizeof(str), format, "unsigned_char");
-        *fp << str;
-!       unsigned char* s = GetArrayRawPointer(
-!         data, static_cast<vtkUnsignedCharArray*>(data)->GetPointer(0), isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%hhu ", num, numComp);
-        if (!isAOSArray)
-        {
---- 1135,1141 ----
-      {
-        snprintf(str, sizeof(str), format, "unsigned_char");
-        *fp << str;
-!       unsigned char* s = GetArrayRawPointer<unsigned char, vtkUnsignedCharArray>(data, isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%hhu ", num, numComp);
-        if (!isAOSArray)
-        {
-***************
-*** 1154,1161 ****
-      {
-        snprintf(str, sizeof(str), format, "short");
-        *fp << str;
-!       short* s =
-!         GetArrayRawPointer(data, static_cast<vtkShortArray*>(data)->GetPointer(0), isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%hd ", num, numComp);
-        if (!isAOSArray)
-        {
---- 1148,1154 ----
-      {
-        snprintf(str, sizeof(str), format, "short");
-        *fp << str;
-!       short* s = GetArrayRawPointer<short, vtkShortArray>(data, isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%hd ", num, numComp);
-        if (!isAOSArray)
-        {
-***************
-*** 1168,1175 ****
-      {
-        snprintf(str, sizeof(str), format, "unsigned_short");
-        *fp << str;
-!       unsigned short* s = GetArrayRawPointer(
-!         data, static_cast<vtkUnsignedShortArray*>(data)->GetPointer(0), isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%hu ", num, numComp);
-        if (!isAOSArray)
-        {
---- 1161,1168 ----
-      {
-        snprintf(str, sizeof(str), format, "unsigned_short");
-        *fp << str;
-!       unsigned short* s =
-!         GetArrayRawPointer<unsigned short, vtkUnsignedShortArray>(data, isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%hu ", num, numComp);
-        if (!isAOSArray)
-        {
-***************
-*** 1182,1188 ****
-      {
-        snprintf(str, sizeof(str), format, "int");
-        *fp << str;
-!       int* s = GetArrayRawPointer(data, static_cast<vtkIntArray*>(data)->GetPointer(0), isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%d ", num, numComp);
-        if (!isAOSArray)
-        {
---- 1175,1181 ----
-      {
-        snprintf(str, sizeof(str), format, "int");
-        *fp << str;
-!       int* s = GetArrayRawPointer<int, vtkIntArray>(data, isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%d ", num, numComp);
-        if (!isAOSArray)
-        {
-***************
-*** 1195,1202 ****
-      {
-        snprintf(str, sizeof(str), format, "unsigned_int");
-        *fp << str;
-!       unsigned int* s = GetArrayRawPointer(
-!         data, static_cast<vtkUnsignedIntArray*>(data)->GetPointer(0), isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%u ", num, numComp);
-        if (!isAOSArray)
-        {
---- 1188,1194 ----
-      {
-        snprintf(str, sizeof(str), format, "unsigned_int");
-        *fp << str;
-!       unsigned int* s = GetArrayRawPointer<unsigned int, vtkUnsignedIntArray>(data, isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%u ", num, numComp);
-        if (!isAOSArray)
-        {
-***************
-*** 1209,1216 ****
-      {
-        snprintf(str, sizeof(str), format, "long");
-        *fp << str;
-!       long* s =
-!         GetArrayRawPointer(data, static_cast<vtkLongArray*>(data)->GetPointer(0), isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%ld ", num, numComp);
-        if (!isAOSArray)
-        {
---- 1201,1207 ----
-      {
-        snprintf(str, sizeof(str), format, "long");
-        *fp << str;
-!       long* s = GetArrayRawPointer<long, vtkLongArray>(data, isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%ld ", num, numComp);
-        if (!isAOSArray)
-        {
-***************
-*** 1223,1230 ****
-      {
-        snprintf(str, sizeof(str), format, "unsigned_long");
-        *fp << str;
-!       unsigned long* s = GetArrayRawPointer(
-!         data, static_cast<vtkUnsignedLongArray*>(data)->GetPointer(0), isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%lu ", num, numComp);
-        if (!isAOSArray)
-        {
---- 1214,1220 ----
-      {
-        snprintf(str, sizeof(str), format, "unsigned_long");
-        *fp << str;
-!       unsigned long* s = GetArrayRawPointer<unsigned long, vtkUnsignedLongArray>(data, isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%lu ", num, numComp);
-        if (!isAOSArray)
-        {
-***************
-*** 1237,1244 ****
-      {
-        snprintf(str, sizeof(str), format, "vtktypeint64");
-        *fp << str;
-!       long long* s =
-!         GetArrayRawPointer(data, static_cast<vtkTypeInt64Array*>(data)->GetPointer(0), isAOSArray);
-        strcpy(outputFormat, vtkTypeTraits<long long>::ParseFormat());
-        strcat(outputFormat, " ");
-        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
---- 1227,1233 ----
-      {
-        snprintf(str, sizeof(str), format, "vtktypeint64");
-        *fp << str;
-!       long long* s = GetArrayRawPointer<long long, vtkTypeInt64Array>(data, isAOSArray);
-        strcpy(outputFormat, vtkTypeTraits<long long>::ParseFormat());
-        strcat(outputFormat, " ");
-        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
-***************
-*** 1254,1260 ****
-        snprintf(str, sizeof(str), format, "vtktypeuint64");
-        *fp << str;
-        unsigned long long* s =
-!         GetArrayRawPointer(data, static_cast<vtkTypeUInt64Array*>(data)->GetPointer(0), isAOSArray);
-        strcpy(outputFormat, vtkTypeTraits<unsigned long long>::ParseFormat());
-        strcat(outputFormat, " ");
-        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
---- 1243,1249 ----
-        snprintf(str, sizeof(str), format, "vtktypeuint64");
-        *fp << str;
-        unsigned long long* s =
-!         GetArrayRawPointer<unsigned long long, vtkTypeUInt64Array>(data, isAOSArray);
-        strcpy(outputFormat, vtkTypeTraits<unsigned long long>::ParseFormat());
-        strcat(outputFormat, " ");
-        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
-***************
-*** 1269,1276 ****
-      {
-        snprintf(str, sizeof(str), format, "float");
-        *fp << str;
-!       float* s =
-!         GetArrayRawPointer(data, static_cast<vtkFloatArray*>(data)->GetPointer(0), isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%g ", num, numComp);
-        if (!isAOSArray)
-        {
---- 1258,1264 ----
-      {
-        snprintf(str, sizeof(str), format, "float");
-        *fp << str;
-!       float* s = GetArrayRawPointer<float, vtkFloatArray>(data, isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%g ", num, numComp);
-        if (!isAOSArray)
-        {
-***************
-*** 1283,1290 ****
-      {
-        snprintf(str, sizeof(str), format, "double");
-        *fp << str;
-!       double* s =
-!         GetArrayRawPointer(data, static_cast<vtkDoubleArray*>(data)->GetPointer(0), isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%.11lg ", num, numComp);
-        if (!isAOSArray)
-        {
---- 1271,1277 ----
-      {
-        snprintf(str, sizeof(str), format, "double");
-        *fp << str;
-!       double* s = GetArrayRawPointer<double, vtkDoubleArray>(data, isAOSArray);
-        vtkWriteDataArray(fp, s, this->FileType, "%.11lg ", num, numComp);
-        if (!isAOSArray)
-        {
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtk patch for vtkDataWriter failed."
       return 1
     fi
     return 0;
@@ -1636,25 +1306,25 @@ function apply_vtk_python3_python_args_patch
     # Add cast to allow us to compile.
     patch -p0 << \EOF
     diff -c Wrapping/PythonCore/vtkPythonArgs.orig.cxx Wrapping/PythonCore/vtkPythonArgs.cxx
-    *** Wrapping/PythonCore/vtkPythonArgs.orig.cxx	2020-03-24 14:29:39.000000000 -0700
-    --- Wrapping/PythonCore/vtkPythonArgs.cxx	2020-03-24 14:29:52.000000000 -0700
-    ***************
-    *** 102,108 ****
-        else if (PyUnicode_Check(o))
-        {
-      #if PY_VERSION_HEX >= 0x03030000
-    !     a = PyUnicode_AsUTF8(o);
-          return true;
-      #else
-          PyObject *s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
-    --- 102,108 ----
-        else if (PyUnicode_Check(o))
-        {
-      #if PY_VERSION_HEX >= 0x03030000
-    !     a = (char*)PyUnicode_AsUTF8(o);
-          return true;
-      #else
-          PyObject *s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
+*** Wrapping/PythonCore/vtkPythonArgs.cxx.orig	Mon Apr 19 15:00:19 2021
+--- Wrapping/PythonCore/vtkPythonArgs.cxx	Mon Apr 19 15:00:44 2021
+***************
+*** 132,138 ****
+    else if (PyUnicode_Check(o))
+    {
+  #if PY_VERSION_HEX >= 0x03030000
+!     a = PyUnicode_AsUTF8(o);
+      return true;
+  #else
+      PyObject* s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
+--- 132,138 ----
+    else if (PyUnicode_Check(o))
+    {
+  #if PY_VERSION_HEX >= 0x03030000
+!     a = (char*)PyUnicode_AsUTF8(o);
+      return true;
+  #else
+      PyObject* s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
 EOF
 
     if [[ $? != 0 ]] ; then
@@ -1666,6 +1336,54 @@ EOF
 }
 
 
+function apply_vtk_planesource_patch
+{
+    # Fix use of ambiguous abs
+    patch -p0 << \EOF
+*** Filters/Sources/vtkPlaneSource.cxx.orig	Tue Apr 20 16:12:05 2021
+--- Filters/Sources/vtkPlaneSource.cxx	Tue Apr 20 16:12:16 2021
+***************
+*** 24,29 ****
+--- 24,30 ----
+  #include "vtkPoints.h"
+  #include "vtkPolyData.h"
+  #include "vtkTransform.h"
++ #include <cmath>
+  
+  vtkStandardNewMacro(vtkPlaneSource);
+  
+***************
+*** 400,408 ****
+  }
+  
+  //------------------------------------------------------------------------------
+  void vtkPlaneSource::Rotate(double angle, double rotationAxis[3])
+  {
+!   if (abs(angle) < EPSILON)
+    {
+      return;
+    }
+--- 401,410 ----
+  }
+  
+  //------------------------------------------------------------------------------
++ 
+  void vtkPlaneSource::Rotate(double angle, double rotationAxis[3])
+  {
+!   if (std::abs(angle) < EPSILON)
+    {
+      return;
+    }
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for planesource failed."
+      return 1
+    fi
+
+    return 0;
+}
 
 
 function apply_vtk_patch
@@ -1681,11 +1399,6 @@ function apply_vtk_patch
     fi
 
     apply_vtkopenfoamreader_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    apply_vtkdatawriter_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
@@ -1720,6 +1433,11 @@ function apply_vtk_patch
     #fi
 
     apply_vtk_python3_python_args_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtk_planesource_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
@@ -1826,6 +1544,8 @@ function build_vtk
         vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
         vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
         vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
+        # for now, until Mesa can be updated to a version that supports GLVND, set LEGACY preference
+        vopts="${vopts} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
         vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
         vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
         vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
