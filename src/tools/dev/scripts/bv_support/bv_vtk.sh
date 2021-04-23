@@ -26,16 +26,16 @@ function bv_vtk_system_vtk
 
     bv_vtk_enable
     USE_SYSTEM_VTK="yes"
-    SYSTEM_VTK_DIR="$1"
-    info "Using System VTK: $SYSTEM_VTK_DIR"
+    VTK_INSTALL_DIR="$1"
+    info "Using System VTK: $VTK_INSTALL_DIR"
 }
 
 function bv_vtk_alt_vtk_dir
 {
     bv_vtk_enable
     USE_SYSTEM_VTK="yes"
-    SYSTEM_VTK_DIR="$1"
-    info "Using Alternate VTK: $SYSTEM_VTK_DIR"
+    VTK_INSTALL_DIR="$1"
+    info "Using Alternate VTK: $VTK_INSTALL_DIR"
 }
 
 function bv_vtk_depends_on
@@ -54,7 +54,7 @@ function bv_vtk_depends_on
         depends_on="${depends_on} ospray"
     fi
 
-    # Only depend on Qt if we're not doing server-only builds.
+    # Only depend on Qt if not doing server-only builds.
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
@@ -64,6 +64,13 @@ function bv_vtk_depends_on
     fi
 
     echo ${depends_on}
+}
+
+function bv_vtk_initialize_vars
+{
+    if [[ "$USE_SYSTEM_VTK" == "no" ]]; then
+        VTK_INSTALL_DIR="${VISITDIR}/vtk/${VTK_VERSION}/${VISITARCH}"
+    fi
 }
 
 function bv_vtk_force
@@ -76,60 +83,61 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-    export VTK_FILE=${VTK_FILE:-"VTK-8.1.0.tar.gz"}
-    export VTK_VERSION=${VTK_VERSION:-"8.1.0"}
-    export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"8.1"}
+    export VTK_VERSION=${VTK_VERSION:-"9.0.1"}
+    export VTK_FILE=${VTK_FILE:-"VTK-${VTK_VERSION}.tar.gz"}
+    export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.0"}
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
     export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
-    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-8.1.0"}
-    export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
-    export VTK_MD5_CHECKSUM="4fa5eadbc8723ba0b8d203f05376d932"
-    export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
+    export VTK_SRC_DIR=${VTK_SRC_DIR:-"${VTK_FILE%.tar*}"}
+    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"${VTK_SRC_DIR}-build"}
+#    export VTK_MD5_CHECKSUM="4fa5eadbc8723ba0b8d203f05376d932"
+#    export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
 }
 
 function bv_vtk_print
 {
     printf "%s%s\n" "VTK_FILE=" "${VTK_FILE}"
     printf "%s%s\n" "VTK_VERSION=" "${VTK_VERSION}"
+    printf "%s%s\n" "VTK_COMPATIBILITY_VERSION=" "${VTK_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "VTK_SRC_DIR=" "${VTK_SRC_DIR}"
     printf "%s%s\n" "VTK_BUILD_DIR=" "${VTK_BUILD_DIR}"
 }
 
 function bv_vtk_print_usage
 {
-    printf "%-20s %s\n" "--vtk" "Build VTK"
+    printf "%-20s %s [%s]\n" "--vtk" "Build VTK support" "$DO_VTK"
     printf "%-20s %s [%s]\n" "--system-vtk" "Use the system installed VTK"
     printf "%-20s %s [%s]\n" "--alt-vtk-dir" "Use VTK from an alternative directory"
 }
 
 function bv_vtk_host_profile
 {
-    echo >> $HOSTCONF
-    echo "##" >> $HOSTCONF
-    echo "## VTK" >> $HOSTCONF
-    echo "##" >> $HOSTCONF
+    if [[ "$DO_VTK" == "yes" ]]; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## VTK" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
 
-    echo "SETUP_APP_VERSION(VTK $VTK_VERSION)" >> $HOSTCONF
-    if [[ "$USE_SYSTEM_VTK" == "yes" ]]; then
-        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR $SYSTEM_VTK_DIR)" >> $HOSTCONF
-    else
-        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/${VTK_INSTALL_DIR}/\${VTK_VERSION}/\${VISITARCH})" >> $HOSTCONF
-        # vtk's target system should take care of this, so does VisIt need to know?
-        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_INCDEP ZLIB_INCLUDE_DIR)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_LIBDEP ZLIB_LIBRARY)" >> $HOSTCONF
+        echo "SETUP_APP_VERSION(VTK $VTK_VERSION)" >> $HOSTCONF
+        if [[ "$USE_SYSTEM_VTK" == "yes" ]]; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR $VTK_INSTALL_DIR)" >> $HOSTCONF
+        else
+            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/vtk/\${VTK_VERSION}/\${VISITARCH})" >> $HOSTCONF
+            # vtk's target system should take care of this, so does VisIt need to know?
+            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_INCDEP ZLIB_INCLUDE_DIR)" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_VTK_LIBDEP ZLIB_LIBRARY)" >> $HOSTCONF
+        fi
     fi
-}
-
-function bv_vtk_initialize_vars
-{
-    info "initalizing vtk vars"
 }
 
 function bv_vtk_ensure
 {
     if [[ "$DO_VTK" == "yes" && "$USE_SYSTEM_VTK" == "no" ]] ; then
-        ensure_built_or_ready $VTK_INSTALL_DIR $VTK_VERSION $VTK_BUILD_DIR $VTK_FILE $VTK_URL
+        check_installed_or_have_src "vtk" $VTK_VERSION $VTK_BUILD_DIR $VTK_FILE $VTK_URL
         if [[ $? != 0 ]] ; then
-            return 1
+            ANY_ERRORS="yes"
+            DO_VTK="no"
+            error "Unable to build vtk. ${VTK_FILE} not found."
         fi
     fi
 }
@@ -142,8 +150,85 @@ function bv_vtk_dry_run
 }
 
 # *************************************************************************** #
-#                            Function 6, build_vtk                            #
+#                            Function 6, patch_vtk                            #
 # *************************************************************************** #
+function apply_vtk9.0.1_hdf5_patch
+{
+    # Patch for 9.0.1 ONLY as these are fixed in the master.
+
+   patch -p0 << \EOF
+*** ./ThirdParty/hdf5/vtkhdf5/src/H5Fsuper.c_orig       2021-04-12 09:44:54.000000000 -0600
+--- ./ThirdParty/hdf5/vtkhdf5/src/H5Fsuper.c    2021-04-12 09:41:21.000000000 -0600
+***************
+*** 54,60 ****
+  /********************/
+  static herr_t H5F__super_ext_create(H5F_t *f, H5O_loc_t *ext_ptr);
+  static herr_t H5F__update_super_ext_driver_msg(H5F_t *f);
+!
+
+  /*********************/
+  /* Package Variables */
+--- 54,60 ----
+  /********************/
+  static herr_t H5F__super_ext_create(H5F_t *f, H5O_loc_t *ext_ptr);
+  static herr_t H5F__update_super_ext_driver_msg(H5F_t *f);
+! herr_t H5O__fsinfo_set_version(H5F_t *f, H5O_fsinfo_t *fsinfo);
+
+  /*********************/
+  /* Package Variables */
+*** ./ThirdParty/hdf5/vtkhdf5/src/H5Oint.c_orig 2021-04-12 09:55:01.000000000 -0600
+--- ./ThirdParty/hdf5/vtkhdf5/src/H5Oint.c      2021-04-12 09:54:47.000000000 -0600
+***************
+*** 31,36 ****
+--- 31,37 ----
+  /* Headers */
+  /***********/
+  #include "H5private.h"          /* Generic Functions                        */
++ #include "H5CXprivate.h"        /* API Contexts */
+  #include "H5Eprivate.h"         /* Error handling                           */
+  #include "H5Fprivate.h"         /* File access                              */
+  #include "H5FLprivate.h"        /* Free lists                               */
+*** ./ThirdParty/hdf5/vtkhdf5/src/H5Rint.c_orig 2021-04-12 09:58:41.000000000 -0600
+--- ./ThirdParty/hdf5/vtkhdf5/src/H5Rint.c      2021-04-12 09:57:55.000000000 -0600
+***************
+*** 23,28 ****
+--- 23,29 ----
+  /***********/
+  #include "H5private.h"          /* Generic Functions                        */
+  #include "H5ACprivate.h"        /* Metadata cache                           */
++ #include "H5CXprivate.h"        /* API Contexts */
+  #include "H5Dprivate.h"         /* Datasets                                 */
+  #include "H5Eprivate.h"         /* Error handling                           */
+  #include "H5Gprivate.h"         /* Groups                                   */
+*** Rendering/RayTracing/CMakeLists_orig.txt	2021-04-14 17:02:27.000000000 -0600
+--- Rendering/RayTracing/CMakeLists.txt	2021-04-14 17:01:07.000000000 -0600
+*************** vtk_module_install_headers(
+*** 57,63 ****
+  if (VTK_ENABLE_OSPRAY)
+    vtk_module_find_package(
+      PACKAGE ospray
+!     VERSION 1.8)
+  
+    vtk_module_link(VTK::RenderingRayTracing
+      PUBLIC
+--- 57,63 ----
+  if (VTK_ENABLE_OSPRAY)
+    vtk_module_find_package(
+      PACKAGE ospray
+!     VERSION 2.5)
+  
+    vtk_module_link(VTK::RenderingRayTracing
+      PUBLIC
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for apply_vtk9.0.1_hdf5_patch failed."
+      return 1
+    fi
+    return 0;
+
+}
+
 function apply_vtkxopenglrenderwindow_patch
 {
   # patch vtk's vtkXOpenRenderWindow to fix segv when deleting windows in
@@ -202,15 +287,15 @@ function apply_vtkopenglspheremapper_h_patch
 --- Rendering/OpenGL2/vtkOpenGLSphereMapper.h  2019-06-05 10:25:08.000000000 -0700
 ***************
 *** 94,105 ****
-  
+
     void RenderPieceDraw(vtkRenderer *ren, vtkActor *act) override;
-  
+
 -   virtual void CreateVBO(
 -     float * points, vtkIdType numPts,
 -     unsigned char *colors, int colorComponents,
 -     vtkIdType nc,
 -     float *sizes, vtkIdType ns, vtkRenderer *ren);
-- 
+-
     // used for transparency
     bool Invert;
     float Radius;
@@ -236,9 +321,9 @@ function apply_vtkopenglspheremapper_patch
 ***************
 *** 15,20 ****
 --- 15,21 ----
-  
+
   #include "vtkOpenGLHelper.h"
-  
+
 + #include "vtkDataArrayAccessor.h"
   #include "vtkFloatArray.h"
   #include "vtkMath.h"
@@ -247,7 +332,7 @@ function apply_vtkopenglspheremapper_patch
 *** 211,253 ****
     os << indent << "Radius: " << this->Radius << "\n";
   }
-  
+
 ! // internal function called by CreateVBO
 ! void vtkOpenGLSphereMapper::CreateVBO(
 !   float * points, vtkIdType numPts,
@@ -259,28 +344,28 @@ function apply_vtkopenglspheremapper_patch
 !   verts->SetNumberOfComponents(3);
 !   verts->SetNumberOfTuples(numPts*3);
 !   float *vPtr = static_cast<float *>(verts->GetVoidPointer(0));
-  
+
 !   vtkFloatArray *offsets = vtkFloatArray::New();
 !   offsets->SetNumberOfComponents(2);
 !   offsets->SetNumberOfTuples(numPts*3);
     float *oPtr = static_cast<float *>(offsets->GetVoidPointer(0));
-- 
+-
 -   vtkUnsignedCharArray *ucolors = vtkUnsignedCharArray::New();
 -   ucolors->SetNumberOfComponents(4);
 -   ucolors->SetNumberOfTuples(numPts*3);
     unsigned char *cPtr = static_cast<unsigned char *>(ucolors->GetVoidPointer(0));
-  
+
 !   float *pointPtr;
 !   unsigned char *colorPtr;
-  
+
     float cos30 = cos(vtkMath::RadiansFromDegrees(30.0));
-  
+
     for (vtkIdType i = 0; i < numPts; ++i)
     {
 !     pointPtr = points + i*3;
 !     colorPtr = (nc == numPts ? colors + i*colorComponents : colors);
 !     float radius = (ns == numPts ? sizes[i] : sizes[0]);
-  
+
       // Vertices
 !     *(vPtr++) = pointPtr[0];
 !     *(vPtr++) = pointPtr[1];
@@ -291,7 +376,7 @@ function apply_vtkopenglspheremapper_patch
 --- 212,250 ----
     os << indent << "Radius: " << this->Radius << "\n";
   }
-  
+
 ! // internal function called by BuildBufferObjects
 ! template <typename PtsArray, typename SizesArray>
 ! void vtkOpenGLSphereMapper_PrepareVBO(
@@ -300,27 +385,27 @@ function apply_vtkopenglspheremapper_patch
 !   vtkFloatArray *verts, vtkFloatArray *offsets, vtkUnsignedCharArray *ucolors)
   {
 !   vtkIdType numPts = points->GetNumberOfTuples();
-  
+
 !   float *vPtr = static_cast<float *>(verts->GetVoidPointer(0));
     float *oPtr = static_cast<float *>(offsets->GetVoidPointer(0));
     unsigned char *cPtr = static_cast<unsigned char *>(ucolors->GetVoidPointer(0));
-  
+
 !   vtkDataArrayAccessor<PtsArray> pointPtr(points);
 !   vtkDataArrayAccessor<SizesArray> sizes(sizesA);
-! 
+!
 !   float radius = sizes.Get(0, 0);
-!   
+!
 !   unsigned char *colorPtr = colors;
-  
+
     float cos30 = cos(vtkMath::RadiansFromDegrees(30.0));
-  
+
     for (vtkIdType i = 0; i < numPts; ++i)
     {
 !     if (nc == numPts)
 !         colorPtr = colors + i*colorComponents;
 !     if (ns == numPts)
 !         radius = sizes.Get(i, 0);
-  
+
       // Vertices
 !     *(vPtr++) = pointPtr.Get(i, 0);
 !     *(vPtr++) = pointPtr.Get(i, 1);
@@ -332,7 +417,7 @@ function apply_vtkopenglspheremapper_patch
 *** 255,263 ****
       *(oPtr++) = -2.0f*radius*cos30;
       *(oPtr++) = -radius;
-  
+
 !     *(vPtr++) = pointPtr[0];
 !     *(vPtr++) = pointPtr[1];
 !     *(vPtr++) = pointPtr[2];
@@ -342,7 +427,7 @@ function apply_vtkopenglspheremapper_patch
 --- 252,260 ----
       *(oPtr++) = -2.0f*radius*cos30;
       *(oPtr++) = -radius;
-  
+
 !     *(vPtr++) = pointPtr.Get(i, 0);
 !     *(vPtr++) = pointPtr.Get(i, 1);
 !     *(vPtr++) = pointPtr.Get(i, 2);
@@ -353,7 +438,7 @@ function apply_vtkopenglspheremapper_patch
 *** 265,273 ****
       *(oPtr++) = 2.0f*radius*cos30;
       *(oPtr++) = -radius;
-  
+
 !     *(vPtr++) = pointPtr[0];
 !     *(vPtr++) = pointPtr[1];
 !     *(vPtr++) = pointPtr[2];
@@ -363,7 +448,7 @@ function apply_vtkopenglspheremapper_patch
 --- 262,270 ----
       *(oPtr++) = 2.0f*radius*cos30;
       *(oPtr++) = -radius;
-  
+
 !     *(vPtr++) = pointPtr.Get(i, 0);
 !     *(vPtr++) = pointPtr.Get(i, 1);
 !     *(vPtr++) = pointPtr.Get(i, 2);
@@ -375,7 +460,7 @@ function apply_vtkopenglspheremapper_patch
       *(oPtr++) = 0.0f;
       *(oPtr++) = 2.0f*radius;
     }
-- 
+-
 -   this->VBOs->CacheDataArray("vertexMC", verts, ren, VTK_FLOAT);
 -   verts->Delete();
 -   this->VBOs->CacheDataArray("offsetMC", offsets, ren, VTK_FLOAT);
@@ -384,14 +469,14 @@ function apply_vtkopenglspheremapper_patch
 -   ucolors->Delete();
 -   VBOs->BuildAllVBOs(ren);
   }
-  
+
   //-------------------------------------------------------------------------
 --- 272,277 ----
 ***************
 *** 320,326 ****
     // then the scalars do not have to be regenerted.
     this->MapScalars(1.0);
-  
+
 !   vtkIdType numPts = poly->GetPoints()->GetNumberOfPoints();
     unsigned char *c;
     int cc;
@@ -399,9 +484,9 @@ function apply_vtkopenglspheremapper_patch
 --- 309,317 ----
     // then the scalars do not have to be regenerted.
     this->MapScalars(1.0);
-  
+
 !   vtkPoints *pts = poly->GetPoints();
-! 
+!
 !   vtkIdType numPts = pts->GetNumberOfPoints();
     unsigned char *c;
     int cc;
@@ -418,7 +503,7 @@ function apply_vtkopenglspheremapper_patch
       nc = 1;
 !     cc = 3;
     }
-  
+
 !   float *scales;
     vtkIdType ns = poly->GetPoints()->GetNumberOfPoints();
     if (this->ScaleArray != nullptr &&
@@ -432,7 +517,7 @@ function apply_vtkopenglspheremapper_patch
 !     scales = &this->Radius;
       ns = 1;
     }
-  
+
 !   // Iterate through all of the different types in the polydata, building OpenGLs
 !   // and IBOs as appropriate for each type.
 !   this->CreateVBO(
@@ -441,12 +526,12 @@ function apply_vtkopenglspheremapper_patch
 !     c, cc, nc,
 !     scales, ns,
 !     ren);
-  
+
     if (!this->Colors)
     {
       delete [] c;
     }
-  
+
     // create the IBO
     this->Primitives[PrimitivePoints].IBO->IndexCount = 0;
 --- 324,386 ----
@@ -462,7 +547,7 @@ function apply_vtkopenglspheremapper_patch
       nc = 1;
 !     cc = 4;
     }
-  
+
 !   vtkDataArray *scales = NULL;
     vtkIdType ns = poly->GetPoints()->GetNumberOfPoints();
     if (this->ScaleArray != nullptr &&
@@ -478,22 +563,22 @@ function apply_vtkopenglspheremapper_patch
 !     scales->SetTuple1(0, this->Radius);
       ns = 1;
     }
-  
+
 !   vtkFloatArray *verts = vtkFloatArray::New();
 !   verts->SetNumberOfComponents(3);
 !   verts->SetNumberOfTuples(numPts*3);
-! 
+!
 !   vtkFloatArray *offsets = vtkFloatArray::New();
 !   offsets->SetNumberOfComponents(2);
 !   offsets->SetNumberOfTuples(numPts*3);
-! 
+!
 !   vtkUnsignedCharArray *ucolors = vtkUnsignedCharArray::New();
 !   ucolors->SetNumberOfComponents(4);
 !   ucolors->SetNumberOfTuples(numPts*3);
-! 
+!
 !   vtkOpenGLSphereMapper_PrepareVBO(pts->GetData(), c, cc, nc, scales, ns,
 !                                    verts, offsets, ucolors);
-! 
+!
 !   this->VBOs->CacheDataArray("vertexMC", verts, ren, VTK_FLOAT);
 !   verts->Delete();
 !   this->VBOs->CacheDataArray("offsetMC", offsets, ren, VTK_FLOAT);
@@ -501,7 +586,7 @@ function apply_vtkopenglspheremapper_patch
 !   this->VBOs->CacheDataArray("scalarColor", ucolors, ren, VTK_UNSIGNED_CHAR);
 !   ucolors->Delete();
 !   this->VBOs->BuildAllVBOs(ren);
-  
+
     if (!this->Colors)
     {
       delete [] c;
@@ -510,7 +595,7 @@ function apply_vtkopenglspheremapper_patch
 +   {
 +     scales->Delete();
 +   }
-  
+
     // create the IBO
     this->Primitives[PrimitivePoints].IBO->IndexCount = 0;
 EOF
@@ -569,11 +654,11 @@ EOF
 
 function apply_vtkospray_patches
 {
-	count_patches=3
+        count_patches=3
     # patch vtkOSPRay files:
 
     # 1) expose vtkViewNodeFactory via vtkOSPRayPass
-	current_patch=1
+        current_patch=1
     patch -p0 << \EOF
 *** Rendering/OSPRay/vtkOSPRayPass.h.original     2018-04-23 19:23:29.000000000 -0700
 --- Rendering/OSPRay/vtkOSPRayPass.h  2018-04-30 21:31:49.911508591 -0700
@@ -598,8 +683,8 @@ function apply_vtkospray_patches
    protected:
     /**
      * Default constructor.
-*** Rendering/OSPRay/vtkOSPRayPass.cxx.original	2018-04-23 19:23:29.000000000 -0700
---- Rendering/OSPRay/vtkOSPRayPass.cxx	2018-04-30 21:31:49.907508611 -0700
+*** Rendering/OSPRay/vtkOSPRayPass.cxx.original 2018-04-23 19:23:29.000000000 -0700
+--- Rendering/OSPRay/vtkOSPRayPass.cxx  2018-04-30 21:31:49.907508611 -0700
 ***************
 *** 273,275 ****
 --- 273,280 ----
@@ -617,11 +702,11 @@ EOF
         return 1
     fi
 
-	# 2) enable vtkOSPRayFollowerNode
-	((current_patch++))
-	patch -p0 << \EOF
-*** Rendering/OSPRay/vtkOSPRayViewNodeFactory.cxx.original	2018-04-23 19:23:29.000000000 -0700
---- Rendering/OSPRay/vtkOSPRayViewNodeFactory.cxx	2018-05-07 19:43:23.902077745 -0700
+        # 2) enable vtkOSPRayFollowerNode
+        ((current_patch++))
+        patch -p0 << \EOF
+*** Rendering/OSPRay/vtkOSPRayViewNodeFactory.cxx.original      2018-04-23 19:23:29.000000000 -0700
+--- Rendering/OSPRay/vtkOSPRayViewNodeFactory.cxx       2018-05-07 19:43:23.902077745 -0700
 ***************
 *** 19,24 ****
 --- 19,25 ----
@@ -657,8 +742,8 @@ EOF
     this->RegisterOverride("vtkPVLODVolume", vol_maker);
     this->RegisterOverride("vtkVolume", vol_maker);
     this->RegisterOverride("vtkOpenGLCamera", cam_maker);
-*** Rendering/OSPRay/CMakeLists.txt.original	2018-04-23 19:23:28.000000000 -0700
---- Rendering/OSPRay/CMakeLists.txt	2018-04-23 21:07:41.269154859 -0700
+*** Rendering/OSPRay/CMakeLists.txt.original    2018-04-23 19:23:28.000000000 -0700
+--- Rendering/OSPRay/CMakeLists.txt     2018-04-23 21:07:41.269154859 -0700
 ***************
 *** 7,12 ****
 --- 7,13 ----
@@ -669,8 +754,8 @@ EOF
     vtkOSPRayLightNode.cxx
     vtkOSPRayMaterialHelpers.cxx
     vtkOSPRayMaterialLibrary.cxx
-*** Rendering/OSPRay/vtkOSPRayFollowerNode.h.original	1969-12-31 16:00:00.000000000 -0800
---- Rendering/OSPRay/vtkOSPRayFollowerNode.h	2018-04-23 21:07:41.269154859 -0700
+*** Rendering/OSPRay/vtkOSPRayFollowerNode.h.original   1969-12-31 16:00:00.000000000 -0800
+--- Rendering/OSPRay/vtkOSPRayFollowerNode.h    2018-04-23 21:07:41.269154859 -0700
 ***************
 *** 0 ****
 --- 1,49 ----
@@ -723,8 +808,8 @@ EOF
 +   void operator=(const vtkOSPRayFollowerNode&) = delete;
 + };
 + #endif
-*** Rendering/OSPRay/vtkOSPRayFollowerNode.cxx.original	1969-12-31 16:00:00.000000000 -0800
---- Rendering/OSPRay/vtkOSPRayFollowerNode.cxx	2018-04-27 18:41:41.770557480 -0700
+*** Rendering/OSPRay/vtkOSPRayFollowerNode.cxx.original 1969-12-31 16:00:00.000000000 -0800
+--- Rendering/OSPRay/vtkOSPRayFollowerNode.cxx  2018-04-27 18:41:41.770557480 -0700
 ***************
 *** 0 ****
 --- 1,51 ----
@@ -779,8 +864,8 @@ EOF
 +
 +   return mtime;
 + }
-*** Rendering/Core/vtkFollower.cxx.original	2017-12-22 10:33:25.000000000 -0600
---- Rendering/Core/vtkFollower.cxx	2018-06-14 13:35:08.481815058 -0500
+*** Rendering/Core/vtkFollower.cxx.original     2017-12-22 10:33:25.000000000 -0600
+--- Rendering/Core/vtkFollower.cxx      2018-06-14 13:35:08.481815058 -0500
 ***************
 *** 156,161 ****
 --- 156,165 ----
@@ -799,10 +884,10 @@ EOF
         return 1
     fi
 
-	((current_patch++))
+        ((current_patch++))
     patch -p0 << \EOF
-*** Rendering/OSPRay/vtkOSPRayVolumeMapper.cxx.original	2018-04-23 15:32:58.538749914 -0400
---- Rendering/OSPRay/vtkOSPRayVolumeMapper.cxx	2018-04-23 15:34:58.399824907 -0400
+*** Rendering/OSPRay/vtkOSPRayVolumeMapper.cxx.original 2018-04-23 15:32:58.538749914 -0400
+--- Rendering/OSPRay/vtkOSPRayVolumeMapper.cxx  2018-04-23 15:34:58.399824907 -0400
 ***************
 *** 72,77 ****
 --- 72,79 ----
@@ -835,19 +920,19 @@ diff -c Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.h.original Rendering/OSPRay
 --- 25,31 ----
   #include "vtkRenderingOSPRayModule.h" // For export macro
   #include "vtkPolyDataMapperNode.h"
-  
+
 + class vtkDataSetSurfaceFilter;
   class vtkOSPRayActorNode;
   class vtkPolyData;
-  
+
 ***************
 *** 61,66 ****
 --- 62,69 ----
     void CreateNewMeshes();
     void AddMeshesToModel(void *arg);
-  
+
 +   vtkDataSetSurfaceFilter *GeometryExtractor;
-+ 
++
   private:
     vtkOSPRayPolyDataMapperNode(const vtkOSPRayPolyDataMapperNode&) = delete;
     void operator=(const vtkOSPRayPolyDataMapperNode&) = delete;
@@ -880,7 +965,7 @@ diff -c Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.cxx.original Rendering/OSPR
     this->OSPMeshes = nullptr;
 +   this->GeometryExtractor = nullptr;
   }
-  
+
   //----------------------------------------------------------------------------
   vtkOSPRayPolyDataMapperNode::~vtkOSPRayPolyDataMapperNode()
   {
@@ -890,7 +975,7 @@ diff -c Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.cxx.original Rendering/OSPR
 +     this->GeometryExtractor->Delete();
 +   }
   }
-  
+
   //----------------------------------------------------------------------------
 ***************
 *** 1318,1324 ****
@@ -939,18 +1024,18 @@ function apply_vtkospray_linking_patch
     # patch to vtk linking issue noticed on macOS
     patch -p0 << \EOF
     diff -c Rendering/OSPRay/CMakeLists.txt.orig  Rendering/OSPRay/CMakeLists.txt
-    *** Rendering/OSPRay/CMakeLists.txt.orig	2019-05-21 15:15:50.000000000 -0700
-    --- Rendering/OSPRay/CMakeLists.txt	2019-05-21 15:16:07.000000000 -0700
+    *** Rendering/OSPRay/CMakeLists.txt.orig    2019-05-21 15:15:50.000000000 -0700
+    --- Rendering/OSPRay/CMakeLists.txt 2019-05-21 15:16:07.000000000 -0700
     ***************
     *** 37,42 ****
     --- 37,45 ----
       vtk_module_library(vtkRenderingOSPRay ${Module_SRCS})
-  
+
       target_link_libraries(${vtk-module} LINK_PUBLIC ${OSPRAY_LIBRARIES})
     + # patch to solve linking issue noticed on macOS
     + target_link_libraries(${vtk-module} LINK_PUBLIC vtkFiltersGeometry)
-    + 
-  
+    +
+
       # OSPRay_Core uses MMTime which is in it's own special library.
       if(WIN32)
 EOF
@@ -967,12 +1052,12 @@ function apply_vtk_python3_python_args_patch
 {
     # in python 3.7.5:
     #  PyUnicode_AsUTF8 returns a const char *, which you cannot assign
-    #  to a char *. 
+    #  to a char *.
     # Add cast to allow us to compile.
     patch -p0 << \EOF
     diff -c Wrapping/PythonCore/vtkPythonArgs.orig.cxx Wrapping/PythonCore/vtkPythonArgs.cxx
-    *** Wrapping/PythonCore/vtkPythonArgs.orig.cxx	2020-03-24 14:29:39.000000000 -0700
-    --- Wrapping/PythonCore/vtkPythonArgs.cxx	2020-03-24 14:29:52.000000000 -0700
+    *** Wrapping/PythonCore/vtkPythonArgs.orig.cxx      2020-03-24 14:29:39.000000000 -0700
+    --- Wrapping/PythonCore/vtkPythonArgs.cxx   2020-03-24 14:29:52.000000000 -0700
     ***************
     *** 102,108 ****
         else if (PyUnicode_Check(o))
@@ -1000,11 +1085,17 @@ EOF
     return 0;
 }
 
-
-
-
 function apply_vtk_patch
 {
+    cd ${VTK_SRC_DIR} || error "Can't cd to VTK source dir."
+
+    apply_vtk9.0.1_hdf5_patch
+    if [[ $? != 0 ]] ; then
+       return 1
+    fi
+
+    return 0
+
     apply_vtkdatawriter_patch
     if [[ $? != 0 ]] ; then
        return 1
@@ -1025,7 +1116,7 @@ function apply_vtk_patch
         return 1
     fi
 
-    # Note: don't guard ospray patches by if ospray is selected 
+    # Note: don't guard ospray patches by if ospray is selected
     # b/c subsequent calls to build_visit won't get a chance to patch
     # given the if test logic used above
     apply_vtkospraypolydatamappernode_patch
@@ -1048,29 +1139,23 @@ function apply_vtk_patch
         return 1
     fi
 
+    cd "$START_DIR"
+
     return 0
 }
 
+# *************************************************************************** #
+#              Function 8.1, build_vtk                                        #
+# *************************************************************************** #
 function build_vtk
 {
-    # Extract the sources
-    if [[ -d $VTK_BUILD_DIR ]] ; then
-        if [[ ! -f $VTK_FILE ]] ; then
-            warn "The directory VTK exists, deleting before uncompressing"
-            rm -Rf $VTK_BUILD_DIR
-            ensure_built_or_ready $VTK_INSTALL_DIR    $VTK_VERSION    $VTK_BUILD_DIR    $VTK_FILE
-        fi
-    fi
-
     #
-    # Prepare the build dir using src file.
+    # Uncompress the source file
     #
-    prepare_build_dir $VTK_BUILD_DIR $VTK_FILE
+    uncompress_src_file $VTK_SRC_DIR $VTK_FILE
     untarred_vtk=$?
-    # 0, already exists, 1 untarred src, 2 error
-
     if [[ $untarred_vtk == -1 ]] ; then
-        warn "Unable to prepare VTK build directory. Giving Up!"
+        warn "Unable to uncompress VTK source file. Giving Up!"
         return 1
     fi
 
@@ -1078,42 +1163,39 @@ function build_vtk
     # Apply patches
     #
     info "Patching VTK . . ."
-    cd $VTK_BUILD_DIR || error "Can't cd to VTK build dir."
     apply_vtk_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_vtk == 1 ]] ; then
             warn "Giving up on VTK build because the patch failed."
             return 1
         else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
+            warn "Patch failed, but continuing. I believe that this script\n" \
                  "tried to apply a patch to an existing directory that had\n" \
                  "already been patched ... that is, the patch is\n" \
                  "failing harmlessly on a second application."
         fi
     fi
 
-    # move back up to the start dir
+    #
+    # Make a build directory for an out-of-source build.
+    #
     cd "$START_DIR"
+    if [[ ! -d $VTK_BUILD_DIR ]] ; then
+        echo "Making build directory $VTK_BUILD_DIR"
+        mkdir $VTK_BUILD_DIR
+    else
+        #
+        # Remove the CMakeCache.txt files ... existing files sometimes
+        # prevent fields from getting overwritten properly.
+        #
+        rm -Rf ${VTK_BUILD_DIR}/CMakeCache.txt ${VTK_BUILD_DIR}/*/CMakeCache.txt
+    fi
+    cd ${VTK_BUILD_DIR}
 
     #
     # Configure VTK
     #
     info "Configuring VTK . . ."
-
-    # Make a build directory for an out-of-source build.. Change the
-    # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
-    VTK_SRC_DIR=$VTK_BUILD_DIR
-    VTK_BUILD_DIR="${VTK_SRC_DIR}-build"
-    if [[ ! -d $VTK_BUILD_DIR ]] ; then
-        echo "Making build directory $VTK_BUILD_DIR"
-        mkdir $VTK_BUILD_DIR
-    fi
-
-    #
-    # Remove the CMakeCache.txt files ... existing files sometimes prevent
-    # fields from getting overwritten properly.
-    #
-    rm -Rf ${VTK_BUILD_DIR}/CMakeCache.txt ${VTK_BUILD_DIR}/*/CMakeCache.txt
 
     #
     # Setup paths and libs for python for the VTK build.
@@ -1131,11 +1213,6 @@ function build_vtk
         export VTK_PY_LIBS="$VTK_PY_LIBS -ldl -lutil -lm"
     fi
 
-    vopts=""
-    vtk_build_mode="${VISIT_BUILD_MODE}"
-    vtk_inst_path="${VISITDIR}/${VTK_INSTALL_DIR}/${VTK_VERSION}/${VISITARCH}"
-    vtk_debug_leaks="false"
-
     # Some linker flags.
     lf=""
     if test "${OPSYS}" = "Darwin" ; then
@@ -1151,14 +1228,14 @@ function build_vtk
     fi
 
     # normal stuff
-    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${vtk_build_mode}"
-    vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${vtk_inst_path}"
+    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+    vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VTK_INSTALL_DIR}"
     if test "x${DO_STATIC_BUILD}" = "xyes" ; then
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
     else
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
-    vopts="${vopts} -DVTK_DEBUG_LEAKS:BOOL=${vtk_debug_leaks}"
+    vopts="${vopts} -DVTK_DEBUG_LEAKS:BOOL=false"
     vopts="${vopts} -DVTK_LEGACY_REMOVE:BOOL=true"
     vopts="${vopts} -DBUILD_TESTING:BOOL=false"
     vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=false"
@@ -1172,7 +1249,7 @@ function build_vtk
     vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=true"
     if test "${OPSYS}" = "Darwin" ; then
         vopts="${vopts} -DVTK_USE_COCOA:BOOL=ON"
-        vopts="${vopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${vtk_inst_path}/lib"
+        vopts="${vopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${VTK_INSTALL_DIR}/lib"
         if test "${MACOSX_DEPLOYMENT_TARGET}" = "10.10"; then
             # If building on 10.10 (Yosemite) check if we are building with Xcode 7 ...
             XCODE_VER=$(xcodebuild -version | head -n 1 | awk '{print $2}')
@@ -1277,12 +1354,14 @@ function build_vtk
 
     # Use OSPRay?
     if [[ "$DO_OSPRAY" == "yes" ]] ; then
-        vopts="${vopts} -DModule_vtkRenderingOSPRay:BOOL=ON"
-        vopts="${vopts} -DOSPRAY_INSTALL_DIR=${OSPRAY_INSTALL_DIR}"
-        vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
+#	vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:INT=YES"
+        vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}/lib/cmake/ospray-${OSPRAY_VERSION}"
+        vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}/lib/cmake/embree-${EMBREE_VERSION}"
+        vopts="${vopts} -Dopenvkl_DIR=${OPENVKL_INSTALL_DIR}/lib/cmake/openvkl-${OPENVKL_VERSION}"
+        vopts="${vopts} -Drkcommon_DIR=${RKCOMMON_INSTALL_DIR}/lib/cmake/rkcommon-${RKCOMMON_VERSION}"
     fi
 
-    # zlib support, use the one we build
+    # zlib support, use the one VisIt build
     vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=ON"
     vopts="${vopts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
     if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
@@ -1291,45 +1370,59 @@ function build_vtk
         vopts="${vopts} -DZLIB_LIBRARY_DEBUG:FILEPATH=${ZLIB_LIBRARY}"
     fi
 
-    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
-    cd ${VTK_BUILD_DIR}
-
     #
     # Several platforms have had problems with the VTK cmake configure command
-    # issued simply via "issue_command".  This was first discovered on
+    # issued simply via "issue_command". This was first discovered on
     # BGQ and then showed up in random cases for both OSX and Linux machines.
     # Brad resolved this on BGQ  with a simple work around - we write a simple
     # script that we invoke with bash which calls cmake with all of the properly
     # arguments. We are now using this strategy for all platforms.
     #
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
 
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
+
     echo "\"${CMAKE_BIN}\"" ${vopts} ../${VTK_SRC_DIR} > bv_run_cmake.sh
     cat bv_run_cmake.sh
-    issue_command bash bv_run_cmake.sh || error "VTK configuration failed."
+    issue_command bash bv_run_cmake.sh
 
+    if [[ $? != 0 ]] ; then
+        warn "VTK configure failed. Giving up"
+        return 1
+    fi
 
     #
     # Now build VTK.
     #
     info "Building VTK . . . (~20 minutes)"
-    env DYLD_LIBRARY_PATH=`pwd`/bin $MAKE $MAKE_OPT_FLAGS || \
-        error "VTK did not build correctly.  Giving up."
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+        warn "VTK build failed. Giving up"
+        return 1
+    fi
 
+    #
+    # Install into the VisIt third party location.
+    #
     info "Installing VTK . . . "
-    $MAKE install || error "VTK did not install correctly."
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+        warn "VTK install failed. Giving up"
+        return 1
+    fi
 
     # Filter out an include that references the user's VTK build directory
-    configdir="${vtk_inst_path}/lib/cmake/vtk-${VTK_SHORT_VERSION}"
+    configdir="${VTK_INSTALL_DIR}/lib/cmake/vtk-${VTK_SHORT_VERSION}"
     cat ${configdir}/VTKConfig.cmake | grep -v "vtkTestingMacros" > ${configdir}/VTKConfig.cmake.new
     mv ${configdir}/VTKConfig.cmake.new ${configdir}/VTKConfig.cmake
 
-    chmod -R ug+w,a+rX ${VISITDIR}/${VTK_INSTALL_DIR}
     if [[ "$DO_GROUP" == "yes" ]] ; then
-        chgrp -R ${GROUP} "$VISITDIR/${VTK_INSTALL_DIR}"
+        chmod -R ug+w,a+rX "$VISITDIR/vtk"
+        chgrp -R ${GROUP} "$VISITDIR/vtk"
     fi
+
     cd "$START_DIR"
     info "Done with VTK"
     return 0
@@ -1349,7 +1442,7 @@ function bv_vtk_is_installed
         return 1
     fi
 
-    check_if_installed "$VTK_INSTALL_DIR" $VTK_VERSION
+    check_if_installed "vtk" $VTK_VERSION
     if [[ $? == 0 ]] ; then
         return 1
     fi
@@ -1358,21 +1451,19 @@ function bv_vtk_is_installed
 
 function bv_vtk_build
 {
-    #
-    # Build VTK
-    #
     cd "$START_DIR"
+
     if [[ "$DO_VTK" == "yes" && "$USE_SYSTEM_VTK" == "no" ]] ; then
-        check_if_installed $VTK_INSTALL_DIR $VTK_VERSION
+        check_if_installed "vtk" $VTK_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping VTK build.  VTK is already installed."
+            info "Skipping VTK build. VTK is already installed."
         else
             info "Building VTK (~20 minutes)"
             build_vtk
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install VTK.  Bailing out."
+                error "Unable to build or install VTK. Bailing out."
             fi
+            info "Done building VTK"
         fi
-        info "Done building VTK"
     fi
 }

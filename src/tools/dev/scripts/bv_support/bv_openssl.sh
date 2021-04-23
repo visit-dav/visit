@@ -24,7 +24,7 @@ function bv_openssl_info
     export OPENSSL_VERSION=${OPENSSL_VERSION:-"1.0.2j"}
     export OPENSSL_FILE=${OPENSSL_FILE:-"openssl-${OPENSSL_VERSION}.tar.gz"}
     export OPENSSL_URL=${OPENSSL_URL:-"https://www.openssl.org/source/"}
-    export OPENSSL_BUILD_DIR=${OPENSSL_BUILD_DIR:-"openssl-${OPENSSL_VERSION}"}
+    export OPENSSL_SRC_DIR=${OPENSSL_SRC_DIR:-"openssl-${OPENSSL_VERSION}"}
     export OPENSSL_MD5_CHECKSUM="96322138f0b69e61b7212bc53d5e912b"
     export OPENSSL_SHA256_CHECKSUM="e7aff292be21c259c6af26469c7a9b3ba26e9abaaffd325e3dccc9785256c431"
 }
@@ -33,7 +33,7 @@ function bv_openssl_print
 {
     printf "%s%s\n" "OPENSSL_FILE=" "${OPENSSL_FILE}"
     printf "%s%s\n" "OPENSSL_VERSION=" "${OPENSSL_VERSION}"
-    printf "%s%s\n" "OPENSSL_BUILD_DIR=" "${OPENSSL_BUILD_DIR}"
+    printf "%s%s\n" "OPENSSL_SRC_DIR=" "${OPENSSL_SRC_DIR}"
 }
 
 function bv_openssl_print_usage
@@ -57,7 +57,7 @@ function bv_openssl_host_profile
 function bv_openssl_ensure
 {
     if [[ "$DO_OPENSSL" == "yes" ]] ; then
-        ensure_built_or_ready "openssl" $OPENSSL_VERSION $OPENSSL_BUILD_DIR $OPENSSL_FILE $OPENSSL_URL
+        check_installed_or_have_src "openssl" $OPENSSL_VERSION $OPENSSL_SRC_DIR $OPENSSL_FILE $OPENSSL_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_OPENSSL="no"
@@ -79,16 +79,16 @@ function bv_openssl_dry_run
 function build_openssl
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $OPENSSL_BUILD_DIR $OPENSSL_FILE
+    uncompress_src_file $OPENSSL_SRC_DIR $OPENSSL_FILE
     untarred_openssl=$?
     if [[ $untarred_openssl == -1 ]] ; then
-        warn "Unable to prepare openssl build directory. Giving Up!"
+        warn "Unable to uncompress openssl source file. Giving Up!"
         return 1
     fi
 
-    cd $OPENSSL_BUILD_DIR || error "Can't cd to openssl build dir."
+    cd $OPENSSL_SRC_DIR || error "Can't cd to openssl source dir."
 
     #
     # Call configure

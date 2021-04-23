@@ -40,13 +40,13 @@ function bv_boost_initialize_vars
 
 function bv_boost_info
 {
-    export BOOST_VERSION=${BOOST_VERSION:-"1_67_0"}
+    export BOOST_VERSION=${BOOST_VERSION:-"1_75_0"}
     export BOOST_FILE=${BOOST_FILE:-"boost_${BOOST_VERSION}.tar.gz"}
-    export BOOST_COMPATIBILITY_VERSION=${BOOST_COMPATIBILITY_VERSION:-"1_67"}
-    export BOOST_URL=${BOOST_URL:-"http://sourceforge.net/projects/boost/files/boost/1.67.0"}
-    export BOOST_BUILD_DIR=${BOOST_BUILD_DIR:-"boost_${BOOST_VERSION}"}
-    export BOOST_MD5_CHECKSUM="4850fceb3f2222ee011d4f3ea304d2cb"
-    export BOOST_SHA256_CHECKSUM="8aa4e330c870ef50a896634c931adf468b21f8a69b77007e45c444151229f665"
+    export BOOST_COMPATIBILITY_VERSION=${BOOST_COMPATIBILITY_VERSION:-"1_75"}
+    export BOOST_URL=${BOOST_URL:-"http://sourceforge.net/projects/boost/files/boost/1.75.0"}
+    export BOOST_SRC_DIR=${BOOST_SRC_DIR:-"boost_${BOOST_VERSION}"}
+#    export BOOST_MD5_CHECKSUM="4850fceb3f2222ee011d4f3ea304d2cb"
+#    export BOOST_SHA256_CHECKSUM="8aa4e330c870ef50a896634c931adf468b21f8a69b77007e45c444151229f665"
 }
 
 function bv_boost_print
@@ -54,7 +54,7 @@ function bv_boost_print
     printf "%s%s\n" "BOOST_FILE=" "${BOOST_FILE}"
     printf "%s%s\n" "BOOST_VERSION=" "${BOOST_VERSION}"
     printf "%s%s\n" "BOOST_COMPATIBILITY_VERSION=" "${BOOST_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "BOOST_BUILD_DIR=" "${BOOST_BUILD_DIR}"
+    printf "%s%s\n" "BOOST_SRC_DIR=" "${BOOST_SRC_DIR}"
 }
 
 function bv_boost_print_usage
@@ -75,11 +75,11 @@ function bv_boost_host_profile
         if [[ "$USE_SYSTEM_BOOST" == "yes" ]]; then
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR $BOOST_INSTALL_DIR)" \
-                >> $HOSTCONF 
+                >> $HOSTCONF
         else
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_BOOST_DIR \${VISITHOME}/boost/\${BOOST_VERSION}/\${VISITARCH})" \
-                >> $HOSTCONF 
+                >> $HOSTCONF
         fi
     fi
 }
@@ -87,11 +87,11 @@ function bv_boost_host_profile
 function bv_boost_ensure
 {
     if [[ "$DO_BOOST" == "yes" && "$USE_SYSTEM_BOOST" == "no" ]] ; then
-        ensure_built_or_ready "boost" $BOOST_VERSION $BOOST_BUILD_DIR $BOOST_FILE $BOOST_URL 
+        check_installed_or_have_src "boost" $BOOST_VERSION $BOOST_SRC_DIR $BOOST_FILE $BOOST_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_BOOST="no"
-            error "Unable to build BOOST.  ${BOOST_FILE} not found."
+            error "Unable to build BOOST. ${BOOST_FILE} not found."
         fi
     fi
 }
@@ -114,23 +114,23 @@ function apply_boost_ppc_rounding_control_patch
 *** 28,37 ****
     double dmode;
   } rounding_mode_struct;
-  
+
 ! static const rounding_mode_struct mode_upward      = { 0xFFF8000000000002LL };
 ! static const rounding_mode_struct mode_downward    = { 0xFFF8000000000003LL };
 ! static const rounding_mode_struct mode_to_nearest  = { 0xFFF8000000000000LL };
 ! static const rounding_mode_struct mode_toward_zero = { 0xFFF8000000000001LL };
-  
+
   struct ppc_rounding_control
   {
 --- 28,37 ----
     double dmode;
   } rounding_mode_struct;
-  
+
 ! static const rounding_mode_struct mode_upward      = { (long long int)0xFFF8000000000002LL };
 ! static const rounding_mode_struct mode_downward    = { (long long int)0xFFF8000000000003LL };
 ! static const rounding_mode_struct mode_to_nearest  = { (long long int)0xFFF8000000000000LL };
 ! static const rounding_mode_struct mode_toward_zero = { (long long int)0xFFF8000000000001LL };
-  
+
   struct ppc_rounding_control
   {
 EOF
@@ -158,28 +158,28 @@ function apply_boost_patch
 function build_boost
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $BOOST_BUILD_DIR $BOOST_FILE
+    uncompress_src_file $BOOST_SRC_DIR $BOOST_FILE
     untarred_boost=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_boost == -1 ]] ; then
-        warn "Unable to prepare BOOST Build Directory. Giving Up"
+        warn "Unable to uncompress BOOST Build Directory. Giving Up"
         return 1
     fi
 
     #
     # Apply patches
     #
-    cd $BOOST_BUILD_DIR || error "Can't cd to BOOST build dir."
+    cd $BOOST_SRC_DIR || error "Can't cd to BOOST source dir."
     apply_boost_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_boost == 1 ]] ; then
             warn "Giving up on Boost build because the patch failed."
             return 1
         else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
+            warn "Patch failed, but continuing. I believe that this script\n" \
                  "tried to apply a patch to an existing directory that had\n" \
                  "already been patched ... that is, the patch is\n" \
                  "failing harmlessly on a second application."
@@ -205,11 +205,11 @@ function build_boost
               chrono iostreams thread date_time filesystem \
               system program_options regex timer"
     fi
-    
-#    if [[ "$DO_UINTAH" == "yes" ]] ; then
-#        libs="$libs \
-#              chrono filesystem wserialization serialization system thread signals date_time program_options"
-#    fi
+
+    if [[ "$DO_UINTAH" == "yes" ]] ; then
+        libs="$libs \
+              chrono filesystem wserialization serialization system thread date_time program_options"
+    fi
 
     # Remove all of the duplicate libs.
     libs=`echo $libs | tr ' ' '\n' | sort -u | tr '\n' ' ' | sed s'/.$//'`
@@ -246,7 +246,7 @@ function build_boost
             --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
 
         if [[ $? != 0 ]] ; then
-            warn "BOOST configure failed.  Giving up"
+            warn "BOOST configure failed. Giving up"
             return 1
         fi
 
@@ -257,7 +257,7 @@ function build_boost
 
         sh -c "./b2"
         if [[ $? != 0 ]] ; then
-            warn "BOOST build failed.  Giving up"
+            warn "BOOST build failed. Giving up"
             return 1
         fi
 
@@ -269,7 +269,7 @@ function build_boost
               --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
 
         if [[ $? != 0 ]] ; then
-            warn "BOOST install failed.  Giving up"
+            warn "BOOST install failed. Giving up"
             return 1
         fi
 
@@ -298,14 +298,14 @@ function build_boost
 
                         # Get the library name sans the directory path
                         deplibname=`echo $deplib | sed "s/.*\///"`
-                        
+
                         # Set the library path
                         install_name_tool -change $deplib \
                                           ${INSTALLNAMEPATH}/$deplibname \
                                           $fulllibname
 
                     fi
-                done            
+                done
             done
         fi
 
@@ -320,7 +320,7 @@ function build_boost
         cp -r boost $VISITDIR/boost/$BOOST_VERSION/$VISITARCH/include
 
         if [[ $? != 0 ]] ; then
-            warn "BOOST install failed.  Giving up"
+            warn "BOOST install failed. Giving up"
             return 1
         fi
     fi
@@ -337,7 +337,7 @@ function build_boost
 function bv_boost_is_enabled
 {
     if [[ $DO_BOOST == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
@@ -362,12 +362,12 @@ function bv_boost_build
     if [[ "$DO_BOOST" == "yes" && "$USE_SYSTEM_BOOST" == "no" ]] ; then
         check_if_installed "boost" $BOOST_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping BOOST build.  BOOST is already installed."
+            info "Skipping BOOST build. BOOST is already installed."
         else
             info "Building BOOST (~15 minutes)"
             build_boost
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install BOOST.  Bailing out."
+                error "Unable to build or install BOOST. Bailing out."
             fi
             info "Done building BOOST"
         fi
@@ -394,7 +394,7 @@ function bv_boost_build
 #   .\b2 --prefix="C:\path\to\where\you\want\boost" link=shared runtime-link=shared variant=release threading=multi address-model=64
 #   .\b2 --prefix="C:\path\to\where\you\want\boost" link=shared runtime-link=shared variant=release threading=multi address-model=64 install
 #
-# If you only want a subset of the libraries add a '--with-<lib>' for each 
+# If you only want a subset of the libraries add a '--with-<lib>' for each
 # library you want:
 #   .\boostrap --prefix="C:\path\to\where\you\want\boost"
 #   .\b2 --with-system --prefix="C:\path\to\where\you\want\boost" link=shared runtime-link=shared variant=release threading=multi address-model=64
@@ -407,5 +407,5 @@ function bv_boost_build
 # once I had bootstrapped.
 #
 # http://www.boost.org/doc/libs/1_57_0/more/getting_started/windows.html#simplified-build-from-source
-# 
+#
 # http://www.boost.org/build/doc/html/bbv2/overview/invocation.html

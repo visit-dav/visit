@@ -23,7 +23,7 @@ function bv_tcmalloc_info
     export TCMALLOC_FILE=${TCMALLOC_FILE:-"google-perftools-0.97.tar.gz"}
     export TCMALLOC_VERSION=${TCMALLOC_VERSION:-"0.97"}
     export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION:-"0.97"}
-    export TCMALLOC_BUILD_DIR=${TCMALLOC_BUILD_DIR:-"google-perftools-0.97"}
+    export TCMALLOC_SRC_DIR=${TCMALLOC_SRC_DIR:-"google-perftools-0.97"}
     export TCMALLOC_MD5_CHECKSUM="5168bdca5557bc5630a866f132f8f7c1"
     export TCMALLOC_SHA256_CHECKSUM="c879267296d91ccadf3aacb9340ca5801b41fbd37aad097b2b6081bf27bb505c"
 }
@@ -33,7 +33,7 @@ function bv_tcmalloc_print
     printf "%s%s\n" "TCMALLOC_FILE=" "${TCMALLOC_FILE}"
     printf "%s%s\n" "TCMALLOC_VERSION=" "${TCMALLOC_VERSION}"
     printf "%s%s\n" "TCMALLOC_COMPATIBILITY_VERSION=" "${TCMALLOC_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "TCMALLOC_BUILD_DIR=" "${TCMALLOC_BUILD_DIR}"
+    printf "%s%s\n" "TCMALLOC_SRC_DIR=" "${TCMALLOC_SRC_DIR}"
 }
 
 function bv_tcmalloc_print_usage
@@ -57,7 +57,7 @@ function bv_tcmalloc_host_profile
 function bv_tcmalloc_ensure
 {
     if [[ "$DO_TCMALLOC" == "yes" ]] ; then
-        ensure_built_or_ready "google-perftools" $TCMALLOC_VERSION $TCMALLOC_BUILD_DIR $TCMALLOC_FILE
+        check_installed_or_have_src "google-perftools" $TCMALLOC_VERSION $TCMALLOC_SRC_DIR $TCMALLOC_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_TCMALLOC="no"
@@ -79,18 +79,18 @@ function bv_tcmalloc_dry_run
 function build_tcmalloc
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $TCMALLOC_BUILD_DIR $TCMALLOC_FILE
+    uncompress_src_file $TCMALLOC_SRC_DIR $TCMALLOC_FILE
     untarred_tcmalloc=$?
     if [[ $untarred_tcmalloc == -1 ]] ; then
-        warn "Unable to prepare google-perftools Build Directory. Giving Up"
+        warn "Unable to uncompress google-perftools Build Directory. Giving Up"
         return 1
     fi
 
 
     info "Configuring google-perftools . . ."
-    cd $TCMALLOC_BUILD_DIR || error "Can't cd to tcmalloc build dir."
+    cd $TCMALLOC_SRC_DIR || error "Can't cd to tcmalloc source dir."
 
     #
     # Build TCMALLOC

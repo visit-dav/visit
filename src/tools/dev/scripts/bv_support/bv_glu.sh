@@ -32,7 +32,7 @@ function bv_glu_info
 {
     export GLU_FILE=${GLU_FILE:-"glu-9.0.0.tar.gz"}
     export GLU_VERSION=${GLU_VERSION:-"9.0.0"}
-    export GLU_BUILD_DIR=${GLU_BUILD_DIR:-"glu-9.0.0"}
+    export GLU_SRC_DIR=${GLU_SRC_DIR:-"glu-9.0.0"}
     export GLU_MD5_CHECKSUM="bbc57d4fe3bd3fb095bdbef6fcb977c4"
     export GLU_SHA256_CHECKSUM="4387476a1933f36fec1531178ea204057bbeb04cc2d8396c9ea32720a1f7e264"
     export GLU_URL=${GLU_URL:-"ftp://ftp.freedesktop.org/pub/mesa/glu"}
@@ -43,7 +43,7 @@ function bv_glu_print
     printf "%s%s\n" "GLU_FILE=" "${GLU_FILE}"
     printf "%s%s\n" "GLU_VERSION=" "${GLU_VERSION}"
     printf "%s%s\n" "GLU_TARGET=" "${GLU_TARGET}"
-    printf "%s%s\n" "GLU_BUILD_DIR=" "${GLU_BUILD_DIR}"
+    printf "%s%s\n" "GLU_SRC_DIR=" "${GLU_SRC_DIR}"
 }
 
 function bv_glu_print_usage
@@ -97,7 +97,7 @@ function bv_glu_ensure
 {
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_GLU" == "yes" ]] ; then
-            ensure_built_or_ready "glu"   $GLU_VERSION   $GLU_BUILD_DIR   $GLU_FILE
+            check_installed_or_have_src "glu"   $GLU_VERSION   $GLU_SRC_DIR   $GLU_FILE
             if [[ $? != 0 ]] ; then
                 return 1
             fi
@@ -162,12 +162,12 @@ function build_glu
     #
     # prepare build dir
     #
-    prepare_build_dir $GLU_BUILD_DIR $GLU_FILE
+    uncompress_src_file $GLU_SRC_DIR $GLU_FILE
     untarred_glu=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_glu == -1 ]] ; then
-        warn "Unable to prepare GLU build directory. Giving Up!"
+        warn "Unable to uncompress GLU source file. Giving Up!"
         return 1
     fi
 
@@ -191,7 +191,7 @@ function build_glu
     # Build GLU.
     #
     info "Building GLU . . . (~2 minutes)"
-    cd $GLU_BUILD_DIR || error "Couldn't cd to glu build dir."
+    cd $GLU_SRC_DIR || error "Couldn't cd to glu source dir."
 
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         GLU_STATIC_DYNAMIC="--disable-shared --enable-static"

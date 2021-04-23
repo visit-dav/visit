@@ -24,7 +24,7 @@ function bv_hdf4_info
     export HDF4_FILE=${HDF4_FILE:-"hdf-4.2.5.tar.gz"}
     export HDF4_VERSION=${HDF4_VERSION:-"4.2.5"}
     export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION:-"4.2"}
-    export HDF4_BUILD_DIR=${HDF4_BUILD_DIR:-"hdf-4.2.5"}
+    export HDF4_SRC_DIR=${HDF4_SRC_DIR:-"hdf-4.2.5"}
     export HDF4_URL=${HDF4_URL:-"http://www.hdfgroup.org/ftp/HDF/HDF_Current/src"}
     export HDF4_MD5_CHECKSUM="7241a34b722d29d8561da0947c06069f"
     export HDF4_SHA256_CHECKSUM="73b0021210bae8c779f9f1435a393ded0f344cfb01f7ee8b8794ec9d41dcd427"
@@ -46,7 +46,7 @@ function bv_hdf4_print
     printf "%s%s\n" "HDF4_FILE=" "${HDF4_FILE}"
     printf "%s%s\n" "HDF4_VERSION=" "${HDF4_VERSION}"
     printf "%s%s\n" "HDF4_COMPATIBILITY_VERSION=" "${HDF4_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "HDF4_BUILD_DIR=" "${HDF4_BUILD_DIR}"
+    printf "%s%s\n" "HDF4_SRC_DIR=" "${HDF4_SRC_DIR}"
 }
 
 function bv_hdf4_print_usage
@@ -79,7 +79,7 @@ function bv_hdf4_host_profile
 function bv_hdf4_ensure
 {
     if [[ "$DO_HDF4" == "yes" ]] ; then
-        ensure_built_or_ready "hdf4" $HDF4_VERSION $HDF4_BUILD_DIR $HDF4_FILE $HDF4_URL
+        check_installed_or_have_src "hdf4" $HDF4_VERSION $HDF4_SRC_DIR $HDF4_FILE $HDF4_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_HDF4="no"
@@ -1288,14 +1288,14 @@ function apply_hdf4_patch
 function build_hdf4
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $HDF4_BUILD_DIR $HDF4_FILE
+    uncompress_src_file $HDF4_SRC_DIR $HDF4_FILE
     untarred_hdf4=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_hdf4 == -1 ]] ; then
-        warn "Unable to prepare HDF4 Build Directory. Giving Up"
+        warn "Unable to uncompress HDF4 Build Directory. Giving Up"
         return 1
     fi
 
@@ -1337,7 +1337,7 @@ function build_hdf4
     # Configure HDF4
     #
     info "Configuring HDF4 . . ."
-    cd $HDF4_BUILD_DIR || error "Can't cd to hdf4 build dir."
+    cd $HDF4_SRC_DIR || error "Can't cd to hdf4 source dir."
     info "Invoking command to configure HDF4"
     MAKEOPS=""
     if [[ "$OPSYS" == "Darwin" || "$OPSYS" == "AIX" ]]; then
@@ -1356,7 +1356,7 @@ function build_hdf4
         --disable-dependency-tracking --disable-netcdf"
         if [[ $? != 0 ]] ; then
             warn "HDF4 configure failed.  Giving up"\
-                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
+                 "You can see the details of the build failure at $HDF4_SRC_DIR/config.log\n"
             return 1
         fi
         MAKEOPS="-i"
@@ -1375,7 +1375,7 @@ function build_hdf4
         --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" --disable-netcdf"
         if [[ $? != 0 ]] ; then
             warn "HDF4 configure failed.  Giving up.\n"\
-                 "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
+                 "You can see the details of the build failure at $HDF4_SRC_DIR/config.log\n"
             return 1
         fi
     fi

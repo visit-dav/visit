@@ -24,6 +24,7 @@
             <lib name="embree"/>
             <lib name="fms"/>
             <lib name="gdal"/>
+            <lib name="glfw"/>
             <lib name="glu"/>
             <lib name="h5part"/>
             <lib name="hdf4"/>
@@ -41,11 +42,13 @@
             <lib name="nektarpp"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>
+            <lib name="openvkl"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
             <lib name="p7zip"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
+            <lib name="rkcommon"/>
             <lib name="silo"/>
             <lib name="stripack"/>
             <lib name="szip"/>
@@ -80,6 +83,7 @@
             <lib name="embree"/>
             <lib name="fms"/>
             <lib name="gdal"/>
+            <lib name="glfw"/>
             <lib name="glu"/>
             <lib name="h5part"/>
             <lib name="hdf4"/>
@@ -93,10 +97,12 @@
             <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>
+            <lib name="openvkl"/>
             <lib name="ospray"/>
             <lib name="p7zip"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
+            <lib name="rkcommon"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="tbb"/>
@@ -175,11 +181,14 @@
             #all the optional non io libraries
         -->
         <group name="nonio" comment="Build non I/O libraries" enabled="no">
-            <lib name="icet"/>
             <lib name="embree"/>
+            <lib name="glfw"/>
+            <lib name="icet"/>
             <lib name="ispc"/>
-            <lib name="tbb"/>
+            <lib name="openvkl"/>
             <lib name="ospray"/>
+            <lib name="rkcommon"/>
+            <lib name="tbb"/>
         </group>
 
         <!--
@@ -282,7 +291,14 @@
         </group>
         <!-- #all the optional non io libraries -->
         <group name="nonio" comment="Build non I/O libraries" enabled="no">
+            <lib name="embree"/>
+            <lib name="glfw"/>
             <lib name="icet"/>
+            <lib name="ispc"/>
+            <lib name="openvkl"/>
+            <lib name="ospray"/>
+            <lib name="rkcommon"/>
+            <lib name="tbb"/>
         </group>
     </license>
 </modules>

@@ -37,14 +37,14 @@ function cmake_set_vars_helper
 {
     CMAKE_VERSION=`"${CMAKE_COMMAND}" --version`
     CMAKE_VERSION=${CMAKE_VERSION/cmake version }
-    CMAKE_BUILD_DIR=`"${CMAKE_COMMAND}" --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g`
-    CMAKE_BUILD_DIR=`echo $CMAKE_BUILD_DIR`
-    CMAKE_INSTALL="$CMAKE_BUILD_DIR/bin"
+    CMAKE_SRC_DIR=`"${CMAKE_COMMAND}" --system-information 2>& 1 | grep _CMAKE_INSTALL_DIR | grep -v _CMAKE_INSTALL_DIR:INTERNAL | sed -e s/\"//g -e s/_CMAKE_INSTALL_DIR//g`
+    CMAKE_SRC_DIR=`echo $CMAKE_SRC_DIR`
+    CMAKE_INSTALL="$CMAKE_SRC_DIR/bin"
     CMAKE_ROOT=`"$CMAKE_COMMAND" --system-information 2>&1 | grep CMAKE_ROOT | grep -v CMAKE_ROOT:INTERNAL | sed -e s/\"//g -e s/CMAKE_ROOT//g` 
     CMAKE_ROOT=`echo "$CMAKE_ROOT"`
     CMAKE_ROOT=`echo $CMAKE_ROOT`
 
-    echo "version: $CMAKE_VERSION build: $CMAKE_BUILD_DIR bin: $CMAKE_INSTALL root: $CMAKE_ROOT"
+    echo "version: $CMAKE_VERSION build: $CMAKE_SRC_DIR bin: $CMAKE_INSTALL root: $CMAKE_ROOT"
 }
 
 function bv_cmake_system_cmake
@@ -96,19 +96,19 @@ function bv_cmake_bin_cmake_dir
 
 function bv_cmake_info
 {
-    export CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.14/"}
-    export CMAKE_VERSION=${CMAKE_VERSION:-"3.14.7"}
+    export CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.19/"}
+    export CMAKE_VERSION=${CMAKE_VERSION:-"3.19.5"}
     export CMAKE_FILE=${CMAKE_FILE:-"cmake-${CMAKE_VERSION}.tar.gz"}
-    export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-${CMAKE_VERSION}"}
-    export CMAKE_MD5_CHECKSUM="1b2d7d9215b51acceef20ed2895e8495"
-    export CMAKE_SHA256_CHECKSUM="9221993e0af3e6d10124d840ff24f5b2f3b884416fca04d3312cb0388dec1385"
+    export CMAKE_SRC_DIR=${CMAKE_SRC_DIR:-"cmake-${CMAKE_VERSION}"}
+#    export CMAKE_MD5_CHECKSUM="1b2d7d9215b51acceef20ed2895e8495"
+#    export CMAKE_SHA256_CHECKSUM="9221993e0af3e6d10124d840ff24f5b2f3b884416fca04d3312cb0388dec1385"
 }
 
 function bv_cmake_print
 {
     printf "%s%s\n" "CMAKE_FILE=" "${CMAKE_FILE}"
     printf "%s%s\n" "CMAKE_VERSION=" "${CMAKE_VERSION}"
-    printf "%s%s\n" "CMAKE_BUILD_DIR=" "${CMAKE_BUILD_DIR}"
+    printf "%s%s\n" "CMAKE_SRC_DIR=" "${CMAKE_SRC_DIR}"
 }
 
 function bv_cmake_print_usage
@@ -142,7 +142,7 @@ function bv_cmake_ensure
 {
     if [[ "$USE_SYSTEM_CMAKE" != "yes" ]]; then 
         if [[ "$DO_CMAKE" == "yes" || "$DO_VTK" == "yes" ]] ; then
-            ensure_built_or_ready "cmake"  $CMAKE_VERSION  $CMAKE_BUILD_DIR  $CMAKE_FILE $CMAKE_URL
+            check_installed_or_have_src "cmake"  $CMAKE_VERSION  $CMAKE_SRC_DIR  $CMAKE_FILE $CMAKE_URL
             if [[ $? != 0 ]] ; then
                 return 1
             fi
@@ -398,14 +398,14 @@ function apply_cmake_patch
 function build_cmake
 {
     #
-    # Prepare cmake build directory
+    # Prepare cmake source dir.ctory
     #
-    prepare_build_dir $CMAKE_BUILD_DIR $CMAKE_FILE
+    uncompress_src_file $CMAKE_SRC_DIR $CMAKE_FILE
     untarred_cmake=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_cmake == -1 ]] ; then
-        warn "Unable to prepare CMake build directory. Giving Up!"
+        warn "Unable to uncompress CMake source file. Giving Up!"
         return 1
     fi
 
@@ -429,7 +429,7 @@ function build_cmake
     # Issue "bootstrap", which takes the place of configure for CMake.
     #
     info "Bootstrapping CMake . . ."
-    cd $CMAKE_BUILD_DIR || error "Can't cd to CMake build dir."
+    cd $CMAKE_SRC_DIR || error "Can't cd to CMake source dir."
     if [[ "$OPSYS" == "AIX" ]]; then
         env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
     elif [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then

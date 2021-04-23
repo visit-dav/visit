@@ -26,7 +26,7 @@ function bv_h5part_info
     export H5PART_FILE=${H5PART_FILE:-"H5Part-${H5PART_VERSION}.tar.gz"}
     export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION:-"1.6"}
     export H5PART_URL=${H5PART_URL:-"https://codeforge.lbl.gov/frs/download.php/387"}
-    export H5PART_BUILD_DIR=${H5PART_BUILD_DIR:-"H5Part-${H5PART_VERSION}"}
+    export H5PART_SRC_DIR=${H5PART_SRC_DIR:-"H5Part-${H5PART_VERSION}"}
     export H5PART_MD5_CHECKSUM="327c63d198e38a12565b74cffdf1f9d7"
     export H5PART_SHA256_CHECKSUM="10347e7535d1afbb08d51be5feb0ae008f73caf889df08e3f7dde717a99c7571"
 }
@@ -36,7 +36,7 @@ function bv_h5part_print
     printf "%s%s\n" "H5PART_FILE=" "${H5PART_FILE}"
     printf "%s%s\n" "H5PART_VERSION=" "${H5PART_VERSION}"
     printf "%s%s\n" "H5PART_COMPATIBILITY_VERSION=" "${H5PART_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "H5PART_BUILD_DIR=" "${H5PART_BUILD_DIR}"
+    printf "%s%s\n" "H5PART_SRC_DIR=" "${H5PART_SRC_DIR}"
 }
 
 function bv_h5part_print_usage
@@ -66,7 +66,7 @@ function bv_h5part_host_profile
 function bv_h5part_ensure
 {
     if [[ "$DO_H5PART" == "yes" ]] ; then
-        ensure_built_or_ready "h5part" $H5PART_VERSION $H5PART_BUILD_DIR $H5PART_FILE $H5PART_URL
+        check_installed_or_have_src "h5part" $H5PART_VERSION $H5PART_SRC_DIR $H5PART_FILE $H5PART_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_H5PART="no"
@@ -496,12 +496,12 @@ function apply_h5part_patch
 function build_h5part
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $H5PART_BUILD_DIR $H5PART_FILE
+    uncompress_src_file $H5PART_SRC_DIR $H5PART_FILE
     untarred_h5part=$?
     if [[ $untarred_h5part == -1 ]] ; then
-        warn "Unable to prepare H5Part Build Directory. Giving Up"
+        warn "Unable to uncompress H5Part Build Directory. Giving Up"
         return 1
     fi
 
@@ -525,7 +525,7 @@ function build_h5part
     # Apply configure
     #
     info "Configuring H5Part . . ."
-    cd $H5PART_BUILD_DIR || error "Can't cd to h5part build dir."
+    cd $H5PART_SRC_DIR || error "Can't cd to h5part source dir."
     if [[ "$DO_HDF5" == "yes" ]] ; then
         export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         export SZIPROOT="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"

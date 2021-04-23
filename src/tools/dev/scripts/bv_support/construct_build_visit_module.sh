@@ -90,7 +90,7 @@ function bv_${output}_host_profile
 function bv_${output}_ensure
 {
     if [[ \"\$DO_${uppercase_out}\" == \"yes\" ]] ; then
-        ensure_built_or_ready \"${uppercase_out}\" \$${uppercase_out}_VERSION \$${uppercase_out}_BUILD_DIR \$${uppercase_out}_FILE
+        check_installed_or_have_src \"${uppercase_out}\" \$${uppercase_out}_VERSION \$${uppercase_out}_BUILD_DIR \$${uppercase_out}_FILE
         if [[ \$? != 0 ]] ; then
             ANY_ERRORS=\"yes\"
             DO_${uppercase_out}=\"no\"

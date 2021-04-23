@@ -25,7 +25,7 @@ function bv_p7zip_info
     export P7ZIP_VERSION=${P7ZIP_VERSION:-"16.02"}
     export P7ZIP_FILE=${P7ZIP_FILE:-"p7zip_${P7ZIP_VERSION}_src_all.tar.bz2"}
     export P7ZIP_COMPATIBILITY_VERSION=${P7ZIP_COMPATIBILITY_VERSION:-"16.0"}
-    export P7ZIP_BUILD_DIR=${P7ZIP_BUILD_DIR:-"p7zip_${P7ZIP_VERSION}"}
+    export P7ZIP_SRC_DIR=${P7ZIP_SRC_DIR:-"p7zip_${P7ZIP_VERSION}"}
     export P7ZIP_URL=${P7ZIP_URL:-https://sourceforge.net/projects/p7zip/files/p7zip/${P7ZIP_VERSION}}
     export P7ZIP_MD5_CHECKSUM="a0128d661cfe7cc8c121e73519c54fbf"
     export P7ZIP_SHA256_CHECKSUM="5eb20ac0e2944f6cb9c2d51dd6c4518941c185347d4089ea89087ffdd6e2341f"
@@ -36,7 +36,7 @@ function bv_p7zip_print
     printf "%s%s\n" "P7ZIP_FILE=" "${P7ZIP_FILE}"
     printf "%s%s\n" "P7ZIP_VERSION=" "${P7ZIP_VERSION}"
     printf "%s%s\n" "P7ZIP_COMPATIBILITY_VERSION=" "${P7ZIP_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "P7ZIP_BUILD_DIR=" "${P7ZIP_BUILD_DIR}"
+    printf "%s%s\n" "P7ZIP_SRC_DIR=" "${P7ZIP_SRC_DIR}"
 }
 
 function bv_p7zip_print_usage
@@ -60,7 +60,7 @@ function bv_p7zip_host_profile
 function bv_p7zip_ensure
 {
     if [[ "$DO_P7ZIP" == "yes" ]] ; then
-        ensure_built_or_ready "p7zip" $P7ZIP_VERSION $P7ZIP_BUILD_DIR $P7ZIP_FILE $P7ZIP_URL
+        check_installed_or_have_src "p7zip" $P7ZIP_VERSION $P7ZIP_SRC_DIR $P7ZIP_FILE $P7ZIP_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_P7ZIP="no"
@@ -86,16 +86,16 @@ function bv_p7zip_dry_run
 function build_p7zip
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $P7ZIP_BUILD_DIR $P7ZIP_FILE
+    uncompress_src_file $P7ZIP_SRC_DIR $P7ZIP_FILE
     untarred_p7zip=$?
     if [[ $untarred_p7zip == -1 ]] ; then
-        warn "Unable to prepare P7ZIP build directory. Giving Up!"
+        warn "Unable to uncompress P7ZIP source file. Giving Up!"
         return 1
     fi
 
-    cd $P7ZIP_BUILD_DIR || error "Can't cd to P7ZIP build dir."
+    cd $P7ZIP_SRC_DIR || error "Can't cd to P7ZIP source dir."
     if [[ "$OPSYS" == "Darwin" ]] ; then
         if [[ -z "${MACOSX_DEPLOYMENT_TARGET}" ]]; then
             cp makefile.macosx_llvm_64bits makefile.machine

@@ -28,7 +28,7 @@ function bv_icet_info
     export ICET_FILE=${ICET_FILE:-"icet-master-77c708f9090236b576669b74c53e9f105eedbd7e.tar.gz"}
     export ICET_VERSION=${ICET_VERSION:-"77c708f9090236b576669b74c53e9f105eedbd7e"}
     export ICET_COMPATIBILITY_VERSION=${ICET_COMPATIBILITY_VERSION:-"77c708f9090236b576669b74c53e9f105eedbd7e"}
-    export ICET_BUILD_DIR=${ICET_BUILD_DIR:-"icet-master-77c708f9090236b576669b74c53e9f105eedbd7e"}
+    export ICET_SRC_DIR=${ICET_SRC_DIR:-"icet-master-77c708f9090236b576669b74c53e9f105eedbd7e"}
     export ICET_MD5_CHECKSUM="c2e185e7d624b1f1bf0efd41bc83c83c"
     export ICET_SHA256_CHECKSUM="38ed9599b4815b376444223435905b66763912cb66749d90d377ef41d430ba77"
 }
@@ -38,7 +38,7 @@ function bv_icet_print
     printf "%s%s\n" "ICET_FILE=" "${ICET_FILE}"
     printf "%s%s\n" "ICET_VERSION=" "${ICET_VERSION}"
     printf "%s%s\n" "ICET_COMPATIBILITY_VERSION=" "${ICET_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "ICET_BUILD_DIR=" "${ICET_BUILD_DIR}"
+    printf "%s%s\n" "ICET_SRC_DIR=" "${ICET_SRC_DIR}"
 }
 
 function bv_icet_print_usage
@@ -64,7 +64,7 @@ function bv_icet_host_profile
 function bv_icet_ensure
 {
     if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
-        ensure_built_or_ready "icet" $ICET_VERSION $ICET_BUILD_DIR $ICET_FILE "http://icet.sandia.gov/_assets/files"
+        check_installed_or_have_src "icet" $ICET_VERSION $ICET_SRC_DIR $ICET_FILE "http://icet.sandia.gov/_assets/files"
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ICET="no"
@@ -108,17 +108,17 @@ function build_icet
     #
     CMAKE_BIN="${CMAKE_COMMAND}"
 
-    prepare_build_dir $ICET_BUILD_DIR $ICET_FILE
+    uncompress_src_file $ICET_SRC_DIR $ICET_FILE
     untarred_icet=$?
     if [[ $untarred_icet == -1 ]] ; then
-        warn "Unable to prepare IceT build directory. Giving Up!"
+        warn "Unable to uncompress IceT source file. Giving Up!"
         return 1
     fi
 
     apply_icet_patch
 
     info "Executing CMake on IceT"
-    cd $ICET_BUILD_DIR || error "Can't cd to IceT build dir."
+    cd $ICET_SRC_DIR || error "Can't cd to IceT source dir."
     if [[ "$DO_STATIC_BUILD" == "no" ]]; then
         LIBEXT="${SO_EXT}"
     else
@@ -134,20 +134,12 @@ function build_icet
         -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
         -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}" \
-        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}" \
-        -DMPI_COMPILER:PATH="${PAR_COMPILER}" \
-        -DBUILD_TESTING:BOOL=OFF \
+        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
+        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}"\
+        -DMPI_COMPILER:PATH="${PAR_COMPILER}"\
+        -DBUILD_TESTING:BOOL=OFF\
         .
     else
-        mesa_opts=""
-        if [[ "$DO_MESAGL" == "yes" ]] ; then
-            mesa_opts="${mesa_opts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/include"
-            mesa_opts="${mesa_opts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
-        elif [[ "$DO_OSMESA" == "yes" ]] ; then
-            mesa_opts="${mesa_opts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/include"
-            mesa_opts="${mesa_opts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
-        fi
         ${CMAKE_BIN} \
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
@@ -156,10 +148,11 @@ function build_icet
         -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
         -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
-        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}" \
-        -DMPI_COMPILER:PATH="${PAR_COMPILER}" \
-        -DBUILD_TESTING:BOOL=OFF \
-        ${mesa_opts} \
+        -DOPENGL_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESAGL_VERSION}/${VISITARCH}/include"\
+        -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESAGL_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
+        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}"\
+        -DMPI_COMPILER:PATH="${PAR_COMPILER}"\
+        -DBUILD_TESTING:BOOL=OFF\
         .
     fi
 

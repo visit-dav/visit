@@ -44,7 +44,7 @@ function bv_visit_host_profile
     fi
 }
 
-function bv_visit_ensure_built_or_ready
+function bv_visit_check_installed_or_have_src
 {
     # Check-out the latest git sources, before building VisIt
     if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
@@ -260,23 +260,23 @@ function build_visit
     fi
 
     #
-    # Set up the VisIt build dir which is a sibling to the VisIt src dir
+    # Set up the VisIt source dir.which is a sibling to the VisIt src dir
     #
     if [[ "$DO_GIT" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        VISIT_BUILD_DIR="visit/build"
+        VISIT_SRC_DIR="visit/build"
     else
-        VISIT_BUILD_DIR="${VISIT_FILE%.tar*}/build"
+        VISIT_SRC_DIR="${VISIT_FILE%.tar*}/build"
     fi
 
-    if [[ ! -e $VISIT_BUILD_DIR ]] ; then
-        mkdir $VISIT_BUILD_DIR || error "Can't make VisIt build dir."
+    if [[ ! -e $VISIT_SRC_DIR ]] ; then
+        mkdir $VISIT_SRC_DIR || error "Can't make VisIt source dir."
     else
-        rm -rf $VISIT_BUILD_DIR/* || error "Can't clean VisIt build dir."
+        rm -rf $VISIT_SRC_DIR/* || error "Can't clean VisIt source dir."
     fi
 
-    info "Building VisIt in ${VISIT_BUILD_DIR} . . ."
+    info "Building VisIt in ${VISIT_SRC_DIR} . . ."
     
-    cd $VISIT_BUILD_DIR
+    cd $VISIT_SRC_DIR
 
     #
     # Create the GIT_VERSION file.

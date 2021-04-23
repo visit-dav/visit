@@ -30,7 +30,7 @@ function bv_hdf5_depends_on
         local depends_on="zlib"
 
         if [[ "$DO_SZIP" == "yes" ]] ; then
-            depends_on="$depends_on szip"    
+            depends_on="$depends_on szip"
         fi
 
         if [[ -n "$PAR_COMPILER" && "$DO_MOAB" == "yes"  && "$DO_MPICH" == "yes" ]]; then
@@ -53,14 +53,14 @@ function bv_hdf5_initialize_vars
 
 function bv_hdf5_info
 {
-    export HDF5_VERSION=${HDF5_VERSION:-"1.8.14"}
+    export HDF5_VERSION=${HDF5_VERSION:-"1.10.7"}
     export HDF5_FILE=${HDF5_FILE:-"hdf5-${HDF5_VERSION}.tar.gz"}
-    export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION:-"1.8"}
-    export HDF5_BUILD_DIR=${HDF5_BUILD_DIR:-"hdf5-${HDF5_VERSION}"}
+    export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION:-"1.10"}
+    export HDF5_SRC_DIR=${HDF5_SRC_DIR:-"hdf5-${HDF5_VERSION}"}
     # Note: Versions of HDF5 1.6.5 and earlier DO NOT have last path component
     export HDF5_URL=${HDF5_URL:-"http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-${HDF5_VERSION}/src"}
-    export HDF5_MD5_CHECKSUM="a482686e733514a51cde12d6fe5c5d95"
-    export HDF5_SHA256_CHECKSUM="1dbefeeef7f591897c632b2b090db96bb8d35ad035beaa36bc39cb2bc67e0639"
+#    export HDF5_MD5_CHECKSUM="a482686e733514a51cde12d6fe5c5d95"
+#    export HDF5_SHA256_CHECKSUM="1dbefeeef7f591897c632b2b090db96bb8d35ad035beaa36bc39cb2bc67e0639"
 }
 
 function bv_hdf5_print
@@ -68,7 +68,7 @@ function bv_hdf5_print
     printf "%s%s\n" "HDF5_FILE=" "${HDF5_FILE}"
     printf "%s%s\n" "HDF5_VERSION=" "${HDF5_VERSION}"
     printf "%s%s\n" "HDF5_COMPATIBILITY_VERSION=" "${HDF5_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "HDF5_BUILD_DIR=" "${HDF5_BUILD_DIR}"
+    printf "%s%s\n" "HDF5_SRC_DIR=" "${HDF5_SRC_DIR}"
 }
 
 function bv_hdf5_print_usage
@@ -88,16 +88,16 @@ function bv_hdf5_host_profile
         if [[ "$USE_SYSTEM_HDF5" == "yes" ]]; then
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR $HDF5_INSTALL_DIR)" \
-                >> $HOSTCONF 
+                >> $HOSTCONF
         else
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_HDF5_DIR \${VISITHOME}/hdf5/$HDF5_VERSION/\${VISITARCH})" \
-                >> $HOSTCONF 
+                >> $HOSTCONF
 
             if [[ -n "$HDF5_MPI_INSTALL_DIR" ]]; then
                 echo \
                     "VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_DIR \${VISITHOME}/hdf5_mpi/$HDF5_VERSION/\${VISITARCH})" \
-                    >> $HOSTCONF 
+                    >> $HOSTCONF
             fi
 
             ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
@@ -105,7 +105,7 @@ function bv_hdf5_host_profile
             if [[ "$DO_SZIP" == "yes" ]] ; then
                 SZIP_LIBDEP="\${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz"
             fi
-            
+
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP $SZIP_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
                     >> $HOSTCONF
@@ -121,11 +121,11 @@ function bv_hdf5_host_profile
 function bv_hdf5_ensure
 {
     if [[ "$DO_HDF5" == "yes" && "$USE_SYSTEM_HDF5" == "no" ]] ; then
-        ensure_built_or_ready "hdf5" $HDF5_VERSION $HDF5_BUILD_DIR $HDF5_FILE $HDF5_URL 
+        check_installed_or_have_src "hdf5" $HDF5_VERSION $HDF5_SRC_DIR $HDF5_FILE $HDF5_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_HDF5="no"
-            error "Unable to build HDF5.  ${HDF5_FILE} not found."
+            error "Unable to build HDF5. ${HDF5_FILE} not found."
         fi
     fi
 }
@@ -571,28 +571,28 @@ function apply_hdf5_patch
 function build_hdf5
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $HDF5_BUILD_DIR $HDF5_FILE
+    uncompress_src_file $HDF5_SRC_DIR $HDF5_FILE
     untarred_hdf5=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_hdf5 == -1 ]] ; then
-        warn "Unable to prepare HDF5 Build Directory. Giving Up"
+        warn "Unable to uncompress HDF5 Build Directory. Giving Up"
         return 1
     fi
 
     #
     # Apply patches
     #
-    cd $HDF5_BUILD_DIR || error "Can't cd to HDF5 build dir."
+    cd $HDF5_SRC_DIR || error "Can't cd to HDF5 source dir."
     apply_hdf5_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_hdf5 == 1 ]] ; then
             warn "Giving up on HDF5 build because the patch failed."
             return 1
         else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
+            warn "Patch failed, but continuing. I believe that this script\n" \
                  "tried to apply a patch to an existing directory that had\n" \
                  "already been patched ... that is, the patch is\n" \
                  "failing harmlessly on a second application."
@@ -615,7 +615,7 @@ function build_hdf5
     fi
     cf_szip=""
     if test "x${DO_SZIP}" = "xyes"; then
-        info "SZip requested.  Configuring HDF5 with SZip support."
+        info "SZip requested. Configuring HDF5 with SZip support."
         sz_dir="${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}"
         cf_szip="--with-szlib=${sz_dir}"
     fi
@@ -651,8 +651,8 @@ function build_hdf5
     # detect coral systems, which older versions of autoconf don't detect
     if [[ "$(uname -m)" == "ppc64le" ]] ; then
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
-    fi 
-    
+    fi
+
     for bt in $par_build_types; do
 
         rm -rf build_$bt
@@ -689,7 +689,7 @@ function build_hdf5
             ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
             ${cf_build_parallel} ${extra_ac_flags} $build_mode"
         if [[ $? != 0 ]] ; then
-            warn "$bt HDF5 configure failed.  Giving up"
+            warn "$bt HDF5 configure failed. Giving up"
             return 1
         fi
 
@@ -700,7 +700,7 @@ function build_hdf5
         info "$MAKE $MAKE_OPT_FLAGS" lib
         $MAKE $MAKE_OPT_FLAGS lib
         if [[ $? != 0 ]] ; then
-            warn "$bt HDF5 build failed.  Giving up"
+            warn "$bt HDF5 build failed. Giving up"
             return 1
         fi
         #
@@ -713,7 +713,7 @@ function build_hdf5
         $MAKE install
 
         if [[ $? != 0 ]] ; then
-            warn "$bt HDF5 install failed.  Giving up"
+            warn "$bt HDF5 install failed. Giving up"
             return 1
         fi
 
@@ -733,7 +733,7 @@ function build_hdf5
 function bv_hdf5_is_enabled
 {
     if [[ $DO_HDF5 == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
@@ -755,16 +755,16 @@ function bv_hdf5_is_installed
 function bv_hdf5_build
 {
     cd "$START_DIR"
-    
+
     if [[ "$DO_HDF5" == "yes" && "$USE_SYSTEM_HDF5" == "no" ]] ; then
         check_if_installed "hdf5" $HDF5_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping HDF5 build.  HDF5 is already installed."
+            info "Skipping HDF5 build. HDF5 is already installed."
         else
             info "Building HDF5 (~15 minutes)"
             build_hdf5
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install HDF5.  Bailing out."
+                error "Unable to build or install HDF5. Bailing out."
             fi
             info "Done building HDF5"
         fi

@@ -35,7 +35,7 @@ function bv_mfem_info
     # NOTE: we are using a special version of MFEM that has not yet been in an MFEM release.
     export MFEM_VERSION=${MFEM_VERSION:-"Add_FMS_support"}
     export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
-    export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
+    export MFEM_SRC_DIR=${MFEM_SRC_DIR:-"mfem-${MFEM_VERSION}"}
     # For the time being, get MFEM tarball from IL website if it cannot be downloaded from third-party
     export MFEM_URL=${MFEM_URL:-"http://visit.ilight.com/assets"}
     #export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-0"}
@@ -47,7 +47,7 @@ function bv_mfem_print
 {
     printf "%s%s\n" "MFEM_FILE=" "${MFEM_FILE}"
     printf "%s%s\n" "MFEM_VERSION=" "${MFEM_VERSION}"
-    printf "%s%s\n" "MFEM_BUILD_DIR=" "${MFEM_BUILD_DIR}"
+    printf "%s%s\n" "MFEM_SRC_DIR=" "${MFEM_SRC_DIR}"
 }
 
 function bv_mfem_print_usage
@@ -92,7 +92,7 @@ function bv_mfem_host_profile
 function bv_mfem_ensure
 {
     if [[ "$DO_MFEM" == "yes" ]] ; then
-        ensure_built_or_ready "mfem" $MFEM_VERSION $MFEM_BUILD_DIR $MFEM_FILE $MFEM_URL
+        check_installed_or_have_src "mfem" $MFEM_VERSION $MFEM_SRC_DIR $MFEM_FILE $MFEM_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_MFEM="no"
@@ -150,19 +150,19 @@ EOF
 function build_mfem
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $MFEM_BUILD_DIR $MFEM_FILE
+    uncompress_src_file $MFEM_SRC_DIR $MFEM_FILE
     untarred_mfem=$?
     if [[ $untarred_mfem == -1 ]] ; then
-        warn "Unable to prepare mfem build directory. Giving Up!"
+        warn "Unable to uncompress mfem source file. Giving Up!"
         return 1
     fi
 
     #
     # Apply patches.
     #
-    cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
+    cd $MFEM_SRC_DIR || error "Can't cd to mfem source dir."
 
     info "Patching MFEM"
     apply_mfem_patch
@@ -182,7 +182,7 @@ function build_mfem
     # Build MFEM.
     #
     mkdir build
-    cd build || error "Can't cd to MFEM build dir."
+    cd build || error "Can't cd to MFEM source dir."
 
     # Version 4.0 now requires c++11
     CXXFLAGS="-std=c++11 ${CXXFLAGS}"

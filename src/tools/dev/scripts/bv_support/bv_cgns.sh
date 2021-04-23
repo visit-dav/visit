@@ -31,7 +31,7 @@ function bv_cgns_info
     export CGNS_FILE=${CGNS_FILE:-"CGNS-4.1.0.tar.gz"}
     export CGNS_VERSION=${CGNS_VERSION:-"4.1.0"}
     export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"4.1"}
-    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"CGNS-4.1.0/src"}
+    export CGNS_SRC_DIR=${CGNS_SRC_DIR:-"CGNS-4.1.0/src"}
     export CGNS_MD5_CHECKSUM="f90b85ae10693d4db0825c7ce61c6f73"
     export CGNS_SHA256_CHECKSUM="b4584e4d0fa52c737a0fb4738157a88581df251c8c5886175ee287e1777e99fd"
 }
@@ -41,7 +41,7 @@ function bv_cgns_print
     printf "%s%s\n" "CGNS_FILE=" "${CGNS_FILE}"
     printf "%s%s\n" "CGNS_VERSION=" "${CGNS_VERSION}"
     printf "%s%s\n" "CGNS_COMPATIBILITY_VERSION=" "${CGNS_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "CGNS_BUILD_DIR=" "${CGNS_BUILD_DIR}"
+    printf "%s%s\n" "CGNS_SRC_DIR=" "${CGNS_SRC_DIR}"
 }
 
 function bv_cgns_print_usage
@@ -71,7 +71,7 @@ function bv_cgns_host_profile
 function bv_cgns_ensure
 {
     if [[ "$DO_CGNS" == "yes" ]] ; then
-        ensure_built_or_ready "cgns" $CGNS_VERSION $CGNS_BUILD_DIR $CGNS_FILE
+        check_installed_or_have_src "cgns" $CGNS_VERSION $CGNS_SRC_DIR $CGNS_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_CGNS="no"
@@ -304,14 +304,14 @@ function apply_cgns_patch
 function build_cgns
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $CGNS_BUILD_DIR $CGNS_FILE
+    uncompress_src_file $CGNS_SRC_DIR $CGNS_FILE
     untarred_cgns=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_cgns == -1 ]] ; then
-        warn "Unable to prepare CGNS Build Directory. Giving Up"
+        warn "Unable to uncompress CGNS Build Directory. Giving Up"
         return 1
     fi
 
@@ -335,7 +335,7 @@ function build_cgns
     # Configure CGNS
     #
     info "Configuring CGNS . . ."
-    cd $CGNS_BUILD_DIR || error "Can't cd to CGNS build dir."
+    cd $CGNS_SRC_DIR || error "Can't cd to CGNS source dir."
     info "Invoking command to configure CGNS"
     LIBEXT=""
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then

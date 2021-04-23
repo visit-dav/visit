@@ -26,7 +26,7 @@ function bv_zlib_info
     export ZLIB_FILE=${ZLIB_FILE:-"zlib-${ZLIB_VERSION}.tar.xz"}
     export ZLIB_COMPATIBILITY_VERSION=${ZLIB_COMPATIBILITY_VERSION:-"1.2"}
     export ZLIB_URL=${ZLIB_URL:-https://www.zlib.net}
-    export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-${ZLIB_VERSION}"}
+    export ZLIB_SRC_DIR=${ZLIB_SRC_DIR:-"zlib-${ZLIB_VERSION}"}
     export ZLIB_MD5_CHECKSUM="85adef240c5f370b308da8c938951a68"
     export ZLIB_SHA256_CHECKSUM="4ff941449631ace0d4d203e3483be9dbc9da454084111f97ea0a2114e19bf066"
 }
@@ -36,7 +36,7 @@ function bv_zlib_print
     printf "%s%s\n" "ZLIB_FILE=" "${ZLIB_FILE}"
     printf "%s%s\n" "ZLIB_VERSION=" "${ZLIB_VERSION}"
     printf "%s%s\n" "ZLIB_COMPATIBILITY_VERSION=" "${ZLIB_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "ZLIB_BUILD_DIR=" "${ZLIB_BUILD_DIR}"
+    printf "%s%s\n" "ZLIB_SRC_DIR=" "${ZLIB_SRC_DIR}"
 }
 
 function bv_zlib_print_usage
@@ -66,7 +66,7 @@ function bv_zlib_initialize_vars
 
 function bv_zlib_ensure
 {
-    ensure_built_or_ready "zlib" $ZLIB_VERSION $ZLIB_BUILD_DIR $ZLIB_FILE $ZLIB_URL
+    check_installed_or_have_src "zlib" $ZLIB_VERSION $ZLIB_SRC_DIR $ZLIB_FILE $ZLIB_URL
     if [[ $? != 0 ]] ; then
         ANY_ERRORS="yes"
         error "Unable to build ZLIB.  ${ZLIB_FILE} not found."
@@ -88,12 +88,12 @@ function bv_zlib_dry_run
 function build_zlib
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $ZLIB_BUILD_DIR $ZLIB_FILE
+    uncompress_src_file $ZLIB_SRC_DIR $ZLIB_FILE
     untarred_zlib=$?
     if [[ $untarred_zlib == -1 ]] ; then
-        warn "Unable to prepare ZLIB build directory. Giving Up!"
+        warn "Unable to uncompress ZLIB source file. Giving Up!"
         return 1
     fi
     
@@ -101,7 +101,7 @@ function build_zlib
     # Call configure
     #
     info "Configuring ZLIB . . ."
-    cd $ZLIB_BUILD_DIR || error "Can't cd to ZLIB build dir."
+    cd $ZLIB_SRC_DIR || error "Can't cd to ZLIB source dir."
     info "Invoking command to configure ZLIB"
 
     STATICARGS="--static"

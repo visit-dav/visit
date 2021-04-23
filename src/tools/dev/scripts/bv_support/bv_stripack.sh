@@ -27,7 +27,7 @@ function bv_stripack_info
     export STRIPACK_FILE=${STRIPACK_FILE:-"stripack-ACM.RJRenka.Sep97.tar.gz"}
     export STRIPACK_VERSION=${STRIPACK_VERSION:-"ACM.RJRenka.Sep97"}
     export STRIPACK_COMPATIBILITY_VERSION=${STRIPACK_COMPATIBILITY_VERSION:-"ACM.RJRenka.Sep97"}
-    export STRIPACK_BUILD_DIR=${STRIPACK_BUILD_DIR:-"stripack-ACM.RJRenka.Sep97"}
+    export STRIPACK_SRC_DIR=${STRIPACK_SRC_DIR:-"stripack-ACM.RJRenka.Sep97"}
     export STRIPACK_MD5_CHECKSUM="364761b3c42d65b274f703b4be576d20"
     export STRIPACK_SHA256_CHECKSUM="4ba03dab1592850339327f8ba50b1dfecac4abd09f7757f50a022914d1353d73"
 }
@@ -37,7 +37,7 @@ function bv_stripack_print
     printf "%s%s\n" "STRIPACK_FILE=" "${STRIPACK_FILE}"
     printf "%s%s\n" "STRIPACK_VERSION=" "${STRIPACK_VERSION}"
     printf "%s%s\n" "STRIPACK_COMPATIBILITY_VERSION=" "${STRIPACK_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "STRIPACK_BUILD_DIR=" "${STRIPACK_BUILD_DIR}"
+    printf "%s%s\n" "STRIPACK_SRC_DIR=" "${STRIPACK_SRC_DIR}"
 }
 
 function bv_stripack_print_usage
@@ -53,7 +53,7 @@ function bv_stripack_host_profile
 function bv_stripack_ensure
 {
     if [[ "$DO_STRIPACK" == "yes" ]] ; then
-        ensure_built_or_ready "stripack" $STRIPACK_VERSION $STRIPACK_BUILD_DIR $STRIPACK_FILE
+        check_installed_or_have_src "stripack" $STRIPACK_VERSION $STRIPACK_SRC_DIR $STRIPACK_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build stripack.  ${STRIPACK_FILE} not found."
             ANY_ERRORS="yes"
@@ -107,17 +107,17 @@ function build_stripack
     fi 
 
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $STRIPACK_BUILD_DIR $STRIPACK_FILE
+    uncompress_src_file $STRIPACK_SRC_DIR $STRIPACK_FILE
     untarred_stripack=$?
     if [[ $untarred_stripack == -1 ]] ; then
-        warn "Unable to prepare stripack Build Directory. Giving Up"
+        warn "Unable to uncompress stripack Build Directory. Giving Up"
         return 1
     fi
 
     info "Building stripack. . ."
-    cd $STRIPACK_BUILD_DIR || error "Can't cd to stripack build dir."
+    cd $STRIPACK_SRC_DIR || error "Can't cd to stripack source dir."
     $FC_COMPILER $FCFLAGS -o libstripack.so stripack.f
     if [[ $? != 0 ]] ; then
         error "Unable to compile stripack"

@@ -23,7 +23,7 @@ function bv_xsd_info
     export XSD_FILE=${XSD_FILE:-"xsd-4.0.0+dep.tar.bz2"}
     export XSD_VERSION=${XSD_VERSION:-"4.0.0"}
     export XSD_COMPATIBILITY_VERSION=${XSD_COMPATIBILITY_VERSION:-"4.0"}
-    export XSD_BUILD_DIR=${XSD_BUILD_DIR:-"xsd-${XSD_VERSION}+dep"}
+    export XSD_SRC_DIR=${XSD_SRC_DIR:-"xsd-${XSD_VERSION}+dep"}
     export XSD_URL=${XSD_URL:-"http://www.codesynthesis.com/download/xsd/4.0"}
     export XSD_MD5_CHECKSUM="ae64d7fcd258addc9b045fe3f96208bb"
     export XSD_SHA256_CHECKSUM="eca52a9c8f52cdbe2ae4e364e4a909503493a0d51ea388fc6c9734565a859817"
@@ -34,7 +34,7 @@ function bv_xsd_print
     printf "%s%s\n" "XSD_FILE=" "${XSD_FILE}"
     printf "%s%s\n" "XSD_VERSION=" "${XSD_VERSION}"
     printf "%s%s\n" "XSD_COMPATIBILITY_VERSION=" "${XSD_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "XSD_BUILD_DIR=" "${XSD_BUILD_DIR}"
+    printf "%s%s\n" "XSD_SRC_DIR=" "${XSD_SRC_DIR}"
 }
 
 function bv_xsd_print_usage
@@ -57,7 +57,7 @@ function bv_xsd_host_profile
 function bv_xsd_ensure
 {
     if [[ "$DO_XSD" == "yes" ]] ; then
-        ensure_built_or_ready "XSD" $XSD_VERSION $XSD_BUILD_DIR $XSD_FILE $XSD_URL
+        check_installed_or_have_src "XSD" $XSD_VERSION $XSD_SRC_DIR $XSD_FILE $XSD_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_XSD="no"
@@ -83,15 +83,15 @@ function  apply_xsd_patch
 function build_xsd
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $XSD_BUILD_DIR $XSD_FILE
+    uncompress_src_file $XSD_SRC_DIR $XSD_FILE
     untarred_xsd=$?
     if [[ $untarred_xsd == -1 ]] ; then
-        warn "Unable to prepare XSD build directory. Giving Up!"
+        warn "Unable to uncompress XSD source file. Giving Up!"
         return 1
     fi
-    cd $XSD_BUILD_DIR/xsd
+    cd $XSD_SRC_DIR/xsd
 
     #
     # For Damaris, we only need to install the XSD headers

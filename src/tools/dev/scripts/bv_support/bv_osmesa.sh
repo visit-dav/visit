@@ -25,7 +25,7 @@ function bv_osmesa_info
     export OSMESA_VERSION=${OSMESA_VERSION:-"17.3.9"}
     export OSMESA_FILE=${OSMESA_FILE:-"mesa-$OSMESA_VERSION.tar.xz"}
     export OSMESA_URL=${OSMESA_URL:-"https://archive.mesa3d.org/older-versions/17.x/"}
-    export OSMESA_BUILD_DIR=${OSMESA_BUILD_DIR:-"mesa-$OSMESA_VERSION"}
+    export OSMESA_SRC_DIR=${OSMESA_SRC_DIR:-"mesa-$OSMESA_VERSION"}
     export OSMESA_MD5_CHECKSUM="b8042f9970ea70a36da1ee1fae27c448"
     export OSMESA_SHA256_CHECKSUM="c5beb5fc05f0e0c294fefe1a393ee118cb67e27a4dca417d77c297f7d4b6e479"
 }
@@ -34,7 +34,7 @@ function bv_osmesa_print
 {
     printf "%s%s\n" "OSMESA_FILE=" "${OSMESA_FILE}"
     printf "%s%s\n" "OSMESA_VERSION=" "${OSMESA_VERSION}"
-    printf "%s%s\n" "OSMESA_BUILD_DIR=" "${OSMESA_BUILD_DIR}"
+    printf "%s%s\n" "OSMESA_SRC_DIR=" "${OSMESA_SRC_DIR}"
 }
 
 function bv_osmesa_print_usage
@@ -92,7 +92,7 @@ function bv_osmesa_ensure
 {
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_OSMESA" == "yes" ]] ; then
-            ensure_built_or_ready "osmesa"   $OSMESA_VERSION   $OSMESA_BUILD_DIR   $OSMESA_FILE $OSMESA_URL
+            check_installed_or_have_src "osmesa"   $OSMESA_VERSION   $OSMESA_SRC_DIR   $OSMESA_FILE $OSMESA_URL
             if [[ $? != 0 ]] ; then
                 return 1
             fi
@@ -145,17 +145,17 @@ function build_osmesa
     #
     # prepare build dir
     #
-    prepare_build_dir $OSMESA_BUILD_DIR $OSMESA_FILE
+    uncompress_src_file $OSMESA_SRC_DIR $OSMESA_FILE
     untarred_osmesa=$?
     if [[ $untarred_osmesa == -1 ]] ; then
-        warn "Unable to prepare Mesa build directory. Giving Up!"
+        warn "Unable to uncompress Mesa source file. Giving Up!"
         return 1
     fi
 
     #
     # Apply patches
     #
-    cd $OSMESA_BUILD_DIR || error "Couldn't cd to osmesa build dir."
+    cd $OSMESA_SRC_DIR || error "Couldn't cd to osmesa source dir."
 
     info "Patching OSMesa"
     apply_osmesa_patch

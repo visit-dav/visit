@@ -23,7 +23,7 @@ function bv_szip_info
     export SZIP_FILE=${SZIP_FILE:-"szip-2.1.tar.gz"}
     export SZIP_VERSION=${SZIP_VERSION:-"2.1"}
     export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION:-"2.0"}
-    export SZIP_BUILD_DIR=${SZIP_BUILD_DIR:-"szip-2.1"}
+    export SZIP_SRC_DIR=${SZIP_SRC_DIR:-"szip-2.1"}
     export SZIP_MD5_CHECKSUM="9cc9125a58b905a4148e4e2fda3fabc6"
     export SZIP_SHA256_CHECKSUM="90f103d6bb3d48e1ab32284d35a34411217b138d45efd830b2cb42a29c5c8d5c"
 }
@@ -33,7 +33,7 @@ function bv_szip_print
     printf "%s%s\n" "SZIP_FILE=" "${SZIP_FILE}"
     printf "%s%s\n" "SZIP_VERSION=" "${SZIP_VERSION}"
     printf "%s%s\n" "SZIP_COMPATIBILITY_VERSION=" "${SZIP_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "SZIP_BUILD_DIR=" "${SZIP_BUILD_DIR}"
+    printf "%s%s\n" "SZIP_SRC_DIR=" "${SZIP_SRC_DIR}"
 }
 
 function bv_szip_print_usage
@@ -57,7 +57,7 @@ function bv_szip_host_profile
 function bv_szip_ensure
 {    
     if [[ "$DO_SZIP" == "yes" ]] ; then
-        ensure_built_or_ready "szip" $SZIP_VERSION $SZIP_BUILD_DIR $SZIP_FILE
+        check_installed_or_have_src "szip" $SZIP_VERSION $SZIP_SRC_DIR $SZIP_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_SZIP="no"
@@ -80,18 +80,18 @@ function bv_szip_dry_run
 function build_szip
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $SZIP_BUILD_DIR $SZIP_FILE
+    uncompress_src_file $SZIP_SRC_DIR $SZIP_FILE
     untarred_szip=$?
     if [[ $untarred_szip == -1 ]] ; then
-        warn "Unable to prepare SZip build directory. Giving Up!"
+        warn "Unable to uncompress SZip source file. Giving Up!"
         return 1
     fi
 
     #
     info "Configuring SZIP . . ."
-    cd ${SZIP_BUILD_DIR} || error "Can't cd to szip build dir."
+    cd ${SZIP_SRC_DIR} || error "Can't cd to szip source dir."
     info "Invoking command to configure SZIP"
     cf_szip=""
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then

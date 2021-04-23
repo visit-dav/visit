@@ -23,14 +23,14 @@ function bv_openexr_info
     export OPENEXR_FILE=${OPENEXR_FILE:-"openexr-2.2.0.tar.gz"}
     export OPENEXR_VERSION=${OPENEXR_VERSION:-"2.2.0"}
     export OPENEXR_COMPATIBILITY_VERSION=${OPENEXR_COMPATIBILITY_VERSION:-"2.2.0"}
-    export OPENEXR_BUILD_DIR=${OPENEXR_BUILD_DIR:-"openexr-2.2.0"}
+    export OPENEXR_SRC_DIR=${OPENEXR_SRC_DIR:-"openexr-2.2.0"}
     export OPENEXR_MD5_CHECKSUM="b64e931c82aa3790329c21418373db4e"
     export OPENEXR_SHA256_CHECKSUM="36a012f6c43213f840ce29a8b182700f6cf6b214bea0d5735594136b44914231"
 
     export ILMBASE_FILE=${ILMBASE_FILE:-"ilmbase-2.2.0.tar.gz"}
     export ILMBASE_VERSION=${ILMBASE_VERSION:-"2.2.0"}
     export ILMBASE_COMPATIBILITY_VERSION=${OPENEXR_COMPATIBILITY_VERSION:-"2.2.0"}
-    export ILMBASE_BUILD_DIR=${ILMBASE_BUILD_DIR:-"ilmbase-2.2.0"}
+    export ILMBASE_SRC_DIR=${ILMBASE_SRC_DIR:-"ilmbase-2.2.0"}
     export ILMBASE_MD5_CHECKSUM="b540db502c5fa42078249f43d18a4652"
     export ILMBASE_SHA256_CHECKSUM="ecf815b60695555c1fbc73679e84c7c9902f4e8faa6e8000d2f905b8b86cedc7"
 }
@@ -40,12 +40,12 @@ function bv_openexr_print
     printf "%s%s\n" "OPENEXR_FILE=" "${OPENEXR_FILE}"
     printf "%s%s\n" "OPENEXR_VERSION=" "${OPENEXR_VERSION}"
     printf "%s%s\n" "OPENEXR_COMPATIBILITY_VERSION=" "${OPENEXR_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "OPENEXR_BUILD_DIR=" "${OPENEXR_BUILD_DIR}"
+    printf "%s%s\n" "OPENEXR_SRC_DIR=" "${OPENEXR_SRC_DIR}"
 
     printf "%s%s\n" "ILMBASE_FILE=" "${ILMBASE_FILE}"
     printf "%s%s\n" "ILMBASE_VERSION=" "${ILMBASE_VERSION}"
     printf "%s%s\n" "ILMBASE_COMPATIBILITY_VERSION=" "${ILMBASE_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "ILMBASE_BUILD_DIR=" "${ILMBASE_BUILD_DIR}"
+    printf "%s%s\n" "ILMBASE_SRC_DIR=" "${ILMBASE_SRC_DIR}"
 }
 
 function bv_openexr_host_profile
@@ -70,13 +70,13 @@ function bv_openexr_print_usage
 function bv_openexr_ensure
 {
     if [[ "$DO_OPENEXR" == "yes" ]] ; then
-        ensure_built_or_ready "openexr" $OPENEXR_VERSION $OPENEXR_BUILD_DIR $OPENEXR_FILE
+        check_installed_or_have_src "openexr" $OPENEXR_VERSION $OPENEXR_SRC_DIR $OPENEXR_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_OPENEXR="no"
             error "Unable to build OpenEXR.  ${OPENEXR_FILE} not found."
         fi
-        ensure_built_or_ready "openexr (ILMBase) " $ILMBASE_VERSION $ILMBASE_BUILD_DIR $ILMBASE_FILE
+        check_installed_or_have_src "openexr (ILMBase) " $ILMBASE_VERSION $ILMBASE_SRC_DIR $ILMBASE_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_OPENEXR="no"
@@ -102,21 +102,21 @@ function bv_openexr_dry_run
 function build_ilmbase
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $ILMBASE_BUILD_DIR $ILMBASE_FILE
+    uncompress_src_file $ILMBASE_SRC_DIR $ILMBASE_FILE
     untarred_ilmbase=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_ilmbase == -1 ]] ; then
-        warn "Unable to prepare ILMBase Build Directory. Giving Up"
+        warn "Unable to uncompress ILMBase Build Directory. Giving Up"
         return 1
     fi
     
     #
     # Configure ILMBase
     #
-    cd $ILMBASE_BUILD_DIR || error "Can't cd to ILMBase build dir."
+    cd $ILMBASE_SRC_DIR || error "Can't cd to ILMBase source dir."
     if [[ "$DO_STATIC_BUILD" == "yes" || "$OPSYS" == "Linux"  ]]; then
         DISABLE_BUILDTYPE="--disable-shared"
     else
@@ -168,21 +168,21 @@ function build_ilmbase
 function build_openexr
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $OPENEXR_BUILD_DIR $OPENEXR_FILE
+    uncompress_src_file $OPENEXR_SRC_DIR $OPENEXR_FILE
     untarred_openexr=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_openexr == -1 ]] ; then
-        warn "Unable to prepare OpenEXR Build Directory. Giving Up"
+        warn "Unable to uncompress OpenEXR Build Directory. Giving Up"
         return 1
     fi
     
     #
     # Configure OpenEXR
     #
-    cd $OPENEXR_BUILD_DIR || error "Can't cd to OpenEXR build dir."
+    cd $OPENEXR_SRC_DIR || error "Can't cd to OpenEXR source dir."
     if [[ "$DO_STATIC_BUILD" == "yes" || "$OPSYS" == "Linux" ]]; then
         DISABLE_BUILDTYPE="--disable-shared"
     else

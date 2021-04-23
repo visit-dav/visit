@@ -26,7 +26,7 @@ function bv_xdmf_info
     export XDMF_FILE=${XDMF_FILE:-"Xdmf-2.1.1.tar.gz"}
     export XDMF_VERSION=${XDMF_VERSION:-"2.1.1"}
     export XDMF_COMPATIBILITY_VERSION=${XDMF_COMPATIBILITY_VERSION:-"2.1.1"}
-    export XDMF_BUILD_DIR=${XDMF_BUILD_DIR:-"Xdmf"}
+    export XDMF_SRC_DIR=${XDMF_SRC_DIR:-"Xdmf"}
     export XDMF_MD5_CHECKSUM="09e2afd3a1b7b3e7d650b860212a95d1"
     export XDMF_SHA256_CHECKSUM="4f0c2011d1d6f86052b102b25b36276168a31e191b4206a8d0c9d716ebced7e1"
 }
@@ -36,7 +36,7 @@ function bv_xdmf_print
     printf "%s%s\n" "XDMF_FILE=" "${XDMF_FILE}"
     printf "%s%s\n" "XDMF_VERSION=" "${XDMF_VERSION}"
     printf "%s%s\n" "XDMF_COMPATIBILITY_VERSION=" "${XDMF_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "XDMF_BUILD_DIR=" "${XDMF_BUILD_DIR}"
+    printf "%s%s\n" "XDMF_SRC_DIR=" "${XDMF_SRC_DIR}"
 }
 
 function bv_xdmf_print_usage
@@ -63,7 +63,7 @@ function bv_xdmf_host_profile
 function bv_xdmf_ensure
 {
     if [[ "$DO_XDMF" == "yes" ]] ; then
-        ensure_built_or_ready "Xdmf" $XDMF_VERSION $XDMF_BUILD_DIR $XDMF_FILE
+        check_installed_or_have_src "Xdmf" $XDMF_VERSION $XDMF_SRC_DIR $XDMF_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_XDMF="no"
@@ -188,12 +188,12 @@ function build_xdmf
     CMAKE_BIN="${CMAKE_COMMAND}"
 
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $XDMF_BUILD_DIR $XDMF_FILE
+    uncompress_src_file $XDMF_SRC_DIR $XDMF_FILE
     untarred_xdmf=$?
     if [[ $untarred_xdmf == -1 ]] ; then
-        warn "Unable to prepare Xdmf Build Directory. Giving up"
+        warn "Unable to uncompress Xdmf Build Directory. Giving up"
         return 1
     fi
 
@@ -215,7 +215,7 @@ function build_xdmf
         fi
     fi
 
-    cd $XDMF_BUILD_DIR || error "Can't cd to Xdmf build dir."
+    cd $XDMF_SRC_DIR || error "Can't cd to Xdmf source dir."
     rm -f CMakeCache.txt #remove any CMakeCache that may have existed
 
     #

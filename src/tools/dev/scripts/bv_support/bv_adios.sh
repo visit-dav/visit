@@ -71,7 +71,7 @@ function bv_adios_info
     export ADIOS_FILE=${ADIOS_FILE:-"adios-${ADIOS_VERSION}.tar.gz"}
     export ADIOS_COMPATIBILITY_VERSION=${ADIOS_COMPATIBILITY_VERSION:-"${ADIOS_VERSION}"}
     export ADIOS_URL=${ADIOS_URL:-"http://users.nccs.gov/~pnorbert"}
-    export ADIOS_BUILD_DIR=${ADIOS_BUILD_DIR:-"adios-${ADIOS_VERSION}"}
+    export ADIOS_SRC_DIR=${ADIOS_SRC_DIR:-"adios-${ADIOS_VERSION}"}
     export ADIOS_MD5_CHECKSUM="6e9eb73953231aebbbc8788f39f08618"
     export ADIOS_SHA256_CHECKSUM="684096cd7e5a7f6b8859601d4daeb1dfaa416dfc2d9d529158a62df6c5bcd7a0"
 }
@@ -81,7 +81,7 @@ function bv_adios_print
     printf "%s%s\n" "ADIOS_FILE=" "${ADIOS_FILE}"
     printf "%s%s\n" "ADIOS_VERSION=" "${ADIOS_VERSION}"
     printf "%s%s\n" "ADIOS_COMPATIBILITY_VERSION=" "${ADIOS_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "ADIOS_BUILD_DIR=" "${ADIOS_BUILD_DIR}"
+    printf "%s%s\n" "ADIOS_SRC_DIR=" "${ADIOS_SRC_DIR}"
 }
 
 function bv_adios_print_usage
@@ -117,7 +117,7 @@ function bv_adios_host_profile
 function bv_adios_ensure
 {
     if [[ "$DO_ADIOS" == "yes" && "$USE_SYSTEM_ADIOS" == "no" ]] ; then
-        ensure_built_or_ready "adios" $ADIOS_VERSION $ADIOS_BUILD_DIR $ADIOS_FILE
+        check_installed_or_have_src "adios" $ADIOS_VERSION $ADIOS_SRC_DIR $ADIOS_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ADIOS="no"
@@ -258,14 +258,14 @@ function apply_adios_patch
 function build_adios
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $ADIOS_BUILD_DIR $ADIOS_FILE
+    uncompress_src_file $ADIOS_SRC_DIR $ADIOS_FILE
     untarred_ADIOS=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_ADIOS == -1 ]] ; then
-        warn "Unable to prepare ADIOS Build Directory. Giving Up"
+        warn "Unable to uncompress ADIOS Build Directory. Giving Up"
         return 1
     fi
 
@@ -289,7 +289,7 @@ function build_adios
     # Apply configure
     #
     info "Configuring ADIOS . . ."
-    cd $ADIOS_BUILD_DIR || error "Can't cd to ADIOS build dir."
+    cd $ADIOS_SRC_DIR || error "Can't cd to ADIOS source dir."
 
     info "Invoking command to configure ADIOS"
 

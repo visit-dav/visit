@@ -60,7 +60,7 @@ function bv_uintah_info
     export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
     export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.6"}
     export UINTAH_URL=${UINTAH_URL:-"https://gforge.sci.utah.edu/svn/uintah/releases/uintah_v${UINTAH_VERSION}"}
-    export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
+    export UINTAH_SRC_DIR=${UINTAH_SRC_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
     export UINTAH_MD5_CHECKSUM="09cad7b2fcc7b1f41dabcf7ecae21f54"
     export UINTAH_SHA256_CHECKSUM="0801da6e5700fa826f2cbc6ed01f81f743f92df3e946cc6ba3748458f36f674e"
 }
@@ -70,7 +70,7 @@ function bv_uintah_print
     printf "%s%s\n" "UINTAH_FILE=" "${UINTAH_FILE}"
     printf "%s%s\n" "UINTAH_VERSION=" "${UINTAH_VERSION}"
     printf "%s%s\n" "UINTAH_COMPATIBILITY_VERSION=" "${UINTAH_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "UINTAH_BUILD_DIR=" "${UINTAH_BUILD_DIR}"
+    printf "%s%s\n" "UINTAH_SRC_DIR=" "${UINTAH_SRC_DIR}"
 }
 
 function bv_uintah_print_usage
@@ -104,7 +104,7 @@ function bv_uintah_host_profile
 function bv_uintah_ensure
 {
     if [[ "$DO_UINTAH" == "yes" && "$USE_SYSTEM_UINTAH" == "no" ]] ; then
-        ensure_built_or_ready "uintah" $UINTAH_VERSION $UINTAH_BUILD_DIR $UINTAH_FILE $UINTAH_URL 
+        check_installed_or_have_src "uintah" $UINTAH_VERSION $UINTAH_SRC_DIR $UINTAH_FILE $UINTAH_URL 
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_UINTAH="no"
@@ -227,21 +227,21 @@ function build_uintah
     fi
 
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $UINTAH_BUILD_DIR $UINTAH_FILE
+    uncompress_src_file $UINTAH_SRC_DIR $UINTAH_FILE
     untarred_uintah=$?
     if [[ $untarred_uintah == -1 ]] ; then
-        warn "Unable to prepare UINTAH Build Directory. Giving Up"
+        warn "Unable to uncompress UINTAH Build Directory. Giving Up"
         return 1
     fi
 
     #
-    if [[ ! -d $UINTAH_BUILD_DIR ]] ; then
-        echo "Making build directory $UINTAH_BUILD_DIR"
-        mkdir $UINTAH_BUILD_DIR
+    if [[ ! -d $UINTAH_SRC_DIR ]] ; then
+        echo "Making source dir.ctory $UINTAH_SRC_DIR"
+        mkdir $UINTAH_SRC_DIR
     fi
-    cd $UINTAH_BUILD_DIR || error "Can't cd to UINTAH build dir."
+    cd $UINTAH_SRC_DIR || error "Can't cd to UINTAH source dir."
 
     info "Configuring UINTAH . . ."
     cf_darwin=""
@@ -382,7 +382,7 @@ function build_uintah
             for deplib in $deplibs;
             do
                 # Only get the libraries related to Uintah
-                if [[ `echo $deplib | grep -c ${UINTAH_BUILD_DIR}` == 1 ]] ; then
+                if [[ `echo $deplib | grep -c ${UINTAH_SRC_DIR}` == 1 ]] ; then
 
                     # Get the library name sans the directory path
                     deplibname=`echo $deplib | sed "s/.*\///"`

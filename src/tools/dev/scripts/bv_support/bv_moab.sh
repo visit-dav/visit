@@ -29,7 +29,7 @@ function bv_moab_info
     export MOAB_VERSION=${MOAB_VERSION:-"4.9.2-RC0"}
     export MOAB_FILE=${MOAB_FILE:-"moab-${MOAB_VERSION}.tar.gz"}
     export MOAB_URL=${MOAB_URL:-"ftp://ftp.mcs.anl.gov/pub/fathom"}
-    export MOAB_BUILD_DIR=${MOAB_BUILD_DIR:-"moab-4.9.2"}
+    export MOAB_SRC_DIR=${MOAB_SRC_DIR:-"moab-4.9.2"}
     export MOAB_MD5_CHECKSUM="8581acec855308b34144c66e1163ad8e"
     export MOAB_SHA256_CHECKSUM="216e34f07717714fcc0675f211a2ddbd5063530a753467b8c13d5ba69535c7f4"
 }
@@ -38,7 +38,7 @@ function bv_moab_print
 {
     printf "%s%s\n" "MOAB_FILE=" "${MOAB_FILE}"
     printf "%s%s\n" "MOAB_VERSION=" "${MOAB_VERSION}"
-    printf "%s%s\n" "MOAB_BUILD_DIR=" "${MOAB_BUILD_DIR}"
+    printf "%s%s\n" "MOAB_SRC_DIR=" "${MOAB_SRC_DIR}"
 }
 
 function bv_moab_print_usage
@@ -73,7 +73,7 @@ function bv_moab_host_profile
 function bv_moab_ensure
 {
     if [[ "$DO_MOAB" == "yes" ]] ; then
-        ensure_built_or_ready "moab" $MOAB_VERSION $MOAB_BUILD_DIR $MOAB_FILE $MOAB_URL
+        check_installed_or_have_src "moab" $MOAB_VERSION $MOAB_SRC_DIR $MOAB_FILE $MOAB_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_MOAB="no"
@@ -95,16 +95,16 @@ function bv_moab_dry_run
 function build_moab
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $MOAB_BUILD_DIR $MOAB_FILE
+    uncompress_src_file $MOAB_SRC_DIR $MOAB_FILE
     untarred_moab=$?
     if [[ $untarred_moab == -1 ]] ; then
-        warn "Unable to prepare moab build directory. Giving Up!"
+        warn "Unable to uncompress moab source file. Giving Up!"
         return 1
     fi
 
-    cd $MOAB_BUILD_DIR || error "Can't cd to moab build dir."
+    cd $MOAB_SRC_DIR || error "Can't cd to moab source dir."
     rm -f src/moab/MOABConfig.h # work around a potential issue in MOAB tarball
 
     par_build_types="serial"

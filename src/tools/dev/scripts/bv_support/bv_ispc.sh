@@ -40,26 +40,26 @@ function bv_ispc_initialize_vars
 
 function bv_ispc_info
 {
-    export ISPC_VERSION=${ISPC_VERSION:-"1.9.2"}
+    export ISPC_VERSION=${ISPC_VERSION:-"1.15.0"}
     if [[ "$OPSYS" == "Darwin" ]] ; then
-        export ISPC_FILE=${ISPC_FILE:-"ispc-v${ISPC_VERSION}-osx.tar.gz"}
+        export ISPC_FILE=${ISPC_FILE:-"ispc-v${ISPC_VERSION}-macOS.tar.gz"}
         export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/osx/"}
-        # these are binary builds, not source tarballs so the mdf5s and shas differ 
-        # between platforms 
+        # these are binary builds, not source tarballs so the mdf5s
+        # and shas differ between platforms
         export ISPC_MD5_CHECKSUM="387cce62a6c63def5e6eb1c0a468a3db"
         export ISPC_SHA256_CHECKSUM="aa307b97bea67d71aff046e3f69c0412cc950eda668a225e6b909dba752ef281"
-        export ISPC_INSTALL_DIR_NAME=ispc-v$ISPC_VERSION-osx
+        export ISPC_BINARY_DIR=${ISPC_BINARY_DIR:-"ispc-v$ISPC_VERSION-macOS"}
     else
         export ISPC_FILE=${ISPC_FILE:-"ispc-v${ISPC_VERSION}-linux.tar.gz"}
         export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/linux/"}
-        # these are binary builds, not source tarballs so the mdf5s and shas differ 
-        # between platforms 
+        # these are binary builds, not source tarballs so the mdf5s
+        # and shas differ between platforms
         export ISPC_MD5_CHECKSUM="0178a33a065ae65d0be00be23871cf9f"
         export ISPC_SHA256_CHECKSUM="5513fbf8a2f6e889232ec1e7aa42f6f0b47954dcb9797e1e3d5e8d6f59301e40"
-        export ISPC_INSTALL_DIR_NAME=ispc-v$ISPC_VERSION-linux
+        export ISPC_BINARY_DIR=${ISPC_BINARY_DIR:-"ispc-v$ISPC_VERSION-linux"}
     fi
+
     export ISPC_COMPATIBILITY_VERSION=${ISPC_COMPATIBILITY_VERSION:-"${ISPC_VERSION}"}
-    export ISPC_BUILD_DIR=${ISPC_BUILD_DIR:-"${ISPC_VERSION}"}
 }
 
 function bv_ispc_print
@@ -67,7 +67,7 @@ function bv_ispc_print
     printf "%s%s\n" "ISPC_FILE=" "${ISPC_FILE}"
     printf "%s%s\n" "ISPC_VERSION=" "${ISPC_VERSION}"
     printf "%s%s\n" "ISPC_COMPATIBILITY_VERSION=" "${ISPC_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "ISPC_BUILD_DIR=" "${ISPC_BUILD_DIR}"
+    printf "%s%s\n" "ISPC_BINARY_DIR=" "${ISPC_BINARY_DIR}"
 }
 
 function bv_ispc_host_profile
@@ -79,6 +79,7 @@ function bv_ispc_host_profile
         echo "##" >> $HOSTCONF
         if [[ "$USE_SYSTEM_ISPC" == "no" ]]; then
             echo "SETUP_APP_VERSION(ISPC ${ISPC_VERSION})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(ISPC_DIR \${VISITHOME}/ispc/\${ISPC_VERSION}/\${VISITARCH}/lib/cmake/ispc-${ISPC_VERSION})" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR \${VISITHOME}/ispc/\${ISPC_VERSION}/\${VISITARCH})" >> $HOSTCONF
         else
             echo "VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR ${ISPC_INSTALL_DIR})" >> $HOSTCONF
@@ -95,11 +96,11 @@ function bv_ispc_print_usage
 function bv_ispc_ensure
 {
     if [[ "$DO_ISPC" == "yes" && "$USE_SYSTEM_ISPC" == "no" ]] ; then
-        ensure_built_or_ready "ispc" $ISPC_VERSION $ISPC_BUILD_DIR $ISPC_FILE $ISPC_URL
+        check_installed_or_have_src "ispc" $ISPC_VERSION $ISPC_BINARY_DIR $ISPC_FILE $ISPC_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ISPC="no"
-            error "Unable to build ISPC.  ${ISPC_FILE} not found."
+            error "Unable to build ISPC. ${ISPC_FILE} not found."
         fi
     fi
 }
@@ -121,13 +122,13 @@ function bv_ispc_dry_run
 function build_ispc
 {
     # Unzip the ISPC tarball and copy it to the VisIt installation.
-    info "Installing prebuilt ISPC"    
+    info "Installing prebuilt ISPC"
     tar zxvf $ISPC_FILE
-    mkdir -p $VISITDIR/ispc/$ISPC_VERSION/$VISITARCH || error "Cannot create ispc install directory"
-    cp -R $ISPC_INSTALL_DIR_NAME/* $VISITDIR/ispc/$ISPC_VERSION/$VISITARCH || error "Cannot copy to ispc install directory"
+    mkdir -p ${ISPC_INSTALL_DIR} || error "Cannot create ispc install directory"
+    cp -R $ISPC_BINARY_DIR/* ${ISPC_INSTALL_DIR} || error "Cannot copy to ispc install directory"
     if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/ispc/$ISPC_VERSION/$VISITARCH"
-        chgrp -R ${GROUP} "$VISITDIR/ispc/$ISPC_VERSION/$VISITARCH"
+        chmod -R ug+w,a+rX "${ISPC_INSTALL_DIR}"
+        chgrp -R ${GROUP} "${ISPC_INSTALL_DIR}"
     fi
     cd "$START_DIR"
     info "Done with ISPC"
@@ -137,14 +138,14 @@ function build_ispc
 function bv_ispc_is_enabled
 {
     if [[ $DO_ISPC == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
 
 function bv_ispc_is_installed
 {
-    if [[ "$USE_SYSTEM_ISPC" == "yes" ]]; then   
+    if [[ "$USE_SYSTEM_ISPC" == "yes" ]]; then
         return 1
     fi
 
@@ -160,14 +161,13 @@ function bv_ispc_build
     if [[ "$DO_ISPC" == "yes" && "$USE_SYSTEM_ISPC" == "no" ]] ; then
         check_if_installed "ispc" $ISPC_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping build of ISPC"
+            info "Skipping build of ISPC. ISPC is already installed."
         else
             build_ispc
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install ISPC.  Bailing out."
+                error "Unable to build or install ISPC. Bailing out."
             fi
-            info "Done building ISPC"
+            info "Done building ISPC."
         fi
     fi
 }
-

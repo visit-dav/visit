@@ -23,7 +23,7 @@ function bv_cfitsio_info
     export CFITSIO_FILE=${CFITSIO_FILE:-"cfitsio3006.tar.gz"}
     export CFITSIO_VERSION=${CFITSIO_VERSION:-"3006"}
     export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION:-"3.0"}
-    export CFITSIO_BUILD_DIR=${CFITSIO_BUILD_DIR:-"cfitsio"}
+    export CFITSIO_SRC_DIR=${CFITSIO_SRC_DIR:-"cfitsio"}
     export CFITSIO_MD5_CHECKSUM="4aacb54dcf833c8075d1f6515ba069ca"
     export CFITSIO_SHA256_CHECKSUM="c156ee0becee8987a14229e705f0f9f39dd2b73bbc9e73bc5d69f43896cb9a63"
 }
@@ -33,7 +33,7 @@ function bv_cfitsio_print
     printf "%s%s\n" "CFITSIO_FILE=" "${CFITSIO_FILE}"
     printf "%s%s\n" "CFITSIO_VERSION=" "${CFITSIO_VERSION}"
     printf "%s%s\n" "CFITSIO_COMPATIBILITY_VERSION=" "${CFITSIO_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "CFITSIO_BUILD_DIR=" "${CFITSIO_BUILD_DIR}"
+    printf "%s%s\n" "CFITSIO_SRC_DIR=" "${CFITSIO_SRC_DIR}"
 }
 
 function bv_cfitsio_print_usage
@@ -57,7 +57,7 @@ function bv_cfitsio_host_profile
 function bv_cfitsio_ensure
 {
     if [[ "$DO_CFITSIO" == "yes" ]] ; then
-        ensure_built_or_ready "cfitsio" $CFITSIO_VERSION $CFITSIO_BUILD_DIR $CFITSIO_FILE
+        check_installed_or_have_src "cfitsio" $CFITSIO_VERSION $CFITSIO_SRC_DIR $CFITSIO_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_CFITSIO="no"
@@ -79,18 +79,18 @@ function bv_cfitsio_dry_run
 function build_cfitsio
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $CFITSIO_BUILD_DIR $CFITSIO_FILE
+    uncompress_src_file $CFITSIO_SRC_DIR $CFITSIO_FILE
     untarred_cfitsio=$?
     if [[ $untarred_cfitsio == -1 ]] ; then
-        warn "Unable to prepare CFITSIO Build Directory. Giving Up"
+        warn "Unable to uncompress CFITSIO Build Directory. Giving Up"
         return 1
     fi
 
     #
     info "Configuring CFITSIO . . ."
-    cd $CFITSIO_BUILD_DIR || error "Can't cd to cfits IO build dir."
+    cd $CFITSIO_SRC_DIR || error "Can't cd to cfits IO source dir."
 
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \

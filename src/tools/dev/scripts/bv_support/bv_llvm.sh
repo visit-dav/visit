@@ -25,26 +25,29 @@ function bv_llvm_depends_on
 
 function bv_llvm_info
 {
-    export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"6.0.1"}
-    export BV_LLVM_FILE=${BV_LLVM_FILE:-"llvm-${BV_LLVM_VERSION}.src.tar.xz"}
-    export BV_LLVM_URL=${BV_LLVM_URL:-"http://releases.llvm.org/${BV_LLVM_VERSION}/"}
-    export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
-    export BV_LLVM_MD5_CHECKSUM="c88c98709300ce2c285391f387fecce0"
-    export BV_LLVM_SHA256_CHECKSUM="b6d6c324f9c71494c0ccaf3dac1f16236d970002b42bb24a6c9e1634f7d0f4e2"
+    export LLVM_VERSION=${LLVM_VERSION:-"6.0.1"}
+    export LLVM_FILE=${LLVM_FILE:-"llvm-${LLVM_VERSION}.src.tar.xz"}
+    export LLVM_URL=${LLVM_URL:-"http://releases.llvm.org/${LLVM_VERSION}/"}
+    export LLVM_SRC_DIR=${LLVM_SRC_DIR:-"${LLVM_FILE%.tar*}"}
+    export LLVM_BUILD_DIR=${LLVM_BUILD_DIR:-"${LLVM_SRC_DIR}-build"}
+    export LLVM_MD5_CHECKSUM="c88c98709300ce2c285391f387fecce0"
+    export LLVM_SHA256_CHECKSUM="b6d6c324f9c71494c0ccaf3dac1f16236d970002b42bb24a6c9e1634f7d0f4e2"
 
-    export BV_CLANG_URL=${BV_LLVM_URL}
-    export BV_CLANG_FILE="cfe-${BV_LLVM_VERSION}.src.tar.xz"
-    export BV_CLANG_BUILD_DIR="cfe-${BV_LLVM_VERSION}.src"
-    export BV_CLANG_MD5_CHECKSUM="4e419bd4e3b55aa06d872320f754bd85"
-    export BV_CLANG_SHA256_CHECKSUM="7c243f1485bddfdfedada3cd402ff4792ea82362ff91fbdac2dae67c6026b667"
+    export CLANG_URL=${LLVM_URL}
+    export CLANG_FILE="cfe-${LLVM_VERSION}.src.tar.xz"
+    export CLANG_SRC_DIR="cfe-${LLVM_VERSION}.src"
+    export CLANG_BUILD_DIR=${CLANG_BUILD_DIR:-"${CLANG_SRC_DIR}-build"}
+    export CLANG_MD5_CHECKSUM="4e419bd4e3b55aa06d872320f754bd85"
+    export CLANG_SHA256_CHECKSUM="7c243f1485bddfdfedada3cd402ff4792ea82362ff91fbdac2dae67c6026b667"
 }
 
 function bv_llvm_print
 {
-    printf "%s%s\n" "BV_LLVM_FILE=" "${BV_LLVM_FILE}"
-    printf "%s%s\n" "BV_LLVM_VERSION=" "${BV_LLVM_VERSION}"
+    printf "%s%s\n" "LLVM_FILE=" "${LLVM_FILE}"
+    printf "%s%s\n" "LLVM_VERSION=" "${LLVM_VERSION}"
     printf "%s%s\n" "LLVM_TARGET=" "${LLVM_TARGET}"
-    printf "%s%s\n" "BV_LLVM_BUILD_DIR=" "${BV_LLVM_BUILD_DIR}"
+    printf "%s%s\n" "LLVM_SRC_DIR=" "${LLVM_SRC_DIR}"
+    printf "%s%s\n" "LLVM_BUILD_DIR=" "${LLVM_BUILD_DIR}"
 }
 
 function bv_llvm_print_usage
@@ -59,13 +62,13 @@ function bv_llvm_host_profile
         echo "##" >> $HOSTCONF
         echo "## LLVM" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR \${VISITHOME}/llvm/$BV_LLVM_VERSION/\${VISITARCH})" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR \${VISITHOME}/llvm/$LLVM_VERSION/\${VISITARCH})" >> $HOSTCONF
     fi
 }
 
 function bv_llvm_initialize_vars
 {
-    export VISIT_LLVM_DIR=${VISIT_LLVM_DIR:-"$VISITDIR/llvm/${BV_LLVM_VERSION}/${VISITARCH}"}
+    export VISIT_LLVM_DIR=${VISIT_LLVM_DIR:-"$VISITDIR/llvm/${LLVM_VERSION}/${VISITARCH}"}
     LLVM_INCLUDE_DIR="${VISIT_LLVM_DIR}/include"
     LLVM_LIB_DIR="${VISIT_LLVM_DIR}/lib"
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
@@ -92,9 +95,24 @@ function bv_llvm_ensure
 {
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_LLVM" == "yes" ]] ; then
-            ensure_built_or_ready "llvm"   $BV_LLVM_VERSION   $BV_LLVM_BUILD_DIR   $BV_LLVM_FILE $BV_LLVM_URL
+            check_installed_or_have_src "llvm" $LLVM_VERSION $LLVM_BUILD_DIR $LLVM_FILE $LLVM_URL
             if [[ $? != 0 ]] ; then
                 return 1
+            fi
+
+            # Download clang
+            ALREADY_INSTALLED="NO"
+            HAVE_TARBALL="NO"
+            if [[ -e ${CLANG_FILE} ]] ; then
+                HAVE_TARBALL="YES"
+            fi
+
+            if [[ "$ALREADY_INSTALLED" == "NO" && "$HAVE_TARBALL" == "NO" ]] ; then
+                download_file ${CLANG_FILE} ${CLANG_URL}
+                if [[ $? != 0 ]] ; then
+                    warn "Error: Cannot obtain source for ${CLANG_FILE}."
+                    return 1
+                fi
             fi
         fi
     fi
@@ -109,82 +127,80 @@ function bv_llvm_dry_run
 
 function apply_llvm_patch
 {
-    info "Currently no patches for llvm"
+    cd ${LLVM_SRC_DIR} || error "Can't cd to LLVM source dir."
+
+#    info "Currently no patches for llvm"
+
+    cd "$START_DIR"
+
+    return 0
 }
 
 function build_llvm
 {
     #
-    # prepare build dir
+    # Uncompress the Clang source dir
     #
-    prepare_build_dir $BV_LLVM_BUILD_DIR $BV_LLVM_FILE
+    uncompress_src_file $CLANG_SRC_DIR $CLANG_FILE
+    untarred_clang=$?
+    if [[ $untarred_clang == -1 ]] ; then
+        warn "Unable to uncompress Clang source file. Giving Up!"
+        return 1
+    else
+	# The LLVM build system expects the directory to be named
+	# clang. Make a soft link so the source version is known.
+	if [[ -e clang ]] ; then
+	    rm -rf clang
+	fi
+	ln -s ${CLANG_SRC_DIR} clang
+    fi
+
+    #
+    # Uncompress the LLVM source dir
+    #
+    uncompress_src_file $LLVM_SRC_DIR $LLVM_FILE
     untarred_llvm=$?
     if [[ $untarred_llvm == -1 ]] ; then
-        warn "Unable to prepare LLVM build directory. Giving Up!"
+        warn "Unable to uncompress LLVM source file. Giving Up!"
         return 1
     fi
 
-    # download clang
-    if ! test -f ${BV_CLANG_FILE} ; then
-        download_file ${BV_CLANG_FILE} ${BV_CLANG_URL}
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${BV_CLANG_FILE}"
-            return 1
-        fi
-    fi
-
-    # extract clang
-    if ! test -d clang ; then
-        info "Extracting clang ..."
-        uncompress_untar ${BV_CLANG_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${BV_CLANG_FILE}"
-            return 1
-        fi
-        # llvm build system expects the directory to be named clang
-        mv ${BV_CLANG_BUILD_DIR} clang
-    fi
-
     #
-    # Build LLVM.
+    # Apply patches
     #
-
-    #
-    # LLVM must be built with an out of source build.
-    #
-    BV_LLVM_SRC_DIR=${BV_LLVM_BUILD_DIR}
-    BV_LLVM_BUILD_DIR="${BV_LLVM_SRC_DIR}-build"
-    if [[ ! -d ${BV_LLVM_BUILD_DIR} ]] ; then
-        info "Making build directory ${BV_LLVM_BUILD_DIR}"
-        mkdir ${BV_LLVM_BUILD_DIR}
-    fi
-
-    #
-    # Patch LLVM
-    #
-    
-    cd "$BV_LLVM_SRC_DIR" || error "Couldn't cd to llvm src dir."
+    info "Patching LLVM . . ."
     apply_llvm_patch
     if [[ $? != 0 ]] ; then
-	if [[ $untarred_llvm == 1 ]] ; then
-	    warn "Giving up on LLVM build because the patch failed."
-	    return 1
-	else
-	    warn "Patch failed, but continuing.  I believe that this script\n" \
-		 "tried to apply a patch to an existing directory that had\n" \
-		 "already been patched ... that is, the patch is\n" \
-		 "failing harmlessly on a second application."
+        if [[ $untarred_llvm == 1 ]] ; then
+            warn "Giving up on LLVM build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing. I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
         fi
     fi
 
+    #
+    # Make a build directory for an out-of-source build.
+    #
     cd "$START_DIR"
-    cd ${BV_LLVM_BUILD_DIR} || error "Couldn't cd to llvm build dir."
+    if [[ ! -d $LLVM_BUILD_DIR ]] ; then
+        echo "Making build directory $LLVM_BUILD_DIR"
+        mkdir $LLVM_BUILD_DIR
+    else
+        #
+        # Remove the CMakeCache.txt files ... existing files sometimes
+        # prevent fields from getting overwritten properly.
+        #
+        rm -Rf ${LLVM_BUILD_DIR}/CMakeCache.txt ${LLVM_BUILD_DIR}/*/CMakeCache.txt
+    fi
+    cd ${LLVM_BUILD_DIR}
 
     #
-    # Remove any CMakeCache.txt files just to be safe.
+    # Call configure
     #
-    rm -f CMakeCache.txt */CMakeCache.txt
-
     info "Configuring LLVM . . ."
 
     llvm_opts=""
@@ -252,24 +268,46 @@ function build_llvm
     llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_BUILD_BUILD:BOOL=OFF"
     llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_VIEW_BUILD:BOOL=OFF"
 
+    #
+    # Several platforms have had problems with the LLVM cmake configure command
+    # issued simply via "issue_command". This was first discovered on
+    # BGQ and then showed up in random cases for both OSX and Linux machines.
+    # Brad resolved this on BGQ  with a simple work around - we write a simple
+    # script that we invoke with bash which calls cmake with all of the properly
+    # arguments. We are now using this strategy for all platforms.
+    #
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
-    echo "\"${CMAKE_COMMAND}\"" ${llvm_opts} ../${BV_LLVM_SRC_DIR} > bv_run_cmake.sh
-    cat bv_run_cmake.sh
-    issue_command bash bv_run_cmake.sh || error "LLVM configuration failed"
 
-    info "Building LLVM . . ."
-    ${MAKE} ${MAKE_OPT_FLAGS}
+    echo "\"${CMAKE_BIN}\"" ${llvm_opts} ../${LLVM_SRC_DIR} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh
+
     if [[ $? != 0 ]] ; then
-        warn "LLVM build failed.  Giving up"
+        warn "Llvm configure failed. Giving up"
         return 1
     fi
 
-    info "Installing LLVM . . ."
-    ${MAKE} ${MAKE_OPT_FLAGS} install
+    #
+    # Build Llvm
+    #
+    info "Building LLVM . . . (~60 minutes)"
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "LLVM install failed.  Giving up"
+        warn "LLVM build failed. Giving up"
+        return 1
+    fi
+
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing LLVM"
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+        warn "LLVM install failed. Giving up"
         return 1
     fi
 
@@ -277,6 +315,7 @@ function build_llvm
         chmod -R ug+w,a+rX "$VISITDIR/llvm"
         chgrp -R ${GROUP} "$VISITDIR/llvm"
     fi
+
     cd "$START_DIR"
     info "Done with LLVM"
     return 0
@@ -285,14 +324,14 @@ function build_llvm
 function bv_llvm_is_enabled
 {
     if [[ $DO_LLVM == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
 
 function bv_llvm_is_installed
 {
-    check_if_installed "llvm" $BV_LLVM_VERSION
+    check_if_installed "llvm" $LLVM_VERSION
     if [[ $? == 0 ]] ; then
         return 1
     fi
@@ -301,19 +340,17 @@ function bv_llvm_is_installed
 
 function bv_llvm_build
 {
-    #
-    # Build LLVM
-    #
     cd "$START_DIR"
+
     if [[ "$DO_LLVM" == "yes" ]] ; then
-        check_if_installed "llvm" $BV_LLVM_VERSION
+        check_if_installed "LLVM" $LLVM_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping LLVM build.  LLVM is already installed."
+            info "Skipping LLVM build. LLVM is already installed."
         else
-            info "Building LLVM (~60 minutes)"
+            info "Building Llvm (~60 minutes)"
             build_llvm
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install LLVM.  Bailing out."
+                error "Unable to build or install LLVM. Bailing out."
             fi
             info "Done building LLVM"
         fi

@@ -50,7 +50,7 @@ function bv_netcdf_info
     export NETCDF_VERSION=${NETCDF_VERSION-"4.1.1"}
     export NETCDF_FILE=${NETCDF_FILE-"netcdf-${NETCDF_VERSION}.tar.gz"}
     export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"4.1"}
-    export NETCDF_BUILD_DIR=${NETCDF_BUILD_DIR-"netcdf-4.1.1"}
+    export NETCDF_SRC_DIR=${NETCDF_SRC_DIR-"netcdf-4.1.1"}
     export NETCDF_MD5_CHECKSUM="79c5ff14c80d5e18dd8f1fceeae1c8e1"
     export NETCDF_SHA256_CHECKSUM="7933d69d378c57f038375bae4dd78c52442a06e2647fce4b75c13a225e342fb0"
 }
@@ -60,7 +60,7 @@ function bv_netcdf_print
     printf "%s%s\n" "NETCDF_FILE=" "${NETCDF_FILE}"
     printf "%s%s\n" "NETCDF_VERSION=" "${NETCDF_VERSION}"
     printf "%s%s\n" "NETCDF_COMPATIBILITY_VERSION=" "${NETCDF_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "NETCDF_BUILD_DIR=" "${NETCDF_BUILD_DIR}"
+    printf "%s%s\n" "NETCDF_SRC_DIR=" "${NETCDF_SRC_DIR}"
 }
 
 function bv_netcdf_print_usage
@@ -97,7 +97,7 @@ function bv_netcdf_host_profile
 function bv_netcdf_ensure
 {
     if [[ "$DO_NETCDF" == "yes" && "$USE_SYSTEM_NETCDF" == "no" ]] ; then
-        ensure_built_or_ready "netcdf" $NETCDF_VERSION $NETCDF_BUILD_DIR \
+        check_installed_or_have_src "netcdf" $NETCDF_VERSION $NETCDF_SRC_DIR \
                               $NETCDF_FILE \
                               http://www.unidata.ucar.edu/downloads/netcdf/ftp/
         if [[ $? != 0 ]] ; then
@@ -175,7 +175,7 @@ EOF
 function apply_netcdf_patch_for_exodusii
 {
     local retval=0
-    pushd $NETCDF_BUILD_DIR 1>/dev/null 2>&1
+    pushd $NETCDF_SRC_DIR 1>/dev/null 2>&1
     patch -p0 << \EOF
 *** libsrc/netcdf.h     Wed Oct 27 11:50:22 2010
 --- libsrc/netcdf.h.ex  Wed Oct 27 11:50:31 2010
@@ -315,14 +315,14 @@ function apply_netcdf_patch
 # *************************************************************************** #
 function build_netcdf
 {
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $NETCDF_BUILD_DIR $NETCDF_FILE
+    uncompress_src_file $NETCDF_SRC_DIR $NETCDF_FILE
     untarred_netcdf=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_netcdf == -1 ]] ; then
-        warn "Unable to prepare NetCDF Build Directory. Giving Up"
+        warn "Unable to uncompress NetCDF Build Directory. Giving Up"
         return 1
     fi
 
@@ -347,7 +347,7 @@ function build_netcdf
     # Configure NetCDF
     #
     info "Configuring NetCDF . . ."
-    cd $NETCDF_BUILD_DIR || error "Can't cd to netcdf build dir."
+    cd $NETCDF_SRC_DIR || error "Can't cd to netcdf source dir."
     info "Invoking command to configure NetCDF"
     EXTRA_FLAGS=""
     if [[ "$OPSYS" == "Darwin" ]]; then

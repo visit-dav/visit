@@ -23,7 +23,7 @@ function bv_mili_info
     export MILI_FILE=${MILI_FILE:-"mili-LGPL-19.2.tar.gz"}
     export MILI_VERSION=${MILI_VERSION:-"19.2"}
     export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"19.2"}
-    export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
+    export MILI_SRC_DIR=${MILI_SRC_DIR:-"mili"}
     export MILI_MD5_CHECKSUM="2d3c62f5261b009dfda2b73bb358749f"
     export MILI_SHA256_CHECKSUM="dcf636d5f0d2ae9c273ab0e909e558d950471554dc5757734ca73737660f4d90"
 }
@@ -33,7 +33,7 @@ function bv_mili_print
     printf "%s%s\n" "MILI_FILE=" "${MILI_FILE}"
     printf "%s%s\n" "MILI_VERSION=" "${MILI_VERSION}"
     printf "%s%s\n" "MILI_COMPATIBILITY_VERSION=" "${MILI_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "MILI_BUILD_DIR=" "${MILI_BUILD_DIR}"
+    printf "%s%s\n" "MILI_SRC_DIR=" "${MILI_SRC_DIR}"
 }
 
 function bv_mili_print_usage
@@ -57,7 +57,7 @@ function bv_mili_host_profile
 function bv_mili_ensure
 {
     if [[ "$DO_MILI" == "yes" ]] ; then
-        ensure_built_or_ready "mili" $MILI_VERSION $MILI_BUILD_DIR $MILI_FILE
+        check_installed_or_have_src "mili" $MILI_VERSION $MILI_SRC_DIR $MILI_FILE
         if [[ $? != 0 ]] ; then
             warn "Unable to build Mili.  ${MILI_FILE} not found."
             ANY_ERRORS="yes"
@@ -243,14 +243,14 @@ function apply_mili_patch
 function build_mili
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $MILI_BUILD_DIR $MILI_FILE
+    uncompress_src_file $MILI_SRC_DIR $MILI_FILE
     untarred_mili=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_mili == -1 ]] ; then
-        warn "Unable to prepare Mili Build Directory. Giving Up"
+        warn "Unable to uncompress Mili Build Directory. Giving Up"
         return 1
     fi
 
@@ -275,7 +275,7 @@ function build_mili
     # Configure Mili
     #
     info "Configuring Mili . . ."
-    cd $MILI_BUILD_DIR || error "Can't cd to mili build dir."
+    cd $MILI_SRC_DIR || error "Can't cd to mili source dir."
 
     extra_ac_flags=""
     # detect coral systems, which older versions of autoconf don't detect

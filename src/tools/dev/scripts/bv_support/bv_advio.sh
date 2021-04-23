@@ -23,7 +23,7 @@ function bv_advio_info
     export ADVIO_FILE=${ADVIO_FILE:-"AdvIO-1.2.tar.gz"}
     export ADVIO_VERSION=${ADVIO_VERSION:-"1.2"}
     export ADVIO_COMPATIBILITY_VERSION=${ADVIO_COMPATIBILITY_VERSION:-"1.2"}
-    export ADVIO_BUILD_DIR=${ADVIO_BUILD_DIR:-AdvIO-1.2}
+    export ADVIO_SRC_DIR=${ADVIO_SRC_DIR:-AdvIO-1.2}
     export ADVIO_MD5_CHECKSUM="db6def939a2d5dd4d3d6203ba5d3ec7e"
     export ADVIO_SHA256_CHECKSUM="cd89d8a7f1fe94c1bd2d04888028d8b2b98a37853c4a8d5b2b7417b83ea1e803"
 }
@@ -33,7 +33,7 @@ function bv_advio_print
     printf "%s%s\n" "ADVIO_FILE=" "${ADVIO_FILE}"
     printf "%s%s\n" "ADVIO_VERSION=" "${ADVIO_VERSION}"
     printf "%s%s\n" "ADVIO_COMPATIBILITY_VERSION=" "${ADVIO_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "ADVIO_BUILD_DIR=" "${ADVIO_BUILD_DIR}"
+    printf "%s%s\n" "ADVIO_SRC_DIR=" "${ADVIO_SRC_DIR}"
 }
 
 function bv_advio_print_usage
@@ -58,7 +58,7 @@ function bv_advio_host_profile
 function bv_advio_ensure
 {
     if [[ "$DO_ADVIO" == "yes" ]] ; then
-        ensure_built_or_ready "AdvIO" $ADVIO_VERSION $ADVIO_BUILD_DIR $ADVIO_FILE
+        check_installed_or_have_src "AdvIO" $ADVIO_VERSION $ADVIO_SRC_DIR $ADVIO_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ADVIO="no"
@@ -153,14 +153,14 @@ function apply_advio_patch
 function build_advio
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $ADVIO_BUILD_DIR $ADVIO_FILE
+    uncompress_src_file $ADVIO_SRC_DIR $ADVIO_FILE
     untarred_ADVIO=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_ADVIO == -1 ]] ; then
-        warn "Unable to prepare AdvIO Build Directory. Giving up"
+        warn "Unable to uncompress AdvIO Build Directory. Giving up"
         return 1
     fi
 
@@ -185,7 +185,7 @@ function build_advio
     # Configure AdvIO
     #
     info "Configuring AdvIO . . ."
-    cd $ADVIO_BUILD_DIR || error "Can't cd to AdvIO build dir."
+    cd $ADVIO_SRC_DIR || error "Can't cd to AdvIO source dir."
     # Remove IDL dependencies from the build process
     sed "s%@idldir@%%g" Makefile.in > m2
     mv m2 Makefile.in

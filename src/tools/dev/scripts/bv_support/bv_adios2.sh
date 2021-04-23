@@ -25,9 +25,6 @@ function bv_adios2_alt_adios2_dir
 {
     echo "Using alternate Adios2 directory"
 
-    # Check to make sure the directory or a particular include file exists.
-    #    [ ! -e "$1" ] && error "Adios not found in $1"
-
     bv_adios2_enable
     USE_SYSTEM_ADIOS2="yes"
     ADIOS2_INSTALL_DIR="$1"
@@ -65,7 +62,8 @@ function bv_adios2_info
     export ADIOS2_FILE=${ADIOS2_FILE:-"adios2-${ADIOS2_VERSION}.tar.gz"}
     export ADIOS2_COMPATIBILITY_VERSION=${ADIOS2_COMPATIBILITY_VERSION:-"${ADIOS2_VERSION}"}
     export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/archive/v2.5.0"}
-    export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
+    export ADIOS2_SRC_DIR=${ADIOS2_SRC_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
+    export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"${ADIOS2_SRC_DIR}-build-ser"}
     export ADIOS2_MD5_CHECKSUM="a50a6bcd02a0a296484a213dca7f9a11"
     export ADIOS2_MD5_CHECKSUM=""
     export ADIOS2_SHA256_CHECKSUM=""
@@ -76,6 +74,7 @@ function bv_adios2_print
     printf "%s%s\n" "ADIOS2_FILE=" "${ADIOS2_FILE}"
     printf "%s%s\n" "ADIOS2_VERSION=" "${ADIOS2_VERSION}"
     printf "%s%s\n" "ADIOS2_COMPATIBILITY_VERSION=" "${ADIOS2_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "ADIOS2_SRC_DIR=" "${ADIOS2_SRC_DIR}"
     printf "%s%s\n" "ADIOS2_BUILD_DIR=" "${ADIOS2_BUILD_DIR}"
 }
 
@@ -114,7 +113,7 @@ function bv_adios2_host_profile
 function bv_adios2_ensure
 {
     if [[ "$DO_ADIOS2" == "yes" && "$USE_SYSTEM_ADIOS2" == "no" ]] ; then
-        ensure_built_or_ready "adios" $ADIOS2_VERSION $ADIOS2_BUILD_DIR $ADIOS2_FILE
+        check_installed_or_have_src "adios" $ADIOS2_VERSION $ADIOS2_BUILD_DIR $ADIOS2_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ADIOS2="no"
@@ -133,44 +132,48 @@ function bv_adios2_dry_run
 function build_adios2
 {
     #
-    # ADIOS2 uses CMake  -- make sure we have it built.
+    # Uncompress the source file
     #
-    CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
-    if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
-        info "ADIOS2: CMake found"
-    else
-        build_cmake
-        if [[ $? != 0 ]] ; then
-            warn "Unable to build cmake.  Giving up"
-            return 1
-        fi
-    fi
-
-    #
-    # Prepare build dir
-    #
-    prepare_build_dir $ADIOS2_BUILD_DIR $ADIOS2_FILE
+    uncompress_src_file $ADIOS2_SRC_DIR $ADIOS2_FILE
     untarred_ADIOS2=$?
     if [[ $untarred_ADIOS2 == -1 ]] ; then
-        warn "Unable to prepare ADIOS2 Build Directory. Giving Up"
+        warn "Unable to uncompress ADIOS2 source file. Giving Up!"
         return 1
     fi
-    #### begin parallel
 
-    par_build_types="ser"
+    #### begin parallel
+    build_types="ser"
+
     if [[ "$parallel" == "yes" ]]; then
-        par_build_types="$par_build_types par"
+        build_types="$build_types par"
     fi
 
-    ADIOS2_SRC_DIR=$ADIOS2_BUILD_DIR
+    for bt in $build_types; do
 
-    for bt in $par_build_types; do
+        ADIOS2_BUILD_DIR="${ADIOS2_SRC_DIR}-build-$bt"
 
-        # Configure.
-        cd $ADIOS2_SRC_DIR || error "Can't cd to $ADIOS2_SRC_DIR"
-        info "Configuring ADIOS2-$bt (~1 minute)"
+        #
+        # Make a build directory for an out-of-source build.
+        #
+        cd "$START_DIR"
+        if [[ ! -d $ADIOS2_BUILD_DIR ]] ; then
+            echo "Making build directory $ADIOS2_BUILD_DIR"
+            mkdir $ADIOS2_BUILD_DIR
+        else
+            #
+            # Remove the CMakeCache.txt files ... existing files sometimes
+            # prevent fields from getting overwritten properly.
+            #
+            rm -Rf ${ADIOS2_BUILD_DIR}/CMakeCache.txt ${ADIOS2_BUILD_DIR}/*/CMakeCache.txt
+        fi
+        cd ${ADIOS2_BUILD_DIR}
 
         if [[ "$bt" == "par" ]]; then
+
+            #
+            # Call configure
+            #
+            info "Configuring Adios2 $bt . . ."
 
             SED_CMD="sed -i "
 
@@ -198,22 +201,6 @@ function build_adios2
             ${SED_CMD} "s/find_package(adios2_mpi/find_package(adios2/g" cmake/install/post/adios2-config-dummy/CMakeLists.txt
         fi
 
-        # Make a build directory for an out-of-source build.. Change the
-        # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
-        ADIOS2_BUILD_DIR="${ADIOS2_SRC_DIR}-$bt-build"
-
-        if [[ ! -d $ADIOS2_BUILD_DIR ]] ; then
-            echo "Making build directory $ADIOS2_BUILD_DIR"
-            mkdir $ADIOS2_BUILD_DIR
-        fi
-
-        cd $ADIOS2_BUILD_DIR || error "Can't cd to $ADIOS2_BUILD_DIR"
-
-        #
-        # Remove the CMakeCache.txt files ... existing files sometimes prevent
-        # fields from getting overwritten properly.
-        #
-        rm -Rf $ADIOS2_BUILD_DIR/CMakeCache.txt $ADIOS2_BUILD_DIR/*/CMakeCache.txt
 
         adios2_build_mode="${VISIT_BUILD_MODE}"
         adios2_install_path="${VISITDIR}/adios2-$bt/${ADIOS2_VERSION}/${VISITARCH}"
@@ -251,38 +238,46 @@ function build_adios2
             cfg_opts="${cfg_opts} -DCMAKE_PREFIX_PATH:PATH=${hdf5_install_path}"
         fi
 
-        # call configure.
+        #
+        # Several platforms have had problems with the VTK cmake configure command
+        # issued simply via "issue_command". This was first discovered on
+        # BGQ and then showed up in random cases for both OSX and Linux machines.
+        # Brad resolved this on BGQ  with a simple work around - we write a simple
+        # script that we invoke with bash which calls cmake with all of the properly
+        # arguments. We are now using this strategy for all platforms.
+        #
         CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+
         if test -e bv_run_cmake.sh ; then
             rm -f bv_run_cmake.sh
         fi
 
-        echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../ > bv_run_cmake.sh
+        echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../${ADIOS2_SRC_DIR} > bv_run_cmake.sh
         cat bv_run_cmake.sh
         issue_command bash bv_run_cmake.sh
 
         if [[ $? != 0 ]] ; then
-            warn "ADIOS2 configure failed.  Giving up"
+            warn "Adios2 configure failed. Giving up"
             return 1
         fi
 
         #
-        # Build ADIOS2
+        # Build Adios2
         #
-        info "Building ADIOS2-$bt . . . (~5 minutes)"
+        info "Building Adios2-$bt . . . (~5 minutes)"
         $MAKE $MAKE_OPT_FLAGS
         if [[ $? != 0 ]] ; then
-            warn "ADIOS2 build failed.  Giving up"
+            warn "Adios2-$bt build failed. Giving up"
             return 1
         fi
 
         #
         # Install into the VisIt third party location.
         #
-        info "Installing ADIOS2-$bt"
+        info "Installing Adios2-$bt"
         $MAKE install
         if [[ $? != 0 ]] ; then
-            warn "ADIOS2 install failed.  Giving up"
+            warn "Adios2-$bt install failed. Giving up"
             return 1
         fi
 
@@ -325,10 +320,12 @@ function bv_adios2_build
     cd "$START_DIR"
 
     if [[ "$DO_ADIOS2" == "yes" && "$USE_SYSTEM_ADIOS2" == "no" ]] ; then
+
         ser_installed="no"
-        par_installed="no"
         check_if_installed "adios2-ser" $ADIOS2_VERSION
         if [[ $? == 0 ]] ; then ser_installed="yes"; fi
+
+        par_installed="no"
         if [[ "$parallel" == "yes" ]]; then
             check_if_installed "adios2-par" $ADIOS2_VERSION
             if [[ $? == 0 ]] ; then par_installed="yes"; fi

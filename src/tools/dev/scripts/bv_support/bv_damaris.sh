@@ -29,7 +29,7 @@ function bv_damaris_info
     export DAMARIS_FILE=${DAMARIS_FILE:-"damaris-${DAMARIS_VERSION}.tgz"}
     export DAMARIS_COMPATIBILITY_VERSION=${DAMARIS_COMPATIBILITY_VERSION:-"1.0"}
     export DAMARIS_URL=${DAMARIS_URL:-"https://gforge.inria.fr/frs/download.php/file/35204"}
-    export DAMARIS_BUILD_DIR=${DAMARIS_BUILD_DIR:-"damaris-${DAMARIS_VERSION}"}
+    export DAMARIS_SRC_DIR=${DAMARIS_SRC_DIR:-"damaris-${DAMARIS_VERSION}"}
     export DAMARIS_MD5_CHECKSUM=""
     export DAMARIS_SHA256_CHECKSUM=""
 }
@@ -39,7 +39,7 @@ function bv_damaris_print
     printf "%s%s\n" "DAMARIS_FILE=" "${DAMARIS_FILE}"
     printf "%s%s\n" "DAMARIS_VERSION=" "${DAMARIS_VERSION}"
     printf "%s%s\n" "DAMARIS_COMPATIBILITY_VERSION=" "${DAMARIS_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "DAMARIS_BUILD_DIR=" "${DAMARIS_BUILD_DIR}"
+    printf "%s%s\n" "DAMARIS_SRC_DIR=" "${DAMARIS_SRC_DIR}"
 }
 
 function bv_damaris_print_usage
@@ -61,7 +61,7 @@ function bv_damaris_host_profile
 function bv_damaris_ensure
 {
     if [[ "$DO_DAMARIS" == "yes" ]] ; then
-        ensure_built_or_ready "damaris" $DAMARIS_VERSION $DAMARIS_BUILD_DIR $DAMARIS_FILE $DAMARIS_URL
+        check_installed_or_have_src "damaris" $DAMARIS_VERSION $DAMARIS_SRC_DIR $DAMARIS_FILE $DAMARIS_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_DAMARIS="no"
@@ -98,7 +98,7 @@ function build_damaris
     
 
     #
-    # The build dir of VisIt is required to get the headers of libsimV2
+    # The source dir.of VisIt is required to get the headers of libsimV2
     # so we create it now. This is pretty much a copy-past of some
     # content from bv_visit.sh.
     #
@@ -129,21 +129,21 @@ function build_damaris
     fi
     
     #
-    # Prepare build dir for Damaris
+    # Uncompress the source file for Damaris
     #
-    prepare_build_dir $DAMARIS_BUILD_DIR $DAMARIS_FILE
+    uncompress_src_file $DAMARIS_SRC_DIR $DAMARIS_FILE
     untarred_damaris=$?
     if [[ $untarred_damaris == -1 ]] ; then
-        warn "Unable to prepare Damaris build directory. Giving Up!"
+        warn "Unable to uncompress Damaris source file. Giving Up!"
     fi
-    cd $DAMARIS_BUILD_DIR
+    cd $DAMARIS_SRC_DIR
 
     #
     # Applying Patches
     #
     apply_damaris_patch
     if [[ $? != 0 ]] ; then
-        warn "Unable to prepare Damaris build directory. Giving Up"
+        warn "Unable to uncompress Damaris source file. Giving Up"
         return 1
     fi
 

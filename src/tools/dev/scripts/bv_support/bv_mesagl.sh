@@ -24,7 +24,7 @@ function bv_mesagl_info
     export MESAGL_VERSION=${MESAGL_VERSION:-"17.3.9"}
     export MESAGL_FILE=${MESAGL_FILE:-"mesa-$MESAGL_VERSION.tar.xz"}
     export MESAGL_URL=${MESAGL_URL:-"https://archive.mesa3d.org/older-versions/17.x/"}
-    export MESAGL_BUILD_DIR=${MESAGL_BUILD_DIR:-"mesa-$MESAGL_VERSION"}
+    export MESAGL_SRC_DIR=${MESAGL_SRC_DIR:-"mesa-$MESAGL_VERSION"}
     export MESAGL_MD5_CHECKSUM="b8042f9970ea70a36da1ee1fae27c448"
     export MESAGL_SHA256_CHECKSUM="c5beb5fc05f0e0c294fefe1a393ee118cb67e27a4dca417d77c297f7d4b6e479"
 }
@@ -33,7 +33,7 @@ function bv_mesagl_print
 {
     printf "%s%s\n" "MESAGL_FILE=" "${MESAGL_FILE}"
     printf "%s%s\n" "MESAGL_VERSION=" "${MESAGL_VERSION}"
-    printf "%s%s\n" "MESAGL_BUILD_DIR=" "${MESAGL_BUILD_DIR}"
+    printf "%s%s\n" "MESAGL_SRC_DIR=" "${MESAGL_SRC_DIR}"
 }
 
 function bv_mesagl_print_usage
@@ -90,7 +90,7 @@ function bv_mesagl_ensure
 {
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_MESAGL" == "yes" ]] ; then
-            ensure_built_or_ready "mesagl"   $MESAGL_VERSION   $MESAGL_BUILD_DIR   $MESAGL_FILE $MESAGL_URL
+            check_installed_or_have_src "mesagl"   $MESAGL_VERSION   $MESAGL_SRC_DIR   $MESAGL_FILE $MESAGL_URL
             if [[ $? != 0 ]] ; then
                 return 1
             fi
@@ -184,17 +184,17 @@ function build_mesagl
     #
     # prepare build dir
     #
-    prepare_build_dir $MESAGL_BUILD_DIR $MESAGL_FILE
+    uncompress_src_file $MESAGL_SRC_DIR $MESAGL_FILE
     untarred_mesagl=$?
     if [[ $untarred_mesagl == -1 ]] ; then
-        warn "Unable to prepare MesaGL build directory. Giving Up!"
+        warn "Unable to uncompress MesaGL source file. Giving Up!"
         return 1
     fi
 
     #
     # Apply patches
     #
-    cd $MESAGL_BUILD_DIR || error "Couldn't cd to mesagl build dir."
+    cd $MESAGL_SRC_DIR || error "Couldn't cd to mesagl source dir."
 
     info "Patching MesaGL"
     apply_mesagl_patch

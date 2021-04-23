@@ -56,7 +56,7 @@ function bv_qwt_info
     export QWT_FILE=${QWT_FILE:-"qwt-6.1.2.tar.bz2"}
     export QWT_VERSION=${QWT_VERSION:-"6.1.2"}
     export QWT_COMPATIBILITY_VERSION=${QWT_COMPATIBILITY_VERSION:-"6.0"}
-    export QWT_BUILD_DIR=${QWT_BUILD_DIR:-"qwt-6.1.2"}
+    export QWT_SRC_DIR=${QWT_SRC_DIR:-"qwt-6.1.2"}
     export QWT_MD5_CHECKSUM="9c88db1774fa7e3045af063bbde44d7d"
     export QWT_SHA256_CHECKSUM="2b08f18d1d3970e7c3c6096d850f17aea6b54459389731d3ce715d193e243d0c"
 }
@@ -66,7 +66,7 @@ function bv_qwt_print
     printf "%s%s\n" "QWT_FILE=" "${QWT_FILE}"
     printf "%s%s\n" "QWT_VERSION=" "${QWT_VERSION}"
     printf "%s%s\n" "QWT_COMPATIBILITY_VERSION=" "${QWT_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "QWT_BUILD_DIR=" "${QWT_BUILD_DIR}"
+    printf "%s%s\n" "QWT_SRC_DIR=" "${QWT_SRC_DIR}"
 }
 
 function bv_qwt_print_usage
@@ -98,7 +98,7 @@ function bv_qwt_host_profile
 function bv_qwt_ensure
 {    
     if [[ "$DO_QWT" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
-        ensure_built_or_ready "qwt" $QWT_VERSION $QWT_BUILD_DIR $QWT_FILE
+        check_installed_or_have_src "qwt" $QWT_VERSION $QWT_SRC_DIR $QWT_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_QWT="no"
@@ -235,19 +235,19 @@ function build_qwt
     # the easiest and most robust way to tackle this is to always delete
     # the source dir if it exists
     
-    if [[ -d ${QWT_BUILD_DIR} ]] ; then
-        info "Removing old Qwt build dir ${QWT_BUILD_DIR} . . ."
-        rm -rf ${QWT_BUILD_DIR}
+    if [[ -d ${QWT_SRC_DIR} ]] ; then
+        info "Removing old Qwt source dir.${QWT_SRC_DIR} . . ."
+        rm -rf ${QWT_SRC_DIR}
     fi
 
     
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $QWT_BUILD_DIR $QWT_FILE
+    uncompress_src_file $QWT_SRC_DIR $QWT_FILE
     untarred_qwt=$?
     if [[ $untarred_qwt == -1 ]] ; then
-        warn "Unable to prepare Qwt build directory. Giving Up!"
+        warn "Unable to uncompress Qwt source file. Giving Up!"
         return 1
     fi
 
@@ -255,7 +255,7 @@ function build_qwt
     # Apply patches
     #
     info "Patching Qwt . . ."
-    cd $QWT_BUILD_DIR || error "Can't cd to Qwt build dir."
+    cd $QWT_SRC_DIR || error "Can't cd to Qwt source dir."
     apply_qwt_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_qwt == 1 ]] ; then

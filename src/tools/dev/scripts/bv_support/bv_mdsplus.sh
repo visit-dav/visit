@@ -23,8 +23,8 @@ function bv_mdsplus_info
     export MDSPLUS_VERSION=${MDSPLUS_VERSION:-"5.0"}
     export MDSPLUS_FILE=${MDSPLUS_FILE:-"mdsplus-${MDSPLUS_VERSION}.tar.gz"}
     export MDSPLUS_COMPATIBILITY_VERSION=${MDSPLUS_COMPATIBILITY_VERSION:-"5.0"}
-    export MDSPLUS_BUILD_DIR=${MDSPLUS_BUILD_DIR:-"mdsplus-${MDSPLUS_VERSION}"}
-    #export MDSPLUS_BUILD_DIR=${MDSPLUS_BUILD_DIR:-"mdsplus"}
+    export MDSPLUS_SRC_DIR=${MDSPLUS_SRC_DIR:-"mdsplus-${MDSPLUS_VERSION}"}
+    #export MDSPLUS_SRC_DIR=${MDSPLUS_SRC_DIR:-"mdsplus"}
     export MDSPLUS_MD5_CHECKSUM=""
     export MDSPLUS_SHA256_CHECKSUM=""
 }
@@ -34,7 +34,7 @@ function bv_mdsplus_print
     printf "%s%s\n" "MDSPLUS_FILE=" "${MDSPLUS_FILE}"
     printf "%s%s\n" "MDSPLUS_VERSION=" "${MDSPLUS_VERSION}"
     printf "%s%s\n" "MDSPLUS_COMPATIBILITY_VERSION=" "${MDSPLUS_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "MDSPLUS_BUILD_DIR=" "${MDSPLUS_BUILD_DIR}"
+    printf "%s%s\n" "MDSPLUS_SRC_DIR=" "${MDSPLUS_SRC_DIR}"
 }
 
 function bv_mdsplus_print_usage
@@ -61,7 +61,7 @@ function bv_mdsplus_host_profile
 function bv_mdsplus_ensure
 {
     if [[ "$DO_MDSPLUS" == "yes" ]] ; then
-        ensure_built_or_ready "mdsplus" $MDSPLUS_VERSION $MDSPLUS_BUILD_DIR $MDSPLUS_FILE
+        check_installed_or_have_src "mdsplus" $MDSPLUS_VERSION $MDSPLUS_SRC_DIR $MDSPLUS_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_MDSPLUS="no"
@@ -92,18 +92,18 @@ function bv_mdsplus_dry_run
 function build_mdsplus
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $MDSPLUS_BUILD_DIR $MDSPLUS_FILE
+    uncompress_src_file $MDSPLUS_SRC_DIR $MDSPLUS_FILE
     untarred_mdsplus=$?
     if [[ $untarred_mdsplus == -1 ]] ; then
-        warn "Unable to prepare MDSplus Build Directory. Giving Up"
+        warn "Unable to uncompress MDSplus Build Directory. Giving Up"
         return 1
     fi
 
     #
     info "Configuring MDSplus . . ."
-    cd $MDSPLUS_BUILD_DIR || error "Can't cd to mdsplus build dir."
+    cd $MDSPLUS_SRC_DIR || error "Can't cd to mdsplus source dir."
     info "Invoking command to configure MDSplus"
     ./configure ${OPTIONAL} --disable-java CXX="$CXX_COMPILER" \
                 CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \

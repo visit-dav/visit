@@ -23,7 +23,7 @@ function bv_mxml_info
     export MXML_FILE=${MXML_FILE:-"mxml-2.6.tar.gz"}
     export MXML_VERSION=${MXML_VERSION:-"2.6"}
     export MXML_COMPATIBILITY_VERSION=${MXML_COMPATIBILITY_VERSION:-"2.6"}
-    export MXML_BUILD_DIR=${MXML_BUILD_DIR:-"mxml-2.6"}
+    export MXML_SRC_DIR=${MXML_SRC_DIR:-"mxml-2.6"}
     export MXML_MD5_CHECKSUM="68977789ae64985dddbd1a1a1652642e"
     export MXML_SHA256_CHECKSUM="b0d347da1a0d5a8c9e82f66087d55cfe499728dacae563740d7e733648c69795"
 }
@@ -33,7 +33,7 @@ function bv_mxml_print
     printf "%s%s\n" "MXML_FILE=" "${MXML_FILE}"
     printf "%s%s\n" "MXML_VERSION=" "${MXML_VERSION}"
     printf "%s%s\n" "MXML_COMPATIBILITY_VERSION=" "${MXML_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "MXML_BUILD_DIR=" "${MXML_BUILD_DIR}"
+    printf "%s%s\n" "MXML_SRC_DIR=" "${MXML_SRC_DIR}"
 }
 
 function bv_mxml_host_profile
@@ -51,7 +51,7 @@ function bv_mxml_print_usage
 function bv_mxml_ensure
 {
     if [[ "$DO_MXML" == "yes" ]] ; then
-        ensure_built_or_ready "mxml" $MXML_VERSION $MXML_BUILD_DIR $MXML_FILE
+        check_installed_or_have_src "mxml" $MXML_VERSION $MXML_SRC_DIR $MXML_FILE
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_MXML="no"
@@ -131,14 +131,14 @@ function apply_mxml_patch
 function build_mxml
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $MXML_BUILD_DIR $MXML_FILE
+    uncompress_src_file $MXML_SRC_DIR $MXML_FILE
     untarred_mxml=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_mxml == -1 ]] ; then
-        warn "Unable to prepare MXML Build Directory. Giving Up"
+        warn "Unable to uncompress MXML Build Directory. Giving Up"
         return 1
     fi
 
@@ -161,7 +161,7 @@ function build_mxml
     #
     # Configure MXML
     #
-    cd $MXML_BUILD_DIR || error "Can't cd to MXML build dir."
+    cd $MXML_SRC_DIR || error "Can't cd to MXML source dir."
 
     info "Configuring MXML . . ."
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \

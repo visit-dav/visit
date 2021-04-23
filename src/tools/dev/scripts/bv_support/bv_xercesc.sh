@@ -23,7 +23,7 @@ function bv_xercesc_info
     export XERCESC_FILE=${XERCESC_FILE:-"xerces-c-3.1.2.tar.gz"}
     export XERCESC_VERSION=${XERCESC_VERSION:-"3.1.2"}
     export XERCESC_COMPATIBILITY_VERSION=${XERCESC_COMPATIBILITY_VERSION:-"3.1"}
-    export XERCESC_BUILD_DIR=${XERCESC_BUILD_DIR:-"xerces-c-${XERCESC_VERSION}"}
+    export XERCESC_SRC_DIR=${XERCESC_SRC_DIR:-"xerces-c-${XERCESC_VERSION}"}
     export XERCESC_URL=${XERCESC_URL:-"http://archive.apache.org/dist/xerces/c/3/sources"}
     export XERCESC_MD5_CHECKSUM="9eb1048939e88d6a7232c67569b23985"
     export XERCESC_SHA256_CHECKSUM="743bd0a029bf8de56a587c270d97031e0099fe2b7142cef03e0da16e282655a0"
@@ -34,7 +34,7 @@ function bv_xercesc_print
     printf "%s%s\n" "XERCESC_FILE=" "${XERCESC_FILE}"
     printf "%s%s\n" "XERCESC_VERSION=" "${XERCESC_VERSION}"
     printf "%s%s\n" "XERCESC_COMPATIBILITY_VERSION=" "${XERCESC_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "XERCESC_BUILD_DIR=" "${XERCESC_BUILD_DIR}"
+    printf "%s%s\n" "XERCESC_SRC_DIR=" "${XERCESC_SRC_DIR}"
 }
 
 function bv_xercesc_print_usage
@@ -58,7 +58,7 @@ function bv_xercesc_host_profile
 function bv_xercesc_ensure
 {
     if [[ "$DO_XERCESC" == "yes" ]] ; then
-        ensure_built_or_ready "xerces-c" $XERCESC_VERSION $XERCESC_BUILD_DIR $XERCESC_FILE $XERCESC_URL
+        check_installed_or_have_src "xerces-c" $XERCESC_VERSION $XERCESC_SRC_DIR $XERCESC_FILE $XERCESC_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_XERCESC="no"
@@ -78,12 +78,12 @@ function build_xercesc
 {
 
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $XERCESC_BUILD_DIR $XERCESC_FILE
+    uncompress_src_file $XERCESC_SRC_DIR $XERCESC_FILE
     untarred_xc=$?
     if [[ $untarred_xc == -1 ]] ; then
-        warn "Unable to prepare Xerces-C build directory. Giving Up!"
+        warn "Unable to uncompress Xerces-C source file. Giving Up!"
         return 1
     fi
 
@@ -91,7 +91,7 @@ function build_xercesc
     # Call configure
     #
     info "Configuring Xerces-C . . ."
-    cd $XERCESC_BUILD_DIR || error "Can't cd to Xerces-C build dir."
+    cd $XERCESC_SRC_DIR || error "Can't cd to Xerces-C source dir."
 
     info "env CXX=$CXX_COMPILER CC=$C_COMPILER ./configure \
     --prefix=$VISITDIR/xerces-c/$XERCESC_VERSION/$VISITARCH \

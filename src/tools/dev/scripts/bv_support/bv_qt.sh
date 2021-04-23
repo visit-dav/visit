@@ -109,8 +109,8 @@ function bv_qt_info
     export QT_VERSION=${QT_VERSION:-"5.14.2"}
     export QT_SHORT_VERSION=${QT_SHORT_VERSION:-"5.14"}
     export QT_FILE=${QT_FILE:-"qt-everywhere-src-${QT_VERSION}.tar.xz"}
-    export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
-    export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
+    export QT_SRC_DIR=${QT_SRC_DIR:-"${QT_FILE%.tar*}"}
+    export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_SRC_DIR}/bin"}
     export QT_URL=${QT_URL:-"http://download.qt.io/archive/qt/${QT_SHORT_VERSION}/${QT_VERSION}/single/"}
     export QT_MD5_CHECKSUM="b3d2b6d00e6ca8a8ede6d1c9bdc74daf"
     export QT_SHA256_CHECKSUM="c6fcd53c744df89e7d3223c02838a33309bd1c291fcb6f9341505fe99f7f19fa"
@@ -121,7 +121,7 @@ function bv_qt_print
     printf "%s%s\n" "QT_FILE=" "${QT_FILE}"
     printf "%s%s\n" "QT_VERSION=" "${QT_VERSION}"
     printf "%s%s\n" "QT_PLATFORM=" "${QT_PLATFORM}"
-    printf "%s%s\n" "QT_BUILD_DIR=" "${QT_BUILD_DIR}"
+    printf "%s%s\n" "QT_SRC_DIR=" "${QT_SRC_DIR}"
     printf "%s%s\n" "QT_BIN_DIR=" "${QT_BIN_DIR}"
 }
 
@@ -158,7 +158,7 @@ function bv_qt_host_profile
 function bv_qt_ensure
 {
     if [[ "$DO_QT" == "yes"  && "$USE_SYSTEM_QT" == "no" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
-        ensure_built_or_ready "qt"     $QT_VERSION    $QT_BUILD_DIR    $QT_FILE    $QT_URL
+        check_installed_or_have_src "qt" $QT_VERSION $QT_SRC_DIR $QT_FILE $QT_URL
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -206,6 +206,8 @@ function qt_license_prompt
 
 function apply_qt_patch
 {
+    cd $QT_SRC_DIR || error "Can't cd to Qt source dir."
+
     if [[ "$DO_MESAGL" == "yes" ]] ; then
         if [[ ${QT_VERSION} == 5.14.2 ]] ; then
             if [[ "$OPSYS" == "Linux" ]]; then
@@ -216,6 +218,9 @@ function apply_qt_patch
             fi
         fi
     fi
+
+    cd "$START_DIR"
+    
     return 0
 }
 
@@ -308,14 +313,12 @@ EOF
 function build_qt
 {
     #
-    # Prepare the build dir using src file.
+    # Uncompress the source file
     #
-    prepare_build_dir $QT_BUILD_DIR $QT_FILE
+    uncompress_src_file $QT_SRC_DIR $QT_FILE
     untarred_qt=$?
-    # 0, already exists, 1 untarred src, 2 error
-
-    if [[ untarred_qt == -1 ]] ; then
-        warn "Unable to prepare Qt build directory. Giving Up!"
+    if [[ $untarred_qt == -1 ]] ; then
+        warn "Unable to uncompress QT source file. Giving Up!"
         return 1
     fi
 
@@ -323,7 +326,6 @@ function build_qt
     # Apply patches
     #
     info "Patching qt . . ."
-    cd $QT_BUILD_DIR || error "Can't cd to Qt build dir."
     apply_qt_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_qt == 1 ]] ; then
@@ -337,6 +339,8 @@ function build_qt
         fi
     fi
 
+    cd $QT_SRC_DIR || error "Can't cd to Qt source dir."
+    
     #
     # Platform specific configuration
     #

@@ -44,7 +44,7 @@ function bv_silo_info
     export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
     export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.10.2"}
     export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
-    export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
+    export SILO_SRC_DIR=${SILO_SRC_DIR:-"silo-${SILO_VERSION}"}
     export SILO_MD5_CHECKSUM="9ceac777a2f2469ac8cef40f4fab49c8"
     export SILO_SHA256_CHECKSUM="3af87e5f0608a69849c00eb7c73b11f8422fa36903dd14610584506e7f68e638"
 }
@@ -54,7 +54,7 @@ function bv_silo_print
     printf "%s%s\n" "SILO_FILE=" "${SILO_FILE}"
     printf "%s%s\n" "SILO_VERSION=" "${SILO_VERSION}"
     printf "%s%s\n" "SILO_COMPATIBILITY_VERSION=" "${SILO_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "SILO_BUILD_DIR=" "${SILO_BUILD_DIR}"
+    printf "%s%s\n" "SILO_SRC_DIR=" "${SILO_SRC_DIR}"
 }
 
 function bv_silo_print_usage
@@ -90,7 +90,7 @@ function bv_silo_host_profile
 function bv_silo_ensure
 {
     if [[ "$DO_SILO" == "yes" ]] ; then
-        ensure_built_or_ready "silo" $SILO_VERSION $SILO_BUILD_DIR $SILO_FILE $SILO_URL
+        check_installed_or_have_src "silo" $SILO_VERSION $SILO_SRC_DIR $SILO_FILE $SILO_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_SILO="no"
@@ -129,12 +129,12 @@ function bv_silo_dry_run
 function build_silo
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $SILO_BUILD_DIR $SILO_FILE
+    uncompress_src_file $SILO_SRC_DIR $SILO_FILE
     untarred_silo=$?
     if [[ $untarred_silo == -1 ]] ; then
-        warn "Unable to prepare Silo build directory. Giving Up!"
+        warn "Unable to uncompress Silo source file. Giving Up!"
         return 1
     fi
     
@@ -142,7 +142,7 @@ function build_silo
     # Call configure
     #
     info "Configuring Silo . . ."
-    cd $SILO_BUILD_DIR || error "Can't cd to Silo build dir."
+    cd $SILO_SRC_DIR || error "Can't cd to Silo source dir."
     info "Invoking command to configure Silo"
     SILO_LINK_OPT=""
     if [[ "$DO_HDF5" == "yes" ]] ; then

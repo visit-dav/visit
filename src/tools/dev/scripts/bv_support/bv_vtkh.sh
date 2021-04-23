@@ -29,7 +29,8 @@ function bv_vtkh_info
 {
     export VTKH_VERSION=${VTKH_VERSION:-"v0.6.6"}
     export VTKH_FILE=${VTKH_FILE:-"vtkh-${VTKH_VERSION}.tar.gz"}
-    export VTKH_BUILD_DIR=${VTKH_BUILD_DIR:-"vtkh-${VTKH_VERSION}"}
+    export VTKH_SRC_DIR=${VTKH_SRC_DIR:-"${VTKH_FILE%.tar*}"}
+    export VTKH_BUILD_DIR=${VTKH_BUILD_DIR:-"${VTKH_SRC_DIR}-build"}
     export VTKH_MD5_CHECKSUM="ec9bead5d3bcc317149fb273f7c5a4af"
     export VTKH_SHA256_CHECKSUM="5fe8bae5f55dbeb3047a37499cc41f3b548e4d86f0058993069f1df57f7915a1"
 }
@@ -38,6 +39,7 @@ function bv_vtkh_print
 {
     printf "%s%s\n" "VTKH_FILE=" "${VTKH_FILE}"
     printf "%s%s\n" "VTKH_VERSION=" "${VTKH_VERSION}"
+    printf "%s%s\n" "VTKH_SRC_DIR=" "${VTKH_SRC_DIR}"
     printf "%s%s\n" "VTKH_BUILD_DIR=" "${VTKH_BUILD_DIR}"
 }
 
@@ -53,16 +55,14 @@ function bv_vtkh_host_profile
         echo "##" >> $HOSTCONF
         echo "## VTKH" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo \
-            "VISIT_OPTION_DEFAULT(VISIT_VTKH_DIR ${VTKH_INSTALL_DIR})" \
-            >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_VTK_DIR \${VISITHOME}/vtkh/\${VTKH_VERSION}/\${VISITARCH})" >> $HOSTCONF
     fi
 }
 
 function bv_vtkh_ensure
 {
     if [[ "$DO_VTKH" == "yes" ]] ; then
-        ensure_built_or_ready "vtk-h" $VTKH_VERSION $VTKH_BUILD_DIR $VTKH_FILE $VTKH_URL
+        check_installed_or_have_src "vtk-h" $VTKH_VERSION $VTKH_SRC_DIR $VTKH_FILE $VTKH_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_VTKH="no"
@@ -79,47 +79,39 @@ function bv_vtkh_dry_run
 }
 
 # *************************************************************************** #
-#                            Function 8, build_vtkh
-#
-#
+#                            Function 6, patch_vtk                            #
 # *************************************************************************** #
-
 function apply_vtkh_patch
 {
-    info "Patching VTKh . . ."
+    cd ${VTKH_SRC_DIR} || error "Can't cd to VTKh source dir."
+
+#    info "Patching VTKh . . ."
+
+    cd "$START_DIR"
 
     return 0
 }
 
+# *************************************************************************** #
+#                            Function 8, build_vtkh                           #
+# *************************************************************************** #
 function build_vtkh
 {
     #
-    # Extract the sources
+    # Uncompress the source file
     #
-    if [[ -d $VTKH_BUILD_DIR ]] ; then
-        if [[ ! -f $VTKH_FILE ]] ; then
-            warn "The directory VTKH exists, deleting before uncompressing"
-            rm -Rf $VTKH_BUILD_DIR
-            ensure_built_or_ready $VTKH_INSTALL_DIR $VTKH_VERSION $VTKH_BUILD_DIR $VTKH_FILE
-        fi
-    fi
-
-    #
-    # Prepare build dir
-    #
-    prepare_build_dir $VTKH_BUILD_DIR $VTKH_FILE
+    uncompress_src_file $VTKH_SRC_DIR $VTKH_FILE
     untarred_vtkh=$?
     # 0, already exists, 1 untarred src, 2 error
 
     if [[ $untarred_vtkh == -1 ]] ; then
-        warn "Unable to prepare VTKh build directory. Giving Up!"
+        warn "Unable to uncompress VTKh source file. Giving Up!"
         return 1
     fi
-    
+
     #
     # Apply patches
     #
-    cd $VTKH_BUILD_DIR || error "Can't cd to VTKh build dir."
     apply_vtkh_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_vtkh == 1 ]] ; then
@@ -132,26 +124,27 @@ function build_vtkh
                  "failing harmlessly on a second application."
         fi
     fi
-    # move back up to the start dir
+
+    #
+    # Make a build directory for an out-of-source build.
+    #
     cd "$START_DIR"
+    if [[ ! -d $VTKH_BUILD_DIR ]] ; then
+        echo "Making build directory $VTKH_BUILD_DIR"
+        mkdir $VTKH_BUILD_DIR
+    else
+        #
+        # Remove the CMakeCache.txt files ... existing files sometimes
+        # prevent fields from getting overwritten properly.
+        #
+        rm -Rf ${VTKH_BUILD_DIR}/CMakeCache.txt ${VTKH_BUILD_DIR}/*/CMakeCache.txt
+    fi
+    cd ${VTKH_BUILD_DIR}
 
     #
     # Configure VTKH
     #
     info "Configuring VTKh . . ."
-    
-    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
-
-    # Make a build directory for an out-of-source build.. Change the
-    # VTKH_BUILD_DIR variable to represent the out-of-source build directory.
-    VTKH_SRC_DIR=$VTKH_BUILD_DIR
-    VTKH_BUILD_DIR="${VTKH_SRC_DIR}-build"
-    if [[ ! -d $VTKH_BUILD_DIR ]] ; then
-        echo "Making build directory $VTKH_BUILD_DIR"
-        mkdir $VTKH_BUILD_DIR
-    fi
-
-    cd $VTKH_BUILD_DIR || error "Can't cd to VTKh build dir."
 
     vopts=""
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/vtkh/${VTKH_VERSION}/${VISITARCH}"
@@ -173,29 +166,47 @@ function build_vtkh
     vopts="${vopts} -DBUILD_SHARED_LIBS=ON"
 
     #
-    # Several platforms have had problems with the VTK cmake configure
-    # command issued simply via "issue_command".  This was first discovered
-    # on BGQ and then showed up in random cases for both OSX and Linux
-    # machines. Brad resolved this on BGQ  with a simple work around - we
-    # write a simple script that we invoke with bash which calls cmake with
-    # all of the properly arguments. We are now using this strategy for all
-    # platforms.
+    # Several platforms have had problems with the VTKh cmake configure command
+    # issued simply via "issue_command". This was first discovered on
+    # BGQ and then showed up in random cases for both OSX and Linux machines.
+    # Brad resolved this on BGQ  with a simple work around - we write a simple
+    # script that we invoke with bash which calls cmake with all of the properly
+    # arguments. We are now using this strategy for all platforms.
     #
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
-    echo "\"${CMAKE_BIN}\"" ${vopts} ../${VTKH_SRC_DIR}/src > bv_run_cmake.sh
+
+    echo "\"${CMAKE_BIN}\"" ${vopts} ../${VTKH_SRC_DIR} > bv_run_cmake.sh
     cat bv_run_cmake.sh
-    issue_command bash bv_run_cmake.sh || error "VTKh configuration failed."
+    issue_command bash bv_run_cmake.sh
+
+    if [[ $? != 0 ]] ; then
+        warn "VTKh configure failed. Giving up"
+        return 1
+    fi
 
     #
-    # Build vtkh
+    # Now build VTKh.
     #
     info "Building VTKh . . . (~2 minutes)"
-    $MAKE $MAKE_OPT_FLAGS || error "VTKh did not build correctly. Giving up."
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+        warn "VTKh build failed. Giving up"
+        return 1
+    fi
 
-    info "Installing VTKh . . . (~2 minutes)"
-    $MAKE install || error "VTKh did not install correctly."
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing VTKh . . . "
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+        warn "VTKh install failed. Giving up"
+        return 1
+    fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/vtkh"
@@ -209,7 +220,7 @@ function build_vtkh
 function bv_vtkh_is_enabled
 {
     if [[ $DO_VTKH == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
@@ -226,6 +237,7 @@ function bv_vtkh_is_installed
 function bv_vtkh_build
 {
     cd "$START_DIR"
+
     if [[ "$DO_VTKH" == "yes" ]] ; then
         check_if_installed "vtkh" $VTKH_VERSION
         if [[ $? == 0 ]] ; then

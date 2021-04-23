@@ -22,13 +22,13 @@ function bv_mpich_depends_on
 
 function bv_mpich_info
 {
-    export MPICH_VERSION=${MPICH_VERSION:-"3.3.1"}
+    export MPICH_VERSION=${MPICH_VERSION:-"3.4.1"}
     export MPICH_FILE=${MPICH_FILE:-"mpich-${MPICH_VERSION}.tar.gz"}
-    export MPICH_COMPATIBILITY_VERSION=${MPICH_COMPATIBILITY_VERSION:-"3.3"}
-    export MPICH_BUILD_DIR=${MPICH_BUILD_DIR:-"mpich-${MPICH_VERSION}"}
+    export MPICH_COMPATIBILITY_VERSION=${MPICH_COMPATIBILITY_VERSION:-"3.4"}
+    export MPICH_SRC_DIR=${MPICH_SRC_DIR:-"mpich-${MPICH_VERSION}"}
     export MPICH_URL=${MPICH_URL:-http://www.mpich.org/static/tarballs/${MPICH_VERSION}}
-    export MPICH_MD5_CHECKSUM="9ed4cabd3fb86525427454381b25f6af"
-    export MPICH_SHA256_CHECKSUM="fe551ef29c8eea8978f679484441ed8bb1d943f6ad25b63c235d4b9243d551e5"
+#    export MPICH_MD5_CHECKSUM="9ed4cabd3fb86525427454381b25f6af"
+#    export MPICH_SHA256_CHECKSUM="fe551ef29c8eea8978f679484441ed8bb1d943f6ad25b63c235d4b9243d551e5"
 }
 
 function bv_mpich_print
@@ -36,7 +36,7 @@ function bv_mpich_print
     printf "%s%s\n" "MPICH_FILE=" "${MPICH_FILE}"
     printf "%s%s\n" "MPICH_VERSION=" "${MPICH_VERSION}"
     printf "%s%s\n" "MPICH_COMPATIBILITY_VERSION=" "${MPICH_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "MPICH_BUILD_DIR=" "${MPICH_BUILD_DIR}"
+    printf "%s%s\n" "MPICH_SRC_DIR=" "${MPICH_SRC_DIR}"
 }
 
 function bv_mpich_print_usage
@@ -66,7 +66,7 @@ function bv_mpich_host_profile
 function bv_mpich_ensure
 {
     if [[ "$DO_MPICH" == "yes" ]] ; then
-        ensure_built_or_ready "mpich" $MPICH_VERSION $MPICH_BUILD_DIR $MPICH_FILE $MPICH_URL
+        check_installed_or_have_src "mpich" $MPICH_VERSION $MPICH_SRC_DIR $MPICH_FILE $MPICH_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_MPICH="no"
@@ -92,12 +92,12 @@ function bv_mpich_dry_run
 function build_mpich
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $MPICH_BUILD_DIR $MPICH_FILE
+    uncompress_src_file $MPICH_SRC_DIR $MPICH_FILE
     untarred_mpich=$?
     if [[ $untarred_mpich == -1 ]] ; then
-        warn "Unable to prepare MPICH build directory. Giving Up!"
+        warn "Unable to uncompress MPICH source file. Giving Up!"
         return 1
     fi
     
@@ -105,7 +105,7 @@ function build_mpich
     # Call configure
     #
     info "Configuring MPICH . . ."
-    cd $MPICH_BUILD_DIR || error "Can't cd to MPICH build dir."
+    cd $MPICH_SRC_DIR || error "Can't cd to MPICH source dir."
     info "Invoking command to configure MPICH"
 
     #
@@ -114,6 +114,11 @@ function build_mpich
     mpich_opts="--enable-shared"
     if [[ "$OPSYS" == "Darwin" ]]; then
         mpich_opts="${mpich_opts} --enable-two-level-namespace --enable-threads=single"
+	# For macOS (Catalina and Big Sur) IPv6 needs to be disabled
+	# for ch4:ofi sockets to work. That can be done by setting the
+	# environment variable `MPIR_CVAR_OFI_SKIP_IPV6=1` Otherwsie
+	# set the '--with-device to Ch3 as it works.
+        mpich_opts="${mpich_opts} --with-device=ch3"
     fi
 
     #
@@ -139,7 +144,7 @@ function build_mpich
                   CC="$C_COMPILER" \
                   CFLAGS="$MPICH_CFLAGS $MPICH_C_OPT_FLAGS" \
                   CXXFLAGS="$MPICH_CXXFLAGS $MPICH_CXX_OPT_FLAGS"\
-                  FFLAGS="$MPICH_FCFLAGS"\
+                  FFLAGS="$MPICH_FCFLAGS -fallow-argument-mismatch"\
                   ./configure ${mpich_opts} \
                   --prefix="$VISITDIR/mpich/$MPICH_VERSION/$VISITARCH"
 

@@ -32,7 +32,7 @@ function bv_pyqt_info
     export PYQT_FILE=${PYQT_FILE:-"pyqt"}
     export PYQT_VERSION=${PYQT_VERSION:-"0"}
     export PYQT_COMPATIBILITY_VERSION=${PYQT_COMPATIBILITY_VERSION:-"0"}
-    export PYQT_BUILD_DIR=${PYQT_BUILD_DIR:-"pyqt"}
+    export PYQT_SRC_DIR=${PYQT_SRC_DIR:-"pyqt"}
     export PYQT_MD5_CHECKSUM=""
     export PYQT_SHA256_CHECKSUM=""
 }
@@ -42,7 +42,7 @@ function bv_pyqt_print
     printf "%s%s\n" "PYQT_FILE=" "${PYQT_FILE}"
     printf "%s%s\n" "PYQT_VERSION=" "${PYQT_VERSION}"
     printf "%s%s\n" "PYQT_COMPATIBILITY_VERSION=" "${PYQT_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "PYQT_BUILD_DIR=" "${PYQT_BUILD_DIR}"
+    printf "%s%s\n" "PYQT_SRC_DIR=" "${PYQT_SRC_DIR}"
 }
 
 function bv_pyqt_print_usage
@@ -69,7 +69,7 @@ function bv_pyqt_host_profile
 function bv_pyqt_ensure
 {
     #if [[ "$DO_PYQT" == "yes" && "$USE_SYSTEM_PYQT" == "no" ]] ; then
-    #    ensure_built_or_ready "pyqt" $PYQT_VERSION $PYQT_BUILD_DIR $PYQT_FILE
+    #    check_installed_or_have_src "pyqt" $PYQT_VERSION $PYQT_SRC_DIR $PYQT_FILE
     #    if [[ $? != 0 ]] ; then
     #        ANY_ERRORS="yes"
     #        DO_PYQT="no"

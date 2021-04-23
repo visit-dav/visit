@@ -40,25 +40,25 @@ function bv_embree_initialize_vars
 
 function bv_embree_info
 {
-    export EMBREE_VERSION=${EMBREE_VERSION:-"3.2.0"}
+    export EMBREE_VERSION=${EMBREE_VERSION:-"3.12.2"}
     if [[ "$OPSYS" == "Darwin" ]] ; then
-        export EMBREE_FILE=${EMBREE_FILE:-"embree-${EMBREE_VERSION}.x86_64.macosx.tar.gz"}
-        export EMBREE_INSTALL_DIR_NAME=embree-$EMBREE_VERSION.x86_64.macosx
-        # these are binary builds, not source tarballs so the mdf5s and shas differ 
-        # between platforms 
-        export EMBREE_MD5_CHECKSUM="8a3874975f1883d8df1714b3ba3eacba"
-        export EMBREE_SHA256_CHECKSUM="31cbbe96c6f19bb9c5463e181070bd667d3dbb93e702671e8406ce26be259109"
+        export EMBREE_FILE=${EMBREE_FILE:-"embree-${EMBREE_VERSION}.x86_64.macosx.zip"}
+        export EMBREE_SRC_DIR=${EMBREE_SRC_DIR:-embree-"$EMBREE_VERSION.x86_64.macosx"}
+        # these are binary builds, not source tarballs so the mdf5s
+        # and shas differ between platforms
+#        export EMBREE_MD5_CHECKSUM="8a3874975f1883d8df1714b3ba3eacba"
+#        export EMBREE_SHA256_CHECKSUM="31cbbe96c6f19bb9c5463e181070bd667d3dbb93e702671e8406ce26be259109"
     else
         export EMBREE_FILE=${EMBREE_FILE:-"embree-${EMBREE_VERSION}.x86_64.linux.tar.gz"}
-        export EMBREE_INSTALL_DIR_NAME=embree-$EMBREE_VERSION.x86_64.linux
-        # these are binary builds, not source tarballs so the mdf5s and shas differ 
-        # between platforms 
-        export EMBREE_MD5_CHECKSUM="7a1c3d12e8732cfee7d389f81d008798"
-        export EMBREE_SHA256_CHECKSUM="7671cc37c4dc4e3da00b2b299b906b35816f058efea92701e7b89574b15e652d"
+        export EMBREE_SRC_DIR=${EMBREE_SRC_DIR:-embree-"embree-$EMBREE_VERSION.x86_64.linux"}
+        # these are binary builds, not source tarballs so the mdf5s
+        # and shas differ between platforms
+#        export EMBREE_MD5_CHECKSUM="7a1c3d12e8732cfee7d389f81d008798"
+#        export EMBREE_SHA256_CHECKSUM="7671cc37c4dc4e3da00b2b299b906b35816f058efea92701e7b89574b15e652d"
     fi
+
     export EMBREE_COMPATIBILITY_VERSION=${EMBREE_COMPATIBILITY_VERSION:-"${EMBREE_VERSION}"}
     export EMBREE_URL=${EMBREE_URL:-"https://github.com/embree/embree/releases/download/v${EMBREE_VERSION}/"}
-    export EMBREE_BUILD_DIR=${EMBREE_BUILD_DIR:-"${EMBREE_VERSION}"}
 }
 
 function bv_embree_print
@@ -66,7 +66,7 @@ function bv_embree_print
     printf "%s%s\n" "EMBREE_FILE=" "${EMBREE_FILE}"
     printf "%s%s\n" "EMBREE_VERSION=" "${EMBREE_VERSION}"
     printf "%s%s\n" "EMBREE_COMPATIBILITY_VERSION=" "${EMBREE_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "EMBREE_BUILD_DIR=" "${EMBREE_BUILD_DIR}"
+    printf "%s%s\n" "EMBREE_BINARY_DIR=" "${EMBREE_BINARY_DIR}"
 }
 
 function bv_embree_host_profile
@@ -78,6 +78,7 @@ function bv_embree_host_profile
         echo "##" >> $HOSTCONF
         if [[ "$USE_SYSTEM_EMBREE" == "no" ]]; then
             echo "SETUP_APP_VERSION(EMBREE ${EMBREE_VERSION})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(EMBREE_DIR \${VISITHOME}/embree/\${EMBREE_VERSION}/\${VISITARCH}/lib/cmake/embree-${EMBREE_VERSION})" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_EMBREE_DIR \${VISITHOME}/embree/\${EMBREE_VERSION}/\${VISITARCH})" >> $HOSTCONF
         else
             echo "VISIT_OPTION_DEFAULT(VISIT_EMBREE_DIR ${EMBREE_INSTALL_DIR})" >> $HOSTCONF
@@ -94,11 +95,11 @@ function bv_embree_print_usage
 function bv_embree_ensure
 {
     if [[ "$DO_EMBREE" == "yes" && "$USE_SYSTEM_EMBREE" == "no" ]] ; then
-        ensure_built_or_ready "embree" $EMBREE_VERSION $EMBREE_BUILD_DIR $EMBREE_FILE $EMBREE_URL
+        check_installed_or_have_src "embree" $EMBREE_VERSION $EMBREE_BINARY_DIR $EMBREE_FILE $EMBREE_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_EMBREE="no"
-            error "Unable to build embree.  ${EMBREE_FILE} not found."
+            error "Unable to build embree. ${EMBREE_FILE} not found."
         fi
     elif [[ "$USE_SYSTEM_EMBREE" == "yes" ]] ; then
         if [[ ! -d $EMBREE_INSTALL_DIR/include/embree3 ]]; then
@@ -124,14 +125,14 @@ function bv_embree_dry_run
 function build_embree
 {
     # Unzip the EMBREE tarball and copy it to the VisIt installation.
-    info "Installing prebuilt embree"    
+    info "Installing prebuilt embree"
     tar zxvf $EMBREE_FILE
-    rm $EMBREE_INSTALL_DIR_NAME/lib/libtbb*
-    mkdir -p $VISITDIR/embree/$EMBREE_VERSION/$VISITARCH || error "Cannot create embree install directory"
-    cp -R $EMBREE_INSTALL_DIR_NAME/* $VISITDIR/embree/$EMBREE_VERSION/$VISITARCH || error "Cannot copy to embree install directory"
+    rm $EMBREE_BINARY_DIR/lib/libtbb*
+    mkdir -p ${EMBREE_INSTALL_DIR} || error "Cannot create embree install directory"
+    cp -R $EMBREE_BINARY_DIR/* ${EMBREE_INSTALL_DIR} || error "Cannot copy to embree install directory"
     if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/embree/$EMBREE_VERSION/$VISITARCH"
-        chgrp -R ${GROUP} "$VISITDIR/embree/$EMBREE_VERSION/$VISITARCH"
+        chmod -R ug+w,a+rX "${EMBREE_INSTALL_DIR}"
+        chgrp -R ${GROUP} "${EMBREE_INSTALL_DIR}"
     fi
     cd "$START_DIR"
     info "Done with embree"
@@ -141,14 +142,14 @@ function build_embree
 function bv_embree_is_enabled
 {
     if [[ $DO_EMBREE == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
 
 function bv_embree_is_installed
 {
-    if [[ "$USE_SYSTEM_EMBREE" == "yes" ]]; then   
+    if [[ "$USE_SYSTEM_EMBREE" == "yes" ]]; then
         return 1
     fi
 
@@ -164,14 +165,13 @@ function bv_embree_build
     if [[ "$DO_EMBREE" == "yes" && "$USE_SYSTEM_EMBREE" == "no" ]] ; then
         check_if_installed "embree" $EMBREE_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping build of embree"
+            info "Skipping build of embree. Embree is already installed."
         else
             build_embree
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install embree.  Bailing out."
+                error "Unable to build or install embree. Bailing out."
             fi
             info "Done building embree"
         fi
     fi
 }
-

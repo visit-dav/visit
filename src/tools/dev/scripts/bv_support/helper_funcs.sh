@@ -619,7 +619,7 @@ function try_download_file_from_shortened_url
 # *************************************************************************** #
 # Function: check_git_client                                                  #
 #                                                                             #
-# Purpose: Helper that checks if a git client is available.                    #
+# Purpose: Helper that checks if a git client is available.                   #
 #                                                                             #
 # Programmer: Cyrus Harrison                                                  #
 # Date:  Mon Nov 17 14:52:37 PST 2008                                         #
@@ -671,17 +671,17 @@ function check_wget
 # *************************************************************************** #
 function check_if_installed
 {
-    BUILD_NAME=$1
-    BUILD_VERSION=""
+    LIB_NAME=$1
+    LIB_VERSION=""
 
     if [[ $# == 2 ]]; then
-        BUILD_VERSION=$2
+        LIB_VERSION=$2
     fi
 
-    if [[ $BUILD_VERSION != "" ]]; then
-        INSTALL_DIR=$VISITDIR/$BUILD_NAME/$BUILD_VERSION/$VISITARCH
+    if [[ $LIB_VERSION != "" ]]; then
+        INSTALL_DIR=$VISITDIR/$LIB_NAME/$LIB_VERSION/$VISITARCH
     else
-        INSTALL_DIR=$VISITDIR/$BUILD_NAME/$VISITARCH
+        INSTALL_DIR=$VISITDIR/$LIB_NAME/$VISITARCH
     fi
 
     if [[ -d ${INSTALL_DIR} ]] ; then
@@ -692,33 +692,35 @@ function check_if_installed
 }
 
 # *************************************************************************** #
-# Function: ensure_built_or_ready                                             #
+# Function: check_installed_or_have_src                                       #
 #                                                                             #
 # Purpose: Helper that checks for proper installed version. If this doesn't   #
-#  exist, makes sure the source file is avalaible for building.               #
+#  exist, makes sure the source file has been downloaded.                     #
 #                                                                             #
 # Programmer: Cyrus Harrison                                                  #
 # Date: Fri Nov 14 08:23:26 PST 2008                                          #
 #                                                                             #
 # *************************************************************************** #
-function ensure_built_or_ready
+function check_installed_or_have_src
 {
-    BUILD_NAME=$1
-    BUILD_VERSION=$2
-    INSTALL_DIR=$VISITDIR/$BUILD_NAME/$BUILD_VERSION/$VISITARCH
+    LIB_NAME=$1
+    LIB_VERSION=$2
     BUILD_DIR=$3
     SRC_FILE=$4
     DOWNLOAD_PATH=$5
+    INSTALL_DIR=$VISITDIR/$LIB_NAME/$LIB_VERSION/$VISITARCH
 
-    info "Checking for ${BUILD_NAME}-${BUILD_VERSION}"
+    info "Checking for ${LIB_NAME}-${LIB_VERSION}"
 
     ALREADY_INSTALLED="NO"
     HAVE_TARBALL="NO"
 
-    check_if_installed $BUILD_NAME $BUILD_VERSION
+    check_if_installed $LIB_NAME $LIB_VERSION
+
     if [[ $? == 0 || -d $BUILD_DIR ]] ; then
         ALREADY_INSTALLED="YES"
     fi
+
     if [[ -e ${SRC_FILE%.gz} || -e ${SRC_FILE} ]] ; then
         HAVE_TARBALL="YES"
     fi
@@ -726,18 +728,19 @@ function ensure_built_or_ready
     if [[ "$ALREADY_INSTALLED" == "NO" && "$HAVE_TARBALL" == "NO" ]] ; then
         download_file ${SRC_FILE} ${DOWNLOAD_PATH}
         if [[ $? != 0 ]] ; then
-            warn "Error: Cannot obtain source for $BUILD_NAME."
+            warn "Error: Cannot obtain source for $LIB_NAME."
             return 1
         fi
     fi
+
     return 0
 }
 
 
 # *************************************************************************** #
-# Function: prepare_build_dir                                                 #
+# Function: uncompress_src_file                                               #
 #                                                                             #
-# Purpose: Helper that prepares a build directory from a src file.            #
+# Purpose: Helper that uncompresses the src file.                             #
 #                                                                             #
 # Returns:                                                                    #
 #          -1 on failure                                                      #
@@ -753,10 +756,10 @@ function ensure_built_or_ready
 #   Paul Selby, Wed  4 Feb 17:25:22 GMT 2015                                  #
 #   Fixed typo which prevented verify_checksum being called                   #
 # *************************************************************************** #
-function prepare_build_dir
+function uncompress_src_file
 {
-    echo "prepare_build_dir:" $1 $2
-    BUILD_DIR=$1
+    echo "uncompress_src_file:" $1 $2
+    LIB_DIR=$1
     SRC_FILE=$2
 
     #optional
@@ -764,8 +767,8 @@ function prepare_build_dir
     CHECKSUM_VALUE=$4
 
     untarred_src=0
-    if [[ -d ${BUILD_DIR} ]] ; then
-        info "Found ${BUILD_DIR} . . ."
+    if [[ -d ${LIB_DIR} ]] ; then
+        info "Found ${LIB_DIR} . . ."
         untarred_src=0
     elif [[ -f ${SRC_FILE} ]] ; then
         if [[ $CHECKSUM_VALUE != "" && $CHECKSUM_TYPE != "" ]]; then
@@ -858,7 +861,7 @@ function check_files
     fi
 
     if [[ "$DO_VISIT" == "yes" ]] ;  then
-        bv_visit_ensure_built_or_ready
+        bv_visit_check_installed_or_have_src
         if [[ $? != 0 ]]; then
             return 1
         fi

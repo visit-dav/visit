@@ -28,7 +28,7 @@ function bv_fms_info
 {
     export FMS_VERSION=${FMS_VERSION:-"100"}
     export FMS_FILE=${FMS_FILE:-"FMS-${FMS_VERSION}.tar.gz"}
-    export FMS_BUILD_DIR=${FMS_BUILD_DIR:-"FMS-${FMS_VERSION}"}
+    export FMS_SRC_DIR=${FMS_SRC_DIR:-"FMS-${FMS_VERSION}"}
     export FMS_URL=${FMS_URL:-"http://visit.ilight.com/assets"}
     export FMS_MD5_CHECKSUM="67241ce13619639a49ae602400b02360"
     export FMS_SHA256_CHECKSUM="621f413e219dc166160c15ad73727512ef716ef9aeb2fe3a5192ec4376c3a798"
@@ -38,7 +38,7 @@ function bv_fms_print
 {
     printf "%s%s\n" "FMS_FILE=" "${FMS_FILE}"
     printf "%s%s\n" "FMS_VERSION=" "${FMS_VERSION}"
-    printf "%s%s\n" "FMS_BUILD_DIR=" "${FMS_BUILD_DIR}"
+    printf "%s%s\n" "FMS_SRC_DIR=" "${FMS_SRC_DIR}"
 }
 
 function bv_fms_print_usage
@@ -67,7 +67,7 @@ function bv_fms_host_profile
 function bv_fms_ensure
 {
     if [[ "$DO_FMS" == "yes" ]] ; then
-        ensure_built_or_ready "fms" $FMS_VERSION $FMS_BUILD_DIR $FMS_FILE $FMS_URL
+        check_installed_or_have_src "fms" $FMS_VERSION $FMS_SRC_DIR $FMS_FILE $FMS_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_FMS="no"
@@ -89,18 +89,18 @@ function bv_fms_dry_run
 function build_fms
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $FMS_BUILD_DIR $FMS_FILE
+    uncompress_src_file $FMS_SRC_DIR $FMS_FILE
     untarred_fms=$?
     if [[ $untarred_fms == -1 ]] ; then
-        warn "Unable to prepare FMS build directory. Giving Up!"
+        warn "Unable to uncompress FMS source file. Giving Up!"
         return 1
     fi
 
-    cd $FMS_BUILD_DIR || error "Can't cd to FMS source dir."
+    cd $FMS_SRC_DIR || error "Can't cd to FMS source dir."
     mkdir build
-    cd build || error "Can't cd to FMS build dir."
+    cd build || error "Can't cd to FMS source dir."
 
     vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""

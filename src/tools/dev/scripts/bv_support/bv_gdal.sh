@@ -24,7 +24,7 @@ function bv_gdal_info
     export GDAL_VERSION=${GDAL_VERSION:-"2.2.4"}
     export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"2.2"}
     export GDAL_URL=${GDAL_URL:-"http://download.osgeo.org/gdal/${GDAL_VERSION}"}
-    export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-2.2.4"}
+    export GDAL_SRC_DIR=${GDAL_SRC_DIR:-"gdal-2.2.4"}
     export GDAL_MD5_CHECKSUM="798c66cc8df26f204f6248358fe4fceb"
     export GDAL_SHA256_CHECKSUM="b9d5a723787f3006a82cb276db171c721187b048b866c0e20e6df464d671a1a4"
 }
@@ -34,7 +34,7 @@ function bv_gdal_print
     printf "%s%s\n" "GDAL_FILE=" "${GDAL_FILE}"
     printf "%s%s\n" "GDAL_VERSION=" "${GDAL_VERSION}"
     printf "%s%s\n" "GDAL_COMPATIBILITY_VERSION=" "${GDAL_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "GDAL_BUILD_DIR=" "${GDAL_BUILD_DIR}"
+    printf "%s%s\n" "GDAL_SRC_DIR=" "${GDAL_SRC_DIR}"
 }
 
 function bv_gdal_print_usage
@@ -59,7 +59,7 @@ function bv_gdal_host_profile
 function bv_gdal_ensure
 {
     if [[ "$DO_GDAL" == "yes" ]] ; then
-        ensure_built_or_ready "gdal" $GDAL_VERSION $GDAL_BUILD_DIR $GDAL_FILE $GDAL_URL
+        check_installed_or_have_src "gdal" $GDAL_VERSION $GDAL_SRC_DIR $GDAL_FILE $GDAL_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_GDAL="no"
@@ -137,18 +137,18 @@ EOF
 function build_gdal
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $GDAL_BUILD_DIR $GDAL_FILE
+    uncompress_src_file $GDAL_SRC_DIR $GDAL_FILE
     untarred_gdal=$?
     if [[ $untarred_gdal == -1 ]] ; then
-        warn "Unable to prepare GDAL Build Directory. Giving Up"
+        warn "Unable to uncompress GDAL Build Directory. Giving Up"
         return 1
     fi
 
     #
     info "Configuring GDAL . . ."
-    cd $GDAL_BUILD_DIR || error "Can't cd to GDAL build dir."
+    cd $GDAL_SRC_DIR || error "Can't cd to GDAL source dir."
     info "Invoking command to configure GDAL"
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ "$DO_STATIC_BUILD" == "no" ]]; then

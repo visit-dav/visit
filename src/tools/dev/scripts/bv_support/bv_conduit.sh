@@ -1,6 +1,8 @@
 function bv_conduit_initialize
 {
     export DO_CONDUIT="no"
+    export USE_SYSTEM_CONDUIT="no"
+    add_extra_commandline_args "conduit" "system-conduit" 0 "Using system CONDUIT (exp)"
 }
 
 function bv_conduit_enable
@@ -13,9 +15,20 @@ function bv_conduit_disable
     DO_CONDUIT="no"
 }
 
+function bv_conduit_system_conduit
+{
+    TEST=`which conduit-config`
+    [ $? != 0 ] && error "System conduit-config not found, cannot configure conduit"
+
+    bv_conduit_enable
+    USE_SYSTEM_CONDUIT="yes"
+    CONDUIT_INSTALL_DIR="$1"
+    info "Using System CONDUIT: $CONDUIT_INSTALL_DIR"
+}
+
 function bv_conduit_depends_on
 {
-    local depends_on=""
+    local depends_on="cmake"
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
         depends_on="hdf5"
@@ -28,8 +41,15 @@ function bv_conduit_depends_on
     if [[ "$DO_MPICH" == "yes" ]] ; then
         depends_on="$depends_on mpich"
     fi
-    
+
     echo $depends_on
+}
+
+function bv_conduit_initialize_vars
+{
+    if [[ "$USE_SYSTEM_CONDUIT" == "no" ]]; then
+        CONDUIT_INSTALL_DIR="${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}"
+    fi
 }
 
 function bv_conduit_info
@@ -37,7 +57,9 @@ function bv_conduit_info
     export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.7.1"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
     export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.7.1"}
-    export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
+    export CONDUIT_SRC_DIR=${CONDUIT_SRC_DIR:-"conduit-${CONDUIT_VERSION}"}
+    export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"${CONDUIT_SRC_DIR}-build"}
+
     export CONDUIT_MD5_CHECKSUM="7f9bb79ef0a6bf42fa9bc05af3829e5b"
     export CONDUIT_SHA256_CHECKSUM="460a480cf08fedbf5b38f707f94f20828798327adadb077f80dbab048fd0a07d"
 }
@@ -47,6 +69,7 @@ function bv_conduit_print
     printf "%s%s\n" "CONDUIT_FILE=" "${CONDUIT_FILE}"
     printf "%s%s\n" "CONDUIT_VERSION=" "${CONDUIT_VERSION}"
     printf "%s%s\n" "CONDUIT_COMPATIBILITY_VERSION=" "${CONDUIT_COMPATIBILITY_VERSION}"
+    printf "%s%s\n" "CONDUIT_SRC_DIR=" "${CONDUIT_SRC_DIR}"
     printf "%s%s\n" "CONDUIT_BUILD_DIR=" "${CONDUIT_BUILD_DIR}"
 }
 
@@ -57,30 +80,30 @@ function bv_conduit_print_usage
 
 function bv_conduit_host_profile
 {
-    if [[ "$DO_CONDUIT" == "yes" ]] ; then
+    if [[ "$DO_CONDUIT" == "yes" ]]; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## Conduit" >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo \
-            "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR \${VISITHOME}/conduit/$CONDUIT_VERSION/\${VISITARCH})" \
-            >> $HOSTCONF
-        if [[ "$DO_HDF5" == "yes" ]] ; then
-            echo \
-                "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" \
-                >> $HOSTCONF
+        if [[ "$USE_SYSTEM_CONDUIT" == "yes" ]]; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR $CONDUIT_INSTALL_DIR)" >> $HOSTCONF
+        else
+            echo "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR \${VISITHOME}/conduit/$CONDUIT_VERSION/\${VISITARCH})" >> $HOSTCONF
+            if [[ "$DO_HDF5" == "yes" ]] ; then
+                echo "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" >> $HOSTCONF
+            fi
         fi
     fi
 }
 
 function bv_conduit_ensure
 {
-    if [[ "$DO_CONDUIT" == "yes" ]] ; then
-        ensure_built_or_ready "conduit" $CONDUIT_VERSION $CONDUIT_BUILD_DIR $CONDUIT_FILE $CONDUIT_URL
+    if [[ "$DO_CONDUIT" == "yes" && "$USE_SYSTEM_CONDUIT" == "no" ]] ; then
+        check_installed_or_have_src "conduit" $CONDUIT_VERSION $CONDUIT_BUILD_DIR $CONDUIT_FILE $CONDUIT_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_CONDUIT="no"
-            error "Unable to build Conduit.  ${CONDUIT_FILE} not found."
+            error "Unable to build Conduit. ${CONDUIT_FILE} not found."
         fi
     fi
 }
@@ -95,58 +118,41 @@ function bv_conduit_dry_run
 # *************************************************************************** #
 # build_conduit
 # *************************************************************************** #
-
 function build_conduit
 {
     #
-    # Conduit uses CMake  -- make sure we have it built.
+    # Uncompress the source file
     #
-    CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
-    if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
-        info "Conduit: CMake found"
-    else
-        build_cmake
-        if [[ $? != 0 ]] ; then
-            warn "Unable to build cmake.  Giving up"
-            return 1
-        fi
-    fi
-    
-    
-    #
-    # Prepare build dir
-    #
-    prepare_build_dir $CONDUIT_BUILD_DIR $CONDUIT_FILE
+    uncompress_src_file $CONDUIT_SRC_DIR $CONDUIT_FILE
     untarred_conduit=$?
     if [[ $untarred_conduit == -1 ]] ; then
-        warn "Unable to prepare Conduit build directory. Giving Up!"
+        warn "Unable to uncompress Conduit source file. Giving Up!"
         return 1
     fi
-    
+
+    #
+    # Make a build directory for an out-of-source build.
+    #
+    cd "$START_DIR"
+    if [[ ! -d $CONDUIT_BUILD_DIR ]] ; then
+        echo "Making build directory $CONDUIT_BUILD_DIR"
+        mkdir $CONDUIT_BUILD_DIR
+    else
+        #
+        # Remove the CMakeCache.txt files ... existing files sometimes
+        # prevent fields from getting overwritten properly.
+        #
+        rm -Rf ${CONDUIT_BUILD_DIR}/CMakeCache.txt ${CONDUIT_BUILD_DIR}/*/CMakeCache.txt
+    fi
+    cd ${CONDUIT_BUILD_DIR}
+
     #
     # Call configure
     #
     info "Configuring Conduit . . ."
 
-    # Make a build directory for an out-of-source build.. Change the
-    # VISIT_BUILD_DIR variable to represent the out-of-source build directory. 
-    CONDUIT_SRC_DIR=$CONDUIT_BUILD_DIR
-    CONDUIT_BUILD_DIR="${CONDUIT_SRC_DIR}-build"
-    if [[ ! -d $CONDUIT_BUILD_DIR ]] ; then
-        echo "Making build directory $CONDUIT_BUILD_DIR"
-        mkdir $CONDUIT_BUILD_DIR
-    fi
-
-    #
-    # Remove the CMakeCache.txt files ... existing files sometimes prevent
-    # fields from getting overwritten properly.
-    #
-    rm -Rf $CONDUIT_BUILD_DIR/CMakeCache.txt $CONDUIT_BUILD_DIR/*/CMakeCache.txt
-
-
     conduit_build_mode="${VISIT_BUILD_MODE}"
-    conduit_install_path="${VISITDIR}/conduit/${CONDUIT_VERSION}/${VISITARCH}"
-
+    conduit_install_path="${CONDUIT_INSTALL_DIR}"
 
     cfg_opts=""
     # normal stuff
@@ -157,7 +163,7 @@ function build_conduit
     else
         cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
-    
+
     cfg_opts="${cfg_opts} -DENABLE_TESTS:BOOL=false"
     cfg_opts="${cfg_opts} -DENABLE_DOCS:BOOL=false"
     cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
@@ -167,11 +173,13 @@ function build_conduit
     if test "${OPSYS}" = "Darwin" ; then
         cfg_opts="${cfg_opts} -DCMAKE_INSTALL_NAME_DIR:PATH=${conduit_install_path}/lib"
         if test "${MACOSX_DEPLOYMENT_TARGET}" = "10.10"; then
-            # If building on 10.10 (Yosemite) check if we are building with Xcode 7 ...
+            # If building on 10.10 (Yosemite) check if we are building
+            # with Xcode 7 ...
             XCODE_VER=$(xcodebuild -version | head -n 1 | awk '{print $2}')
             if test ${XCODE_VER%.*} == 7; then
-                # Workaround for Xcode 7 not having a 10.10 SDK: Prevent CMake from linking to 10.11 SDK
-                # by using Frameworks installed in root directory.
+                # Workaround for Xcode 7 not having a 10.10 SDK:
+                # Prevent CMake from linking to 10.11 SDK by using
+                # Frameworks installed in root directory.
                 echo "Xcode 7 on MacOS 10.10 detected: Enabling CMake workaround"
                 cfg_opts="${cfg_opts} -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=\"\" -DCMAKE_OSX_SYSROOT:STRING=/"
             fi
@@ -201,40 +209,39 @@ function build_conduit
         cfg_opts="${cfg_opts} -DMPI_C_COMPILER:STRING=${PAR_COMPILER}"
         cfg_opts="${cfg_opts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER}"
     fi
-    
+
     if [[ "$PAR_INCLUDE" != "" ]] ; then
         cfg_opts="${cfg_opts} -DMPI_C_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
         cfg_opts="${cfg_opts} -DMPI_CXX_INCLUDE_PATH:STRING=${PAR_INCLUDE_PATH}"
     fi
-    
+
     if [[ "$PAR_LIBS" != "" ]] ; then
         cfg_opts="${cfg_opts} -DMPI_C_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
         cfg_opts="${cfg_opts} -DMPI_C_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
         cfg_opts="${cfg_opts} -DMPI_CXX_LINK_FLAGS:STRING=${PAR_LINKER_FLAGS}"
         cfg_opts="${cfg_opts} -DMPI_CXX_LIBRARIES:STRING=${PAR_LIBRARY_LINKER_FLAGS}"
     fi
-    
-    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
-    cd ${CONDUIT_BUILD_DIR}
 
     #
     # Several platforms have had problems with the VTK cmake configure command
-    # issued simply via "issue_command".  This was first discovered on 
-    # BGQ and then showed up in random cases for both OSX and Linux machines. 
-    # Brad resolved this on BGQ  with a simple work around - we write a simple 
+    # issued simply via "issue_command". This was first discovered on
+    # BGQ and then showed up in random cases for both OSX and Linux machines.
+    # Brad resolved this on BGQ  with a simple work around - we write a simple
     # script that we invoke with bash which calls cmake with all of the properly
     # arguments. We are now using this strategy for all platforms.
     #
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
 
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
+
     echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../${CONDUIT_SRC_DIR}/src > bv_run_cmake.sh
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh
 
     if [[ $? != 0 ]] ; then
-        warn "Conduit configure failed.  Giving up"
+        warn "Conduit configure failed. Giving up"
         return 1
     fi
 
@@ -244,17 +251,17 @@ function build_conduit
     info "Building Conduit . . . (~5 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "Conduit build failed.  Giving up"
+        warn "Conduit build failed. Giving up"
         return 1
     fi
-    
+
     #
     # Install into the VisIt third party location.
     #
     info "Installing Conduit"
     $MAKE install
     if [[ $? != 0 ]] ; then
-        warn "Conduit install failed.  Giving up"
+        warn "Conduit install failed. Giving up"
         return 1
     fi
 
@@ -262,6 +269,7 @@ function build_conduit
         chmod -R ug+w,a+rX "$VISITDIR/conduit"
         chgrp -R ${GROUP} "$VISITDIR/conduit"
     fi
+
     cd "$START_DIR"
     info "Done with Conduit"
     return 0
@@ -270,7 +278,7 @@ function build_conduit
 function bv_conduit_is_enabled
 {
     if [[ $DO_CONDUIT == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
@@ -287,15 +295,16 @@ function bv_conduit_is_installed
 function bv_conduit_build
 {
     cd "$START_DIR"
+
     if [[ "$DO_CONDUIT" == "yes" ]] ; then
         check_if_installed "conduit" $CONDUIT_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping Conduit build.  Conduit is already installed."
+            info "Skipping Conduit build. Conduit is already installed."
         else
             info "Building Conduit (~5 minutes)"
             build_conduit
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install Conduit.  Bailing out."
+                error "Unable to build or install Conduit. Bailing out."
             fi
             info "Done building Conduit"
         fi

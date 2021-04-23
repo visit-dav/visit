@@ -24,7 +24,7 @@ function bv_boxlib_info
     export BOXLIB_FILE=${BOXLIB_FILE:-"ccse-${BOXLIB_VERSION}.tar.gz"}
     export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION:-"1.3.5"}
     export BOXLIB_URL=${BOXLIB_URL:-"https://ccse.lbl.gov/Software/tarfiles/"}
-    export BOXLIB_BUILD_DIR=${BOXLIB_BUILD_DIR:-"ccse-${BOXLIB_VERSION}/Src/C_BaseLib"}
+    export BOXLIB_SRC_DIR=${BOXLIB_SRC_DIR:-"ccse-${BOXLIB_VERSION}/Src/C_BaseLib"}
     export BOXLIB_MD5_CHECKSUM="263214a8b7f6046f99186601afc90144"
     export BOXLIB_SHA256_CHECKSUM="2dd2496d27dc84d9171be06b44e3968fa481867d936174e7d49a547da5f6f755"
 }
@@ -34,7 +34,7 @@ function bv_boxlib_print
     printf "%s%s\n" "BOXLIB_FILE=" "${BOXLIB_FILE}"
     printf "%s%s\n" "BOXLIB_VERSION=" "${BOXLIB_VERSION}"
     printf "%s%s\n" "BOXLIB_COMPATIBILITY_VERSION=" "${BOXLIB_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "BOXLIB_BUILD_DIR=" "${BOXLIB_BUILD_DIR}"
+    printf "%s%s\n" "BOXLIB_SRC_DIR=" "${BOXLIB_SRC_DIR}"
 }
 
 function bv_boxlib_print_usage
@@ -59,7 +59,7 @@ function bv_boxlib_host_profile
 function bv_boxlib_ensure
 {
     if [[ "$DO_BOXLIB" == "yes" ]] ; then
-        ensure_built_or_ready "boxlib" $BOXLIB_VERSION $BOXLIB_BUILD_DIR $BOXLIB_FILE $BOXLIB_URL
+        check_installed_or_have_src "boxlib" $BOXLIB_VERSION $BOXLIB_SRC_DIR $BOXLIB_FILE $BOXLIB_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_BOXLIB="no"
@@ -166,12 +166,12 @@ function apply_boxlib_patch
 function build_boxlib
 {
     #
-    # Prepare build dir
+    # Uncompress the source file
     #
-    prepare_build_dir $BOXLIB_BUILD_DIR $BOXLIB_FILE
+    uncompress_src_file $BOXLIB_SRC_DIR $BOXLIB_FILE
     untarred_boxlib=$?
     if [[ $untarred_boxlib == -1 ]] ; then
-        warn "Unable to prepare Boxlib Build Directory. Giving Up"
+        warn "Unable to uncompress Boxlib Build Directory. Giving Up"
         return 1
     fi
 
@@ -192,7 +192,7 @@ function build_boxlib
         fi
     fi
 
-    cd $BOXLIB_BUILD_DIR || error "Can't cd to BoxLib build dir."
+    cd $BOXLIB_SRC_DIR || error "Can't cd to BoxLib source dir."
 
     #
     # Build BoxLib

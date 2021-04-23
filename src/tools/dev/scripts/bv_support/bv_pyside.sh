@@ -17,10 +17,10 @@ function bv_pyside_disable
 
 function bv_pyside_alt_pyside_dir
 {
-    bv_pyside_enable 
+    bv_pyside_enable
     USE_SYSTEM_PYSIDE="yes"
     PYSIDE_INSTALL_DIR="$1"
-    info "using alternative pyside directory: $PYSIDE_INSTALL_DIR" 
+    info "using alternative pyside directory: $PYSIDE_INSTALL_DIR"
 }
 
 function bv_pyside_depends_on
@@ -40,16 +40,20 @@ function bv_pyside_depends_on
 
 function bv_pyside_initialize_vars
 {
-    info "initialize PySide vars"
+    if [[ "$USE_SYSTEM_PYSIDE" == "no" ]]; then
+        PYSIDE_INSTALL_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}"
+    fi
 }
 
 function bv_pyside_info
 {
     export PYSIDE_VERSION=${PYSIDE_VERSION:-"5.14.2"}
-    export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-setup-5.14.2.tar.gz"}
-    export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"pyside-setup-5.14.2"}
-    export PYSIDE_MD5_CHECKSUM="862cfe43648fa64152864dafe2e03849"
-    export PYSIDE_SHA256_CHECKSUM="ff75f817b2de3e3b278d8f9e8269dd473c068e652264fc8e074af599a19b3c3a"
+    export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-setup-${PYSIDE_VERSION}.tar.gz"}
+    export PYSIDE_COMPATIBILITY_VERSION=${PYSIDE_COMPATIBILITY_VERSION:-"5.14"}
+    export PYSIDE_SRC_DIR=${PYSIDE_SRC_DIR:-"${PYSIDE_FILE%.tar*}"}
+    export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"${PYSIDE_SRC_DIR}-build"}
+#    export PYSIDE_MD5_CHECKSUM="862cfe43648fa64152864dafe2e03849"
+#    export PYSIDE_SHA256_CHECKSUM="ff75f817b2de3e3b278d8f9e8269dd473c068e652264fc8e074af599a19b3c3a"
 }
 
 function bv_pyside_print
@@ -57,6 +61,7 @@ function bv_pyside_print
     printf "%s%s\n" "PYSIDE_FILE=" "${PYSIDE_FILE}"
     printf "%s%s\n" "PYSIDE_VERSION=" "${PYSIDE_VERSION}"
     printf "%s%s\n" "PYSIDE_PLATFORM=" "${PYSIDE_PLATFORM}"
+    printf "%s%s\n" "PYSIDE_SRC_DIR=" "${PYSIDE_SRC_DIR}"
     printf "%s%s\n" "PYSIDE_BUILD_DIR=" "${PYSIDE_BUILD_DIR}"
 }
 
@@ -92,12 +97,12 @@ function bv_pyside_host_profile
 
 function bv_pyside_ensure
 {
-    if [[ "$DO_PYSIDE" = "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" && "$USE_SYSTEM_PYSIDE" == "no" ]] ; then
-        ensure_built_or_ready "pyside"     $PYSIDE_VERSION    $PYSIDE_BUILD_DIR    $PYSIDE_FILE 
+    if [[ "$DO_PYSIDE" == "yes" && "$USE_SYSTEM_PYSIDE" == "no" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
+        check_installed_or_have_src "pyside" $PYSIDE_VERSION $PYSIDE_BUILD_DIR $PYSIDE_FILE $PYSIDE_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_PYSIDE="no"
-            error "Unable to build PySide.  ${PYSIDE_FILE} not found."
+            error "Unable to build PySide. ${PYSIDE_FILE} not found."
         fi
     fi
 }
@@ -154,8 +159,8 @@ diff -c sources/shiboken2/data/shiboken_helpers.cmake.orig sources/shiboken2/dat
 ***************
 *** 314,319 ****
 --- 314,320 ----
-  
-  
+
+
   macro(shiboken_find_required_python)
 +   if(NOT PYTHON_FOUND)
       if(${ARGC} GREATER 0)
@@ -169,7 +174,7 @@ diff -c sources/shiboken2/data/shiboken_helpers.cmake.orig sources/shiboken2/dat
       endif()
 +   endif()
       shiboken_validate_python_version()
-  
+
       set(SHIBOKEN_PYTHON_INTERPRETER "${PYTHON_EXECUTABLE}")
 EOF
     if [[ $? != 0 ]] ; then
@@ -226,6 +231,8 @@ EOF
 
 function apply_pyside_patch
 {
+    cd ${PYSIDE_SRC_DIR} || error "Can't cd to PySide source dir."
+
     if [[ ${PYSIDE_VERSION} == 5.14.2 ]] ; then
         apply_pyside_5142_patch
         if [[ $? != 0 ]] ; then
@@ -242,34 +249,31 @@ function apply_pyside_patch
         fi
     fi
 
+    cd "$START_DIR"
+
     return 0
 }
 
 function build_pyside
 {
-    ##
-    ## Prepare the build dir using src file.
-    ##
-
-    prepare_build_dir $PYSIDE_BUILD_DIR $PYSIDE_FILE
+    #
+    # Uncompress the source file
+    #
+    uncompress_src_file $PYSIDE_SRC_DIR $PYSIDE_FILE
     untarred_pyside=$?
-    ## 0, already exists, 1  untarred src, 2 error
-
-    if [[ untarred_pyside == -1 ]] ; then
-        warn "Unable to prepare PySide build directory. Giving Up!"
+    if [[ $untarred_pyside == -1 ]] ; then
+        warn "Unable to uncompress PYSIDE source file. Giving Up!"
         return 1
     fi
 
-    cd $PYSIDE_BUILD_DIR || error "Can't cd to PySide build dir."
-
-    ##
-    ## Apply patches
-    ##
-
+    #
+    # Apply patches
+    #
+    info "Patching PYSIDE . . ."
     apply_pyside_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_pyside == 1 ]] ; then
-            warn "Giving up on pyside build because the patch failed."
+            warn "Giving up on PySide build because the patch failed."
             return 1
         else
             warn "Patch failed, but continuing. I believe that this script\n" \
@@ -279,12 +283,31 @@ function build_pyside
         fi
     fi
 
+    #
+    # Make a build directory for an out-of-source build.
+    #
     cd "$START_DIR"
+    if [[ ! -d $PYSIDE_BUILD_DIR ]] ; then
+        echo "Making build directory $PYSIDE_BUILD_DIR"
+        mkdir $PYSIDE_BUILD_DIR
+    else
+        #
+        # Remove the CMakeCache.txt files ... existing files sometimes
+        # prevent fields from getting overwritten properly.
+        #
+        rm -Rf ${PYSIDE_BUILD_DIR}/CMakeCache.txt ${PYSIDE_BUILD_DIR}/*/CMakeCache.txt
+    fi
+    cd ${PYSIDE_BUILD_DIR}
+
+    #
+    # Configure PYSIDE
+    #
+    info "Configuring PySide . . ."
+
     # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH issue can be resolved
     #if [[ "$USE_SYSTEM_PYTHON" == "yes" ]] ; then
         # we are using system python, do the build that installs pyside as a stand-alone package
-        info "Pyside being built as stand-alone"
-        VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
+        info "PySide being built as stand-alone"
 
         pyside_opts=""
         # for finding qt
@@ -305,39 +328,16 @@ function build_pyside
 
         # pyside options
         pyside_opts="${pyside_opts} -DBUILD_TESTS:BOOL=FALSE"
-        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_PREFIX:PATH=\"$VISIT_PYSIDE_DIR\""
-        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_RPATH:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
-        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_NAME_DIR:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
-     
-
-        if [[ "$DO_MESAGL" == "yes" ]] ; then
-            pyside_opts="${pyside_opts} -DGL_H=${MESAGL_INCLUDE_DIR}/GL/gl.h"
-        fi
-
-        CMAKE_BIN="${CMAKE_INSTALL}/cmake"
-
-        PYSIDE_SRC_DIR=$PYSIDE_BUILD_DIR
-        PYSIDE_BUILD_DIR="${PYSIDE_SRC_DIR}-build"
-        if [[ ! -d $PYSIDE_BUILD_DIR ]] ; then
-            echo "Making build directory $PYSIDE_BUILD_DIR"
-            mkdir $PYSIDE_BUILD_DIR
-        fi
-
-        info "pyside build dir ${PYSIDE_BUILD_DIR}"
-
-        cd "${PYSIDE_BUILD_DIR}"
-
-        if test -e bv_run_cmake.sh ; then
-            rm -f bv_run_cmake.sh
-        fi
-
-        info "Configuring pyside . . ."
+        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_PREFIX:PATH=\"$PYSIDE_INSTALL_DIR\""
+        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_RPATH:FILEPATH=\"$PYSIDE_INSTALL_DIR/lib\""
+        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_NAME_DIR:FILEPATH=\"$PYSIDE_INSTALL_DIR/lib\""
 
         # Note:
         # The pyside build process needs to resolve OpenGL libs several
         # times. If we are using mesa as gl, we need to provide the proper
         # path to gl via LD_LIBRARY_PATH
         if [[ "$DO_MESAGL" == "yes" ]] ; then
+            pyside_opts="${pyside_opts} -DGL_H=${MESAGL_INCLUDE_DIR}/GL/gl.h"
             export LD_LIBRARY_PATH=${MESAGL_LIB_DIR}:${LD_LIBRARY_PATH}
         fi
 
@@ -351,22 +351,53 @@ function build_pyside
             fi
         fi
 
+        #
+        # Several platforms have had problems with the PySide cmake
+        # configure command issued simply via "issue_command". This
+        # was first discovered on BGQ and then showed up in random
+        # cases for both OSX and Linux machines.  Brad resolved this
+        # on BGQ with a simple work around - we write a simple script
+        # that we invoke with bash which calls cmake with all of the
+        # properly arguments. We are now using this strategy for all
+        # platforms.
+        #
+        CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+
+        if test -e bv_run_cmake.sh ; then
+            rm -f bv_run_cmake.sh
+        fi
+
         echo "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
         cat bv_run_cmake.sh
-        issue_command bash bv_run_cmake.sh || error "pyside configuration failed."
-
-        info "Building pyside . . ."
-        $MAKE $MAKE_OPT_FLAGS ||  error "PySide did not build correctly. Giving up."
-
-        info "Installing pyside . . ."
-        $MAKE install || error "PySide did not install correctly."
+        issue_command bash bv_run_cmake.sh
 
         if [[ $? != 0 ]] ; then
+            warn "Pyside configure failed. Giving up"
             return 1
         fi
 
-        chmod -R ug+w,a+rX "$VISITDIR/pyside"
+        #
+        # Build Pyside
+        #
+        info "Building Pyside . . . (~5 minutes)"
+        $MAKE $MAKE_OPT_FLAGS
+        if [[ $? != 0 ]] ; then
+            warn "Pyside build failed. Giving up"
+            return 1
+        fi
+
+        #
+        # Install into the VisIt third party location.
+        #
+        info "Installing Pyside"
+        $MAKE install
+        if [[ $? != 0 ]] ; then
+            warn "Pyside install failed. Giving up"
+            return 1
+        fi
+
         if [[ "$DO_GROUP" == "yes" ]] ; then
+            chmod -R ug+w,a+rX "$VISITDIR/pyside"
             chgrp -R ${GROUP} "$VISITDIR/pyside"
         fi
     #else
@@ -408,23 +439,25 @@ function bv_pyside_is_enabled
 {
     if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]]; then
         return 0;
-    fi 
-    if [[ $DO_PYSIDE == "yes" ]]; then
-        return 1    
     fi
+
+    if [[ $DO_PYSIDE == "yes" ]]; then
+        return 1
+    fi
+
     return 0
 }
 
 function bv_pyside_is_installed
 {
-    if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then 
+    if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
         return 1
     fi
 
+    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH
+    # issue can be resolved.
 
-    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH issue can be resolved
     #if [[ "$USE_SYSTEM_PYTHON" == "yes" ]] ; then
-        VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
         check_if_installed "pyside" $PYSIDE_VERSION
         if [[ $? != 0 ]] ; then
             return 0
@@ -442,11 +475,8 @@ function bv_pyside_is_installed
 
 function bv_pyside_build
 {
-    #
-    # Build PySide
-    #
     cd "$START_DIR"
-    if [[ "$DO_PYSIDE" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" && "$USE_SYSTEM_PYSIDE" == "no" ]] ; then
+    if [[ "$DO_PYSIDE" == "yes" && "$USE_SYSTEM_PYSIDE" == "no" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
         bv_pyside_is_installed #this returns 1 for true, 0 for false
         if [[ $? != 0 ]] ; then
             info "Skipping PySide build.  PySide is already installed."
