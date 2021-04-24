@@ -59,8 +59,8 @@ function bv_hdf5_info
     export HDF5_SRC_DIR=${HDF5_SRC_DIR:-"hdf5-${HDF5_VERSION}"}
     # Note: Versions of HDF5 1.6.5 and earlier DO NOT have last path component
     export HDF5_URL=${HDF5_URL:-"http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-${HDF5_VERSION}/src"}
-#    export HDF5_MD5_CHECKSUM="a482686e733514a51cde12d6fe5c5d95"
-#    export HDF5_SHA256_CHECKSUM="1dbefeeef7f591897c632b2b090db96bb8d35ad035beaa36bc39cb2bc67e0639"
+    export HDF5_MD5_CHECKSUM="006ed785942f4ed9a6f31556d0ef8ba5"
+    export HDF5_SHA256_CHECKSUM="7a1a0a54371275ce2dfc5cd093775bb025c365846512961e7e5ceaecb437ef15"
 }
 
 function bv_hdf5_print

@@ -52,8 +52,8 @@ function bv_pyside_info
     export PYSIDE_COMPATIBILITY_VERSION=${PYSIDE_COMPATIBILITY_VERSION:-"5.14"}
     export PYSIDE_SRC_DIR=${PYSIDE_SRC_DIR:-"${PYSIDE_FILE%.tar*}"}
     export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"${PYSIDE_SRC_DIR}-build"}
-#    export PYSIDE_MD5_CHECKSUM="862cfe43648fa64152864dafe2e03849"
-#    export PYSIDE_SHA256_CHECKSUM="ff75f817b2de3e3b278d8f9e8269dd473c068e652264fc8e074af599a19b3c3a"
+    export PYSIDE_MD5_CHECKSUM="862cfe43648fa64152864dafe2e03849"
+    export PYSIDE_SHA256_CHECKSUM="ff75f817b2de3e3b278d8f9e8269dd473c068e652264fc8e074af599a19b3c3a"
 }
 
 function bv_pyside_print
@@ -379,7 +379,7 @@ function build_pyside
         #
         # Build Pyside
         #
-        info "Building Pyside . . . (~5 minutes)"
+        info "Building Pyside . . ."
         $MAKE $MAKE_OPT_FLAGS
         if [[ $? != 0 ]] ; then
             warn "Pyside build failed. Giving up"
@@ -389,7 +389,7 @@ function build_pyside
         #
         # Install into the VisIt third party location.
         #
-        info "Installing Pyside"
+        info "Installing Pyside . . ."
         $MAKE install
         if [[ $? != 0 ]] ; then
             warn "Pyside install failed. Giving up"
@@ -481,7 +481,7 @@ function bv_pyside_build
         if [[ $? != 0 ]] ; then
             info "Skipping PySide build.  PySide is already installed."
         else
-            info "Building PySide (~20 minutes)"
+            info "Building PySide (~5 minutes)"
             build_pyside
             if [[ $? != 0 ]] ; then
                 error "Unable to build or install PySide.  Bailing out."

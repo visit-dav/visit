@@ -100,8 +100,8 @@ function bv_cmake_info
     export CMAKE_VERSION=${CMAKE_VERSION:-"3.19.5"}
     export CMAKE_FILE=${CMAKE_FILE:-"cmake-${CMAKE_VERSION}.tar.gz"}
     export CMAKE_SRC_DIR=${CMAKE_SRC_DIR:-"cmake-${CMAKE_VERSION}"}
-#    export CMAKE_MD5_CHECKSUM="1b2d7d9215b51acceef20ed2895e8495"
-#    export CMAKE_SHA256_CHECKSUM="9221993e0af3e6d10124d840ff24f5b2f3b884416fca04d3312cb0388dec1385"
+    export CMAKE_MD5_CHECKSUM="b05ac439a6f49c75a0faaeca4a2c3144"
+    export CMAKE_SHA256_CHECKSUM="c432296eb5dec6d71eae15d140f6297d63df44e9ffe3e453628d1dc8fc4201ce"
 }
 
 function bv_cmake_print

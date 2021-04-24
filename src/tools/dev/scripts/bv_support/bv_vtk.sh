@@ -90,8 +90,8 @@ function bv_vtk_info
     export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
     export VTK_SRC_DIR=${VTK_SRC_DIR:-"${VTK_FILE%.tar*}"}
     export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"${VTK_SRC_DIR}-build"}
-#    export VTK_MD5_CHECKSUM="4fa5eadbc8723ba0b8d203f05376d932"
-#    export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
+    export VTK_MD5_CHECKSUM="b3ba14d616c3b23583c42cffb585deac"
+    export VTK_SHA256_CHECKSUM="1b39a5e191c282861e7af4101eaa8585969a2de05f5646c9199a161213a622c7"
 }
 
 function bv_vtk_print

@@ -25,20 +25,20 @@ function bv_llvm_depends_on
 
 function bv_llvm_info
 {
-    export LLVM_VERSION=${LLVM_VERSION:-"6.0.1"}
+    export LLVM_VERSION=${LLVM_VERSION:-"12.0.0"}
     export LLVM_FILE=${LLVM_FILE:-"llvm-${LLVM_VERSION}.src.tar.xz"}
-    export LLVM_URL=${LLVM_URL:-"http://releases.llvm.org/${LLVM_VERSION}/"}
+    export LLVM_URL=${LLVM_URL:-"https://github.com/llvm/llvm-project/releases/tag/llvmorg-${LLVM_VERSION}/"}
     export LLVM_SRC_DIR=${LLVM_SRC_DIR:-"${LLVM_FILE%.tar*}"}
     export LLVM_BUILD_DIR=${LLVM_BUILD_DIR:-"${LLVM_SRC_DIR}-build"}
-    export LLVM_MD5_CHECKSUM="c88c98709300ce2c285391f387fecce0"
-    export LLVM_SHA256_CHECKSUM="b6d6c324f9c71494c0ccaf3dac1f16236d970002b42bb24a6c9e1634f7d0f4e2"
+    export LLVM_MD5_CHECKSUM="ceab21c9081e122a88d82216a80d0dc0"
+    export LLVM_SHA256_CHECKSUM="49dc47c8697a1a0abd4ee51629a696d7bfe803662f2a7252a3b16fc75f3a8b50"
 
     export CLANG_URL=${LLVM_URL}
-    export CLANG_FILE="cfe-${LLVM_VERSION}.src.tar.xz"
-    export CLANG_SRC_DIR="cfe-${LLVM_VERSION}.src"
+    export CLANG_FILE="clang-${LLVM_VERSION}.src.tar.xz"
+    export CLANG_SRC_DIR="clang-${LLVM_VERSION}.src"
     export CLANG_BUILD_DIR=${CLANG_BUILD_DIR:-"${CLANG_SRC_DIR}-build"}
-    export CLANG_MD5_CHECKSUM="4e419bd4e3b55aa06d872320f754bd85"
-    export CLANG_SHA256_CHECKSUM="7c243f1485bddfdfedada3cd402ff4792ea82362ff91fbdac2dae67c6026b667"
+    export CLANG_MD5_CHECKSUM="877200cc072ece1a52c27677ab26e3ee"
+    export CLANG_SHA256_CHECKSUM="e26e452e91d4542da3ebbf404f024d3e1cbf103f4cd110c26bf0a19621cca9ed"
 }
 
 function bv_llvm_print
@@ -127,6 +127,8 @@ function bv_llvm_dry_run
 
 function apply_llvm_patch
 {
+#    info "Patching LLVM . . ."
+
     cd ${LLVM_SRC_DIR} || error "Can't cd to LLVM source dir."
 
 #    info "Currently no patches for llvm"
@@ -150,7 +152,7 @@ function build_llvm
 	# The LLVM build system expects the directory to be named
 	# clang. Make a soft link so the source version is known.
 	if [[ -e clang ]] ; then
-	    rm -rf clang
+	    rm -f clang
 	fi
 	ln -s ${CLANG_SRC_DIR} clang
     fi
@@ -168,7 +170,6 @@ function build_llvm
     #
     # Apply patches
     #
-    info "Patching LLVM . . ."
     apply_llvm_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_llvm == 1 ]] ; then
@@ -258,6 +259,7 @@ function build_llvm
     llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FUZZER_BUILD:BOOL=OFF"
     llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD:BOOL=OFF"
     llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_OFFLOAD_BUNDLER_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_OFFLOAD_WRAPPER_BUILD:BOOL=OFF"
     llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_REFACTOR_BUILD:BOOL=OFF"
     llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_RENAME_BUILD:BOOL=OFF"
     llvm_opts="${llvm_opts} -DCLANG_TOOL_C_ARCMT_TEST_BUILD:BOOL=OFF"

@@ -45,8 +45,8 @@ function bv_boost_info
     export BOOST_COMPATIBILITY_VERSION=${BOOST_COMPATIBILITY_VERSION:-"1_75"}
     export BOOST_URL=${BOOST_URL:-"http://sourceforge.net/projects/boost/files/boost/1.75.0"}
     export BOOST_SRC_DIR=${BOOST_SRC_DIR:-"boost_${BOOST_VERSION}"}
-#    export BOOST_MD5_CHECKSUM="4850fceb3f2222ee011d4f3ea304d2cb"
-#    export BOOST_SHA256_CHECKSUM="8aa4e330c870ef50a896634c931adf468b21f8a69b77007e45c444151229f665"
+    export BOOST_MD5_CHECKSUM="38813f6feb40387dfe90160debd71251"
+    export BOOST_SHA256_CHECKSUM="aeb26f80e80945e82ee93e5939baebdca47b9dee80a07d3144be1e1a6a66dd6a"
 }
 
 function bv_boost_print

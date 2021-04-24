@@ -27,8 +27,8 @@ function bv_mpich_info
     export MPICH_COMPATIBILITY_VERSION=${MPICH_COMPATIBILITY_VERSION:-"3.4"}
     export MPICH_SRC_DIR=${MPICH_SRC_DIR:-"mpich-${MPICH_VERSION}"}
     export MPICH_URL=${MPICH_URL:-http://www.mpich.org/static/tarballs/${MPICH_VERSION}}
-#    export MPICH_MD5_CHECKSUM="9ed4cabd3fb86525427454381b25f6af"
-#    export MPICH_SHA256_CHECKSUM="fe551ef29c8eea8978f679484441ed8bb1d943f6ad25b63c235d4b9243d551e5"
+    export MPICH_MD5_CHECKSUM="10e43fd61fd1a13c89cfbed3eb30b97a"
+    export MPICH_SHA256_CHECKSUM="8836939804ef6d492bcee7d54abafd6477d2beca247157d92688654d13779727"
 }
 
 function bv_mpich_print

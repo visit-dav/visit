@@ -49,8 +49,8 @@ function bv_rkcommon_info
     export RKCOMMON_SRC_DIR=${RKCOMMON_SRC_DIR:-"rkcommon-${RKCOMMON_VERSION}"}
     export RKCOMMON_BUILD_DIR=${RKCOMMON_BUILD_DIR:-"${RKCOMMON_SRC_DIR}-build"}
 
-#    export RKCOMMON_MD5_CHECKSUM="7f9bb79ef0a6bf42fa9bc05af3829e5b"
-#    export RKCOMMON_SHA256_CHECKSUM="460a480cf08fedbf5b38f707f94f20828798327adadb077f80dbab048fd0a07d"
+    export RKCOMMON_MD5_CHECKSUM="9eaff694a0ae530e9dd8d89fda99316a"
+    export RKCOMMON_SHA256_CHECKSUM="24d0c9c58a4d2f22075850df170ec5732cfaa0a16f22f90dbd6538232be009b0"
 }
 
 function bv_rkcommon_print
