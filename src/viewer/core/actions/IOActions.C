@@ -203,10 +203,15 @@ ExportDBAction::Execute()
                                 key, networkIds, &exportAtts,
                                 timeSuffix, exportAtts))
                         {
+                            std::string host = key.OriginalHostName();
+                            if (host == "localhost")
+                                host = "";
+                            else
+                                host += ":";
                             GetViewerMessaging()->Message(
-                                TR("Exported database time state %1 to %2:%3/%4").
+                                TR("Exported database time state %1 to %2%3/%4").
                                 arg(i).
-                                arg(key.HostName()).
+                                arg(host).
                                 arg(exportAtts.GetDirname()).
                                 arg(exportAtts.GetFilename()));
                         }
@@ -242,9 +247,14 @@ ExportDBAction::Execute()
         else if (GetViewerEngineManager()->ExportDatabases(key,
                  networkIds, &exportAtts, "", exportAtts))
         {
+            std::string host = key.OriginalHostName();
+            if (host == "localhost")
+                host = "";
+            else
+                host += ":";
             GetViewerMessaging()->Message(
-                TR("Exported database to %1:%2/%3").
-                arg(key.HostName()).
+                TR("Exported database to %1%2/%3").
+                arg(host).
                 arg(exportAtts.GetDirname()).
                 arg(exportAtts.GetFilename()));
         }
