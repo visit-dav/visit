@@ -78,6 +78,43 @@ function bv_vtkh_dry_run
     fi
 }
 
+
+function bv_vtkh_is_enabled
+{
+    if [[ $DO_VTKH == "yes" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_vtkh_is_installed
+{
+    check_if_installed "vtkh" $VTKH_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_vtkh_build
+{
+    cd "$START_DIR"
+
+    if [[ "$DO_VTKH" == "yes" ]] ; then
+        check_if_installed "vtkh" $VTKH_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping VTKh build. VTKh is already installed."
+        else
+            info "Building VTKh (~2 minutes)"
+            build_vtkh
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install VTKh.  Bailing out."
+            fi
+            info "Done building VTKh"
+        fi
+    fi
+}
+
 # *************************************************************************** #
 #                            Function 6, patch_vtk                            #
 # *************************************************************************** #
@@ -215,40 +252,4 @@ function build_vtkh
     cd "$START_DIR"
     info "Done with VTKh"
     return 0
-}
-
-function bv_vtkh_is_enabled
-{
-    if [[ $DO_VTKH == "yes" ]]; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_vtkh_is_installed
-{
-    check_if_installed "vtkh" $VTKH_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_vtkh_build
-{
-    cd "$START_DIR"
-
-    if [[ "$DO_VTKH" == "yes" ]] ; then
-        check_if_installed "vtkh" $VTKH_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping VTKh build. VTKh is already installed."
-        else
-            info "Building VTKh (~2 minutes)"
-            build_vtkh
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install VTKh.  Bailing out."
-            fi
-            info "Done building VTKh"
-        fi
-    fi
 }

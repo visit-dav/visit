@@ -149,6 +149,47 @@ function bv_vtk_dry_run
     fi
 }
 
+
+function bv_vtk_is_enabled
+{
+    if [[ $DO_VTK == "yes" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_vtk_is_installed
+{
+    if [[ "$USE_SYSTEM_VTK" == "yes" ]]; then
+        return 1
+    fi
+
+    check_if_installed "vtk" $VTK_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_vtk_build
+{
+    cd "$START_DIR"
+
+    if [[ "$DO_VTK" == "yes" && "$USE_SYSTEM_VTK" == "no" ]] ; then
+        check_if_installed "vtk" $VTK_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping VTK build. VTK is already installed."
+        else
+            info "Building VTK (~20 minutes)"
+            build_vtk
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install VTK. Bailing out."
+            fi
+            info "Done building VTK"
+        fi
+    fi
+}
+
 # *************************************************************************** #
 #                            Function 6, patch_vtk                            #
 # *************************************************************************** #
@@ -1426,44 +1467,4 @@ function build_vtk
     cd "$START_DIR"
     info "Done with VTK"
     return 0
-}
-
-function bv_vtk_is_enabled
-{
-    if [[ $DO_VTK == "yes" ]]; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_vtk_is_installed
-{
-    if [[ "$USE_SYSTEM_VTK" == "yes" ]]; then
-        return 1
-    fi
-
-    check_if_installed "vtk" $VTK_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_vtk_build
-{
-    cd "$START_DIR"
-
-    if [[ "$DO_VTK" == "yes" && "$USE_SYSTEM_VTK" == "no" ]] ; then
-        check_if_installed "vtk" $VTK_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping VTK build. VTK is already installed."
-        else
-            info "Building VTK (~20 minutes)"
-            build_vtk
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install VTK. Bailing out."
-            fi
-            info "Done building VTK"
-        fi
-    fi
 }

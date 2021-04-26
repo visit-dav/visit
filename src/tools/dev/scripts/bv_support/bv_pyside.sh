@@ -114,8 +114,64 @@ function bv_pyside_dry_run
     fi
 }
 
+function bv_pyside_is_enabled
+{
+    if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]]; then
+        return 0;
+    fi
+
+    if [[ $DO_PYSIDE == "yes" ]]; then
+        return 1
+    fi
+
+    return 0
+}
+
+function bv_pyside_is_installed
+{
+    if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
+        return 1
+    fi
+
+    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH
+    # issue can be resolved.
+
+    #if [[ "$USE_SYSTEM_PYTHON" == "yes" ]] ; then
+        check_if_installed "pyside" $PYSIDE_VERSION
+        if [[ $? != 0 ]] ; then
+            return 0
+        fi
+    #else
+    #    # check in python
+    #    if [[ ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide2" ||
+    #          ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/shiboken2"  ]]; then
+    #        info "pyside not installed"
+    #        return 0
+    #    fi
+    #fi
+    return 1
+}
+
+function bv_pyside_build
+{
+    cd "$START_DIR"
+    if [[ "$DO_PYSIDE" == "yes" && "$USE_SYSTEM_PYSIDE" == "no" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
+        bv_pyside_is_installed #this returns 1 for true, 0 for false
+        if [[ $? != 0 ]] ; then
+            info "Skipping PySide build.  PySide is already installed."
+        else
+            info "Building PySide (~5 minutes)"
+            build_pyside
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install PySide.  Bailing out."
+            fi
+            info "Done building PySide"
+        fi
+    fi
+}
+
 # *************************************************************************** #
-#   Function 4.2, build_pyside
+#   Function 4.2, patch_pyside
 # *************************************************************************** #
 
 function apply_pyside_5142_patch
@@ -433,60 +489,4 @@ function build_pyside
     info "Done with PySide"
 
     return 0
-}
-
-function bv_pyside_is_enabled
-{
-    if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]]; then
-        return 0;
-    fi
-
-    if [[ $DO_PYSIDE == "yes" ]]; then
-        return 1
-    fi
-
-    return 0
-}
-
-function bv_pyside_is_installed
-{
-    if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
-        return 1
-    fi
-
-    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH
-    # issue can be resolved.
-
-    #if [[ "$USE_SYSTEM_PYTHON" == "yes" ]] ; then
-        check_if_installed "pyside" $PYSIDE_VERSION
-        if [[ $? != 0 ]] ; then
-            return 0
-        fi
-    #else
-    #    # check in python
-    #    if [[ ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide2" ||
-    #          ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/shiboken2"  ]]; then
-    #        info "pyside not installed"
-    #        return 0
-    #    fi
-    #fi
-    return 1
-}
-
-function bv_pyside_build
-{
-    cd "$START_DIR"
-    if [[ "$DO_PYSIDE" == "yes" && "$USE_SYSTEM_PYSIDE" == "no" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
-        bv_pyside_is_installed #this returns 1 for true, 0 for false
-        if [[ $? != 0 ]] ; then
-            info "Skipping PySide build.  PySide is already installed."
-        else
-            info "Building PySide (~5 minutes)"
-            build_pyside
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install PySide.  Bailing out."
-            fi
-            info "Done building PySide"
-        fi
-    fi
 }

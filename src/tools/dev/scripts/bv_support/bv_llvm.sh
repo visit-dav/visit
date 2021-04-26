@@ -125,6 +125,42 @@ function bv_llvm_dry_run
     fi
 }
 
+function bv_llvm_is_enabled
+{
+    if [[ $DO_LLVM == "yes" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_llvm_is_installed
+{
+    check_if_installed "llvm" $LLVM_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_llvm_build
+{
+    cd "$START_DIR"
+
+    if [[ "$DO_LLVM" == "yes" ]] ; then
+        check_if_installed "LLVM" $LLVM_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping LLVM build. LLVM is already installed."
+        else
+            info "Building Llvm (~60 minutes)"
+            build_llvm
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install LLVM. Bailing out."
+            fi
+            info "Done building LLVM"
+        fi
+    fi
+}
+
 function apply_llvm_patch
 {
 #    info "Patching LLVM . . ."
@@ -321,40 +357,4 @@ function build_llvm
     cd "$START_DIR"
     info "Done with LLVM"
     return 0
-}
-
-function bv_llvm_is_enabled
-{
-    if [[ $DO_LLVM == "yes" ]]; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_llvm_is_installed
-{
-    check_if_installed "llvm" $LLVM_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_llvm_build
-{
-    cd "$START_DIR"
-
-    if [[ "$DO_LLVM" == "yes" ]] ; then
-        check_if_installed "LLVM" $LLVM_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping LLVM build. LLVM is already installed."
-        else
-            info "Building Llvm (~60 minutes)"
-            build_llvm
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install LLVM. Bailing out."
-            fi
-            info "Done building LLVM"
-        fi
-    fi
 }

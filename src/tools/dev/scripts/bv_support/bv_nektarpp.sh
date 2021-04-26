@@ -112,6 +112,47 @@ function bv_nektarpp_dry_run
     fi
 }
 
+
+function bv_nektarpp_is_enabled
+{
+    if [[ $DO_NEKTARPP == "yes" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_nektarpp_is_installed
+{
+    if [[ "$USE_SYSTEM_NEKTARPP" == "yes" ]]; then
+        return 1
+    fi
+
+    check_if_installed "nektar++" $NEKTARPP_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_nektarpp_build
+{
+    cd "$START_DIR"
+
+    if [[ "$DO_NEKTARPP" == "yes" && "$USE_SYSTEM_NEKTARPP" == "no" ]] ; then
+        check_if_installed "nektar++" $NEKTARPP_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping Nektar++ build. Nektar++ is already installed."
+        else
+            info "Building Nektar++ (~10 minutes)"
+            build_nektarpp
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install Nektar++. Bailing out."
+            fi
+            info "Done building Nektar++"
+        fi
+    fi
+}
+
 function apply_nektarpp_4_4_0_patch
 {
     info "Patching Nektar++ 4.4.0"
@@ -613,44 +654,4 @@ function build_nektarpp
     cd "$START_DIR"
     info "Done with Nektar++"
     return 0
-}
-
-function bv_nektarpp_is_enabled
-{
-    if [[ $DO_NEKTARPP == "yes" ]]; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_nektarpp_is_installed
-{
-    if [[ "$USE_SYSTEM_NEKTARPP" == "yes" ]]; then
-        return 1
-    fi
-
-    check_if_installed "nektar++" $NEKTARPP_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_nektarpp_build
-{
-    cd "$START_DIR"
-
-    if [[ "$DO_NEKTARPP" == "yes" && "$USE_SYSTEM_NEKTARPP" == "no" ]] ; then
-        check_if_installed "nektar++" $NEKTARPP_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping Nektar++ build. Nektar++ is already installed."
-        else
-            info "Building Nektar++ (~10 minutes)"
-            build_nektarpp
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install Nektar++. Bailing out."
-            fi
-            info "Done building Nektar++"
-        fi
-    fi
 }

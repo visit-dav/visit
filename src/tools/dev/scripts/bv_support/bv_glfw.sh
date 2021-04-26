@@ -2,7 +2,7 @@ function bv_glfw_initialize
 {
     export DO_GLFW="no"
     export USE_SYSTEM_GLFW="no"
-    add_extra_commandline_args "glfw" "alt-glfw-dir" 1 "Use alternative directory for glfw"
+    add_extra_commandline_args "glfw" "alt-glfw-dir" 1 "Use alternative directory for GLFW"
 }
 
 function bv_glfw_enable
@@ -17,7 +17,7 @@ function bv_glfw_disable
 
 function bv_glfw_alt_glfw_dir
 {
-    echo "Using alternate glfw directory"
+    echo "Using alternate GLFW directory"
     bv_glfw_enable
     USE_SYSTEM_GLFW="yes"
     GLFW_INSTALL_DIR="$1"
@@ -30,7 +30,7 @@ function bv_glfw_depends_on
 
 function bv_glfw_initialize_vars
 {
-    info "initializing glfw vars"
+    info "initializing GLFW vars"
     if [[ "$DO_GLFW" == "yes" ]] ; then
         if [[ "$USE_SYSTEM_GLFW" == "no" ]]; then
             GLFW_INSTALL_DIR=$VISITDIR/glfw/$GLFW_VERSION/$VISITARCH
@@ -43,14 +43,14 @@ function bv_glfw_info
     export GLFW_VERSION=${GLFW_VERSION:-"3.3.3"}
     if [[ "$OPSYS" == "Darwin" ]] ; then
         export GLFW_FILE=${GLFW_FILE:-"glfw-${GLFW_VERSION}.bin.MACOS.zip"}
-        export GLFW_BUILD_DIR=${GLFW_BUILD_DIR:-glfw-"$GLFW_VERSION.bin.MACOS"}
+        export GLFW_BINARY_DIR=${GLFW_BINARY_DIR:-glfw-"$GLFW_VERSION.bin.MACOS"}
         # these are binary builds, not source tarballs so the mdf5s
         # and shas differ between platforms
 #        export GLFW_MD5_CHECKSUM="8a3874975f1883d8df1714b3ba3eacba"
 #        export GLFW_SHA256_CHECKSUM="31cbbe96c6f19bb9c5463e181070bd667d3dbb93e702671e8406ce26be259109"
     else
         export GLFW_FILE=${GLFW_FILE:-"glfw-${GLFW_VERSION}.x86_64.linux.tar.gz"}
-        export GLFW_BUILD_DIR=${GLFW_BUILD_DIR:-glfw-"glfw-$GLFW_VERSION.x86_64.linux"}
+        export GLFW_BINARY_DIR=${GLFW_BINARY_DIR:-glfw-"glfw-$GLFW_VERSION.x86_64.linux"}
         # these are binary builds, not source tarballs so the mdf5s
         # and shas differ between platforms
 #        export GLFW_MD5_CHECKSUM="7a1c3d12e8732cfee7d389f81d008798"
@@ -66,7 +66,7 @@ function bv_glfw_print
     printf "%s%s\n" "GLFW_FILE=" "${GLFW_FILE}"
     printf "%s%s\n" "GLFW_VERSION=" "${GLFW_VERSION}"
     printf "%s%s\n" "GLFW_COMPATIBILITY_VERSION=" "${GLFW_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "GLFW_BUILD_DIR=" "${GLFW_BUILD_DIR}"
+    printf "%s%s\n" "GLFW_BINARY_DIR=" "${GLFW_BINARY_DIR}"
 }
 
 function bv_glfw_host_profile
@@ -86,22 +86,22 @@ function bv_glfw_host_profile
 
 function bv_glfw_print_usage
 {
-    #glfw does not have an option, it is only dependent on glfw.
-    printf "%-20s %s [%s]\n" "--glfw" "Build glfw" "$DO_GLFW"
+    #glfw does not have an option, it is only dependent on GLFW.
+    printf "%-20s %s [%s]\n" "--glfw" "Build GLFW" "$DO_GLFW"
 }
 
 function bv_glfw_ensure
 {
     if [[ "$DO_GLFW" == "yes" && "$USE_SYSTEM_GLFW" == "no" ]] ; then
-        check_installed_or_have_src "glfw" $GLFW_VERSION $GLFW_BUILD_DIR $GLFW_FILE $GLFW_URL
+        check_installed_or_have_src "glfw" $GLFW_VERSION $GLFW_BINARY_DIR $GLFW_FILE $GLFW_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_GLFW="no"
-            error "Unable to build glfw.  ${GLFW_FILE} not found."
+            error "Unable to build GLFW.  ${GLFW_FILE} not found."
         fi
     elif [[ "$USE_SYSTEM_GLFW" == "yes" ]] ; then
         if [[ ! -d $GLFW_INSTALL_DIR/include/glfw3 ]]; then
-            error "Unable to find glfw v3.+ in the alternative path, perhaps a wrong glfw version is provided."
+            error "Unable to find GLFW v3.+ in the alternative path, perhaps a wrong GLFW version is provided."
         fi
     fi
 }
@@ -109,32 +109,8 @@ function bv_glfw_ensure
 function bv_glfw_dry_run
 {
     if [[ "$DO_GLFW" == "yes" ]] ; then
-        echo "Dry run option not set for glfw."
+        echo "Dry run option not set for GLFW."
     fi
-}
-
-# ***************************************************************************
-# build_glfw
-#
-# Modifications:
-#
-# ***************************************************************************
-
-function build_glfw
-{
-    # Unzip the GLFW tarball and copy it to the VisIt installation.
-    info "Installing prebuilt glfw"    
-    tar zxvf $GLFW_FILE
-    rm $GLFW_BUILD_DIR/lib/libtbb*
-    mkdir -p ${GLFW_INSTALL_DIR} || error "Cannot create glfw install directory"
-    cp -R $GLFW_BUILD_DIR/* ${GLFW_INSTALL_DIR} || error "Cannot copy to glfw install directory"
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "${GLFW_INSTALL_DIR}"
-        chgrp -R ${GROUP} "${GLFW_INSTALL_DIR}"
-    fi
-    cd "$START_DIR"
-    info "Done with glfw"
-    return 0
 }
 
 function bv_glfw_is_enabled
@@ -163,14 +139,57 @@ function bv_glfw_build
     if [[ "$DO_GLFW" == "yes" && "$USE_SYSTEM_GLFW" == "no" ]] ; then
         check_if_installed "glfw" $GLFW_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping build of glfw"
+            info "Skipping build of GLFW"
         else
             build_glfw
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install glfw.  Bailing out."
+                error "Unable to build or install GLFW.  Bailing out."
             fi
-            info "Done building glfw"
+            info "Done building GLFW"
         fi
     fi
 }
 
+# ***************************************************************************
+# build_glfw
+# ***************************************************************************
+function build_glfw
+{
+    #
+    # Uncompress the source file
+    #
+    uncompress_src_file $GLFW_BINARY_DIR $GLFW_FILE
+    untarred_glfw=$?
+    if [[ $untarred_glfw == -1 ]] ; then
+        warn "Unable to uncompress GLFW source file. Giving Up!"
+        return 1
+    fi
+
+    # Remove the tbb library as it should installed via TBB.
+    rm $GLFW_BINARY_DIR/lib/libtbb*
+
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing GLFW . . ."
+    mkdir -p ${GLFW_INSTALL_DIR}
+    if [[ $? != 0 ]] ; then
+        warn "Cannot create GLFW install directory"
+        return 1
+    fi
+
+    cp -R $GLFW_BINARY_DIR/* ${GLFW_INSTALL_DIR}
+    if [[ $? != 0 ]] ; then
+        warn "GLFW install failed. Giving up"
+        return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/glfw"
+        chgrp -R ${GROUP} "$VISITDIR/glfw"
+    fi
+
+    cd "$START_DIR"
+    info "Done with GLFW"
+    return 0
+}

@@ -169,6 +169,46 @@ function bv_ospray_dry_run
     fi
 }
 
+function bv_ospray_is_enabled
+{
+    if [[ $DO_OSPRAY == "yes" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_ospray_is_installed
+{
+    if [[ "$USE_SYSTEM_OSPRAY" == "yes" ]]; then
+        return 1
+    fi
+
+    check_if_installed "ospray" $OSPRAY_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_ospray_build
+{
+    cd "$START_DIR"
+
+    if [[ "$DO_OSPRAY" == "yes" && "$USE_SYSTEM_OSPRAY" == "no" ]] ; then
+        check_if_installed "ospray" $OSPRAY_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping OSPRAY build. OSPRAY is already installed."
+        else
+            info "Building OSPRAY (~20 minutes)"
+            build_ospray
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install OSPRAY. Bailing out."
+            fi
+            info "Done building OSPRAY"
+        fi
+    fi
+}
+
 # *************************************************************************** #
 #              Function 8.1, build_ospray                                     #
 # *************************************************************************** #
@@ -260,12 +300,13 @@ function build_ospray
     fi
 
     #
-    # Several platforms have had problems with the OSPRAY cmake configure command
-    # issued simply via "issue_command". This was first discovered on
-    # BGQ and then showed up in random cases for both OSX and Linux machines.
-    # Brad resolved this on BGQ  with a simple work around - we write a simple
-    # script that we invoke with bash which calls cmake with all of the properly
-    # arguments. We are now using this strategy for all platforms.
+    # Several platforms have had problems with the cmake configure
+    # command issued simply via "issue_command". This was first
+    # discovered on BGQ and then showed up in random cases for both
+    # OSX and Linux machines.  Brad resolved this on BGQ with a simple
+    # work around - we write a simple script that we invoke with bash
+    # which calls cmake with all of the properly arguments. We are now
+    # using this strategy for all platforms.
     #
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
 
@@ -310,44 +351,4 @@ function build_ospray
     cd "$START_DIR"
     info "Done with OSPRAY"
     return 0
-}
-
-function bv_ospray_is_enabled
-{
-    if [[ $DO_OSPRAY == "yes" ]]; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_ospray_is_installed
-{
-    if [[ "$USE_SYSTEM_OSPRAY" == "yes" ]]; then
-        return 1
-    fi
-
-    check_if_installed "ospray" $OSPRAY_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_ospray_build
-{
-    cd "$START_DIR"
-
-    if [[ "$DO_OSPRAY" == "yes" && "$USE_SYSTEM_OSPRAY" == "no" ]] ; then
-        check_if_installed "ospray" $OSPRAY_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping OSPRAY build. OSPRAY is already installed."
-        else
-            info "Building OSPRAY (~20 minutes)"
-            build_ospray
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install OSPRAY. Bailing out."
-            fi
-            info "Done building OSPRAY"
-        fi
-    fi
 }

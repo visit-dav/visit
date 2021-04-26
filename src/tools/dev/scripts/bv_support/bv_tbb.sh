@@ -25,11 +25,7 @@ function bv_tbb_alt_tbb_dir
 
 function bv_tbb_depends_on
 {
-    if [[ "$USE_SYSTEM_TBB" == "yes" ]] ; then
-        echo ""
-    else
-        echo ""
-    fi
+    echo ""
 }
 
 function bv_tbb_initialize_vars
@@ -40,6 +36,11 @@ function bv_tbb_initialize_vars
             TBB_INSTALL_DIR=$VISITDIR/tbb/$TBB_VERSION/$VISITARCH
         fi
     fi
+
+    # Note by Qi bv_tbb.sh is not completely written by
+    #   me. TBB_ROOT cmake variable is commonly used in many TBB
+    #   related projects. I want to keep it set here since I am
+    #   afraid of breaking other packages other than ospray
     export TBB_ROOT="${TBB_INSTALL_DIR}"
 }
 
@@ -118,28 +119,6 @@ function bv_tbb_dry_run
     fi
 }
 
-# ***************************************************************************
-# build_tbb
-#
-# Modifications:
-#
-# ***************************************************************************
-
-function build_tbb
-{
-    # Unzip the TBB tarball and copy it to the VisIt installation.
-    info "Installing prebuilt TBB"
-    tar zxvf $TBB_FILE
-    mkdir -p ${TBB_INSTALL_DIR} || error "Cannot create tbb install directory"
-    cp -R $TBB_BINARY_DIR/* ${TBB_INSTALL_DIR} || error "Cannot copy to tbb install directory"
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "${TBB_INSTALL_DIR}"
-        chgrp -R ${GROUP} "${TBB_INSTALL_DIR}"
-    fi
-    cd "$START_DIR"
-    info "Done with TBB"
-    return 0
-}
 
 function bv_tbb_is_enabled
 {
@@ -176,4 +155,45 @@ function bv_tbb_build
             info "Done building TBB."
         fi
     fi
+}
+
+# ***************************************************************************
+# build_tbb
+# ***************************************************************************
+function build_tbb
+{
+    #
+    # Uncompress the source file
+    #
+    uncompress_src_file $TBB_BINARY_DIR $TBB_FILE
+    untarred_tbb=$?
+    if [[ $untarred_tbb == -1 ]] ; then
+        warn "Unable to uncompress TBB source file. Giving Up!"
+        return 1
+    fi
+
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing TBB . . ."
+    mkdir -p ${TBB_INSTALL_DIR}
+    if [[ $? != 0 ]] ; then
+        warn "Cannot create TBB install directory"
+        return 1
+    fi
+
+    cp -R $TBB_BINARY_DIR/* ${TBB_INSTALL_DIR}
+    if [[ $? != 0 ]] ; then
+        warn "TBB install failed. Giving up"
+        return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/tbb"
+        chgrp -R ${GROUP} "$VISITDIR/tbb"
+    fi
+
+    cd "$START_DIR"
+    info "Done with TBB"
+    return 0
 }

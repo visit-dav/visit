@@ -103,6 +103,46 @@ function bv_rkcommon_dry_run
     fi
 }
 
+function bv_rkcommon_is_enabled
+{
+    if [[ $DO_RKCOMMON == "yes" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_rkcommon_is_installed
+{
+    if [[ "$USE_SYSTEM_RKCOMMON" == "yes" ]]; then
+        return 1
+    fi
+
+    check_if_installed "rkcommon" $RKCOMMON_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_rkcommon_build
+{
+    cd "$START_DIR"
+
+    if [[ "$DO_RKCOMMON" == "yes" ]] ; then
+        check_if_installed "rkcommon" $RKCOMMON_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping Rkcommon build. Rkcommon is already installed."
+        else
+            info "Building Rkcommon (~5 minutes)"
+            build_rkcommon
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install Rkcommon. Bailing out."
+            fi
+            info "Done building Rkcommon"
+        fi
+    fi
+}
+
 # *************************************************************************** #
 # build_rkcommon
 # *************************************************************************** #
@@ -208,7 +248,7 @@ function build_rkcommon
     #
     # Install into the VisIt third party location.
     #
-    info "Installing Rkcommon"
+    info "Installing Rkcommon . . ."
     $MAKE install
     if [[ $? != 0 ]] ; then
         warn "Rkcommon install failed. Giving up"
@@ -219,47 +259,8 @@ function build_rkcommon
         chmod -R ug+w,a+rX "$VISITDIR/rkcommon"
         chgrp -R ${GROUP} "$VISITDIR/rkcommon"
     fi
+
     cd "$START_DIR"
     info "Done with Rkcommon"
     return 0
-}
-
-function bv_rkcommon_is_enabled
-{
-    if [[ $DO_RKCOMMON == "yes" ]]; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_rkcommon_is_installed
-{
-    if [[ "$USE_SYSTEM_RKCOMMON" == "yes" ]]; then
-        return 1
-    fi
-
-    check_if_installed "rkcommon" $RKCOMMON_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_rkcommon_build
-{
-    cd "$START_DIR"
-
-    if [[ "$DO_RKCOMMON" == "yes" ]] ; then
-        check_if_installed "rkcommon" $RKCOMMON_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping Rkcommon build. Rkcommon is already installed."
-        else
-            info "Building Rkcommon (~5 minutes)"
-            build_rkcommon
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install Rkcommon. Bailing out."
-            fi
-            info "Done building Rkcommon"
-        fi
-    fi
 }

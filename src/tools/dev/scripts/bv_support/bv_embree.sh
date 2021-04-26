@@ -43,14 +43,14 @@ function bv_embree_info
     export EMBREE_VERSION=${EMBREE_VERSION:-"3.12.2"}
     if [[ "$OPSYS" == "Darwin" ]] ; then
         export EMBREE_FILE=${EMBREE_FILE:-"embree-${EMBREE_VERSION}.x86_64.macosx.zip"}
-        export EMBREE_SRC_DIR=${EMBREE_SRC_DIR:-embree-"$EMBREE_VERSION.x86_64.macosx"}
+        export EMBREE_BINARY_DIR=${EMBREE_BINARY_DIR:-embree-"$EMBREE_VERSION.x86_64.macosx"}
         # these are binary builds, not source tarballs so the mdf5s
         # and shas differ between platforms
 #        export EMBREE_MD5_CHECKSUM="8a3874975f1883d8df1714b3ba3eacba"
 #        export EMBREE_SHA256_CHECKSUM="31cbbe96c6f19bb9c5463e181070bd667d3dbb93e702671e8406ce26be259109"
     else
         export EMBREE_FILE=${EMBREE_FILE:-"embree-${EMBREE_VERSION}.x86_64.linux.tar.gz"}
-        export EMBREE_SRC_DIR=${EMBREE_SRC_DIR:-embree-"embree-$EMBREE_VERSION.x86_64.linux"}
+        export EMBREE_BINARY_DIR=${EMBREE_BINARY_DIR:-embree-"embree-$EMBREE_VERSION.x86_64.linux"}
         # these are binary builds, not source tarballs so the mdf5s
         # and shas differ between platforms
 #        export EMBREE_MD5_CHECKSUM="7a1c3d12e8732cfee7d389f81d008798"
@@ -115,29 +115,6 @@ function bv_embree_dry_run
     fi
 }
 
-# ***************************************************************************
-# build_embree
-#
-# Modifications:
-#
-# ***************************************************************************
-
-function build_embree
-{
-    # Unzip the EMBREE tarball and copy it to the VisIt installation.
-    info "Installing prebuilt embree"
-    tar zxvf $EMBREE_FILE
-    rm $EMBREE_BINARY_DIR/lib/libtbb*
-    mkdir -p ${EMBREE_INSTALL_DIR} || error "Cannot create embree install directory"
-    cp -R $EMBREE_BINARY_DIR/* ${EMBREE_INSTALL_DIR} || error "Cannot copy to embree install directory"
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "${EMBREE_INSTALL_DIR}"
-        chgrp -R ${GROUP} "${EMBREE_INSTALL_DIR}"
-    fi
-    cd "$START_DIR"
-    info "Done with embree"
-    return 0
-}
 
 function bv_embree_is_enabled
 {
@@ -174,4 +151,46 @@ function bv_embree_build
             info "Done building embree"
         fi
     fi
+}
+
+# ***************************************************************************
+# build_embree
+# ***************************************************************************
+
+function build_embree
+{
+    #
+    # Uncompress the source file
+    #
+    uncompress_src_file $EMBREE_BINARY_DIR $EMBREE_FILE
+    untarred_embree=$?
+    if [[ $untarred_embree == -1 ]] ; then
+        warn "Unable to uncompress EMBREE source file. Giving Up!"
+        return 1
+    fi
+
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing EMBREE . . ."
+    mkdir -p ${EMBREE_INSTALL_DIR}
+    if [[ $? != 0 ]] ; then
+        warn "Cannot create EMBREE install directory"
+        return 1
+    fi
+
+    cp -R $EMBREE_BINARY_DIR/* ${EMBREE_INSTALL_DIR}
+    if [[ $? != 0 ]] ; then
+        warn "EMBREE install failed. Giving up"
+        return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/embree"
+        chgrp -R ${GROUP} "$VISITDIR/embree"
+    fi
+
+    cd "$START_DIR"
+    info "Done with EMBREE"
+    return 0
 }

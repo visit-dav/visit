@@ -112,6 +112,47 @@ function bv_pidx_dry_run
     fi
 }
 
+
+function bv_pidx_is_enabled
+{
+    if [[ $DO_PIDX == "yes" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_pidx_is_installed
+{
+    if [[ "$USE_SYSTEM_PIDX" == "yes" ]]; then
+        return 1
+    fi
+
+    check_if_installed "pidx" $PIDX_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_pidx_build
+{
+    cd "$START_DIR"
+
+    if [[ "$DO_PIDX" == "yes" && "$USE_SYSTEM_PIDX" == "no" ]] ; then
+        check_if_installed "pidx" $PIDX_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping PIDX build. PIDX is already installed."
+        else
+            info "Building PIDX (~2 minutes)"
+            build_pidx
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install PIDX. Bailing out."
+            fi
+            info "Done building pidx"
+        fi
+    fi
+}
+
 function apply_pidx_patch
 {
     cd ${PIDX_SRC_DIR} || error "Can't cd to PIDX source dir."
@@ -292,44 +333,4 @@ function build_pidx
     cd "$START_DIR"
     info "Done with pidx"
     return 0
-}
-
-function bv_pidx_is_enabled
-{
-    if [[ $DO_PIDX == "yes" ]]; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_pidx_is_installed
-{
-    if [[ "$USE_SYSTEM_PIDX" == "yes" ]]; then
-        return 1
-    fi
-
-    check_if_installed "pidx" $PIDX_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_pidx_build
-{
-    cd "$START_DIR"
-
-    if [[ "$DO_PIDX" == "yes" && "$USE_SYSTEM_PIDX" == "no" ]] ; then
-        check_if_installed "pidx" $PIDX_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping PIDX build. PIDX is already installed."
-        else
-            info "Building PIDX (~2 minutes)"
-            build_pidx
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install PIDX. Bailing out."
-            fi
-            info "Done building pidx"
-        fi
-    fi
 }

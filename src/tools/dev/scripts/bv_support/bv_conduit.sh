@@ -132,22 +132,6 @@ function bv_conduit_dry_run
     fi
 }
 
-function apply_conduit_patch
-{
-    cd "${CONDUIT_SRC_DIR}" || error "Can't cd to conduit source dir."
-
-#    info "Patching conduit . . ."
-
-#    apply_xyz_patch
-#    if [[ $? != 0 ]] ; then
-#        return 1
-#    fi
-
-    cd "${START_DIR}"
-
-    return 0
-}
-
 function bv_conduit_is_enabled
 {
     if [[ "${DO_CONDUIT}" == "yes" ]]; then
@@ -186,6 +170,22 @@ function bv_conduit_build
             info "Done building conduit"
         fi
     fi
+}
+
+function apply_conduit_patch
+{
+    cd "${CONDUIT_SRC_DIR}" || error "Can't cd to conduit source dir."
+
+#    info "Patching conduit . . ."
+
+#    apply_xyz_patch
+#    if [[ $? != 0 ]] ; then
+#        return 1
+#    fi
+
+    cd "${START_DIR}"
+
+    return 0
 }
 
 function build_conduit

@@ -44,19 +44,19 @@ function bv_ispc_info
     if [[ "$OPSYS" == "Darwin" ]] ; then
         export ISPC_FILE=${ISPC_FILE:-"ispc-v${ISPC_VERSION}-macOS.tar.gz"}
         export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/osx/"}
+        export ISPC_BINARY_DIR=${ISPC_BINARY_DIR:-"ispc-v$ISPC_VERSION-macOS"}
         # these are binary builds, not source tarballs so the mdf5s
         # and shas differ between platforms
         export ISPC_MD5_CHECKSUM="387cce62a6c63def5e6eb1c0a468a3db"
         export ISPC_SHA256_CHECKSUM="aa307b97bea67d71aff046e3f69c0412cc950eda668a225e6b909dba752ef281"
-        export ISPC_BINARY_DIR=${ISPC_BINARY_DIR:-"ispc-v$ISPC_VERSION-macOS"}
     else
         export ISPC_FILE=${ISPC_FILE:-"ispc-v${ISPC_VERSION}-linux.tar.gz"}
         export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/linux/"}
+        export ISPC_BINARY_DIR=${ISPC_BINARY_DIR:-"ispc-v$ISPC_VERSION-linux"}
         # these are binary builds, not source tarballs so the mdf5s
         # and shas differ between platforms
         export ISPC_MD5_CHECKSUM="0178a33a065ae65d0be00be23871cf9f"
         export ISPC_SHA256_CHECKSUM="5513fbf8a2f6e889232ec1e7aa42f6f0b47954dcb9797e1e3d5e8d6f59301e40"
-        export ISPC_BINARY_DIR=${ISPC_BINARY_DIR:-"ispc-v$ISPC_VERSION-linux"}
     fi
 
     export ISPC_COMPATIBILITY_VERSION=${ISPC_COMPATIBILITY_VERSION:-"${ISPC_VERSION}"}
@@ -112,29 +112,6 @@ function bv_ispc_dry_run
     fi
 }
 
-# ***************************************************************************
-# build_ispc
-#
-# Modifications:
-#
-# ***************************************************************************
-
-function build_ispc
-{
-    # Unzip the ISPC tarball and copy it to the VisIt installation.
-    info "Installing prebuilt ISPC"
-    tar zxvf $ISPC_FILE
-    mkdir -p ${ISPC_INSTALL_DIR} || error "Cannot create ispc install directory"
-    cp -R $ISPC_BINARY_DIR/* ${ISPC_INSTALL_DIR} || error "Cannot copy to ispc install directory"
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "${ISPC_INSTALL_DIR}"
-        chgrp -R ${GROUP} "${ISPC_INSTALL_DIR}"
-    fi
-    cd "$START_DIR"
-    info "Done with ISPC"
-    return 0
-}
-
 function bv_ispc_is_enabled
 {
     if [[ $DO_ISPC == "yes" ]]; then
@@ -171,3 +148,46 @@ function bv_ispc_build
         fi
     fi
 }
+
+# ***************************************************************************
+# build_ispc
+# ***************************************************************************
+
+function build_ispc
+{
+    #
+    # Uncompress the source file
+    #
+    uncompress_src_file $ISPC_BINARY_DIR $ISPC_FILE
+    untarred_ispc=$?
+    if [[ $untarred_ispc == -1 ]] ; then
+        warn "Unable to uncompress ISPC source file. Giving Up!"
+        return 1
+    fi
+
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing ISPC . . ."
+    mkdir -p ${ISPC_INSTALL_DIR}
+    if [[ $? != 0 ]] ; then
+        warn "Cannot create ISPC install directory"
+        return 1
+    fi
+
+    cp -R $ISPC_BINARY_DIR/* ${ISPC_INSTALL_DIR}
+    if [[ $? != 0 ]] ; then
+        warn "ISPC install failed. Giving up"
+        return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/ispc"
+        chgrp -R ${GROUP} "$VISITDIR/ispc"
+    fi
+
+    cd "$START_DIR"
+    info "Done with ISPC"
+    return 0
+}
+

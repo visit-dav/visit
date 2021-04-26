@@ -82,11 +82,43 @@ function bv_mpich_dry_run
     fi
 }
 
+function bv_mpich_is_enabled
+{
+    if [[ $DO_MPICH == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_mpich_is_installed
+{
+    check_if_installed "mpich" $MPICH_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_mpich_build
+{
+    cd "$START_DIR"
+    if [[ "$DO_MPICH" == "yes" ]] ; then
+        check_if_installed "mpich" $MPICH_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping MPICH build.  MPICH is already installed."
+        else
+            info "Building MPICH (~2 minutes)"
+            build_mpich
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install MPICH.  Bailing out."
+            fi
+            info "Done building MPICH"
+        fi
+    fi
+}
+
 # *************************************************************************** #
-#                            Function 8, build_mpich
-#
-# Modfications:
-#
+# build_mpich
 # *************************************************************************** #
 
 function build_mpich
@@ -179,39 +211,4 @@ function build_mpich
     cd "$START_DIR"
     info "Done with MPICH"
     return 0
-}
-
-function bv_mpich_is_enabled
-{
-    if [[ $DO_MPICH == "yes" ]]; then
-        return 1    
-    fi
-    return 0
-}
-
-function bv_mpich_is_installed
-{
-    check_if_installed "mpich" $MPICH_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_mpich_build
-{
-    cd "$START_DIR"
-    if [[ "$DO_MPICH" == "yes" ]] ; then
-        check_if_installed "mpich" $MPICH_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping MPICH build.  MPICH is already installed."
-        else
-            info "Building MPICH (~2 minutes)"
-            build_mpich
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install MPICH.  Bailing out."
-            fi
-            info "Done building MPICH"
-        fi
-    fi
 }

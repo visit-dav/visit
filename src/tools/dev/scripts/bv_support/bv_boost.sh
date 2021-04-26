@@ -103,6 +103,46 @@ function bv_boost_dry_run
     fi
 }
 
+function bv_boost_is_enabled
+{
+    if [[ $DO_BOOST == "yes" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_boost_is_installed
+{
+    if [[ "$USE_SYSTEM_BOOST" == "yes" ]]; then
+        return 1
+    fi
+
+    check_if_installed "boost" $BOOST_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_boost_build
+{
+    cd "$START_DIR"
+
+    if [[ "$DO_BOOST" == "yes" && "$USE_SYSTEM_BOOST" == "no" ]] ; then
+        check_if_installed "boost" $BOOST_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping BOOST build. BOOST is already installed."
+        else
+            info "Building BOOST (~15 minutes)"
+            build_boost
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install BOOST. Bailing out."
+            fi
+            info "Done building BOOST"
+        fi
+    fi
+}
+
 function apply_boost_ppc_rounding_control_patch
 {
    # resolves a C++11 narrowing error
@@ -152,7 +192,7 @@ function apply_boost_patch
 }
 
 # *************************************************************************** #
-#                          Function 8.1, build_boost                           #
+#                          Function 8.1, build_boost                          #
 # *************************************************************************** #
 
 function build_boost
@@ -329,52 +369,11 @@ function build_boost
         chmod -R ug+w,a+rX "$VISITDIR/boost"
         chgrp -R ${GROUP} "$VISITDIR/boost"
     fi
+
     cd "$START_DIR"
     info "Done with BOOST"
     return 0
 }
-
-function bv_boost_is_enabled
-{
-    if [[ $DO_BOOST == "yes" ]]; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_boost_is_installed
-{
-    if [[ "$USE_SYSTEM_BOOST" == "yes" ]]; then
-        return 1
-    fi
-
-    check_if_installed "boost" $BOOST_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_boost_build
-{
-    cd "$START_DIR"
-
-    if [[ "$DO_BOOST" == "yes" && "$USE_SYSTEM_BOOST" == "no" ]] ; then
-        check_if_installed "boost" $BOOST_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping BOOST build. BOOST is already installed."
-        else
-            info "Building BOOST (~15 minutes)"
-            build_boost
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install BOOST. Bailing out."
-            fi
-            info "Done building BOOST"
-        fi
-    fi
-}
-
-
 
 # Notes to Windows developers on building boost:
 # grab the .zip or .7z tarball and extract

@@ -91,6 +91,47 @@ function bv_vtkm_dry_run
     fi
 }
 
+
+function bv_vtkm_is_enabled
+{
+    if [[ $DO_VTKM == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_vtkm_is_installed
+{
+    if [[ "$USE_SYSTEM_VTKM" == "yes" ]]; then
+        return 1
+    fi
+
+    check_if_installed "vtkm" $VTKM_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_vtkm_build
+{
+    cd "$START_DIR"
+    
+    if [[ "$DO_VTKM" == "yes" && "$USE_SYSTEM_VTKM" == "no" ]] ; then
+        check_if_installed "vtkm" $VTKM_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping VTKm build. VTKm is already installed."
+        else
+            info "Building VTKm (~2 minutes)"
+            build_vtkm
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install VTKm.  Bailing out."
+            fi
+            info "Done building VTKm"
+        fi
+    fi
+}
+
 # *************************************************************************** #
 #                            Function 6, patch_vtk                            #
 # *************************************************************************** #
@@ -256,44 +297,4 @@ function build_vtkm
     cd "$START_DIR"
     info "Done with Vtkm"
     return 0
-}
-
-function bv_vtkm_is_enabled
-{
-    if [[ $DO_VTKM == "yes" ]]; then
-        return 1    
-    fi
-    return 0
-}
-
-function bv_vtkm_is_installed
-{
-    if [[ "$USE_SYSTEM_VTKM" == "yes" ]]; then
-        return 1
-    fi
-
-    check_if_installed "vtkm" $VTKM_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_vtkm_build
-{
-    cd "$START_DIR"
-    
-    if [[ "$DO_VTKM" == "yes" && "$USE_SYSTEM_VTKM" == "no" ]] ; then
-        check_if_installed "vtkm" $VTKM_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping VTKm build. VTKm is already installed."
-        else
-            info "Building VTKm (~2 minutes)"
-            build_vtkm
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install VTKm.  Bailing out."
-            fi
-            info "Done building VTKm"
-        fi
-    fi
 }

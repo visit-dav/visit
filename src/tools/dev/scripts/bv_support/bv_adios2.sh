@@ -129,6 +129,56 @@ function bv_adios2_dry_run
     fi
 }
 
+
+function bv_adios2_is_enabled
+{
+    if [[ $DO_ADIOS2 == "yes" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_adios2_is_installed
+{
+    if [[ "$USE_SYSTEM_ADIOS2" == "yes" ]]; then
+        return 1
+    fi
+
+    check_if_installed "adios2" $ADIOS2_VERSION
+    if [[ $? == 0 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+function bv_adios2_build
+{
+    cd "$START_DIR"
+
+    if [[ "$DO_ADIOS2" == "yes" && "$USE_SYSTEM_ADIOS2" == "no" ]] ; then
+
+        ser_installed="no"
+        check_if_installed "adios2-ser" $ADIOS2_VERSION
+        if [[ $? == 0 ]] ; then ser_installed="yes"; fi
+
+        par_installed="no"
+        if [[ "$parallel" == "yes" ]]; then
+            check_if_installed "adios2-par" $ADIOS2_VERSION
+            if [[ $? == 0 ]] ; then par_installed="yes"; fi
+        fi
+
+        if [ "$ser_installed" == "yes" ] && ([ "$parallel" == "no" ] || [ "$par_installed" == "yes" ]) ; then
+            info "ADIOS2 already installed, skipping"
+        else
+            build_adios2
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install ADIOS2.  Bailing out."
+            fi
+            info "Done building ADIOS2"
+        fi
+    fi
+}
+
 function build_adios2
 {
     #
@@ -292,53 +342,4 @@ function build_adios2
     cd "$START_DIR"
     info "Done with ADIOS2"
     return 0
-}
-
-function bv_adios2_is_enabled
-{
-    if [[ $DO_ADIOS2 == "yes" ]]; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_adios2_is_installed
-{
-    if [[ "$USE_SYSTEM_ADIOS2" == "yes" ]]; then
-        return 1
-    fi
-
-    check_if_installed "adios2" $ADIOS2_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_adios2_build
-{
-    cd "$START_DIR"
-
-    if [[ "$DO_ADIOS2" == "yes" && "$USE_SYSTEM_ADIOS2" == "no" ]] ; then
-
-        ser_installed="no"
-        check_if_installed "adios2-ser" $ADIOS2_VERSION
-        if [[ $? == 0 ]] ; then ser_installed="yes"; fi
-
-        par_installed="no"
-        if [[ "$parallel" == "yes" ]]; then
-            check_if_installed "adios2-par" $ADIOS2_VERSION
-            if [[ $? == 0 ]] ; then par_installed="yes"; fi
-        fi
-
-        if [ "$ser_installed" == "yes" ] && ([ "$parallel" == "no" ] || [ "$par_installed" == "yes" ]) ; then
-            info "ADIOS2 already installed, skipping"
-        else
-            build_adios2
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install ADIOS2.  Bailing out."
-            fi
-            info "Done building ADIOS2"
-        fi
-    fi
 }

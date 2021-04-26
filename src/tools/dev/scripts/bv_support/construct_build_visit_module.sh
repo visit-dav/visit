@@ -145,22 +145,6 @@ function bv_${output}_dry_run
     fi
 }
 
-function apply_${output}_patch
-{
-    cd \"\${${uppercase_out}_SRC_DIR}\" || error \"Can't cd to ${output} source dir.\"
-
-#    info \"Patching ${output} . . .\"
-
-#    apply_xyz_patch
-#    if [[ \$? != 0 ]] ; then
-#        return 1
-#    fi
-
-    cd \"\${START_DIR}\"
-
-    return 0
-}
-
 function bv_${output}_is_enabled
 {
     if [[ \"\${DO_${uppercase_out}}\" == \"yes\" ]]; then
@@ -199,6 +183,22 @@ function bv_${output}_build
             info \"Done building ${output}\"
         fi
     fi
+}
+
+function apply_${output}_patch
+{
+    cd \"\${${uppercase_out}_SRC_DIR}\" || error \"Can't cd to ${output} source dir.\"
+
+#    info \"Patching ${output} . . .\"
+
+#    apply_xyz_patch
+#    if [[ \$? != 0 ]] ; then
+#        return 1
+#    fi
+
+    cd \"\${START_DIR}\"
+
+    return 0
 }
 
 function build_${output}

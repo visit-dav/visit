@@ -115,30 +115,6 @@ function bv_openvkl_dry_run
     fi
 }
 
-# ***************************************************************************
-# build_openvkl
-#
-# Modifications:
-#
-# ***************************************************************************
-
-function build_openvkl
-{
-    # Unzip the OPENVKL tarball and copy it to the VisIt installation.
-    info "Installing prebuilt openvkl"
-    tar zxvf $OPENVKL_FILE
-    rm $OPENVKL_BINARY_DIR/lib/libtbb*
-    mkdir -p ${OPENVKL_INSTALL_DIR} || error "Cannot create openvkl install directory"
-    cp -R $OPENVKL_BINARY_DIR/* ${OPENVKL_INSTALL_DIR} || error "Cannot copy to openvkl install directory"
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "${OPENVKL_INSTALL_DIR}"
-        chgrp -R ${GROUP} "${OPENVKL_INSTALL_DIR}"
-    fi
-    cd "$START_DIR"
-    info "Done with openvkl"
-    return 0
-}
-
 function bv_openvkl_is_enabled
 {
     if [[ $DO_OPENVKL == "yes" ]]; then
@@ -174,4 +150,46 @@ function bv_openvkl_build
             info "Done building OpenVKL"
         fi
     fi
+}
+
+# ***************************************************************************
+# build_openvkl
+# ***************************************************************************
+
+function build_openvkl
+{
+    #
+    # Uncompress the source file
+    #
+    uncompress_src_file $OPENVKL_BINARY_DIR $OPENVKL_FILE
+    untarred_openvkl=$?
+    if [[ $untarred_openvkl == -1 ]] ; then
+        warn "Unable to uncompress OPENVKL source file. Giving Up!"
+        return 1
+    fi
+
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing OPENVKL . . ."
+    mkdir -p ${OPENVKL_INSTALL_DIR}
+    if [[ $? != 0 ]] ; then
+        warn "Cannot create OPENVKL install directory"
+        return 1
+    fi
+
+    cp -R $OPENVKL_BINARY_DIR/* ${OPENVKL_INSTALL_DIR}
+    if [[ $? != 0 ]] ; then
+        warn "OPENVKL install failed. Giving up"
+        return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/openvkl"
+        chgrp -R ${GROUP} "$VISITDIR/openvkl"
+    fi
+
+    cd "$START_DIR"
+    info "Done with OPENVKL"
+    return 0
 }
