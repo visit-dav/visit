@@ -5,7 +5,7 @@
 
 Source code repository for the VisIt Scientific Visualization and Data Analysis Application
 
-[Project Website](https://visit.llnl.gov) | [Nightly Test Status](https://visit-dav.github.io/dashboard/)
+[Project Website](https://visit-dav.github.io/visit-website/) | [Nightly Test Status](https://visit-dav.github.io/dashboard/)
 
 
 ##  Documentation
