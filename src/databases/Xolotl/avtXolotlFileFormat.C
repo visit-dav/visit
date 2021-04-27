@@ -553,7 +553,7 @@ avtXolotlFileFormat::PopulateHeaderGroupMetaData()
     else
     {
         // We are visualizing concentrations
-        // Now we need to get the data ranges from
+        // Now we need to get the data ranges from the composition data set
         hid_t compositionDataSet = H5Dopen(fileId, "headerGroup/composition", H5P_DEFAULT);
         hid_t sid = H5Dget_space(compositionDataSet);
         hsize_t composition_dims[2];
@@ -722,7 +722,7 @@ avtXolotlFileFormat::Initialize()
 void
 avtXolotlFileFormat::FreeUpResources(void)
 {
-    if (concentrationsGroup >=0 )
+    if (concentrationsGroup >= 0)
         H5Gclose(concentrationsGroup);
 
     if (fileId >= 0)
