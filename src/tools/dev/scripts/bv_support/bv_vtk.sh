@@ -87,7 +87,7 @@ function bv_vtk_info
     export VTK_FILE=${VTK_FILE:-"VTK-${VTK_VERSION}.tar.gz"}
     export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.0"}
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
-    export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
+    export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
     export VTK_SRC_DIR=${VTK_SRC_DIR:-"${VTK_FILE%.tar*}"}
     export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"${VTK_SRC_DIR}-build"}
     export VTK_MD5_CHECKSUM="b3ba14d616c3b23583c42cffb585deac"
@@ -148,7 +148,6 @@ function bv_vtk_dry_run
         echo "Dry run option not set for vtk"
     fi
 }
-
 
 function bv_vtk_is_enabled
 {
@@ -241,15 +240,15 @@ function apply_vtk9.0.1_hdf5_patch
   #include "H5Dprivate.h"         /* Datasets                                 */
   #include "H5Eprivate.h"         /* Error handling                           */
   #include "H5Gprivate.h"         /* Groups                                   */
-*** Rendering/RayTracing/CMakeLists_orig.txt	2021-04-14 17:02:27.000000000 -0600
---- Rendering/RayTracing/CMakeLists.txt	2021-04-14 17:01:07.000000000 -0600
+*** Rendering/RayTracing/CMakeLists_orig.txt    2021-04-14 17:02:27.000000000 -0600
+--- Rendering/RayTracing/CMakeLists.txt 2021-04-14 17:01:07.000000000 -0600
 *************** vtk_module_install_headers(
 *** 57,63 ****
   if (VTK_ENABLE_OSPRAY)
     vtk_module_find_package(
       PACKAGE ospray
 !     VERSION 1.8)
-  
+
     vtk_module_link(VTK::RenderingRayTracing
       PUBLIC
 --- 57,63 ----
@@ -257,7 +256,7 @@ function apply_vtk9.0.1_hdf5_patch
     vtk_module_find_package(
       PACKAGE ospray
 !     VERSION 2.5)
-  
+
     vtk_module_link(VTK::RenderingRayTracing
       PUBLIC
 EOF
@@ -270,48 +269,438 @@ EOF
 
 }
 
-function apply_vtkxopenglrenderwindow_patch
+function apply_vtkopengloptions_patch
 {
-  # patch vtk's vtkXOpenRenderWindow to fix segv when deleting windows in
-  # offscreen mode.
+  # patch vtk's vtkOpenGLOptions.cmake to allow specifying VTK_OPENGL_HAS_OSMESA
+  # and VTK_USE_X, otherwise vtkOSOpenGLRenderWindow isn't built and vtkglew
+  # doesn't link with OSMESA.
 
    patch -p0 << \EOF
-*** Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx.orig 2018-03-30 14:38:07.000000000
---- Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx 2018-03-30 14:38:40.000000000
+*** CMake/vtkOpenGLOptions.cmake.orig
+--- CMake/vtkOpenGLOptions.cmake
 ***************
-*** 1148,1160 ****
+*** 83,96 ****
+    set(VTK_CAN_DO_HEADLESS FALSE)
+  endif()
 
-  void vtkXOpenGLRenderWindow::PopContext()
-  {
-    GLXContext current = glXGetCurrentContext();
-    GLXContext target = static_cast<GLXContext>(this->ContextStack.top());
-    this->ContextStack.pop();
-!   if (target != current)
-    {
-      glXMakeCurrent(this->DisplayStack.top(),
-        this->DrawableStack.top(),
-        target);
-    }
-    this->DisplayStack.pop();
---- 1148,1160 ----
+! if (VTK_OPENGL_HAS_OSMESA AND VTK_CAN_DO_ONSCREEN)
+!   message(FATAL_ERROR
+!     "The `VTK_OPENGL_HAS_OSMESA` is ignored if any of the following is true: "
+!     "the target platform is Windows, `VTK_USE_COCOA` is `ON`, or `VTK_USE_X` "
+!     "is `ON`. OSMesa does not support on-screen rendering and VTK's OpenGL "
+!     "selection is at build time, so the current build configuration is not "
+!     "satisfiable.")
+! endif ()
 
-  void vtkXOpenGLRenderWindow::PopContext()
-  {
-    GLXContext current = glXGetCurrentContext();
-    GLXContext target = static_cast<GLXContext>(this->ContextStack.top());
-    this->ContextStack.pop();
-!   if (target && target != current)
-    {
-      glXMakeCurrent(this->DisplayStack.top(),
-        this->DrawableStack.top(),
-        target);
-    }
-    this->DisplayStack.pop();
+  cmake_dependent_option(
+    VTK_USE_OPENGL_DELAYED_LOAD
+--- 83,96 ----
+    set(VTK_CAN_DO_HEADLESS FALSE)
+  endif()
+
+! #if (VTK_OPENGL_HAS_OSMESA AND VTK_CAN_DO_ONSCREEN)
+! #  message(FATAL_ERROR
+! #    "The `VTK_OPENGL_HAS_OSMESA` is ignored if any of the following is true: "
+! #    "the target platform is Windows, `VTK_USE_COCOA` is `ON`, or `VTK_USE_X` "
+! #    "is `ON`. OSMesa does not support on-screen rendering and VTK's OpenGL "
+! #    "selection is at build time, so the current build configuration is not "
+! #    "satisfiable.")
+! #endif ()
+
+  cmake_dependent_option(
+    VTK_USE_OPENGL_DELAYED_LOAD
 
 EOF
 
     if [[ $? != 0 ]] ; then
-      warn "vtk patch for vtkXOpenGLRenderWindow failed."
+      warn "vtk patch for vtkOpenGLOptions failed."
+      return 1
+    fi
+    return 0;
+}
+
+function apply_vtkopenfoamreader_header_patch
+{
+  # patch vtk's OpenFOAMReader to provide more meta data information
+  # useful for VisIt's plugin.
+
+   patch -p0 << \EOF
+*** IO/Geometry/vtkOpenFOAMReader.h.orig
+--- IO/Geometry/vtkOpenFOAMReader.h
+***************
+*** 48,53 ****
+--- 48,58 ----
+  #include "vtkIOGeometryModule.h" // For export macro
+  #include "vtkMultiBlockDataSetAlgorithm.h"
+
++ //added by LLNL
++ #include <map>
++ #include <vector>
++ //end added by LLNL
++
+  class vtkCollection;
+  class vtkCharArray;
+  class vtkDataArraySelection;
+***************
+*** 348,353 ****
+--- 353,380 ----
+
+    friend class vtkOpenFOAMReaderPrivate;
+
++   // Added by LLNL
++   vtkStdString GetCellArrayClassName(const char *name);
++   vtkStdString GetPointArrayClassName(const char *name);
++   vtkStdString GetLagrangianArrayClassName(const char *name);
++
++   int GetNumberOfCellZones()
++     { return static_cast<int>(this->CellZones.size()); }
++   int GetNumberOfFaceZones()
++     { return static_cast<int>(this->FaceZones.size()); }
++   int GetNumberOfPointZones()
++     { return static_cast<int>(this->PointZones.size()); }
++
++   vtkStdString GetCellZoneName(int);
++   vtkStdString GetFaceZoneName(int);
++   vtkStdString GetPointZoneName(int);
++
++   int GetCellArrayExists(const char *name);
++   int GetPointArrayExists(const char *name);
++   int GetLagrangianArrayExists(const char *name);
++
++   // end Added by LLNL
++
+  protected:
+    // refresh flag
+    bool Refresh;
+***************
+*** 423,428 ****
+--- 450,465 ----
+    // index of the active reader
+    int CurrentReaderIndex;
+
++   // added by LLNL
++   std::vector<vtkStdString> CellZones;
++   std::vector<vtkStdString> FaceZones;
++   std::vector<vtkStdString> PointZones;
++
++   std::map<vtkStdString, vtkStdString> CellArrayClassName;
++   std::map<vtkStdString, vtkStdString> PointArrayClassName;
++   std::map<vtkStdString, vtkStdString> LagrangianArrayClassName;
++   // end added by LLNL
++
+    vtkOpenFOAMReader();
+    ~vtkOpenFOAMReader() override;
+    int RequestInformation(vtkInformation*, vtkInformationVector**, vtkInformationVector*) override;
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOpenFOAMReader.h failed."
+      return 1
+    fi
+    return 0;
+}
+
+function apply_vtkopenfoamreader_source_patch
+{
+  # patch vtk's OpenFOAMReader to provide more meta data information
+  # useful for VisIt's plugin.
+
+   patch -p0 << \EOF
+*** IO/Geometry/vtkOpenFOAMReader.cxx.orig
+--- IO/Geometry/vtkOpenFOAMReader.cxx
+***************
+*** 4419,4424 ****
+--- 4419,4427 ----
+              this->LagrangianFieldFiles->InsertNextValue(fieldFile);
+              // object name
+              pointObjectNames->InsertNextValue(io.GetObjectName());
++             // added by LLNL
++             this->Parent->LagrangianArrayClassName[io.GetObjectName()] = cn;
++             // end added by LLNL
+            }
+          }
+          else
+***************
+*** 4434,4444 ****
+--- 4437,4453 ----
+                this->VolFieldFiles->InsertNextValue(fieldFile);
+                // object name
+                cellObjectNames->InsertNextValue(io.GetObjectName());
++               // added by LLNL
++               this->Parent->CellArrayClassName[io.GetObjectName()] = cn;
++               // end added by LLNL
+              }
+              else
+              {
+                this->PointFieldFiles->InsertNextValue(fieldFile);
+                pointObjectNames->InsertNextValue(io.GetObjectName());
++               // added by LLNL
++               this->Parent->PointArrayClassName[io.GetObjectName()] = cn;
++               // end added by LLNL
+              }
+            }
+          }
+***************
+*** 4644,4649 ****
+--- 4653,4705 ----
+
+        delete boundaryDict;
+      }
++
++     // added by LLNL
++     if (this->Parent->GetReadZones())
++     {
++       vtkFoamDict *dictPtr= this->GatherBlocks("pointZones", true);
++       if (dictPtr!= NULL)
++       {
++         this->Parent->PointZones.clear();
++         vtkFoamDict &pointZoneDict = *dictPtr;
++         int nPointZones = static_cast<int>(pointZoneDict.size());
++
++         for (int i = 0; i < nPointZones; i++)
++         {
++           this->Parent->PointZones.push_back(pointZoneDict[i]->GetKeyword().c_str());
++         }
++         delete dictPtr;
++       }
++
++       dictPtr= this->GatherBlocks("faceZones", true);
++       if (dictPtr!= NULL)
++       {
++         this->Parent->FaceZones.clear();
++         vtkFoamDict &faceZoneDict = *dictPtr;
++         int nFaceZones = static_cast<int>(faceZoneDict.size());
++
++         for (int i = 0; i < nFaceZones; i++)
++         {
++           this->Parent->FaceZones.push_back(faceZoneDict[i]->GetKeyword().c_str());
++         }
++         delete dictPtr;
++       }
++
++       dictPtr= this->GatherBlocks("cellZones", true);
++       if (dictPtr!= NULL)
++       {
++         this->Parent->CellZones.clear();
++         vtkFoamDict &cellZoneDict = *dictPtr;
++         int nCellZones = static_cast<int>(cellZoneDict.size());
++
++         for (int i = 0; i < nCellZones; i++)
++         {
++           this->Parent->CellZones.push_back(cellZoneDict[i]->GetKeyword().c_str());
++         }
++         delete dictPtr;
++       }
++     }
++     // end added by LLNL
+    }
+
+    // Add scalars and vectors to metadata
+***************
+*** 9344,9346 ****
+--- 9400,9519 ----
+      (static_cast<double>(this->Parent->CurrentReaderIndex) + amount) /
+      static_cast<double>(this->Parent->NumberOfReaders));
+  }
++
++
++ // added by LLNL
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetCellArrayClassName(const char *name)
++ {
++   vtkStdString ret;
++   if (name == NULL || name[0] == '\0')
++   {
++         return ret;
++   }
++   std::map<vtkStdString, vtkStdString>::const_iterator itr =
++     this->CellArrayClassName.find(vtkStdString(name));
++   if (itr != this->CellArrayClassName.end())
++   {
++     return itr->second;
++   }
++   else
++   {
++     return ret;
++   }
++ }
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetPointArrayClassName(const char *name)
++ {
++   vtkStdString ret;
++   if (name == NULL || name[0] == '\0')
++   {
++         return ret;
++   }
++   std::map<vtkStdString, vtkStdString>::const_iterator itr =
++     this->PointArrayClassName.find(vtkStdString(name));
++   if (itr != this->PointArrayClassName.end())
++   {
++     return itr->second;
++   }
++   else
++   {
++     return ret;
++   }
++ }
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetLagrangianArrayClassName(const char *name)
++ {
++   vtkStdString ret;
++   if (name == NULL || name[0] == '\0')
++   {
++         return ret;
++   }
++   std::map<vtkStdString, vtkStdString>::const_iterator itr =
++     this->LagrangianArrayClassName.find(vtkStdString(name));
++   if (itr != this->LagrangianArrayClassName.end())
++   {
++     return itr->second;
++   }
++   else
++   {
++     return ret;
++   }
++ }
++
++ //-----------------------------------------------------------------------------
++ int vtkOpenFOAMReader::GetCellArrayExists(const char *name)
++ {
++   return this->CellDataArraySelection->ArrayExists(name);
++ }
++
++ //-----------------------------------------------------------------------------
++ int vtkOpenFOAMReader::GetPointArrayExists(const char *name)
++ {
++   return this->PointDataArraySelection->ArrayExists(name);
++ }
++
++ //-----------------------------------------------------------------------------
++ int vtkOpenFOAMReader::GetLagrangianArrayExists(const char *name)
++ {
++   return this->LagrangianDataArraySelection->ArrayExists(name);
++ }
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetCellZoneName(const int index)
++ {
++   vtkStdString ret;
++   if (index >= 0 && index < this->GetNumberOfCellZones())
++   {
++     ret = this->CellZones[index];
++   }
++   return ret;
++ }
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetFaceZoneName(const int index)
++ {
++   vtkStdString ret;
++   if (index >= 0 && index < this->GetNumberOfFaceZones())
++   {
++     ret = this->FaceZones[index];
++   }
++   return ret;
++ }
++
++ //-----------------------------------------------------------------------------
++ vtkStdString vtkOpenFOAMReader::GetPointZoneName(const int index)
++ {
++   vtkStdString ret;
++   if (index >= 0 && index < this->GetNumberOfPointZones())
++   {
++     ret = this->PointZones[index];
++   }
++   return ret;
++ }
++
++ // end added by LLNL
++
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOpenFOAMReader.cxx failed."
+      return 1
+    fi
+    return 0;
+}
+
+function apply_vtkopenfoamreader_patch
+{
+    apply_vtkopenfoamreader_header_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+    apply_vtkopenfoamreader_source_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function apply_vtkprobeopenglversion_patch
+{
+  # patch vtk's Rendering/OpenGL2/CMakeLists.txt to fix a compile problem
+  # with vtkProbeOpenGLVersion when OSMesa is turned on.
+
+   patch -p0 << \EOF
+*** Rendering/OpenGL2/CMakeLists.txt.orig
+--- Rendering/OpenGL2/CMakeLists.txt
+***************
+*** 351,372 ****
+    vtk_module_link(VTK::RenderingOpenGL2 PUBLIC "-framework UIKit")
+  endif ()
+
+! if (NOT ANDROID AND
+!     NOT APPLE_IOS AND
+!     NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten" AND
+!     NOT VTK_OPENGL_USE_GLES)
+!   set(probe_no_install)
+!   if (NOT _vtk_build_INSTALL_HEADERS)
+!     set(probe_no_install
+!       NO_INSTALL)
+!   endif ()
+!   vtk_module_add_executable(vtkProbeOpenGLVersion
+!     ${probe_no_install}
+!     vtkProbeOpenGLVersion.cxx)
+!   target_link_libraries(vtkProbeOpenGLVersion
+!     PRIVATE
+!       VTK::RenderingOpenGL2)
+!   vtk_module_autoinit(
+!     TARGETS vtkProbeOpenGLVersion
+!     MODULES VTK::RenderingOpenGL2)
+! endif ()
+--- 351,372 ----
+    vtk_module_link(VTK::RenderingOpenGL2 PUBLIC "-framework UIKit")
+  endif ()
+
+! #if (NOT ANDROID AND
+! #    NOT APPLE_IOS AND
+! #    NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten" AND
+! #    NOT VTK_OPENGL_USE_GLES)
+! #  set(probe_no_install)
+! #  if (NOT _vtk_build_INSTALL_HEADERS)
+! #    set(probe_no_install
+! #      NO_INSTALL)
+! #  endif ()
+! #  vtk_module_add_executable(vtkProbeOpenGLVersion
+! #    ${probe_no_install}
+! #    vtkProbeOpenGLVersion.cxx)
+! #  target_link_libraries(vtkProbeOpenGLVersion
+! #    PRIVATE
+! #      VTK::RenderingOpenGL2)
+! #  vtk_module_autoinit(
+! #    TARGETS vtkProbeOpenGLVersion
+! #    MODULES VTK::RenderingOpenGL2)
+! #endif ()
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkProbeOpenGLVersion failed."
       return 1
     fi
     return 0;
@@ -320,6 +709,7 @@ EOF
 
 function apply_vtkopenglspheremapper_h_patch
 {
+##NEED TO UPDATE THIS
   # patch vtk's vtkOpenGLSphereMapper.h to fix bug evidenced when
   # points are double precision
 
@@ -650,40 +1040,313 @@ EOF
 
 function apply_vtkdatawriter_patch
 {
-  # patch vtk's vtkDataWriter to fix bug when writing binary vtkBitArray.
+  # patch vtk's vtkDataWriter to fix bug when writing non-AOS data arrays
+  # (as used with LibSim).
 
    patch -p0 << \EOF
-*** IO/Legacy/vtkDataWriter.cxx.original 2018-01-19 13:52:19.000000000
---- IO/Legacy/vtkDataWriter.cxx 2018-01-19 13:52:49.000000000
+*** IO/Legacy/vtkDataWriter.cxx.orig    Fri Jun 26 06:24:40 2020
+--- IO/Legacy/vtkDataWriter.cxx Thu Apr 15 15:00:41 2021
 ***************
-*** 1070,1082 ****
-            }
-          }
-        }
-        else
-        {
-          unsigned char *cptr=
-!           static_cast<vtkUnsignedCharArray *>(data)->GetPointer(0);
-          fp->write(reinterpret_cast<char *>(cptr),
-                    (sizeof(unsigned char))*((num-1)/8+1));
+*** 1026,1059 ****
+    *fp << "\n";
+  }
 
-        }
-        *fp << "\n";
-      }
---- 1070,1082 ----
-            }
-          }
-        }
-        else
-        {
-          unsigned char *cptr=
-!           static_cast<vtkBitArray *>(data)->GetPointer(0);
-          fp->write(reinterpret_cast<char *>(cptr),
-                    (sizeof(unsigned char))*((num-1)/8+1));
+  // Returns a pointer to the data ordered in original VTK style ordering
+  // of the data. If this is an SOA array it has to allocate the memory
+  // for that in which case the calling function must delete it.
+! template <class T>
+! T* GetArrayRawPointer(vtkAbstractArray* array, T* ptr, int isAOSArray)
+  {
+    if (isAOSArray)
+    {
+!     return ptr;
+!   }
+!   if (vtkSOADataArrayTemplate<T>* typedArray = vtkSOADataArrayTemplate<T>::SafeDownCast(array))
+!   {
+!     T* data = new T[array->GetNumberOfComponents() * array->GetNumberOfTuples()];
+!     typedArray->ExportToVoidPointer(data);
+!     return data;
+    }
+! #ifdef VTK_USE_SCALED_SOA_ARRAYS
+!   else if (vtkScaledSOADataArrayTemplate<T>* typedScaleArray =
+!              vtkScaledSOADataArrayTemplate<T>::SafeDownCast(array))
+!   {
+!     T* data = new T[array->GetNumberOfComponents() * array->GetNumberOfTuples()];
+!     typedScaleArray->ExportToVoidPointer(data);
+!     return data;
+!   }
+! #endif
+!   vtkGenericWarningMacro(
+!     "Do not know how to handle array type " << array->GetClassName() << " in vtkDataWriter");
+!   return nullptr;
+  }
 
-        }
-        *fp << "\n";
-      }
+  } // end anonymous namespace
+--- 1026,1056 ----
+    *fp << "\n";
+  }
+
++ //------------------------------------------------------------------------------
++ template <class Value, class Array>
++ Value* GetPointer(vtkAbstractArray* array)
++ {
++   return static_cast<Array*>(array)->GetPointer(0);
++ }
++
++ //------------------------------------------------------------------------------
+  // Returns a pointer to the data ordered in original VTK style ordering
+  // of the data. If this is an SOA array it has to allocate the memory
+  // for that in which case the calling function must delete it.
+! template <class T, class Array>
+! T* GetArrayRawPointer(vtkAbstractArray* array, int isAOSArray)
+  {
+    if (isAOSArray)
+    {
+!     return GetPointer<T, Array>(array);
+    }
+!
+!   auto nc = array->GetNumberOfComponents();
+!   auto nt = array->GetNumberOfTuples();
+!
+!   T* data = new T[nc * nt];
+!   array->ExportToVoidPointer(data);
+!   return data;
+  }
+
+  } // end anonymous namespace
+***************
+*** 1108,1115 ****
+      {
+        snprintf(str, sizeof(str), format, "char");
+        *fp << str;
+!       char* s =
+!         GetArrayRawPointer(data, static_cast<vtkCharArray*>(data)->GetPointer(0), isAOSArray);
+  #if VTK_TYPE_CHAR_IS_SIGNED
+        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
+  #else
+--- 1105,1111 ----
+      {
+        snprintf(str, sizeof(str), format, "char");
+        *fp << str;
+!       char* s = GetArrayRawPointer<char, vtkCharArray>(data, isAOSArray);
+  #if VTK_TYPE_CHAR_IS_SIGNED
+        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
+  #else
+***************
+*** 1126,1133 ****
+      {
+        snprintf(str, sizeof(str), format, "signed_char");
+        *fp << str;
+!       signed char* s =
+!         GetArrayRawPointer(data, static_cast<vtkSignedCharArray*>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1122,1128 ----
+      {
+        snprintf(str, sizeof(str), format, "signed_char");
+        *fp << str;
+!       signed char* s = GetArrayRawPointer<signed char, vtkSignedCharArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1140,1147 ****
+      {
+        snprintf(str, sizeof(str), format, "unsigned_char");
+        *fp << str;
+!       unsigned char* s = GetArrayRawPointer(
+!         data, static_cast<vtkUnsignedCharArray*>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hhu ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1135,1141 ----
+      {
+        snprintf(str, sizeof(str), format, "unsigned_char");
+        *fp << str;
+!       unsigned char* s = GetArrayRawPointer<unsigned char, vtkUnsignedCharArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hhu ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1154,1161 ****
+      {
+        snprintf(str, sizeof(str), format, "short");
+        *fp << str;
+!       short* s =
+!         GetArrayRawPointer(data, static_cast<vtkShortArray*>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hd ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1148,1154 ----
+      {
+        snprintf(str, sizeof(str), format, "short");
+        *fp << str;
+!       short* s = GetArrayRawPointer<short, vtkShortArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hd ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1168,1175 ****
+      {
+        snprintf(str, sizeof(str), format, "unsigned_short");
+        *fp << str;
+!       unsigned short* s = GetArrayRawPointer(
+!         data, static_cast<vtkUnsignedShortArray*>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hu ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1161,1168 ----
+      {
+        snprintf(str, sizeof(str), format, "unsigned_short");
+        *fp << str;
+!       unsigned short* s =
+!         GetArrayRawPointer<unsigned short, vtkUnsignedShortArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hu ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1182,1188 ****
+      {
+        snprintf(str, sizeof(str), format, "int");
+        *fp << str;
+!       int* s = GetArrayRawPointer(data, static_cast<vtkIntArray*>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%d ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1175,1181 ----
+      {
+        snprintf(str, sizeof(str), format, "int");
+        *fp << str;
+!       int* s = GetArrayRawPointer<int, vtkIntArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%d ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1195,1202 ****
+      {
+        snprintf(str, sizeof(str), format, "unsigned_int");
+        *fp << str;
+!       unsigned int* s = GetArrayRawPointer(
+!         data, static_cast<vtkUnsignedIntArray*>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%u ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1188,1194 ----
+      {
+        snprintf(str, sizeof(str), format, "unsigned_int");
+        *fp << str;
+!       unsigned int* s = GetArrayRawPointer<unsigned int, vtkUnsignedIntArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%u ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1209,1216 ****
+      {
+        snprintf(str, sizeof(str), format, "long");
+        *fp << str;
+!       long* s =
+!         GetArrayRawPointer(data, static_cast<vtkLongArray*>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%ld ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1201,1207 ----
+      {
+        snprintf(str, sizeof(str), format, "long");
+        *fp << str;
+!       long* s = GetArrayRawPointer<long, vtkLongArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%ld ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1223,1230 ****
+      {
+        snprintf(str, sizeof(str), format, "unsigned_long");
+        *fp << str;
+!       unsigned long* s = GetArrayRawPointer(
+!         data, static_cast<vtkUnsignedLongArray*>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%lu ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1214,1220 ----
+      {
+        snprintf(str, sizeof(str), format, "unsigned_long");
+        *fp << str;
+!       unsigned long* s = GetArrayRawPointer<unsigned long, vtkUnsignedLongArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%lu ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1237,1244 ****
+      {
+        snprintf(str, sizeof(str), format, "vtktypeint64");
+        *fp << str;
+!       long long* s =
+!         GetArrayRawPointer(data, static_cast<vtkTypeInt64Array*>(data)->GetPointer(0), isAOSArray);
+        strcpy(outputFormat, vtkTypeTraits<long long>::ParseFormat());
+        strcat(outputFormat, " ");
+        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
+--- 1227,1233 ----
+      {
+        snprintf(str, sizeof(str), format, "vtktypeint64");
+        *fp << str;
+!       long long* s = GetArrayRawPointer<long long, vtkTypeInt64Array>(data, isAOSArray);
+        strcpy(outputFormat, vtkTypeTraits<long long>::ParseFormat());
+        strcat(outputFormat, " ");
+        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
+***************
+*** 1254,1260 ****
+        snprintf(str, sizeof(str), format, "vtktypeuint64");
+        *fp << str;
+        unsigned long long* s =
+!         GetArrayRawPointer(data, static_cast<vtkTypeUInt64Array*>(data)->GetPointer(0), isAOSArray);
+        strcpy(outputFormat, vtkTypeTraits<unsigned long long>::ParseFormat());
+        strcat(outputFormat, " ");
+        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
+--- 1243,1249 ----
+        snprintf(str, sizeof(str), format, "vtktypeuint64");
+        *fp << str;
+        unsigned long long* s =
+!         GetArrayRawPointer<unsigned long long, vtkTypeUInt64Array>(data, isAOSArray);
+        strcpy(outputFormat, vtkTypeTraits<unsigned long long>::ParseFormat());
+        strcat(outputFormat, " ");
+        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
+***************
+*** 1269,1276 ****
+      {
+        snprintf(str, sizeof(str), format, "float");
+        *fp << str;
+!       float* s =
+!         GetArrayRawPointer(data, static_cast<vtkFloatArray*>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%g ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1258,1264 ----
+      {
+        snprintf(str, sizeof(str), format, "float");
+        *fp << str;
+!       float* s = GetArrayRawPointer<float, vtkFloatArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%g ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1283,1290 ****
+      {
+        snprintf(str, sizeof(str), format, "double");
+        *fp << str;
+!       double* s =
+!         GetArrayRawPointer(data, static_cast<vtkDoubleArray*>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%.11lg ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1271,1277 ----
+      {
+        snprintf(str, sizeof(str), format, "double");
+        *fp << str;
+!       double* s = GetArrayRawPointer<double, vtkDoubleArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%.11lg ", num, numComp);
+        if (!isAOSArray)
+        {
 EOF
 
     if [[ $? != 0 ]] ; then
@@ -1126,61 +1789,70 @@ EOF
     return 0;
 }
 
+
+
+
 function apply_vtk_patch
 {
-    cd ${VTK_SRC_DIR} || error "Can't cd to VTK source dir."
+    cd "${VTK_SRC_DIR}" || error "Can't cd to VTK source dir."
 
-    apply_vtk9.0.1_hdf5_patch
+    info "Patching VTK . . ."
+
+    apply_vtkprobeopenglversion_patch
     if [[ $? != 0 ]] ; then
-       return 1
+        return 1
     fi
 
-    return 0
+    apply_vtkopengloptions_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtkopenfoamreader_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
 
     apply_vtkdatawriter_patch
     if [[ $? != 0 ]] ; then
-       return 1
-    fi
-
-    apply_vtkopenglspheremapper_h_patch
-    if [[ $? != 0 ]] ; then
         return 1
     fi
 
-    apply_vtkopenglspheremapper_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    # will have to test if these or versions thereof are still required
+    #apply_vtkopenglspheremapper_h_patch
+    #if [[ $? != 0 ]] ; then
+    #    return 1
+    #fi
 
-    apply_vtkxopenglrenderwindow_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    #apply_vtkopenglspheremapper_patch
+    #if [[ $? != 0 ]] ; then
+    #    return 1
+    #fi
 
     # Note: don't guard ospray patches by if ospray is selected
     # b/c subsequent calls to build_visit won't get a chance to patch
     # given the if test logic used above
-    apply_vtkospraypolydatamappernode_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    #apply_vtkospraypolydatamappernode_patch
+    #if [[ $? != 0 ]] ; then
+    #    return 1
+    #fi
 
-    apply_vtkospray_patches
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    #apply_vtkospray_patches
+    #if [[ $? != 0 ]] ; then
+    #    return 1
+    #fi
 
-    apply_vtkospray_linking_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    #apply_vtkospray_linking_patch
+    #if [[ $? != 0 ]] ; then
+    #    return 1
+    #fi
 
     apply_vtk_python3_python_args_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
 
-    cd "$START_DIR"
+    cd "${START_DIR}"
 
     return 0
 }
@@ -1203,7 +1875,6 @@ function build_vtk
     #
     # Apply patches
     #
-    info "Patching VTK . . ."
     apply_vtk_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_vtk == 1 ]] ; then
@@ -1254,12 +1925,32 @@ function build_vtk
         export VTK_PY_LIBS="$VTK_PY_LIBS -ldl -lutil -lm"
     fi
 
-    # Some linker flags.
+    # Linker flags.
     lf=""
     if test "${OPSYS}" = "Darwin" ; then
         lf="-Wl,-headerpad_max_install_names"
         lf="${lf},-compatibility_version,${VTK_COMPATIBILITY_VERSION}"
         lf="${lf},-current_version,${VTK_VERSION}"
+    fi
+
+    # Cmake flags.
+    vopts=""
+
+    # Use Mesa as GL?
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
+        vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
+        vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
+        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+        vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
+        vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+
+        if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+            if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
+                vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
+            fi
+        fi
     fi
 
     # Add some extra arguments to the VTK cmake command line via the
@@ -1278,8 +1969,9 @@ function build_vtk
     fi
     vopts="${vopts} -DVTK_DEBUG_LEAKS:BOOL=false"
     vopts="${vopts} -DVTK_LEGACY_REMOVE:BOOL=true"
+    vopts="${vopts} -DVTK_BUILD_TESTING:BOOL=false"
     vopts="${vopts} -DBUILD_TESTING:BOOL=false"
-    vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=false"
+    vopts="${vopts} -DVTK_BUILD_DOCUMENTATION:BOOL=false"
     vopts="${vopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
@@ -1287,7 +1979,8 @@ function build_vtk
     vopts="${vopts} -DCMAKE_EXE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
-    vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=true"
+    # setting this to true causes errors when building debug versions of visit.
+    vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=false"
     if test "${OPSYS}" = "Darwin" ; then
         vopts="${vopts} -DVTK_USE_COCOA:BOOL=ON"
         vopts="${vopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${VTK_INSTALL_DIR}/lib"
@@ -1314,43 +2007,43 @@ function build_vtk
 
     # allow VisIt to override any of vtk's classes
     vopts="${vopts} -DVTK_ALL_NEW_OBJECT_FACTORY:BOOL=true"
+    # disable downloads (also disables testing)
+    vopts="${vopts} -DVTK_FORBID_DOWNLOADS:BOOL=true"
 
     # Turn off module groups
-    vopts="${vopts} -DVTK_Group_Imaging:BOOL=false"
-    vopts="${vopts} -DVTK_Group_MPI:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Qt:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Rendering:BOOL=false"
-    vopts="${vopts} -DVTK_Group_StandAlone:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Tk:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Views:BOOL=false"
-    vopts="${vopts} -DVTK_Group_Web:BOOL=false"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_Imaging:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_MPI:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_Qt:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_Rendering:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_StandAlone:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_Views:STRING=DONT_WANT"
+    vopts="${vopts} -DVTK_GROUP_ENABLE_Web:STRING=DONT_WANT"
 
     # Turn on individual modules. dependent modules are turned on automatically
-    vopts="${vopts} -DModule_vtkCommonCore:BOOL=true"
-    vopts="${vopts} -DModule_vtkFiltersFlowPaths:BOOL=true"
-    vopts="${vopts} -DModule_vtkFiltersHybrid:BOOL=true"
-    vopts="${vopts} -DModule_vtkFiltersModeling:BOOL=true"
-    vopts="${vopts} -DModule_vtkGeovisCore:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOEnSight:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOGeometry:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOLegacy:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOPLY:BOOL=true"
-    vopts="${vopts} -DModule_vtkIOXML:BOOL=true"
-    vopts="${vopts} -DModule_vtkInteractionStyle:BOOL=true"
-    vopts="${vopts} -DModule_vtkRenderingAnnotation:BOOL=true"
-    vopts="${vopts} -DModule_vtkRenderingFreeType:BOOL=true"
-    vopts="${vopts} -DModule_vtkRenderingOpenGL2:BOOL=true"
-    vopts="${vopts} -DModule_vtklibxml2:BOOL=true"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_CommonCore:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersFlowPaths:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersHybrid:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_FiltersModeling:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GeovisCore:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOEnSight:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOGeometry:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOLegacy:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOPLY:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_IOXML:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_InteractionStyle:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingAnnotation:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingFreeType:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingOpenGL2:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingVolumeOpenGL2:STRING=YES"
+    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_libxml2:STRING=YES"
 
     # Tell VTK where to locate qmake if we're building graphical support. We
     # do not add graphical support for server-only builds.
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
-                vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
-                vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
-                vopts="${vopts} -DVTK_QT_VERSION=5"
-                vopts="${vopts} -DCMAKE_PREFIX_PATH=${QT_INSTALL_DIR}/lib/cmake"
+                vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_GUISupportQt:BOOL:STRING=YES"
+                vopts="${vopts} -DQt5_DIR:FILEPATH=${QT_INSTALL_DIR}/lib/cmake/Qt5"
             fi
         fi
     fi
@@ -1364,6 +2057,7 @@ function build_vtk
             pylib="${PYTHON_LIBRARY}"
 
             vopts="${vopts} -DVTK_WRAP_PYTHON:BOOL=true"
+            vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
             vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
             vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
             vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
@@ -1371,39 +2065,24 @@ function build_vtk
             if [[ "$DO_PYTHON2" == "no" ]]; then
               vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
             fi
-            #            vopts="${vopts} -DPYTHON_UTIL_LIBRARY:FILEPATH="
+#             vopts="${vopts} -DPYTHON_UTIL_LIBRARY:FILEPATH="
         else
             warn "Forgetting python filters because we are doing a static build."
         fi
     fi
 
-    # Use Mesa as GL?
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-        vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-        vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
-        vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=${MESAGL_GLU_LIB}"
-        vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
-        vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-
-        if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
-            if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
-                vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
-            fi
-        fi
-    fi
 
     # Use OSPRay?
     if [[ "$DO_OSPRAY" == "yes" ]] ; then
-#	vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:INT=YES"
+#       vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:INT=YES"
         vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}/lib/cmake/ospray-${OSPRAY_VERSION}"
         vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}/lib/cmake/embree-${EMBREE_VERSION}"
         vopts="${vopts} -Dopenvkl_DIR=${OPENVKL_INSTALL_DIR}/lib/cmake/openvkl-${OPENVKL_VERSION}"
         vopts="${vopts} -Drkcommon_DIR=${RKCOMMON_INSTALL_DIR}/lib/cmake/rkcommon-${RKCOMMON_VERSION}"
     fi
 
-    # zlib support, use the one VisIt build
-    vopts="${vopts} -DVTK_USE_SYSTEM_ZLIB:BOOL=ON"
+    # zlib support, use the one we build
+    vopts="${vopts} -DVTK_MODULE_USE_EXTERNAL_VTK_zlib:BOOL=ON"
     vopts="${vopts} -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}"
     if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
         vopts="${vopts} -DZLIB_LIBRARY_RELEASE:FILEPATH=${ZLIB_LIBRARY}"

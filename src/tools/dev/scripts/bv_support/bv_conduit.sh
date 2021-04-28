@@ -104,8 +104,9 @@ function bv_conduit_host_profile
         if [[ "${USE_SYSTEM_CONDUIT}" == "yes" ]]; then
             echo "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${CONDUIT_INSTALL_DIR})" >> ${HOSTCONF}
         else
-            echo "SETUP_APP_VERSION(conduit ${CONDUIT_VERSION})" >> ${HOSTCONF}
-            echo "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR \${VISITHOME}/conduit/\${CONDUIT_VERSION}/\${VISITARCH})" >> ${HOSTCONF}
+#            The version contains a letter so it can not be used.	    
+#            echo "SETUP_APP_VERSION(conduit ${CONDUIT_VERSION})" >> ${HOSTCONF}
+            echo "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR \${VISITHOME}/conduit/${CONDUIT_VERSION}/\${VISITARCH})" >> ${HOSTCONF}
             if [[ "$DO_HDF5" == "yes" ]] ; then
                 echo "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 \${VISIT_HDF5_LIBDEP} TYPE STRING)" >> $HOSTCONF
             fi

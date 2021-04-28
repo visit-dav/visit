@@ -64,9 +64,8 @@ function bv_adios2_info
     export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/archive/v2.5.0"}
     export ADIOS2_SRC_DIR=${ADIOS2_SRC_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
     export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"${ADIOS2_SRC_DIR}-build-ser"}
-    export ADIOS2_MD5_CHECKSUM="a50a6bcd02a0a296484a213dca7f9a11"
-    export ADIOS2_MD5_CHECKSUM=""
-    export ADIOS2_SHA256_CHECKSUM=""
+    export ADIOS2_MD5_CHECKSUM="83199107aa0cb435ca1fdef221f32e03"
+    export ADIOS2_SHA256_CHECKSUM="53cb8cde39cd0b5dfcda7d0ea19becf740a8a775fc545eda27d3e1259f5b5e6d"
 }
 
 function bv_adios2_print
@@ -200,7 +199,51 @@ function build_adios2
 
     for bt in $build_types; do
 
+	# Separate build directories for serial and parallel.
         ADIOS2_BUILD_DIR="${ADIOS2_SRC_DIR}-build-$bt"
+
+        #
+        # Remove the library name conlfict from having two libadios2
+        # libraries - change the par version to libadios2_mpi.
+        #
+        info "Updating library names for Adios2-$bt . . ."
+
+        cd "$START_DIR"
+        cd ${ADIOS2_SRC_DIR}
+
+        # sed for OSX is different then on Linux in that it expects an
+        # extension so create a backup copy or double quotes to
+        # overwrite the file being modified. (see
+        # https://ed.gs/2016/01/26/os-x-sed-invalid-command-code/).
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            SED_CMD="sed -i \"\" "
+        else
+            SED_CMD="sed -i "
+        fi
+
+        # The source may have already uncompressed. As such, make sure
+        # the serial source has the original name.
+        if [[ "$bt" == "ser" ]]; then
+            # Change all references from adios2_mpi to adios2.
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi/adios2/g" {} \;
+        else
+            # Change all references from adios2 to adios2_mpi.
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2/adios2_mpi/g" {} \;
+            # The global replacemnt changes too many things, change
+            # specific replacements back to the original name.
+            ${SED_CMD} "s/adios2_mpi/adios2/g" source/CMakeLists.txt
+
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi.h/adios2.h/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi\//adios2\//g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi_/adios2_/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi-/adios2-/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi::/adios2::/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpisys/adios2sys/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/\/adios2_mpi/\/adios2/g" {} \;
+            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpiExports/adios2Exports/g" {} \;
+            ${SED_CMD} "s/adios2.helper/adios2\/helper/g" source/adios2/toolkit/sst/CMakeLists.txt
+            ${SED_CMD} "s/find_package(adios2_mpi/find_package(adios2/g" cmake/install/post/adios2-config-dummy/CMakeLists.txt
+        fi
 
         #
         # Make a build directory for an out-of-source build.
@@ -218,39 +261,10 @@ function build_adios2
         fi
         cd ${ADIOS2_BUILD_DIR}
 
-        if [[ "$bt" == "par" ]]; then
-
-            #
-            # Call configure
-            #
-            info "Configuring Adios2 $bt . . ."
-
-            SED_CMD="sed -i "
-
-            # sed for OSX is different then most Linux distros in that you have
-            # to use a few extra characters to get it to do the same command (see
-            # https://ed.gs/2016/01/26/os-x-sed-invalid-command-code/).
-            if [[ "$OPSYS" == "Darwin" ]]; then
-                SED_CMD="sed -i \"\" "
-            fi
-
-            # Change all references from adios2 to adios2_mpi.
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2/adios2_mpi/g" {} \;
-            # This changes too many things, now we need to change specific things back.
-
-            ${SED_CMD} "s/adios2_mpi/adios2/g" source/CMakeLists.txt
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi.h/adios2.h/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi\//adios2\//g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi_/adios2_/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi-/adios2-/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi::/adios2::/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpisys/adios2sys/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/\/adios2_mpi/\/adios2/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpiExports/adios2Exports/g" {} \;
-            ${SED_CMD} "s/adios2.helper/adios2\/helper/g" source/adios2/toolkit/sst/CMakeLists.txt
-            ${SED_CMD} "s/find_package(adios2_mpi/find_package(adios2/g" cmake/install/post/adios2-config-dummy/CMakeLists.txt
-        fi
-
+        #
+        # Call configure
+        #
+        info "Configuring Adios2-$bt . . ."
 
         adios2_build_mode="${VISIT_BUILD_MODE}"
         adios2_install_path="${VISITDIR}/adios2-$bt/${ADIOS2_VERSION}/${VISITARCH}"
@@ -289,11 +303,12 @@ function build_adios2
         fi
 
         #
-        # Several platforms have had problems with the VTK cmake configure command
-        # issued simply via "issue_command". This was first discovered on
-        # BGQ and then showed up in random cases for both OSX and Linux machines.
-        # Brad resolved this on BGQ  with a simple work around - we write a simple
-        # script that we invoke with bash which calls cmake with all of the properly
+        # Several platforms have had problems with the cmake configure
+        # command issued simply via "issue_command". This was first
+        # discovered on BGQ and then showed up in random cases for
+        # both OSX and Linux machines.  Brad resolved this on BGQ with
+        # a simple work around - we write a simple script that we
+        # invoke with bash which calls cmake with all of the properly
         # arguments. We are now using this strategy for all platforms.
         #
         CMAKE_BIN="${CMAKE_INSTALL}/cmake"
@@ -335,8 +350,6 @@ function build_adios2
             chmod -R ug+w,a+rX "$VISITDIR/adios2"
             chgrp -R ${GROUP} "$VISITDIR/adios2"
         fi
-
-        cd "$START_DIR"
     done
 
     cd "$START_DIR"

@@ -38,8 +38,10 @@ function bv_mxml_print
 
 function bv_mxml_host_profile
 {
-    #nothing to be done for now..
-    echo "##" >> $HOSTCONF
+    #nothing to be done for now.
+    if [[ "$DO_MXML" == "yes" ]] ; then
+        return 0
+    fi
 }
 
 function bv_mxml_print_usage
@@ -72,21 +74,21 @@ function apply_mxml_26_darwin_patch
     info "Patching MXML for darwin build"
     patch -p0 << \EOF
 diff -c mxml-2.6/Makefile.in mxml-2.6/Makefile.in.new
-*** mxml-2.6/Makefile.in	2016-06-21 14:05:57.000000000 -0600
---- mxml-2.6/Makefile.in.new	2016-06-21 14:07:38.000000000 -0600
+*** mxml-2.6/Makefile.in        2016-06-21 14:05:57.000000000 -0600
+--- mxml-2.6/Makefile.in.new    2016-06-21 14:07:38.000000000 -0600
 ***************
 *** 344,353 ****
 --- 344,355 ----
-  			--header doc/docset.header --intro doc/docset.intro \
-  			--css doc/docset.css --title "Mini-XML API Reference" \
-  			mxml.xml || exit 1; \
-+ 	    if test -e /Developer/usr/bin/docsetutil; then \
-  		/Developer/usr/bin/docsetutil package --output org.minixml.xar \
-  			--atom org.minixml.atom \
-  			--download-url http://www.minixml.org/org.minixml.xar \
-  			org.minixml.docset || exit 1; \
-+ 	    fi \
-  	fi
+                        --header doc/docset.header --intro doc/docset.intro \
+                        --css doc/docset.css --title "Mini-XML API Reference" \
+                        mxml.xml || exit 1; \
++           if test -e /Developer/usr/bin/docsetutil; then \
+                /Developer/usr/bin/docsetutil package --output org.minixml.xar \
+                        --atom org.minixml.atom \
+                        --download-url http://www.minixml.org/org.minixml.xar \
+                        org.minixml.docset || exit 1; \
++           fi \
+        fi
 EOF
     if [[ $? != 0 ]] ; then
         warn "Unable to patch MXML. Wrong version?"
@@ -157,7 +159,7 @@ function build_mxml
                  "failing harmlessly on a second application."
         fi
     fi
-    
+
     #
     # Configure MXML
     #
@@ -194,6 +196,7 @@ function build_mxml
         chmod -R ug+w,a+rX "$VISITDIR/mxml"
         chgrp -R ${GROUP} "$VISITDIR/mxml"
     fi
+
     cd "$START_DIR"
     info "Done with MXML"
     return 0
@@ -202,7 +205,7 @@ function build_mxml
 function bv_mxml_is_enabled
 {
     if [[ $DO_MXML == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
@@ -231,4 +234,3 @@ function bv_mxml_build
         fi
     fi
 }
-
