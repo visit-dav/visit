@@ -133,7 +133,7 @@ function bv_vtk_host_profile
 function bv_vtk_ensure
 {
     if [[ "$DO_VTK" == "yes" && "$USE_SYSTEM_VTK" == "no" ]] ; then
-        check_installed_or_have_src "vtk" $VTK_VERSION $VTK_BUILD_DIR $VTK_FILE $VTK_URL
+        ensure_built_or_ready "vtk" $VTK_VERSION $VTK_BUILD_DIR $VTK_FILE $VTK_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_VTK="no"
@@ -1865,7 +1865,7 @@ function build_vtk
     #
     # Uncompress the source file
     #
-    uncompress_src_file $VTK_SRC_DIR $VTK_FILE
+    prepare_build_dir $VTK_SRC_DIR $VTK_FILE
     untarred_vtk=$?
     if [[ $untarred_vtk == -1 ]] ; then
         warn "Unable to uncompress VTK source file. Giving Up!"

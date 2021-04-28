@@ -38,7 +38,6 @@
             <lib name="mili"/>
             <lib name="moab"/>
             <lib name="mpich"/>
-            <lib name="mxml"/>
             <lib name="nektarpp"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>
@@ -94,7 +93,6 @@
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
-            <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>
             <lib name="openvkl"/>
@@ -136,7 +134,6 @@
             <lib name="gdal"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
-            <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="nektarpp"/>
             <lib name="openexr"/>
@@ -163,7 +160,6 @@
             <lib name="gdal"/>
             <lib name="h5part"/>
             <lib name="hdf5"/>
-            <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="nektarpp"/>
             <lib name="pidx"/>

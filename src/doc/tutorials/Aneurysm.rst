@@ -574,7 +574,7 @@ a Mesh plot.
 
 16. Go to *Add->Pseudocolor->velocity_magnitude*.
 17. Open the Pseudocolor plot attributes window.
-18. Set *Limits* to *Use Current Plot*.
+18. Set *Limits* to *Use Actual Data*.
 19. Click *Apply* and *Dismiss*.
 20. Go to *Operators->Slicing->Slice*.
 21. Click *Draw*.

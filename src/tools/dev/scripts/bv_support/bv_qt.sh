@@ -206,12 +206,15 @@ function qt_license_prompt
 
 function apply_qt_patch
 {
-    cd $QT_SRC_DIR || error "Can't cd to Qt source dir."
-
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        if [[ ${QT_VERSION} == 5.14.2 ]] ; then
-            if [[ "$OPSYS" == "Linux" ]]; then
+    if [[ ${QT_VERSION} == 5.14.2 ]] ; then
+        if [[ "$OPSYS" == "Linux" ]]; then
+            if [[ "$DO_MESAGL" == "yes" ]] ; then
                 apply_qt_5142_linux_mesagl_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            else
+                apply_qt_5142_linux_opengl_patch
                 if [[ $? != 0 ]] ; then
                     return 1
                 fi
@@ -277,9 +280,10 @@ diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/
 ! 
 EOF
     if [[ $? != 0 ]] ; then
-        warn "qt 5.14.2 linux mesagl patch 2failed."
+        warn "qt 5.14.2 linux mesagl patch 2 failed."
         return 1
     fi
+
     patch -p0 <<EOF
 diff -c qtbase/mkspecs/common/linux.conf.orig qtbase/mkspecs/common/linux.conf
 *** qtbase/mkspecs/common/linux.conf.orig
@@ -304,6 +308,64 @@ diff -c qtbase/mkspecs/common/linux.conf.orig qtbase/mkspecs/common/linux.conf
 EOF
     if [[ $? != 0 ]] ; then
         warn "qt 5.14.2 linux mesagl patch 3 failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_qt_5142_linux_opengl_patch
+{
+    info "Patching qt 5.14.2 for Linux and OpenGL"
+    patch -p0 <<EOF
+diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
+*** qtbase/mkspecs/linux-g++-64/qmake.conf.orig
+--- qtbase/mkspecs/linux-g++-64/qmake.conf
+***************
+*** 18,24 ****
+  include(../common/g++-unix.conf)
+
+
+! QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+
+  load(qt_config)
+--- 18,24 ----
+  include(../common/g++-unix.conf)
+
+
+! QMAKE_LIBDIR_X11        = /usr/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/lib64
+
+  load(qt_config)
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.14.2 linux opengl patch 1 failed."
+        return 1
+    fi
+
+    patch -p0 <<EOF
+diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/qmake.conf
+*** qtbase/mkspecs/linux-icc-64/qmake.conf.orig
+--- qtbase/mkspecs/linux-icc-64/qmake.conf
+***************
+*** 12,16 ****
+
+  # Change the all LIBDIR variables to use lib64 instead of lib
+
+! QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+--- 12,16 ----
+
+  # Change the all LIBDIR variables to use lib64 instead of lib
+
+! QMAKE_LIBDIR_X11        = /usr/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/lib64
+EOF
+
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.14.2 linux opengl patch 2 failed."
         return 1
     fi
 
@@ -458,7 +520,7 @@ function build_qt
     qt_flags="${qt_flags} -qt-libpng"
 
     if [[ "$OPSYS" == "Linux" ]] ; then
-        qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes"
+        qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes -xcb-native-painting"
     fi
 
     if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
