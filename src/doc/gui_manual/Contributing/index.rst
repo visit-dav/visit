@@ -431,7 +431,7 @@ The resulting docs will be browseable on ReadTheDocs with a URL of the form ``ht
 Be aware that if you are doing anything on the branch that could cause generation to fail (e.g. changing ``conf.py``), you will need to examine the build logs on ReadTheDocs to diagnose the cause.
 
 Please clean up after yourself when you are done working with the branch.
-To do this, first *whipe* the branch (removes the generated version) on ReadTheDocs and then deactivate it.
+To do this, first *wipe* the branch (removes the generated version) on ReadTheDocs and then deactivate it.
 
 Things To Consider Going Forward
 --------------------------------
