@@ -4,14 +4,14 @@ Create Bonds operator
 ~~~~~~~~~~~~~~~~~~~~~
 
 The CreateBonds operator is used to specify ranges of distances for various 
-types of atoms, and use those ranges to create bonds. The default behavior of 
+types of atoms and use those ranges to create bonds. The default behavior of 
 this operator is to create a bonds between a Hydrogen and any other species 
 if the atoms are separated by a distance between 0.4 and 1.2 units 
 (e.g. Angstroms) and between a pair of atoms (not including H) if they are 
 between 0.4 and 1.9 units apart. This works well for organic molecules. 
 However, in :numref:`Figure %s <createbonds_example>`, the default distances 
 were not useful. In this case, the values were changed to create a bond 
-including H for distances between 0.4 and 1.5 units, and for other species 
+including H for distances between 0.4 and 1.5 units and for other species 
 between 0.4 and 2.5 units. :numref:`Figure %s <createbonds_bonding>`.
 
 
@@ -63,11 +63,11 @@ Advanced settings
 .. figure:: images/createbonds_advanced.png
 
 
-**Variable for atomic number** defaults to *element* as per the convention, but can be set to any integral variable corresponding to the atomic number of each atom.
+**Variable for atomic number** defaults to *element* as per the convention, but it can be set to any integral variable corresponding to the atomic number of each atom.
 
-If you specify the wrong distance, each atom might try to bond to many other atoms. To keep an error like this from causing a severe hit to memory and performance, **Maximum bonds per atom** will stop the process before it gets out of hand.  The default value is *10*, and could safely be set lower in many cases, but is user-settable for unusual cases where >10 bonds are needed on some atoms. 
+If you specify the wrong distance, each atom might try to bond to many other atoms. To keep an error like this from causing a severe hit to memory and performance, **Maximum bonds per atom** will stop the process before it gets out of hand.  The default value is *10*, and it could safely be set lower in many cases, but it is user-settable for unusual cases where >10 bonds are needed on some atoms. 
 
-When **Add periodic bonds** is checked, this will make the algorithm see if an atom would bond with and atom past a periodic boundary edge, and add a dangling bond in that case.  Checking this setting will enable the **Periodic in X,Y,Z** controls as well as the controls for **Unit cell vectors**.
+When **Add periodic bonds** is checked, this will make the algorithm see if an atom would bond with an atom past a periodic boundary edge, and add a dangling bond in that case.  Checking this setting will enable the **Periodic in X,Y,Z** controls as well as the controls for **Unit cell vectors**.
 
 **Periodicity in X, Y, Z** can be selected independently (or none).
 
