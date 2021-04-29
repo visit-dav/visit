@@ -60,21 +60,21 @@ static const char *DataValue_strings[] = {
 "Solid", "SeedPointID", "Speed",
 "Vorticity", "ArcLength", "TimeAbsolute",
 "TimeRelative", "AverageDistanceFromSeed", "CorrelationDistance",
-"ClosedCurve", "Difference", "Variable"
-};
+"ClosedCurve", "Difference", "Variable",
+"VariableAtSeed"};
 
 std::string
 IntegralCurveAttributes::DataValue_ToString(IntegralCurveAttributes::DataValue t)
 {
     int index = int(t);
-    if(index < 0 || index >= 12) index = 0;
+    if(index < 0 || index >= 13) index = 0;
     return DataValue_strings[index];
 }
 
 std::string
 IntegralCurveAttributes::DataValue_ToString(int t)
 {
-    int index = (t < 0 || t >= 12) ? 0 : t;
+    int index = (t < 0 || t >= 13) ? 0 : t;
     return DataValue_strings[index];
 }
 
@@ -82,7 +82,7 @@ bool
 IntegralCurveAttributes::DataValue_FromString(const std::string &s, IntegralCurveAttributes::DataValue &val)
 {
     val = IntegralCurveAttributes::Solid;
-    for(int i = 0; i < 12; ++i)
+    for(int i = 0; i < 13; ++i)
     {
         if(s == DataValue_strings[i])
         {
@@ -1815,7 +1815,7 @@ IntegralCurveAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 12)
+            if(ival >= 0 && ival < 13)
                 SetDataValue(DataValue(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

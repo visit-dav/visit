@@ -52,6 +52,7 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public final static int DATAVALUE_CLOSEDCURVE = 9;
     public final static int DATAVALUE_DIFFERENCE = 10;
     public final static int DATAVALUE_VARIABLE = 11;
+    public final static int DATAVALUE_VARIABLEATSEED = 12;
 
     public final static int CLEANUPMETHOD_NOCLEANUP = 0;
     public final static int CLEANUPMETHOD_MERGE = 1;
@@ -1624,6 +1625,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
             str = str + "DATAVALUE_DIFFERENCE";
         if(dataValue == DATAVALUE_VARIABLE)
             str = str + "DATAVALUE_VARIABLE";
+        if(dataValue == DATAVALUE_VARIABLEATSEED)
+            str = str + "DATAVALUE_VARIABLEATSEED";
         str = str + "\n";
         str = str + stringToString("dataVariable", dataVariable, indent) + "\n";
         str = str + indent + "integrationDirection = ";

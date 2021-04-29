@@ -260,7 +260,7 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
     str += tmpStr;
     const char *dataValue_names = "Solid, SeedPointID, Speed, Vorticity, ArcLength, "
         "TimeAbsolute, TimeRelative, AverageDistanceFromSeed, CorrelationDistance, "
-        "ClosedCurve, Difference, Variable";
+        "ClosedCurve, Difference, Variable, VariableAtSeed";
     switch (atts->GetDataValue())
     {
       case IntegralCurveAttributes::Solid:
@@ -309,6 +309,10 @@ PyIntegralCurveAttributes_ToString(const IntegralCurveAttributes *atts, const ch
           break;
       case IntegralCurveAttributes::Variable:
           snprintf(tmpStr, 1000, "%sdataValue = %sVariable  # %s\n", prefix, prefix, dataValue_names);
+          str += tmpStr;
+          break;
+      case IntegralCurveAttributes::VariableAtSeed:
+          snprintf(tmpStr, 1000, "%sdataValue = %sVariableAtSeed  # %s\n", prefix, prefix, dataValue_names);
           str += tmpStr;
           break;
       default:
@@ -1422,16 +1426,17 @@ IntegralCurveAttributes_SetDataValue(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the dataValue in the object.
-    if(ival >= 0 && ival < 12)
+    if(ival >= 0 && ival < 13)
         obj->data->SetDataValue(IntegralCurveAttributes::DataValue(ival));
     else
     {
         fprintf(stderr, "An invalid dataValue value was given. "
-                        "Valid values are in the range of [0,11]. "
+                        "Valid values are in the range of [0,12]. "
                         "You can also use the following names: "
                         "Solid, SeedPointID, Speed, Vorticity, ArcLength, "
                         "TimeAbsolute, TimeRelative, AverageDistanceFromSeed, CorrelationDistance, "
-                        "ClosedCurve, Difference, Variable.");
+                        "ClosedCurve, Difference, Variable, VariableAtSeed"
+                        ".");
         return NULL;
     }
 
@@ -3110,6 +3115,8 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(IntegralCurveAttributes::Difference));
     if(strcmp(name, "Variable") == 0)
         return PyInt_FromLong(long(IntegralCurveAttributes::Variable));
+    if(strcmp(name, "VariableAtSeed") == 0)
+        return PyInt_FromLong(long(IntegralCurveAttributes::VariableAtSeed));
 
     if(strcmp(name, "dataVariable") == 0)
         return IntegralCurveAttributes_GetDataVariable(self, NULL);

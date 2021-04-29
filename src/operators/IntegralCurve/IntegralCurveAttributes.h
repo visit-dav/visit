@@ -51,7 +51,8 @@ public:
         CorrelationDistance,
         ClosedCurve,
         Difference,
-        Variable
+        Variable,
+        VariableAtSeed
     };
     enum CleanupMethod
     {

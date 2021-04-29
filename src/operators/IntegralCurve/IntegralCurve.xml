@@ -42,6 +42,7 @@
         ClosedCurve
         Difference
         Variable
+        VariableAtSeed
       </Enum>
       <Enum name="CleanupMethod">
         NoCleanup
