@@ -15,6 +15,7 @@ operators that you rarely use.
     Clip_operator
     Cone_operator
     ConnectedComponents_operator
+    CreateBonds_operator
     Cylinder_operator
     Decimate_operator
     DeferExpression_operator
