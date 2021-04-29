@@ -42,8 +42,8 @@ Controlling how atoms are drawn
 The value *Spheres* for **Draw atoms as** means to draw spheres using 3D 
 geometry.  *Sphere Impostors* means to draw them using a single flat polygon 
 with an image of a sphere -- this requires support from graphics hardware and 
-can introduce some minor graphical artifacts, but is very fast. The value 
-*None* means that you are only interested in seeing the bonds, and would 
+can introduce some minor graphical artifacts, but it is very fast. The value 
+*None* means that you are only interested in seeing the bonds, and you would 
 like the atoms themselves not to be drawn.
 
 When rendering *Spheres*, **Atom sphere quality** determines the number of 
@@ -125,7 +125,7 @@ When VisIt_ encounters a discrete-valued variable, it determines which one of
 these color tables to use based on the variable name (*element* and *restype*, 
 specifically).
 
-**Element types** and **Residue types** are specific examples, and are separate 
+**Element types** and **Residue types** are specific examples, and they are separate 
 because there are conventional color tables widely used. VisIt_ provides some 
 of these color tables.  **Other discrete fields** catches anything which is not 
 an element or residue type. 
