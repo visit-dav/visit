@@ -1,6 +1,49 @@
 export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
 
 # *************************************************************************** #
+# Purpose: Flexible comparison function for version strings                   #
+#                                                                             #
+#   - Converts version string "4.101.3" to bash array (4 101 3)               #
+#   - Appends zeros to operand with fewer array members (4)==>(4 000 0)       #
+#   - Ensures appended zeros have same length as counterparts                 #
+#   - Forms integer values from arrays (4 101 3)==>41013                      #
+#   - Compares integers using specified operator                              #
+#   - Sets status using test operator                                         #
+#                                                                             #
+# *************************************************************************** #
+function compare_version_strings
+{   
+    # default op is -lt and separator char is .
+    op=${3:-'-lt'}
+    sep=${4:-'.'}
+
+    # create array variables of digits from version string
+    vldigitarr=($(echo $1 | tr $sep ' '))
+    vrdigitarr=($(echo $2 | tr $sep ' '))
+
+    # append strings of zeros of equal length for missing digits
+    # "5"==>"0", "10"==>"00", "101"==>"000"
+    i=0
+    while [[ ${#vldigitarr[@]} -lt ${#vrdigitarr[@]} ]]; do
+        zeros=$(echo ${vrdigitarr[$i]} | tr '1234567890' '0000000000')
+        vldigitarr+=($zeros)
+        i=$((i+1))
+    done
+    while [[ ${#vrdigitarr[@]} -lt ${#vldigitarr[@]} ]]; do
+        zeros=$(echo ${vldigitarr[$i]} | tr '1234567890' '0000000000')
+        vrdigitarr+=($zeros)
+        i=$((i+1))
+    done
+
+    # Turn arrays of digit strings into integers
+    # "4 10 3" ==> 4103
+    vlval=$(echo ${vldigitarr[@]} | tr -d ' ')
+    vrval=$(echo ${vrdigitarr[@]} | tr -d ' ')
+
+    test $vlval $op $vrval
+}
+
+# *************************************************************************** #
 # Function: errorFunc                                                         #
 #                                                                             #
 # Purpose: Error messages                                                     #
