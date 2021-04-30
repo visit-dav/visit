@@ -459,7 +459,7 @@ function build_silo
     #
     info "Configuring Silo . . ."
     cd $SILO_BUILD_DIR || error "Can't cd to Silo build dir."
-    apply_silo_patch
+    apply_silo_patch || return 1
     info "Invoking command to configure Silo"
     SILO_LINK_OPT=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
