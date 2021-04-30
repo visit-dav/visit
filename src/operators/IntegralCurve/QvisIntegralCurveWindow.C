@@ -741,6 +741,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     dataValueComboBox = new QComboBox(dataGroup);
     dataValueComboBox->addItem(tr("Solid Color"), IntegralCurveAttributes::Solid);
+    dataValueComboBox->addItem(tr("Random"), IntegralCurveAttributes::Random);
     dataValueComboBox->addItem(tr("Seed Point ID"), IntegralCurveAttributes::SeedPointID);
     dataValueComboBox->addItem(tr("Vector magnitude"), IntegralCurveAttributes::Speed);
     dataValueComboBox->addItem(tr("Vorticity magnitude"), IntegralCurveAttributes::Vorticity);

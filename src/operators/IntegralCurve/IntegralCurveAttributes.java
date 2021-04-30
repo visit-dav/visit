@@ -41,18 +41,19 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
     public final static int SOURCETYPE_FIELDDATA = 8;
 
     public final static int DATAVALUE_SOLID = 0;
-    public final static int DATAVALUE_SEEDPOINTID = 1;
-    public final static int DATAVALUE_SPEED = 2;
-    public final static int DATAVALUE_VORTICITY = 3;
-    public final static int DATAVALUE_ARCLENGTH = 4;
-    public final static int DATAVALUE_TIMEABSOLUTE = 5;
-    public final static int DATAVALUE_TIMERELATIVE = 6;
-    public final static int DATAVALUE_AVERAGEDISTANCEFROMSEED = 7;
-    public final static int DATAVALUE_CORRELATIONDISTANCE = 8;
-    public final static int DATAVALUE_CLOSEDCURVE = 9;
-    public final static int DATAVALUE_DIFFERENCE = 10;
-    public final static int DATAVALUE_VARIABLE = 11;
-    public final static int DATAVALUE_VARIABLEATSEED = 12;
+    public final static int DATAVALUE_RANDOM = 1;
+    public final static int DATAVALUE_SEEDPOINTID = 2;
+    public final static int DATAVALUE_SPEED = 3;
+    public final static int DATAVALUE_VORTICITY = 4;
+    public final static int DATAVALUE_ARCLENGTH = 5;
+    public final static int DATAVALUE_TIMEABSOLUTE = 6;
+    public final static int DATAVALUE_TIMERELATIVE = 7;
+    public final static int DATAVALUE_AVERAGEDISTANCEFROMSEED = 8;
+    public final static int DATAVALUE_CORRELATIONDISTANCE = 9;
+    public final static int DATAVALUE_CLOSEDCURVE = 10;
+    public final static int DATAVALUE_DIFFERENCE = 11;
+    public final static int DATAVALUE_VARIABLE = 12;
+    public final static int DATAVALUE_VARIABLEATSEED = 13;
 
     public final static int CLEANUPMETHOD_NOCLEANUP = 0;
     public final static int CLEANUPMETHOD_MERGE = 1;
@@ -1603,6 +1604,8 @@ public class IntegralCurveAttributes extends AttributeSubject implements Plugin
         str = str + indent + "dataValue = ";
         if(dataValue == DATAVALUE_SOLID)
             str = str + "DATAVALUE_SOLID";
+        if(dataValue == DATAVALUE_RANDOM)
+            str = str + "DATAVALUE_RANDOM";
         if(dataValue == DATAVALUE_SEEDPOINTID)
             str = str + "DATAVALUE_SEEDPOINTID";
         if(dataValue == DATAVALUE_SPEED)

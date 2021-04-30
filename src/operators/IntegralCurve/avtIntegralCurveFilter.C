@@ -2683,6 +2683,21 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
     bool   cropEndFlag    = atts.GetCropEndFlag();
     double cropEndValue   = atts.GetCropEnd();
 
+    std::vector< int > random_values;
+
+    // If doing a random color use a one-to-one mapping so no two IC
+    // have the same color.
+    if (dataValue == IntegralCurveAttributes::Random)
+    {
+      random_values.resize(numICs);
+
+      for (int i = 0; i < numICs; i++)
+        random_values[i] = i;
+
+      // Now randomize the values.
+      std::random_shuffle ( random_values.begin(), random_values.end() );
+    }
+
     for (int i = 0; i < numICs; i++)
     {
         avtStateRecorderIntegralCurve *ic =
@@ -2866,7 +2881,11 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
 
         if( dataValue == IntegralCurveAttributes::Solid )
         {
-            data_value = 0.0f;
+          data_value = 0.0f;
+        }
+        else if( dataValue == IntegralCurveAttributes::Random )
+        {
+          data_value = random_values[i];
         }
         else if( dataValue == IntegralCurveAttributes::AverageDistanceFromSeed ||
                  dataValue == IntegralCurveAttributes::Difference )
@@ -2968,6 +2987,7 @@ avtIntegralCurveFilter::CreateIntegralCurveOutput(std::vector<avtIntegralCurve *
               // The data_value is set outside of the loop so nothing
               // to do.
               case IntegralCurveAttributes::Solid:
+              case IntegralCurveAttributes::Random:
               case IntegralCurveAttributes::AverageDistanceFromSeed:
               case IntegralCurveAttributes::Difference:
               case IntegralCurveAttributes::VariableAtSeed:

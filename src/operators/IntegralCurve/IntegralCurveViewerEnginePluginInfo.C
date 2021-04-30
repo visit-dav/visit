@@ -187,8 +187,8 @@ IntegralCurveViewerEnginePluginInfo::GetOperatorVarDescription(AttributeSubject 
 {
     IntegralCurveAttributes *atts_in = (IntegralCurveAttributes *)atts;
 
-    const char *typeString[13] =
-      { "None", "Seed Point ID", "Speed", "Vorticity", "Arc Length",
+    const char *typeString[14] =
+      { "None", "Random", "Seed Point ID", "Speed", "Vorticity", "Arc Length",
          "Absolute Time", "Relative Time",
          "Ave. dist. from seed", "Correlation Distance", "Closed Curve",
          "Difference", "Variable", "VariableAtSeed" };

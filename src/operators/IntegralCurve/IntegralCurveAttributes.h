@@ -41,6 +41,7 @@ public:
     enum DataValue
     {
         Solid,
+        Random,
         SeedPointID,
         Speed,
         Vorticity,
