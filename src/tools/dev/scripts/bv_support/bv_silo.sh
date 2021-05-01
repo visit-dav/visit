@@ -24,10 +24,14 @@ function bv_silo_silex
 
 function bv_silo_depends_on
 {
-    local depends_on="zlib"
+    local depends_on=""
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        depends_on="zlib"
+    fi
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        depends_on="hdf5"
+        depends_on="$depends_on hdf5"
     fi
     
     if [[ "$DO_SZIP" == "yes" ]] ; then
@@ -109,7 +113,7 @@ function bv_silo_dry_run
 function apply_silo_4102_fpzip_patch
 {
     info "Patching silo for fpzip DOMAIN and RANGE symbols"
-    patch -p0 <<EOF
+    patch --verbose -p0 <<EOF
 Index: src/fpzip/codec.h
 ===================================================================
 --- src/fpzip/codec.h	(revision 809)
@@ -470,13 +474,18 @@ function build_silo
     else
         WITHHDF5ARG="--without-hdf5"
     fi
-    SILO_LINK_OPT="$SILO_LINK_OPT -lz"
     if [[ "$DO_SZIP" == "yes" ]] ; then
         export SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         WITHSZIPARG="--with-szlib=$SZIPDIR"
         SILO_LINK_OPT="$SILO_LINK_OPT -L$SZIPDIR/lib -lsz"
     else
         WITHSZIPARG="--without-szlib"
+    fi
+    if [[ "$DO_ZLIB" == "no" ]]; then
+        WITH_HZIP_AND_FPZIP="--disable-hzip --disable-fpzip"
+    else
+        SILO_LINK_OPT="$SILO_LINK_OPT -lz"
+        ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
     fi
     WITHSHAREDARG="--enable-shared"
     if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
@@ -493,7 +502,6 @@ function build_silo
     #    fi
     #fi
 
-    ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS="--disable-fortran"
@@ -511,7 +519,7 @@ function build_silo
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
         --enable-install-lite-headers --without-readline \
         $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
 
@@ -521,7 +529,7 @@ function build_silo
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
         --enable-install-lite-headers --without-readline \
         $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
 
