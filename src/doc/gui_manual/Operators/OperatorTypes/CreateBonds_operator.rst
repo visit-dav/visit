@@ -74,3 +74,9 @@ When **Add periodic bonds** is checked, this will make the algorithm see if an a
 Some file formats specify the vectors for the unit cell (sometimes called "direct lattice" vectors) containing the molecular data in the file. If they are present and **Use provided unit cell vectors** is checked, then it will use those values instead of the ones specified in this window.  
 
 **Vector for X, Y, and Z** controls the actual vectors describing the amount to displace in each of the three axes. 
+
+
+Examples in use
+"""""""""""""""
+
+See :ref:`moleculardatafeatures_head` for examples of the CreateBonds operator in use with the :ref:`molecule_plot_head`.

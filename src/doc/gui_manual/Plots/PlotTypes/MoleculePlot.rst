@@ -138,3 +138,7 @@ the range to a specific range of values of particular interest, making full use
 of the color table within that range and clamping anything outside that range 
 to the colors at the min/max extrema of the selected color table. 
 
+Examples in use
+"""""""""""""""
+
+See :ref:`moleculardatafeatures_head` for examples of the Molecule plot in use.
