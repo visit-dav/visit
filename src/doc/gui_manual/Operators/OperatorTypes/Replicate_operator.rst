@@ -4,13 +4,12 @@ Replicate operator
 ~~~~~~~~~~~~~~~~~~
 
 The Replicate operator is most often used in atomic and molecular visualization in VisIt_, and can be combined with the :ref:`molecule_plot_head` and :ref:`createbonds_operator_head`.
-
+See :ref:`moleculardatafeatures_head` for examples of the Replicate operator in use with the :ref:`molecule_plot_head`.
 
 .. _replicatewindow:
 
 .. figure:: images/replicatewindow.png
-   :width: 70%
-   :align: center
+   :scale: 75%
 
    Replicate attributes window
 
@@ -30,4 +29,5 @@ When there are periodic boundary conditions, atoms at the boundaries of the unit
 For example, in a periodic unit cell with origin [0,0,0] and dimensions [1,1,1], suppose there is an atom centered on the minimum-Z face, i.e. located at [0.5, 0.5, 0]. Due to the periodic boundary conditions, this means that there should be another instance of this atom at the maximum-Z face, i.e. at [0.5, 0.5, 1]. If you set the number of Z replications to at least 2, then it will create this other instance of the atom as desired. However, it will also create any atoms which lie in the replicated cell between z=1 and z=2. Sometimes you want to replicate just those atoms which are still within the original unit cell after replication (within epsilon). By checking this flag, but leaving the number of replications at 1,1,1, this operator will create the instance of the atom at [0.5, 0.5, 1] without adding the other atoms at z>1.
 
 **Shift atoms to new periodic origin** enables the ability to set an origin (using **New periodic atom origin**) for periodic atom creation.
+
 
