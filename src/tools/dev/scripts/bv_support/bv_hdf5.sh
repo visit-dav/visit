@@ -30,11 +30,11 @@ function bv_hdf5_depends_on
         local depends_on=""
 
         if [[ "$DO_ZLIB" == "yes" ]] ; then
-            depends_on="$depends_on zlib"    
+            depends_on="$depends_on zlib"
         fi
 
         if [[ "$DO_SZIP" == "yes" ]] ; then
-            depends_on="$depends_on szip"    
+            depends_on="$depends_on szip"
         fi
 
         if [[ -n "$PAR_COMPILER" && "$DO_MOAB" == "yes"  && "$DO_MPICH" == "yes" ]]; then
@@ -570,7 +570,7 @@ function build_hdf5
         cf_szip="--with-szlib=${sz_dir}"
     fi
     cv_zlib=""
-    if [[ "$DO_ZLIB " == "yes" ]]; then
+    if [[ "$DO_ZLIB" == "yes" ]]; then
         info "Configuring HDF5 with ZLib support."
         cf_zlib="--with-zlib=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
     fi
