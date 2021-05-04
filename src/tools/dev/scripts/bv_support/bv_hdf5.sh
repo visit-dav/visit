@@ -473,6 +473,29 @@ EOF
     return 0;
 }
 
+
+function apply_hdf5_1814_isatty_patch
+{
+    info "Patching hdf5 1.8.14 for isatty"
+    patch -p0 << EOF
+--- hl/src/H5LTanalyze.c.orig	2014-11-07 04:53:42.000000000 -0800
++++ hl/src/H5LTanalyze.c	2021-02-01 13:40:36.000000000 -0800
+@@ -40,6 +40,7 @@
+ #include <string.h>
+ #include <errno.h>
+ #include <stdlib.h>
++#include <unistd.h>
+ 
+ /* end standard C headers. */
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "HDF5 1.8.14 isatty patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 function apply_hdf5_patch
 {
     # Apply a patch for static if we build statically.
@@ -481,6 +504,11 @@ function apply_hdf5_patch
         if [[ $? != 0 ]]; then
             return 1
         fi
+    fi
+
+    apply_hdf5_1814_isatty_patch
+    if [[ $? != 0 ]]; then
+        return 1
     fi
 
     return 0
