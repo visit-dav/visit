@@ -569,7 +569,7 @@ function build_hdf5
         sz_dir="${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}"
         cf_szip="--with-szlib=${sz_dir}"
     fi
-    cv_zlib=""
+    cf_zlib=""
     if [[ "$DO_ZLIB" == "yes" ]]; then
         info "Configuring HDF5 with ZLib support."
         cf_zlib="--with-zlib=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
