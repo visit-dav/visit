@@ -2608,7 +2608,7 @@ ViewerEngineManagerImplementation::ExportDatabases(const EngineKey &ek,
     ExportDBAttributes &retAtts)
 {
     ENGINE_PROXY_RPC_BEGIN("ExportDatabase");
-      engine->GetEngineMethods()->ExportDatabases(ids, expAtts, timeSuffix, retAtts);
+    engine->GetEngineMethods()->ExportDatabases(ids, expAtts, timeSuffix, retAtts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 
