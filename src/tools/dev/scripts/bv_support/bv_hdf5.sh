@@ -27,7 +27,11 @@ function bv_hdf5_depends_on
     if [[ "$USE_SYSTEM_HDF5" == "yes" ]]; then
         echo ""
     else
-        local depends_on="zlib"
+        local depends_on=""
+
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            depends_on="$depends_on zlib"    
+        fi
 
         if [[ "$DO_SZIP" == "yes" ]] ; then
             depends_on="$depends_on szip"    
@@ -100,7 +104,10 @@ function bv_hdf5_host_profile
                     >> $HOSTCONF 
             fi
 
-            ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
+            ZLIB_LIBDEP=""
+            if [[ "$DO_ZLIB" == "yes" ]] ; then
+                ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
+            fi
             SZIP_LIBDEP=""
             if [[ "$DO_SZIP" == "yes" ]] ; then
                 SZIP_LIBDEP="\${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz"
@@ -619,9 +626,11 @@ function build_hdf5
         sz_dir="${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}"
         cf_szip="--with-szlib=${sz_dir}"
     fi
-    info "Configuring HDF5 with ZLib support."
-    cf_zlib="--with-zlib=${zlib_dir}"
-    zlib_dir="${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}"
+    cv_zlib=""
+    if [[ "$DO_ZLIB " == "yes" ]]; then
+        info "Configuring HDF5 with ZLib support."
+        cf_zlib="--with-zlib=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
+    fi
 
     # Disable Fortran on Darwin since it causes HDF5 builds to fail.
     if [[ "$OPSYS" == "Darwin" ]]; then
