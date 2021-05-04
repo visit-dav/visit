@@ -1,24 +1,25 @@
 ### Description
 
-Resolves # (*If this PR is unrelated to a ticket, please erase this line*)
+Resolves # <!-- If this PR is unrelated to a ticket, please erase this line -->
 
-Please include a summary of the change
+<!-- Please include a summary of the change and any other information and instructions to help reviewers understand the work -->
 
 ### Type of change
 
-Please check one of the following:
+<!-- Please check one of the boxes below -->
+
 * [ ] Bug fix
 * [ ] New feature
 * [ ] Documentation update
-* [ ] Other (please explain with a note below)
+* [ ] Other <!-- please explain with a note below -->
 
 ### How Has This Been Tested?
 
-Please describe the tests you've added or any tests that already cover this change. Include relevant information, such as which operating system you tested on.
+<!-- Please describe the tests you've added or any tests that already cover this change. Include relevant information, such as which operating system you tested on. -->
 
 ### Checklist:
 
-For items in this checklist that do not apply, simply insert two tilde chars, `~~`, just ahead of the left bracket char, `[` at the beginning of a line. Each line ends with two tilde chars to make doing such ~~strikeouts~~ easy.
+<!-- For items in this checklist that do not apply, simply insert two tilde chars, `~~`, just ahead of the left bracket char, `[` at the beginning of a line. Each line ends with two tilde chars to make doing such ~~strikeouts~~ easy. -->
 
 - [ ] I have followed the [style guidelines][1] of this project.~~
 - [ ] I have performed a self-review of my own code.~~
