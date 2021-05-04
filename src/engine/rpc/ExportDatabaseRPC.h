@@ -53,14 +53,14 @@ class ENGINE_RPC_API ExportDatabaseRPC : public BlockingRPC
     ExportDBAttributes       *GetExportDBAtts();
     const std::string        &GetTimeSuffix() const;
 
-    ExportDBAttributes GetReturnAtts() { return returnAtts; }
+    ExportDBAttributes GetReturnAtts() const { return returnAtts; }
 
-    ExportDBAttributes returnAtts;
 
   private:
     intVector            ids;
     ExportDBAttributes   exportDBAtts; 
     std::string          timeSuffix;
+    ExportDBAttributes   returnAtts;
 };
 
 #endif
