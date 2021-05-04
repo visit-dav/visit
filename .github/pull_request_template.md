@@ -28,7 +28,7 @@ For items in this checklist that do not apply, simply insert two tilde chars, `~
 - [ ] I have added debugging support to my changes.~~
 - [ ] I have added tests that prove my fix is effective or that my feature works.~~
 - [ ] I have confirmed new and existing unit tests pass locally with my changes.~~
-- [ ] I have added any new baselines to the repo.~~
+- [ ] I have added new baselines for any new tests to the repo.~~
 - [ ] I have NOT made any changes to [*protocol* or *public interfaces*][3] in an RC branch.~~
 - [ ] I have assigned reviewers (see [VisIt's PR procedures][2] for more information).~~
 
