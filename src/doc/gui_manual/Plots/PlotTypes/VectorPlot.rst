@@ -1,3 +1,5 @@
+.. _vector_plot_head:
+
 Vector plot
 ~~~~~~~~~~~
 
