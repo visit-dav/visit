@@ -12,6 +12,7 @@
 #include <plugin_vartypes.h>
 #include <plugin_entry_point.h>
 #include <stdio.h>
+#include <no_icon.xpm>
 
 // Forward declarations.
 class AttributeSubject;
@@ -104,6 +105,10 @@ class ExpressionList;
 //    Burlen Loring, Thu Oct  8 14:31:15 PDT 2015
 //    clean up a few compiler warnings
 //
+//    Kathleen Biagas, Thu May 6, 2021
+//    Added a default icon (empty), to keep operator names horizontal spacing
+//    the same. Lack of an icon seems to affect only OSX.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralOperatorPluginInfo
@@ -141,7 +146,7 @@ class PLUGIN_API GUIOperatorPluginInfo : public virtual CommonOperatorPluginInfo
     {
         return 0;
     }
-    virtual const char **XPMIconData() const { return 0; }
+    virtual const char **XPMIconData() const { return no_icon_xpm; }
 };
 
 class PLUGIN_API ViewerEngineOperatorPluginInfo : public virtual CommonOperatorPluginInfo
@@ -173,7 +178,7 @@ class PLUGIN_API ViewerEngineOperatorPluginInfo : public virtual CommonOperatorP
 class PLUGIN_API ViewerOperatorPluginInfo : public virtual ViewerEngineOperatorPluginInfo
 {
   public:
-    virtual const char **XPMIconData() const { return 0; }
+    virtual const char **XPMIconData() const { return no_icon_xpm; }
 };
 
 class PLUGIN_API EngineOperatorPluginInfo : public virtual ViewerEngineOperatorPluginInfo
