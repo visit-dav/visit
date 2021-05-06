@@ -24,10 +24,14 @@ function bv_silo_silex
 
 function bv_silo_depends_on
 {
-    local depends_on="zlib"
+    local depends_on=""
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        depends_on="zlib"
+    fi
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        depends_on="hdf5"
+        depends_on="$depends_on hdf5"
     fi
     
     if [[ "$DO_SZIP" == "yes" ]] ; then
@@ -109,7 +113,7 @@ function bv_silo_dry_run
 function apply_silo_4102_fpzip_patch
 {
     info "Patching silo for fpzip DOMAIN and RANGE symbols"
-    patch -p0 <<EOF
+    patch --verbose -p0 <<EOF
 Index: src/fpzip/codec.h
 ===================================================================
 --- src/fpzip/codec.h	(revision 809)
@@ -461,39 +465,29 @@ function build_silo
     cd $SILO_BUILD_DIR || error "Can't cd to Silo build dir."
     apply_silo_patch || return 1
     info "Invoking command to configure Silo"
-    SILO_LINK_OPT=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        export HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
-        export HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
+        HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
+        HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
         WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
-        SILO_LINK_OPT="-L$HDF5LIB -lhdf5"
     else
         WITHHDF5ARG="--without-hdf5"
     fi
-    SILO_LINK_OPT="$SILO_LINK_OPT -lz"
     if [[ "$DO_SZIP" == "yes" ]] ; then
-        export SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+        SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         WITHSZIPARG="--with-szlib=$SZIPDIR"
-        SILO_LINK_OPT="$SILO_LINK_OPT -L$SZIPDIR/lib -lsz"
     else
         WITHSZIPARG="--without-szlib"
+    fi
+    if [[ "$DO_ZLIB" == "no" ]]; then
+        WITH_HZIP_AND_FPZIP="--disable-hzip --disable-fpzip"
+    else
+        ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
     fi
     WITHSHAREDARG="--enable-shared"
     if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
         WITHSHAREDARG="--disable-shared"
     fi
-    #if [[ "$DO_SILEX" == "no" || "$DO_QT" != "yes" || "$DO_STATIC_BUILD" == "yes" ]] ; then
-        WITHSILOQTARG='--disable-silex'
-    #else
-    #    export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-    #    if [[ "$OPSYS" == "Darwin" ]] ; then
-    #        WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="m -F${SILOQTDIR}/lib -framework QtGui -framework QtCore"'
-    #    else
-    #        WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="QtGui -lQtCore"'
-    #    fi
-    #fi
-
-    ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
+    WITHSILOQTARG='--disable-silex'
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS="--disable-fortran"
@@ -511,7 +505,7 @@ function build_silo
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
         --enable-install-lite-headers --without-readline \
         $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
 
@@ -521,7 +515,7 @@ function build_silo
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
         --enable-install-lite-headers --without-readline \
         $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
 
