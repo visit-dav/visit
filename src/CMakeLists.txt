@@ -474,6 +474,13 @@
 #    Kathleen Biagas, Thu Feb 18, 2021
 #    Added logic to support codesigning Windows releases.
 #
+#    Kathleen Biagas, Thu Apr 22, 2021
+#    Removed addition of tools/DataManualExamples/Simulations for static
+#    builds, the directory structure has changed and the examples are now
+#    in 'tools/data'.  'tools' and 'tools/data' are added unconditionally.
+#    'DataManualExamples' is dependent on VISIT_ENABLE_DATA_MANUAL_EXAMPLES
+#    being ON.
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -2146,14 +2153,6 @@ ADD_SUBDIRECTORY(tools)
 IF(VISIT_STATIC)
     ADD_SUBDIRECTORY(engine/main)
     ADD_SUBDIRECTORY(sim/V2/static)
-
-    # Make it possible to build some sim examples since we've created the
-    # static sim library.
-    IF(NOT WIN32)
-        IF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-            ADD_SUBDIRECTORY(tools/DataManualExamples/Simulations)
-        ENDIF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-    ENDIF(NOT WIN32)
 
     IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
         ADD_SUBDIRECTORY(mdserver/main)

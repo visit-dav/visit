@@ -237,6 +237,9 @@ QvisExportDBWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Brad Whitlock, Mon Aug 10 17:16:32 PDT 2015
 //   Add support for grouping.
 //
+//   Kathleen Biagas, Mon Apr 26, 2021
+//   Add remote host to 'Directory name' if needed.
+//
 // ****************************************************************************
 
 void
@@ -250,7 +253,21 @@ QvisExportDBWindow::CreateWindowContents()
     fileLayout->setMargin(5);
 
     // Directory
-    directoryNameLabel = new QLabel(tr("Directory name"), fileBox);
+
+    QString caption("Directory name");
+    if(plotList)
+    {
+        int sel = plotList->FirstSelectedIndex();
+        if (sel >=0)
+        {
+            QualifiedFilename dbName(plotList->GetPlots(sel).GetDatabaseName());
+            if (dbName.host != "localhost");
+            {
+                caption += QString(" on %1").arg(dbName.host.c_str());
+            }
+        }
+    }
+    directoryNameLabel = new QLabel(tr(caption.toStdString().c_str()), fileBox);
     
     QHBoxLayout *directoryLayout = new QHBoxLayout();
     directoryNameLineEdit = new QLineEdit(fileBox);
