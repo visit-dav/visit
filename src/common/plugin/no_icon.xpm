@@ -1,4 +1,6 @@
 /* XPM */
+#ifndef PLUGIN_NO_ICON
+#define PLUGIN_NO_ICON
 static const char * no_icon_xpm[] = {
 "32 32 1 1",
 " 	c None",
@@ -34,3 +36,5 @@ static const char * no_icon_xpm[] = {
 "                                ",
 "                                ",
 "                                "};
+
+#endif
