@@ -12,6 +12,7 @@
 #include <plugin_vartypes.h>
 #include <plugin_entry_point.h>
 #include <stdio.h>
+#include <no_icon.xpm>
 
 #include <string>
 
@@ -116,6 +117,10 @@ class ViewerPlot;
 //    Burlen Loring, Thu Oct  8 14:34:36 PDT 2015
 //    fix a couple of compiler warnings
 //
+//    Kathleen Biagas, Thu May 6, 2021
+//    Added a default icon (empty), to keep plot names horizontal spacing
+//    the same. Lack of an icon seems to affect only OSX.
+//
 // ****************************************************************************
 
 class PLUGIN_API GeneralPlotPluginInfo
@@ -150,7 +155,7 @@ class PLUGIN_API GUIPlotPluginInfo : public virtual CommonPlotPluginInfo
     {
         return 0;
     }
-    virtual const char **XPMIconData() const { return 0; }
+    virtual const char **XPMIconData() const { return no_icon_xpm; }
 };
 
 class PLUGIN_API ViewerEnginePlotPluginInfo : public virtual CommonPlotPluginInfo
@@ -185,7 +190,7 @@ public:
 class PLUGIN_API ViewerPlotPluginInfo : public virtual ViewerEnginePlotPluginInfo
 {
 public:
-    virtual const char **XPMIconData() const { return 0; }
+    virtual const char **XPMIconData() const { return no_icon_xpm; }
 
     virtual void *AlternateDisplayCreate(ViewerPlot *) { return 0; }
     virtual void AlternateDisplayDestroy(void *) {; }
