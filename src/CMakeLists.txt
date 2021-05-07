@@ -481,6 +481,10 @@
 #    'DataManualExamples' is dependent on VISIT_ENABLE_DATA_MANUAL_EXAMPLES
 #    being ON.
 #
+#    Eric Brugger, Wed May  5 08:31:16 PDT 2021
+#    Set VISIT_GIT_VERSION from the file GIT_VERSION if we are not in a
+#    git checkout.
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -1752,12 +1756,15 @@ ENDFUNCTION(MAC_NIB_INSTALL)
 
 #-----------------------------------------------------------------------------
 # Read the GIT version
+# If we are in a git repo, get the version using git, otherwise try the
+# file GIT_VERSION, which will be present in a source code tar file
+# created by visit-dist.
 #-----------------------------------------------------------------------------
 #dummy revision, in case commands fail
-SET(VISIT_GIT_VERSION "Unknown")
-    IF (EXISTS ${VISIT_SOURCE_DIR}/../.git)
-        # Only try and determine the version number if it looks like
-        # we're in a working copy (a .git directory should be present)
+set(VISIT_GIT_VERSION "Unknown")
+if (EXISTS ${VISIT_SOURCE_DIR}/../.git)
+    # Only try and determine the version number if it looks like
+    # we're in a working copy (a .git directory should be present)
     find_package(Git QUIET)
     if(Git_FOUND)
         # if we would prefer the full hash, remove --short in the command
@@ -1769,11 +1776,15 @@ SET(VISIT_GIT_VERSION "Unknown")
             ERROR_QUIET
             OUTPUT_STRIP_TRAILING_WHITESPACE)
         if(${found_it} EQUAL 0)
-            SET(VISIT_GIT_VERSION ${git_rev})
+            set(VISIT_GIT_VERSION ${git_rev})
         endif()
         unset(found_it)
         unset(git_rev)
     endif()
+else (EXISTS ${VISIT_SOURCE_DIR}/../.git)
+    if (EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
+        file(STRINGS ${VISIT_SOURCE_DIR}/GIT_VERSION VISIT_GIT_VERSION)
+    endif (EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
 endif()
 
 #-----------------------------------------------------------------------------
