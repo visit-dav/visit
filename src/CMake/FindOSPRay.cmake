@@ -37,18 +37,13 @@ IF(VISIT_OSPRAY)
     IF(NOT APPLE)
         list(APPEND OSPRAY_LIBRARIES 
             ${LIBRARY_PATH_PREFIX}ospray_module_ispc${LIBRARY_SUFFIX}
-            ${LIBRARY_PATH_PREFIX}ospray_module_visit${LIBRARY_SUFFIX}
-            ${LIBRARY_PATH_PREFIX}ospray_module_visit_common${LIBRARY_SUFFIX})
+	     )
     ELSE()
         list(APPEND OSPRAY_LIBRARIES
-            ${LIBRARY_PATH_PREFIX}ospray.0${LIBRARY_SUFFIX}
-            ${LIBRARY_PATH_PREFIX}ospray_common.0${LIBRARY_SUFFIX}
-            ${LIBRARY_PATH_PREFIX}ospray_module_ispc${LIBRARY_SUFFIX}
-            ${LIBRARY_PATH_PREFIX}ospray_module_ispc.0${LIBRARY_SUFFIX}
-            ${LIBRARY_PATH_PREFIX}ospray_module_visit${LIBRARY_SUFFIX}
-            ${LIBRARY_PATH_PREFIX}ospray_module_visit.0${LIBRARY_SUFFIX}
-            ${LIBRARY_PATH_PREFIX}ospray_module_visit_common${LIBRARY_SUFFIX}
-            ${LIBRARY_PATH_PREFIX}ospray_module_visit_common.0${LIBRARY_SUFFIX})
+            ${LIBRARY_PATH_PREFIX}ospray.${OSPRAY_MAJOR_VERSION}${LIBRARY_SUFFIX}
+            ${LIBRARY_PATH_PREFIX}ospray_imgui.${OSPRAY_MAJOR_VERSION}${LIBRARY_SUFFIX}
+            ${LIBRARY_PATH_PREFIX}ospray_module_ispc.${OSPRAY_MAJOR_VERSION}${LIBRARY_SUFFIX}
+	     )
     ENDIF()
 
     # ospray tries to dlopen the ispc libs at runtime
@@ -76,12 +71,12 @@ IF(VISIT_OSPRAY)
     #
     # on linux ospray have libraries in a form of:
     #      libospray[xxx].so
-    #      libospray[xxx].so.0
+    #      libospray[xxx].so.[major_version]
     #      libospray[xxx].so.[version]
     #
     # on mac ospray have libraries in a form of:
     #      libospray[xxx].dylib
-    #      libospray[xxx].0.dylib
+    #      libospray[xxx].[major_version].dylib
     #      libospray[xxx].[version].dylib
     #
     # on windows
@@ -115,7 +110,7 @@ IF(VISIT_OSPRAY)
               (NOT "${_name_}" STREQUAL "libtbb") AND
               (NOT "${_name_}" STREQUAL "libtbbmalloc") AND
               (NOT "${_name_}" STREQUAL "libembree3") )
-            THIRD_PARTY_INSTALL_LIBRARY(${l}.0)
+            THIRD_PARTY_INSTALL_LIBRARY(${l}.${OSPRAY_MAJOR_VERSON})
           ENDIF()
 
           if(LINUX AND ("${_name_}" MATCHES "embree" OR
