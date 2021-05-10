@@ -99,6 +99,7 @@ vtk/vtkVisItTextActor.C
 
 if(VISIT_OSPRAY)
     list(APPEND AVTPLOTTER_VTK_SOURCES
+         vtk/vtkOSPRayVisItDataSetMapperNode.C
          vtk/vtkOSPRayVisItCubeAxesActorNode.C
          vtk/vtkOSPRayVisItAxisActorNode.C
          vtk/vtkVisItViewNodeFactory.C
@@ -171,7 +172,6 @@ ${PROJECT_BINARY_DIR}/avt/Plotter/vtk/
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
-
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtplotter_ser ${AVTPLOTTER_SOURCES})
 TARGET_LINK_LIBRARIES(avtplotter_ser 
@@ -180,7 +180,7 @@ TARGET_LINK_LIBRARIES(avtplotter_ser
     VTK::RenderingCore VTK::RenderingFreeType VTK::RenderingOpenGL2
     ${OPENGL_LIBRARIES})
 if(VISIT_OSPRAY)
-    target_link_libraries(avtplotter_ser VTK::RenderingOSPRay)
+    target_link_libraries(avtplotter_ser VTK::RenderingRayTracing)
 endif()
 VISIT_INSTALL_TARGETS(avtplotter_ser)
 
@@ -193,7 +193,7 @@ IF(VISIT_PARALLEL)
         VTK::RenderingCore VTK::RenderingFreeType VTK::RenderingOpenGL2
         ${OPENGL_LIBRARIES})
     if(VISIT_OSPRAY)
-        target_link_libraries(avtplotter_par VTK::RenderingOSPRay)
+        target_link_libraries(avtplotter_par VTK::RenderingRayTracing)
     endif()
     VISIT_INSTALL_TARGETS(avtplotter_par)
 ENDIF(VISIT_PARALLEL)
