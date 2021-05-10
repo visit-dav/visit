@@ -4,7 +4,6 @@
 
 #include "vtkOSPRayVisItCubeAxesActorNode.h"
 #include "vtkVisItCubeAxesActor.h"
-#include "vtkVisItAxisActor.h"
 #include "vtkOSPRayRendererNode.h"
 #include "vtkRenderer.h"
 
@@ -26,11 +25,13 @@ void vtkOSPRayVisItCubeAxesActorNode::Build(bool prepass)
 {
   if(prepass)
   {
-    vtkVisItCubeAxesActor* cubeAxesActor = vtkVisItCubeAxesActor::SafeDownCast
-      (this->GetRenderable());
+    vtkVisItCubeAxesActor* cubeAxesActor = vtkVisItCubeAxesActor::SafeDownCast(
+        this->GetRenderable());
     vtkOSPRayRendererNode* ospRenderer = static_cast<vtkOSPRayRendererNode*>(
         this->GetFirstAncestorOfType("vtkOSPRayRendererNode"));
+
     vtkRenderer* ren = vtkRenderer::SafeDownCast(ospRenderer->GetRenderable());
+
     vtkCollection* objCollection = vtkCollection::New();
     cubeAxesActor->BuildGeometry(ren, objCollection);
     this->PrepareNodes();

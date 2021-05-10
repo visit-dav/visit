@@ -14,7 +14,7 @@
 #include <plotter_exports.h>
 #include <vtkOSPRayActorNode.h>
 
-class  PLOTTER_API vtkOSPRayVisItAxisActorNode :
+class PLOTTER_API vtkOSPRayVisItAxisActorNode :
   public vtkOSPRayActorNode
 {
 public:
@@ -31,6 +31,7 @@ protected:
 
 private:
   vtkOSPRayVisItAxisActorNode(const vtkOSPRayVisItAxisActorNode&) = delete;
+
   void operator=(const vtkOSPRayVisItAxisActorNode&) = delete;
 };
 #endif
