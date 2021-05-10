@@ -12,7 +12,7 @@ class vtkViewNode;
 //============================================================================
 namespace vtkVisItViewNodeFactory
 {
-vtkViewNode PLOTTER_API *pd_maker();
+vtkViewNode PLOTTER_API *ds_maker();
 vtkViewNode PLOTTER_API *cube_axes_act_maker();
 vtkViewNode PLOTTER_API *axis_act_maker();
 }

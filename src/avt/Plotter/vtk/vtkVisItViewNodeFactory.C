@@ -3,14 +3,15 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <vtkVisItViewNodeFactory.h>
-#include <vtkOSPRayPolyDataMapperNode.h>
+
+#include <vtkOSPRayVisItDataSetMapperNode.h>
 #include <vtkOSPRayVisItAxisActorNode.h>
 #include <vtkOSPRayVisItCubeAxesActorNode.h>
 
 //============================================================================
-vtkViewNode *vtkVisItViewNodeFactory::pd_maker()
+vtkViewNode *vtkVisItViewNodeFactory::ds_maker()
 {
-  vtkOSPRayPolyDataMapperNode *vn = vtkOSPRayPolyDataMapperNode::New();
+  vtkOSPRayVisItDataSetMapperNode *vn = vtkOSPRayVisItDataSetMapperNode::New();
   return vn;
 }
 
