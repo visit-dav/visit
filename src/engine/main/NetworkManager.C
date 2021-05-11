@@ -4801,6 +4801,10 @@ NetworkManager::GetDataBinning(const char *name)
 //    Change atts arg from 'const &' to * so that actual dir name can be
 //    returned in them.  If Dirname is '.', GetCWD to store instead.
 //
+//    Kathleen Biagas, Mon May 10 2021
+//    Move re-setting of Dirname when '.' to end of method, so it doesn't
+//    affect dirs stored internally in exported db's (like Silo). 
+//
 // ****************************************************************************
 
 void
@@ -4819,12 +4823,6 @@ NetworkManager::ExportDatabases(const intVector &ids,
     }
     else
         filename = f;
-
-    if (atts->GetDirname() == ".")
-    {
-        // get the real path used for displaying back to user
-        atts->SetDirname(FileFunctions::GetCurrentWorkingDirectory());
-    }
 
     if(ids.size() > 1)
     {
@@ -4874,6 +4872,13 @@ NetworkManager::ExportDatabases(const intVector &ids,
             eAtts.SetFilename(filename + ext);
         ExportSingleDatabase(ids[0], eAtts);
     }
+
+    if (atts->GetDirname() == ".")
+    {
+        // get the real path used for displaying back to user
+        atts->SetDirname(FileFunctions::GetCurrentWorkingDirectory());
+    }
+
 }
 
 // ****************************************************************************
