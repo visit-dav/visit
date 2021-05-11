@@ -80,7 +80,16 @@ function python_set_vars_helper
     #remove any extra includes
     PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH%%-I*}"
     PYTHON_INCLUDE_DIR="$PYTHON_INCLUDE_PATH"
-    PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
+    else
+        PYTHON_VERSION_MINOR=`echo $PYTHON_VERSION | cut -d. -f2`
+        if [[ $PYTHON_VERSION_MINOR -ge 8 ]] ; then
+            PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs --embed`
+        else
+            PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
+        fi
+    fi
     #remove all other libraries except for python..
     PYTHON_LIBRARY=`echo $PYTHON_LIBRARY | sed "s/.*\(python[^ ]*\).*/\1/g"`
 
