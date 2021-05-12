@@ -27,12 +27,16 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a few issues running build_visit with '--static'.</li>
   <li>When Export database will happen on a remote machine, the window will now display the host name next to request for Directory.</li>
   <li>Fixed a bug with the CreateBonds operator window displaying %.1 in Bonds list Max field instead of correct value.</li>
+  <li>Fixed a bug where the splash screen in some binary distributions would display "Unknown" for the git version instead of the actual git version.</li>
+  <li>Fixed a bug with the Xdmf Reader not reading TIME_LIST for temporal data collections.</li>
+  <li>Fixed a bug with the Mili reader where some of the material colors in a filled boundary plot would be black. The Mili reader would assign random colors to materials when no material colors were specified in the file, which resulted in some materials being black. Now the reader doesn't specify any colors in that case so that the material colors are chosen using the filled boundary plot's default color selection algorithm.</li>
+  <li>Fixed a bug with DataBinning operator window where the Dimension 2 var would be disabled for 3D.</li>
 </ul>
 
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 3.2.1</font></b></p>
 <ul>
-  <li>Enhancement 1</li>
+  <li>Added a section on developing at GitHub to the developers manual.</li>
   <li>Enhancement 2</li>
 </ul>
 
