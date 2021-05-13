@@ -255,6 +255,9 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
 //   Use helper function DoubleToQString for consistency in formatting across
 //   all windows.
 //
+//   Kathleen Biagas, Wed May 12, 2021
+//   markerVariable and idVariable controls were changed to QvisVariableButton.
+//
 // ****************************************************************************
 
 void
@@ -488,6 +491,10 @@ QvisMultiCurvePlotWindow::UpdateMultipleAreaColors()
 //
 //   Eric Brugger, Fri Feb 15 16:36:01 PST 2013
 //   I added markerScale and markerLineWidth.
+//
+//   Kathleen Biagas, Wed May 12, 2021
+//   Removed ID_markerVariable and ID_idVariable as controls were changed
+//   to QvisVariableButtons.
 //
 // ****************************************************************************
 
