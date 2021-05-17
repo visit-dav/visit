@@ -10,11 +10,11 @@ Source code repository for the VisIt Scientific Visualization and Data Analysis 
 
 ##  Documentation
 
-[Users Wiki](https://www.visitusers.org) | [GUI and CLI Users Manuals](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop) [![Documentation Status](https://readthedocs.org/projects/visit-sphinx-github-user-manual/badge/?version=develop)](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/?badge=develop)
+[Users Manuals](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop) [![Documentation Status](https://readthedocs.org/projects/visit-sphinx-github-user-manual/badge/?version=develop)](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/?badge=develop)
 
 ##  Developer Resources
 
-* [Github Development Info](https://visitusers.org/index.php?title=Github)
+* [Github Development Info](https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/dev_manual/GitHub.html)
 * [Newly Submitted Issues](https://github.com/visit-dav/visit/issues?utf8=✓&q=is%3Aissue+is%3Aopen+-label%3Areviewed)
 
 
