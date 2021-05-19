@@ -130,6 +130,9 @@ class PLOTTER_API  avtLegend
    
     void                          Update();
 
+    void                          UseCustomTitle(bool);
+    void                          SetCustomTitle(const char *);
+
   protected:
     double                        position[2];
     double                        size[2];
@@ -146,6 +149,9 @@ class PLOTTER_API  avtLegend
     char                         *varUnits;
     char                         *message;
     LegendOrientation             orientation;
+
+    bool                          useCustomTitle;
+    char                         *customTitle;
 
     virtual void                  ChangePosition(double, double) = 0;
     virtual void                  ChangeTitle(const char *) = 0;

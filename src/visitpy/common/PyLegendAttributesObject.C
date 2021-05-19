@@ -581,6 +581,32 @@ LegendAttributesObject_GetFontHeight(PyObject *self, PyObject *args)
     return PyFloat_FromDouble(obj->data->GetOptions().GetEntry("fontHeight")->AsDouble());
 }
 
+static PyObject *
+LegendAttributesObject_SetCustomTitle(PyObject *self, PyObject *args)
+{
+    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+
+    std::string sval;
+    if(!PyArg_ParseTuple(args, "s", &sval))
+        return NULL;
+
+    // Set the font height in the object.
+/*CUSTOM*/
+    obj->data->GetOptions().GetEntry("customTitle")->SetValue(sval);
+    UpdateAnnotationHelper(obj->data);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *
+LegendAttributesObject_GetCustomTitle(PyObject *self, PyObject *args)
+{
+    LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
+/*CUSTOM*/
+    return PyString_FromString(obj->data->GetOptions().GetEntry("customTitle")->AsString().c_str());
+}
+
 // Create some set/get functions for the bits from IntAttribute1.
 SETGET_FLAG(ManagePosition,  LEGEND_MANAGE_POSITION)
 SETGET_FLAG(DrawBoundingBox, LEGEND_DRAW_BOX)
@@ -588,6 +614,7 @@ SETGET_FLAG(DrawTitle,       LEGEND_DRAW_TITLE)
 SETGET_FLAG(DrawMinMax,      LEGEND_DRAW_MINMAX)
 SETGET_FLAG(ControlTicks,    LEGEND_CONTROL_TICKS)
 SETGET_FLAG(MinMaxInclusive, LEGEND_MINMAX_INCLUSIVE)
+SETGET_FLAG(CustomTitleEnabled, LEGEND_CUSTOM_TITLE)
 
 
 static PyObject *
@@ -896,7 +923,6 @@ LegendAttributesObject_GetSuppliedLabels(PyObject *self, PyObject *args)
 }
 
 
-
 static PyObject *
 LegendAttributesObject_Delete(PyObject *self, PyObject *args)
 {
@@ -957,6 +983,8 @@ static struct PyMethodDef LegendAttributesObject_methods[] = {
     {"GetSuppliedValues", LegendAttributesObject_GetSuppliedValues, METH_VARARGS},
     {"SetSuppliedLabels", LegendAttributesObject_SetSuppliedLabels, METH_VARARGS},
     {"GetSuppliedLabels", LegendAttributesObject_GetSuppliedLabels, METH_VARARGS},
+    {"SetCustomTitle", LegendAttributesObject_SetCustomTitle, METH_VARARGS},
+    {"GetCustomTitle", LegendAttributesObject_GetCustomTitle, METH_VARARGS},
     {"Delete", LegendAttributesObject_Delete, METH_VARARGS},
     {NULL, NULL}
 };
@@ -1027,6 +1055,8 @@ LegendAttributesObject_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "drawTitle") == 0)
         return LegendAttributesObject_GetDrawTitle(self, NULL);
+    if(strcmp(name, "customTitleEnabled") == 0)
+        return LegendAttributesObject_GetCustomTitleEnabled(self, NULL);
     if(strcmp(name, "drawMinMax") == 0)
         return LegendAttributesObject_GetDrawMinMax(self, NULL);
 
@@ -1099,6 +1129,8 @@ LegendAttributesObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (LegendAttributesObject_SetDrawLabels(self, tuple) != NULL);
     else if(strcmp(name, "drawTitle") == 0)
         retval = (LegendAttributesObject_SetDrawTitle(self, tuple) != NULL);
+    else if(strcmp(name, "customTitleEnabled") == 0)
+        retval = (LegendAttributesObject_SetCustomTitleEnabled(self, tuple) != NULL);
     else if(strcmp(name, "drawMinMax") == 0)
         retval = (LegendAttributesObject_SetDrawMinMax(self, tuple) != NULL);
     else if(strcmp(name, "orientation") == 0)

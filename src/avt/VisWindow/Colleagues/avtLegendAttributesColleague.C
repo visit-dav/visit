@@ -71,6 +71,7 @@ avtLegendAttributesColleague::avtLegendAttributesColleague(
     SetBool(atts, LEGEND_ORIENTATION0,     false);
     SetBool(atts, LEGEND_ORIENTATION1,     false);
     SetBool(atts, LEGEND_DRAW_TITLE,       true);
+    SetBool(atts, LEGEND_CUSTOM_TITLE,     false);
     SetBool(atts, LEGEND_DRAW_MINMAX,      true);
     SetBool(atts, LEGEND_CONTROL_TICKS,    true);
     SetBool(atts, LEGEND_MINMAX_INCLUSIVE, true);
@@ -106,6 +107,9 @@ avtLegendAttributesColleague::avtLegendAttributesColleague(
 
     // Set the default legend type to variable
     atts.GetOptions().GetEntry("legendType")->SetValue(0);
+
+    // Set the default custom title 
+    atts.GetOptions().GetEntry("customTitle")->SetValue("");
 }
 
 // ****************************************************************************
@@ -324,6 +328,9 @@ avtLegendAttributesColleague::ManageLayout(avtLegend_p legend) const
 //   Kathleen Bonnell, Thu Oct  1 14:35:03 PDT 2009
 //   Added support for user control of tick values and labels.
 //
+//   Kathleen Biagas, Wed May 19, 2021
+//   Added support for custom title.
+//
 // ****************************************************************************
 
 void
@@ -394,6 +401,9 @@ avtLegendAttributesColleague::CustomizeLegend(avtLegend_p legend)
 
     // Set whether the title is drawn.
     legend->SetTitleVisibility(GetBool(atts, LEGEND_DRAW_TITLE));
+
+    legend->SetCustomTitle(atts.GetOptions().GetEntry("customTitle")->AsString().c_str());
+    legend->UseCustomTitle(GetBool(atts, LEGEND_CUSTOM_TITLE));
 
     // Set whether the labels are drawn.
     int dv = GetBool(atts, LEGEND_DRAW_VALUES) ? 1 : 0;

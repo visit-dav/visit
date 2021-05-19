@@ -52,6 +52,9 @@ avtLegend::avtLegend()
     varUnits = NULL;
     message = NULL;
     orientation = VerticalTextOnRight;
+
+    useCustomTitle = false;
+    customTitle = NULL;
 }
 
 
@@ -101,6 +104,10 @@ avtLegend::~avtLegend()
     if (message != NULL)
     {
         delete [] message;
+    }
+    if (customTitle != NULL)
+    {
+        delete [] customTitle;
     }
 }
 
@@ -936,4 +943,61 @@ void
 avtLegend::GetCalculatedLabels(stringVector &)
 {
     // Do nothing
+}
+
+// ****************************************************************************
+//  Method: avtLegend::SetTitle
+//
+//  Purpose:
+//      Sets the custom title.
+//
+//  Arguments:
+//      str       The new custom title.
+//
+//  Programmer:   Kathleen Biagas 
+//  Creation:     May 19, 2021
+//
+// ****************************************************************************
+
+void
+avtLegend::SetCustomTitle(const char *str)
+{
+    if (customTitle != NULL) delete [] customTitle;
+
+    if (str != NULL)
+    {
+        customTitle = new char[strlen(str)+1];
+        strcpy(customTitle, str);
+    }
+    else
+    {
+        customTitle = NULL;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtLegend::UseCustomTitle
+//
+//  Purpose:
+//      Sets the custom title flag.
+//
+//  Arguments:
+//      val       The new custom title.
+//
+//  Programmer:   Kathleen Biagas 
+//  Creation:     May 19, 2021
+//
+// ****************************************************************************
+
+void
+avtLegend::UseCustomTitle(bool val)
+{
+    if(useCustomTitle != val)
+    {
+        useCustomTitle = val;
+        if(useCustomTitle)
+            ChangeTitle(customTitle);
+        else
+            ChangeTitle(title);
+    }
 }
