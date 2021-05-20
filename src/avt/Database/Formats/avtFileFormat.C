@@ -115,35 +115,30 @@ avtFileFormat::~avtFileFormat()
 //  Programmer:  Hank Childs
 //  Creation:    March 12, 2002
 //
+//  Modifications:
+//
+//      Alister Maguire, Thu May 20 14:24:03 PDT 2021
+//      Check to see if the metadata has any AMR meshes in it.
+//
 // ****************************************************************************
 
 void
 avtFileFormat::RegisterDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    //
+    // Make note when we encounter AMR meshes as these are special cases.
+    //
+    int numMeshes = md->GetNumMeshes();
+    for (int i = 0; i < numMeshes; ++i)
+    {
+        const avtMeshMetaData *meshMD = md->GetMesh(i);
+        if (meshMD->meshType == AVT_AMR_MESH)
+        {
+            hasAmrMesh = true;
+        }
+    }
+
     metadata = md;
-}
-
-
-// ****************************************************************************
-//  Method: avtFileFormat::HasInvariantMetaData
-//
-//  Purpose:
-//      Is our metadata invariant across timesteps/databases?
-//
-//  Programmer: Alister Maguire
-//  Creation:   May 20, 2021
-//
-// ****************************************************************************
-
-bool
-avtFileFormat::HasInvariantMetaData(void) const
-{
-    //
-    // Because AMR meshes tend to vary between states, we just assume
-    // that they will by default. Note that this will return true if
-    // ANY of the plugin meshes are AMR.
-    //
-    return !hasAmrMesh;
 }
 
 // ****************************************************************************
@@ -329,9 +324,6 @@ avtFileFormat::SetCache(avtVariableCache *c)
 //    Added code to assure topo is zero if its a point mesh. VisIt has
 //    subtle problems in the pipeline if it is not.
 //
-//    Alister Maguire, Thu May 20 08:45:10 PDT 2021
-//    If we're getting an AMR mesh, make note of this.
-//
 // ****************************************************************************
 
 void
@@ -352,15 +344,6 @@ avtFileFormat::AddMeshToMetaData(avtDatabaseMetaData *md, string name,
     mesh->topologicalDimension = topo;
     mesh->blockTitle = "blocks";
     mesh->blockPieceName = "block";
-
-    //
-    // AMR meshes are special cases, so let's keep track of them.
-    //
-    if (type == AVT_AMR_MESH)
-    {
-        hasAmrMesh = true;
-    }
-
     if (bounds != NULL)
     {
         mesh->SetBounds(bounds);

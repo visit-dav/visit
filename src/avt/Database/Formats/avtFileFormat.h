@@ -111,8 +111,8 @@ class     avtVariableCache;
 //    allows users to specify material colors.  
 //
 //    Alister Maguire, Thu May 20 08:45:10 PDT 2021
-//    Added hasAmrMesh, and moved method defintions for HasInvariantSIL
-//    and HasInvariantMetaData to the C file.
+//    Added hasAmrMesh, and moved the method defintion for HasInvariantSIL
+//    to the C file.
 //
 // ****************************************************************************
 
@@ -140,7 +140,7 @@ class DATABASE_API avtFileFormat
 
     virtual bool          PerformsMaterialSelection(void) { return false; };
     virtual bool          HasVarsDefinedOnSubMeshes(void) { return false; };
-    virtual bool          HasInvariantMetaData(void) const;
+    virtual bool          HasInvariantMetaData(void) const { return true; };
     virtual bool          HasInvariantSIL(void) const;
     virtual void          TurnMaterialSelectionOff(void);
     virtual void          TurnMaterialSelectionOn(const char *);
