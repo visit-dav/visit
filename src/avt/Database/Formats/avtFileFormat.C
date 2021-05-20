@@ -64,6 +64,9 @@ const double avtFileFormat::FORMAT_INVALID_TIME  = INVALID_TIME / 10.0;
 //    Hank Childs, Sun Dec 26 12:13:19 PST 2010
 //    Initialize doingStreaming.
 //
+//    Alister Maguire, Thu May 20 08:45:10 PDT 2021
+//    Initialize hasAmrMesh.
+//
 // ****************************************************************************
 
 avtFileFormat::avtFileFormat()
@@ -77,6 +80,7 @@ avtFileFormat::avtFileFormat()
     closingFile = false;
     resultMustBeProducedOnlyOnThisProcessor = false;
     strictMode = false;
+    hasAmrMesh = false;
 }
 
 
@@ -117,6 +121,51 @@ void
 avtFileFormat::RegisterDatabaseMetaData(avtDatabaseMetaData *md)
 {
     metadata = md;
+}
+
+
+// ****************************************************************************
+//  Method: avtFileFormat::HasInvariantMetaData
+//
+//  Purpose:
+//      Is our metadata invariant across timesteps/databases?
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 20, 2021
+//
+// ****************************************************************************
+
+bool
+avtFileFormat::HasInvariantMetaData(void) const
+{
+    //
+    // Because AMR meshes tend to vary between states, we just assume
+    // that they will by default. Note that this will return true if
+    // ANY of the plugin meshes are AMR.
+    //
+    return !hasAmrMesh;
+}
+
+// ****************************************************************************
+//  Method: avtFileFormat::HasInvariantSIL
+//
+//  Purpose:
+//      Is our SIL invariant across timesteps/databases?
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 20, 2021
+//
+// ****************************************************************************
+
+bool
+avtFileFormat::HasInvariantSIL(void) const
+{
+    //
+    // Because AMR meshes tend to vary between states, we just assume
+    // that they will by default. Note that this will return true if
+    // ANY of the plugin meshes are AMR.
+    //
+    return !hasAmrMesh;
 }
 
 
@@ -280,6 +329,9 @@ avtFileFormat::SetCache(avtVariableCache *c)
 //    Added code to assure topo is zero if its a point mesh. VisIt has
 //    subtle problems in the pipeline if it is not.
 //
+//    Alister Maguire, Thu May 20 08:45:10 PDT 2021
+//    If we're getting an AMR mesh, make note of this.
+//
 // ****************************************************************************
 
 void
@@ -300,6 +352,15 @@ avtFileFormat::AddMeshToMetaData(avtDatabaseMetaData *md, string name,
     mesh->topologicalDimension = topo;
     mesh->blockTitle = "blocks";
     mesh->blockPieceName = "block";
+
+    //
+    // AMR meshes are special cases, so let's keep track of them.
+    //
+    if (type == AVT_AMR_MESH)
+    {
+        hasAmrMesh = true;
+    }
+
     if (bounds != NULL)
     {
         mesh->SetBounds(bounds);
