@@ -22,6 +22,7 @@
 # ----------------------------------------------------------------------------
 
 import os, string, cgi, difflib
+from HtmlPython import LeadingSpaceToHtmlFormat
 
 class TextFile:
     def __init__(self, fn, msg):
@@ -139,10 +140,17 @@ class Differencer:
         self.out.write("    <td align=\"right\"><b><code>%d:&nbsp;</code></b></td>\n"%num)
 
     def WriteLineText(self, color, text):
+
+        #
+        # Before writing the text, replace leading spaces with their
+        # html equivalent.
+        #
+        html_text = LeadingSpaceToHtmlFormat(text)
+
         if color == "":
-            self.out.write("    <td><code>%s</code></td>\n"%text)
+            self.out.write("    <td><code>%s</code></td>\n"%html_text)
         else:
-            self.out.write("    <td bgcolor=\"%s\"><code>%s</code></td>\n"%(color,text))
+            self.out.write("    <td bgcolor=\"%s\"><code>%s</code></td>\n"%(color,html_text))
 
     def WriteLeft(self,cl):
         l = self.GetNextLeft()

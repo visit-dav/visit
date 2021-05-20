@@ -116,3 +116,13 @@ class Parser:
 def ColorizePython(test_script ,result_dir,category, filename, filebase):
     source = open(test_script).read()
     Parser(source, open(pjoin(result_dir,"html",'%s_%s_py.html' % (category, filebase)), 'wt')).format(None, None, "%s/%s"%(category,filename))
+
+def LeadingSpaceToHtmlFormat(in_str):
+    """
+        Given an input string, replace all leading spaces with the
+        html equivalent, "&nbsp;".
+    """
+    html_space   = "&nbsp;"
+    lstripped    = in_str.lstrip()
+    num_leading  = len(in_str) - len(lstripped)
+    return html_space * num_leading + lstripped
