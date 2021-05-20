@@ -2856,7 +2856,6 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 //  Creation:    Jan 16, 2019
 //
 //  Modifications
-//
 //      Alister Maguire, Fri Jun 28 15:01:24 PDT 2019
 //      Added checks to determine if shared variables have been added
 //      or not.
@@ -2868,6 +2867,9 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 //      Alister Maguire, Tue Jul 21 10:52:18 PDT 2020
 //      No need to add the materials for each mesh. Only add to the
 //      non-sand mesh.
+//
+//      Eric Brugger, Fri May  7 15:54:32 PDT 2021
+//      Don't add any material colors if no material colors were specified.
 //
 // ****************************************************************************
 
@@ -2913,12 +2915,19 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
         stringVector matNames;
         miliMetaData[meshId]->GetMaterialNames(matNames);
-        AddMaterialToMetaData(md,
-                              matName,
-                              meshName,
-                              numMats,
-                              matNames,
-                              matColors);
+        if (matColors.empty())
+            AddMaterialToMetaData(md,
+                                  matName,
+                                  meshName,
+                                  numMats,
+                                  matNames);
+        else
+            AddMaterialToMetaData(md,
+                                  matName,
+                                  meshName,
+                                  numMats,
+                                  matNames,
+                                  matColors);
 
         AddLabelVarToMetaData(md,
                               "OriginalZoneLabels",
@@ -3709,10 +3718,13 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 //  Date:   April 9, 2019
 //
 //  Modifications:
-//
 //      Alister Maguire, Tue Jul  9 13:31:59 PDT 2019
 //      Check that we have the correct file format. JSON tends to hang when
 //      it tries to open non-json files.
+//
+//      Eric Brugger, Fri May  7 15:54:32 PDT 2021
+//      Remove the code that assigns a random color to a material if no
+//      material color is specified.
 //
 // ****************************************************************************
 void
@@ -3834,12 +3846,11 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                 string name = jItr->name.GetString();
                 const rapidjson::Value &mat = jItr->value;
 
-                string matName = "";
-                std::stringstream colorSS;
-                colorSS << "#";
-
                 if (mat.IsObject())
                 {
+                    string matName = "";
+                    string colorString;
+
                     if (mat.HasMember("name"))
                     {
                         matName = mat["name"].GetString();
@@ -3861,6 +3872,9 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                         //
                         if (mColors.IsArray())
                         {
+                            std::stringstream colorSS;
+                            colorSS << "#";
+
                             for (rapidjson::SizeType i = 0;
                                  i < mColors.Size(); ++i)
                             {
@@ -3871,24 +3885,15 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                                     std::max(0, std::min(255, iVal));
                             }
 
-                        }
-                    }
-                    else
-                    {
-                        //
-                        // If this material doesn't have a color,
-                        // assign a random color.
-                        //
-                        for (int i = 0; i < 3; ++i)
-                        {
-                            int randInt = (rand() % static_cast<int> (256));
-                            colorSS << std::hex << randInt;
+                            colorString = string(colorSS.str());
                         }
                     }
 
+                    //
+                    // An empty color string indicates no color.
+                    //
                     MiliMaterialMetaData *miliMaterial =
-                        new MiliMaterialMetaData(matName,
-                                                 string(colorSS.str()));
+                        new MiliMaterialMetaData(matName, colorString);
 
                     miliMetaData[meshId]->AddMaterialMD(matCount++,
                                                         miliMaterial);

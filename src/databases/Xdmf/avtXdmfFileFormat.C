@@ -62,6 +62,10 @@ using std::string;
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Thu May 6, 2021
+//    Support time stored as TIME_LIST for TEMPORAL_COLLECTION.
+//
 // ****************************************************************************
 
 avtXdmfFileFormat::avtXdmfFileFormat(const char *fname) :
@@ -96,22 +100,42 @@ avtXdmfFileFormat::avtXdmfFileFormat(const char *fname) :
     grid.SetElement(gridElement);
     grid.UpdateInformation();
 
-    if (grid.GetGridType() == XDMF_GRID_COLLECTION) {
-        if (grid.GetCollectionType() == XDMF_GRID_COLLECTION_TEMPORAL) {
+    if (grid.GetGridType() == XDMF_GRID_COLLECTION)
+    {
+        if (grid.GetCollectionType() == XDMF_GRID_COLLECTION_TEMPORAL)
+        {
+            bool getTimeFromChild = true;
+            if(grid.GetTime())
+            {
+                XdmfInt32 tt = grid.GetTime()->GetTimeType();
+                if (tt == XDMF_TIME_LIST)
+                {
+                    XdmfArray *tA = grid.GetTime()->GetArray();
+                    if(tA)
+                    {
+                        getTimeFromChild = false;
+                        for(XdmfInt64 i = 0; i < tA->GetNumberOfElements(); ++i)
+                            timesteps.push_back(tA->GetValueAsFloat64(i));
+                    }
+                }
+            }
             firstGrid = "/Xdmf/Domain/Grid/Grid";
             XdmfGrid childGrid;
-            for (int i = 0; i < grid.GetNumberOfChildren(); ++i) {
+            for (int i = 0; i < grid.GetNumberOfChildren(); ++i)
+            {
                 std::stringstream gridLocation;
                 gridLocation << firstGrid << "[" << i + 1 << "]";
                 childGrid.SetDOM(dom);
                 childGrid.SetElement(dom->FindElementByPath(gridLocation.str().c_str()));
                 childGrid.UpdateInformation();
-                timesteps.push_back(childGrid.GetTime()->GetValue());
+                if (getTimeFromChild)
+                    timesteps.push_back(childGrid.GetTime()->GetValue());
             }
             numGrids = 1;
         }
         else if(grid.GetCollectionType() == XDMF_GRID_COLLECTION_SPATIAL ||
-                grid.GetCollectionType() == XDMF_GRID_COLLECTION_UNSET) {
+                grid.GetCollectionType() == XDMF_GRID_COLLECTION_UNSET)
+        {
             numGrids = 1;
             timesteps.push_back(grid.GetTime()->GetValue());
         }

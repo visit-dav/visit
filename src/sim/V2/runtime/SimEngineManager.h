@@ -26,6 +26,8 @@ class VisWindow;
 //  Creation:   Tue Sep  9 16:51:11 PDT 2014
 //
 //  Modifications:
+//    Kathleen Biagas, Fri Apr 23 2021
+//    ExportDatabases has new signature.
 //
 // ****************************************************************************
 
@@ -191,8 +193,9 @@ public:
 
     virtual bool ExportDatabases(const EngineKey &ek,
                                  const intVector &ids,
-                                 const ExportDBAttributes &expAtts, 
-                                 const std::string &timeSuffix);
+                                 const ExportDBAttributes *expAtts,
+                                 const std::string &timeSuffix,
+                                 ExportDBAttributes &retAtts);
 
     virtual bool ConstructDataBinning(const EngineKey &ek, int id);
 

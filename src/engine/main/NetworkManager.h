@@ -433,6 +433,10 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    go into scalable rendering mode and immediately go back out and
 //    a blank image would get displayed.
 //
+//    Kathleen Biagas, Fri Apr 23 2021
+//    Change ExportDatabase atts arg from 'const &' to * so that actual dir
+//    name used can be returned in them.
+//
 // ****************************************************************************
 
 class ENGINE_MAIN_API NetworkManager : public EngineBase
@@ -537,7 +541,7 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     void          PickForIntersection(const int, PickAttributes *);
     void          Query(const std::vector<int> &, QueryAttributes*);
     std::string   GetQueryParameters(const std::string &qName);
-    void          ExportDatabases(const intVector &, const ExportDBAttributes &, 
+    void          ExportDatabases(const intVector &, ExportDBAttributes *,
                                   const std::string &timeSuffix);
     void          ConstructDataBinning(const int, ConstructDataBinningAttributes *);
     avtDataBinning *GetDataBinning(const char *);

@@ -1,3 +1,5 @@
+.. _contour_plot_head:
+
 Contour Plot
 ~~~~~~~~~~~~
 

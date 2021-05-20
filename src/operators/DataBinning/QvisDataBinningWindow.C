@@ -382,6 +382,9 @@ QvisDataBinningWindow::CreateWindowContents()
 //   Hank Childs, Fri Jan  4 11:49:36 PST 2013
 //   Remove unused bins for curves.
 //
+//   Kathleen Biagas, Tue May 4 2021
+//   Ensure dim2Var is enabled when NumDimensions is 3.
+//
 // ****************************************************************************
 
 void
@@ -675,7 +678,7 @@ QvisDataBinningWindow::UpdateWindow(bool doAll)
           case DataBinningAttributes::ID_dim2BinBasedOn:
             if (atts->GetDim2BinBasedOn() == DataBinningAttributes::Variable
                 && (atts->GetNumDimensions() == DataBinningAttributes::Two ||
-                    atts->GetNumDimensions() == DataBinningAttributes::Two))
+                    atts->GetNumDimensions() == DataBinningAttributes::Three))
                dim2Var->setEnabled(true);
             else
                dim2Var->setEnabled(false);

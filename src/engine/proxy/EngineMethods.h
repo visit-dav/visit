@@ -57,6 +57,9 @@ class StatusAttributes;
 //    I changed export database so it takes a vector of network ids.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Kathleen Biagas, Fri Apr 23 2021
+//    Change ExportDatabases to have a return atts.
+//
 // ****************************************************************************
 
 
@@ -135,8 +138,10 @@ public:
     void                     Query(const std::vector<int> &,
                                    const QueryAttributes *,
                                    QueryAttributes &);
-    void                     ExportDatabases(const intVector &ids, const ExportDBAttributes &,
-                                             const std::string &timeSuffix);
+    void                     ExportDatabases(const intVector &ids,
+                                             const ExportDBAttributes *,
+                                             const std::string &timeSuffix,
+                                             ExportDBAttributes &);
     void                     ConstructDataBinning(int, const ConstructDataBinningAttributes *);
 
     const SelectionSummary  &CreateNamedSelection(int id, const SelectionProperties &props);
