@@ -26,6 +26,7 @@
 
 #include <InvalidDBTypeException.h>
 #include <InvalidVariableException.h>
+#include <InvalidZoneTypeException.h>
 #include <TyphonIOException.h>
 
 
@@ -731,6 +732,9 @@ avtTyphonIOFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //    Paul Selby, Tue 23 Jun 15:50:34 BST 2015
 //    Added support for Curvilinear meshes
 //
+//    Paul Selby, Fri 21 May 16:54:23 BST 2021
+//    Added support for Unstructured meshes
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -763,6 +767,9 @@ avtTyphonIOFileFormat::GetMesh(int timestate, int domain, const char *meshname)
             break;
           case TIO_MESH_QUAD_NONCOLINEAR:
             rv = GetQuadNonColinearMesh(meshId, domain);
+            break;
+          case TIO_MESH_UNSTRUCT:
+            rv = GetUnstrMesh(meshId, domain);
             break;
           case TIO_MESH_POINT:
             rv = GetPointMesh(meshId, domain);
@@ -1138,6 +1145,185 @@ avtTyphonIOFileFormat::GetPointMesh(TIO_Object_t meshId, TIO_Size_t chunk)
 
 
 // ****************************************************************************
+//  Method: avtTyphonIOFileFormat::GetUnstrMesh
+//
+//  Purpose:
+//      Gets the unstructured mesh chunk as vtkUnstructuredGrid.
+//
+//  Arguments:
+//      meshId  Previously opened TyphonIO meshId
+//      chunk   TyphonIO chunk index
+//
+//  Programmer: Paul Selby
+//  Creation:   May 21, 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkUnstructuredGrid *
+avtTyphonIOFileFormat::GetUnstrMesh(TIO_Object_t meshId, TIO_Size_t chunk)
+{
+    TIO_Dims_t ndims;
+    TIO_Size_t nnodes, ncells, nshapes, nconnectivity;
+    TIO_t success;
+
+    //
+    // Read connectivity as vtkIdType so can use with InsertNextCell
+    // Note: Probably doubling memory required but is temporary
+    //
+    success = TIO_Read_UnstrMesh_Chunk(fileId, meshId, chunk,
+                                       TIO_XFER_INDEPENDENT, TIO_VTK_ID_TYPE,
+                                       TIO_FLOAT, TIO_GHOSTS_NONE, &ndims,
+                                       &nnodes, &ncells, &nshapes,
+                                       &nconnectivity, NULL, NULL, NULL, NULL,
+                                       NULL, NULL, NULL, NULL);
+    if (success != TIO_SUCCESS)
+    {
+        EXCEPTION1(TyphonIOException, success);
+    }
+
+    vtkIdType *connectivity = new vtkIdType[nconnectivity];
+    vtkIdType *ncells_per_shape = new vtkIdType[nshapes];
+    TIO_Shape_t *shapes = new TIO_Shape_t[nshapes];
+
+    //
+    // Cannot read co-ordinates directly into memory as not points[nn][3]
+    // Note: TyphonIO will convert to float on the fly if needed
+    //
+    float *x = 0;
+    float *y = 0;
+    float *z = 0;
+    switch (ndims)
+    {
+      case TIO_3D: z = new float[nnodes]; // FALLTHRU
+      case TIO_2D: y = new float[nnodes]; // FALLTHRU
+      case TIO_1D: x = new float[nnodes]; // FALLTHRU
+      default:
+        break;
+    }
+
+    success = TIO_Read_UnstrMesh_Chunk(fileId, meshId, chunk,
+                                       TIO_XFER_INDEPENDENT, TIO_VTK_ID_TYPE,
+                                       TIO_FLOAT, TIO_GHOSTS_NONE, NULL, NULL,
+                                       NULL, NULL, NULL, NULL, NULL, shapes,
+                                       ncells_per_shape, connectivity, x, y, z);
+    if (success != TIO_SUCCESS)
+    {
+        delete[] connectivity;
+        delete[] ncells_per_shape;
+        delete[] shapes;
+        delete[] x;
+        delete[] y;
+        delete[] z;
+        EXCEPTION1(TyphonIOException, success);
+    }
+
+    //
+    // Create vtkPoints object and copy points into it
+    //
+    vtkPoints *points = vtkPoints::New();
+    points->SetNumberOfPoints(nnodes);
+    float *pts = (float *) points->GetVoidPointer(0);
+    if (ndims == TIO_3D)
+    {
+        for (TIO_Size_t i = 0; i < nnodes; ++i)
+        {
+            *pts++ = x[i];
+            *pts++ = y[i];
+            *pts++ = z[i];
+        }
+    }
+    else if (ndims == TIO_2D)
+    {
+        for (TIO_Size_t i = 0; i < nnodes; ++i)
+        {
+            *pts++ = x[i];
+            *pts++ = y[i];
+            *pts++ = 0.0;
+        }
+    }
+    else if (ndims == TIO_1D)
+    {
+        for (TIO_Size_t i = 0; i < nnodes; ++i)
+        {
+            *pts++ = x[i];
+            *pts++ = 0.0;
+            *pts++ = 0.0;
+        }
+    }
+    //
+    // Delete temporary arrays
+    //
+    delete[] x;
+    delete[] y;
+    delete[] z;
+
+    //
+    // Create vtkUnstructuredGrid to contain cells by iterating over shapes
+    //
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(points);
+    points->Delete();
+    ugrid->Allocate(ncells);
+
+    vtkIdType *ptr_conn = connectivity;
+    for (TIO_Size_t s = 0; s < nshapes; ++s)
+    {
+        vtkIdType celltype, np;
+        switch (shapes[s])
+        {
+          //
+          // TyphonIO uses VTK node ordering convention so no need to change
+          //
+          case TIO_SHAPE_NULL:   celltype = VTK_EMPTY_CELL; np = 0; break;
+          case TIO_SHAPE_POINT1: celltype = VTK_VERTEX;     np = 1; break;
+          case TIO_SHAPE_BAR2:   celltype = VTK_LINE;       np = 2; break;
+          case TIO_SHAPE_TRI3:   celltype = VTK_TRIANGLE;   np = 3; break;
+          case TIO_SHAPE_QUAD4:  celltype = VTK_QUAD;       np = 4; break;
+          case TIO_SHAPE_TET4:   celltype = VTK_TETRA;      np = 4; break;
+          case TIO_SHAPE_WEDGE6: celltype = VTK_WEDGE;      np = 6; break;
+          case TIO_SHAPE_HEX8:   celltype = VTK_HEXAHEDRON; np = 8; break;
+          case TIO_SHAPE_PYR5:   celltype = VTK_PYRAMID;    np = 5; break;
+          default:
+              if (shapes[s] > 0)
+              {
+                  celltype = VTK_POLYGON;
+                  np = shapes[s];
+              }
+              else
+              {
+                  delete[] connectivity;
+                  delete[] ncells_per_shape;
+                  delete[] shapes;
+                  ugrid->Delete();
+                  EXCEPTION1(InvalidZoneTypeException, shapes[s]);
+              }
+        }
+        for (vtkIdType c = 0; c < ncells_per_shape[s]; ++c)
+        {
+            //
+            // Convert TyphonIO connectivity to 0 origin
+            //
+            for (vtkIdType n = 0; n < np; ++n) ptr_conn[n]--;
+
+            ugrid->InsertNextCell(celltype, np, ptr_conn);
+            ptr_conn += np;
+        }
+    }
+
+    //
+    // Delete temporary arrays
+    //
+    delete[] connectivity;
+    delete[] ncells_per_shape;
+    delete[] shapes;
+
+    return ugrid;
+}
+
+
+// ****************************************************************************
 //  Method: avtTyphonIOFileFormat::GetVar
 //
 //  Purpose:
@@ -1162,6 +1348,9 @@ avtTyphonIOFileFormat::GetPointMesh(TIO_Object_t meshId, TIO_Size_t chunk)
 //
 //    Paul Selby, Thu 18 Jun 17:02:18 BST 2015
 //    Added support for Quad meshes
+//
+//    Paul Selby, Fri 21 May 16:54:23 BST 2021
+//    Added support for Unstructured meshes
 //
 // ****************************************************************************
 
@@ -1205,6 +1394,9 @@ avtTyphonIOFileFormat::GetVar(int timestate, int domain, const char *varname)
           case TIO_MESH_QUAD_COLINEAR: // FALLTHRU
           case TIO_MESH_QUAD_NONCOLINEAR:
             rv = GetQuadVar(quantId, domain, centreType);
+            break;
+          case TIO_MESH_UNSTRUCT:
+            rv = GetUnstrVar(quantId, domain, centreType);
             break;
           case TIO_MESH_POINT:
             rv = GetPointVar(quantId, domain, centreType);
@@ -1370,6 +1562,69 @@ avtTyphonIOFileFormat::GetPointVar(TIO_Object_t quantId, TIO_Size_t chunk,
     return rv;
 }
 
+
+// ****************************************************************************
+//  Method: avtTyphonIOFileFormat::GetUnstrVar
+//
+//  Purpose:
+//      Gets the unstructured mesh variable
+//
+//  Arguments:
+//      quantId    Previously opened TyphonIO quantId
+//      chunk      TyphonIO chunk index
+//      centreType TyphonIO centre type
+//
+//  Programmer: Paul Selby
+//  Creation:   May 21, 2021
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtTyphonIOFileFormat::GetUnstrVar(TIO_Object_t quantId, TIO_Size_t chunk,
+                                   TIO_Centre_t centreType)
+{
+    TIO_Size_t nvals;
+    TIO_t success;
+
+    success = TIO_Read_UnstrQuant_Chunk(fileId, quantId, chunk,
+                                        TIO_XFER_INDEPENDENT, TIO_FLOAT,
+                                        TIO_GHOSTS_NONE, &nvals, NULL, NULL,
+                                        NULL);
+    if (success != TIO_SUCCESS)
+    {
+        EXCEPTION1(TyphonIOException, success);
+    }
+
+    switch(centreType)
+    {
+      case TIO_CENTRE_CELL:
+        break;
+      case TIO_CENTRE_NODE:
+        break;
+      default:
+        EXCEPTION1(VisItException, "Unsupported centring for Unstructured Mesh");
+    }
+
+    //
+    // Can read values directly into memory
+    // Note: TyphonIO will convert to float on the fly if needed
+    //
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfTuples(nvals);
+    float *vals = (float *) rv->GetVoidPointer(0);
+
+    success = TIO_Read_UnstrQuant_Chunk(fileId, quantId, chunk,
+                                        TIO_XFER_INDEPENDENT, TIO_FLOAT,
+                                        TIO_GHOSTS_NONE, NULL, vals, NULL,
+                                        NULL);
+    if (success != TIO_SUCCESS)
+    {
+        rv->Delete();
+        EXCEPTION1(TyphonIOException, success);
+    }
+
+    return rv;
+}
 
 // ****************************************************************************
 //  Method: avtTyphonIOFileFormat::GetVectorVar

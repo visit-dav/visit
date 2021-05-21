@@ -11,9 +11,27 @@
 
 #include <typhonio_viz.h>
 
+#include <vtkType.h>
+
 #include <avtMTMDFileFormat.h>
 
 #include <vector>
+
+//
+// Define TIO_Data_t enum (tio_global.h) equivalent to vtkIdType (vtkType.h)
+//
+#ifdef VTK_ID_TYPE_IMPL
+# if VTK_ID_TYPE_IMPL == VTK_LONG_LONG
+#  define TIO_VTK_ID_TYPE TIO_LLONG
+# elif VTK_ID_TYPE_IMPL == VTK_LONG
+#  define TIO_VTK_ID_TYPE TIO_LONG
+# elif VTK_ID_TYPE_IMPL == VTK_INT
+#  define TIO_VTK_ID_TYPE TIO_INT
+# endif
+#endif
+#ifndef TIO_VTK_ID_TYPE
+# error "Unable to set TIO equivalent to VTK_ID_TYPE"
+#endif
 
 class vtkRectilinearGrid;
 class vtkStructuredGrid;
@@ -52,6 +70,9 @@ class avtMaterial;
 //
 //    Paul Selby, Tue 23 Jun 15:50:34 BST 2015
 //    Added GetQuadNonColinearMesh method
+//
+//    Paul Selby, Fri 21 May 16:54:23 BST 2021
+//    Added GetUnstrMesh & GetUnstrVar methods
 //
 // ****************************************************************************
 
@@ -108,8 +129,10 @@ class avtTyphonIOFileFormat : public avtMTMDFileFormat
     vtkRectilinearGrid    *GetQuadColinearMesh(TIO_Object_t, TIO_Size_t);
     vtkStructuredGrid     *GetQuadNonColinearMesh(TIO_Object_t, TIO_Size_t);
     vtkUnstructuredGrid   *GetPointMesh(TIO_Object_t, TIO_Size_t);
+    vtkUnstructuredGrid   *GetUnstrMesh(TIO_Object_t, TIO_Size_t);
     vtkDataArray          *GetQuadVar(TIO_Object_t, TIO_Size_t, TIO_Centre_t);
     vtkDataArray          *GetPointVar(TIO_Object_t, TIO_Size_t, TIO_Centre_t);
+    vtkDataArray          *GetUnstrVar(TIO_Object_t, TIO_Size_t, TIO_Centre_t);
     avtMaterial           *GetPointMat(TIO_Object_t, TIO_Size_t);
 };
 

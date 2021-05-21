@@ -27,6 +27,9 @@
 #    Paul Selby, Tue 23 Jun 16:06:46 BST 2015
 #    Added Non-Colinear Quad mesh
 #
+#    Paul Selby, Fri 21 May 16:54:23 BST 2021
+#    Added Pseudocolor for Unstr data
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("TyphonIO")
 
@@ -137,9 +140,25 @@ Test("typhonio_03_02")
 #
 # Unstructured Mesh subset plot
 #
-AddPlot("Subset", "blocks")
+AddPlot("Subset", "chunks")
 DrawPlots()
 Test("typhonio_03_03")
+
+#
+# Pseudocolor plot
+#
+DeleteAllPlots()
+AddPlot("Pseudocolor", "Quant1")
+DrawPlots()
+Test("typhonio_03_04")
+
+#
+# Pseudocolor plot
+#
+DeleteAllPlots()
+AddPlot("Pseudocolor", "Quant2")
+DrawPlots()
+Test("typhonio_03_05")
 
 DeleteAllPlots()
 CloseDatabase(db)
