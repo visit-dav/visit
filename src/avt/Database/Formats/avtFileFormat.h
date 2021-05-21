@@ -110,6 +110,10 @@ class     avtVariableCache;
 //    Added another version of AddMaterialToMetaData that
 //    allows users to specify material colors.  
 //
+//    Alister Maguire, Thu May 20 08:45:10 PDT 2021
+//    Added hasAmrMesh, and moved the method defintion for HasInvariantSIL
+//    to the C file.
+//
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -137,7 +141,7 @@ class DATABASE_API avtFileFormat
     virtual bool          PerformsMaterialSelection(void) { return false; };
     virtual bool          HasVarsDefinedOnSubMeshes(void) { return false; };
     virtual bool          HasInvariantMetaData(void) const { return true; };
-    virtual bool          HasInvariantSIL(void) const      { return true; };
+    virtual bool          HasInvariantSIL(void) const;
     virtual void          TurnMaterialSelectionOff(void);
     virtual void          TurnMaterialSelectionOn(const char *);
 
@@ -204,6 +208,7 @@ class DATABASE_API avtFileFormat
     char                 *materialName;
     std::vector<int>      fileIndicesForDescriptorManager;
     bool                  strictMode;
+    bool                  hasAmrMesh;
 
     // reflects the ability of the format to operate in a streaming setting
     // this is an output to the database & pipeline
