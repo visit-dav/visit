@@ -299,6 +299,9 @@ vtkLabelMapper::DrawLabels2D(vtkDataSet *input, vtkRenderer *ren)
 void
 vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
 {
+    double positionScale[3];
+    GetPositionScale(positionScale);
+
     //
     // Draw all the node labels.
     //
@@ -314,9 +317,9 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
             this->TextMappers[index]->SetInput(labelPtr);
             labelPtr += this->MaxLabelSize;
             const double *vert = p->GetPoint(i);
-            this->LabelPositions.push_back(vert[0]);
-            this->LabelPositions.push_back(vert[1]);
-            this->LabelPositions.push_back(vert[2]);
+            this->LabelPositions.push_back(vert[0] * positionScale[0]);
+            this->LabelPositions.push_back(vert[1] * positionScale[1]);
+            this->LabelPositions.push_back(vert[2] * positionScale[2]);
         }
         p->Delete();
     }
@@ -335,9 +338,9 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
             this->TextMappers[index]->SetInput(labelPtr);
             labelPtr += this->MaxLabelSize;
             const double *vert = cellCenters->GetTuple3(i);
-            this->LabelPositions.push_back(vert[0]);
-            this->LabelPositions.push_back(vert[1]);
-            this->LabelPositions.push_back(vert[2]);
+            this->LabelPositions.push_back(vert[0] * positionScale[0]);
+            this->LabelPositions.push_back(vert[1] * positionScale[1]);
+            this->LabelPositions.push_back(vert[2] * positionScale[2]);
         }
     }
 }
@@ -384,6 +387,9 @@ void
 vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
     vtkRenderer *ren)
 {
+    double positionScale[3];
+    GetPositionScale(positionScale);
+
     //
     // Figure out the world coordinates of the window that is being displayed.
     //
@@ -509,9 +515,9 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
             this->TextMappers[index]->SetTextProperty(this->NodeLabelProperty);
             this->TextMappers[index]->SetInput(labelPtr);
             index++;
-            this->LabelPositions.push_back(labelVert[0]);
-            this->LabelPositions.push_back(labelVert[1]);
-            this->LabelPositions.push_back(labelVert[2]);
+            this->LabelPositions.push_back(labelVert[0] * positionScale[0]);
+            this->LabelPositions.push_back(labelVert[1] * positionScale[1]);
+            this->LabelPositions.push_back(labelVert[2] * positionScale[2]);
         }
         p->Delete();
     }
@@ -555,9 +561,9 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
             this->TextMappers[index]->SetTextProperty(this->CellLabelProperty);
             this->TextMappers[index]->SetInput(labelPtr);
             index++;
-            this->LabelPositions.push_back(labelVert[0]);
-            this->LabelPositions.push_back(labelVert[1]);
-            this->LabelPositions.push_back(labelVert[2]);
+            this->LabelPositions.push_back(labelVert[0] * positionScale[0]);
+            this->LabelPositions.push_back(labelVert[1] * positionScale[1]);
+            this->LabelPositions.push_back(labelVert[2] * positionScale[2]);
         }
     }
 
@@ -1163,6 +1169,9 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
         }
         visitTimer->StopTimer(stageTimer, "Binning 3D labels");
 
+        double positionScale[3];
+        GetPositionScale(positionScale);
+
         //
         // Draw the labels that came from nodes.
         //
@@ -1183,9 +1192,9 @@ vtkLabelMapper::DrawLabels3D(vtkDataSet *input, vtkRenderer *ren)
             else
                 this->TextMappers[index]->SetTextProperty(this->NodeLabelProperty);
             index++;
-            this->LabelPositions.push_back(info->realPoint[0]);
-            this->LabelPositions.push_back(info->realPoint[1]);
-            this->LabelPositions.push_back(info->realPoint[2]);
+            this->LabelPositions.push_back(info->realPoint[0] * positionScale[0]);
+            this->LabelPositions.push_back(info->realPoint[1] * positionScale[1]);
+            this->LabelPositions.push_back(info->realPoint[2] * positionScale[2]);
         }
         visitTimer->StopTimer(stageTimer, "Drawing binned 3D labels");
     }
@@ -1419,6 +1428,43 @@ vtkLabelMapper::InitializeZBuffer(vtkDataSet *input, vtkRenderer *ren,
 }
 
 // ****************************************************************************
+// Method: vtkLabelMapper::GetPositionScale
+//
+// Purpose:
+//     Get a scale to apply to our position. Currently, this will use
+//     the full frame scaling if it's enabled.
+//
+// Arguments:
+//     scale    A pointer to a 3D array. We will put the scale factor here.
+//
+// Programmer: Alister Maguire
+// Creation:   May 20, 2021
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+vtkLabelMapper::GetPositionScale(double *scale)
+{
+    if (UseFullFrameScaling)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            scale[i] = FullFrameScaling[i];
+        }
+    }
+    else
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            scale[i] = 1.;
+        }
+    }
+}
+
+
+// ****************************************************************************
 // Method: vtkLabelMapper::DrawAllCellLabels3D
 //
 // Notes:  Taken from avtLabelRenderer
@@ -1459,14 +1505,16 @@ vtkLabelMapper::InitializeZBuffer(vtkDataSet *input, vtkRenderer *ren,
     vprime[1] /= vprime[3]; \
     vprime[2] /= vprime[3]; \
     } \
+    double positionScale[3]; \
+    GetPositionScale(positionScale); \
     ZBUFFER_PREDICATE_START \
       this->TextMappers.push_back(vtkSmartPointer<vtkTextMapper>::New()); \
       this->TextMappers[index]->SetInput(labelString); \
       this->TextMappers[index]->SetTextProperty(TEXT_PROPERTY); \
       index++; \
-      this->LabelPositions.push_back(vert[0]); \
-      this->LabelPositions.push_back(vert[1]); \
-      this->LabelPositions.push_back(vert[2]); \
+      this->LabelPositions.push_back(vert[0] * positionScale[0]); \
+      this->LabelPositions.push_back(vert[1] * positionScale[1]); \
+      this->LabelPositions.push_back(vert[2] * positionScale[2]); \
     ZBUFFER_PREDICATE_END \
     }
 

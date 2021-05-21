@@ -66,6 +66,8 @@ protected:
     void ClearZBuffer();
     void InitializeZBuffer(vtkDataSet *, vtkRenderer *, bool, bool);
 
+    void GetPositionScale(double *);
+
     template <typename T>
     double *TransformPoints(T inputPoints,
                            const unsigned char *quantizedNormalIndices,
