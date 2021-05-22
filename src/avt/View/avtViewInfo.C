@@ -251,7 +251,7 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //  Method: avtViewInfo::SetCameraFromView
 //
 //  Arguments:
-//    vtkcam      The camera in which to store the view info. 
+//    vtkcam      The camera in which to store the view info.
 //
 //  Programmer:  Kathleen Bonnell
 //  Creation:    January 08, 2001
@@ -260,7 +260,7 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //    Eric Brugger, Fri Jun  6 15:30:49 PDT 2003
 //    I added image pan and image zoom.
 //
-//    Eric Brugger, Wed Jun 18 17:46:36 PDT 2003 
+//    Eric Brugger, Wed Jun 18 17:46:36 PDT 2003
 //    I modified the call to SetWindowCenter since the meaning of its
 //    arguments changed.
 //
@@ -293,20 +293,29 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     vtkcam->SetFocalPoint(focus);
     vtkcam->SetPosition(camera);
     vtkcam->SetViewUp(viewUp);
-    vtkcam->SetWindowCenter(2.0*imagePan[0], 2.0*imagePan[1]);
     vtkcam->SetFocalDisk(imageZoom);
-#ifdef VISIT_OSPRAY_XXX
+
+    // Currently the SetWindowCenter and SetUserTransform do not get
+    // used in the vtkOSPRayCamerNode so instead use the Zoom here and
+    // in the Navigate3D.C and Zoom3D.C pan the camera rather than the
+    // image.
+#ifdef VISIT_OSPRAY
     vtkcam->Zoom(imageZoom);
 #else
+    // ARS - commented as the results are not used.
+    // double   imagePanCurrent[2];
+    // vtkcam->GetWindowCenter(imagePanCurrent[0], imagePanCurrent[1]);
+    vtkcam->SetWindowCenter(2.0*imagePan[0], 2.0*imagePan[1]);
+
     if (imageZoom != 1.0)
     {
         double matrix[4][4];
         vtkMatrix4x4::Identity(*matrix);
- 
+
         matrix[0][0] = imageZoom;
         matrix[1][1] = imageZoom;
         vtkTransform *trans = vtkTransform::New();
-        trans->SetMatrix(*matrix); 
+        trans->SetMatrix(*matrix);
         vtkcam->SetUserTransform(trans);
         trans->Delete();
     }

@@ -21,7 +21,7 @@ class VisWindowInteractorProxy;
 //  Class: Zoom3D
 //
 //  Purpose:
-//      Defines what Visit's 3D Zoom interactions should look like.  
+//      Defines what Visit's 3D Zoom interactions should look like.
 //
 //  Programmer: Hank Childs
 //  Creation:   May 22, 2000
@@ -33,7 +33,7 @@ class VisWindowInteractorProxy;
 //
 //    Eric Brugger, Tue Mar 26 14:52:43 PST 2002
 //    Add ZoomCamera.
-//    
+//
 //    Eric Brugger, Fri Apr 12 12:31:05 PDT 2002
 //    Add an overloaded ZoomCamera.
 //
@@ -71,6 +71,7 @@ class VISWINDOW_API Zoom3D : public ZoomInteractor
     void                ZoomCamera(void);
     void                ZoomCamera(const int x, const int y);
 
+    bool                altPressed;
     bool                shiftPressed;
     bool                shouldSpin;
 
@@ -78,7 +79,4 @@ class VISWINDOW_API Zoom3D : public ZoomInteractor
     void                DisableSpinMode(void);
 };
 
-
 #endif
-
-

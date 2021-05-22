@@ -31,7 +31,7 @@
 Zoom3D::Zoom3D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
 {
     shiftPressed = false;
-    shouldSpin = false;    
+    shouldSpin = false;
 }
 
 
@@ -50,10 +50,10 @@ Zoom3D::Zoom3D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
 //    I modified the routine to handle the zooming in here rather than in
 //    superclass.
 //
-//    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002 
+//    Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
 //    Retreive LastPos from RenderWindowInteractor as it is no longer a member
-//    of the parent class. 
-//    
+//    of the parent class.
+//
 //    Kathleen Bonnell, Wed Jun  8 10:01:52 PDT 2011
 //    Use current EventPostion instead of last.
 //
@@ -72,23 +72,35 @@ Zoom3D::OnTimer(void)
         bool matchedUpState = true;
         switch (State)
         {
-        case VTKIS_PAN:
-          PanImage3D(Pos[0], Pos[1]);
-          
+        case VTKIS_ROTATE:
+          RotateAboutFocus3D(Pos[0], Pos[1], false);
+
           rwi->CreateTimer(VTKI_TIMER_UPDATE);
           break;
-          
+
+        case VTKIS_PAN:
+          // Currently the SetWindowCenter called from avtViewInfo.C
+          // does not get used in the vtkOSPRayCamerNode so instead
+          // pan the camera rather than the image.
+#ifdef VISIT_OSPRAY
+          PanCamera3D(Pos[0], Pos[1]);
+#else
+          PanImage3D(Pos[0], Pos[1]);
+#endif
+          rwi->CreateTimer(VTKI_TIMER_UPDATE);
+          break;
+
         case VTKIS_ZOOM:
           ZoomImage3D(Pos[0], Pos[1]);
-          
+
           rwi->CreateTimer(VTKI_TIMER_UPDATE);
           break;
-          
+
         default:
           matchedUpState = false;
           break;
         }
-        
+
         if (!matchedUpState && shouldSpin)
         {
             VisWindow *vw = proxy;
@@ -159,11 +171,20 @@ Zoom3D::StartLeftButtonAction()
 {
     DisableSpinMode();
 
-    // If shift is pressed, pan, otherwise rubber band zoom.  The pan
-    // action matches the Navigate2D/3D modes. Save which one we did so
-    // we can issue the proper "End.." statement when the button is
-    // released.
-    if (Interactor->GetShiftKey())
+    // If alt is pressed, rotate or if shift is pressed, pan,
+    // otherwise rubber band zoom.  The pan action matches the
+    // Navigate2D/3D modes.
+
+    // Regarless of the operation save which one so the proper "End.."
+    // statement is issued when the button is released.
+    if (Interactor->GetAltKey())
+    {
+        StartBoundingBox();
+        StartRotate();
+        altPressed = true;
+    }
+
+    else if (Interactor->GetShiftKey())
     {
         StartBoundingBox();
         StartPan();
@@ -226,7 +247,13 @@ Zoom3D::EndLeftButtonAction()
     // We must issue the proper end state for either pan or rotate
     // depending on whether the shift or ctrl button was pushed.  The
     // shift left mouse pan action matches the Navigate2D/3D modes.
-    if (shiftPressed)
+    if (altPressed)
+    {
+        EndBoundingBox();
+        EndRotate();
+        altPressed = false;
+    }
+    else if (shiftPressed)
     {
         EndBoundingBox();
         EndPan();
@@ -269,7 +296,13 @@ Zoom3D::EndLeftButtonAction()
 void
 Zoom3D::AbortLeftButtonAction()
 {
-    if (shiftPressed)
+    if (altPressed)
+    {
+        EndBoundingBox();
+        EndRotate();
+        altPressed = false;
+    }
+    else if (shiftPressed)
     {
         EndBoundingBox();
         EndPan();
@@ -287,7 +320,7 @@ Zoom3D::AbortLeftButtonAction()
 //  Method: Zoom3D::StartMiddleButtonAction
 //
 //  Purpose:
-//      Handles the middle button being pushed down.  For Zoom3D, this 
+//      Handles the middle button being pushed down.  For Zoom3D, this
 //      means standard zooming.
 //
 //  Programmer: Hank Childs
@@ -371,8 +404,8 @@ Zoom3D::EndMiddleButtonAction()
 //    Akira Haddox, Thu Jul  3 13:54:59 PDT 2003
 //    Changed check for not zooming to include line rubberbands.
 //
-//    Kathleen Bonnell, Wed Aug  4 07:59:41 PDT 2004 
-//    Added logic for un-zoom. 
+//    Kathleen Bonnell, Wed Aug  4 07:59:41 PDT 2004
+//    Added logic for un-zoom.
 //
 //    Eric Brugger, Thu May 26 12:29:20 PDT 2011
 //    Remove an unnecessary render call.
@@ -530,7 +563,7 @@ Zoom3D::OnMouseWheelForward()
 //  Method: Zoom3D::OnMouseWheelBackward()
 //
 //  Purpose:
-//    Handles the mouse wheel turned forward.  
+//    Handles the mouse wheel turned forward.
 //
 //  Arguments:
 //
