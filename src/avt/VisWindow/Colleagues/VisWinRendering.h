@@ -34,7 +34,7 @@ class VisWindowColleagueProxy;
 //  Class: VisWinRendering
 //
 //  Purpose:
-//    This is a concrete colleague for the mediator VisWindow.  It handles 
+//    This is a concrete colleague for the mediator VisWindow.  It handles
 //    all of the rendering pipeline duties for the VisWindow.  It must be
 //    instantiated first in the VisWindow since many other colleagues
 //    depend on it being able to return the proper renderers.
@@ -45,9 +45,9 @@ class VisWindowColleagueProxy;
 //  Modifications:
 //    Hank Childs, Thu Jul  6 13:39:11 PDT 2000
 //    Added ability to suspend updates (rendering) as well as ability to
-//    set the size and position and an explicit realize.  Changed type of iren 
+//    set the size and position and an explicit realize.  Changed type of iren
 //    the XRenderWindowInteractor, made data member of app context, so it could
-//    be realized any time.  Separated out border portion into its own 
+//    be realized any time.  Separated out border portion into its own
 //    colleague.  Removed methods SetForegroundColor, Start2DMode, Stop2DMode,
 //    SetUpViewport, and SetUpRenderingPipeline and axis data members.
 //
@@ -59,7 +59,7 @@ class VisWindowColleagueProxy;
 //    Added foreground renderer.
 //
 //    Brad Whitlock, Tue Nov 7 10:29:17 PDT 2000
-//    Made it use Qt render windows and interactors. 
+//    Made it use Qt render windows and interactors.
 //
 //    Hank Childs, Mon Feb 12 19:40:13 PST 2001
 //    Implemented ScreenCapture.
@@ -82,9 +82,9 @@ class VisWindowColleagueProxy;
 //    Hank Childs, Tue Jan 29 10:40:42 PST 2002
 //    Made this an abstract base type.
 //
-//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002 
+//    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002
 //    Add support for curve mode.  Added method to compute scale factor
-//    for vector text (moved and modified from avtPickActor). 
+//    for vector text (moved and modified from avtPickActor).
 //
 //    Sean Ahern, Mon May 20 13:30:53 PDT 2002
 //    Added the ability to raise/lower windows.
@@ -95,8 +95,8 @@ class VisWindowColleagueProxy;
 //    Jeremy Meredith, Tue Nov 19 17:13:04 PST 2002
 //    Added stereo en/disable flag and function.
 //
-//    Kathleen Bonnell, Wed Dec  4 17:05:24 PST 2002  
-//    Removed numAntialiasingFrames, now using GL way of anti-aliasing. 
+//    Kathleen Bonnell, Wed Dec  4 17:05:24 PST 2002
+//    Removed numAntialiasingFrames, now using GL way of anti-aliasing.
 //
 //    Brad Whitlock, Wed Jan 29 14:37:43 PST 2003
 //    I added a method to create a toolbar.
@@ -216,7 +216,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     virtual void             SetBackgroundColor(double, double, double);
     virtual void             SetViewport(double, double, double, double);
-   
+
     vtkRenderer             *GetCanvas(void);
     vtkRenderer             *GetBackground(void);
     vtkRenderer             *GetForeground(void);
@@ -378,7 +378,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                  { return compactDomainsAutoThreshold; }
     int                      SetCompactDomainsAutoThreshold(int val);
 #ifdef VISIT_OSPRAY
-    void                     SetModePerspective(bool modePerspective);
     void                     SetOsprayRendering(bool enabled);
     bool                     GetOsprayRendering() const
                                  { return osprayRendering; };
@@ -391,6 +390,9 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     void                     SetOsprayShadows(bool enabled);
     bool                     GetOsprayShadows() const
                                  { return osprayShadows; };
+    void                     Set3DView(bool enabled);
+    bool                     Get3DView() const
+                                 { return viewIs3D; };
 #endif
 
     virtual void            *CreateToolbar(const char *) { return 0; };
@@ -410,9 +412,9 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                 bool ctrl, bool shift);
 
   protected:
-    vtkRenderer                  *canvas;
-    vtkRenderer                  *background;
-    vtkRenderer                  *foreground;
+    vtkRenderer                  *canvas{nullptr};
+    vtkRenderer                  *background{nullptr};
+    vtkRenderer                  *foreground{nullptr};
     bool                          needsUpdate;
     bool                          realized;
     bool                          antialiasing;
@@ -438,7 +440,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                           ospraySPP;
     int                           osprayAO;
     bool                          osprayShadows;
-    bool                          modeIsPerspective;
+    bool                          viewIs3D;
 #endif
 
     void(*renderInfo)(void *);
@@ -481,7 +483,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
 #ifdef VISIT_OSPRAY
     // OSPRay render pass
-    vtkOSPRayPass                *osprayPass;
+    vtkOSPRayPass                *osprayPass{nullptr};
 #endif
 
 private:
