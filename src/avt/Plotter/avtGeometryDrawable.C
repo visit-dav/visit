@@ -13,8 +13,6 @@
 #include <vtkProp.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
-#include <vtkMapper.h>
-#include <vtkMapper2D.h>
 #include <vtkVisItFullFrameMapper2D.h>
 
 #include <avtMapperBase.h>

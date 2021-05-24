@@ -31,6 +31,9 @@ class vtkTextProperty;
 //
 // Modifications:
 //
+//    Alister Maguire, Mon May 24 10:06:23 PDT 2021
+//    Added GetPositionScale.
+//
 // ****************************************************************************
 
 class vtkLabelMapper : public vtkLabelMapperBase
