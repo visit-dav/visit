@@ -483,7 +483,7 @@ avtLabelMapper::SetNodeOrigin(vtkIdType origin)
 //  Note:  Taken from avtPseudocolorMapper.
 //
 //  Programmer: Alister Maguire
-//  Creation:   May 2l, 2021
+//  Creation:   May 21, 2021
 //
 //  Modifications:
 //
