@@ -471,8 +471,8 @@ avtLabelMapper::SetNodeOrigin(vtkIdType origin)
 //  Method: avtLabelMapper::SetFullFrameScaling
 //
 //  Purpose:
-//    Sets a fullframe scale factor that can be used by the mapper to compensate
-//    for the stretching that fullframe mode performs on geometry.
+//    Sets a full frame scale factor that can be used by the mapper to
+//    compensate for the stretching that full frame mode performs on geometry.
 //
 //  Arguments:
 //    useScale : True if the scale is used.

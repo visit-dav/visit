@@ -294,6 +294,9 @@ vtkLabelMapper::DrawLabels2D(vtkDataSet *input, vtkRenderer *ren)
 //    Added the ability to have different colors and sizes for node vs.
 //    cell labels.
 //
+//    Alister Maguire, Mon May 24 10:06:23 PDT 2021
+//    If we're in full frame mode, we need to perform some scaling.
+//
 // ****************************************************************************
 
 void
@@ -382,7 +385,7 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
 //    Favor double instead of float.
 //
 //    Alister Maguire, Mon May 24 10:06:23 PDT 2021
-//    If we're in full frame mode, we need to scale the Y axis.
+//    If we're in full frame mode, we need to perform some scaling.
 //
 // ****************************************************************************
 
@@ -1062,6 +1065,9 @@ vtkLabelMapper::PopulateBinsWithCellLabels3D(vtkDataSet *input, vtkRenderer *ren
 //   can construct a point transformation matrix that we know will always be
 //   correct, regardless of how VTK camera has been set.
 //
+//   Alister Maguire, Mon May 24 10:06:23 PDT 2021
+//   If we're in full frame mode, we need to perform some scaling.
+//
 // ****************************************************************************
 
 void
@@ -1500,6 +1506,9 @@ vtkLabelMapper::GetPositionScale(double *scale)
 //
 //   Brad Whitlock, Tue Apr 25 10:26:22 PDT 2006
 //   I made it use our own transformation matrix to transform the points.
+//
+//   Alister Maguire, Mon May 24 10:06:23 PDT 2021
+//   If we're in full frame mode, we need to perform some scaling.
 //
 // ****************************************************************************
 
