@@ -168,7 +168,6 @@ ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${PROJECT_BINARY_DIR}/avt/Plotter/vtk/
 ${VTK_INCLUDE_DIRS}
-${VISIT_SOURCE_DIR}/plots/Label/
 )
 
 # Add link directories
