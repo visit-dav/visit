@@ -381,6 +381,9 @@ vtkLabelMapper::DrawAllLabels2D(vtkDataSet *input)
 //    Brad Whitlock, Sat Apr 21 21:40:29 PDT 2012
 //    Favor double instead of float.
 //
+//    Alister Maguire, Mon May 24 10:06:23 PDT 2021
+//    If we're in full frame mode, we need to scale the Y axis.
+//
 // ****************************************************************************
 
 void
@@ -466,6 +469,18 @@ vtkLabelMapper::DrawDynamicallySelectedLabels2D(vtkDataSet *input,
                     bin_y_size + minMeshY;
     int bin_x_n = int(ceil (win_dx / bin_x_size)) + 1;
     int bin_y_n = int(ceil (win_dy / bin_y_size)) + 1;
+
+    //
+    // If we're using full frame scaling, we need to adjust the number of
+    // cells in the Y direction. Scaling in the X direction is not needed
+    // (I believe this is because VisIt is sneaky and only scales the Y
+    // axis).
+    //
+    if (UseFullFrameScaling)
+    {
+        bin_y_n /= FullFrameScaling[1];
+    }
+
     int bin_x_y = bin_x_n * bin_y_n;
 
     //
