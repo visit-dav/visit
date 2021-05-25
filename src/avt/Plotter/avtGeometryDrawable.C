@@ -13,6 +13,7 @@
 #include <vtkProp.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
+#include <vtkVisItFullFrameMapper2D.h>
 
 #include <avtMapperBase.h>
 #include <avtTransparencyActor.h>
@@ -356,6 +357,9 @@ avtGeometryDrawable::ShiftByVector(const double vec[3])
 //    Kathleen Biagas, Thu Apr 13 10:27:54 PDT 2017
 //    Only set scale for vtkActor (not vtkActor2D).
 //
+//    Alister Maguire, Fri May 21 15:11:53 PDT 2021
+//    Handle the vtkLabelMapper.
+//
 // ****************************************************************************
 
 void
@@ -371,6 +375,20 @@ avtGeometryDrawable::ScaleByVector(const double vec[3])
             v[1] = vec[1];
             v[2] = vec[2];
             ((vtkActor*)actors[i])->SetScale(v);
+        }
+        else if (actors[i] != NULL && actors[i]->IsA("vtkActor2D"))
+        {
+            //
+            // The vtkLabelMapper is a special case. It's a vtkActor2D, which
+            // means that it doesn't have a "SetScale" method, but we need to
+            // be able to actively adjust the full frame scaling. We can
+            // instead rely on the mapper to handle this adjustment.
+            //
+            if (((vtkActor2D*)actors[i])->GetMapper()->IsA("vtkLabelMapper"))
+            {
+                ((vtkVisItFullFrameMapper2D*)((vtkActor2D*)actors[i])->
+                    GetMapper())->SetFullFrameScaling(vec);
+            }
         }
     }
 }
