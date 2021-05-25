@@ -11,7 +11,7 @@ import fnmatch
 
 from os.path import join as pjoin
 
-def sexe(cmd,ret_output=False,echo = True,env=None):
+def shexe(cmd,ret_output=False,echo = True,env=None):
         """ Helper for executing shell commands. """
         kwargs = {"shell":True}
         if not env is None:
@@ -135,7 +135,7 @@ def find_exes(sdir):
           # only do `file` check for files that have exe mode and aren't excluded by suffix
           if mode & exe_flags and valid_exe_suffix(fname):
               # check with otool that this is an exe and not a script
-              rcode, chk_out = sexe("file {0}".format(fname), ret_output=True)
+              rcode, chk_out = shexe("file {0}".format(fname), ret_output=True)
               if rcode != 0:
                   print("[warning: failed to obtain file type for '%s']" % fname)
               elif chk_out.count("executable") >= 1:
@@ -163,12 +163,12 @@ def fixup_items(items,lib_maps,prefix_path):
             id_cmd = id_cmd.format(lib_maps[item_base], item)
         else:
             id_cmd = id_cmd.format(item.replace(prefix_path,""), item)
-        sexe(id_cmd)
+        shexe(id_cmd)
 
         # Remove rpaths containing user home directory
         home = os.path.expanduser("~")
         invalid_paths = []
-        rcode, lc_rpaths = sexe("otool -l {0}".format(item), ret_output=True)
+        rcode, lc_rpaths = shexe("otool -l {0}".format(item), ret_output=True)
         if rcode != 0:
             print("[info: no invalid LC_RPATHS for '%s']" % item)
         else:
@@ -180,7 +180,7 @@ def fixup_items(items,lib_maps,prefix_path):
 
             del_rpath_cmd = "install_name_tool -delete_rpath {0} {1} 2>&1"
             for invalid_path in invalid_paths:
-                sexe(del_rpath_cmd.format(invalid_path, item))
+                shexe(del_rpath_cmd.format(invalid_path, item))
 
         ####################################
         # Add rpaths relative to the bundle
@@ -191,12 +191,12 @@ def fixup_items(items,lib_maps,prefix_path):
         rpath_base_cmd =  "install_name_tool -add_rpath {0} {1} 2>&1"
         rpath_cmds = [rpath_base_cmd.format(rp, item) for rp in exe_rpaths]
         for rp_cmd in rpath_cmds:
-            sexe(rp_cmd)
+            shexe(rp_cmd)
 
         ###############
         # re-wire deps
         ###############
-        rcode, dependencies = sexe("otool -L {0}".format(item), ret_output=True)
+        rcode, dependencies = shexe("otool -L {0}".format(item), ret_output=True)
         if rcode != 0:
             print("[warning: failed to obtain dependencies for '%s']" % item)
         else:
@@ -218,7 +218,7 @@ def fixup_items(items,lib_maps,prefix_path):
                 if dep_base in lib_maps:
                     dep_cmd = "install_name_tool -change {0} @rpath{1} {2}"
                     dep_cmd = dep_cmd.format(dep,lib_maps[dep_base],item)
-                    sexe(dep_cmd)
+                    shexe(dep_cmd)
 
 def main():
     prefix_path = "darwin-x86_64"
