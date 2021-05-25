@@ -466,3 +466,38 @@ avtLabelMapper::SetNodeOrigin(vtkIdType origin)
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtLabelMapper::SetFullFrameScaling
+//
+//  Purpose:
+//    Sets a full frame scale factor that can be used by the mapper to
+//    compensate for the stretching that full frame mode performs on geometry.
+//
+//  Arguments:
+//    useScale : True if the scale is used.
+//    s        : The fullframe scale vector.
+//
+//  Returns:    True if any vtk mappers use the scale.
+//
+//  Note:  Taken from avtPseudocolorMapper.
+//
+//  Programmer: Alister Maguire
+//  Creation:   May 21, 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtLabelMapper::SetFullFrameScaling(bool useScale, const double *s)
+{
+    bool retval = false;
+    for (int i = 0; i < nMappers && !retval; ++i)
+    {
+        if (mappers[i] != NULL && mappers[i]->IsA("vtkLabelMapper"))
+           retval = ((vtkLabelMapper*)mappers[i])->
+                SetFullFrameScaling(useScale, s);
+    }
+    return retval;
+}
