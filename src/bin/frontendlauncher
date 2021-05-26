@@ -64,12 +64,12 @@ fi
 # Come up with a list of versions, starting with current
 versions="current"
 for minor in 9 8 7 6 5 4 3 2 1 0; do
-    for patch in 4 3 2 1 0; do
+    for patch in 9 8 7 6 5 4 3 2 1 0; do
         versions="$versions 3.$minor.$patch"
     done
 done
 for minor in 15 14 13 12 11 10 9 8 7 6; do
-    for patch in 4 3 2 1 0; do
+    for patch in 9 8 7 6 5 4 3 2 1 0; do
         versions="$versions 2.$minor.$patch"
     done
 done
@@ -118,7 +118,7 @@ done
 # If we have a two digit version number, find the latest patch associated
 # with that two digit version. 
 if [[ $version =~ ^[0-9]+.[0-9]+$ ]]; then
-    for patch in 6 5 4 3 2 1 0; do
+    for patch in 9 8 7 6 5 4 3 2 1 0; do
         version_dir="$dir/../$version.$patch"
         if test -x "$version_dir"; then
             version="$version.$patch"
