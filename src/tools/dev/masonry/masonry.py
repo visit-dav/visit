@@ -28,7 +28,8 @@ __all__ = ["Context",
            "make",
            "inorder",
            "notarize",
-           "view_log"]
+           "view_log",
+           "log_to_text"]
 # ----------------------------------------------------------------------------
 #  Method: mkdir_p
 #
@@ -687,6 +688,25 @@ inorder = InorderTrigger
 notarize = NotarizeAction
 
 
+def log_to_text(fname):
+    log = json.load(open(fname))
+    for t in log["trigger"]["results"]:
+        for k, v in t.items():
+            print()
+            print("++++++++++++++++++++++++++++++")
+            print(k)
+            print("++++++++++++++++++++++++++++++")
+            print()
+            for kk,vv in v.items():
+                if kk == "output":
+                    print("========")
+                    print("{0}: output:".format(kk))
+                    print("========")
+                    print(vv.replace("\\n","\n"))
+                else:
+                    print("{0}: {1}".format(kk,vv))
+
+
 def view_log(fname):
     port = 8000
     html_src = pjoin(os.path.split(os.path.abspath(__file__))[0],"html")
@@ -694,9 +714,13 @@ def view_log(fname):
     subprocess.call("cp -fr %s/* %s" % (html_src,log_dir),shell=True)
     os.chdir(log_dir)
     try:
+        if sys.version_info[0] == 2:
+            svr_cmd = "SimpleHTTPServer"
+        else:
+            svr_cmd = "http.server"
         child = subprocess.Popen([sys.executable, 
                                   '-m',
-                                  'http.server',
+                                  svr_cmd,
                                   str(port)])
         url = 'http://localhost:8000/view_log.html?log=%s' % log_fname
         webbrowser.open(url)
