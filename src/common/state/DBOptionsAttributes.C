@@ -1300,7 +1300,13 @@ DBOptionsAttributes::SetInt(const std::string &name, int defaultValue)
         optInts.push_back(defaultValue);
     }
     else
-        optInts[bIndex] = defaultValue;
+    {
+        OptionType ot = GetType(name);    
+        if (ot == Int)
+            optInts[bIndex] = defaultValue;
+        else if (ot == Enum)
+            optEnums[bIndex] = defaultValue;
+    }
 }
 
 // ****************************************************************************
@@ -1324,7 +1330,11 @@ DBOptionsAttributes::GetInt(const std::string &name) const
     int bIndex = FindIndex(name);
     if (bIndex < 0)
         EXCEPTION0(BadDeclareFormatString);
-    return optInts[bIndex];
+    OptionType ot = GetType(name);    
+    if (ot == Int)
+        return optInts[bIndex]; 
+    else if (ot == Enum)
+        return optEnums[bIndex]; 
 }
 
 // ****************************************************************************
@@ -1349,7 +1359,25 @@ DBOptionsAttributes::SetString(const std::string &name, const std::string &defau
         optStrings.push_back(defaultValue);
     }
     else
-        optStrings[bIndex] = defaultValue;
+    {
+        OptionType ot = GetType(name);    
+        if (ot == String)
+        {
+            optStrings[bIndex] = defaultValue;
+        }
+        else if (ot == Enum)
+        {
+            stringVector es = GetEnumStrings(name);
+            for (size_t i = 0; i < es.size(); ++i)
+            {
+                if(es[i] == defaultValue)
+                {
+                    optEnums[bIndex] = i;
+                    break;
+                }
+            }
+        }
+    }
 }
 
 // ****************************************************************************
@@ -1373,7 +1401,16 @@ DBOptionsAttributes::GetString(const std::string &name) const
     int bIndex = FindIndex(name);
     if (bIndex < 0)
         EXCEPTION0(BadDeclareFormatString);
-    return optStrings[bIndex];
+    OptionType ot = GetType(name);    
+    if (ot == Int)
+    {
+        return optStrings[bIndex]; 
+    }
+    else if (ot == Enum)
+    {
+        stringVector es = GetEnumStrings(name);
+        return es[optEnums[bIndex]]; 
+    }
 }
 
 // ****************************************************************************
@@ -1484,6 +1521,16 @@ DBOptionsAttributes::GetType(int index) const
         EXCEPTION0(BadDeclareFormatString);
 
     return (DBOptionsAttributes::OptionType) types[index];
+}
+
+DBOptionsAttributes::OptionType
+DBOptionsAttributes::GetType(const std::string &name) const
+{
+    for (size_t i = 0 ; i < names.size() ; i++)
+        if (names[i] == name)
+            return (DBOptionsAttributes::OptionType) types[i];
+
+    EXCEPTION0(BadDeclareFormatString);
 }
 
 // ****************************************************************************

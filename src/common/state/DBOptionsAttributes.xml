@@ -64,6 +64,8 @@
     </Function>
     <Function name="GetType" user="true" member="true">
     </Function>
+    <Function name="GetType2" user="true" member="true">
+    </Function>
     <Function name="GetEnumStrings" user="true" member="true">
     </Function>
     <Function name="GetName" user="true" member="true">
