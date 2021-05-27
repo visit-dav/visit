@@ -55,6 +55,7 @@ typedef struct
     int      saveCounter;
     int      batch;
     int      export;
+    int      exportVTK;
     char    *sessionfile;
     int      setview;
 
@@ -77,6 +78,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->saveCounter = 0;
     sim->batch = 0;
     sim->export = 0;
+    sim->exportVTK = 0;
     sim->sessionfile = NULL;
     sim->setview = 0;
 
@@ -93,7 +95,7 @@ simulation_data_dtor(simulation_data *sim)
     }
 }
 
-const char *cmd_names[] = {"halt", "step", "run", "addplot", "export"};
+const char *cmd_names[] = {"halt", "step", "run", "addplot", "export", "exportVTK"};
 
 /******************************************************************************
  ******************************************************************************
@@ -176,6 +178,7 @@ void simulate_one_timestep(simulation_data *sim)
         visit_handle vars = VISIT_INVALID_HANDLE;
         VisIt_NameList_alloc(&vars);
         VisIt_NameList_addName(vars, "default");
+
 #ifdef TEST_FIELDVIEW_XDB_OPTIONS
         /* Add another export variable. */
         VisIt_NameList_addName(vars, "mesh2d/nodeid");
@@ -206,6 +209,40 @@ void simulate_one_timestep(simulation_data *sim)
             printf("Exported %s\n", filename);
         }
 #endif
+    }
+
+    if(sim->exportVTK)
+    {
+        char filename[100];
+        visit_handle vars = VISIT_INVALID_HANDLE;
+        VisIt_NameList_alloc(&vars);
+        VisIt_NameList_addName(vars, "default");
+        /* Add another export variable. */
+        VisIt_NameList_addName(vars, "mesh2d/nodeid");
+
+        {
+            /* Create an option list that tells the VTK export to
+             * use XML Binary file format.
+             */
+            visit_handle options = VISIT_INVALID_HANDLE;
+            VisIt_OptionList_alloc(&options);
+            /* FileFormat 0: Legacy ASCII */
+            /* FileFormat 1: Legacy Binary */
+            /* FileFormat 2: XML ASCII */
+            /* FileFormat 3: XML Binary */
+
+            VisIt_OptionList_setValueI(options, "FileFormat", 3);
+
+            sprintf(filename, "updateplots_export%04d", sim->saveCounter);
+            if(VisItExportDatabaseWithOptions(filename, "VTK_1.0",
+                                              vars, options) &&
+               sim->par_rank == 0)
+            {
+                 printf("Exported %s\n", filename);
+            }
+
+            VisIt_OptionList_free(options);
+        }
         VisIt_NameList_free(vars);
 
         exportedFile = 1;
@@ -238,6 +275,8 @@ void ControlCommandCallback(const char *cmd, const char *args, void *cbdata)
     }
     else if(strcmp(cmd, "export") == 0)
         sim->export = 1;
+    else if(strcmp(cmd, "exportVTK") == 0)
+        sim->exportVTK = 1;
 }
 
 /* CHANGE 1 */
@@ -377,6 +416,8 @@ ProcessConsoleCommand(simulation_data *sim)
     }
     else if(strcmp(cmd, "export") == 0)
         sim->export = 1;
+    else if(strcmp(cmd, "exportVTK") == 0)
+        sim->exportVTK = 1;
 
     if(sim->echo && sim->par_rank == 0)
     {
@@ -589,6 +630,8 @@ int main(int argc, char **argv)
             sim.batch = 1;
         else if(strcmp(argv[i], "-export") == 0)
             sim.export = 1;
+        else if(strcmp(argv[i], "-exportVTK") == 0)
+            sim.exportVTK = 1;
         else if(strcmp(argv[i], "-echo") == 0)
             sim.echo = 1;
         else if(strcmp(argv[i], "-sessionfile") == 0 && (i+1) < argc)

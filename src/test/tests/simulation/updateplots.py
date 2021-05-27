@@ -29,6 +29,19 @@ def step(sim):
         if "Command 'step'" in buf:
             keepGoing = False
 
+def testExportVTK(sim):
+    # default export FileFormat for VTK is Legacy ascii (.vtk extension),
+    # Test an export that sets the FileFormat to XML Binary (.vtr extension)
+    sim.consolecommand("exportVTK")
+    # Read from stderr to look for the echoed command. Sync.
+    keepGoing = True
+    while keepGoing:
+        buf = sim.p.stderr.readline()
+        print(buf)
+        if "Command 'exportVTK'" in buf:
+            keepGoing = False
+    step(sim)
+    TestValueEQ("updateplots_export0000.vtr exists", os.path.isfile("updateplots_export0000.vtr"))
 
 # Perform our tests.
 if connected:
@@ -60,7 +73,9 @@ if connected:
         i = i+1
 
     TestText("updateplots%02d"%i, times)
-             
+
+    testExportVTK(sim)
+
 # Close down the simulation.
 if started:        
     sim.endsim()
