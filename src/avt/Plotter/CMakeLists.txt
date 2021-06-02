@@ -95,6 +95,7 @@ vtk/vtkVisItDataSetMapper.C
 vtk/vtkVisItScalarBarActor.C 
 vtk/vtkVisItScalarBarWithOpacityActor.C 
 vtk/vtkVisItTextActor.C
+vtk/vtkVisItFullFrameMapper2D.C
 )
 
 if(VISIT_OSPRAY)
