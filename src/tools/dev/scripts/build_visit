@@ -271,6 +271,9 @@ configure_support_files
 #import helper functions..
 . $bv_PREFIX/helper_funcs.sh
 
+# Test a key version compare function there
+test_compare_version_strings
+
 #import visit
 . $bv_PREFIX/bv_visit.sh
 

@@ -119,13 +119,32 @@ function python_set_vars_helper
 function bv_python_system_python
 {
     echo "Using system python"
-    TEST=`which python-config`
-    [ $? != 0 ] && error "System python-config not found, cannot configure python"
 
-    bv_python_enable
+    # this method uses 'which' to find the full path to system python and it's config command
+
+    if [[ $DO_PYTHON2 == "no" ]]; then
+        # prefer python3 
+        TEST=`which python3-config`
+        if [ $? == 0 ]
+        then 
+            PYTHON_COMMAND=`which python3`
+            PYTHON_CONFIG_COMMAND=$TEST
+        else
+            TEST=`which python-config`
+            [ $? != 0 ] && error "Neither system python3-config nor python-config found, cannot configure python"
+            PYTHON_COMMAND=`which python`
+            PYTHON_CONFIG_COMMAND=$TEST
+        fi
+    else
+        # only try python 2
+        TEST=`which python-config`
+        [ $? != 0 ] && error "System python-config found, cannot configure python"
+        PYTHON_COMMAND=`which python`
+        PYTHON_CONFIG_COMMAND=$TEST
+    fi
+
     USE_SYSTEM_PYTHON="yes"
-    PYTHON_COMMAND="python"
-    PYTHON_CONFIG_COMMAND="python-config"
+    bv_python_enable
     PYTHON_FILE=""
     python_set_vars_helper #set vars..
 }
@@ -154,16 +173,28 @@ function bv_python_alt_python_dir
 {
     echo "Using alternate python directory"
 
-    if [ -e "$1/bin/python-config" ]
-    then
-        PYTHON_COMMAND="$1/bin/python"
-        PYTHON_CONFIG_COMMAND="$1/bin/python-config"
-    elif [ -e "$1/bin/python3-config" ]
-    then
-        PYTHON_COMMAND="$1/bin/python3"
-        PYTHON_CONFIG_COMMAND="$1/bin/python3-config"
+    if [[ $DO_PYTHON2 == "no" ]]; then
+        # prefer python3
+        if [ -e "$1/bin/python3-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python3"
+            PYTHON_CONFIG_COMMAND="$1/bin/python3-config"
+        elif [ -e "$1/bin/python-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python"
+            PYTHON_CONFIG_COMMAND="$1/bin/python-config"
+        else
+            error "Python (python3-config or python-config) not found in $1"
+        fi
     else
-        error "Python not found in $1"
+        # only try python2
+        if [ -e "$1/bin/python-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python"
+            PYTHON_CONFIG_COMMAND="$1/bin/python-config"
+        else
+            error "Python (python-config) not found in $1"
+        fi
     fi
 
     bv_python_enable
@@ -176,8 +207,12 @@ function bv_python_alt_python_dir
 
 function bv_python_depends_on
 {
-    # we always need openssl b/c of requests.
-    echo "openssl zlib"
+     pydep=""
+     if [[ $USE_SYSTEM_PYTHON == "no" ]] ; then
+        # we always need openssl b/c of requests.
+        pydep="openssl zlib"
+     fi
+     echo $pydep
 }
 
 function bv_python_info

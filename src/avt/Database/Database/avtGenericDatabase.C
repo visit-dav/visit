@@ -7768,6 +7768,9 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //    Eric Brugger, Fri Mar 13 15:20:08 PDT 2020
 //    Modify to handle NULL meshes.
 //
+//    Eric Brugger, Mon May 24 11:38:21 PDT 2021
+//    Modify to handle meshes with no points or cells.
+//
 // ****************************************************************************
 
 bool
@@ -7881,8 +7884,10 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     for (int i = 0 ; i < (int)doms.size() ; i++)
     {
         list.push_back(ds.GetDataset(i, 0));
-        if (list[i] != NULL)
-            list[i]->Register(NULL);
+        if (list[i] == NULL ||
+            list[i]->GetNumberOfPoints() == 0 || list[i]->GetNumberOfCells() == 0)
+            continue;
+        list[i]->Register(NULL);
     }
     vector<vtkDataSet *> newList = dbi->ExchangeMesh(doms, list);
 
@@ -7892,7 +7897,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
     //
     for (int i = 0 ; i < (int)doms.size() ; i++)
     {
-        if (list[i] == NULL)
+        if (list[i] == NULL ||
+            list[i]->GetNumberOfPoints() == 0 || list[i]->GetNumberOfCells() == 0)
             continue;
         vtkFieldData *fd = list[i]->GetFieldData();
         for (int k = 0; k < fd->GetNumberOfArrays(); k++)
@@ -7922,7 +7928,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t i = 0 ; i < doms.size() ; i++)
         {
             vtkDataSet *ds1 = list[i];
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
             {
                 scalars.push_back(NULL);
                 continue;
@@ -7943,7 +7950,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int i = 0 ; i < (int)doms.size() ; i++)
         {
             vtkDataSet *ds1 = ds.GetDataset(i, 0);
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
                 continue;
             vtkDataArray *s   = scalarsOut[i];
             if (centering == AVT_NODECENT)
@@ -7969,7 +7977,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t i = 0 ; i < doms.size() ; i++)
         {
             vtkDataSet *ds1 = list[i];
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
             {
                 vectors.push_back(NULL);
                 continue;
@@ -7990,7 +7999,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int i = 0 ; i < (int)doms.size() ; i++)
         {
             vtkDataSet *ds1 = ds.GetDataset(i, 0);
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
                 continue;
             vtkDataArray *s   = vectorsOut[i];
             if (vmd->centering == AVT_NODECENT)
@@ -8026,7 +8036,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (size_t j = 0 ; j < doms.size() ; j++)
                 {
                     vtkDataSet *ds1 = list[j];
-                    if (ds1 == NULL)
+                    if (ds1 == NULL ||
+                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
                     {
                         scalars.push_back(NULL);
                         continue;
@@ -8047,7 +8058,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (int j = 0 ; j < (int)doms.size() ; j++)
                 {
                     vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                    if (ds1 == NULL)
+                    if (ds1 == NULL ||
+                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
                         continue;
                     vtkDataSetAttributes *atts = NULL;
                     if (isPointData)
@@ -8068,7 +8080,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 vector<vtkDataArray *> scalars;
                 for (size_t j = 0 ; j < doms.size() ; j++)
                 {
-                    if (list[j] == NULL)
+                    if (list[j] == NULL ||
+                        list[j]->GetNumberOfPoints() == 0 || list[j]->GetNumberOfCells() == 0)
                     {
                         scalars.push_back(NULL);
                         continue;
@@ -8081,7 +8094,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (int j = 0 ; j < (int)doms.size() ; j++)
                 {
                     vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                    if (ds1 == NULL)
+                    if (ds1 == NULL ||
+                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
                         continue;
                     ds1->GetCellData()->AddArray(scalarsOut[j]);
                     scalarsOut[j]->Delete();
@@ -8097,7 +8111,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (size_t j = 0 ; j < doms.size() ; j++)
                 {
                     vtkDataSet *ds1 = list[j];
-                    if (ds1 == NULL)
+                    if (ds1 == NULL ||
+                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
                     {
                         vectors.push_back(NULL);
                         continue;
@@ -8118,7 +8133,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                 for (int j = 0 ; j < (int) doms.size() ; j++)
                 {
                     vtkDataSet *ds1 = ds.GetDataset(j, 0);
-                    if (ds1 == NULL)
+                    if (ds1 == NULL ||
+                        ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
                         continue;
                     vtkDataSetAttributes *atts = NULL;
                     if (isPointData)
@@ -8250,7 +8266,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = list[j];
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
             {
                 nodeNums.push_back(NULL);
                 continue;
@@ -8263,7 +8280,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int j = 0 ; j < (int)doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
                 continue;
             ds1->GetPointData()->AddArray(nodeNumsOut[j]);
             nodeNumsOut[j]->Delete();
@@ -8279,7 +8297,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = list[j];
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
             {
                 cellNums.push_back(NULL);
                 continue;
@@ -8292,7 +8311,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int j = 0 ; j < (int)doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
                 continue;
             ds1->GetCellData()->AddArray(cellNumsOut[j]);
             cellNumsOut[j]->Delete();
@@ -8308,7 +8328,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = list[j];
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
             {
                 nodeNums.push_back(NULL);
                 continue;
@@ -8321,7 +8342,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int j = 0 ; j < (int)doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
                 continue;
             ds1->GetPointData()->AddArray(nodeNumsOut[j]);
             nodeNumsOut[j]->Delete();
@@ -8337,7 +8359,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (size_t j = 0 ; j < doms.size() ; j++)
         {
             vtkDataSet *ds1 = list[j];
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
             {
                 cellNums.push_back(NULL);
                 continue;
@@ -8350,7 +8373,8 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
         for (int j = 0 ; j < (int)doms.size() ; j++)
         {
             vtkDataSet *ds1 = ds.GetDataset(j, 0);
-            if (ds1 == NULL)
+            if (ds1 == NULL ||
+                ds1->GetNumberOfPoints() == 0 || ds1->GetNumberOfCells() == 0)
                 continue;
             ds1->GetCellData()->AddArray(cellNumsOut[j]);
             cellNumsOut[j]->Delete();
@@ -8501,6 +8525,9 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
 //    Kathleen Biagas, Fri May 22 15:41:44 PDT 2020
 //    Test for myMin > myMax.
 //
+//    Eric Brugger, Mon May 24 11:38:21 PDT 2021
+//    Modify to handle meshes with no points or cells.
+//
 // ****************************************************************************
 
 bool
@@ -8546,7 +8573,8 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
     for (int i = 0 ; i < (int)doms.size() ; i++)
     {
         vtkUnstructuredGrid *d = (vtkUnstructuredGrid *) ds.GetDataset(i, 0);
-        if (d == NULL)
+        if (d == NULL ||
+            d->GetNumberOfPoints() == 0 || d->GetNumberOfCells() == 0)
         {
             gni.push_back(NULL);
             lni.push_back(NULL);
