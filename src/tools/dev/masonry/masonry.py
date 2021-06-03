@@ -196,7 +196,7 @@ def timedelta(t_start,t_end):
             "minutes":minutes,
             "seconds": seconds}
 
-def sexe(cmd,ret_output=False,echo = False,env=None):
+def shexe(cmd,ret_output=False,echo = False,env=None):
         """ Helper for executing shell commands. """
         kwargs = {"shell":True}
         if not env is None:
@@ -389,7 +389,7 @@ class NotarizeAction(Action):
                     cmd = 'codesign --force --options runtime --timestamp'
                     cmd += ' --entitlements %s' % self.params["entitlements"]
                     cmd += ' -s "%s" %s' % (self.params["cert"], binary)
-                    rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
+                    rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                     print("[res: %s]" % rout)
 
             # codesign VisIt.app
@@ -397,7 +397,7 @@ class NotarizeAction(Action):
             cmd = 'codesign --force --options runtime --timestamp'
             cmd += ' --entitlements %s' % self.params["entitlements"]
             cmd += ' -s "%s" %s' % (self.params["cert"], visit_app) 
-            rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
+            rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
             print("[res: %s]" % rout)
 
             # Create DMG to upload to Apple
@@ -408,11 +408,36 @@ class NotarizeAction(Action):
 
             src_folder = pjoin(bundle_dir, "VisIt-%s" % self.params["build_version"])
             temp_dmg = pjoin(notarize_dir, "VisIt.dmg")
+            if os.path.isfile(temp_dmg):
+                print("[removing existing temporary dmg file: {0}]".format(temp_dmg))
+                os.remove(temp_dmg)
 
             cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, temp_dmg)
-            rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
-            print("[res: %s]" % rout)
-            
+
+            ##########################################################################
+            # NOTE (cyrush) 2021-05-27
+            # the dmg creation process is unreliable, it can often fail with:
+            #   hdiutil: create failed - Resource busy 
+            # but then works fine on subsequent tries, so we try here multiple times
+            ##########################################################################
+
+            dmg_created = False
+            dmg_create_max_attempts = 5
+            dmg_create_attempts = 0
+            dmg_create_output = ""
+            while not dmg_created and dmg_create_attempts < dmg_create_max_attempts:
+                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
+                print("[res: %s]" % rout)
+                dmg_create_output = rout
+                if rcode == 0:
+                    dmg_created = True
+                else:
+                    dmg_create_attempts += 1
+
+            if not dmg_created:
+                msg = "[error creating VisIt dmg for notarization ({0} attempts)]".format(dmg_create_attempts)
+                raise RuntimeError(msg, cmd, dmg_create_output)
+
             ######################################
             # Upload to Apple Notary Service 
             ######################################
@@ -424,7 +449,9 @@ class NotarizeAction(Action):
             cmd += " --asc-provider %s" % self.params["asc_provider"]
             cmd += " --file %s" % temp_dmg 
             cmd += " --output-format xml"
-            rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
+            rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
+            if rcode != 0:
+                raise RuntimeError("[error submitting VisIt dmg for notarization]", cmd)
 
             pl = plistlib.readPlistFromString(rout)
             uuid = pl["notarization-upload"]["RequestUUID"]
@@ -439,7 +466,7 @@ class NotarizeAction(Action):
             status = "in progress"
             while status == "in progress":
                 time.sleep(30)
-                rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
+                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 pl = plistlib.readPlistFromString(rout)
                 status = pl["notarization-info"]["Status"]
                 status = status.strip()
@@ -451,18 +478,18 @@ class NotarizeAction(Action):
 
             if status == "success":
                 cmd = "xcrun stapler staple %s" % visit_app
-                rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
+                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 print("[stapler: %s]" % rout)
 
                 # Create new DMG with stapled containing notarized app
                 dmg_stapled = pjoin(notarize_dir, "VisIt.stpl.dmg")
                 cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, dmg_stapled)
-                rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
+                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 print("[hdiutil: %s]" % rout)
 
                 dmg_release = pjoin(notarize_dir, "VisIt-%s.dmg" % self.params["build_version"])
                 cmd = "hdiutil convert %s -format UDZO -o %s" % (dmg_stapled, dmg_release)
-                rcode, rout = sexe(cmd, ret_output=True, echo=True, env=env)
+                rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 print("[hdiutil:convert: %s]" % rout)
             else:
                 raise RuntimeError("Notarization Failed!")
@@ -528,7 +555,7 @@ class ShellAction(Action):
 
             print("[chdir to: %s]" % self.params["working_dir"])
             os.chdir(self.params["working_dir"])
-            rcode, rout = sexe(self.params["cmd"],
+            rcode, rout = shexe(self.params["cmd"],
                                ret_output=True,
                                echo=True,
                                env=env)
