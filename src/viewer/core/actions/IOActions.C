@@ -125,7 +125,10 @@ ExportDBAction::GetActivePlotNetworkIds(ViewerPlotList *plist, intVector &networ
 // Creation:   Fri Aug 22 10:57:49 PDT 2014
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Fri Apr 23 2021
+//   ExportDatabases has new signature with return atts.
+//   Add location of export to message returned to user.
+//
 // ****************************************************************************
 
 void
@@ -197,11 +200,20 @@ ExportDBAction::Execute()
                             return;
                         }
                         else if(GetViewerEngineManager()->ExportDatabases(
-                                key, networkIds, exportAtts, timeSuffix))
+                                key, networkIds, &exportAtts,
+                                timeSuffix, exportAtts))
                         {
+                            std::string host = key.OriginalHostName();
+                            if (host == "localhost")
+                                host = "";
+                            else
+                                host += ":";
                             GetViewerMessaging()->Message(
-                                TR("Exported database time state %1").
-                                arg(i));
+                                TR("Exported database time state %1 to %2%3/%4").
+                                arg(i).
+                                arg(host).
+                                arg(exportAtts.GetDirname()).
+                                arg(exportAtts.GetFilename()));
                         }
                         else
                             status = 1;
@@ -232,9 +244,19 @@ ExportDBAction::Execute()
             plist->SetTimeSliderState(state);
         }
         // Do export of current time state.
-        else if (GetViewerEngineManager()->ExportDatabases(key, networkIds, exportAtts, ""))
+        else if (GetViewerEngineManager()->ExportDatabases(key,
+                 networkIds, &exportAtts, "", exportAtts))
         {
-            GetViewerMessaging()->Message(TR("Exported database"));
+            std::string host = key.OriginalHostName();
+            if (host == "localhost")
+                host = "";
+            else
+                host += ":";
+            GetViewerMessaging()->Message(
+                TR("Exported database to %1%2/%3").
+                arg(host).
+                arg(exportAtts.GetDirname()).
+                arg(exportAtts.GetFilename()));
         }
         else
         {

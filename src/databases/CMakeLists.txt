@@ -188,8 +188,11 @@
 #    Kathleen Biagas, Mon Sep 14 2020
 #    Enable Rect as an optional plugin on Windows.
 #
-#   Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
-#   Removed FastBit and FastQuery
+#    Eddie Rusu, Wed Oct 14 15:52:13 PDT 2020
+#    Removed FastBit and FastQuery
+#
+#    Kathleen Biagas, Tue May 4, 2021
+#    Rename SW4 to sw4img to fix static builds.
 #
 #****************************************************************************
 
@@ -441,7 +444,7 @@ SAR
 SAS
 SPCTH
 STL
-SW4
+sw4img
 Shapefile
 ${SIMV2_PLUGIN}
 Spheral
