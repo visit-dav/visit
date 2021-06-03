@@ -382,12 +382,12 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
         c << "    {" << Endl;
         c << "        PyObject     *tuple;" << Endl;
         c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "            return NULL;" << Endl;
+        c << "            return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "        if(PyTuple_Check(tuple))" << Endl;
         c << "        {" << Endl;
         c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
-        c << "                return NULL;" << Endl;
+        c << "                return PyExc_ValueError;" << Endl;
         c << Endl;
         c << "            PyErr_Clear();" << Endl;
         c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
@@ -400,11 +400,11 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
         c << "                else if(PyLong_Check(item))" << Endl;
         c << "                    ivals[i] = int(PyLong_AsDouble(item));" << Endl;
         c << "                else" << Endl;
-        c << "                    ivals[i] = 0;" << Endl;
+        c << "                    return PyExc_TypeError;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
         c << "        else" << Endl;
-        c << "            return NULL;" << Endl;
+        c << "            return PyExc_TypeError;" << Endl;
         c << "    }" << Endl;
         c << Endl;
         c << "    // Mark the " << name << " in the object as modified." << Endl;
@@ -473,7 +473,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         c << ";" << Endl;
         c << "    PyObject   *tuple;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return ValueError;" << Endl;
         c << Endl;
         c << "    if(PyTuple_Check(tuple))" << Endl;
         c << "    {" << Endl;
@@ -488,7 +488,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         c << "            else if(PyLong_Check(item))" << Endl;
         c << "                vec[i] = int(PyLong_AsLong(item));" << Endl;
         c << "            else" << Endl;
-        c << "                vec[i] = 0;" << Endl;
+        c << "                return PyExc_TypeError;" << Endl;
         c << "        }" << Endl;
         c << "    }" << Endl;
         c << "    else if(PyFloat_Check(tuple))" << Endl;
@@ -507,7 +507,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         c << "        vec[0] = int(PyLong_AsLong(tuple));" << Endl;
         c << "    }" << Endl;
         c << "    else" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Mark the "<<name<<" in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
@@ -681,12 +681,12 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
         c << "    {" << Endl;
         c << "        PyObject     *tuple;" << Endl;
         c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "            return NULL;" << Endl;
+        c << "            return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "        if(PyTuple_Check(tuple))" << Endl;
         c << "        {" << Endl;
         c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
-        c << "                return NULL;" << Endl;
+        c << "                return PyExc_ValueError;" << Endl;
         c << Endl;
         c << "            PyErr_Clear();" << Endl;
         c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
@@ -699,11 +699,11 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
         c << "                else if(PyLong_Check(item))" << Endl;
         c << "                    fvals[i] = float(PyLong_AsDouble(item));" << Endl;
         c << "                else" << Endl;
-        c << "                    fvals[i] = 0.;" << Endl;
+        c << "                    return PyExc_TypeError;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
         c << "        else" << Endl;
-        c << "            return NULL;" << Endl;
+        c << "            return PyExc_TypeError;" << Endl;
         c << "    }" << Endl;
         c << Endl;
         c << "    // Mark the " << name << " in the object as modified." << Endl;
@@ -770,7 +770,7 @@ class AttsGeneratorFloatVector : public virtual FloatVector , public virtual Pyt
         c << ";" << Endl;
         c << "    PyObject     *tuple;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    if(PyTuple_Check(tuple))" << Endl;
         c << "    {" << Endl;
@@ -785,7 +785,7 @@ class AttsGeneratorFloatVector : public virtual FloatVector , public virtual Pyt
         c << "            else if(PyLong_Check(item))" << Endl;
         c << "                vec[i] = float(PyLong_AsDouble(item));" << Endl;
         c << "            else" << Endl;
-        c << "                vec[i] = 0.f;" << Endl;
+        c << "                return PyExc_TypeError;" << Endl;
         c << "        }" << Endl;
         c << "    }" << Endl;
         c << "    else if(PyFloat_Check(tuple))" << Endl;
@@ -804,7 +804,7 @@ class AttsGeneratorFloatVector : public virtual FloatVector , public virtual Pyt
         c << "        vec[0] = float(PyLong_AsDouble(tuple));" << Endl;
         c << "    }" << Endl;
         c << "    else" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Mark the "<<name<<" in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
@@ -930,12 +930,12 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Pyt
         c << "    {" << Endl;
         c << "        PyObject     *tuple;" << Endl;
         c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "            return NULL;" << Endl;
+        c << "            return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "        if(PyTuple_Check(tuple))" << Endl;
         c << "        {" << Endl;
         c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
-        c << "                return NULL;" << Endl;
+        c << "                return PyExc_ValueError;" << Endl;
         c << Endl;
         c << "            PyErr_Clear();" << Endl;
         c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
@@ -948,11 +948,11 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Pyt
         c << "                else if(PyLong_Check(item))" << Endl;
         c << "                    dvals[i] = PyLong_AsDouble(item);" << Endl;
         c << "                else" << Endl;
-        c << "                    dvals[i] = 0.;" << Endl;
+        c << "                    return PyExc_TypeError;" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
         c << "        else" << Endl;
-        c << "            return NULL;" << Endl;
+        c << "            return PyExc_TypeError;" << Endl;
         c << "    }" << Endl;
         c << Endl;
         c << "    // Mark the " << name << " in the object as modified." << Endl;
@@ -1021,7 +1021,7 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
         c << ";" << Endl;
         c << "    PyObject     *tuple;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    if(PyTuple_Check(tuple))" << Endl;
         c << "    {" << Endl;
@@ -1036,7 +1036,7 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
         c << "            else if(PyLong_Check(item))" << Endl;
         c << "                vec[i] = PyLong_AsDouble(item);" << Endl;
         c << "            else" << Endl;
-        c << "                vec[i] = 0.;" << Endl;
+        c << "                return PyExc_TypeError;" << Endl;
         c << "        }" << Endl;
         c << "    }" << Endl;
         c << "    else if(PyFloat_Check(tuple))" << Endl;
@@ -1055,7 +1055,7 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
         c << "        vec[0] = PyLong_AsDouble(tuple);" << Endl;
         c << "    }" << Endl;
         c << "    else" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Mark the "<<name<<" in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
@@ -1181,12 +1181,12 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
         c << "    {" << Endl;
         c << "        PyObject     *tuple;" << Endl;
         c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "            return NULL;" << Endl;
+        c << "            return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "        if(PyTuple_Check(tuple))" << Endl;
         c << "        {" << Endl;
         c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
-        c << "                return NULL;" << Endl;
+        c << "                return PyExc_ValueError;" << Endl;
         c << Endl;
         c << "            PyErr_Clear();" << Endl;
         c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
@@ -1200,7 +1200,7 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
         c << "                else if(PyLong_Check(item))" << Endl;
         c << "                    c = int(PyLong_AsDouble(item));" << Endl;
         c << "                else" << Endl;
-        c << "                    c = 0;" << Endl;
+        c << "                    return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "                if(c < 0) c = 0;" << Endl;
         c << "                if(c > 255) c = 255;" << Endl;
@@ -1208,7 +1208,7 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
         c << "            }" << Endl;
         c << "        }" << Endl;
         c << "        else" << Endl;
-        c << "            return NULL;" << Endl;
+        c << "            return PyExc_TypeError;" << Endl;
         c << "    }" << Endl;
         c << Endl;
         c << "    // Mark the " << name << " in the object as modified." << Endl;
@@ -1277,7 +1277,7 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
         c << ";" << Endl;
         c << "    PyObject     *tuple;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    if(PyTuple_Check(tuple))" << Endl;
         c << "    {" << Endl;
@@ -1293,7 +1293,7 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
         c << "            else if(PyLong_Check(item))" << Endl;
         c << "                c = int(PyLong_AsDouble(item));" << Endl;
         c << "            else" << Endl;
-        c << "                c = 0;" << Endl;
+        c << "                return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "            if(c < 0) c = 0;" << Endl;
         c << "            if(c > 255) c = 255;" << Endl;
@@ -1325,7 +1325,7 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
         c << "        vec[0] = (unsigned char)(c);" << Endl;
         c << "    }" << Endl;
         c << "    else" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Mark the "<<name<<" in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
@@ -1437,7 +1437,7 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << ";" << Endl;
         c << "    PyObject     *tuple;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    if(PyTuple_Check(tuple))" << Endl;
         c << "    {" << Endl;
@@ -1452,7 +1452,7 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << "                PyString_AsString_Cleanup(item_cstr);" << Endl;
         c << "            }" << Endl;
         c << "            else" << Endl;
-        c << "                vec[i] = std::string(\"\");" << Endl;
+        c << "                return PyExc_TypeError;" << Endl;
         c << "        }" << Endl;
         c << "    }" << Endl;
         c << "    else if(PyString_Check(tuple))" << Endl;
@@ -1463,7 +1463,7 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << "        PyString_AsString_Cleanup(tuple_cstr);" << Endl;
         c << "    }" << Endl;
         c << "    else" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Mark the "<<name<<" in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
@@ -1593,14 +1593,14 @@ class AttsGeneratorColor : public virtual Color , public virtual PythonGenerator
         c << "            {" << Endl;
         c << "                PyObject *tuple = NULL;" << Endl;
         c << "                if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "                    return NULL;" << Endl;
+        c << "                    return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "                if(!PyTuple_Check(tuple))" << Endl;
-        c << "                    return NULL;" << Endl;
+        c << "                    return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "                // Make sure that the tuple is the right size." << Endl;
         c << "                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)" << Endl;
-        c << "                    return NULL;" << Endl;
+        c << "                    return PyExc_ValueError;" << Endl;
         c << Endl;
         c << "                // Make sure that all elements in the tuple are ints." << Endl;
         c << "                for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
@@ -1611,7 +1611,7 @@ class AttsGeneratorColor : public virtual Color , public virtual PythonGenerator
         c << "                    else if(PyFloat_Check(item))" << Endl;
         c << "                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));" << Endl;
         c << "                    else" << Endl;
-        c << "                        return NULL;" << Endl;
+        c << "                        return PyExc_TypeError;" << Endl;
         c << "                }" << Endl;
         c << "            }" << Endl;
         c << "        }" << Endl;
@@ -1870,7 +1870,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                        {" << Endl;
             c << "                            // Make sure that the tuple is the right size." << Endl;
             c << "                            if(PyTuple_Size(pyobj) < cL.GetNumColors())" << Endl;
-            c << "                                return NULL;" << Endl;
+            c << "                                return PyExc_ValueError;" << Endl;
             c << Endl;
             c << "                            // Make sure that the tuple is the right size." << Endl;
             c << "                            bool badInput = false;" << Endl;
@@ -1903,7 +1903,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                            if(badInput)" << Endl;
             c << "                            {" << Endl;
             c << "                                delete [] C;" << Endl;
-            c << "                                return NULL;" << Endl;
+            c << "                                return PyExc_ValueError;" << Endl;
             c << "                            }" << Endl;
             c << Endl;
             c << "                            for(int i = 0; i < cL.GetNumColors(); ++i)" << Endl;
@@ -1914,7 +1914,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                        {" << Endl;
             c << "                            // Make sure that the list is the right size." << Endl;
             c << "                            if(PyList_Size(pyobj) < cL.GetNumColors())" << Endl;
-            c << "                                return NULL;" << Endl;
+            c << "                                return PyExc_ValueError;" << Endl;
             c << Endl;
             c << "                            // Make sure that the tuple is the right size." << Endl;
             c << "                            bool badInput = false;" << Endl;
@@ -1947,7 +1947,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                            if(badInput)" << Endl;
             c << "                            {" << Endl;
             c << "                                delete [] C;" << Endl;
-            c << "                                return NULL;" << Endl;
+            c << "                                return PyExc_ValueError;" << Endl;
             c << "                            }" << Endl;
             c << Endl;
             c << "                            for(int i = 0; i < cL.GetNumColors(); ++i)" << Endl;
@@ -1956,17 +1956,17 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                            delete [] C;" << Endl;
             c << "                        }" << Endl;
             c << "                        else" << Endl;
-            c << "                            return NULL;" << Endl;
+            c << "                            return PyExc_TypeError;" << Endl;
             c << "                    }" << Endl;
             c << "                }" << Endl;
             c << "                else" << Endl;
             c << "                {" << Endl;
             c << "                    if(!PyTuple_Check(pyobj))" << Endl;
-            c << "                        return NULL;" << Endl;
+            c << "                        return PyExc_TypeError;" << Endl;
             c << Endl;
             c << "                    // Make sure that the tuple is the right size." << Endl;
             c << "                    if(PyTuple_Size(pyobj) < 3 || PyTuple_Size(pyobj) > 4)" << Endl;
-            c << "                        return NULL;" << Endl;
+            c << "                        return PyExc_ValueError;" << Endl;
             c << Endl;
             c << "                    // Make sure that all elements in the tuple are ints." << Endl;
             c << "                    for(int i = 0; i < PyTuple_Size(pyobj); ++i)" << Endl;
@@ -1977,7 +1977,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                        else if(PyFloat_Check(item))" << Endl;
             c << "                            c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(pyobj, i)));" << Endl;
             c << "                        else" << Endl;
-            c << "                            return NULL;" << Endl;
+            c << "                            return PyExc_TypeError;" << Endl;
             c << "                    }" << Endl;
             c << "                }" << Endl;
             c << "            }" << Endl;
@@ -3283,7 +3283,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    PyObject *tuple = PyTuple_New(1);" << Endl;
         c << "    PyTuple_SET_ITEM(tuple, 0, args);" << Endl;
         c << "    Py_INCREF(args);" << Endl;
-        c << "    PyObject *obj = NULL;" << Endl;
+        c << "    PyObject *obj = PyExc_NameError;" << Endl;
         c << Endl;
 
         // Figure out the first field that can write a _setattr method.
@@ -3308,8 +3308,15 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "        Py_DECREF(obj);" << Endl;
         c << Endl;
         c << "    Py_DECREF(tuple);" << Endl;
-        c << "    if( obj == NULL)" << Endl;
-        c << "        PyErr_Format(PyExc_RuntimeError, \"Unable to set unknown attribute: '\%s'\", name);" << Endl;
+        c << "    if (obj == PyExc_NameError)" << Endl;
+        c << "        obj = PyErr_Format(obj, \"Unknown attribute: '\%s'\", name);" << Endl;
+        c << "    else if (obj == PyExc_TypeError)" << Endl;
+        c << "        obj = PyErr_Format(obj, \"Bad type for attribute: '\%s'\", name);" << Endl;
+        c << "    else if (obj == PyExc_IndexError)" << Endl;
+        c << "        obj = PyErr_Format(obj, \"Bad index for attribute: '\%s'\", name);" << Endl;
+        c << "    else if (obj == PyExc_ValueError)" << Endl;
+        c << "        obj = PyErr_Format(obj, \"Bad value for attribute: '\%s'\", name);" << Endl;
+        c << Endl;
         c << "    return (obj != NULL) ? 0 : -1;" << Endl;
         c << "}" << Endl;
         c << Endl;
