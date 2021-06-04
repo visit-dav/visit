@@ -480,17 +480,23 @@ class NotarizeAction(Action):
                 cmd = "xcrun stapler staple %s" % visit_app
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 print("[stapler: %s]" % rout)
+                if rcode != 0:
+                    raise RuntimeError("[error stapling VisIt (bad network or on VPN?)]", cmd)
 
                 # Create new DMG with stapled containing notarized app
                 dmg_stapled = pjoin(notarize_dir, "VisIt.stpl.dmg")
                 cmd = "hdiutil create -srcFolder %s -o %s" % (src_folder, dmg_stapled)
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 print("[hdiutil: %s]" % rout)
+                if rcode != 0:
+                    raise RuntimeError("[error creating stapled VisIt.stpl.dmg]", cmd)
 
                 dmg_release = pjoin(notarize_dir, "VisIt-%s.dmg" % self.params["build_version"])
                 cmd = "hdiutil convert %s -format UDZO -o %s" % (dmg_stapled, dmg_release)
                 rcode, rout = shexe(cmd, ret_output=True, echo=True, env=env)
                 print("[hdiutil:convert: %s]" % rout)
+                if rcode != 0:
+                    raise RuntimeError("[error creating final VisIt-{0}.dmg]".format(self.params["build_version"]), cmd)
             else:
                 raise RuntimeError("Notarization Failed!")
         except KeyboardInterrupt as e:
