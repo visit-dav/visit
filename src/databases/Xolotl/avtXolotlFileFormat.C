@@ -1504,7 +1504,7 @@ avtXolotlFileFormat::GetPositionsOfVariableFromCompositionTable(int *variableInd
     tofree = str = strdup(vn);
 
     int currentVariableNumber = 0;
-	token = STRTOK(str, "/", &nextToken);
+    token = STRTOK(str, "/", &nextToken);
     while (token)
     {
         if (strncmp(token, "Helium", strlen("Helium")) == 0)
