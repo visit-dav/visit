@@ -59,7 +59,7 @@ LegendAttributesObject_Get##NAME(PyObject *self, PyObject *args)\
 // ****************************************************************************
 // Module: PyLegendAttributesObject
 //
-// Purpose: 
+// Purpose:
 //   This class is a Python wrapper arround AnnotationObject that makes it
 //   look like a Text2D object.
 //
@@ -586,12 +586,14 @@ LegendAttributesObject_SetCustomTitle(PyObject *self, PyObject *args)
 {
     LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
 
-    std::string sval;
+    char *sval;
+    int oIndex = -1;
     if(!PyArg_ParseTuple(args, "s", &sval))
         return NULL;
 
     // Set the font height in the object.
 /*CUSTOM*/
+cerr << "  LAO_SetCustomTitle: " << sval << endl;
     obj->data->GetOptions().GetEntry("customTitle")->SetValue(sval);
     UpdateAnnotationHelper(obj->data);
 
@@ -614,7 +616,7 @@ SETGET_FLAG(DrawTitle,       LEGEND_DRAW_TITLE)
 SETGET_FLAG(DrawMinMax,      LEGEND_DRAW_MINMAX)
 SETGET_FLAG(ControlTicks,    LEGEND_CONTROL_TICKS)
 SETGET_FLAG(MinMaxInclusive, LEGEND_MINMAX_INCLUSIVE)
-SETGET_FLAG(CustomTitleEnabled, LEGEND_CUSTOM_TITLE)
+SETGET_FLAG(UseCustomTitle,  LEGEND_CUSTOM_TITLE)
 
 
 static PyObject *
@@ -825,7 +827,7 @@ LegendAttributesObject_SetSuppliedValues(PyObject *self, PyObject *args)
                 vec[i] = double(PyInt_AS_LONG(item));
             else if (PyLong_Check(item))
                 vec[i] = PyLong_AsDouble(item);
-            else 
+            else
                 vec[i] = 0.;
         }
     }
@@ -889,7 +891,7 @@ LegendAttributesObject_SetSuppliedLabels(PyObject *self, PyObject *args)
                 vec[i] = std::string(item_c_str);
                 PyString_AsString_Cleanup(item_c_str);
             }
-            else 
+            else
                 vec[i] = std::string("");
         }
     }
@@ -1055,8 +1057,10 @@ LegendAttributesObject_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "drawTitle") == 0)
         return LegendAttributesObject_GetDrawTitle(self, NULL);
-    if(strcmp(name, "customTitleEnabled") == 0)
-        return LegendAttributesObject_GetCustomTitleEnabled(self, NULL);
+    if(strcmp(name, "useCustomTitle") == 0)
+        return LegendAttributesObject_GetUseCustomTitle(self, NULL);
+    if(strcmp(name, "customTitle") == 0)
+        return LegendAttributesObject_GetCustomTitle(self, NULL);
     if(strcmp(name, "drawMinMax") == 0)
         return LegendAttributesObject_GetDrawMinMax(self, NULL);
 
@@ -1129,8 +1133,10 @@ LegendAttributesObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (LegendAttributesObject_SetDrawLabels(self, tuple) != NULL);
     else if(strcmp(name, "drawTitle") == 0)
         retval = (LegendAttributesObject_SetDrawTitle(self, tuple) != NULL);
-    else if(strcmp(name, "customTitleEnabled") == 0)
-        retval = (LegendAttributesObject_SetCustomTitleEnabled(self, tuple) != NULL);
+    else if(strcmp(name, "useCustomTitle") == 0)
+        retval = (LegendAttributesObject_SetUseCustomTitle(self, tuple) != NULL);
+    else if(strcmp(name, "customTitle") == 0)
+        retval = (LegendAttributesObject_SetCustomTitle(self, tuple) != NULL);
     else if(strcmp(name, "drawMinMax") == 0)
         retval = (LegendAttributesObject_SetDrawMinMax(self, tuple) != NULL);
     else if(strcmp(name, "orientation") == 0)
@@ -1160,7 +1166,7 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
     else
         fprintf(fp, "active = 0\n");
 
-    fprintf(fp, "managePosition = %d\n", 
+    fprintf(fp, "managePosition = %d\n",
         GetBool(obj->data, LEGEND_MANAGE_POSITION)?1:0);
 
 /*CUSTOM*/
@@ -1177,7 +1183,7 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
     else
         fprintf(fp, "useForegroundForTextColor = 0\n");
 
-    fprintf(fp, "drawBoundingBox = %d\n", 
+    fprintf(fp, "drawBoundingBox = %d\n",
         GetBool(obj->data, LEGEND_DRAW_BOX)?1:0);
     const unsigned char *bboxColor = obj->data->GetColor1().GetColor();
     fprintf(fp, "boundingBoxColor = (%d, %d, %d, %d)\n", int(bboxColor[0]), int(bboxColor[1]), int(bboxColor[2]), int(bboxColor[3]));
@@ -1205,44 +1211,44 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
     else
         fprintf(fp, "fontShadow = 0\n");
 
-    fprintf(fp, "fontHeight = %g\n", 
+    fprintf(fp, "fontHeight = %g\n",
             obj->data->GetOptions().GetEntry("fontHeight")->AsDouble());
 
     const char *drawLabelNames = "None, Values, Labels, Both";
     if (!GetBool(obj->data, LEGEND_DRAW_VALUES))
       if (!GetBool(obj->data, LEGEND_DRAW_LABELS))
           fprintf(fp, "drawLabels = None # %s\n", drawLabelNames);
-      else 
+      else
           fprintf(fp, "drawLabels = Labels # %s\n", drawLabelNames);
-    else 
+    else
       if (!GetBool(obj->data, LEGEND_DRAW_LABELS))
           fprintf(fp, "drawLabels = Values # %s\n", drawLabelNames);
-      else 
+      else
           fprintf(fp, "drawLabels = Both # %s\n", drawLabelNames);
 
-    fprintf(fp, "drawTitle = %d\n", 
+    fprintf(fp, "drawTitle = %d\n",
         GetBool(obj->data, LEGEND_DRAW_TITLE)?1:0);
 
-    fprintf(fp, "drawMinMax = %d\n", 
+    fprintf(fp, "drawMinMax = %d\n",
         GetBool(obj->data, LEGEND_DRAW_MINMAX)?1:0);
 
     const char *orientationNames = "VerticalRight, VerticalLeft, HorizontalTop, HorizontalBottom";
     if (!GetBool(obj->data, LEGEND_ORIENTATION0))
         if (!GetBool(obj->data, LEGEND_ORIENTATION1))
-            fprintf(fp, "orientation = VerticalRight  # %s\n", orientationNames); 
+            fprintf(fp, "orientation = VerticalRight  # %s\n", orientationNames);
         else
-            fprintf(fp, "orientation = VerticalLeft  # %s\n", orientationNames); 
+            fprintf(fp, "orientation = VerticalLeft  # %s\n", orientationNames);
     else
         if (!GetBool(obj->data, LEGEND_ORIENTATION1))
-            fprintf(fp, "orientation = HorizontalTop  # %s\n", orientationNames); 
+            fprintf(fp, "orientation = HorizontalTop  # %s\n", orientationNames);
         else
-            fprintf(fp, "orientation = HorizontalBottom  # %s\n", orientationNames); 
+            fprintf(fp, "orientation = HorizontalBottom  # %s\n", orientationNames);
 
-    fprintf(fp, "controlTicks = %d\n", 
+    fprintf(fp, "controlTicks = %d\n",
             GetBool(obj->data, LEGEND_CONTROL_TICKS)?1:0);
-    fprintf(fp, "numTicks = %d\n", 
+    fprintf(fp, "numTicks = %d\n",
             obj->data->GetOptions().GetEntry("numTicks")->AsInt());
-    fprintf(fp, "minMaxInclusive = %d\n", 
+    fprintf(fp, "minMaxInclusive = %d\n",
             GetBool(obj->data, LEGEND_MINMAX_INCLUSIVE)?1:0);
 
     if (obj->data->GetOptions().GetEntry("legendType")->AsInt() == LEGEND_TYPE_VARIABLE)
@@ -1289,8 +1295,8 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
 static PyObject *
 PyLegendAttributesObject_StringRepresentation(const AnnotationObject *atts)
 {
-    std::string str; 
-    char tmpStr[1000]; 
+    std::string str;
+    char tmpStr[1000];
 
     if(atts->GetActive())
         snprintf(tmpStr, 1000, "active = 1\n");
@@ -1298,7 +1304,7 @@ PyLegendAttributesObject_StringRepresentation(const AnnotationObject *atts)
         snprintf(tmpStr, 1000, "active = 0\n");
     str += tmpStr;
 
-    snprintf(tmpStr, 1000, "managePosition = %d\n", 
+    snprintf(tmpStr, 1000, "managePosition = %d\n",
         GetBool(atts, LEGEND_MANAGE_POSITION)?1:0);
     str += tmpStr;
 
@@ -1321,7 +1327,7 @@ PyLegendAttributesObject_StringRepresentation(const AnnotationObject *atts)
         snprintf(tmpStr, 1000, "useForegroundForTextColor = 0\n");
     str += tmpStr;
 
-    snprintf(tmpStr, 1000, "drawBoundingBox = %d\n", 
+    snprintf(tmpStr, 1000, "drawBoundingBox = %d\n",
         GetBool(atts, LEGEND_DRAW_BOX)?1:0);
     str += tmpStr;
     const unsigned char *bboxColor = atts->GetColor1().GetColor();
@@ -1356,7 +1362,7 @@ PyLegendAttributesObject_StringRepresentation(const AnnotationObject *atts)
         snprintf(tmpStr, 1000, "fontShadow = 0\n");
     str += tmpStr;
 
-    snprintf(tmpStr, 1000, "fontHeight = %g\n", 
+    snprintf(tmpStr, 1000, "fontHeight = %g\n",
             atts->GetOptions().GetEntry("fontHeight")->AsDouble());
     str += tmpStr;
 
@@ -1364,43 +1370,43 @@ PyLegendAttributesObject_StringRepresentation(const AnnotationObject *atts)
     if (!GetBool(atts, LEGEND_DRAW_VALUES))
       if (!GetBool(atts, LEGEND_DRAW_LABELS))
           snprintf(tmpStr, 1000, "drawLabels = None # %s\n", drawLabelNames);
-      else 
+      else
           snprintf(tmpStr, 1000, "drawLabels = Labels # %s\n", drawLabelNames);
-    else 
+    else
       if (!GetBool(atts, LEGEND_DRAW_LABELS))
           snprintf(tmpStr, 1000, "drawLabels = Values # %s\n", drawLabelNames);
-      else 
+      else
           snprintf(tmpStr, 1000, "drawLabels = Both # %s\n", drawLabelNames);
     str += tmpStr;
 
-    snprintf(tmpStr, 1000, "drawTitle = %d\n", 
+    snprintf(tmpStr, 1000, "drawTitle = %d\n",
         GetBool(atts, LEGEND_DRAW_TITLE)?1:0);
     str += tmpStr;
 
-    snprintf(tmpStr, 1000, "drawMinMax = %d\n", 
+    snprintf(tmpStr, 1000, "drawMinMax = %d\n",
         GetBool(atts, LEGEND_DRAW_MINMAX)?1:0);
     str += tmpStr;
 
     const char *orientationNames = "VerticalRight, VerticalLeft, HorizontalTop, HorizontalBottom";
     if (!GetBool(atts, LEGEND_ORIENTATION0))
         if (!GetBool(atts, LEGEND_ORIENTATION1))
-            snprintf(tmpStr, 1000, "orientation = VerticalRight  # %s\n", orientationNames); 
+            snprintf(tmpStr, 1000, "orientation = VerticalRight  # %s\n", orientationNames);
         else
-            snprintf(tmpStr, 1000, "orientation = VerticalLeft  # %s\n", orientationNames); 
+            snprintf(tmpStr, 1000, "orientation = VerticalLeft  # %s\n", orientationNames);
     else
         if (!GetBool(atts, LEGEND_ORIENTATION1))
-            snprintf(tmpStr, 1000, "orientation = HorizontalTop  # %s\n", orientationNames); 
+            snprintf(tmpStr, 1000, "orientation = HorizontalTop  # %s\n", orientationNames);
         else
-            snprintf(tmpStr, 1000, "orientation = HorizontalBottom  # %s\n", orientationNames); 
+            snprintf(tmpStr, 1000, "orientation = HorizontalBottom  # %s\n", orientationNames);
     str += tmpStr;
 
-    snprintf(tmpStr, 1000, "controlTicks = %d\n", 
+    snprintf(tmpStr, 1000, "controlTicks = %d\n",
             GetBool(atts, LEGEND_CONTROL_TICKS)?1:0);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "numTicks = %d\n", 
+    snprintf(tmpStr, 1000, "numTicks = %d\n",
             atts->GetOptions().GetEntry("numTicks")->AsInt());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "minMaxInclusive = %d\n", 
+    snprintf(tmpStr, 1000, "minMaxInclusive = %d\n",
             GetBool(atts, LEGEND_MINMAX_INCLUSIVE)?1:0);
     str += tmpStr;
 
@@ -1511,8 +1517,8 @@ VISIT_PY_TYPE_OBJ(LegendAttributesObjectType,
 static PyObject *
 LegendAttributesObject_richcompare(PyObject *self, PyObject *other, int op)
 {
-    // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
+    // only compare against the same type
+    if ( Py_TYPE(self) == Py_TYPE(other)
          && Py_TYPE(self) == &LegendAttributesObjectType)
     {
         Py_INCREF(Py_NotImplemented);
