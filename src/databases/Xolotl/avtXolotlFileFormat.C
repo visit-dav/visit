@@ -1486,15 +1486,26 @@ avtXolotlFileFormat::findInVector(const std::vector<T>  & vecOfElements, const T
 //  updated the indexing scheme to support phase-space, which may have
 //  variable numbers of phase-space vars present
 //
+//  Kathleen Biagas, Fri Jun 4, 2021
+//  Switch from strsep to strtok_s/_r since strsep isn't available on Windows.
+//
 // ****************************************************************************
+
+#ifdef _WIN32
+#define STRTOK strtok_s
+#else
+#define STRTOK strtok_r
+#endif
+
 void
 avtXolotlFileFormat::GetPositionsOfVariableFromCompositionTable(int *variableIndexes, const char *vn)
 {
-    char *token, *str, *tofree;
+    char *token, *nextToken=NULL, *str, *tofree;
     tofree = str = strdup(vn);
 
     int currentVariableNumber = 0;
-    while ((token = strsep(&str, "/")))
+	token = STRTOK(str, "/", &nextToken);
+    while (token)
     {
         if (strncmp(token, "Helium", strlen("Helium")) == 0)
         {
@@ -1552,6 +1563,8 @@ avtXolotlFileFormat::GetPositionsOfVariableFromCompositionTable(int *variableInd
         }
 
         currentVariableNumber++;
+
+        token=STRTOK(NULL, "/", &nextToken);
     }
 
     // If we are in 3 dimensions we need the array indexs for our unused variables
