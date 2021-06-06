@@ -316,14 +316,14 @@ PyCylinderAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if (obj == PyExc_NameError)
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute: '%s'", name);
     else if (obj == PyExc_TypeError)
         obj = PyErr_Format(obj, "Bad type for attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Bad index for attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Bad value for attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Bad length/size for attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
