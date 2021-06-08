@@ -237,7 +237,7 @@ ModelFitAtts_SetVars(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->GetVars();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -252,7 +252,7 @@ ModelFitAtts_SetVars(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -263,7 +263,7 @@ ModelFitAtts_SetVars(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the Vars in the object as modified.
     obj->data->SelectVars();
@@ -292,7 +292,7 @@ ModelFitAtts_SetNumVars(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetNumVars();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -307,7 +307,7 @@ ModelFitAtts_SetNumVars(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -326,7 +326,7 @@ ModelFitAtts_SetNumVars(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the numVars in the object as modified.
     obj->data->SelectNumVars();
@@ -355,7 +355,7 @@ ModelFitAtts_SetTuples(PyObject *self, PyObject *args)
     doubleVector  &vec = obj->data->GetTuples();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -370,7 +370,7 @@ ModelFitAtts_SetTuples(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = PyLong_AsDouble(item);
             else
-                vec[i] = 0.;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -389,7 +389,7 @@ ModelFitAtts_SetTuples(PyObject *self, PyObject *args)
         vec[0] = PyLong_AsDouble(tuple);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the Tuples in the object as modified.
     obj->data->SelectTuples();
@@ -418,7 +418,7 @@ ModelFitAtts_SetStatTuples(PyObject *self, PyObject *args)
     unsignedCharVector  &vec = obj->data->GetStatTuples();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -434,7 +434,7 @@ ModelFitAtts_SetStatTuples(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 c = int(PyLong_AsDouble(item));
             else
-                c = 0;
+                return PyExc_TypeError;
 
             if(c < 0) c = 0;
             if(c > 255) c = 255;
@@ -466,7 +466,7 @@ ModelFitAtts_SetStatTuples(PyObject *self, PyObject *args)
         vec[0] = (unsigned char)(c);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the StatTuples in the object as modified.
     obj->data->SelectStatTuples();
@@ -495,7 +495,7 @@ ModelFitAtts_SetNumTups(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetNumTups();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -510,7 +510,7 @@ ModelFitAtts_SetNumTups(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -529,7 +529,7 @@ ModelFitAtts_SetNumTups(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the numTups in the object as modified.
     obj->data->SelectNumTups();
@@ -558,7 +558,7 @@ ModelFitAtts_SetThold(PyObject *self, PyObject *args)
     doubleVector  &vec = obj->data->GetThold();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -573,7 +573,7 @@ ModelFitAtts_SetThold(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = PyLong_AsDouble(item);
             else
-                vec[i] = 0.;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -592,7 +592,7 @@ ModelFitAtts_SetThold(PyObject *self, PyObject *args)
         vec[0] = PyLong_AsDouble(tuple);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the thold in the object as modified.
     obj->data->SelectThold();
@@ -621,7 +621,7 @@ ModelFitAtts_SetSelectionType(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetSelectionType();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -636,7 +636,7 @@ ModelFitAtts_SetSelectionType(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -655,7 +655,7 @@ ModelFitAtts_SetSelectionType(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the selectionType in the object as modified.
     obj->data->SelectSelectionType();
@@ -684,7 +684,7 @@ ModelFitAtts_SetDistanceType(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetDistanceType();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -699,7 +699,7 @@ ModelFitAtts_SetDistanceType(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -718,7 +718,7 @@ ModelFitAtts_SetDistanceType(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the distanceType in the object as modified.
     obj->data->SelectDistanceType();
@@ -747,7 +747,7 @@ ModelFitAtts_SetInputSpace(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetInputSpace();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -762,7 +762,7 @@ ModelFitAtts_SetInputSpace(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -781,7 +781,7 @@ ModelFitAtts_SetInputSpace(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the inputSpace in the object as modified.
     obj->data->SelectInputSpace();
@@ -810,7 +810,7 @@ ModelFitAtts_SetModelNames(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->GetModelNames();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -825,7 +825,7 @@ ModelFitAtts_SetModelNames(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -836,7 +836,7 @@ ModelFitAtts_SetModelNames(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the modelNames in the object as modified.
     obj->data->SelectModelNames();
@@ -865,7 +865,7 @@ ModelFitAtts_SetModelNums(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetModelNums();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -880,7 +880,7 @@ ModelFitAtts_SetModelNums(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -899,7 +899,7 @@ ModelFitAtts_SetModelNums(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the modelNums in the object as modified.
     obj->data->SelectModelNums();
@@ -1001,7 +1001,7 @@ PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "Vars") == 0)
         obj = ModelFitAtts_SetVars(self, tuple);
@@ -1031,7 +1031,14 @@ PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args)
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
