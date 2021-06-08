@@ -226,7 +226,7 @@ CreateBondsAttributes_SetAtomicNumber1(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetAtomicNumber1();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -241,7 +241,7 @@ CreateBondsAttributes_SetAtomicNumber1(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -260,7 +260,7 @@ CreateBondsAttributes_SetAtomicNumber1(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the atomicNumber1 in the object as modified.
     obj->data->SelectAtomicNumber1();
@@ -289,7 +289,7 @@ CreateBondsAttributes_SetAtomicNumber2(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetAtomicNumber2();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -304,7 +304,7 @@ CreateBondsAttributes_SetAtomicNumber2(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -323,7 +323,7 @@ CreateBondsAttributes_SetAtomicNumber2(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the atomicNumber2 in the object as modified.
     obj->data->SelectAtomicNumber2();
@@ -352,7 +352,7 @@ CreateBondsAttributes_SetMinDist(PyObject *self, PyObject *args)
     doubleVector  &vec = obj->data->GetMinDist();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -367,7 +367,7 @@ CreateBondsAttributes_SetMinDist(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = PyLong_AsDouble(item);
             else
-                vec[i] = 0.;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -386,7 +386,7 @@ CreateBondsAttributes_SetMinDist(PyObject *self, PyObject *args)
         vec[0] = PyLong_AsDouble(tuple);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the minDist in the object as modified.
     obj->data->SelectMinDist();
@@ -415,7 +415,7 @@ CreateBondsAttributes_SetMaxDist(PyObject *self, PyObject *args)
     doubleVector  &vec = obj->data->GetMaxDist();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -430,7 +430,7 @@ CreateBondsAttributes_SetMaxDist(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = PyLong_AsDouble(item);
             else
-                vec[i] = 0.;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -449,7 +449,7 @@ CreateBondsAttributes_SetMaxDist(PyObject *self, PyObject *args)
         vec[0] = PyLong_AsDouble(tuple);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the maxDist in the object as modified.
     obj->data->SelectMaxDist();
@@ -624,12 +624,12 @@ CreateBondsAttributes_SetXVector(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -642,11 +642,11 @@ CreateBondsAttributes_SetXVector(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the xVector in the object as modified.
@@ -678,12 +678,12 @@ CreateBondsAttributes_SetYVector(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -696,11 +696,11 @@ CreateBondsAttributes_SetYVector(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the yVector in the object as modified.
@@ -732,12 +732,12 @@ CreateBondsAttributes_SetZVector(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -750,11 +750,11 @@ CreateBondsAttributes_SetZVector(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the zVector in the object as modified.
@@ -869,7 +869,7 @@ PyCreateBondsAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "elementVariable") == 0)
         obj = CreateBondsAttributes_SetElementVariable(self, tuple);
@@ -905,7 +905,14 @@ PyCreateBondsAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

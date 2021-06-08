@@ -281,14 +281,14 @@ MeshAttributes_SetMeshColor(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return NULL;
+                    return PyExc_TypeError;
 
                 if(!PyTuple_Check(tuple))
-                    return NULL;
+                    return PyExc_TypeError;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return NULL;
+                    return PyExc_ValueError;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -299,7 +299,7 @@ MeshAttributes_SetMeshColor(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return NULL;
+                        return PyExc_TypeError;
                 }
             }
         }
@@ -481,14 +481,14 @@ MeshAttributes_SetOpaqueColor(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return NULL;
+                    return PyExc_TypeError;
 
                 if(!PyTuple_Check(tuple))
-                    return NULL;
+                    return PyExc_TypeError;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return NULL;
+                    return PyExc_ValueError;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -499,7 +499,7 @@ MeshAttributes_SetOpaqueColor(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return NULL;
+                        return PyExc_TypeError;
                 }
             }
         }
@@ -903,7 +903,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "legendFlag") == 0)
         obj = MeshAttributes_SetLegendFlag(self, tuple);
@@ -983,7 +983,14 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

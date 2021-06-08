@@ -207,12 +207,12 @@ View3DAttributes_SetViewNormal(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -225,11 +225,11 @@ View3DAttributes_SetViewNormal(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the viewNormal in the object as modified.
@@ -261,12 +261,12 @@ View3DAttributes_SetFocus(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -279,11 +279,11 @@ View3DAttributes_SetFocus(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the focus in the object as modified.
@@ -315,12 +315,12 @@ View3DAttributes_SetViewUp(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -333,11 +333,11 @@ View3DAttributes_SetViewUp(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the viewUp in the object as modified.
@@ -465,12 +465,12 @@ View3DAttributes_SetImagePan(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 2)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -483,11 +483,11 @@ View3DAttributes_SetImagePan(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the imagePan in the object as modified.
@@ -615,12 +615,12 @@ View3DAttributes_SetCenterOfRotation(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -633,11 +633,11 @@ View3DAttributes_SetCenterOfRotation(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the centerOfRotation in the object as modified.
@@ -693,12 +693,12 @@ View3DAttributes_SetAxis3DScales(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -711,11 +711,11 @@ View3DAttributes_SetAxis3DScales(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the axis3DScales in the object as modified.
@@ -747,12 +747,12 @@ View3DAttributes_SetShear(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -765,11 +765,11 @@ View3DAttributes_SetShear(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the shear in the object as modified.
@@ -877,8 +877,7 @@ View3DAttributes_Add(PyObject *v, PyObject *w)
     bool arg2isObject = PyView3DAttributes_Check(w);
     if(!arg1isObject || !arg2isObject)
     {
-        PyErr_SetString(PyExc_TypeError,
-                    "View3DAttributes_add: One or more arguments are not View3DAttributes!");
+        cerr << "View3DAttributes_add: One or more arguments are not View3DAttributes!" << endl;
         return NULL;
     }
 
@@ -935,9 +934,6 @@ View3DAttributes_Mul(PyObject *v, PyObject *w)
 
     if(arg1isObject && arg2isObject)
     {
-        PyErr_SetString(PyExc_TypeError,
-                    "View3DAttributes_mult: Both  arguments are View3DAttributes!"
-                    " Expected one View3DAttributes object and one numeric argument.");
         return NULL;
     }
     else
@@ -963,10 +959,7 @@ View3DAttributes_Mul(PyObject *v, PyObject *w)
             val = PyLong_AsDouble(num);
         else
         {
-            PyErr_SetString(PyExc_TypeError,
-                        "View3DAttributes_mult: Expected numeric argument is not a number!"
-                        " Expected one View3DAttributes object and one numeric argument.");
-            return NULL;
+            cerr << "MUL: Expected numeric argument is not a number!" << endl;
         }
 
         c->GetViewNormal()[0] = a->GetViewNormal()[0] * val;
@@ -1109,7 +1102,7 @@ PyView3DAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "viewNormal") == 0)
         obj = View3DAttributes_SetViewNormal(self, tuple);
@@ -1151,7 +1144,14 @@ PyView3DAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -1170,173 +1170,6 @@ View3DAttributes_str(PyObject *v)
     return PyString_FromString(PyView3DAttributes_ToString(obj->data,"").c_str());
 }
 
-
-/*
-PyNumberMethods struct differs between Python 2 and Python 3
-
-// Good ref on python 2 and 3 changes for PyNumberMethods
-// https://py3c.readthedocs.io/en/latest/ext-types.html#pynumbermethods
-
-// PYTHON 2 STRUCT FOR PyNumberMethods
-
-typedef struct {
-     binaryfunc nb_add;
-     binaryfunc nb_subtract;
-     binaryfunc nb_multiply;
-     binaryfunc nb_divide;  // MISSING IN PYTHON 3
-     binaryfunc nb_remainder;
-     binaryfunc nb_divmod;
-     ternaryfunc nb_power;
-     unaryfunc nb_negative;
-     unaryfunc nb_positive;
-     unaryfunc nb_absolute;
-     inquiry nb_nonzero;       // Used by PyObject_IsTrue 
-     unaryfunc nb_invert;
-     binaryfunc nb_lshift;
-     binaryfunc nb_rshift;
-     binaryfunc nb_and;
-     binaryfunc nb_xor;
-     binaryfunc nb_or;
-     coercion nb_coerce;     // MISSING IN PYTHON 3   // Used by the coerce() function 
-     unaryfunc nb_int;
-     unaryfunc nb_long;   // MUST BE NULL IN PYTHON 3
-     unaryfunc nb_float;
-     unaryfunc nb_oct;    // MISSING IN PYTHON 3
-     unaryfunc nb_hex;    // MISSING IN PYTHON 3
-
-     // Added in release 2.0 
-     binaryfunc nb_inplace_add;
-     binaryfunc nb_inplace_subtract;
-     binaryfunc nb_inplace_multiply;
-     binaryfunc nb_inplace_divide;  // MISSING IN PYTHON 3
-     binaryfunc nb_inplace_remainder;
-     ternaryfunc nb_inplace_power;
-     binaryfunc nb_inplace_lshift;
-     binaryfunc nb_inplace_rshift;
-     binaryfunc nb_inplace_and;
-     binaryfunc nb_inplace_xor;
-     binaryfunc nb_inplace_or;
-
-     // Added in release 2.2 
-     binaryfunc nb_floor_divide;
-     binaryfunc nb_true_divide;
-     binaryfunc nb_inplace_floor_divide;
-     binaryfunc nb_inplace_true_divide;
-
-     // Added in release 2.5 
-     unaryfunc nb_index;
-} PyNumberMethods;
-
-// PYTHON 3 STRUCT FOR PyNumberMethods
-
-typedef struct {
-     binaryfunc nb_add;
-     binaryfunc nb_subtract;
-     binaryfunc nb_multiply;
-     binaryfunc nb_remainder;
-     binaryfunc nb_divmod;
-     ternaryfunc nb_power;
-     unaryfunc nb_negative;
-     unaryfunc nb_positive;
-     unaryfunc nb_absolute;
-     inquiry nb_bool;
-     unaryfunc nb_invert;
-     binaryfunc nb_lshift;
-     binaryfunc nb_rshift;
-     binaryfunc nb_and;
-     binaryfunc nb_xor;
-     binaryfunc nb_or;
-     unaryfunc nb_int;
-     void *nb_reserved;
-     unaryfunc nb_float;
-
-     binaryfunc nb_inplace_add;
-     binaryfunc nb_inplace_subtract;
-     binaryfunc nb_inplace_multiply;
-     binaryfunc nb_inplace_remainder;
-     ternaryfunc nb_inplace_power;
-     binaryfunc nb_inplace_lshift;
-     binaryfunc nb_inplace_rshift;
-     binaryfunc nb_inplace_and;
-     binaryfunc nb_inplace_xor;
-     binaryfunc nb_inplace_or;
-
-     binaryfunc nb_floor_divide;
-     binaryfunc nb_true_divide;
-     binaryfunc nb_inplace_floor_divide;
-     binaryfunc nb_inplace_true_divide;
-
-     unaryfunc nb_index;
-
-     binaryfunc nb_matrix_multiply; // MISSING IN PYTHON 2
-     binaryfunc nb_inplace_matrix_multiply; // MISSING IN PYTHON 2
-} PyNumberMethods;
-
-*/
-
-//
-// The type description structure
-//
-static PyNumberMethods View3DAttributes_as_number = {
-    (binaryfunc)View3DAttributes_Add, /*nb_add*/
-    (binaryfunc)0, /*nb_subtract*/
-    (binaryfunc)View3DAttributes_Mul, /*nb_multiply*/
-#if !defined(IS_PY3K)
-// PYTHON 2 ONLY
-    (binaryfunc)0,     /*nb_divide*/ // MISSING IN PYTHON 3
-#endif
-    (binaryfunc)0,     /*nb_remainder*/
-    (binaryfunc)0,     /*nb_divmod*/
-    (ternaryfunc)0,    /*nb_power*/
-    (unaryfunc)0,     /*nb_negative*/
-    (unaryfunc)0,     /*nb_positive*/
-    (unaryfunc)0,     /*nb_absolute*/
-    (inquiry)0,       /*nb_bool*/
-    (unaryfunc)0,     /*nb_invert*/
-    (binaryfunc)0,    /*nb_lshift*/
-    (binaryfunc)0,    /*nb_rshift*/
-    (binaryfunc)0,    /*nb_and*/
-    (binaryfunc)0,    /*nb_xor*/
-    (binaryfunc)0,    /*nb_or*/
-#if !defined(IS_PY3K)
-// PYTHON 2 ONLY
-    (coercion)0,      /*nb_coerce*/ // MISSING IN PYTHON 3
-#endif
-    (unaryfunc)0,     /*nb_int*/
-    0,                /*nb_reserved*/
-    (unaryfunc)0,     /*nb_float*/
-#if !defined(IS_PY3K)
-// PYTHON 2 ONLY
-    (unaryfunc)0,  /*nb_oct*/    // MISSING IN PYTHON 3
-// PYTHON 2 ONLY
-    (unaryfunc)0, /*nb_hex */    // MISSING IN PYTHON 3
-#endif
-    0,            /*nb_inplace_add*/
-    0,            /*nb_inplace_subtract*/
-    0,            /*nb_inplace_multiply*/
-#if !defined(IS_PY3K)
-// PYTHON 2 ONLY
-    0,            /* nb_inplace_divide */ // MISSING IN PYTHON 3
-#endif
-    0,            /*nb_inplace_remainder*/
-    0,            /*nb_inplace_power*/
-    0,            /*nb_inplace_lshift*/
-    0,            /*nb_inplace_rshift*/
-    0,            /*nb_inplace_and*/
-    0,            /*nb_inplace_xor*/
-    0,            /*nb_inplace_or*/
-    (binaryfunc)0, /*nb_floor_divide;*/
-    (binaryfunc)0, /*nb_true_divide;*/
-    (binaryfunc)0, /*nb_inplace_floor_divide;*/
-    (binaryfunc)0, /*nb_inplace_true_divide;*/
-    (unaryfunc)0, /*nb_index;*/
-#if defined(IS_PY3K)
-// PYTHON3 ONLY
-    (binaryfunc)0, /*nb_matrix_multiply;*/
-    (binaryfunc)0 /*nb_inplace_matrix_multiply;*/
-#endif
-};
-
 //
 // The doc string for the class.
 //
@@ -1347,9 +1180,8 @@ static char *View3DAttributes_Purpose = "This class contains the 3d view attribu
 #endif
 
 //
-// The type description structure
+// Python Type Struct Def Macro from Py2and3Support.h
 //
-
 //         VISIT_PY_TYPE_OBJ( VPY_TYPE,
 //                            VPY_NAME,
 //                            VPY_OBJECT,
@@ -1362,25 +1194,31 @@ static char *View3DAttributes_Purpose = "This class contains the 3d view attribu
 //                            VPY_RICHCOMP,
 //                            VPY_AS_NUMBER)
 
-VISIT_PY_TYPE_OBJ(View3DAttributesType,          \
-                  "View3DAttributes",            \
-                  View3DAttributesObject,        \
-                  View3DAttributes_dealloc,      \
-                  View3DAttributes_print,        \
-                  PyView3DAttributes_getattr,    \
-                  PyView3DAttributes_setattr,    \
-                  View3DAttributes_str,          \
-                  View3DAttributes_Purpose,      \
-                  View3DAttributes_richcompare,  \
-                  &View3DAttributes_as_number);
+//
+// The type description structure
+//
 
+VISIT_PY_TYPE_OBJ(View3DAttributesType,         \
+                  "View3DAttributes",           \
+                  View3DAttributesObject,       \
+                  View3DAttributes_dealloc,     \
+                  View3DAttributes_print,       \
+                  PyView3DAttributes_getattr,   \
+                  PyView3DAttributes_setattr,   \
+                  View3DAttributes_str,         \
+                  View3DAttributes_Purpose,     \
+                  View3DAttributes_richcompare, \
+                  0); /* as_number*/
 
+//
+// Helper function for comparing.
+//
 static PyObject *
 View3DAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &View3DAttributesType)
+    if ( Py_TYPE(self) != &View3DAttributesType
+         || Py_TYPE(other) != &View3DAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

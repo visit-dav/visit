@@ -183,7 +183,7 @@ NameschemeAttributes_SetExternalArrayNames(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->GetExternalArrayNames();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -198,7 +198,7 @@ NameschemeAttributes_SetExternalArrayNames(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -209,7 +209,7 @@ NameschemeAttributes_SetExternalArrayNames(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the externalArrayNames in the object as modified.
     obj->data->SelectExternalArrayNames();
@@ -238,7 +238,7 @@ NameschemeAttributes_SetExternalArrayOffsets(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetExternalArrayOffsets();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -253,7 +253,7 @@ NameschemeAttributes_SetExternalArrayOffsets(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -272,7 +272,7 @@ NameschemeAttributes_SetExternalArrayOffsets(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the externalArrayOffsets in the object as modified.
     obj->data->SelectExternalArrayOffsets();
@@ -301,7 +301,7 @@ NameschemeAttributes_SetExternalArrayData(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetExternalArrayData();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -316,7 +316,7 @@ NameschemeAttributes_SetExternalArrayData(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -335,7 +335,7 @@ NameschemeAttributes_SetExternalArrayData(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the externalArrayData in the object as modified.
     obj->data->SelectExternalArrayData();
@@ -364,7 +364,7 @@ NameschemeAttributes_SetAllExplicitNames(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->GetAllExplicitNames();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -379,7 +379,7 @@ NameschemeAttributes_SetAllExplicitNames(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -390,7 +390,7 @@ NameschemeAttributes_SetAllExplicitNames(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the allExplicitNames in the object as modified.
     obj->data->SelectAllExplicitNames();
@@ -419,7 +419,7 @@ NameschemeAttributes_SetExplicitIds(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetExplicitIds();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -434,7 +434,7 @@ NameschemeAttributes_SetExplicitIds(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -453,7 +453,7 @@ NameschemeAttributes_SetExplicitIds(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the explicitIds in the object as modified.
     obj->data->SelectExplicitIds();
@@ -482,7 +482,7 @@ NameschemeAttributes_SetExplicitNames(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->GetExplicitNames();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -497,7 +497,7 @@ NameschemeAttributes_SetExplicitNames(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -508,7 +508,7 @@ NameschemeAttributes_SetExplicitNames(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the explicitNames in the object as modified.
     obj->data->SelectExplicitNames();
@@ -594,7 +594,7 @@ PyNameschemeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "namescheme") == 0)
         obj = NameschemeAttributes_SetNamescheme(self, tuple);
@@ -616,7 +616,14 @@ PyNameschemeAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

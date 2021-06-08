@@ -112,7 +112,7 @@ ViewerClientInformationElement_SetRawData(PyObject *self, PyObject *args)
     unsignedCharVector  &vec = obj->data->GetRawData();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -128,7 +128,7 @@ ViewerClientInformationElement_SetRawData(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 c = int(PyLong_AsDouble(item));
             else
-                c = 0;
+                return PyExc_TypeError;
 
             if(c < 0) c = 0;
             if(c > 255) c = 255;
@@ -160,7 +160,7 @@ ViewerClientInformationElement_SetRawData(PyObject *self, PyObject *args)
         vec[0] = (unsigned char)(c);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the rawData in the object as modified.
     obj->data->SelectRawData();
@@ -310,7 +310,7 @@ PyViewerClientInformationElement_setattr(PyObject *self, char *name, PyObject *a
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "data") == 0)
         obj = ViewerClientInformationElement_SetData(self, tuple);
@@ -328,7 +328,14 @@ PyViewerClientInformationElement_setattr(PyObject *self, char *name, PyObject *a
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

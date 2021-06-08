@@ -169,7 +169,7 @@ IsosurfaceAttributes_SetContourValue(PyObject *self, PyObject *args)
     doubleVector  &vec = obj->data->GetContourValue();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -184,7 +184,7 @@ IsosurfaceAttributes_SetContourValue(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = PyLong_AsDouble(item);
             else
-                vec[i] = 0.;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -203,7 +203,7 @@ IsosurfaceAttributes_SetContourValue(PyObject *self, PyObject *args)
         vec[0] = PyLong_AsDouble(tuple);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the contourValue in the object as modified.
     obj->data->SelectContourValue();
@@ -232,7 +232,7 @@ IsosurfaceAttributes_SetContourPercent(PyObject *self, PyObject *args)
     doubleVector  &vec = obj->data->GetContourPercent();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -247,7 +247,7 @@ IsosurfaceAttributes_SetContourPercent(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = PyLong_AsDouble(item);
             else
-                vec[i] = 0.;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -266,7 +266,7 @@ IsosurfaceAttributes_SetContourPercent(PyObject *self, PyObject *args)
         vec[0] = PyLong_AsDouble(tuple);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the contourPercent in the object as modified.
     obj->data->SelectContourPercent();
@@ -562,7 +562,7 @@ PyIsosurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "contourNLevels") == 0)
         obj = IsosurfaceAttributes_SetContourNLevels(self, tuple);
@@ -590,7 +590,14 @@ PyIsosurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

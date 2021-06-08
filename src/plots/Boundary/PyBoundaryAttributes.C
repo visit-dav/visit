@@ -285,14 +285,14 @@ BoundaryAttributes_SetSingleColor(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return NULL;
+                    return PyExc_TypeError;
 
                 if(!PyTuple_Check(tuple))
-                    return NULL;
+                    return PyExc_TypeError;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return NULL;
+                    return PyExc_ValueError;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -303,7 +303,7 @@ BoundaryAttributes_SetSingleColor(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return NULL;
+                        return PyExc_TypeError;
                 }
             }
         }
@@ -373,12 +373,11 @@ BoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the tuple is the right size.
                             if(PyTuple_Size(pyobj) < cL.GetNumColors())
-                                return NULL;
+                                return PyExc_ValueError;
 
                             // Make sure that the tuple is the right size.
-                            bool badInput = false;
                             int *C = new int[4 * cL.GetNumColors()];
-                            for(int i = 0; i < PyTuple_Size(pyobj) && !badInput; ++i)
+                            for(int i = 0; i < PyTuple_Size(pyobj); ++i)
                             {
                                 PyObject *item = PyTuple_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
@@ -388,7 +387,7 @@ BoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                     C[i*4+1] = 0;
                                     C[i*4+2] = 0;
                                     C[i*4+3] = 255;
-                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)
+                                    for(int j = 0; j < PyTuple_Size(item); ++j)
                                     {
                                         PyObject *colorcomp = PyTuple_GET_ITEM(item, j);
                                         if(PyInt_Check(colorcomp))
@@ -396,17 +395,17 @@ BoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else if(PyFloat_Check(colorcomp))
                                            C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));
                                         else
-                                           badInput = true;
+                                        {
+                                           delete [] C;
+                                           return PyExc_TypeError;
+                                        }
                                     }
                                 }
                                 else
-                                    badInput = true;
-                            }
-
-                            if(badInput)
-                            {
-                                delete [] C;
-                                return NULL;
+                                {
+                                    delete [] C;
+                                    return PyExc_ValueError;
+                                }
                             }
 
                             for(int i = 0; i < cL.GetNumColors(); ++i)
@@ -417,12 +416,11 @@ BoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the list is the right size.
                             if(PyList_Size(pyobj) < cL.GetNumColors())
-                                return NULL;
+                                return PyExc_ValueError;
 
                             // Make sure that the tuple is the right size.
-                            bool badInput = false;
                             int *C = new int[4 * cL.GetNumColors()];
-                            for(int i = 0; i < PyList_Size(pyobj) && !badInput; ++i)
+                            for(int i = 0; i < PyList_Size(pyobj); ++i)
                             {
                                 PyObject *item = PyList_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
@@ -432,7 +430,7 @@ BoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                     C[i*4+1] = 0;
                                     C[i*4+2] = 0;
                                     C[i*4+3] = 255;
-                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)
+                                    for(int j = 0; j < PyTuple_Size(item); ++j)
                                     {
                                         PyObject *colorcomp = PyTuple_GET_ITEM(item, j);
                                         if(PyInt_Check(colorcomp))
@@ -440,17 +438,17 @@ BoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else if(PyFloat_Check(colorcomp))
                                            C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));
                                         else
-                                           badInput = true;
+                                        {
+                                           delete [] C;
+                                           return PyExc_TypeError;
+                                        }
                                     }
                                 }
                                 else
-                                    badInput = true;
-                            }
-
-                            if(badInput)
-                            {
-                                delete [] C;
-                                return NULL;
+                                {
+                                    delete [] C;
+                                    return PyExc_ValueError;
+                                }
                             }
 
                             for(int i = 0; i < cL.GetNumColors(); ++i)
@@ -459,17 +457,17 @@ BoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             delete [] C;
                         }
                         else
-                            return NULL;
+                            return PyExc_TypeError;
                     }
                 }
                 else
                 {
                     if(!PyTuple_Check(pyobj))
-                        return NULL;
+                        return PyExc_TypeError;
 
                     // Make sure that the tuple is the right size.
                     if(PyTuple_Size(pyobj) < 3 || PyTuple_Size(pyobj) > 4)
-                        return NULL;
+                        return PyExc_ValueError;
 
                     // Make sure that all elements in the tuple are ints.
                     for(int i = 0; i < PyTuple_Size(pyobj); ++i)
@@ -480,7 +478,7 @@ BoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         else if(PyFloat_Check(item))
                             c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(pyobj, i)));
                         else
-                            return NULL;
+                            return PyExc_TypeError;
                     }
                 }
             }
@@ -552,7 +550,7 @@ BoundaryAttributes_SetBoundaryNames(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->GetBoundaryNames();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -567,7 +565,7 @@ BoundaryAttributes_SetBoundaryNames(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -578,7 +576,7 @@ BoundaryAttributes_SetBoundaryNames(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the boundaryNames in the object as modified.
     obj->data->SelectBoundaryNames();
@@ -889,7 +887,7 @@ PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "colorType") == 0)
         obj = BoundaryAttributes_SetColorType(self, tuple);
@@ -963,7 +961,14 @@ PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

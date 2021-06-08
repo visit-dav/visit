@@ -657,7 +657,7 @@ avtDatabaseMetaData_SetTimeStepNames(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->GetTimeStepNames();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -672,7 +672,7 @@ avtDatabaseMetaData_SetTimeStepNames(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -683,7 +683,7 @@ avtDatabaseMetaData_SetTimeStepNames(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the timeStepNames in the object as modified.
     obj->data->SelectTimeStepNames();
@@ -712,7 +712,7 @@ avtDatabaseMetaData_SetCycles(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetCycles();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -727,7 +727,7 @@ avtDatabaseMetaData_SetCycles(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -746,7 +746,7 @@ avtDatabaseMetaData_SetCycles(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the cycles in the object as modified.
     obj->data->SelectCycles();
@@ -775,7 +775,7 @@ avtDatabaseMetaData_SetCyclesAreAccurate(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetCyclesAreAccurate();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -790,7 +790,7 @@ avtDatabaseMetaData_SetCyclesAreAccurate(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -809,7 +809,7 @@ avtDatabaseMetaData_SetCyclesAreAccurate(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the cyclesAreAccurate in the object as modified.
     obj->data->SelectCyclesAreAccurate();
@@ -838,7 +838,7 @@ avtDatabaseMetaData_SetTimes(PyObject *self, PyObject *args)
     doubleVector  &vec = obj->data->GetTimes();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -853,7 +853,7 @@ avtDatabaseMetaData_SetTimes(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = PyLong_AsDouble(item);
             else
-                vec[i] = 0.;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -872,7 +872,7 @@ avtDatabaseMetaData_SetTimes(PyObject *self, PyObject *args)
         vec[0] = PyLong_AsDouble(tuple);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the times in the object as modified.
     obj->data->SelectTimes();
@@ -901,7 +901,7 @@ avtDatabaseMetaData_SetTimesAreAccurate(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetTimesAreAccurate();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -916,7 +916,7 @@ avtDatabaseMetaData_SetTimesAreAccurate(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -935,7 +935,7 @@ avtDatabaseMetaData_SetTimesAreAccurate(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the timesAreAccurate in the object as modified.
     obj->data->SelectTimesAreAccurate();
@@ -2536,7 +2536,7 @@ avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(PyObject *self, PyObject *
     stringVector  &vec = obj->data->GetSuggestedDefaultSILRestriction();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -2551,7 +2551,7 @@ avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(PyObject *self, PyObject *
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -2562,7 +2562,7 @@ avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(PyObject *self, PyObject *
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the suggestedDefaultSILRestriction in the object as modified.
     obj->data->SelectSuggestedDefaultSILRestriction();
@@ -2824,7 +2824,7 @@ PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "hasTemporalExtents") == 0)
         obj = avtDatabaseMetaData_SetHasTemporalExtents(self, tuple);
@@ -2880,7 +2880,14 @@ PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

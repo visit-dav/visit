@@ -255,7 +255,7 @@ PickAttributes_SetVariables(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->GetVariables();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -270,7 +270,7 @@ PickAttributes_SetVariables(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -281,7 +281,7 @@ PickAttributes_SetVariables(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the variables in the object as modified.
     obj->data->SelectVariables();
@@ -954,12 +954,12 @@ PickAttributes_SetPickHighlightColor(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -972,11 +972,11 @@ PickAttributes_SetPickHighlightColor(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     ivals[i] = int(PyLong_AsDouble(item));
                 else
-                    ivals[i] = 0;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the pickHighlightColor in the object as modified.
@@ -1299,7 +1299,7 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "variables") == 0)
         obj = PickAttributes_SetVariables(self, tuple);
@@ -1373,7 +1373,14 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

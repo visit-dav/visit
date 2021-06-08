@@ -657,12 +657,12 @@ avtMeshMetaData_SetLogicalBounds(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -675,11 +675,11 @@ avtMeshMetaData_SetLogicalBounds(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     ivals[i] = int(PyLong_AsDouble(item));
                 else
-                    ivals[i] = 0;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the logicalBounds in the object as modified.
@@ -951,12 +951,12 @@ avtMeshMetaData_SetMinSpatialExtents(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -969,11 +969,11 @@ avtMeshMetaData_SetMinSpatialExtents(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the minSpatialExtents in the object as modified.
@@ -1005,12 +1005,12 @@ avtMeshMetaData_SetMaxSpatialExtents(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -1023,11 +1023,11 @@ avtMeshMetaData_SetMaxSpatialExtents(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the maxSpatialExtents in the object as modified.
@@ -1153,7 +1153,7 @@ avtMeshMetaData_SetBlockNames(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->blockNames;
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -1168,7 +1168,7 @@ avtMeshMetaData_SetBlockNames(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -1179,7 +1179,7 @@ avtMeshMetaData_SetBlockNames(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the blockNames in the object as modified.
     obj->data->SelectAll();
@@ -1340,7 +1340,7 @@ avtMeshMetaData_SetGroupNames(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->groupNames;
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -1355,7 +1355,7 @@ avtMeshMetaData_SetGroupNames(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -1366,7 +1366,7 @@ avtMeshMetaData_SetGroupNames(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the groupNames in the object as modified.
     obj->data->SelectAll();
@@ -1395,7 +1395,7 @@ avtMeshMetaData_SetGroupIds(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->groupIds;
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -1410,7 +1410,7 @@ avtMeshMetaData_SetGroupIds(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -1429,7 +1429,7 @@ avtMeshMetaData_SetGroupIds(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the groupIds in the object as modified.
     obj->data->SelectAll();
@@ -1458,7 +1458,7 @@ avtMeshMetaData_SetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->groupIdsBasedOnRange;
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -1473,7 +1473,7 @@ avtMeshMetaData_SetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -1492,7 +1492,7 @@ avtMeshMetaData_SetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the groupIdsBasedOnRange in the object as modified.
     obj->data->SelectAll();
@@ -1713,12 +1713,12 @@ avtMeshMetaData_SetUnitCellVectors(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 9)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -1731,11 +1731,11 @@ avtMeshMetaData_SetUnitCellVectors(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     fvals[i] = float(PyLong_AsDouble(item));
                 else
-                    fvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the unitCellVectors in the object as modified.
@@ -1767,12 +1767,12 @@ avtMeshMetaData_SetUnitCellOrigin(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 3)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -1785,11 +1785,11 @@ avtMeshMetaData_SetUnitCellOrigin(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     fvals[i] = float(PyLong_AsDouble(item));
                 else
-                    fvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the unitCellOrigin in the object as modified.
@@ -1845,12 +1845,12 @@ avtMeshMetaData_SetRectilinearGridTransform(PyObject *self, PyObject *args)
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
+            return PyExc_TypeError;
 
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 16)
-                return NULL;
+                return PyExc_ValueError;
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -1863,11 +1863,11 @@ avtMeshMetaData_SetRectilinearGridTransform(PyObject *self, PyObject *args)
                 else if(PyLong_Check(item))
                     dvals[i] = PyLong_AsDouble(item);
                 else
-                    dvals[i] = 0.;
+                    return PyExc_TypeError;
             }
         }
         else
-            return NULL;
+            return PyExc_TypeError;
     }
 
     // Mark the rectilinearGridTransform in the object as modified.
@@ -2326,7 +2326,7 @@ PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "name") == 0)
         obj = avtMeshMetaData_SetName(self, tuple);
@@ -2438,7 +2438,14 @@ PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

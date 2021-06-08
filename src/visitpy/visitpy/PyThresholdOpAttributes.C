@@ -200,7 +200,7 @@ ThresholdOpAttributes_SetListedVarNames(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->GetListedVarNames();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -215,7 +215,7 @@ ThresholdOpAttributes_SetListedVarNames(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -226,7 +226,7 @@ ThresholdOpAttributes_SetListedVarNames(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the listedVarNames in the object as modified.
     obj->data->SelectListedVarNames();
@@ -255,7 +255,7 @@ ThresholdOpAttributes_SetZonePortions(PyObject *self, PyObject *args)
     intVector  &vec = obj->data->GetZonePortions();
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_ValueError;
 
     if(PyTuple_Check(tuple))
     {
@@ -270,7 +270,7 @@ ThresholdOpAttributes_SetZonePortions(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = int(PyLong_AsLong(item));
             else
-                vec[i] = 0;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -289,7 +289,7 @@ ThresholdOpAttributes_SetZonePortions(PyObject *self, PyObject *args)
         vec[0] = int(PyLong_AsLong(tuple));
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the zonePortions in the object as modified.
     obj->data->SelectZonePortions();
@@ -318,7 +318,7 @@ ThresholdOpAttributes_SetLowerBounds(PyObject *self, PyObject *args)
     doubleVector  &vec = obj->data->GetLowerBounds();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -333,7 +333,7 @@ ThresholdOpAttributes_SetLowerBounds(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = PyLong_AsDouble(item);
             else
-                vec[i] = 0.;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -352,7 +352,7 @@ ThresholdOpAttributes_SetLowerBounds(PyObject *self, PyObject *args)
         vec[0] = PyLong_AsDouble(tuple);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the lowerBounds in the object as modified.
     obj->data->SelectLowerBounds();
@@ -381,7 +381,7 @@ ThresholdOpAttributes_SetUpperBounds(PyObject *self, PyObject *args)
     doubleVector  &vec = obj->data->GetUpperBounds();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -396,7 +396,7 @@ ThresholdOpAttributes_SetUpperBounds(PyObject *self, PyObject *args)
             else if(PyLong_Check(item))
                 vec[i] = PyLong_AsDouble(item);
             else
-                vec[i] = 0.;
+                return PyExc_TypeError;
         }
     }
     else if(PyFloat_Check(tuple))
@@ -415,7 +415,7 @@ ThresholdOpAttributes_SetUpperBounds(PyObject *self, PyObject *args)
         vec[0] = PyLong_AsDouble(tuple);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the upperBounds in the object as modified.
     obj->data->SelectUpperBounds();
@@ -492,7 +492,7 @@ ThresholdOpAttributes_SetBoundsRange(PyObject *self, PyObject *args)
     stringVector  &vec = obj->data->GetBoundsRange();
     PyObject     *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return PyExc_TypeError;
 
     if(PyTuple_Check(tuple))
     {
@@ -507,7 +507,7 @@ ThresholdOpAttributes_SetBoundsRange(PyObject *self, PyObject *args)
                 PyString_AsString_Cleanup(item_cstr);
             }
             else
-                vec[i] = std::string("");
+                return PyExc_TypeError;
         }
     }
     else if(PyString_Check(tuple))
@@ -518,7 +518,7 @@ ThresholdOpAttributes_SetBoundsRange(PyObject *self, PyObject *args)
         PyString_AsString_Cleanup(tuple_cstr);
     }
     else
-        return NULL;
+        return PyExc_TypeError;
 
     // Mark the boundsRange in the object as modified.
     obj->data->SelectBoundsRange();
@@ -612,7 +612,7 @@ PyThresholdOpAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, args);
     Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject *obj = PyExc_NameError;
 
     if(strcmp(name, "outputMeshType") == 0)
         obj = ThresholdOpAttributes_SetOutputMeshType(self, tuple);
@@ -638,7 +638,14 @@ PyThresholdOpAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     Py_DECREF(tuple);
     if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_NameError)
+        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
+    else if (obj == PyExc_TypeError)
+        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+    else if (obj == PyExc_ValueError)
+        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
