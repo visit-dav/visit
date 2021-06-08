@@ -1884,7 +1884,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                                    C[i*4+1] = 0;" << Endl;
             c << "                                    C[i*4+2] = 0;" << Endl;
             c << "                                    C[i*4+3] = 255;" << Endl;
-            c << "                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)" << Endl;
+            c << "                                    for(int j = 0; j < PyTuple_Size(item); ++j)" << Endl;
             c << "                                    {" << Endl;
             c << "                                        PyObject *colorcomp = PyTuple_GET_ITEM(item, j);" << Endl;
             c << "                                        if(PyInt_Check(colorcomp))" << Endl;
@@ -1927,7 +1927,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                                    C[i*4+1] = 0;" << Endl;
             c << "                                    C[i*4+2] = 0;" << Endl;
             c << "                                    C[i*4+3] = 255;" << Endl;
-            c << "                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)" << Endl;
+            c << "                                    for(int j = 0; j < PyTuple_Size(item); ++j)" << Endl;
             c << "                                    {" << Endl;
             c << "                                        PyObject *colorcomp = PyTuple_GET_ITEM(item, j);" << Endl;
             c << "                                        if(PyInt_Check(colorcomp))" << Endl;
