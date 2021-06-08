@@ -473,7 +473,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         c << ";" << Endl;
         c << "    PyObject   *tuple;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "        return ValueError;" << Endl;
+        c << "        return PyExc_ValueError;" << Endl;
         c << Endl;
         c << "    if(PyTuple_Check(tuple))" << Endl;
         c << "    {" << Endl;
@@ -3307,13 +3307,13 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << Endl;
         c << "    Py_DECREF(tuple);" << Endl;
         c << "    if( obj == NULL)" << Endl;
-        c << "        PyErr_Format(PyExc_RuntimeError, \"Unable to set attribute: '\%s'\", name);" << Endl;
+        c << "        PyErr_Format(PyExc_RuntimeError, \"Unknown problem while assigning to attribute: '\%s'\", name);" << Endl;
         c << "    else if (obj == PyExc_NameError)" << Endl;
-        c << "        obj = PyErr_Format(obj, \"Unknown attribute: '\%s'\", name);" << Endl;
+        c << "        obj = PyErr_Format(obj, \"Unknown attribute name: '\%s'\", name);" << Endl;
         c << "    else if (obj == PyExc_TypeError)" << Endl;
-        c << "        obj = PyErr_Format(obj, \"Bad type for attribute: '\%s'\", name);" << Endl;
+        c << "        obj = PyErr_Format(obj, \"Problem with type of item assigned to attribute: '\%s'\", name);" << Endl;
         c << "    else if (obj == PyExc_ValueError)" << Endl;
-        c << "        obj = PyErr_Format(obj, \"Bad length/size for attribute: '\%s'\", name);" << Endl;
+        c << "        obj = PyErr_Format(obj, \"Problem with length/size of item assigned to attribute: '\%s'\", name);" << Endl;
         c << Endl;
         c << "    return (obj != NULL) ? 0 : -1;" << Endl;
         c << "}" << Endl;
