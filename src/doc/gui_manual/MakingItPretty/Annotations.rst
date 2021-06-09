@@ -827,7 +827,7 @@ The Legend annotation object interface can be used to customize the legends posi
 
 The **Position** tab, shown in :numref:`Figure %s <legend_position_image>` has controls for position, size and orientation.
 VisIt generally controls the positions of legends, but if you want a specific legend to be placed elsewhere in the visualization window, uncheck the **Let VisIt manage legend position** checkbox and modify the **Legend position**.
-The 2D coordinate used to position the legend matches the legend's lower left corner. (??? CHECK THIS!!!)
+The 2D coordinate used to position the legend matches the legend's lower left corner.
 To change the position of a legend, enter a new 2D coordinate into the
 **Legend position** text field.
 You can also click the down arrow next to the **Legend position** text field to interactively choose a new lower left coordinate using the screen positioning control, which represents the visualization window.
