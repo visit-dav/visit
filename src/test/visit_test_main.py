@@ -1853,10 +1853,10 @@ def TestText(case_name, inText, baseText=None, numdifftol=None):
 # passed as args both for the current (actual) and the baseline (expected). The
 # baseline values are stored directly in the calling .py file as args in the
 # call to this method. The values can be any Python object. When they are floats
-# or ints or strings of floats or ints or lists/tuples of floats or ints or
-# strings of floats or ints, it will round them to the desired precision and do
-# the comparison numerically. Otherwise it will compare them as strings.
-# Returns whether or not the test resulted in True or False.
+# or ints or strings of floats or ints or lists/tuples of floats or ints, it
+# will round them to the desired precision and do the comparison numerically.
+# Otherwise it will compare them as strings. Returns whether or not the test
+# resulted in True or False.
 # ----------------------------------------------------------------------------
 def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=True):
     CheckInteractive(case_name)
@@ -1865,9 +1865,15 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
         iterator = iter(expected) # excepts if not iterable
     except TypeError: # not iterable
         try:
-            result = oper(round(float(actual), rndprec),round(float(expected), rndprec))
-            actual_str = "%.*f"%(rndprec,round(float(actual),rndprec))
-            expected_str = "%.*f"%(rndprec,round(float(expected),rndprec))
+            if isinstance(actual, bool) and isinstance(expected, bool):
+                rndprec = 0
+                result = oper(actual, expected)
+                actual_str = "%s"%actual
+                expected_str = "%s"%expected
+            else:
+                result = oper(round(float(actual), rndprec),round(float(expected), rndprec))
+                actual_str = "%.*f"%(rndprec,round(float(actual),rndprec))
+                expected_str = "%.*f"%(rndprec,round(float(expected),rndprec))
         except:
             result = oper(str(actual), str(expected))
             actual_str = str(actual)
@@ -1892,6 +1898,32 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
         LogValueTestResult(case_name,oper.__name__,result,
             "%s .%s. %s (prec=%d)" % (actual_str,oper.__name__,expected_str,rndprec),skip)
     return result
+
+# Python equiv. of C __LINE__ useful to differentiate multiple FOA instances
+def __LINE__():
+    return str(sys._getframe(1).f_lineno)
+
+#
+# The ...OnArrival methods are useful for cases where the majority of logic for
+# determining a passed or failed test exists primarily as the python code itself
+# being executed. A good example is unit/atts_assign.py. While there may be many
+# instances of FOA with the same name argument, they can be differentiated by the
+# line arg. However, there should be only a single POA instance with the same
+# name.
+#
+def FailOnArrival(name, line="unk"):
+    return TestValueEQ(name+':'+line, False, True)
+
+def PassOnArrival(name):
+    return TestValueEQ(name, True, True)
+
+# Alias for FailOnArrival
+def TestFOA(name, line="unk"):
+    return FailOnArrival(name, line)
+
+# Alias for PassOnArrival
+def TestPOA(name):
+    return PassOnArrival(name)
 
 # actual == expected
 def TestValueEQ(case_name, actual, expected, rndprec=5):
