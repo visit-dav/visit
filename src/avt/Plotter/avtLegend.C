@@ -960,7 +960,7 @@ avtLegend::GetCalculatedLabels(stringVector &)
 //      Sets the custom title.
 //
 //  Arguments:
-//      str       The new custom title.
+//      ct        The new custom title.
 //
 //  Programmer:   Kathleen Biagas
 //  Creation:     May 19, 2021
