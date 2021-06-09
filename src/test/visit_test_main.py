@@ -1900,7 +1900,8 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
     return result
 
 # Python equiv. of C __LINE__ useful to differentiate multiple FOA instances
-def __LINE__():
+# Useful as line arg to TestFOA()/FailOnArrival()
+def LINE():
     return str(sys._getframe(1).f_lineno)
 
 #
