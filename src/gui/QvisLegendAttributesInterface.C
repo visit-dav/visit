@@ -251,10 +251,22 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     connect(drawTitleCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawTitleToggled(bool)));
     aLayout->addWidget(drawTitleCheckBox, row, 0);
+
+    customTitleCheckBox = new QCheckBox(tr("Custom title"), this);
+    connect(customTitleCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(customTitleToggled(bool)));
+    aLayout->addWidget(customTitleCheckBox, row, 1);
+
+    customTitle = new QNarrowLineEdit(this);
+    connect(customTitle, SIGNAL(editingFinished()),
+            this, SLOT(customTitleChanged()));
+    aLayout->addWidget(customTitle, row, 2);
+    ++row;
+
     drawMinmaxCheckBox = new QCheckBox(tr("Draw min/max"), this);
     connect(drawMinmaxCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawMinmaxToggled(bool)));
-    aLayout->addWidget(drawMinmaxCheckBox, row, 1, 1, 2);
+    aLayout->addWidget(drawMinmaxCheckBox, row, 0, 1, 2);
     ++row;
 
     QFrame *splitter3 = new QFrame(this);
@@ -601,7 +613,21 @@ QvisLegendAttributesInterface::UpdateControls()
     // Set the "draw labels" box.
     drawTitleCheckBox->blockSignals(true);
     drawTitleCheckBox->setChecked(GetBool(LEGEND_DRAW_TITLE));
+    customTitleCheckBox->setEnabled(GetBool(LEGEND_DRAW_TITLE));
+    customTitle->setEnabled(GetBool(LEGEND_DRAW_TITLE) &&
+                            GetBool(LEGEND_CUSTOM_TITLE));
     drawTitleCheckBox->blockSignals(false);
+
+    customTitleCheckBox->blockSignals(true);
+    customTitleCheckBox->setChecked(GetBool(LEGEND_CUSTOM_TITLE));
+    customTitle->setEnabled(GetBool(LEGEND_DRAW_TITLE) &&
+                            GetBool(LEGEND_CUSTOM_TITLE));
+    customTitleCheckBox->blockSignals(false);
+
+    customTitle->blockSignals(true);
+    QString ct = QString(annot->GetOptions().GetEntry("customTitle")->AsString().c_str());
+    customTitle->setText(ct);
+    customTitle->blockSignals(false);
 
     // Set the "draw labels" box.
     drawMinmaxCheckBox->blockSignals(true);
@@ -1114,6 +1140,47 @@ void
 QvisLegendAttributesInterface::drawTitleToggled(bool val)
 {
     SetBool(LEGEND_DRAW_TITLE, val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisLegendAttributesInterface::customTitleToggled
+//
+// Purpose: 
+//   Called when the custom title checkbox is toggled.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   Wednesday May 19, 2021
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisLegendAttributesInterface::customTitleToggled(bool val)
+{
+    SetBool(LEGEND_CUSTOM_TITLE, val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisLegendAttributesInterface::customTitleChanged
+//
+// Purpose: 
+//   Called when the custom title text is changed.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   Wednesday May 19, 2021
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisLegendAttributesInterface::customTitleChanged()
+{
+    QString ct = customTitle->text();
+    annot->GetOptions().GetEntry("customTitle")->SetValue(ct.toStdString());
     SetUpdate(false);
     Apply();
 }
