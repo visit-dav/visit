@@ -100,7 +100,7 @@ SelectionSummary_SetName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the name in the object.
     obj->data->SetName(std::string(str));
@@ -123,17 +123,9 @@ SelectionSummary_GetVariables(PyObject *self, PyObject *args)
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetVariables().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetVariables().size() == 0)
-            snprintf(msg, 400, "In SelectionSummary::GetVariables : The index %d is invalid because variables is empty.", index);
-        else
-            snprintf(msg, 400, "In SelectionSummary::GetVariables : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetVariables().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -160,14 +152,9 @@ SelectionSummary_AddVariables(PyObject *self, PyObject *args)
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySelectionVariableSummary_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The SelectionSummary::AddVariables method only accepts SelectionVariableSummary objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     SelectionVariableSummary *newData = PySelectionVariableSummary_FromPyObject(element);
     obj->data->AddVariables(*newData);
     obj->data->SelectVariables();
@@ -207,15 +194,10 @@ SelectionSummary_RemoveVariables(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
     if(index < 0 || index >= obj->data->GetNumVariables())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In SelectionSummary::RemoveVariables : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return SelectionSummary_Remove_One_Variables(self, index);
 }
@@ -241,7 +223,7 @@ SelectionSummary_SetCellCount(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cellCount in the object.
     obj->data->SetCellCount((int)ival);
@@ -265,7 +247,7 @@ SelectionSummary_SetTotalCellCount(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the totalCellCount in the object.
     obj->data->SetTotalCellCount((int)ival);
@@ -352,7 +334,7 @@ SelectionSummary_SetHistogramMinBin(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the histogramMinBin in the object.
     obj->data->SetHistogramMinBin(dval);
@@ -376,7 +358,7 @@ SelectionSummary_SetHistogramMaxBin(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the histogramMaxBin in the object.
     obj->data->SetHistogramMaxBin(dval);
@@ -480,14 +462,16 @@ PySelectionSummary_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -633,7 +617,7 @@ SelectionSummary_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

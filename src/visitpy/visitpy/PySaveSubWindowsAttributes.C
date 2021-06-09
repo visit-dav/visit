@@ -157,11 +157,11 @@ SaveSubWindowsAttributes_SetWin1(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win1 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin1(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -193,11 +193,11 @@ SaveSubWindowsAttributes_SetWin2(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win2 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin2(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -229,11 +229,11 @@ SaveSubWindowsAttributes_SetWin3(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win3 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin3(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -265,11 +265,11 @@ SaveSubWindowsAttributes_SetWin4(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win4 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin4(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -301,11 +301,11 @@ SaveSubWindowsAttributes_SetWin5(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win5 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin5(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -337,11 +337,11 @@ SaveSubWindowsAttributes_SetWin6(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win6 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin6(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -373,11 +373,11 @@ SaveSubWindowsAttributes_SetWin7(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win7 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin7(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -409,11 +409,11 @@ SaveSubWindowsAttributes_SetWin8(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win8 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin8(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -445,11 +445,11 @@ SaveSubWindowsAttributes_SetWin9(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win9 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin9(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -481,11 +481,11 @@ SaveSubWindowsAttributes_SetWin10(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win10 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin10(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -517,11 +517,11 @@ SaveSubWindowsAttributes_SetWin11(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win11 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin11(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -553,11 +553,11 @@ SaveSubWindowsAttributes_SetWin12(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win12 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin12(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -589,11 +589,11 @@ SaveSubWindowsAttributes_SetWin13(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win13 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin13(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -625,11 +625,11 @@ SaveSubWindowsAttributes_SetWin14(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win14 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin14(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -661,11 +661,11 @@ SaveSubWindowsAttributes_SetWin15(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win15 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin15(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -697,11 +697,11 @@ SaveSubWindowsAttributes_SetWin16(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowAttributes_Check(newValue))
     {
         fprintf(stderr, "The win16 field can only be set with SaveSubWindowAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetWin16(*PySaveSubWindowAttributes_FromPyObject(newValue));
@@ -866,14 +866,16 @@ PySaveSubWindowsAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1019,7 +1021,7 @@ SaveSubWindowsAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

@@ -245,7 +245,7 @@ SaveWindowAttributes_SetOutputToCurrentDirectory(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the outputToCurrentDirectory in the object.
     obj->data->SetOutputToCurrentDirectory(ival != 0);
@@ -269,7 +269,7 @@ SaveWindowAttributes_SetOutputDirectory(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the outputDirectory in the object.
     obj->data->SetOutputDirectory(std::string(str));
@@ -293,7 +293,7 @@ SaveWindowAttributes_SetFileName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fileName in the object.
     obj->data->SetFileName(std::string(str));
@@ -317,7 +317,7 @@ SaveWindowAttributes_SetFamily(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the family in the object.
     obj->data->SetFamily(ival != 0);
@@ -341,7 +341,7 @@ SaveWindowAttributes_SetFormat(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the format in the object.
     if(ival >= 0 && ival < 15)
@@ -355,7 +355,7 @@ SaveWindowAttributes_SetFormat(PyObject *self, PyObject *args)
                         "POSTSCRIPT, POVRAY, PPM, RGB, "
                         "STL, TIFF, ULTRA, VTK, "
                         "PLY, EXR.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -377,7 +377,7 @@ SaveWindowAttributes_SetWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the width in the object.
     obj->data->SetWidth((int)ival);
@@ -401,7 +401,7 @@ SaveWindowAttributes_SetHeight(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the height in the object.
     obj->data->SetHeight((int)ival);
@@ -425,7 +425,7 @@ SaveWindowAttributes_SetScreenCapture(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the screenCapture in the object.
     obj->data->SetScreenCapture(ival != 0);
@@ -449,7 +449,7 @@ SaveWindowAttributes_SetSaveTiled(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the saveTiled in the object.
     obj->data->SetSaveTiled(ival != 0);
@@ -473,7 +473,7 @@ SaveWindowAttributes_SetQuality(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the quality in the object.
     obj->data->SetQuality((int)ival);
@@ -497,7 +497,7 @@ SaveWindowAttributes_SetProgressive(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the progressive in the object.
     obj->data->SetProgressive(ival != 0);
@@ -521,7 +521,7 @@ SaveWindowAttributes_SetBinary(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the binary in the object.
     obj->data->SetBinary(ival != 0);
@@ -545,7 +545,7 @@ SaveWindowAttributes_SetStereo(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stereo in the object.
     obj->data->SetStereo(ival != 0);
@@ -569,7 +569,7 @@ SaveWindowAttributes_SetCompression(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the compression in the object.
     if(ival >= 0 && ival < 5)
@@ -581,7 +581,7 @@ SaveWindowAttributes_SetCompression(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "None, PackBits, Jpeg, Deflate, LZW"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -603,7 +603,7 @@ SaveWindowAttributes_SetForceMerge(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the forceMerge in the object.
     obj->data->SetForceMerge(ival != 0);
@@ -627,7 +627,7 @@ SaveWindowAttributes_SetResConstraint(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the resConstraint in the object.
     if(ival >= 0 && ival < 3)
@@ -638,7 +638,7 @@ SaveWindowAttributes_SetResConstraint(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "NoConstraint, EqualWidthHeight, ScreenProportions.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -660,7 +660,7 @@ SaveWindowAttributes_SetPixelData(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pixelData in the object.
     obj->data->SetPixelData((int)ival);
@@ -684,7 +684,7 @@ SaveWindowAttributes_SetAdvancedMultiWindowSave(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the advancedMultiWindowSave in the object.
     obj->data->SetAdvancedMultiWindowSave(ival != 0);
@@ -708,11 +708,11 @@ SaveWindowAttributes_SetSubWindowAtts(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySaveSubWindowsAttributes_Check(newValue))
     {
         fprintf(stderr, "The subWindowAtts field can only be set with SaveSubWindowsAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetSubWindowAtts(*PySaveSubWindowsAttributes_FromPyObject(newValue));
@@ -744,11 +744,11 @@ SaveWindowAttributes_SetOpts(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyDBOptionsAttributes_Check(newValue))
     {
         fprintf(stderr, "The opts field can only be set with DBOptionsAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetOpts(*PyDBOptionsAttributes_FromPyObject(newValue));
@@ -988,14 +988,16 @@ PySaveWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1141,7 +1143,7 @@ SaveWindowAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

@@ -205,7 +205,7 @@ HistogramAttributes_SetBasedOn(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the basedOn in the object.
     if(ival >= 0 && ival < 2)
@@ -216,7 +216,7 @@ HistogramAttributes_SetBasedOn(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "ManyVarsForSingleZone, ManyZonesForSingleVar.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -238,7 +238,7 @@ HistogramAttributes_SetHistogramType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the histogramType in the object.
     if(ival >= 0 && ival < 3)
@@ -249,7 +249,7 @@ HistogramAttributes_SetHistogramType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Frequency, Weighted, Variable.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -271,7 +271,7 @@ HistogramAttributes_SetWeightVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the weightVariable in the object.
     obj->data->SetWeightVariable(std::string(str));
@@ -295,7 +295,7 @@ HistogramAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the limitsMode in the object.
     if(ival >= 0 && ival < 2)
@@ -306,7 +306,7 @@ HistogramAttributes_SetLimitsMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "OriginalData, CurrentPlot.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -328,7 +328,7 @@ HistogramAttributes_SetMinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minFlag in the object.
     obj->data->SetMinFlag(ival != 0);
@@ -352,7 +352,7 @@ HistogramAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxFlag in the object.
     obj->data->SetMaxFlag(ival != 0);
@@ -376,7 +376,7 @@ HistogramAttributes_SetMin(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the min in the object.
     obj->data->SetMin(dval);
@@ -400,7 +400,7 @@ HistogramAttributes_SetMax(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the max in the object.
     obj->data->SetMax(dval);
@@ -424,7 +424,7 @@ HistogramAttributes_SetNumBins(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numBins in the object.
     obj->data->SetNumBins((int)ival);
@@ -448,7 +448,7 @@ HistogramAttributes_SetDomain(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the domain in the object.
     obj->data->SetDomain((int)ival);
@@ -472,7 +472,7 @@ HistogramAttributes_SetZone(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the zone in the object.
     obj->data->SetZone((int)ival);
@@ -496,7 +496,7 @@ HistogramAttributes_SetUseBinWidths(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useBinWidths in the object.
     obj->data->SetUseBinWidths(ival != 0);
@@ -520,7 +520,7 @@ HistogramAttributes_SetOutputType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the outputType in the object.
     if(ival >= 0 && ival < 2)
@@ -531,7 +531,7 @@ HistogramAttributes_SetOutputType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Curve, Block.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -553,7 +553,7 @@ HistogramAttributes_SetLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineWidth in the object.
     obj->data->SetLineWidth(ival);
@@ -654,7 +654,7 @@ HistogramAttributes_SetDataScale(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dataScale in the object.
     if(ival >= 0 && ival < 3)
@@ -665,7 +665,7 @@ HistogramAttributes_SetDataScale(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, SquareRoot.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -687,7 +687,7 @@ HistogramAttributes_SetBinScale(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the binScale in the object.
     if(ival >= 0 && ival < 3)
@@ -698,7 +698,7 @@ HistogramAttributes_SetBinScale(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, SquareRoot.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -720,7 +720,7 @@ HistogramAttributes_SetNormalizeHistogram(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the normalizeHistogram in the object.
     obj->data->SetNormalizeHistogram(ival != 0);
@@ -744,7 +744,7 @@ HistogramAttributes_SetComputeAsCDF(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the computeAsCDF in the object.
     obj->data->SetComputeAsCDF(ival != 0);
@@ -995,14 +995,16 @@ PyHistogramAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1148,7 +1150,7 @@ HistogramAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

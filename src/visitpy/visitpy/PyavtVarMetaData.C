@@ -117,7 +117,7 @@ avtVarMetaData_SetCentering(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     obj->data->centering = (avtCentering)ival;
 
@@ -140,7 +140,7 @@ avtVarMetaData_SetHasUnits(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the hasUnits in the object.
     obj->data->hasUnits = (ival != 0);
@@ -164,7 +164,7 @@ avtVarMetaData_SetUnits(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the units in the object.
     obj->data->units = std::string(str);
@@ -188,7 +188,7 @@ avtVarMetaData_SetHasDataExtents(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the hasDataExtents in the object.
     obj->data->hasDataExtents = (ival != 0);
@@ -212,7 +212,7 @@ avtVarMetaData_SetMinDataExtents(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minDataExtents in the object.
     obj->data->minDataExtents = dval;
@@ -236,7 +236,7 @@ avtVarMetaData_SetMaxDataExtents(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxDataExtents in the object.
     obj->data->maxDataExtents = dval;
@@ -444,14 +444,16 @@ PyavtVarMetaData_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -597,7 +599,7 @@ avtVarMetaData_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

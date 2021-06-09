@@ -550,7 +550,7 @@ LCSAttributes_SetSourceType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sourceType in the object.
     if(ival >= 0 && ival < 2)
@@ -561,7 +561,7 @@ LCSAttributes_SetSourceType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "NativeMesh, RegularGrid.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -637,7 +637,7 @@ LCSAttributes_SetUseDataSetStart(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the UseDataSetStart in the object.
     if(ival >= 0 && ival < 2)
@@ -648,7 +648,7 @@ LCSAttributes_SetUseDataSetStart(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Full, Subset.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -724,7 +724,7 @@ LCSAttributes_SetUseDataSetEnd(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the UseDataSetEnd in the object.
     if(ival >= 0 && ival < 2)
@@ -735,7 +735,7 @@ LCSAttributes_SetUseDataSetEnd(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Full, Subset.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -811,7 +811,7 @@ LCSAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the integrationDirection in the object.
     if(ival >= 0 && ival < 3)
@@ -822,7 +822,7 @@ LCSAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Forward, Backward, Both.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -844,7 +844,7 @@ LCSAttributes_SetAuxiliaryGrid(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the auxiliaryGrid in the object.
     if(ival >= 0 && ival < 3)
@@ -855,7 +855,7 @@ LCSAttributes_SetAuxiliaryGrid(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "None, TwoDim, ThreeDim.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -877,7 +877,7 @@ LCSAttributes_SetAuxiliaryGridSpacing(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the auxiliaryGridSpacing in the object.
     obj->data->SetAuxiliaryGridSpacing(dval);
@@ -901,7 +901,7 @@ LCSAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxSteps in the object.
     obj->data->SetMaxSteps((int)ival);
@@ -925,7 +925,7 @@ LCSAttributes_SetOperationType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the operationType in the object.
     if(ival >= 0 && ival < 6)
@@ -937,7 +937,7 @@ LCSAttributes_SetOperationType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "IntegrationTime, ArcLength, AverageDistanceFromSeed, EigenValue, EigenVector, "
                         "Lyapunov.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -959,7 +959,7 @@ LCSAttributes_SetCauchyGreenTensor(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cauchyGreenTensor in the object.
     if(ival >= 0 && ival < 2)
@@ -970,7 +970,7 @@ LCSAttributes_SetCauchyGreenTensor(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Left, Right.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -992,7 +992,7 @@ LCSAttributes_SetEigenComponent(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the eigenComponent in the object.
     if(ival >= 0 && ival < 7)
@@ -1004,7 +1004,7 @@ LCSAttributes_SetEigenComponent(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Smallest, Intermediate, Largest, PosShearVector, NegShearVector, "
                         "PosLambdaShearVector, NegLambdaShearVector.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1026,7 +1026,7 @@ LCSAttributes_SetEigenWeight(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the eigenWeight in the object.
     obj->data->SetEigenWeight(dval);
@@ -1050,7 +1050,7 @@ LCSAttributes_SetOperatorType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the operatorType in the object.
     if(ival >= 0 && ival < 2)
@@ -1061,7 +1061,7 @@ LCSAttributes_SetOperatorType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "BaseValue, Gradient.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1083,7 +1083,7 @@ LCSAttributes_SetTerminationType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the terminationType in the object.
     if(ival >= 0 && ival < 3)
@@ -1094,7 +1094,7 @@ LCSAttributes_SetTerminationType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Time, Distance, Size.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1116,7 +1116,7 @@ LCSAttributes_SetTerminateBySize(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the terminateBySize in the object.
     obj->data->SetTerminateBySize(ival != 0);
@@ -1140,7 +1140,7 @@ LCSAttributes_SetTermSize(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the termSize in the object.
     obj->data->SetTermSize(dval);
@@ -1164,7 +1164,7 @@ LCSAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the terminateByDistance in the object.
     obj->data->SetTerminateByDistance(ival != 0);
@@ -1188,7 +1188,7 @@ LCSAttributes_SetTermDistance(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the termDistance in the object.
     obj->data->SetTermDistance(dval);
@@ -1212,7 +1212,7 @@ LCSAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the terminateByTime in the object.
     obj->data->SetTerminateByTime(ival != 0);
@@ -1236,7 +1236,7 @@ LCSAttributes_SetTermTime(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the termTime in the object.
     obj->data->SetTermTime(dval);
@@ -1260,7 +1260,7 @@ LCSAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxStepLength in the object.
     obj->data->SetMaxStepLength(dval);
@@ -1284,7 +1284,7 @@ LCSAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the limitMaximumTimestep in the object.
     obj->data->SetLimitMaximumTimestep(ival != 0);
@@ -1308,7 +1308,7 @@ LCSAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxTimeStep in the object.
     obj->data->SetMaxTimeStep(dval);
@@ -1332,7 +1332,7 @@ LCSAttributes_SetRelTol(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the relTol in the object.
     obj->data->SetRelTol(dval);
@@ -1356,7 +1356,7 @@ LCSAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolSizeType in the object.
     if(ival >= 0 && ival < 2)
@@ -1367,7 +1367,7 @@ LCSAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Absolute, FractionOfBBox.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1389,7 +1389,7 @@ LCSAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolAbsolute in the object.
     obj->data->SetAbsTolAbsolute(dval);
@@ -1413,7 +1413,7 @@ LCSAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolBBox in the object.
     obj->data->SetAbsTolBBox(dval);
@@ -1437,7 +1437,7 @@ LCSAttributes_SetFieldType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fieldType in the object.
     if(ival >= 0 && ival < 6)
@@ -1449,7 +1449,7 @@ LCSAttributes_SetFieldType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
                         "NektarPPField.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1471,7 +1471,7 @@ LCSAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fieldConstant in the object.
     obj->data->SetFieldConstant(dval);
@@ -1549,7 +1549,7 @@ LCSAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the integrationType in the object.
     if(ival >= 0 && ival < 6)
@@ -1561,7 +1561,7 @@ LCSAttributes_SetIntegrationType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, "
                         "M3DC12DIntegrator.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1583,7 +1583,7 @@ LCSAttributes_SetClampLogValues(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the clampLogValues in the object.
     obj->data->SetClampLogValues(ival != 0);
@@ -1607,7 +1607,7 @@ LCSAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the parallelizationAlgorithmType in the object.
     if(ival >= 0 && ival < 4)
@@ -1618,7 +1618,7 @@ LCSAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1640,7 +1640,7 @@ LCSAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxProcessCount in the object.
     obj->data->SetMaxProcessCount((int)ival);
@@ -1664,7 +1664,7 @@ LCSAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxDomainCacheSize in the object.
     obj->data->SetMaxDomainCacheSize((int)ival);
@@ -1688,7 +1688,7 @@ LCSAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the workGroupSize in the object.
     obj->data->SetWorkGroupSize((int)ival);
@@ -1712,7 +1712,7 @@ LCSAttributes_SetPathlines(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlines in the object.
     obj->data->SetPathlines(ival != 0);
@@ -1736,7 +1736,7 @@ LCSAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *arg
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesOverrideStartingTimeFlag in the object.
     obj->data->SetPathlinesOverrideStartingTimeFlag(ival != 0);
@@ -1760,7 +1760,7 @@ LCSAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesOverrideStartingTime in the object.
     obj->data->SetPathlinesOverrideStartingTime(dval);
@@ -1784,7 +1784,7 @@ LCSAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesPeriod in the object.
     obj->data->SetPathlinesPeriod(dval);
@@ -1808,7 +1808,7 @@ LCSAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesCMFE in the object.
     if(ival >= 0 && ival < 2)
@@ -1819,7 +1819,7 @@ LCSAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "CONN_CMFE, POS_CMFE.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1841,7 +1841,7 @@ LCSAttributes_SetThresholdLimit(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the thresholdLimit in the object.
     obj->data->SetThresholdLimit(dval);
@@ -1865,7 +1865,7 @@ LCSAttributes_SetRadialLimit(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the radialLimit in the object.
     obj->data->SetRadialLimit(dval);
@@ -1889,7 +1889,7 @@ LCSAttributes_SetBoundaryLimit(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the boundaryLimit in the object.
     obj->data->SetBoundaryLimit(dval);
@@ -1913,7 +1913,7 @@ LCSAttributes_SetSeedLimit(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the seedLimit in the object.
     obj->data->SetSeedLimit((int)ival);
@@ -1937,7 +1937,7 @@ LCSAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueAdvectionWarnings in the object.
     obj->data->SetIssueAdvectionWarnings(ival != 0);
@@ -1961,7 +1961,7 @@ LCSAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueBoundaryWarnings in the object.
     obj->data->SetIssueBoundaryWarnings(ival != 0);
@@ -1985,7 +1985,7 @@ LCSAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueTerminationWarnings in the object.
     obj->data->SetIssueTerminationWarnings(ival != 0);
@@ -2009,7 +2009,7 @@ LCSAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueStepsizeWarnings in the object.
     obj->data->SetIssueStepsizeWarnings(ival != 0);
@@ -2033,7 +2033,7 @@ LCSAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueStiffnessWarnings in the object.
     obj->data->SetIssueStiffnessWarnings(ival != 0);
@@ -2057,7 +2057,7 @@ LCSAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueCriticalPointsWarnings in the object.
     obj->data->SetIssueCriticalPointsWarnings(ival != 0);
@@ -2081,7 +2081,7 @@ LCSAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the criticalPointThreshold in the object.
     obj->data->SetCriticalPointThreshold(dval);
@@ -2587,14 +2587,16 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -2740,7 +2742,7 @@ LCSAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

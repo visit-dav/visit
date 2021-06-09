@@ -93,7 +93,7 @@ SelectionList_SetAutoApplyUpdates(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the autoApplyUpdates in the object.
     obj->data->SetAutoApplyUpdates(ival != 0);
@@ -116,17 +116,9 @@ SelectionList_GetSelections(PyObject *self, PyObject *args)
     SelectionListObject *obj = (SelectionListObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetSelections().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetSelections().size() == 0)
-            snprintf(msg, 400, "In SelectionList::GetSelections : The index %d is invalid because selections is empty.", index);
-        else
-            snprintf(msg, 400, "In SelectionList::GetSelections : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSelections().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -153,14 +145,9 @@ SelectionList_AddSelections(PyObject *self, PyObject *args)
     SelectionListObject *obj = (SelectionListObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySelectionProperties_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The SelectionList::AddSelections method only accepts SelectionProperties objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     SelectionProperties *newData = PySelectionProperties_FromPyObject(element);
     obj->data->AddSelections(*newData);
     obj->data->SelectSelections();
@@ -200,15 +187,10 @@ SelectionList_RemoveSelections(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     SelectionListObject *obj = (SelectionListObject *)self;
     if(index < 0 || index >= obj->data->GetNumSelections())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In SelectionList::RemoveSelections : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return SelectionList_Remove_One_Selections(self, index);
 }
@@ -233,17 +215,9 @@ SelectionList_GetSelectionSummary(PyObject *self, PyObject *args)
     SelectionListObject *obj = (SelectionListObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetSelectionSummary().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetSelectionSummary().size() == 0)
-            snprintf(msg, 400, "In SelectionList::GetSelectionSummary : The index %d is invalid because selectionSummary is empty.", index);
-        else
-            snprintf(msg, 400, "In SelectionList::GetSelectionSummary : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSelectionSummary().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -270,14 +244,9 @@ SelectionList_AddSelectionSummary(PyObject *self, PyObject *args)
     SelectionListObject *obj = (SelectionListObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PySelectionSummary_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The SelectionList::AddSelectionSummary method only accepts SelectionSummary objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     SelectionSummary *newData = PySelectionSummary_FromPyObject(element);
     obj->data->AddSelectionSummary(*newData);
     obj->data->SelectSelectionSummary();
@@ -317,15 +286,10 @@ SelectionList_RemoveSelectionSummary(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     SelectionListObject *obj = (SelectionListObject *)self;
     if(index < 0 || index >= obj->data->GetNumSelectionSummarys())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In SelectionList::RemoveSelectionSummary : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return SelectionList_Remove_One_SelectionSummary(self, index);
 }
@@ -408,14 +372,16 @@ PySelectionList_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -561,7 +527,7 @@ SelectionList_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

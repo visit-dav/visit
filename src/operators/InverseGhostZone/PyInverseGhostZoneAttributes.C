@@ -95,7 +95,7 @@ InverseGhostZoneAttributes_SetRequestGhostZones(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the requestGhostZones in the object.
     obj->data->SetRequestGhostZones(ival != 0);
@@ -119,7 +119,7 @@ InverseGhostZoneAttributes_SetShowDuplicated(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showDuplicated in the object.
     obj->data->SetShowDuplicated(ival != 0);
@@ -143,7 +143,7 @@ InverseGhostZoneAttributes_SetShowEnhancedConnectivity(PyObject *self, PyObject 
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showEnhancedConnectivity in the object.
     obj->data->SetShowEnhancedConnectivity(ival != 0);
@@ -167,7 +167,7 @@ InverseGhostZoneAttributes_SetShowReducedConnectivity(PyObject *self, PyObject *
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showReducedConnectivity in the object.
     obj->data->SetShowReducedConnectivity(ival != 0);
@@ -191,7 +191,7 @@ InverseGhostZoneAttributes_SetShowAMRRefined(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showAMRRefined in the object.
     obj->data->SetShowAMRRefined(ival != 0);
@@ -215,7 +215,7 @@ InverseGhostZoneAttributes_SetShowExterior(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showExterior in the object.
     obj->data->SetShowExterior(ival != 0);
@@ -239,7 +239,7 @@ InverseGhostZoneAttributes_SetShowNotApplicable(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showNotApplicable in the object.
     obj->data->SetShowNotApplicable(ival != 0);
@@ -342,14 +342,16 @@ PyInverseGhostZoneAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -495,7 +497,7 @@ InverseGhostZoneAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

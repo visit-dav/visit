@@ -127,7 +127,7 @@ OnionPeelAttributes_SetAdjacencyType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the adjacencyType in the object.
     if(ival >= 0 && ival < 2)
@@ -138,7 +138,7 @@ OnionPeelAttributes_SetAdjacencyType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Node, Face.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -160,7 +160,7 @@ OnionPeelAttributes_SetUseGlobalId(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useGlobalId in the object.
     obj->data->SetUseGlobalId(ival != 0);
@@ -184,7 +184,7 @@ OnionPeelAttributes_SetCategoryName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the categoryName in the object.
     obj->data->SetCategoryName(std::string(str));
@@ -208,7 +208,7 @@ OnionPeelAttributes_SetSubsetName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the subsetName in the object.
     obj->data->SetSubsetName(std::string(str));
@@ -295,7 +295,7 @@ OnionPeelAttributes_SetLogical(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the logical in the object.
     obj->data->SetLogical(ival != 0);
@@ -319,7 +319,7 @@ OnionPeelAttributes_SetRequestedLayer(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the requestedLayer in the object.
     obj->data->SetRequestedLayer((int)ival);
@@ -343,7 +343,7 @@ OnionPeelAttributes_SetSeedType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the seedType in the object.
     if(ival >= 0 && ival < 2)
@@ -354,7 +354,7 @@ OnionPeelAttributes_SetSeedType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "SeedCell, SeedNode.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -376,7 +376,7 @@ OnionPeelAttributes_SetHonorOriginalMesh(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the honorOriginalMesh in the object.
     obj->data->SetHonorOriginalMesh(ival != 0);
@@ -501,14 +501,16 @@ PyOnionPeelAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -654,7 +656,7 @@ OnionPeelAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

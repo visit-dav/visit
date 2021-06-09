@@ -213,11 +213,11 @@ AnnotationAttributes_SetAxes2D(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyAxes2D_Check(newValue))
     {
         fprintf(stderr, "The axes2D field can only be set with Axes2D objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetAxes2D(*PyAxes2D_FromPyObject(newValue));
@@ -249,11 +249,11 @@ AnnotationAttributes_SetAxes3D(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyAxes3D_Check(newValue))
     {
         fprintf(stderr, "The axes3D field can only be set with Axes3D objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetAxes3D(*PyAxes3D_FromPyObject(newValue));
@@ -285,7 +285,7 @@ AnnotationAttributes_SetUserInfoFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the userInfoFlag in the object.
     obj->data->SetUserInfoFlag(ival != 0);
@@ -309,11 +309,11 @@ AnnotationAttributes_SetUserInfoFont(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyFontAttributes_Check(newValue))
     {
         fprintf(stderr, "The userInfoFont field can only be set with FontAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetUserInfoFont(*PyFontAttributes_FromPyObject(newValue));
@@ -345,7 +345,7 @@ AnnotationAttributes_SetDatabaseInfoFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the databaseInfoFlag in the object.
     obj->data->SetDatabaseInfoFlag(ival != 0);
@@ -369,7 +369,7 @@ AnnotationAttributes_SetTimeInfoFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeInfoFlag in the object.
     obj->data->SetTimeInfoFlag(ival != 0);
@@ -393,11 +393,11 @@ AnnotationAttributes_SetDatabaseInfoFont(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyFontAttributes_Check(newValue))
     {
         fprintf(stderr, "The databaseInfoFont field can only be set with FontAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetDatabaseInfoFont(*PyFontAttributes_FromPyObject(newValue));
@@ -429,7 +429,7 @@ AnnotationAttributes_SetDatabaseInfoExpansionMode(PyObject *self, PyObject *args
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the databaseInfoExpansionMode in the object.
     if(ival >= 0 && ival < 5)
@@ -441,7 +441,7 @@ AnnotationAttributes_SetDatabaseInfoExpansionMode(PyObject *self, PyObject *args
                         "You can also use the following names: "
                         "File, Directory, Full, Smart, SmartDirectory"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -463,7 +463,7 @@ AnnotationAttributes_SetDatabaseInfoTimeScale(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the databaseInfoTimeScale in the object.
     obj->data->SetDatabaseInfoTimeScale(dval);
@@ -487,7 +487,7 @@ AnnotationAttributes_SetDatabaseInfoTimeOffset(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the databaseInfoTimeOffset in the object.
     obj->data->SetDatabaseInfoTimeOffset(dval);
@@ -511,7 +511,7 @@ AnnotationAttributes_SetLegendInfoFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the legendInfoFlag in the object.
     obj->data->SetLegendInfoFlag(ival != 0);
@@ -689,7 +689,7 @@ AnnotationAttributes_SetGradientBackgroundStyle(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the gradientBackgroundStyle in the object.
     if(ival >= 0 && ival < 5)
@@ -701,7 +701,7 @@ AnnotationAttributes_SetGradientBackgroundStyle(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "TopToBottom, BottomToTop, LeftToRight, RightToLeft, Radial"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -877,7 +877,7 @@ AnnotationAttributes_SetBackgroundMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the backgroundMode in the object.
     if(ival >= 0 && ival < 4)
@@ -888,7 +888,7 @@ AnnotationAttributes_SetBackgroundMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "Solid, Gradient, Image, ImageSphere.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -910,7 +910,7 @@ AnnotationAttributes_SetBackgroundImage(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the backgroundImage in the object.
     obj->data->SetBackgroundImage(std::string(str));
@@ -934,7 +934,7 @@ AnnotationAttributes_SetImageRepeatX(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the imageRepeatX in the object.
     obj->data->SetImageRepeatX((int)ival);
@@ -958,7 +958,7 @@ AnnotationAttributes_SetImageRepeatY(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the imageRepeatY in the object.
     obj->data->SetImageRepeatY((int)ival);
@@ -982,11 +982,11 @@ AnnotationAttributes_SetAxesArray(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyAxesArray_Check(newValue))
     {
         fprintf(stderr, "The axesArray field can only be set with AxesArray objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetAxesArray(*PyAxesArray_FromPyObject(newValue));
@@ -1212,14 +1212,16 @@ PyAnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1365,7 +1367,7 @@ AnnotationAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

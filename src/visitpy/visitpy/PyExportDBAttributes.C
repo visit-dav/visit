@@ -124,7 +124,7 @@ ExportDBAttributes_SetAllTimes(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the allTimes in the object.
     obj->data->SetAllTimes(ival != 0);
@@ -148,7 +148,7 @@ ExportDBAttributes_SetDirname(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dirname in the object.
     obj->data->SetDirname(std::string(str));
@@ -172,7 +172,7 @@ ExportDBAttributes_SetFilename(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the filename in the object.
     obj->data->SetFilename(std::string(str));
@@ -196,7 +196,7 @@ ExportDBAttributes_SetTimeStateFormat(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeStateFormat in the object.
     obj->data->SetTimeStateFormat(std::string(str));
@@ -220,7 +220,7 @@ ExportDBAttributes_SetDb_type(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the db_type in the object.
     obj->data->SetDb_type(std::string(str));
@@ -244,7 +244,7 @@ ExportDBAttributes_SetDb_type_fullname(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the db_type_fullname in the object.
     obj->data->SetDb_type_fullname(std::string(str));
@@ -323,7 +323,7 @@ ExportDBAttributes_SetWriteUsingGroups(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the writeUsingGroups in the object.
     obj->data->SetWriteUsingGroups(ival != 0);
@@ -347,7 +347,7 @@ ExportDBAttributes_SetGroupSize(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the groupSize in the object.
     obj->data->SetGroupSize((int)ival);
@@ -371,11 +371,11 @@ ExportDBAttributes_SetOpts(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyDBOptionsAttributes_Check(newValue))
     {
         fprintf(stderr, "The opts field can only be set with DBOptionsAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetOpts(*PyDBOptionsAttributes_FromPyObject(newValue));
@@ -504,14 +504,16 @@ PyExportDBAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -657,7 +659,7 @@ ExportDBAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

@@ -222,7 +222,7 @@ ExplodeAttributes_SetExplosionType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the explosionType in the object.
     if(ival >= 0 && ival < 3)
@@ -233,7 +233,7 @@ ExplodeAttributes_SetExplosionType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Point, Plane, Cylinder.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -525,7 +525,7 @@ ExplodeAttributes_SetMaterialExplosionFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the materialExplosionFactor in the object.
     obj->data->SetMaterialExplosionFactor(dval);
@@ -549,7 +549,7 @@ ExplodeAttributes_SetMaterial(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the material in the object.
     obj->data->SetMaterial(std::string(str));
@@ -573,7 +573,7 @@ ExplodeAttributes_SetCylinderRadius(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cylinderRadius in the object.
     obj->data->SetCylinderRadius(dval);
@@ -597,7 +597,7 @@ ExplodeAttributes_SetExplodeMaterialCells(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the explodeMaterialCells in the object.
     obj->data->SetExplodeMaterialCells(ival != 0);
@@ -621,7 +621,7 @@ ExplodeAttributes_SetCellExplosionFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cellExplosionFactor in the object.
     obj->data->SetCellExplosionFactor(dval);
@@ -645,7 +645,7 @@ ExplodeAttributes_SetExplosionPattern(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the explosionPattern in the object.
     if(ival >= 0 && ival < 2)
@@ -656,7 +656,7 @@ ExplodeAttributes_SetExplosionPattern(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Impact, Scatter.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -678,7 +678,7 @@ ExplodeAttributes_SetExplodeAllCells(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the explodeAllCells in the object.
     obj->data->SetExplodeAllCells(ival != 0);
@@ -756,17 +756,9 @@ ExplodeAttributes_GetExplosions(PyObject *self, PyObject *args)
     ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetExplosions().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetExplosions().size() == 0)
-            snprintf(msg, 400, "In ExplodeAttributes::GetExplosions : The index %d is invalid because explosions is empty.", index);
-        else
-            snprintf(msg, 400, "In ExplodeAttributes::GetExplosions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetExplosions().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -793,14 +785,9 @@ ExplodeAttributes_AddExplosions(PyObject *self, PyObject *args)
     ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyExplodeAttributes_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The ExplodeAttributes::AddExplosions method only accepts ExplodeAttributes objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     ExplodeAttributes *newData = PyExplodeAttributes_FromPyObject(element);
     obj->data->AddExplosions(*newData);
     obj->data->SelectExplosions();
@@ -840,15 +827,10 @@ ExplodeAttributes_RemoveExplosions(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
     if(index < 0 || index >= obj->data->GetNumExplosions())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In ExplodeAttributes::RemoveExplosions : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return ExplodeAttributes_Remove_One_Explosions(self, index);
 }
@@ -1014,14 +996,16 @@ PyExplodeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1167,7 +1151,7 @@ ExplodeAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

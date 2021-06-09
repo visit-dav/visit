@@ -365,7 +365,7 @@ VolumeAttributes_SetOsprayShadowsEnabledFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the osprayShadowsEnabledFlag in the object.
     obj->data->SetOsprayShadowsEnabledFlag(ival != 0);
@@ -389,7 +389,7 @@ VolumeAttributes_SetOsprayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the osprayUseGridAcceleratorFlag in the object.
     obj->data->SetOsprayUseGridAcceleratorFlag(ival != 0);
@@ -413,7 +413,7 @@ VolumeAttributes_SetOsprayPreIntegrationFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the osprayPreIntegrationFlag in the object.
     obj->data->SetOsprayPreIntegrationFlag(ival != 0);
@@ -437,7 +437,7 @@ VolumeAttributes_SetOspraySingleShadeFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the ospraySingleShadeFlag in the object.
     obj->data->SetOspraySingleShadeFlag(ival != 0);
@@ -461,7 +461,7 @@ VolumeAttributes_SetOsprayOneSidedLightingFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the osprayOneSidedLightingFlag in the object.
     obj->data->SetOsprayOneSidedLightingFlag(ival != 0);
@@ -485,7 +485,7 @@ VolumeAttributes_SetOsprayAoTransparencyEnabledFlag(PyObject *self, PyObject *ar
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the osprayAoTransparencyEnabledFlag in the object.
     obj->data->SetOsprayAoTransparencyEnabledFlag(ival != 0);
@@ -509,7 +509,7 @@ VolumeAttributes_SetOspraySpp(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the ospraySpp in the object.
     obj->data->SetOspraySpp((int)ival);
@@ -533,7 +533,7 @@ VolumeAttributes_SetOsprayAoSamples(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the osprayAoSamples in the object.
     obj->data->SetOsprayAoSamples((int)ival);
@@ -557,7 +557,7 @@ VolumeAttributes_SetOsprayAoDistance(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the osprayAoDistance in the object.
     obj->data->SetOsprayAoDistance(dval);
@@ -581,7 +581,7 @@ VolumeAttributes_SetOsprayMinContribution(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the osprayMinContribution in the object.
     obj->data->SetOsprayMinContribution(dval);
@@ -605,7 +605,7 @@ VolumeAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the legendFlag in the object.
     obj->data->SetLegendFlag(ival != 0);
@@ -629,7 +629,7 @@ VolumeAttributes_SetLightingFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lightingFlag in the object.
     obj->data->SetLightingFlag(ival != 0);
@@ -653,11 +653,11 @@ VolumeAttributes_SetColorControlPoints(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyColorControlPointList_Check(newValue))
     {
         fprintf(stderr, "The colorControlPoints field can only be set with ColorControlPointList objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetColorControlPoints(*PyColorControlPointList_FromPyObject(newValue));
@@ -689,7 +689,7 @@ VolumeAttributes_SetOpacityAttenuation(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityAttenuation in the object.
     obj->data->SetOpacityAttenuation(fval);
@@ -713,7 +713,7 @@ VolumeAttributes_SetOpacityMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityMode in the object.
     if(ival >= 0 && ival < 3)
@@ -724,7 +724,7 @@ VolumeAttributes_SetOpacityMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "FreeformMode, GaussianMode, ColorTableMode.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -746,11 +746,11 @@ VolumeAttributes_SetOpacityControlPoints(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyGaussianControlPointList_Check(newValue))
     {
         fprintf(stderr, "The opacityControlPoints field can only be set with GaussianControlPointList objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetOpacityControlPoints(*PyGaussianControlPointList_FromPyObject(newValue));
@@ -782,7 +782,7 @@ VolumeAttributes_SetResampleFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the resampleFlag in the object.
     obj->data->SetResampleFlag(ival != 0);
@@ -806,7 +806,7 @@ VolumeAttributes_SetResampleTarget(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the resampleTarget in the object.
     obj->data->SetResampleTarget((int)ival);
@@ -830,7 +830,7 @@ VolumeAttributes_SetOpacityVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityVariable in the object.
     obj->data->SetOpacityVariable(std::string(str));
@@ -854,7 +854,7 @@ VolumeAttributes_SetCompactVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the compactVariable in the object.
     obj->data->SetCompactVariable(std::string(str));
@@ -961,7 +961,7 @@ VolumeAttributes_SetUseColorVarMin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useColorVarMin in the object.
     obj->data->SetUseColorVarMin(ival != 0);
@@ -985,7 +985,7 @@ VolumeAttributes_SetColorVarMin(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorVarMin in the object.
     obj->data->SetColorVarMin(fval);
@@ -1009,7 +1009,7 @@ VolumeAttributes_SetUseColorVarMax(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useColorVarMax in the object.
     obj->data->SetUseColorVarMax(ival != 0);
@@ -1033,7 +1033,7 @@ VolumeAttributes_SetColorVarMax(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorVarMax in the object.
     obj->data->SetColorVarMax(fval);
@@ -1057,7 +1057,7 @@ VolumeAttributes_SetUseOpacityVarMin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useOpacityVarMin in the object.
     obj->data->SetUseOpacityVarMin(ival != 0);
@@ -1081,7 +1081,7 @@ VolumeAttributes_SetOpacityVarMin(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityVarMin in the object.
     obj->data->SetOpacityVarMin(fval);
@@ -1105,7 +1105,7 @@ VolumeAttributes_SetUseOpacityVarMax(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useOpacityVarMax in the object.
     obj->data->SetUseOpacityVarMax(ival != 0);
@@ -1129,7 +1129,7 @@ VolumeAttributes_SetOpacityVarMax(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityVarMax in the object.
     obj->data->SetOpacityVarMax(fval);
@@ -1153,7 +1153,7 @@ VolumeAttributes_SetSmoothData(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the smoothData in the object.
     obj->data->SetSmoothData(ival != 0);
@@ -1177,7 +1177,7 @@ VolumeAttributes_SetSamplesPerRay(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the samplesPerRay in the object.
     obj->data->SetSamplesPerRay((int)ival);
@@ -1201,7 +1201,7 @@ VolumeAttributes_SetRendererType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the rendererType in the object.
     if(ival >= 0 && ival < 5)
@@ -1213,7 +1213,7 @@ VolumeAttributes_SetRendererType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Default, RayCasting, RayCastingIntegration, RayCastingSLIVR, RayCastingOSPRay"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1235,7 +1235,7 @@ VolumeAttributes_SetGradientType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the gradientType in the object.
     if(ival >= 0 && ival < 2)
@@ -1246,7 +1246,7 @@ VolumeAttributes_SetGradientType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "CenteredDifferences, SobelOperator.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1268,7 +1268,7 @@ VolumeAttributes_SetScaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scaling in the object.
     if(ival >= 0 && ival < 3)
@@ -1279,7 +1279,7 @@ VolumeAttributes_SetScaling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, Skew.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1301,7 +1301,7 @@ VolumeAttributes_SetSkewFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the skewFactor in the object.
     obj->data->SetSkewFactor(dval);
@@ -1325,7 +1325,7 @@ VolumeAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the limitsMode in the object.
     if(ival >= 0 && ival < 2)
@@ -1336,7 +1336,7 @@ VolumeAttributes_SetLimitsMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "OriginalData, CurrentPlot.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1358,7 +1358,7 @@ VolumeAttributes_SetSampling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampling in the object.
     if(ival >= 0 && ival < 3)
@@ -1369,7 +1369,7 @@ VolumeAttributes_SetSampling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "KernelBased, Rasterization, Trilinear.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1391,7 +1391,7 @@ VolumeAttributes_SetRendererSamples(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the rendererSamples in the object.
     obj->data->SetRendererSamples(fval);
@@ -1415,7 +1415,7 @@ VolumeAttributes_SetLowGradientLightingReduction(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lowGradientLightingReduction in the object.
     if(ival >= 0 && ival < 8)
@@ -1427,7 +1427,7 @@ VolumeAttributes_SetLowGradientLightingReduction(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Off, Lowest, Lower, Low, Medium, "
                         "High, Higher, Highest.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1449,7 +1449,7 @@ VolumeAttributes_SetLowGradientLightingClampFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lowGradientLightingClampFlag in the object.
     obj->data->SetLowGradientLightingClampFlag(ival != 0);
@@ -1473,7 +1473,7 @@ VolumeAttributes_SetLowGradientLightingClampValue(PyObject *self, PyObject *args
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lowGradientLightingClampValue in the object.
     obj->data->SetLowGradientLightingClampValue(dval);
@@ -1900,14 +1900,16 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -2053,7 +2055,7 @@ VolumeAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

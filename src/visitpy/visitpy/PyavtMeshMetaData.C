@@ -464,7 +464,7 @@ avtMeshMetaData_SetName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the name in the object.
     obj->data->name = std::string(str);
@@ -488,7 +488,7 @@ avtMeshMetaData_SetOriginalName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the originalName in the object.
     obj->data->originalName = std::string(str);
@@ -512,7 +512,7 @@ avtMeshMetaData_SetValidVariable(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the validVariable in the object.
     obj->data->validVariable = (ival != 0);
@@ -536,7 +536,7 @@ avtMeshMetaData_SetMeshType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     obj->data->meshType = (avtMeshType)ival;
 
@@ -559,7 +559,7 @@ avtMeshMetaData_SetMeshCoordType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     obj->data->meshCoordType = (avtMeshCoordType)ival;
 
@@ -582,7 +582,7 @@ avtMeshMetaData_SetCellOrigin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cellOrigin in the object.
     obj->data->cellOrigin = (int)ival;
@@ -606,7 +606,7 @@ avtMeshMetaData_SetSpatialDimension(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the spatialDimension in the object.
     obj->data->spatialDimension = (int)ival;
@@ -630,7 +630,7 @@ avtMeshMetaData_SetHasLogicalBounds(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the hasLogicalBounds in the object.
     obj->data->hasLogicalBounds = (ival != 0);
@@ -708,7 +708,7 @@ avtMeshMetaData_SetHasNumberCells(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the hasNumberCells in the object.
     obj->data->hasNumberCells = (ival != 0);
@@ -732,7 +732,7 @@ avtMeshMetaData_SetNumberCells(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numberCells in the object.
     obj->data->numberCells = (int)ival;
@@ -756,7 +756,7 @@ avtMeshMetaData_SetTopologicalDimension(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the topologicalDimension in the object.
     obj->data->topologicalDimension = (int)ival;
@@ -780,7 +780,7 @@ avtMeshMetaData_SetXUnits(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the xUnits in the object.
     obj->data->xUnits = std::string(str);
@@ -804,7 +804,7 @@ avtMeshMetaData_SetYUnits(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the yUnits in the object.
     obj->data->yUnits = std::string(str);
@@ -828,7 +828,7 @@ avtMeshMetaData_SetZUnits(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the zUnits in the object.
     obj->data->zUnits = std::string(str);
@@ -852,7 +852,7 @@ avtMeshMetaData_SetXLabel(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the xLabel in the object.
     obj->data->xLabel = std::string(str);
@@ -876,7 +876,7 @@ avtMeshMetaData_SetYLabel(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the yLabel in the object.
     obj->data->yLabel = std::string(str);
@@ -900,7 +900,7 @@ avtMeshMetaData_SetZLabel(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the zLabel in the object.
     obj->data->zLabel = std::string(str);
@@ -924,7 +924,7 @@ avtMeshMetaData_SetHasSpatialExtents(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the hasSpatialExtents in the object.
     obj->data->hasSpatialExtents = (ival != 0);
@@ -1056,7 +1056,7 @@ avtMeshMetaData_SetNumBlocks(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numBlocks in the object.
     obj->data->numBlocks = (int)ival;
@@ -1080,7 +1080,7 @@ avtMeshMetaData_SetBlockOrigin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the blockOrigin in the object.
     obj->data->blockOrigin = (int)ival;
@@ -1104,7 +1104,7 @@ avtMeshMetaData_SetBlockPieceName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the blockPieceName in the object.
     obj->data->blockPieceName = std::string(str);
@@ -1128,7 +1128,7 @@ avtMeshMetaData_SetBlockTitle(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the blockTitle in the object.
     obj->data->blockTitle = std::string(str);
@@ -1207,11 +1207,11 @@ avtMeshMetaData_SetBlockNameScheme(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyNameschemeAttributes_Check(newValue))
     {
         fprintf(stderr, "The blockNameScheme field can only be set with NameschemeAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->blockNameScheme = *PyNameschemeAttributes_FromPyObject(newValue);
@@ -1243,7 +1243,7 @@ avtMeshMetaData_SetNumGroups(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numGroups in the object.
     obj->data->numGroups = (int)ival;
@@ -1267,7 +1267,7 @@ avtMeshMetaData_SetGroupOrigin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the groupOrigin in the object.
     obj->data->groupOrigin = (int)ival;
@@ -1291,7 +1291,7 @@ avtMeshMetaData_SetGroupPieceName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the groupPieceName in the object.
     obj->data->groupPieceName = std::string(str);
@@ -1315,7 +1315,7 @@ avtMeshMetaData_SetGroupTitle(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the groupTitle in the object.
     obj->data->groupTitle = std::string(str);
@@ -1520,7 +1520,7 @@ avtMeshMetaData_SetDisjointElements(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the disjointElements in the object.
     obj->data->disjointElements = (ival != 0);
@@ -1544,7 +1544,7 @@ avtMeshMetaData_SetContainsGhostZones(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     obj->data->containsGhostZones = (avtGhostType)ival;
 
@@ -1567,7 +1567,7 @@ avtMeshMetaData_SetContainsOriginalCells(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the containsOriginalCells in the object.
     obj->data->containsOriginalCells = (ival != 0);
@@ -1591,7 +1591,7 @@ avtMeshMetaData_SetContainsOriginalNodes(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the containsOriginalNodes in the object.
     obj->data->containsOriginalNodes = (ival != 0);
@@ -1615,7 +1615,7 @@ avtMeshMetaData_SetContainsGlobalNodeIds(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the containsGlobalNodeIds in the object.
     obj->data->containsGlobalNodeIds = (ival != 0);
@@ -1639,7 +1639,7 @@ avtMeshMetaData_SetContainsGlobalZoneIds(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the containsGlobalZoneIds in the object.
     obj->data->containsGlobalZoneIds = (ival != 0);
@@ -1663,7 +1663,7 @@ avtMeshMetaData_SetLoadBalanceScheme(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     obj->data->loadBalanceScheme = (LoadBalanceScheme)ival;
 
@@ -1686,7 +1686,7 @@ avtMeshMetaData_SetNodesAreCritical(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the nodesAreCritical in the object.
     obj->data->nodesAreCritical = (ival != 0);
@@ -1818,7 +1818,7 @@ avtMeshMetaData_SetRectilinearGridHasTransform(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the rectilinearGridHasTransform in the object.
     obj->data->rectilinearGridHasTransform = (ival != 0);
@@ -1896,7 +1896,7 @@ avtMeshMetaData_SetNodeOrigin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the nodeOrigin in the object.
     obj->data->nodeOrigin = (int)ival;
@@ -1920,7 +1920,7 @@ avtMeshMetaData_SetContainsExteriorBoundaryGhosts(PyObject *self, PyObject *args
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the containsExteriorBoundaryGhosts in the object.
     obj->data->containsExteriorBoundaryGhosts = (ival != 0);
@@ -1944,7 +1944,7 @@ avtMeshMetaData_SetHideFromGUI(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the hideFromGUI in the object.
     obj->data->hideFromGUI = (ival != 0);
@@ -1968,7 +1968,7 @@ avtMeshMetaData_SetLODs(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the LODs in the object.
     obj->data->LODs = (int)ival;
@@ -1992,7 +1992,7 @@ avtMeshMetaData_SetPresentGhostZoneTypes(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the presentGhostZoneTypes in the object.
     obj->data->presentGhostZoneTypes = (int)ival;
@@ -2016,7 +2016,7 @@ avtMeshMetaData_SetZonesWereSplit(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the zonesWereSplit in the object.
     obj->data->zonesWereSplit = (ival != 0);
@@ -2437,14 +2437,16 @@ PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -2590,7 +2592,7 @@ avtMeshMetaData_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

@@ -199,7 +199,7 @@ Plot_SetStateType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stateType in the object.
     if(ival >= 0 && ival < 4)
@@ -210,7 +210,7 @@ Plot_SetStateType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "NewlyCreated, Pending, Completed, Error.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -232,7 +232,7 @@ Plot_SetPlotType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the plotType in the object.
     obj->data->SetPlotType((int)ival);
@@ -256,7 +256,7 @@ Plot_SetPlotName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the plotName in the object.
     obj->data->SetPlotName(std::string(str));
@@ -280,7 +280,7 @@ Plot_SetActiveFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the activeFlag in the object.
     obj->data->SetActiveFlag(ival != 0);
@@ -304,7 +304,7 @@ Plot_SetHiddenFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the hiddenFlag in the object.
     obj->data->SetHiddenFlag(ival != 0);
@@ -328,7 +328,7 @@ Plot_SetExpandedFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the expandedFlag in the object.
     obj->data->SetExpandedFlag(ival != 0);
@@ -352,7 +352,7 @@ Plot_SetPlotVar(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the plotVar in the object.
     obj->data->SetPlotVar(std::string(str));
@@ -376,7 +376,7 @@ Plot_SetDatabaseName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the databaseName in the object.
     obj->data->SetDatabaseName(std::string(str));
@@ -518,7 +518,7 @@ Plot_SetActiveOperator(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the activeOperator in the object.
     obj->data->SetActiveOperator((int)ival);
@@ -542,7 +542,7 @@ Plot_SetId(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the id in the object.
     obj->data->SetId((int)ival);
@@ -566,7 +566,7 @@ Plot_SetEmbeddedPlotId(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the embeddedPlotId in the object.
     obj->data->SetEmbeddedPlotId((int)ival);
@@ -590,7 +590,7 @@ Plot_SetBeginFrame(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the beginFrame in the object.
     obj->data->SetBeginFrame((int)ival);
@@ -614,7 +614,7 @@ Plot_SetEndFrame(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the endFrame in the object.
     obj->data->SetEndFrame((int)ival);
@@ -764,7 +764,7 @@ Plot_SetIsFromSimulation(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the isFromSimulation in the object.
     obj->data->SetIsFromSimulation(ival != 0);
@@ -788,7 +788,7 @@ Plot_SetFollowsTime(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the followsTime in the object.
     obj->data->SetFollowsTime(ival != 0);
@@ -812,7 +812,7 @@ Plot_SetDescription(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the description in the object.
     obj->data->SetDescription(std::string(str));
@@ -836,7 +836,7 @@ Plot_SetSelection(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the selection in the object.
     obj->data->SetSelection(std::string(str));
@@ -860,7 +860,7 @@ Plot_SetAnimatingFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the animatingFlag in the object.
     obj->data->SetAnimatingFlag(ival != 0);
@@ -1062,14 +1062,16 @@ PyPlot_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1215,7 +1217,7 @@ Plot_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

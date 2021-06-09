@@ -228,7 +228,7 @@ VectorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the glyphLocation in the object.
     if(ival >= 0 && ival < 2)
@@ -239,7 +239,7 @@ VectorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "AdaptsToMeshResolution, UniformInSpace.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -261,7 +261,7 @@ VectorAttributes_SetUseStride(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useStride in the object.
     obj->data->SetUseStride(ival != 0);
@@ -285,7 +285,7 @@ VectorAttributes_SetNVectors(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the nVectors in the object.
     obj->data->SetNVectors((int)ival);
@@ -309,7 +309,7 @@ VectorAttributes_SetStride(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stride in the object.
     obj->data->SetStride((int)ival);
@@ -333,7 +333,7 @@ VectorAttributes_SetOrigOnly(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the origOnly in the object.
     obj->data->SetOrigOnly(ival != 0);
@@ -357,7 +357,7 @@ VectorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the limitsMode in the object.
     if(ival >= 0 && ival < 2)
@@ -368,7 +368,7 @@ VectorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "OriginalData, CurrentPlot.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -390,7 +390,7 @@ VectorAttributes_SetMinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minFlag in the object.
     obj->data->SetMinFlag(ival != 0);
@@ -414,7 +414,7 @@ VectorAttributes_SetMin(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the min in the object.
     obj->data->SetMin(dval);
@@ -438,7 +438,7 @@ VectorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxFlag in the object.
     obj->data->SetMaxFlag(ival != 0);
@@ -462,7 +462,7 @@ VectorAttributes_SetMax(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the max in the object.
     obj->data->SetMax(dval);
@@ -486,7 +486,7 @@ VectorAttributes_SetColorByMagnitude(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorByMagnitude in the object.
     obj->data->SetColorByMagnitude(ival != 0);
@@ -510,7 +510,7 @@ VectorAttributes_SetColorTableName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorTableName in the object.
     obj->data->SetColorTableName(std::string(str));
@@ -534,7 +534,7 @@ VectorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the invertColorTable in the object.
     obj->data->SetInvertColorTable(ival != 0);
@@ -635,7 +635,7 @@ VectorAttributes_SetUseLegend(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useLegend in the object.
     obj->data->SetUseLegend(ival != 0);
@@ -659,7 +659,7 @@ VectorAttributes_SetScale(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scale in the object.
     obj->data->SetScale(dval);
@@ -683,7 +683,7 @@ VectorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scaleByMagnitude in the object.
     obj->data->SetScaleByMagnitude(ival != 0);
@@ -707,7 +707,7 @@ VectorAttributes_SetAutoScale(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the autoScale in the object.
     obj->data->SetAutoScale(ival != 0);
@@ -731,7 +731,7 @@ VectorAttributes_SetGlyphType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the glyphType in the object.
     if(ival >= 0 && ival < 2)
@@ -742,7 +742,7 @@ VectorAttributes_SetGlyphType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Arrow, Ellipsoid.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -764,7 +764,7 @@ VectorAttributes_SetHeadOn(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the headOn in the object.
     obj->data->SetHeadOn(ival != 0);
@@ -788,7 +788,7 @@ VectorAttributes_SetHeadSize(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the headSize in the object.
     obj->data->SetHeadSize(dval);
@@ -812,7 +812,7 @@ VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineStem in the object.
     if(ival >= 0 && ival < 2)
@@ -823,7 +823,7 @@ VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Cylinder, Line.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -845,7 +845,7 @@ VectorAttributes_SetLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineWidth in the object.
     obj->data->SetLineWidth(ival);
@@ -869,7 +869,7 @@ VectorAttributes_SetStemWidth(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stemWidth in the object.
     obj->data->SetStemWidth(dval);
@@ -893,7 +893,7 @@ VectorAttributes_SetVectorOrigin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the vectorOrigin in the object.
     if(ival >= 0 && ival < 3)
@@ -904,7 +904,7 @@ VectorAttributes_SetVectorOrigin(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Head, Middle, Tail.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -926,7 +926,7 @@ VectorAttributes_SetGeometryQuality(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the geometryQuality in the object.
     if(ival >= 0 && ival < 2)
@@ -937,7 +937,7 @@ VectorAttributes_SetGeometryQuality(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Fast, High.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -959,7 +959,7 @@ VectorAttributes_SetAnimationStep(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the animationStep in the object.
     obj->data->SetAnimationStep((int)ival);
@@ -1299,14 +1299,16 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1452,7 +1454,7 @@ VectorAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

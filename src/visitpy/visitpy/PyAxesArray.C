@@ -88,7 +88,7 @@ AxesArray_SetVisible(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the visible in the object.
     obj->data->SetVisible(ival != 0);
@@ -112,7 +112,7 @@ AxesArray_SetTicksVisible(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the ticksVisible in the object.
     obj->data->SetTicksVisible(ival != 0);
@@ -136,7 +136,7 @@ AxesArray_SetAutoSetTicks(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the autoSetTicks in the object.
     obj->data->SetAutoSetTicks(ival != 0);
@@ -160,7 +160,7 @@ AxesArray_SetAutoSetScaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the autoSetScaling in the object.
     obj->data->SetAutoSetScaling(ival != 0);
@@ -184,7 +184,7 @@ AxesArray_SetLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineWidth in the object.
     obj->data->SetLineWidth(ival);
@@ -208,11 +208,11 @@ AxesArray_SetAxes(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyAxisAttributes_Check(newValue))
     {
         fprintf(stderr, "The axes field can only be set with AxisAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetAxes(*PyAxisAttributes_FromPyObject(newValue));
@@ -317,14 +317,16 @@ PyAxesArray_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -470,7 +472,7 @@ AxesArray_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

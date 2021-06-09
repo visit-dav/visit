@@ -288,7 +288,7 @@ RenderingAttributes_SetAntialiasing(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the antialiasing in the object.
     obj->data->SetAntialiasing(ival != 0);
@@ -312,7 +312,7 @@ RenderingAttributes_SetOrderComposite(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the orderComposite in the object.
     obj->data->SetOrderComposite(ival != 0);
@@ -336,7 +336,7 @@ RenderingAttributes_SetDepthCompositeThreads(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the depthCompositeThreads in the object.
     obj->data->SetDepthCompositeThreads((int)ival);
@@ -360,7 +360,7 @@ RenderingAttributes_SetDepthCompositeBlocking(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the depthCompositeBlocking in the object.
     obj->data->SetDepthCompositeBlocking((int)ival);
@@ -384,7 +384,7 @@ RenderingAttributes_SetAlphaCompositeThreads(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the alphaCompositeThreads in the object.
     obj->data->SetAlphaCompositeThreads((int)ival);
@@ -408,7 +408,7 @@ RenderingAttributes_SetAlphaCompositeBlocking(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the alphaCompositeBlocking in the object.
     obj->data->SetAlphaCompositeBlocking((int)ival);
@@ -432,7 +432,7 @@ RenderingAttributes_SetDepthPeeling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the depthPeeling in the object.
     obj->data->SetDepthPeeling(ival != 0);
@@ -456,7 +456,7 @@ RenderingAttributes_SetOcclusionRatio(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the occlusionRatio in the object.
     obj->data->SetOcclusionRatio(dval);
@@ -480,7 +480,7 @@ RenderingAttributes_SetNumberOfPeels(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numberOfPeels in the object.
     obj->data->SetNumberOfPeels((int)ival);
@@ -504,7 +504,7 @@ RenderingAttributes_SetMultiresolutionMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the multiresolutionMode in the object.
     obj->data->SetMultiresolutionMode(ival != 0);
@@ -528,7 +528,7 @@ RenderingAttributes_SetMultiresolutionCellSize(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the multiresolutionCellSize in the object.
     obj->data->SetMultiresolutionCellSize(fval);
@@ -552,7 +552,7 @@ RenderingAttributes_SetGeometryRepresentation(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the geometryRepresentation in the object.
     if(ival >= 0 && ival < 3)
@@ -563,7 +563,7 @@ RenderingAttributes_SetGeometryRepresentation(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Surfaces, Wireframe, Points.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -585,7 +585,7 @@ RenderingAttributes_SetStereoRendering(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stereoRendering in the object.
     obj->data->SetStereoRendering(ival != 0);
@@ -609,7 +609,7 @@ RenderingAttributes_SetStereoType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stereoType in the object.
     if(ival >= 0 && ival < 4)
@@ -620,7 +620,7 @@ RenderingAttributes_SetStereoType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "RedBlue, Interlaced, CrystalEyes, RedGreen.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -642,7 +642,7 @@ RenderingAttributes_SetNotifyForEachRender(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the notifyForEachRender in the object.
     obj->data->SetNotifyForEachRender(ival != 0);
@@ -666,7 +666,7 @@ RenderingAttributes_SetScalableActivationMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scalableActivationMode in the object.
     if(ival >= 0 && ival < 3)
@@ -677,7 +677,7 @@ RenderingAttributes_SetScalableActivationMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Never, Always, Auto.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -699,7 +699,7 @@ RenderingAttributes_SetScalableAutoThreshold(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scalableAutoThreshold in the object.
     obj->data->SetScalableAutoThreshold((int)ival);
@@ -723,7 +723,7 @@ RenderingAttributes_SetSpecularFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the specularFlag in the object.
     obj->data->SetSpecularFlag(ival != 0);
@@ -747,7 +747,7 @@ RenderingAttributes_SetSpecularCoeff(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the specularCoeff in the object.
     obj->data->SetSpecularCoeff(fval);
@@ -771,7 +771,7 @@ RenderingAttributes_SetSpecularPower(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the specularPower in the object.
     obj->data->SetSpecularPower(fval);
@@ -872,7 +872,7 @@ RenderingAttributes_SetDoShadowing(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the doShadowing in the object.
     obj->data->SetDoShadowing(ival != 0);
@@ -896,7 +896,7 @@ RenderingAttributes_SetShadowStrength(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the shadowStrength in the object.
     obj->data->SetShadowStrength(dval);
@@ -920,7 +920,7 @@ RenderingAttributes_SetDoDepthCueing(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the doDepthCueing in the object.
     obj->data->SetDoDepthCueing(ival != 0);
@@ -944,7 +944,7 @@ RenderingAttributes_SetDepthCueingAutomatic(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the depthCueingAutomatic in the object.
     obj->data->SetDepthCueingAutomatic(ival != 0);
@@ -1076,7 +1076,7 @@ RenderingAttributes_SetCompressionActivationMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the compressionActivationMode in the object.
     if(ival >= 0 && ival < 3)
@@ -1087,7 +1087,7 @@ RenderingAttributes_SetCompressionActivationMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Never, Always, Auto.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1109,7 +1109,7 @@ RenderingAttributes_SetColorTexturingFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorTexturingFlag in the object.
     obj->data->SetColorTexturingFlag(ival != 0);
@@ -1133,7 +1133,7 @@ RenderingAttributes_SetCompactDomainsActivationMode(PyObject *self, PyObject *ar
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the compactDomainsActivationMode in the object.
     if(ival >= 0 && ival < 3)
@@ -1144,7 +1144,7 @@ RenderingAttributes_SetCompactDomainsActivationMode(PyObject *self, PyObject *ar
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Never, Always, Auto.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1166,7 +1166,7 @@ RenderingAttributes_SetCompactDomainsAutoThreshold(PyObject *self, PyObject *arg
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the compactDomainsAutoThreshold in the object.
     obj->data->SetCompactDomainsAutoThreshold((int)ival);
@@ -1190,7 +1190,7 @@ RenderingAttributes_SetOsprayRendering(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the osprayRendering in the object.
     obj->data->SetOsprayRendering(ival != 0);
@@ -1214,7 +1214,7 @@ RenderingAttributes_SetOspraySPP(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the ospraySPP in the object.
     obj->data->SetOspraySPP((int)ival);
@@ -1238,7 +1238,7 @@ RenderingAttributes_SetOsprayAO(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the osprayAO in the object.
     obj->data->SetOsprayAO((int)ival);
@@ -1262,7 +1262,7 @@ RenderingAttributes_SetOsprayShadows(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the osprayShadows in the object.
     obj->data->SetOsprayShadows(ival != 0);
@@ -1570,14 +1570,16 @@ PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1723,7 +1725,7 @@ RenderingAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

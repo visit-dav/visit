@@ -70,7 +70,7 @@ GaussianControlPoint_SetX(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the x in the object.
     obj->data->SetX(fval);
@@ -94,7 +94,7 @@ GaussianControlPoint_SetHeight(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the height in the object.
     obj->data->SetHeight(fval);
@@ -118,7 +118,7 @@ GaussianControlPoint_SetWidth(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the width in the object.
     obj->data->SetWidth(fval);
@@ -142,7 +142,7 @@ GaussianControlPoint_SetXBias(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the xBias in the object.
     obj->data->SetXBias(fval);
@@ -166,7 +166,7 @@ GaussianControlPoint_SetYBias(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the yBias in the object.
     obj->data->SetYBias(fval);
@@ -257,14 +257,16 @@ PyGaussianControlPoint_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -410,7 +412,7 @@ GaussianControlPoint_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

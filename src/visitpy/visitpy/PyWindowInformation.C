@@ -224,7 +224,7 @@ WindowInformation_SetActiveSource(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the activeSource in the object.
     obj->data->SetActiveSource(std::string(str));
@@ -248,7 +248,7 @@ WindowInformation_SetActiveTimeSlider(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the activeTimeSlider in the object.
     obj->data->SetActiveTimeSlider((int)ival);
@@ -390,7 +390,7 @@ WindowInformation_SetAnimationMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the animationMode in the object.
     obj->data->SetAnimationMode((int)ival);
@@ -414,7 +414,7 @@ WindowInformation_SetInteractionMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the interactionMode in the object.
     obj->data->SetInteractionMode((int)ival);
@@ -438,7 +438,7 @@ WindowInformation_SetToolUpdateMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the toolUpdateMode in the object.
     obj->data->SetToolUpdateMode((int)ival);
@@ -462,7 +462,7 @@ WindowInformation_SetBoundingBoxNavigate(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the boundingBoxNavigate in the object.
     obj->data->SetBoundingBoxNavigate(ival != 0);
@@ -486,7 +486,7 @@ WindowInformation_SetSpin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the spin in the object.
     obj->data->SetSpin(ival != 0);
@@ -510,7 +510,7 @@ WindowInformation_SetFullFrame(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fullFrame in the object.
     obj->data->SetFullFrame(ival != 0);
@@ -534,7 +534,7 @@ WindowInformation_SetPerspective(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the perspective in the object.
     obj->data->SetPerspective(ival != 0);
@@ -558,7 +558,7 @@ WindowInformation_SetMaintainView(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maintainView in the object.
     obj->data->SetMaintainView(ival != 0);
@@ -582,7 +582,7 @@ WindowInformation_SetLockView(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lockView in the object.
     obj->data->SetLockView(ival != 0);
@@ -606,7 +606,7 @@ WindowInformation_SetLockTools(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lockTools in the object.
     obj->data->SetLockTools(ival != 0);
@@ -630,7 +630,7 @@ WindowInformation_SetLockTime(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lockTime in the object.
     obj->data->SetLockTime(ival != 0);
@@ -654,7 +654,7 @@ WindowInformation_SetViewExtentsType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the viewExtentsType in the object.
     obj->data->SetViewExtentsType((int)ival);
@@ -678,7 +678,7 @@ WindowInformation_SetViewDimension(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the viewDimension in the object.
     obj->data->SetViewDimension((int)ival);
@@ -765,7 +765,7 @@ WindowInformation_SetCameraViewMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cameraViewMode in the object.
     obj->data->SetCameraViewMode(ival != 0);
@@ -789,7 +789,7 @@ WindowInformation_SetUsingScalableRendering(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the usingScalableRendering in the object.
     obj->data->SetUsingScalableRendering(ival != 0);
@@ -813,7 +813,7 @@ WindowInformation_SetLastRenderMin(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lastRenderMin in the object.
     obj->data->SetLastRenderMin(fval);
@@ -837,7 +837,7 @@ WindowInformation_SetLastRenderAvg(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lastRenderAvg in the object.
     obj->data->SetLastRenderAvg(fval);
@@ -861,7 +861,7 @@ WindowInformation_SetLastRenderMax(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lastRenderMax in the object.
     obj->data->SetLastRenderMax(fval);
@@ -885,7 +885,7 @@ WindowInformation_SetNumPrimitives(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numPrimitives in the object.
     obj->data->SetNumPrimitives((int)ival);
@@ -1017,7 +1017,7 @@ WindowInformation_SetWinMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the winMode in the object.
     obj->data->SetWinMode((int)ival);
@@ -1041,7 +1041,7 @@ WindowInformation_SetDDTSim(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the DDTSim in the object.
     obj->data->SetDDTSim(ival != 0);
@@ -1065,7 +1065,7 @@ WindowInformation_SetDDTConnected(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the DDTConnected in the object.
     obj->data->SetDDTConnected(ival != 0);
@@ -1300,14 +1300,16 @@ PyWindowInformation_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1453,7 +1455,7 @@ WindowInformation_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

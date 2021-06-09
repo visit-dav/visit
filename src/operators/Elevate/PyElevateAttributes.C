@@ -136,7 +136,7 @@ ElevateAttributes_SetUseXYLimits(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useXYLimits in the object.
     if(ival >= 0 && ival < 3)
@@ -147,7 +147,7 @@ ElevateAttributes_SetUseXYLimits(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Never, Auto, Always.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -169,7 +169,7 @@ ElevateAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the limitsMode in the object.
     if(ival >= 0 && ival < 2)
@@ -180,7 +180,7 @@ ElevateAttributes_SetLimitsMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "OriginalData, CurrentPlot.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -202,7 +202,7 @@ ElevateAttributes_SetScaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scaling in the object.
     if(ival >= 0 && ival < 3)
@@ -213,7 +213,7 @@ ElevateAttributes_SetScaling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, Skew.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -235,7 +235,7 @@ ElevateAttributes_SetSkewFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the skewFactor in the object.
     obj->data->SetSkewFactor(dval);
@@ -259,7 +259,7 @@ ElevateAttributes_SetMinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minFlag in the object.
     obj->data->SetMinFlag(ival != 0);
@@ -283,7 +283,7 @@ ElevateAttributes_SetMin(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the min in the object.
     obj->data->SetMin(dval);
@@ -307,7 +307,7 @@ ElevateAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxFlag in the object.
     obj->data->SetMaxFlag(ival != 0);
@@ -331,7 +331,7 @@ ElevateAttributes_SetMax(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the max in the object.
     obj->data->SetMax(dval);
@@ -355,7 +355,7 @@ ElevateAttributes_SetZeroFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the zeroFlag in the object.
     obj->data->SetZeroFlag(ival != 0);
@@ -379,7 +379,7 @@ ElevateAttributes_SetVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the variable in the object.
     obj->data->SetVariable(std::string(str));
@@ -519,14 +519,16 @@ PyElevateAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -672,7 +674,7 @@ ElevateAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

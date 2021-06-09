@@ -270,7 +270,7 @@ DataBinningAttributes_SetNumDimensions(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numDimensions in the object.
     if(ival >= 0 && ival < 3)
@@ -281,7 +281,7 @@ DataBinningAttributes_SetNumDimensions(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "One, Two, Three.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -303,7 +303,7 @@ DataBinningAttributes_SetDim1BinBasedOn(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim1BinBasedOn in the object.
     if(ival >= 0 && ival < 4)
@@ -314,7 +314,7 @@ DataBinningAttributes_SetDim1BinBasedOn(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "X, Y, Z, Variable.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -336,7 +336,7 @@ DataBinningAttributes_SetDim1Var(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim1Var in the object.
     obj->data->SetDim1Var(std::string(str));
@@ -360,7 +360,7 @@ DataBinningAttributes_SetDim1SpecifyRange(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim1SpecifyRange in the object.
     obj->data->SetDim1SpecifyRange(ival != 0);
@@ -384,7 +384,7 @@ DataBinningAttributes_SetDim1MinRange(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim1MinRange in the object.
     obj->data->SetDim1MinRange(dval);
@@ -408,7 +408,7 @@ DataBinningAttributes_SetDim1MaxRange(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim1MaxRange in the object.
     obj->data->SetDim1MaxRange(dval);
@@ -432,7 +432,7 @@ DataBinningAttributes_SetDim1NumBins(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim1NumBins in the object.
     obj->data->SetDim1NumBins((int)ival);
@@ -456,7 +456,7 @@ DataBinningAttributes_SetDim2BinBasedOn(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim2BinBasedOn in the object.
     if(ival >= 0 && ival < 4)
@@ -467,7 +467,7 @@ DataBinningAttributes_SetDim2BinBasedOn(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "X, Y, Z, Variable.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -489,7 +489,7 @@ DataBinningAttributes_SetDim2Var(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim2Var in the object.
     obj->data->SetDim2Var(std::string(str));
@@ -513,7 +513,7 @@ DataBinningAttributes_SetDim2SpecifyRange(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim2SpecifyRange in the object.
     obj->data->SetDim2SpecifyRange(ival != 0);
@@ -537,7 +537,7 @@ DataBinningAttributes_SetDim2MinRange(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim2MinRange in the object.
     obj->data->SetDim2MinRange(dval);
@@ -561,7 +561,7 @@ DataBinningAttributes_SetDim2MaxRange(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim2MaxRange in the object.
     obj->data->SetDim2MaxRange(dval);
@@ -585,7 +585,7 @@ DataBinningAttributes_SetDim2NumBins(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim2NumBins in the object.
     obj->data->SetDim2NumBins((int)ival);
@@ -609,7 +609,7 @@ DataBinningAttributes_SetDim3BinBasedOn(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim3BinBasedOn in the object.
     if(ival >= 0 && ival < 4)
@@ -620,7 +620,7 @@ DataBinningAttributes_SetDim3BinBasedOn(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "X, Y, Z, Variable.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -642,7 +642,7 @@ DataBinningAttributes_SetDim3Var(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim3Var in the object.
     obj->data->SetDim3Var(std::string(str));
@@ -666,7 +666,7 @@ DataBinningAttributes_SetDim3SpecifyRange(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim3SpecifyRange in the object.
     obj->data->SetDim3SpecifyRange(ival != 0);
@@ -690,7 +690,7 @@ DataBinningAttributes_SetDim3MinRange(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim3MinRange in the object.
     obj->data->SetDim3MinRange(dval);
@@ -714,7 +714,7 @@ DataBinningAttributes_SetDim3MaxRange(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim3MaxRange in the object.
     obj->data->SetDim3MaxRange(dval);
@@ -738,7 +738,7 @@ DataBinningAttributes_SetDim3NumBins(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim3NumBins in the object.
     obj->data->SetDim3NumBins((int)ival);
@@ -762,7 +762,7 @@ DataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the outOfBoundsBehavior in the object.
     if(ival >= 0 && ival < 2)
@@ -773,7 +773,7 @@ DataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Clamp, Discard.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -795,7 +795,7 @@ DataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the reductionOperator in the object.
     if(ival >= 0 && ival < 9)
@@ -808,7 +808,7 @@ DataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *args)
                         "Average, Minimum, Maximum, StandardDeviation, Variance, "
                         "Sum, Count, RMS, PDF"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -830,7 +830,7 @@ DataBinningAttributes_SetVarForReduction(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the varForReduction in the object.
     obj->data->SetVarForReduction(std::string(str));
@@ -854,7 +854,7 @@ DataBinningAttributes_SetEmptyVal(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the emptyVal in the object.
     obj->data->SetEmptyVal(dval);
@@ -878,7 +878,7 @@ DataBinningAttributes_SetOutputType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the outputType in the object.
     if(ival >= 0 && ival < 2)
@@ -889,7 +889,7 @@ DataBinningAttributes_SetOutputType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "OutputOnBins, OutputOnInputMesh.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -911,7 +911,7 @@ DataBinningAttributes_SetRemoveEmptyValFromCurve(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the removeEmptyValFromCurve in the object.
     obj->data->SetRemoveEmptyValFromCurve(ival != 0);
@@ -1185,14 +1185,16 @@ PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1338,7 +1340,7 @@ DataBinningAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

@@ -89,17 +89,9 @@ ViewerClientInformation_GetVars(PyObject *self, PyObject *args)
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetVars().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetVars().size() == 0)
-            snprintf(msg, 400, "In ViewerClientInformation::GetVars : The index %d is invalid because vars is empty.", index);
-        else
-            snprintf(msg, 400, "In ViewerClientInformation::GetVars : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetVars().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -126,14 +118,9 @@ ViewerClientInformation_AddVars(PyObject *self, PyObject *args)
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyViewerClientInformationElement_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The ViewerClientInformation::AddVars method only accepts ViewerClientInformationElement objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     ViewerClientInformationElement *newData = PyViewerClientInformationElement_FromPyObject(element);
     obj->data->AddVars(*newData);
     obj->data->SelectVars();
@@ -173,15 +160,10 @@ ViewerClientInformation_RemoveVars(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
     if(index < 0 || index >= obj->data->GetNumVars())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In ViewerClientInformation::RemoveVars : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return ViewerClientInformation_Remove_One_Vars(self, index);
 }
@@ -312,14 +294,16 @@ PyViewerClientInformation_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -465,7 +449,7 @@ ViewerClientInformation_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

@@ -1107,7 +1107,7 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the RPCType in the object.
     if(ival >= 0 && ival < 210)
@@ -1170,7 +1170,7 @@ ViewerRPC_SetRPCType(PyObject *self, PyObject *args)
                         "ReleaseToDDTRPC, PlotDDTVispointVariablesRPC, ExportRPC, ExportHostProfileRPC, "
                         "StartPlotAnimationRPC, StopPlotAnimationRPC, ReadHostProfilesFromDirectoryRPC, SetRemoveDuplicateNodesRPC, "
                         "MaxRPC.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1192,7 +1192,7 @@ ViewerRPC_SetWindowLayout(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the windowLayout in the object.
     obj->data->SetWindowLayout((int)ival);
@@ -1216,7 +1216,7 @@ ViewerRPC_SetWindowId(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the windowId in the object.
     obj->data->SetWindowId((int)ival);
@@ -1240,7 +1240,7 @@ ViewerRPC_SetWindowMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the windowMode in the object.
     obj->data->SetWindowMode((int)ival);
@@ -1264,7 +1264,7 @@ ViewerRPC_SetWindowArea(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the windowArea in the object.
     obj->data->SetWindowArea(std::string(str));
@@ -1288,7 +1288,7 @@ ViewerRPC_SetDatabase(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the database in the object.
     obj->data->SetDatabase(std::string(str));
@@ -1312,7 +1312,7 @@ ViewerRPC_SetProgramHost(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the programHost in the object.
     obj->data->SetProgramHost(std::string(str));
@@ -1336,7 +1336,7 @@ ViewerRPC_SetProgramSim(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the programSim in the object.
     obj->data->SetProgramSim(std::string(str));
@@ -1415,7 +1415,7 @@ ViewerRPC_SetNFrames(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the nFrames in the object.
     obj->data->SetNFrames((int)ival);
@@ -1439,7 +1439,7 @@ ViewerRPC_SetStateNumber(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stateNumber in the object.
     obj->data->SetStateNumber((int)ival);
@@ -1517,7 +1517,7 @@ ViewerRPC_SetFrame(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the frame in the object.
     obj->data->SetFrame((int)ival);
@@ -1541,7 +1541,7 @@ ViewerRPC_SetPlotType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the plotType in the object.
     obj->data->SetPlotType((int)ival);
@@ -1565,7 +1565,7 @@ ViewerRPC_SetOperatorType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the operatorType in the object.
     obj->data->SetOperatorType((int)ival);
@@ -1589,7 +1589,7 @@ ViewerRPC_SetVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the variable in the object.
     obj->data->SetVariable(std::string(str));
@@ -1802,7 +1802,7 @@ ViewerRPC_SetColorTableName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorTableName in the object.
     obj->data->SetColorTableName(std::string(str));
@@ -1826,7 +1826,7 @@ ViewerRPC_SetQueryName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the queryName in the object.
     obj->data->SetQueryName(std::string(str));
@@ -1904,7 +1904,7 @@ ViewerRPC_SetToolId(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the toolId in the object.
     obj->data->SetToolId((int)ival);
@@ -1928,7 +1928,7 @@ ViewerRPC_SetEmbeddedPlotId(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the embeddedPlotId in the object.
     obj->data->SetEmbeddedPlotId((int)ival);
@@ -1952,7 +1952,7 @@ ViewerRPC_SetBoolFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the boolFlag in the object.
     obj->data->SetBoolFlag(ival != 0);
@@ -1976,7 +1976,7 @@ ViewerRPC_SetIntArg1(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the intArg1 in the object.
     obj->data->SetIntArg1((int)ival);
@@ -2000,7 +2000,7 @@ ViewerRPC_SetIntArg2(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the intArg2 in the object.
     obj->data->SetIntArg2((int)ival);
@@ -2024,7 +2024,7 @@ ViewerRPC_SetIntArg3(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the intArg3 in the object.
     obj->data->SetIntArg3((int)ival);
@@ -2048,7 +2048,7 @@ ViewerRPC_SetStringArg1(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stringArg1 in the object.
     obj->data->SetStringArg1(std::string(str));
@@ -2072,7 +2072,7 @@ ViewerRPC_SetStringArg2(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stringArg2 in the object.
     obj->data->SetStringArg2(std::string(str));
@@ -2096,7 +2096,7 @@ ViewerRPC_SetToolUpdateMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the toolUpdateMode in the object.
     obj->data->SetToolUpdateMode((int)ival);
@@ -2792,14 +2792,16 @@ PyViewerRPC_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -2945,7 +2947,7 @@ ViewerRPC_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

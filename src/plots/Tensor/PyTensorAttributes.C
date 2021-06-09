@@ -153,7 +153,7 @@ TensorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the glyphLocation in the object.
     if(ival >= 0 && ival < 2)
@@ -164,7 +164,7 @@ TensorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "AdaptsToMeshResolution, UniformInSpace.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -186,7 +186,7 @@ TensorAttributes_SetUseStride(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useStride in the object.
     obj->data->SetUseStride(ival != 0);
@@ -210,7 +210,7 @@ TensorAttributes_SetNTensors(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the nTensors in the object.
     obj->data->SetNTensors((int)ival);
@@ -234,7 +234,7 @@ TensorAttributes_SetStride(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stride in the object.
     obj->data->SetStride((int)ival);
@@ -258,7 +258,7 @@ TensorAttributes_SetOrigOnly(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the origOnly in the object.
     obj->data->SetOrigOnly(ival != 0);
@@ -282,7 +282,7 @@ TensorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the limitsMode in the object.
     if(ival >= 0 && ival < 2)
@@ -293,7 +293,7 @@ TensorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "OriginalData, CurrentPlot.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -315,7 +315,7 @@ TensorAttributes_SetMinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minFlag in the object.
     obj->data->SetMinFlag(ival != 0);
@@ -339,7 +339,7 @@ TensorAttributes_SetMin(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the min in the object.
     obj->data->SetMin(dval);
@@ -363,7 +363,7 @@ TensorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxFlag in the object.
     obj->data->SetMaxFlag(ival != 0);
@@ -387,7 +387,7 @@ TensorAttributes_SetMax(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the max in the object.
     obj->data->SetMax(dval);
@@ -411,7 +411,7 @@ TensorAttributes_SetColorByEigenValues(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorByEigenValues in the object.
     obj->data->SetColorByEigenValues(ival != 0);
@@ -435,7 +435,7 @@ TensorAttributes_SetColorTableName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorTableName in the object.
     obj->data->SetColorTableName(std::string(str));
@@ -459,7 +459,7 @@ TensorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the invertColorTable in the object.
     obj->data->SetInvertColorTable(ival != 0);
@@ -560,7 +560,7 @@ TensorAttributes_SetUseLegend(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useLegend in the object.
     obj->data->SetUseLegend(ival != 0);
@@ -584,7 +584,7 @@ TensorAttributes_SetScale(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scale in the object.
     obj->data->SetScale(dval);
@@ -608,7 +608,7 @@ TensorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scaleByMagnitude in the object.
     obj->data->SetScaleByMagnitude(ival != 0);
@@ -632,7 +632,7 @@ TensorAttributes_SetAutoScale(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the autoScale in the object.
     obj->data->SetAutoScale(ival != 0);
@@ -656,7 +656,7 @@ TensorAttributes_SetAnimationStep(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the animationStep in the object.
     obj->data->SetAnimationStep((int)ival);
@@ -841,14 +841,16 @@ PyTensorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -994,7 +996,7 @@ TensorAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

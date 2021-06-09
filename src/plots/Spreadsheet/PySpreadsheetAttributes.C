@@ -133,7 +133,7 @@ SpreadsheetAttributes_SetSubsetName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the subsetName in the object.
     obj->data->SetSubsetName(std::string(str));
@@ -157,7 +157,7 @@ SpreadsheetAttributes_SetFormatString(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the formatString in the object.
     obj->data->SetFormatString(std::string(str));
@@ -181,7 +181,7 @@ SpreadsheetAttributes_SetUseColorTable(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useColorTable in the object.
     obj->data->SetUseColorTable(ival != 0);
@@ -205,7 +205,7 @@ SpreadsheetAttributes_SetColorTableName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorTableName in the object.
     obj->data->SetColorTableName(std::string(str));
@@ -229,7 +229,7 @@ SpreadsheetAttributes_SetShowTracerPlane(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showTracerPlane in the object.
     obj->data->SetShowTracerPlane(ival != 0);
@@ -330,7 +330,7 @@ SpreadsheetAttributes_SetNormal(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the normal in the object.
     if(ival >= 0 && ival < 3)
@@ -341,7 +341,7 @@ SpreadsheetAttributes_SetNormal(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "X, Y, Z.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -363,7 +363,7 @@ SpreadsheetAttributes_SetSliceIndex(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sliceIndex in the object.
     obj->data->SetSliceIndex((int)ival);
@@ -387,7 +387,7 @@ SpreadsheetAttributes_SetSpreadsheetFont(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the spreadsheetFont in the object.
     obj->data->SetSpreadsheetFont(std::string(str));
@@ -411,7 +411,7 @@ SpreadsheetAttributes_SetShowPatchOutline(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showPatchOutline in the object.
     obj->data->SetShowPatchOutline(ival != 0);
@@ -435,7 +435,7 @@ SpreadsheetAttributes_SetShowCurrentCellOutline(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showCurrentCellOutline in the object.
     obj->data->SetShowCurrentCellOutline(ival != 0);
@@ -459,7 +459,7 @@ SpreadsheetAttributes_SetCurrentPickType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the currentPickType in the object.
     obj->data->SetCurrentPickType((int)ival);
@@ -483,7 +483,7 @@ SpreadsheetAttributes_SetCurrentPickLetter(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the currentPickLetter in the object.
     obj->data->SetCurrentPickLetter(std::string(str));
@@ -690,14 +690,16 @@ PySpreadsheetAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -843,7 +845,7 @@ SpreadsheetAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

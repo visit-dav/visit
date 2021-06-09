@@ -231,11 +231,11 @@ WellBoreAttributes_SetDefaultPalette(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyColorControlPointList_Check(newValue))
     {
         fprintf(stderr, "The defaultPalette field can only be set with ColorControlPointList objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetDefaultPalette(*PyColorControlPointList_FromPyObject(newValue));
@@ -344,7 +344,7 @@ WellBoreAttributes_SetColorType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorType in the object.
     if(ival >= 0 && ival < 3)
@@ -355,7 +355,7 @@ WellBoreAttributes_SetColorType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "ColorBySingleColor, ColorByMultipleColors, ColorByColorTable.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -377,7 +377,7 @@ WellBoreAttributes_SetColorTableName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorTableName in the object.
     obj->data->SetColorTableName(std::string(str));
@@ -401,7 +401,7 @@ WellBoreAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the invertColorTable in the object.
     obj->data->SetInvertColorTable(ival != 0);
@@ -650,7 +650,7 @@ WellBoreAttributes_SetMultiColor(PyObject *self, PyObject *args)
     }
 
     if(index < 0 || index >= cL.GetNumColors())
-        return NULL;
+        return PyExc_IndexError;
 
     // Set the color in the object.
     if(setTheColor)
@@ -673,7 +673,7 @@ WellBoreAttributes_GetMultiColor(PyObject *self, PyObject *args)
     if(PyArg_ParseTuple(args, "i", &index))
     {
         if(index < 0 || index >= cL.GetNumColors())
-            return NULL;
+            return PyExc_IndexError;
 
         // Allocate a tuple the with enough entries to hold the singleColor.
         retval = PyTuple_New(4);
@@ -712,7 +712,7 @@ WellBoreAttributes_SetDrawWellsAs(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the drawWellsAs in the object.
     if(ival >= 0 && ival < 2)
@@ -723,7 +723,7 @@ WellBoreAttributes_SetDrawWellsAs(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Lines, Cylinders.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -745,7 +745,7 @@ WellBoreAttributes_SetWellCylinderQuality(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the wellCylinderQuality in the object.
     if(ival >= 0 && ival < 4)
@@ -756,7 +756,7 @@ WellBoreAttributes_SetWellCylinderQuality(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "Low, Medium, High, Super.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -778,7 +778,7 @@ WellBoreAttributes_SetWellRadius(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the wellRadius in the object.
     obj->data->SetWellRadius(fval);
@@ -802,7 +802,7 @@ WellBoreAttributes_SetWellLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the wellLineWidth in the object.
     obj->data->SetWellLineWidth(ival);
@@ -826,7 +826,7 @@ WellBoreAttributes_SetWellAnnotation(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the wellAnnotation in the object.
     if(ival >= 0 && ival < 4)
@@ -837,7 +837,7 @@ WellBoreAttributes_SetWellAnnotation(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "None, StemOnly, NameOnly, StemAndName.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -859,7 +859,7 @@ WellBoreAttributes_SetWellStemHeight(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the wellStemHeight in the object.
     obj->data->SetWellStemHeight(fval);
@@ -883,7 +883,7 @@ WellBoreAttributes_SetWellNameScale(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the wellNameScale in the object.
     obj->data->SetWellNameScale(fval);
@@ -907,7 +907,7 @@ WellBoreAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the legendFlag in the object.
     obj->data->SetLegendFlag(ival != 0);
@@ -931,7 +931,7 @@ WellBoreAttributes_SetNWellBores(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the nWellBores in the object.
     obj->data->SetNWellBores((int)ival);
@@ -1291,14 +1291,16 @@ PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1444,7 +1446,7 @@ WellBoreAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

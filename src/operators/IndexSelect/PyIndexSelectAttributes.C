@@ -146,7 +146,7 @@ IndexSelectAttributes_SetMaxDim(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxDim in the object.
     if(ival >= 0 && ival < 3)
@@ -157,7 +157,7 @@ IndexSelectAttributes_SetMaxDim(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "OneD, TwoD, ThreeD.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -179,7 +179,7 @@ IndexSelectAttributes_SetDim(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dim in the object.
     if(ival >= 0 && ival < 3)
@@ -190,7 +190,7 @@ IndexSelectAttributes_SetDim(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "OneD, TwoD, ThreeD.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -212,7 +212,7 @@ IndexSelectAttributes_SetXAbsMax(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the xAbsMax in the object.
     obj->data->SetXAbsMax((int)ival);
@@ -236,7 +236,7 @@ IndexSelectAttributes_SetXMin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the xMin in the object.
     obj->data->SetXMin((int)ival);
@@ -260,7 +260,7 @@ IndexSelectAttributes_SetXMax(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the xMax in the object.
     obj->data->SetXMax((int)ival);
@@ -284,7 +284,7 @@ IndexSelectAttributes_SetXIncr(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the xIncr in the object.
     obj->data->SetXIncr((int)ival);
@@ -308,7 +308,7 @@ IndexSelectAttributes_SetXWrap(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the xWrap in the object.
     obj->data->SetXWrap(ival != 0);
@@ -332,7 +332,7 @@ IndexSelectAttributes_SetYAbsMax(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the yAbsMax in the object.
     obj->data->SetYAbsMax((int)ival);
@@ -356,7 +356,7 @@ IndexSelectAttributes_SetYMin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the yMin in the object.
     obj->data->SetYMin((int)ival);
@@ -380,7 +380,7 @@ IndexSelectAttributes_SetYMax(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the yMax in the object.
     obj->data->SetYMax((int)ival);
@@ -404,7 +404,7 @@ IndexSelectAttributes_SetYIncr(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the yIncr in the object.
     obj->data->SetYIncr((int)ival);
@@ -428,7 +428,7 @@ IndexSelectAttributes_SetYWrap(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the yWrap in the object.
     obj->data->SetYWrap(ival != 0);
@@ -452,7 +452,7 @@ IndexSelectAttributes_SetZAbsMax(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the zAbsMax in the object.
     obj->data->SetZAbsMax((int)ival);
@@ -476,7 +476,7 @@ IndexSelectAttributes_SetZMin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the zMin in the object.
     obj->data->SetZMin((int)ival);
@@ -500,7 +500,7 @@ IndexSelectAttributes_SetZMax(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the zMax in the object.
     obj->data->SetZMax((int)ival);
@@ -524,7 +524,7 @@ IndexSelectAttributes_SetZIncr(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the zIncr in the object.
     obj->data->SetZIncr((int)ival);
@@ -548,7 +548,7 @@ IndexSelectAttributes_SetZWrap(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the zWrap in the object.
     obj->data->SetZWrap(ival != 0);
@@ -572,7 +572,7 @@ IndexSelectAttributes_SetUseWholeCollection(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useWholeCollection in the object.
     obj->data->SetUseWholeCollection(ival != 0);
@@ -596,7 +596,7 @@ IndexSelectAttributes_SetCategoryName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the categoryName in the object.
     obj->data->SetCategoryName(std::string(str));
@@ -620,7 +620,7 @@ IndexSelectAttributes_SetSubsetName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the subsetName in the object.
     obj->data->SetSubsetName(std::string(str));
@@ -815,14 +815,16 @@ PyIndexSelectAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -968,7 +970,7 @@ IndexSelectAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

@@ -147,7 +147,7 @@ avtSimulationInformation_SetHost(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the host in the object.
     obj->data->SetHost(std::string(str));
@@ -171,7 +171,7 @@ avtSimulationInformation_SetPort(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the port in the object.
     obj->data->SetPort((int)ival);
@@ -195,7 +195,7 @@ avtSimulationInformation_SetSecurityKey(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the securityKey in the object.
     obj->data->SetSecurityKey(std::string(str));
@@ -328,17 +328,9 @@ avtSimulationInformation_GetGenericCommands(PyObject *self, PyObject *args)
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetGenericCommands().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetGenericCommands().size() == 0)
-            snprintf(msg, 400, "In avtSimulationInformation::GetGenericCommands : The index %d is invalid because genericCommands is empty.", index);
-        else
-            snprintf(msg, 400, "In avtSimulationInformation::GetGenericCommands : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetGenericCommands().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -365,14 +357,9 @@ avtSimulationInformation_AddGenericCommands(PyObject *self, PyObject *args)
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtSimulationCommandSpecification_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtSimulationInformation::AddGenericCommands method only accepts avtSimulationCommandSpecification objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtSimulationCommandSpecification *newData = PyavtSimulationCommandSpecification_FromPyObject(element);
     obj->data->AddGenericCommands(*newData);
     obj->data->SelectGenericCommands();
@@ -412,15 +399,10 @@ avtSimulationInformation_RemoveGenericCommands(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
     if(index < 0 || index >= obj->data->GetNumGenericCommands())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtSimulationInformation::RemoveGenericCommands : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtSimulationInformation_Remove_One_GenericCommands(self, index);
 }
@@ -446,7 +428,7 @@ avtSimulationInformation_SetMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the mode in the object.
     if(ival >= 0 && ival < 3)
@@ -457,7 +439,7 @@ avtSimulationInformation_SetMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Unknown, Running, Stopped.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -478,17 +460,9 @@ avtSimulationInformation_GetCustomCommands(PyObject *self, PyObject *args)
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetCustomCommands().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetCustomCommands().size() == 0)
-            snprintf(msg, 400, "In avtSimulationInformation::GetCustomCommands : The index %d is invalid because customCommands is empty.", index);
-        else
-            snprintf(msg, 400, "In avtSimulationInformation::GetCustomCommands : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetCustomCommands().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -515,14 +489,9 @@ avtSimulationInformation_AddCustomCommands(PyObject *self, PyObject *args)
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtSimulationCommandSpecification_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtSimulationInformation::AddCustomCommands method only accepts avtSimulationCommandSpecification objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtSimulationCommandSpecification *newData = PyavtSimulationCommandSpecification_FromPyObject(element);
     obj->data->AddCustomCommands(*newData);
     obj->data->SelectCustomCommands();
@@ -562,15 +531,10 @@ avtSimulationInformation_RemoveCustomCommands(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
     if(index < 0 || index >= obj->data->GetNumCustomCommands())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtSimulationInformation::RemoveCustomCommands : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtSimulationInformation_Remove_One_CustomCommands(self, index);
 }
@@ -596,7 +560,7 @@ avtSimulationInformation_SetMessage(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the message in the object.
     obj->data->SetMessage(std::string(str));
@@ -720,14 +684,16 @@ PyavtSimulationInformation_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -873,7 +839,7 @@ avtSimulationInformation_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

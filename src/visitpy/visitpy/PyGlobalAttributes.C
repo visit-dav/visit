@@ -358,7 +358,7 @@ GlobalAttributes_SetActiveWindow(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the activeWindow in the object.
     obj->data->SetActiveWindow((int)ival);
@@ -382,7 +382,7 @@ GlobalAttributes_SetIconifiedFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the iconifiedFlag in the object.
     obj->data->SetIconifiedFlag(ival != 0);
@@ -406,7 +406,7 @@ GlobalAttributes_SetAutoUpdateFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the autoUpdateFlag in the object.
     obj->data->SetAutoUpdateFlag(ival != 0);
@@ -430,7 +430,7 @@ GlobalAttributes_SetReplacePlots(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the replacePlots in the object.
     obj->data->SetReplacePlots(ival != 0);
@@ -454,7 +454,7 @@ GlobalAttributes_SetApplyOperator(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the applyOperator in the object.
     obj->data->SetApplyOperator(ival != 0);
@@ -478,7 +478,7 @@ GlobalAttributes_SetApplySelection(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the applySelection in the object.
     obj->data->SetApplySelection(ival != 0);
@@ -502,7 +502,7 @@ GlobalAttributes_SetApplyWindow(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the applyWindow in the object.
     obj->data->SetApplyWindow(ival != 0);
@@ -526,7 +526,7 @@ GlobalAttributes_SetExecuting(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the executing in the object.
     obj->data->SetExecuting(ival != 0);
@@ -550,7 +550,7 @@ GlobalAttributes_SetWindowLayout(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the windowLayout in the object.
     obj->data->SetWindowLayout((int)ival);
@@ -574,7 +574,7 @@ GlobalAttributes_SetMakeDefaultConfirm(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the makeDefaultConfirm in the object.
     obj->data->SetMakeDefaultConfirm(ival != 0);
@@ -598,7 +598,7 @@ GlobalAttributes_SetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cloneWindowOnFirstRef in the object.
     obj->data->SetCloneWindowOnFirstRef(ival != 0);
@@ -622,7 +622,7 @@ GlobalAttributes_SetAutomaticallyAddOperator(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the automaticallyAddOperator in the object.
     obj->data->SetAutomaticallyAddOperator(ival != 0);
@@ -646,7 +646,7 @@ GlobalAttributes_SetTryHarderCyclesTimes(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tryHarderCyclesTimes in the object.
     obj->data->SetTryHarderCyclesTimes(ival != 0);
@@ -670,7 +670,7 @@ GlobalAttributes_SetTreatAllDBsAsTimeVarying(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the treatAllDBsAsTimeVarying in the object.
     obj->data->SetTreatAllDBsAsTimeVarying(ival != 0);
@@ -694,7 +694,7 @@ GlobalAttributes_SetCreateMeshQualityExpressions(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the createMeshQualityExpressions in the object.
     obj->data->SetCreateMeshQualityExpressions(ival != 0);
@@ -718,7 +718,7 @@ GlobalAttributes_SetCreateTimeDerivativeExpressions(PyObject *self, PyObject *ar
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the createTimeDerivativeExpressions in the object.
     obj->data->SetCreateTimeDerivativeExpressions(ival != 0);
@@ -742,7 +742,7 @@ GlobalAttributes_SetCreateVectorMagnitudeExpressions(PyObject *self, PyObject *a
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the createVectorMagnitudeExpressions in the object.
     obj->data->SetCreateVectorMagnitudeExpressions(ival != 0);
@@ -766,7 +766,7 @@ GlobalAttributes_SetNewPlotsInheritSILRestriction(PyObject *self, PyObject *args
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the newPlotsInheritSILRestriction in the object.
     obj->data->SetNewPlotsInheritSILRestriction(ival != 0);
@@ -790,7 +790,7 @@ GlobalAttributes_SetUserDirForSessionFiles(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the userDirForSessionFiles in the object.
     obj->data->SetUserDirForSessionFiles(ival != 0);
@@ -814,7 +814,7 @@ GlobalAttributes_SetSaveCrashRecoveryFile(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the saveCrashRecoveryFile in the object.
     obj->data->SetSaveCrashRecoveryFile(ival != 0);
@@ -838,7 +838,7 @@ GlobalAttributes_SetIgnoreExtentsFromDbs(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the ignoreExtentsFromDbs in the object.
     obj->data->SetIgnoreExtentsFromDbs(ival != 0);
@@ -862,7 +862,7 @@ GlobalAttributes_SetExpandNewPlots(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the expandNewPlots in the object.
     obj->data->SetExpandNewPlots(ival != 0);
@@ -886,7 +886,7 @@ GlobalAttributes_SetUserRestoreSessionFile(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the userRestoreSessionFile in the object.
     obj->data->SetUserRestoreSessionFile(ival != 0);
@@ -910,7 +910,7 @@ GlobalAttributes_SetPrecisionType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the precisionType in the object.
     if(ival >= 0 && ival < 3)
@@ -921,7 +921,7 @@ GlobalAttributes_SetPrecisionType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Float, Native, Double.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -943,7 +943,7 @@ GlobalAttributes_SetBackendType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the backendType in the object.
     if(ival >= 0 && ival < 2)
@@ -954,7 +954,7 @@ GlobalAttributes_SetBackendType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "VTK, VTKM.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -976,7 +976,7 @@ GlobalAttributes_SetRemoveDuplicateNodes(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the removeDuplicateNodes in the object.
     obj->data->SetRemoveDuplicateNodes(ival != 0);
@@ -1217,14 +1217,16 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1370,7 +1372,7 @@ GlobalAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

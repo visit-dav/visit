@@ -212,7 +212,7 @@ PDFAttributes_SetVar1(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1 in the object.
     obj->data->SetVar1(std::string(str));
@@ -236,7 +236,7 @@ PDFAttributes_SetVar1MinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1MinFlag in the object.
     obj->data->SetVar1MinFlag(ival != 0);
@@ -260,7 +260,7 @@ PDFAttributes_SetVar1MaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1MaxFlag in the object.
     obj->data->SetVar1MaxFlag(ival != 0);
@@ -284,7 +284,7 @@ PDFAttributes_SetVar1Min(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1Min in the object.
     obj->data->SetVar1Min(dval);
@@ -308,7 +308,7 @@ PDFAttributes_SetVar1Max(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1Max in the object.
     obj->data->SetVar1Max(dval);
@@ -332,7 +332,7 @@ PDFAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1Scaling in the object.
     if(ival >= 0 && ival < 3)
@@ -343,7 +343,7 @@ PDFAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, Skew.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -365,7 +365,7 @@ PDFAttributes_SetVar1SkewFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1SkewFactor in the object.
     obj->data->SetVar1SkewFactor(dval);
@@ -389,7 +389,7 @@ PDFAttributes_SetVar1NumSamples(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1NumSamples in the object.
     obj->data->SetVar1NumSamples((int)ival);
@@ -413,7 +413,7 @@ PDFAttributes_SetVar2(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2 in the object.
     obj->data->SetVar2(std::string(str));
@@ -437,7 +437,7 @@ PDFAttributes_SetVar2MinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2MinFlag in the object.
     obj->data->SetVar2MinFlag(ival != 0);
@@ -461,7 +461,7 @@ PDFAttributes_SetVar2MaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2MaxFlag in the object.
     obj->data->SetVar2MaxFlag(ival != 0);
@@ -485,7 +485,7 @@ PDFAttributes_SetVar2Min(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2Min in the object.
     obj->data->SetVar2Min(dval);
@@ -509,7 +509,7 @@ PDFAttributes_SetVar2Max(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2Max in the object.
     obj->data->SetVar2Max(dval);
@@ -533,7 +533,7 @@ PDFAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2Scaling in the object.
     if(ival >= 0 && ival < 3)
@@ -544,7 +544,7 @@ PDFAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, Skew.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -566,7 +566,7 @@ PDFAttributes_SetVar2SkewFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2SkewFactor in the object.
     obj->data->SetVar2SkewFactor(dval);
@@ -590,7 +590,7 @@ PDFAttributes_SetVar2NumSamples(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2NumSamples in the object.
     obj->data->SetVar2NumSamples((int)ival);
@@ -614,7 +614,7 @@ PDFAttributes_SetNumAxes(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numAxes in the object.
     if(ival >= 0 && ival < 2)
@@ -625,7 +625,7 @@ PDFAttributes_SetNumAxes(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Two, Three.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -647,7 +647,7 @@ PDFAttributes_SetVar3(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3 in the object.
     obj->data->SetVar3(std::string(str));
@@ -671,7 +671,7 @@ PDFAttributes_SetVar3MinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3MinFlag in the object.
     obj->data->SetVar3MinFlag(ival != 0);
@@ -695,7 +695,7 @@ PDFAttributes_SetVar3MaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3MaxFlag in the object.
     obj->data->SetVar3MaxFlag(ival != 0);
@@ -719,7 +719,7 @@ PDFAttributes_SetVar3Min(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3Min in the object.
     obj->data->SetVar3Min(dval);
@@ -743,7 +743,7 @@ PDFAttributes_SetVar3Max(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3Max in the object.
     obj->data->SetVar3Max(dval);
@@ -767,7 +767,7 @@ PDFAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3Scaling in the object.
     if(ival >= 0 && ival < 3)
@@ -778,7 +778,7 @@ PDFAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, Skew.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -800,7 +800,7 @@ PDFAttributes_SetVar3SkewFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3SkewFactor in the object.
     obj->data->SetVar3SkewFactor(dval);
@@ -824,7 +824,7 @@ PDFAttributes_SetVar3NumSamples(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3NumSamples in the object.
     obj->data->SetVar3NumSamples((int)ival);
@@ -848,7 +848,7 @@ PDFAttributes_SetScaleCube(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scaleCube in the object.
     obj->data->SetScaleCube(ival != 0);
@@ -872,7 +872,7 @@ PDFAttributes_SetDensityType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the densityType in the object.
     if(ival >= 0 && ival < 2)
@@ -883,7 +883,7 @@ PDFAttributes_SetDensityType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Probability, ZoneCount.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1135,14 +1135,16 @@ PyPDFAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1288,7 +1290,7 @@ PDFAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

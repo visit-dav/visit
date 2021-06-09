@@ -201,7 +201,7 @@ CreateBondsAttributes_SetElementVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the elementVariable in the object.
     obj->data->SetElementVariable(std::string(str));
@@ -477,7 +477,7 @@ CreateBondsAttributes_SetMaxBondsClamp(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxBondsClamp in the object.
     obj->data->SetMaxBondsClamp((int)ival);
@@ -501,7 +501,7 @@ CreateBondsAttributes_SetAddPeriodicBonds(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the addPeriodicBonds in the object.
     obj->data->SetAddPeriodicBonds(ival != 0);
@@ -525,7 +525,7 @@ CreateBondsAttributes_SetUseUnitCellVectors(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useUnitCellVectors in the object.
     obj->data->SetUseUnitCellVectors(ival != 0);
@@ -549,7 +549,7 @@ CreateBondsAttributes_SetPeriodicInX(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the periodicInX in the object.
     obj->data->SetPeriodicInX(ival != 0);
@@ -573,7 +573,7 @@ CreateBondsAttributes_SetPeriodicInY(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the periodicInY in the object.
     obj->data->SetPeriodicInY(ival != 0);
@@ -597,7 +597,7 @@ CreateBondsAttributes_SetPeriodicInZ(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the periodicInZ in the object.
     obj->data->SetPeriodicInZ(ival != 0);
@@ -904,14 +904,16 @@ PyCreateBondsAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1057,7 +1059,7 @@ CreateBondsAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

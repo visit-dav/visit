@@ -101,7 +101,7 @@ RadialResampleAttributes_SetIsFast(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the isFast in the object.
     obj->data->SetIsFast(ival != 0);
@@ -125,7 +125,7 @@ RadialResampleAttributes_SetMinTheta(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minTheta in the object.
     obj->data->SetMinTheta(fval);
@@ -149,7 +149,7 @@ RadialResampleAttributes_SetMaxTheta(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxTheta in the object.
     obj->data->SetMaxTheta(fval);
@@ -173,7 +173,7 @@ RadialResampleAttributes_SetDeltaTheta(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the deltaTheta in the object.
     obj->data->SetDeltaTheta(fval);
@@ -197,7 +197,7 @@ RadialResampleAttributes_SetRadius(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the radius in the object.
     obj->data->SetRadius(fval);
@@ -221,7 +221,7 @@ RadialResampleAttributes_SetDeltaRadius(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the deltaRadius in the object.
     obj->data->SetDeltaRadius(fval);
@@ -299,7 +299,7 @@ RadialResampleAttributes_SetIs3D(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the is3D in the object.
     obj->data->SetIs3D(ival != 0);
@@ -323,7 +323,7 @@ RadialResampleAttributes_SetMinAzimuth(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minAzimuth in the object.
     obj->data->SetMinAzimuth(fval);
@@ -347,7 +347,7 @@ RadialResampleAttributes_SetMaxAzimuth(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxAzimuth in the object.
     obj->data->SetMaxAzimuth(fval);
@@ -371,7 +371,7 @@ RadialResampleAttributes_SetDeltaAzimuth(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the deltaAzimuth in the object.
     obj->data->SetDeltaAzimuth(fval);
@@ -498,14 +498,16 @@ PyRadialResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -651,7 +653,7 @@ RadialResampleAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

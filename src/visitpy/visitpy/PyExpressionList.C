@@ -73,17 +73,9 @@ ExpressionList_GetExpressions(PyObject *self, PyObject *args)
     ExpressionListObject *obj = (ExpressionListObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetExpressions().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetExpressions().size() == 0)
-            snprintf(msg, 400, "In ExpressionList::GetExpressions : The index %d is invalid because expressions is empty.", index);
-        else
-            snprintf(msg, 400, "In ExpressionList::GetExpressions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetExpressions().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -110,14 +102,9 @@ ExpressionList_AddExpressions(PyObject *self, PyObject *args)
     ExpressionListObject *obj = (ExpressionListObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyExpression_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The ExpressionList::AddExpressions method only accepts Expression objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     Expression *newData = PyExpression_FromPyObject(element);
     obj->data->AddExpressions(*newData);
     obj->data->SelectExpressions();
@@ -157,15 +144,10 @@ ExpressionList_RemoveExpressions(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     ExpressionListObject *obj = (ExpressionListObject *)self;
     if(index < 0 || index >= obj->data->GetNumExpressions())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In ExpressionList::RemoveExpressions : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return ExpressionList_Remove_One_Expressions(self, index);
 }
@@ -235,14 +217,16 @@ PyExpressionList_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -388,7 +372,7 @@ ExpressionList_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

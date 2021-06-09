@@ -279,7 +279,7 @@ TransformAttributes_SetDoRotate(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the doRotate in the object.
     obj->data->SetDoRotate(ival != 0);
@@ -411,7 +411,7 @@ TransformAttributes_SetRotateAmount(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the rotateAmount in the object.
     obj->data->SetRotateAmount(dval);
@@ -435,7 +435,7 @@ TransformAttributes_SetRotateType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the rotateType in the object.
     if(ival >= 0 && ival < 2)
@@ -446,7 +446,7 @@ TransformAttributes_SetRotateType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Deg, Rad.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -468,7 +468,7 @@ TransformAttributes_SetDoScale(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the doScale in the object.
     obj->data->SetDoScale(ival != 0);
@@ -546,7 +546,7 @@ TransformAttributes_SetScaleX(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scaleX in the object.
     obj->data->SetScaleX(dval);
@@ -570,7 +570,7 @@ TransformAttributes_SetScaleY(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scaleY in the object.
     obj->data->SetScaleY(dval);
@@ -594,7 +594,7 @@ TransformAttributes_SetScaleZ(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scaleZ in the object.
     obj->data->SetScaleZ(dval);
@@ -618,7 +618,7 @@ TransformAttributes_SetDoTranslate(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the doTranslate in the object.
     obj->data->SetDoTranslate(ival != 0);
@@ -642,7 +642,7 @@ TransformAttributes_SetTranslateX(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the translateX in the object.
     obj->data->SetTranslateX(dval);
@@ -666,7 +666,7 @@ TransformAttributes_SetTranslateY(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the translateY in the object.
     obj->data->SetTranslateY(dval);
@@ -690,7 +690,7 @@ TransformAttributes_SetTranslateZ(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the translateZ in the object.
     obj->data->SetTranslateZ(dval);
@@ -714,7 +714,7 @@ TransformAttributes_SetTransformType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the transformType in the object.
     if(ival >= 0 && ival < 3)
@@ -725,7 +725,7 @@ TransformAttributes_SetTransformType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Similarity, Coordinate, Linear.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -747,7 +747,7 @@ TransformAttributes_SetInputCoordSys(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the inputCoordSys in the object.
     if(ival >= 0 && ival < 3)
@@ -758,7 +758,7 @@ TransformAttributes_SetInputCoordSys(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Cartesian, Cylindrical, Spherical.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -780,7 +780,7 @@ TransformAttributes_SetOutputCoordSys(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the outputCoordSys in the object.
     if(ival >= 0 && ival < 3)
@@ -791,7 +791,7 @@ TransformAttributes_SetOutputCoordSys(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Cartesian, Cylindrical, Spherical.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -813,7 +813,7 @@ TransformAttributes_SetContinuousPhi(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the continuousPhi in the object.
     obj->data->SetContinuousPhi(ival != 0);
@@ -837,7 +837,7 @@ TransformAttributes_SetM00(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m00 in the object.
     obj->data->SetM00(dval);
@@ -861,7 +861,7 @@ TransformAttributes_SetM01(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m01 in the object.
     obj->data->SetM01(dval);
@@ -885,7 +885,7 @@ TransformAttributes_SetM02(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m02 in the object.
     obj->data->SetM02(dval);
@@ -909,7 +909,7 @@ TransformAttributes_SetM03(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m03 in the object.
     obj->data->SetM03(dval);
@@ -933,7 +933,7 @@ TransformAttributes_SetM10(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m10 in the object.
     obj->data->SetM10(dval);
@@ -957,7 +957,7 @@ TransformAttributes_SetM11(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m11 in the object.
     obj->data->SetM11(dval);
@@ -981,7 +981,7 @@ TransformAttributes_SetM12(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m12 in the object.
     obj->data->SetM12(dval);
@@ -1005,7 +1005,7 @@ TransformAttributes_SetM13(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m13 in the object.
     obj->data->SetM13(dval);
@@ -1029,7 +1029,7 @@ TransformAttributes_SetM20(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m20 in the object.
     obj->data->SetM20(dval);
@@ -1053,7 +1053,7 @@ TransformAttributes_SetM21(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m21 in the object.
     obj->data->SetM21(dval);
@@ -1077,7 +1077,7 @@ TransformAttributes_SetM22(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m22 in the object.
     obj->data->SetM22(dval);
@@ -1101,7 +1101,7 @@ TransformAttributes_SetM23(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m23 in the object.
     obj->data->SetM23(dval);
@@ -1125,7 +1125,7 @@ TransformAttributes_SetM30(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m30 in the object.
     obj->data->SetM30(dval);
@@ -1149,7 +1149,7 @@ TransformAttributes_SetM31(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m31 in the object.
     obj->data->SetM31(dval);
@@ -1173,7 +1173,7 @@ TransformAttributes_SetM32(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m32 in the object.
     obj->data->SetM32(dval);
@@ -1197,7 +1197,7 @@ TransformAttributes_SetM33(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the m33 in the object.
     obj->data->SetM33(dval);
@@ -1221,7 +1221,7 @@ TransformAttributes_SetInvertLinearTransform(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the invertLinearTransform in the object.
     obj->data->SetInvertLinearTransform(ival != 0);
@@ -1245,7 +1245,7 @@ TransformAttributes_SetVectorTransformMethod(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the vectorTransformMethod in the object.
     if(ival >= 0 && ival < 4)
@@ -1256,7 +1256,7 @@ TransformAttributes_SetVectorTransformMethod(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "None, AsPoint, AsDisplacement, AsDirection.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1278,7 +1278,7 @@ TransformAttributes_SetTransformVectors(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the transformVectors in the object.
     obj->data->SetTransformVectors(ival != 0);
@@ -1598,14 +1598,16 @@ PyTransformAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1751,7 +1753,7 @@ TransformAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

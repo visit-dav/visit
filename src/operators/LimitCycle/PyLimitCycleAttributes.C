@@ -524,7 +524,7 @@ LimitCycleAttributes_SetSourceType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sourceType in the object.
     if(ival >= 0 && ival < 2)
@@ -535,7 +535,7 @@ LimitCycleAttributes_SetSourceType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "SpecifiedLine, SpecifiedPlane.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -827,7 +827,7 @@ LimitCycleAttributes_SetSampleDensity0(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDensity0 in the object.
     obj->data->SetSampleDensity0((int)ival);
@@ -851,7 +851,7 @@ LimitCycleAttributes_SetSampleDensity1(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDensity1 in the object.
     obj->data->SetSampleDensity1((int)ival);
@@ -875,7 +875,7 @@ LimitCycleAttributes_SetDataValue(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dataValue in the object.
     if(ival >= 0 && ival < 11)
@@ -888,7 +888,7 @@ LimitCycleAttributes_SetDataValue(PyObject *self, PyObject *args)
                         "Solid, SeedPointID, Speed, Vorticity, ArcLength, "
                         "TimeAbsolute, TimeRelative, AverageDistanceFromSeed, CorrelationDistance, "
                         "Difference, Variable.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -910,7 +910,7 @@ LimitCycleAttributes_SetDataVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dataVariable in the object.
     obj->data->SetDataVariable(std::string(str));
@@ -934,7 +934,7 @@ LimitCycleAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the integrationDirection in the object.
     if(ival >= 0 && ival < 6)
@@ -946,7 +946,7 @@ LimitCycleAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Forward, Backward, Both, ForwardDirectionless, BackwardDirectionless, "
                         "BothDirectionless.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -968,7 +968,7 @@ LimitCycleAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxSteps in the object.
     obj->data->SetMaxSteps((int)ival);
@@ -992,7 +992,7 @@ LimitCycleAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the terminateByDistance in the object.
     obj->data->SetTerminateByDistance(ival != 0);
@@ -1016,7 +1016,7 @@ LimitCycleAttributes_SetTermDistance(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the termDistance in the object.
     obj->data->SetTermDistance(dval);
@@ -1040,7 +1040,7 @@ LimitCycleAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the terminateByTime in the object.
     obj->data->SetTerminateByTime(ival != 0);
@@ -1064,7 +1064,7 @@ LimitCycleAttributes_SetTermTime(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the termTime in the object.
     obj->data->SetTermTime(dval);
@@ -1088,7 +1088,7 @@ LimitCycleAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxStepLength in the object.
     obj->data->SetMaxStepLength(dval);
@@ -1112,7 +1112,7 @@ LimitCycleAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the limitMaximumTimestep in the object.
     obj->data->SetLimitMaximumTimestep(ival != 0);
@@ -1136,7 +1136,7 @@ LimitCycleAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxTimeStep in the object.
     obj->data->SetMaxTimeStep(dval);
@@ -1160,7 +1160,7 @@ LimitCycleAttributes_SetRelTol(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the relTol in the object.
     obj->data->SetRelTol(dval);
@@ -1184,7 +1184,7 @@ LimitCycleAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolSizeType in the object.
     if(ival >= 0 && ival < 2)
@@ -1195,7 +1195,7 @@ LimitCycleAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Absolute, FractionOfBBox.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1217,7 +1217,7 @@ LimitCycleAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolAbsolute in the object.
     obj->data->SetAbsTolAbsolute(dval);
@@ -1241,7 +1241,7 @@ LimitCycleAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolBBox in the object.
     obj->data->SetAbsTolBBox(dval);
@@ -1265,7 +1265,7 @@ LimitCycleAttributes_SetFieldType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fieldType in the object.
     if(ival >= 0 && ival < 6)
@@ -1277,7 +1277,7 @@ LimitCycleAttributes_SetFieldType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
                         "NektarPPField.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1299,7 +1299,7 @@ LimitCycleAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fieldConstant in the object.
     obj->data->SetFieldConstant(dval);
@@ -1377,7 +1377,7 @@ LimitCycleAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the integrationType in the object.
     if(ival >= 0 && ival < 6)
@@ -1389,7 +1389,7 @@ LimitCycleAttributes_SetIntegrationType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, "
                         "M3DC12DIntegrator.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1411,7 +1411,7 @@ LimitCycleAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *a
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the parallelizationAlgorithmType in the object.
     if(ival >= 0 && ival < 4)
@@ -1422,7 +1422,7 @@ LimitCycleAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *a
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1444,7 +1444,7 @@ LimitCycleAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxProcessCount in the object.
     obj->data->SetMaxProcessCount((int)ival);
@@ -1468,7 +1468,7 @@ LimitCycleAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxDomainCacheSize in the object.
     obj->data->SetMaxDomainCacheSize((int)ival);
@@ -1492,7 +1492,7 @@ LimitCycleAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the workGroupSize in the object.
     obj->data->SetWorkGroupSize((int)ival);
@@ -1516,7 +1516,7 @@ LimitCycleAttributes_SetPathlines(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlines in the object.
     obj->data->SetPathlines(ival != 0);
@@ -1540,7 +1540,7 @@ LimitCycleAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObje
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesOverrideStartingTimeFlag in the object.
     obj->data->SetPathlinesOverrideStartingTimeFlag(ival != 0);
@@ -1564,7 +1564,7 @@ LimitCycleAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesOverrideStartingTime in the object.
     obj->data->SetPathlinesOverrideStartingTime(dval);
@@ -1588,7 +1588,7 @@ LimitCycleAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesPeriod in the object.
     obj->data->SetPathlinesPeriod(dval);
@@ -1612,7 +1612,7 @@ LimitCycleAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesCMFE in the object.
     if(ival >= 0 && ival < 2)
@@ -1623,7 +1623,7 @@ LimitCycleAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "CONN_CMFE, POS_CMFE.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1645,7 +1645,7 @@ LimitCycleAttributes_SetSampleDistance0(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDistance0 in the object.
     obj->data->SetSampleDistance0(dval);
@@ -1669,7 +1669,7 @@ LimitCycleAttributes_SetSampleDistance1(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDistance1 in the object.
     obj->data->SetSampleDistance1(dval);
@@ -1693,7 +1693,7 @@ LimitCycleAttributes_SetSampleDistance2(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDistance2 in the object.
     obj->data->SetSampleDistance2(dval);
@@ -1717,7 +1717,7 @@ LimitCycleAttributes_SetFillInterior(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fillInterior in the object.
     obj->data->SetFillInterior(ival != 0);
@@ -1741,7 +1741,7 @@ LimitCycleAttributes_SetRandomSamples(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the randomSamples in the object.
     obj->data->SetRandomSamples(ival != 0);
@@ -1765,7 +1765,7 @@ LimitCycleAttributes_SetRandomSeed(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the randomSeed in the object.
     obj->data->SetRandomSeed((int)ival);
@@ -1789,7 +1789,7 @@ LimitCycleAttributes_SetNumberOfRandomSamples(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numberOfRandomSamples in the object.
     obj->data->SetNumberOfRandomSamples((int)ival);
@@ -1813,7 +1813,7 @@ LimitCycleAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the forceNodeCenteredData in the object.
     obj->data->SetForceNodeCenteredData(ival != 0);
@@ -1837,7 +1837,7 @@ LimitCycleAttributes_SetCycleTolerance(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cycleTolerance in the object.
     obj->data->SetCycleTolerance(dval);
@@ -1861,7 +1861,7 @@ LimitCycleAttributes_SetMaxIterations(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxIterations in the object.
     obj->data->SetMaxIterations((int)ival);
@@ -1885,7 +1885,7 @@ LimitCycleAttributes_SetShowPartialResults(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showPartialResults in the object.
     obj->data->SetShowPartialResults(ival != 0);
@@ -1909,7 +1909,7 @@ LimitCycleAttributes_SetShowReturnDistances(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showReturnDistances in the object.
     obj->data->SetShowReturnDistances(ival != 0);
@@ -1933,7 +1933,7 @@ LimitCycleAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueAdvectionWarnings in the object.
     obj->data->SetIssueAdvectionWarnings(ival != 0);
@@ -1957,7 +1957,7 @@ LimitCycleAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueBoundaryWarnings in the object.
     obj->data->SetIssueBoundaryWarnings(ival != 0);
@@ -1981,7 +1981,7 @@ LimitCycleAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueTerminationWarnings in the object.
     obj->data->SetIssueTerminationWarnings(ival != 0);
@@ -2005,7 +2005,7 @@ LimitCycleAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueStepsizeWarnings in the object.
     obj->data->SetIssueStepsizeWarnings(ival != 0);
@@ -2029,7 +2029,7 @@ LimitCycleAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueStiffnessWarnings in the object.
     obj->data->SetIssueStiffnessWarnings(ival != 0);
@@ -2053,7 +2053,7 @@ LimitCycleAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *ar
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueCriticalPointsWarnings in the object.
     obj->data->SetIssueCriticalPointsWarnings(ival != 0);
@@ -2077,7 +2077,7 @@ LimitCycleAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the criticalPointThreshold in the object.
     obj->data->SetCriticalPointThreshold(dval);
@@ -2101,7 +2101,7 @@ LimitCycleAttributes_SetCorrelationDistanceAngTol(PyObject *self, PyObject *args
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the correlationDistanceAngTol in the object.
     obj->data->SetCorrelationDistanceAngTol(dval);
@@ -2125,7 +2125,7 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObj
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the correlationDistanceMinDistAbsolute in the object.
     obj->data->SetCorrelationDistanceMinDistAbsolute(dval);
@@ -2149,7 +2149,7 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistBBox(PyObject *self, PyObject 
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the correlationDistanceMinDistBBox in the object.
     obj->data->SetCorrelationDistanceMinDistBBox(dval);
@@ -2173,7 +2173,7 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObject 
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the correlationDistanceMinDistType in the object.
     if(ival >= 0 && ival < 2)
@@ -2184,7 +2184,7 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObject 
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Absolute, FractionOfBBox.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -2688,14 +2688,16 @@ PyLimitCycleAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -2841,7 +2843,7 @@ LimitCycleAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

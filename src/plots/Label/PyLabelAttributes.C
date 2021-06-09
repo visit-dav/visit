@@ -192,7 +192,7 @@ LabelAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the legendFlag in the object.
     obj->data->SetLegendFlag(ival != 0);
@@ -216,7 +216,7 @@ LabelAttributes_SetShowNodes(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showNodes in the object.
     obj->data->SetShowNodes(ival != 0);
@@ -240,7 +240,7 @@ LabelAttributes_SetShowCells(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showCells in the object.
     obj->data->SetShowCells(ival != 0);
@@ -264,7 +264,7 @@ LabelAttributes_SetRestrictNumberOfLabels(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the restrictNumberOfLabels in the object.
     obj->data->SetRestrictNumberOfLabels(ival != 0);
@@ -288,7 +288,7 @@ LabelAttributes_SetDrawLabelsFacing(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the drawLabelsFacing in the object.
     if(ival >= 0 && ival < 3)
@@ -299,7 +299,7 @@ LabelAttributes_SetDrawLabelsFacing(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Front, Back, FrontAndBack.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -321,7 +321,7 @@ LabelAttributes_SetLabelDisplayFormat(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the labelDisplayFormat in the object.
     if(ival >= 0 && ival < 3)
@@ -332,7 +332,7 @@ LabelAttributes_SetLabelDisplayFormat(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Natural, LogicalIndex, Index.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -354,7 +354,7 @@ LabelAttributes_SetNumberOfLabels(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numberOfLabels in the object.
     obj->data->SetNumberOfLabels((int)ival);
@@ -378,11 +378,11 @@ LabelAttributes_SetTextFont1(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyFontAttributes_Check(newValue))
     {
         fprintf(stderr, "The textFont1 field can only be set with FontAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetTextFont1(*PyFontAttributes_FromPyObject(newValue));
@@ -414,11 +414,11 @@ LabelAttributes_SetTextFont2(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyFontAttributes_Check(newValue))
     {
         fprintf(stderr, "The textFont2 field can only be set with FontAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetTextFont2(*PyFontAttributes_FromPyObject(newValue));
@@ -450,7 +450,7 @@ LabelAttributes_SetHorizontalJustification(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the horizontalJustification in the object.
     if(ival >= 0 && ival < 3)
@@ -461,7 +461,7 @@ LabelAttributes_SetHorizontalJustification(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "HCenter, Left, Right.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -483,7 +483,7 @@ LabelAttributes_SetVerticalJustification(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the verticalJustification in the object.
     if(ival >= 0 && ival < 3)
@@ -494,7 +494,7 @@ LabelAttributes_SetVerticalJustification(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "VCenter, Top, Bottom.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -516,7 +516,7 @@ LabelAttributes_SetDepthTestMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the depthTestMode in the object.
     if(ival >= 0 && ival < 3)
@@ -527,7 +527,7 @@ LabelAttributes_SetDepthTestMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "LABEL_DT_AUTO, LABEL_DT_ALWAYS, LABEL_DT_NEVER.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -549,7 +549,7 @@ LabelAttributes_SetFormatTemplate(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the formatTemplate in the object.
     obj->data->SetFormatTemplate(std::string(str));
@@ -855,14 +855,16 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1008,7 +1010,7 @@ LabelAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

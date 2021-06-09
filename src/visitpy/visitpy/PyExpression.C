@@ -139,7 +139,7 @@ Expression_SetName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the name in the object.
     obj->data->SetName(std::string(str));
@@ -163,7 +163,7 @@ Expression_SetDefinition(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the definition in the object.
     obj->data->SetDefinition(std::string(str));
@@ -187,7 +187,7 @@ Expression_SetHidden(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the hidden in the object.
     obj->data->SetHidden(ival != 0);
@@ -211,7 +211,7 @@ Expression_SetType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the type in the object.
     if(ival >= 0 && ival < 10)
@@ -224,7 +224,7 @@ Expression_SetType(PyObject *self, PyObject *args)
                         "Unknown, ScalarMeshVar, VectorMeshVar, TensorMeshVar, SymmetricTensorMeshVar, "
                         "ArrayMeshVar, CurveMeshVar, Mesh, Material, "
                         "Species.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -246,7 +246,7 @@ Expression_SetFromDB(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fromDB in the object.
     obj->data->SetFromDB(ival != 0);
@@ -270,7 +270,7 @@ Expression_SetFromOperator(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fromOperator in the object.
     obj->data->SetFromOperator(ival != 0);
@@ -294,7 +294,7 @@ Expression_SetOperatorName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the operatorName in the object.
     obj->data->SetOperatorName(std::string(str));
@@ -318,7 +318,7 @@ Expression_SetMeshName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the meshName in the object.
     obj->data->SetMeshName(std::string(str));
@@ -342,7 +342,7 @@ Expression_SetDbName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dbName in the object.
     obj->data->SetDbName(std::string(str));
@@ -366,7 +366,7 @@ Expression_SetAutoExpression(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the autoExpression in the object.
     obj->data->SetAutoExpression(ival != 0);
@@ -508,14 +508,16 @@ PyExpression_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -661,7 +663,7 @@ Expression_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

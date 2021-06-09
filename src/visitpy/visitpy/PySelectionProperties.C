@@ -211,7 +211,7 @@ SelectionProperties_SetName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the name in the object.
     obj->data->SetName(std::string(str));
@@ -235,7 +235,7 @@ SelectionProperties_SetSource(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the source in the object.
     obj->data->SetSource(std::string(str));
@@ -259,7 +259,7 @@ SelectionProperties_SetHost(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the host in the object.
     obj->data->SetHost(std::string(str));
@@ -283,7 +283,7 @@ SelectionProperties_SetSelectionType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the selectionType in the object.
     if(ival >= 0 && ival < 2)
@@ -294,7 +294,7 @@ SelectionProperties_SetSelectionType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "BasicSelection, CumulativeQuerySelection.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -316,7 +316,7 @@ SelectionProperties_SetIdVariableType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the idVariableType in the object.
     if(ival >= 0 && ival < 4)
@@ -327,7 +327,7 @@ SelectionProperties_SetIdVariableType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "UseZoneIDForID, UseGlobalZoneIDForID, UseLocationsForID, UseVariableForID.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -349,7 +349,7 @@ SelectionProperties_SetIdVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the idVariable in the object.
     obj->data->SetIdVariable(std::string(str));
@@ -554,7 +554,7 @@ SelectionProperties_SetMinTimeState(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minTimeState in the object.
     obj->data->SetMinTimeState((int)ival);
@@ -578,7 +578,7 @@ SelectionProperties_SetMaxTimeState(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxTimeState in the object.
     obj->data->SetMaxTimeState((int)ival);
@@ -602,7 +602,7 @@ SelectionProperties_SetTimeStateStride(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeStateStride in the object.
     obj->data->SetTimeStateStride((int)ival);
@@ -626,7 +626,7 @@ SelectionProperties_SetCombineRule(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the combineRule in the object.
     if(ival >= 0 && ival < 2)
@@ -637,7 +637,7 @@ SelectionProperties_SetCombineRule(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "CombineAnd, CombineOr.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -659,7 +659,7 @@ SelectionProperties_SetHistogramType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the histogramType in the object.
     if(ival >= 0 && ival < 4)
@@ -670,7 +670,7 @@ SelectionProperties_SetHistogramType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "HistogramTime, HistogramMatches, HistogramID, HistogramVariable.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -692,7 +692,7 @@ SelectionProperties_SetHistogramNumBins(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the histogramNumBins in the object.
     obj->data->SetHistogramNumBins((int)ival);
@@ -716,7 +716,7 @@ SelectionProperties_SetHistogramAutoScaleNumBins(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the histogramAutoScaleNumBins in the object.
     obj->data->SetHistogramAutoScaleNumBins(ival != 0);
@@ -740,7 +740,7 @@ SelectionProperties_SetHistogramStartBin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the histogramStartBin in the object.
     obj->data->SetHistogramStartBin((int)ival);
@@ -764,7 +764,7 @@ SelectionProperties_SetHistogramEndBin(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the histogramEndBin in the object.
     obj->data->SetHistogramEndBin((int)ival);
@@ -788,7 +788,7 @@ SelectionProperties_SetHistogramVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the histogramVariable in the object.
     obj->data->SetHistogramVariable(std::string(str));
@@ -991,14 +991,16 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1144,7 +1146,7 @@ SelectionProperties_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

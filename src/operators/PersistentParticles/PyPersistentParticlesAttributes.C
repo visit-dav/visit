@@ -114,7 +114,7 @@ PersistentParticlesAttributes_SetStartIndex(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the startIndex in the object.
     obj->data->SetStartIndex((int)ival);
@@ -138,7 +138,7 @@ PersistentParticlesAttributes_SetStopIndex(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stopIndex in the object.
     obj->data->SetStopIndex((int)ival);
@@ -162,7 +162,7 @@ PersistentParticlesAttributes_SetStride(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stride in the object.
     obj->data->SetStride((int)ival);
@@ -186,7 +186,7 @@ PersistentParticlesAttributes_SetStartPathType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the startPathType in the object.
     if(ival >= 0 && ival < 2)
@@ -197,7 +197,7 @@ PersistentParticlesAttributes_SetStartPathType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Absolute, Relative.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -219,7 +219,7 @@ PersistentParticlesAttributes_SetStopPathType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the stopPathType in the object.
     if(ival >= 0 && ival < 2)
@@ -230,7 +230,7 @@ PersistentParticlesAttributes_SetStopPathType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Absolute, Relative.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -252,7 +252,7 @@ PersistentParticlesAttributes_SetTraceVariableX(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the traceVariableX in the object.
     obj->data->SetTraceVariableX(std::string(str));
@@ -276,7 +276,7 @@ PersistentParticlesAttributes_SetTraceVariableY(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the traceVariableY in the object.
     obj->data->SetTraceVariableY(std::string(str));
@@ -300,7 +300,7 @@ PersistentParticlesAttributes_SetTraceVariableZ(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the traceVariableZ in the object.
     obj->data->SetTraceVariableZ(std::string(str));
@@ -324,7 +324,7 @@ PersistentParticlesAttributes_SetConnectParticles(PyObject *self, PyObject *args
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the connectParticles in the object.
     obj->data->SetConnectParticles(ival != 0);
@@ -348,7 +348,7 @@ PersistentParticlesAttributes_SetShowPoints(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showPoints in the object.
     obj->data->SetShowPoints(ival != 0);
@@ -372,7 +372,7 @@ PersistentParticlesAttributes_SetIndexVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the indexVariable in the object.
     obj->data->SetIndexVariable(std::string(str));
@@ -509,14 +509,16 @@ PyPersistentParticlesAttributes_setattr(PyObject *self, char *name, PyObject *ar
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -662,7 +664,7 @@ PersistentParticlesAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

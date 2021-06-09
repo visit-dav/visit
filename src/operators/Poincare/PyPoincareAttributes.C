@@ -656,7 +656,7 @@ PoincareAttributes_SetOpacityType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityType in the object.
     if(ival >= 0 && ival < 2)
@@ -667,7 +667,7 @@ PoincareAttributes_SetOpacityType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Explicit, ColorTable.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -689,7 +689,7 @@ PoincareAttributes_SetOpacity(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacity in the object.
     obj->data->SetOpacity(dval);
@@ -713,7 +713,7 @@ PoincareAttributes_SetMinPunctures(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minPunctures in the object.
     obj->data->SetMinPunctures((int)ival);
@@ -737,7 +737,7 @@ PoincareAttributes_SetMaxPunctures(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxPunctures in the object.
     obj->data->SetMaxPunctures((int)ival);
@@ -761,7 +761,7 @@ PoincareAttributes_SetPuncturePlotType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the puncturePlotType in the object.
     if(ival >= 0 && ival < 2)
@@ -772,7 +772,7 @@ PoincareAttributes_SetPuncturePlotType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Single, Double.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -794,7 +794,7 @@ PoincareAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxSteps in the object.
     obj->data->SetMaxSteps((int)ival);
@@ -818,7 +818,7 @@ PoincareAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the terminateByTime in the object.
     obj->data->SetTerminateByTime(ival != 0);
@@ -842,7 +842,7 @@ PoincareAttributes_SetTermTime(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the termTime in the object.
     obj->data->SetTermTime(dval);
@@ -866,7 +866,7 @@ PoincareAttributes_SetPuncturePeriodTolerance(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the puncturePeriodTolerance in the object.
     obj->data->SetPuncturePeriodTolerance(dval);
@@ -890,7 +890,7 @@ PoincareAttributes_SetPuncturePlane(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the puncturePlane in the object.
     if(ival >= 0 && ival < 3)
@@ -901,7 +901,7 @@ PoincareAttributes_SetPuncturePlane(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Poloidal, Toroidal, Arbitrary.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -923,7 +923,7 @@ PoincareAttributes_SetSourceType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sourceType in the object.
     if(ival >= 0 && ival < 3)
@@ -934,7 +934,7 @@ PoincareAttributes_SetSourceType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "SpecifiedPoint, PointList, SpecifiedLine.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1181,7 +1181,7 @@ PoincareAttributes_SetPointDensity(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointDensity in the object.
     obj->data->SetPointDensity((int)ival);
@@ -1205,7 +1205,7 @@ PoincareAttributes_SetFieldType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fieldType in the object.
     if(ival >= 0 && ival < 6)
@@ -1217,7 +1217,7 @@ PoincareAttributes_SetFieldType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
                         "NektarPPField.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1239,7 +1239,7 @@ PoincareAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the forceNodeCenteredData in the object.
     obj->data->SetForceNodeCenteredData(ival != 0);
@@ -1263,7 +1263,7 @@ PoincareAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fieldConstant in the object.
     obj->data->SetFieldConstant(dval);
@@ -1341,7 +1341,7 @@ PoincareAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the integrationType in the object.
     if(ival >= 0 && ival < 6)
@@ -1353,7 +1353,7 @@ PoincareAttributes_SetIntegrationType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, "
                         "M3DC12DIntegrator.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1375,7 +1375,7 @@ PoincareAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the coordinateSystem in the object.
     if(ival >= 0 && ival < 2)
@@ -1386,7 +1386,7 @@ PoincareAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Cartesian, Cylindrical.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1408,7 +1408,7 @@ PoincareAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxStepLength in the object.
     obj->data->SetMaxStepLength(dval);
@@ -1432,7 +1432,7 @@ PoincareAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the limitMaximumTimestep in the object.
     obj->data->SetLimitMaximumTimestep(ival != 0);
@@ -1456,7 +1456,7 @@ PoincareAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxTimeStep in the object.
     obj->data->SetMaxTimeStep(dval);
@@ -1480,7 +1480,7 @@ PoincareAttributes_SetRelTol(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the relTol in the object.
     obj->data->SetRelTol(dval);
@@ -1504,7 +1504,7 @@ PoincareAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolSizeType in the object.
     if(ival >= 0 && ival < 2)
@@ -1515,7 +1515,7 @@ PoincareAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Absolute, FractionOfBBox.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1537,7 +1537,7 @@ PoincareAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolAbsolute in the object.
     obj->data->SetAbsTolAbsolute(dval);
@@ -1561,7 +1561,7 @@ PoincareAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolBBox in the object.
     obj->data->SetAbsTolBBox(dval);
@@ -1585,7 +1585,7 @@ PoincareAttributes_SetAnalysis(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the analysis in the object.
     if(ival >= 0 && ival < 2)
@@ -1596,7 +1596,7 @@ PoincareAttributes_SetAnalysis(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "None, Normal.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1618,7 +1618,7 @@ PoincareAttributes_SetMaximumToroidalWinding(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maximumToroidalWinding in the object.
     obj->data->SetMaximumToroidalWinding((int)ival);
@@ -1642,7 +1642,7 @@ PoincareAttributes_SetOverrideToroidalWinding(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the overrideToroidalWinding in the object.
     obj->data->SetOverrideToroidalWinding((int)ival);
@@ -1666,7 +1666,7 @@ PoincareAttributes_SetOverridePoloidalWinding(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the overridePoloidalWinding in the object.
     obj->data->SetOverridePoloidalWinding((int)ival);
@@ -1690,7 +1690,7 @@ PoincareAttributes_SetWindingPairConfidence(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the windingPairConfidence in the object.
     obj->data->SetWindingPairConfidence(dval);
@@ -1714,7 +1714,7 @@ PoincareAttributes_SetRationalSurfaceFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the rationalSurfaceFactor in the object.
     obj->data->SetRationalSurfaceFactor(dval);
@@ -1738,7 +1738,7 @@ PoincareAttributes_SetOverlaps(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the overlaps in the object.
     if(ival >= 0 && ival < 4)
@@ -1749,7 +1749,7 @@ PoincareAttributes_SetOverlaps(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "Raw, Remove, Merge, Smooth.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1771,7 +1771,7 @@ PoincareAttributes_SetMeshType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the meshType in the object.
     if(ival >= 0 && ival < 2)
@@ -1782,7 +1782,7 @@ PoincareAttributes_SetMeshType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Curves, Surfaces.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1804,7 +1804,7 @@ PoincareAttributes_SetNumberPlanes(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numberPlanes in the object.
     obj->data->SetNumberPlanes((int)ival);
@@ -1828,7 +1828,7 @@ PoincareAttributes_SetSinglePlane(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the singlePlane in the object.
     obj->data->SetSinglePlane(dval);
@@ -1852,7 +1852,7 @@ PoincareAttributes_SetMin(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the min in the object.
     obj->data->SetMin(dval);
@@ -1876,7 +1876,7 @@ PoincareAttributes_SetMax(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the max in the object.
     obj->data->SetMax(dval);
@@ -1900,7 +1900,7 @@ PoincareAttributes_SetMinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minFlag in the object.
     obj->data->SetMinFlag(ival != 0);
@@ -1924,7 +1924,7 @@ PoincareAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxFlag in the object.
     obj->data->SetMaxFlag(ival != 0);
@@ -1948,7 +1948,7 @@ PoincareAttributes_SetColorType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorType in the object.
     if(ival >= 0 && ival < 2)
@@ -1959,7 +1959,7 @@ PoincareAttributes_SetColorType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "ColorBySingleColor, ColorByColorTable.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -2058,7 +2058,7 @@ PoincareAttributes_SetColorTableName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorTableName in the object.
     obj->data->SetColorTableName(std::string(str));
@@ -2082,7 +2082,7 @@ PoincareAttributes_SetDataValue(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dataValue in the object.
     if(ival >= 0 && ival < 14)
@@ -2096,7 +2096,7 @@ PoincareAttributes_SetDataValue(PyObject *self, PyObject *args)
                         "ToroidalWindings, PoloidalWindingsQ, PoloidalWindingsP, FieldlineOrder, "
                         "PointOrder, PlaneOrder, WindingGroupOrder, WindingPointOrder, "
                         "WindingPointOrderModulo.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -2118,7 +2118,7 @@ PoincareAttributes_SetShowRationalSurfaces(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showRationalSurfaces in the object.
     obj->data->SetShowRationalSurfaces(ival != 0);
@@ -2142,7 +2142,7 @@ PoincareAttributes_SetRationalSurfaceMaxIterations(PyObject *self, PyObject *arg
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the RationalSurfaceMaxIterations in the object.
     obj->data->SetRationalSurfaceMaxIterations((int)ival);
@@ -2166,7 +2166,7 @@ PoincareAttributes_SetShowOPoints(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showOPoints in the object.
     obj->data->SetShowOPoints(ival != 0);
@@ -2190,7 +2190,7 @@ PoincareAttributes_SetOPointMaxIterations(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the OPointMaxIterations in the object.
     obj->data->SetOPointMaxIterations((int)ival);
@@ -2214,7 +2214,7 @@ PoincareAttributes_SetShowXPoints(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showXPoints in the object.
     obj->data->SetShowXPoints(ival != 0);
@@ -2238,7 +2238,7 @@ PoincareAttributes_SetXPointMaxIterations(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the XPointMaxIterations in the object.
     obj->data->SetXPointMaxIterations((int)ival);
@@ -2262,7 +2262,7 @@ PoincareAttributes_SetPerformOLineAnalysis(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the performOLineAnalysis in the object.
     obj->data->SetPerformOLineAnalysis(ival != 0);
@@ -2286,7 +2286,7 @@ PoincareAttributes_SetOLineToroidalWinding(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the OLineToroidalWinding in the object.
     obj->data->SetOLineToroidalWinding((int)ival);
@@ -2310,7 +2310,7 @@ PoincareAttributes_SetOLineAxisFileName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the OLineAxisFileName in the object.
     obj->data->SetOLineAxisFileName(std::string(str));
@@ -2334,7 +2334,7 @@ PoincareAttributes_SetShowChaotic(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showChaotic in the object.
     obj->data->SetShowChaotic(ival != 0);
@@ -2358,7 +2358,7 @@ PoincareAttributes_SetShowIslands(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showIslands in the object.
     obj->data->SetShowIslands(ival != 0);
@@ -2382,7 +2382,7 @@ PoincareAttributes_SetSummaryFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the SummaryFlag in the object.
     obj->data->SetSummaryFlag(ival != 0);
@@ -2406,7 +2406,7 @@ PoincareAttributes_SetVerboseFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the verboseFlag in the object.
     obj->data->SetVerboseFlag(ival != 0);
@@ -2430,7 +2430,7 @@ PoincareAttributes_SetShow1DPlots(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the show1DPlots in the object.
     obj->data->SetShow1DPlots(ival != 0);
@@ -2454,7 +2454,7 @@ PoincareAttributes_SetShowLines(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showLines in the object.
     obj->data->SetShowLines(ival != 0);
@@ -2478,7 +2478,7 @@ PoincareAttributes_SetShowPoints(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showPoints in the object.
     obj->data->SetShowPoints(ival != 0);
@@ -2502,7 +2502,7 @@ PoincareAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *arg
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the parallelizationAlgorithmType in the object.
     if(ival >= 0 && ival < 4)
@@ -2513,7 +2513,7 @@ PoincareAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *arg
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -2535,7 +2535,7 @@ PoincareAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxProcessCount in the object.
     obj->data->SetMaxProcessCount((int)ival);
@@ -2559,7 +2559,7 @@ PoincareAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxDomainCacheSize in the object.
     obj->data->SetMaxDomainCacheSize((int)ival);
@@ -2583,7 +2583,7 @@ PoincareAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the workGroupSize in the object.
     obj->data->SetWorkGroupSize((int)ival);
@@ -2607,7 +2607,7 @@ PoincareAttributes_SetPathlines(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlines in the object.
     obj->data->SetPathlines(ival != 0);
@@ -2631,7 +2631,7 @@ PoincareAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesOverrideStartingTimeFlag in the object.
     obj->data->SetPathlinesOverrideStartingTimeFlag(ival != 0);
@@ -2655,7 +2655,7 @@ PoincareAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *ar
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesOverrideStartingTime in the object.
     obj->data->SetPathlinesOverrideStartingTime(dval);
@@ -2679,7 +2679,7 @@ PoincareAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesPeriod in the object.
     obj->data->SetPathlinesPeriod(dval);
@@ -2703,7 +2703,7 @@ PoincareAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesCMFE in the object.
     if(ival >= 0 && ival < 2)
@@ -2714,7 +2714,7 @@ PoincareAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "CONN_CMFE, POS_CMFE.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -2736,7 +2736,7 @@ PoincareAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueTerminationWarnings in the object.
     obj->data->SetIssueTerminationWarnings(ival != 0);
@@ -2760,7 +2760,7 @@ PoincareAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueStepsizeWarnings in the object.
     obj->data->SetIssueStepsizeWarnings(ival != 0);
@@ -2784,7 +2784,7 @@ PoincareAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueStiffnessWarnings in the object.
     obj->data->SetIssueStiffnessWarnings(ival != 0);
@@ -2808,7 +2808,7 @@ PoincareAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *args
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueCriticalPointsWarnings in the object.
     obj->data->SetIssueCriticalPointsWarnings(ival != 0);
@@ -2832,7 +2832,7 @@ PoincareAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the criticalPointThreshold in the object.
     obj->data->SetCriticalPointThreshold(dval);
@@ -3484,14 +3484,16 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -3637,7 +3639,7 @@ PoincareAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

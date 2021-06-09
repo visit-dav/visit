@@ -119,7 +119,7 @@ GlobalLineoutAttributes_SetDynamic(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the Dynamic in the object.
     obj->data->SetDynamic(ival != 0);
@@ -143,7 +143,7 @@ GlobalLineoutAttributes_SetCreateWindow(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the createWindow in the object.
     obj->data->SetCreateWindow(ival != 0);
@@ -167,7 +167,7 @@ GlobalLineoutAttributes_SetWindowId(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the windowId in the object.
     obj->data->SetWindowId((int)ival);
@@ -191,7 +191,7 @@ GlobalLineoutAttributes_SetSamplingOn(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the samplingOn in the object.
     obj->data->SetSamplingOn(ival != 0);
@@ -215,7 +215,7 @@ GlobalLineoutAttributes_SetNumSamples(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numSamples in the object.
     obj->data->SetNumSamples((int)ival);
@@ -239,7 +239,7 @@ GlobalLineoutAttributes_SetCreateReflineLabels(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the createReflineLabels in the object.
     obj->data->SetCreateReflineLabels(ival != 0);
@@ -263,7 +263,7 @@ GlobalLineoutAttributes_SetCurveOption(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the curveOption in the object.
     if(ival >= 0 && ival < 2)
@@ -274,7 +274,7 @@ GlobalLineoutAttributes_SetCurveOption(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "UpdateCurve, CreateCurve.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -296,7 +296,7 @@ GlobalLineoutAttributes_SetColorOption(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorOption in the object.
     if(ival >= 0 && ival < 2)
@@ -307,7 +307,7 @@ GlobalLineoutAttributes_SetColorOption(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "RepeatColor, CreateColor.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -329,7 +329,7 @@ GlobalLineoutAttributes_SetFreezeInTime(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the freezeInTime in the object.
     obj->data->SetFreezeInTime(ival != 0);
@@ -454,14 +454,16 @@ PyGlobalLineoutAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -607,7 +609,7 @@ GlobalLineoutAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

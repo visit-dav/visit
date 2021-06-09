@@ -257,7 +257,7 @@ ClipAttributes_SetQuality(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the quality in the object.
     if(ival >= 0 && ival < 2)
@@ -268,7 +268,7 @@ ClipAttributes_SetQuality(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Fast, Accurate.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -290,7 +290,7 @@ ClipAttributes_SetFuncType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the funcType in the object.
     if(ival >= 0 && ival < 2)
@@ -301,7 +301,7 @@ ClipAttributes_SetFuncType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Plane, Sphere.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -323,7 +323,7 @@ ClipAttributes_SetPlane1Status(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the plane1Status in the object.
     obj->data->SetPlane1Status(ival != 0);
@@ -347,7 +347,7 @@ ClipAttributes_SetPlane2Status(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the plane2Status in the object.
     obj->data->SetPlane2Status(ival != 0);
@@ -371,7 +371,7 @@ ClipAttributes_SetPlane3Status(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the plane3Status in the object.
     obj->data->SetPlane3Status(ival != 0);
@@ -719,7 +719,7 @@ ClipAttributes_SetPlaneInverse(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the planeInverse in the object.
     obj->data->SetPlaneInverse(ival != 0);
@@ -743,7 +743,7 @@ ClipAttributes_SetPlaneToolControlledClipPlane(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the planeToolControlledClipPlane in the object.
     if(ival >= 0 && ival < 4)
@@ -754,7 +754,7 @@ ClipAttributes_SetPlaneToolControlledClipPlane(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "None, Plane1, Plane2, Plane3.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -830,7 +830,7 @@ ClipAttributes_SetRadius(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the radius in the object.
     obj->data->SetRadius(dval);
@@ -854,7 +854,7 @@ ClipAttributes_SetSphereInverse(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sphereInverse in the object.
     obj->data->SetSphereInverse(ival != 0);
@@ -878,7 +878,7 @@ ClipAttributes_SetCrinkleClip(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the crinkleClip in the object.
     obj->data->SetCrinkleClip(ival != 0);
@@ -1062,14 +1062,16 @@ PyClipAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1215,7 +1217,7 @@ ClipAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

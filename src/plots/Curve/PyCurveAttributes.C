@@ -255,7 +255,7 @@ CurveAttributes_SetShowLines(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showLines in the object.
     obj->data->SetShowLines(ival != 0);
@@ -279,7 +279,7 @@ CurveAttributes_SetLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineWidth in the object.
     obj->data->SetLineWidth(ival);
@@ -303,7 +303,7 @@ CurveAttributes_SetShowPoints(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showPoints in the object.
     obj->data->SetShowPoints(ival != 0);
@@ -327,7 +327,7 @@ CurveAttributes_SetSymbol(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the symbol in the object.
     if(ival >= 0 && ival < 7)
@@ -339,7 +339,7 @@ CurveAttributes_SetSymbol(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Point, TriangleUp, TriangleDown, Square, Circle, "
                         "Plus, X.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -361,7 +361,7 @@ CurveAttributes_SetPointSize(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointSize in the object.
     obj->data->SetPointSize(dval);
@@ -385,7 +385,7 @@ CurveAttributes_SetPointFillMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointFillMode in the object.
     if(ival >= 0 && ival < 2)
@@ -396,7 +396,7 @@ CurveAttributes_SetPointFillMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Static, Dynamic.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -418,7 +418,7 @@ CurveAttributes_SetPointStride(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointStride in the object.
     obj->data->SetPointStride((int)ival);
@@ -442,7 +442,7 @@ CurveAttributes_SetSymbolDensity(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the symbolDensity in the object.
     obj->data->SetSymbolDensity((int)ival);
@@ -466,7 +466,7 @@ CurveAttributes_SetCurveColorSource(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the curveColorSource in the object.
     if(ival >= 0 && ival < 2)
@@ -477,7 +477,7 @@ CurveAttributes_SetCurveColorSource(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Cycle, Custom.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -576,7 +576,7 @@ CurveAttributes_SetShowLegend(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showLegend in the object.
     obj->data->SetShowLegend(ival != 0);
@@ -600,7 +600,7 @@ CurveAttributes_SetShowLabels(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showLabels in the object.
     obj->data->SetShowLabels(ival != 0);
@@ -624,7 +624,7 @@ CurveAttributes_SetDesignator(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the designator in the object.
     obj->data->SetDesignator(std::string(str));
@@ -648,7 +648,7 @@ CurveAttributes_SetDoBallTimeCue(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the doBallTimeCue in the object.
     obj->data->SetDoBallTimeCue(ival != 0);
@@ -749,7 +749,7 @@ CurveAttributes_SetTimeCueBallSize(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeCueBallSize in the object.
     obj->data->SetTimeCueBallSize(dval);
@@ -773,7 +773,7 @@ CurveAttributes_SetDoLineTimeCue(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the doLineTimeCue in the object.
     obj->data->SetDoLineTimeCue(ival != 0);
@@ -874,7 +874,7 @@ CurveAttributes_SetLineTimeCueWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineTimeCueWidth in the object.
     obj->data->SetLineTimeCueWidth((int)ival);
@@ -898,7 +898,7 @@ CurveAttributes_SetDoCropTimeCue(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the doCropTimeCue in the object.
     obj->data->SetDoCropTimeCue(ival != 0);
@@ -922,7 +922,7 @@ CurveAttributes_SetTimeForTimeCue(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeForTimeCue in the object.
     obj->data->SetTimeForTimeCue(dval);
@@ -946,7 +946,7 @@ CurveAttributes_SetFillMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fillMode in the object.
     if(ival >= 0 && ival < 4)
@@ -957,7 +957,7 @@ CurveAttributes_SetFillMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "NoFill, Solid, HorizontalGradient, VerticalGradient.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1133,7 +1133,7 @@ CurveAttributes_SetPolarToCartesian(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the polarToCartesian in the object.
     obj->data->SetPolarToCartesian(ival != 0);
@@ -1157,7 +1157,7 @@ CurveAttributes_SetPolarCoordinateOrder(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the polarCoordinateOrder in the object.
     if(ival >= 0 && ival < 2)
@@ -1168,7 +1168,7 @@ CurveAttributes_SetPolarCoordinateOrder(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "R_Theta, Theta_R.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1190,7 +1190,7 @@ CurveAttributes_SetAngleUnits(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the angleUnits in the object.
     if(ival >= 0 && ival < 2)
@@ -1201,7 +1201,7 @@ CurveAttributes_SetAngleUnits(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Radians, Degrees.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1567,14 +1567,16 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1720,7 +1722,7 @@ CurveAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

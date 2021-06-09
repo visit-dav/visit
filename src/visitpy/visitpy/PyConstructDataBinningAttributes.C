@@ -215,7 +215,7 @@ ConstructDataBinningAttributes_SetName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the name in the object.
     obj->data->SetName(std::string(str));
@@ -434,7 +434,7 @@ ConstructDataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *ar
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the reductionOperator in the object.
     if(ival >= 0 && ival < 9)
@@ -447,7 +447,7 @@ ConstructDataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *ar
                         "Average, Minimum, Maximum, StandardDeviation, Variance, "
                         "Sum, Count, RMS, PDF"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -469,7 +469,7 @@ ConstructDataBinningAttributes_SetVarForReductionOperator(PyObject *self, PyObje
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the varForReductionOperator in the object.
     obj->data->SetVarForReductionOperator(std::string(str));
@@ -493,7 +493,7 @@ ConstructDataBinningAttributes_SetUndefinedValue(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the undefinedValue in the object.
     obj->data->SetUndefinedValue(dval);
@@ -517,7 +517,7 @@ ConstructDataBinningAttributes_SetBinningScheme(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the binningScheme in the object.
     if(ival >= 0 && ival < 2)
@@ -528,7 +528,7 @@ ConstructDataBinningAttributes_SetBinningScheme(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Uniform, Unknown.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -613,7 +613,7 @@ ConstructDataBinningAttributes_SetOverTime(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the overTime in the object.
     obj->data->SetOverTime(ival != 0);
@@ -637,7 +637,7 @@ ConstructDataBinningAttributes_SetTimeStart(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeStart in the object.
     obj->data->SetTimeStart((int)ival);
@@ -661,7 +661,7 @@ ConstructDataBinningAttributes_SetTimeEnd(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeEnd in the object.
     obj->data->SetTimeEnd((int)ival);
@@ -685,7 +685,7 @@ ConstructDataBinningAttributes_SetTimeStride(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeStride in the object.
     obj->data->SetTimeStride((int)ival);
@@ -709,7 +709,7 @@ ConstructDataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the outOfBoundsBehavior in the object.
     if(ival >= 0 && ival < 2)
@@ -720,7 +720,7 @@ ConstructDataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Clamp, Discard.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -914,14 +914,16 @@ PyConstructDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *a
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1067,7 +1069,7 @@ ConstructDataBinningAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

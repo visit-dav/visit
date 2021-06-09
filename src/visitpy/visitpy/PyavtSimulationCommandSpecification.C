@@ -107,7 +107,7 @@ avtSimulationCommandSpecification_SetName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the name in the object.
     obj->data->SetName(std::string(str));
@@ -131,7 +131,7 @@ avtSimulationCommandSpecification_SetArgumentType(PyObject *self, PyObject *args
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the argumentType in the object.
     if(ival >= 0 && ival < 4)
@@ -142,7 +142,7 @@ avtSimulationCommandSpecification_SetArgumentType(PyObject *self, PyObject *args
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "CmdArgNone, CmdArgInt, CmdArgFloat, CmdArgString.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -164,7 +164,7 @@ avtSimulationCommandSpecification_SetClassName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the className in the object.
     obj->data->SetClassName(std::string(str));
@@ -188,7 +188,7 @@ avtSimulationCommandSpecification_SetEnabled(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the enabled in the object.
     obj->data->SetEnabled(ival != 0);
@@ -212,7 +212,7 @@ avtSimulationCommandSpecification_SetParent(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the parent in the object.
     obj->data->SetParent(std::string(str));
@@ -236,7 +236,7 @@ avtSimulationCommandSpecification_SetIsOn(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the isOn in the object.
     obj->data->SetIsOn(ival != 0);
@@ -260,7 +260,7 @@ avtSimulationCommandSpecification_SetSignal(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the signal in the object.
     obj->data->SetSignal(std::string(str));
@@ -284,7 +284,7 @@ avtSimulationCommandSpecification_SetText(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the text in the object.
     obj->data->SetText(std::string(str));
@@ -308,7 +308,7 @@ avtSimulationCommandSpecification_SetUiType(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the uiType in the object.
     obj->data->SetUiType(std::string(str));
@@ -332,7 +332,7 @@ avtSimulationCommandSpecification_SetValue(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the value in the object.
     obj->data->SetValue(std::string(str));
@@ -462,14 +462,16 @@ PyavtSimulationCommandSpecification_setattr(PyObject *self, char *name, PyObject
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -615,7 +617,7 @@ avtSimulationCommandSpecification_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

@@ -392,7 +392,7 @@ avtDatabaseMetaData_SetHasTemporalExtents(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the hasTemporalExtents in the object.
     obj->data->SetHasTemporalExtents(ival != 0);
@@ -416,7 +416,7 @@ avtDatabaseMetaData_SetMinTemporalExtents(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minTemporalExtents in the object.
     obj->data->SetMinTemporalExtents(dval);
@@ -440,7 +440,7 @@ avtDatabaseMetaData_SetMaxTemporalExtents(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxTemporalExtents in the object.
     obj->data->SetMaxTemporalExtents(dval);
@@ -464,7 +464,7 @@ avtDatabaseMetaData_SetNumStates(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numStates in the object.
     obj->data->SetNumStates((int)ival);
@@ -488,7 +488,7 @@ avtDatabaseMetaData_SetIsVirtualDatabase(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the isVirtualDatabase in the object.
     obj->data->SetIsVirtualDatabase(ival != 0);
@@ -512,7 +512,7 @@ avtDatabaseMetaData_SetMustRepopulateOnStateChange(PyObject *self, PyObject *arg
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the mustRepopulateOnStateChange in the object.
     obj->data->SetMustRepopulateOnStateChange(ival != 0);
@@ -536,7 +536,7 @@ avtDatabaseMetaData_SetMustAlphabetizeVariables(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the mustAlphabetizeVariables in the object.
     obj->data->SetMustAlphabetizeVariables(ival != 0);
@@ -560,7 +560,7 @@ avtDatabaseMetaData_SetFormatCanDoDomainDecomposition(PyObject *self, PyObject *
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the formatCanDoDomainDecomposition in the object.
     obj->data->SetFormatCanDoDomainDecomposition(ival != 0);
@@ -584,7 +584,7 @@ avtDatabaseMetaData_SetFormatCanDoMultires(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the formatCanDoMultires in the object.
     obj->data->SetFormatCanDoMultires(ival != 0);
@@ -608,7 +608,7 @@ avtDatabaseMetaData_SetUseCatchAllMesh(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useCatchAllMesh in the object.
     obj->data->SetUseCatchAllMesh(ival != 0);
@@ -632,7 +632,7 @@ avtDatabaseMetaData_SetTimeStepPath(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeStepPath in the object.
     obj->data->SetTimeStepPath(std::string(str));
@@ -963,7 +963,7 @@ avtDatabaseMetaData_SetDatabaseName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the databaseName in the object.
     obj->data->SetDatabaseName(std::string(str));
@@ -987,7 +987,7 @@ avtDatabaseMetaData_SetFileFormat(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fileFormat in the object.
     obj->data->SetFileFormat(std::string(str));
@@ -1011,7 +1011,7 @@ avtDatabaseMetaData_SetDatabaseComment(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the databaseComment in the object.
     obj->data->SetDatabaseComment(std::string(str));
@@ -1035,11 +1035,11 @@ avtDatabaseMetaData_SetExprList(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyExpressionList_Check(newValue))
     {
         fprintf(stderr, "The exprList field can only be set with ExpressionList objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetExprList(*PyExpressionList_FromPyObject(newValue));
@@ -1070,17 +1070,9 @@ avtDatabaseMetaData_GetMeshes(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetMeshes().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetMeshes().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetMeshes : The index %d is invalid because meshes is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetMeshes : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetMeshes().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1107,14 +1099,9 @@ avtDatabaseMetaData_AddMeshes(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtMeshMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddMeshes method only accepts avtMeshMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtMeshMetaData *newData = PyavtMeshMetaData_FromPyObject(element);
     obj->data->AddMeshes(*newData);
     obj->data->SelectMeshes();
@@ -1154,15 +1141,10 @@ avtDatabaseMetaData_RemoveMeshes(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumMeshes())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveMeshes : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_Meshes(self, index);
 }
@@ -1187,17 +1169,9 @@ avtDatabaseMetaData_GetSubsets(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetSubsets().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetSubsets().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetSubsets : The index %d is invalid because subsets is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetSubsets : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSubsets().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1224,14 +1198,9 @@ avtDatabaseMetaData_AddSubsets(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtSubsetsMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddSubsets method only accepts avtSubsetsMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtSubsetsMetaData *newData = PyavtSubsetsMetaData_FromPyObject(element);
     obj->data->AddSubsets(*newData);
     obj->data->SelectSubsets();
@@ -1271,15 +1240,10 @@ avtDatabaseMetaData_RemoveSubsets(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSubsets())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveSubsets : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_Subsets(self, index);
 }
@@ -1304,17 +1268,9 @@ avtDatabaseMetaData_GetScalars(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetScalars().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetScalars().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetScalars : The index %d is invalid because scalars is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetScalars : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetScalars().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1341,14 +1297,9 @@ avtDatabaseMetaData_AddScalars(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtScalarMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddScalars method only accepts avtScalarMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtScalarMetaData *newData = PyavtScalarMetaData_FromPyObject(element);
     obj->data->AddScalars(*newData);
     obj->data->SelectScalars();
@@ -1388,15 +1339,10 @@ avtDatabaseMetaData_RemoveScalars(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumScalars())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveScalars : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_Scalars(self, index);
 }
@@ -1421,17 +1367,9 @@ avtDatabaseMetaData_GetVectors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetVectors().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetVectors().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetVectors : The index %d is invalid because vectors is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetVectors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetVectors().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1458,14 +1396,9 @@ avtDatabaseMetaData_AddVectors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtVectorMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddVectors method only accepts avtVectorMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtVectorMetaData *newData = PyavtVectorMetaData_FromPyObject(element);
     obj->data->AddVectors(*newData);
     obj->data->SelectVectors();
@@ -1505,15 +1438,10 @@ avtDatabaseMetaData_RemoveVectors(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumVectors())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveVectors : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_Vectors(self, index);
 }
@@ -1538,17 +1466,9 @@ avtDatabaseMetaData_GetTensors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetTensors().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetTensors().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetTensors : The index %d is invalid because tensors is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetTensors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetTensors().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1575,14 +1495,9 @@ avtDatabaseMetaData_AddTensors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtTensorMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddTensors method only accepts avtTensorMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtTensorMetaData *newData = PyavtTensorMetaData_FromPyObject(element);
     obj->data->AddTensors(*newData);
     obj->data->SelectTensors();
@@ -1622,15 +1537,10 @@ avtDatabaseMetaData_RemoveTensors(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumTensors())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveTensors : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_Tensors(self, index);
 }
@@ -1655,17 +1565,9 @@ avtDatabaseMetaData_GetSymmTensors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetSymmTensors().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetSymmTensors().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetSymmTensors : The index %d is invalid because symmTensors is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetSymmTensors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSymmTensors().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1692,14 +1594,9 @@ avtDatabaseMetaData_AddSymmTensors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtSymmetricTensorMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddSymmTensors method only accepts avtSymmetricTensorMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtSymmetricTensorMetaData *newData = PyavtSymmetricTensorMetaData_FromPyObject(element);
     obj->data->AddSymmTensors(*newData);
     obj->data->SelectSymmTensors();
@@ -1739,15 +1636,10 @@ avtDatabaseMetaData_RemoveSymmTensors(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSymmTensors())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveSymmTensors : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_SymmTensors(self, index);
 }
@@ -1772,17 +1664,9 @@ avtDatabaseMetaData_GetArrays(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetArrays().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetArrays().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetArrays : The index %d is invalid because arrays is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetArrays : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetArrays().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1809,14 +1693,9 @@ avtDatabaseMetaData_AddArrays(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtArrayMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddArrays method only accepts avtArrayMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtArrayMetaData *newData = PyavtArrayMetaData_FromPyObject(element);
     obj->data->AddArrays(*newData);
     obj->data->SelectArrays();
@@ -1856,15 +1735,10 @@ avtDatabaseMetaData_RemoveArrays(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumArrays())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveArrays : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_Arrays(self, index);
 }
@@ -1889,17 +1763,9 @@ avtDatabaseMetaData_GetMaterials(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetMaterials().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetMaterials().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetMaterials : The index %d is invalid because materials is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetMaterials : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetMaterials().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1926,14 +1792,9 @@ avtDatabaseMetaData_AddMaterials(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtMaterialMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddMaterials method only accepts avtMaterialMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtMaterialMetaData *newData = PyavtMaterialMetaData_FromPyObject(element);
     obj->data->AddMaterials(*newData);
     obj->data->SelectMaterials();
@@ -1973,15 +1834,10 @@ avtDatabaseMetaData_RemoveMaterials(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumMaterials())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveMaterials : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_Materials(self, index);
 }
@@ -2006,17 +1862,9 @@ avtDatabaseMetaData_GetSpecies(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetSpecies().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetSpecies().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetSpecies : The index %d is invalid because species is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetSpecies : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSpecies().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2043,14 +1891,9 @@ avtDatabaseMetaData_AddSpecies(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtSpeciesMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddSpecies method only accepts avtSpeciesMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtSpeciesMetaData *newData = PyavtSpeciesMetaData_FromPyObject(element);
     obj->data->AddSpecies(*newData);
     obj->data->SelectSpecies();
@@ -2090,15 +1933,10 @@ avtDatabaseMetaData_RemoveSpecies(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSpecies())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveSpecies : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_Species(self, index);
 }
@@ -2123,17 +1961,9 @@ avtDatabaseMetaData_GetCurves(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetCurves().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetCurves().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetCurves : The index %d is invalid because curves is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetCurves : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetCurves().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2160,14 +1990,9 @@ avtDatabaseMetaData_AddCurves(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtCurveMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddCurves method only accepts avtCurveMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtCurveMetaData *newData = PyavtCurveMetaData_FromPyObject(element);
     obj->data->AddCurves(*newData);
     obj->data->SelectCurves();
@@ -2207,15 +2032,10 @@ avtDatabaseMetaData_RemoveCurves(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumCurves())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveCurves : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_Curves(self, index);
 }
@@ -2240,17 +2060,9 @@ avtDatabaseMetaData_GetLabels(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetLabels().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetLabels().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetLabels : The index %d is invalid because labels is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetLabels : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetLabels().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2277,14 +2089,9 @@ avtDatabaseMetaData_AddLabels(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtLabelMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddLabels method only accepts avtLabelMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtLabelMetaData *newData = PyavtLabelMetaData_FromPyObject(element);
     obj->data->AddLabels(*newData);
     obj->data->SelectLabels();
@@ -2324,15 +2131,10 @@ avtDatabaseMetaData_RemoveLabels(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumLabels())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveLabels : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_Labels(self, index);
 }
@@ -2357,17 +2159,9 @@ avtDatabaseMetaData_GetDefaultPlots(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetDefaultPlots().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetDefaultPlots().size() == 0)
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetDefaultPlots : The index %d is invalid because defaultPlots is empty.", index);
-        else
-            snprintf(msg, 400, "In avtDatabaseMetaData::GetDefaultPlots : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetDefaultPlots().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2394,14 +2188,9 @@ avtDatabaseMetaData_AddDefaultPlots(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtDefaultPlotMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtDatabaseMetaData::AddDefaultPlots method only accepts avtDefaultPlotMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtDefaultPlotMetaData *newData = PyavtDefaultPlotMetaData_FromPyObject(element);
     obj->data->AddDefaultPlots(*newData);
     obj->data->SelectDefaultPlots();
@@ -2441,15 +2230,10 @@ avtDatabaseMetaData_RemoveDefaultPlots(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumDefaultPlots())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtDatabaseMetaData::RemoveDefaultPlots : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtDatabaseMetaData_Remove_One_DefaultPlots(self, index);
 }
@@ -2475,7 +2259,7 @@ avtDatabaseMetaData_SetIsSimulation(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the isSimulation in the object.
     obj->data->SetIsSimulation(ival != 0);
@@ -2499,11 +2283,11 @@ avtDatabaseMetaData_SetSimInfo(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtSimulationInformation_Check(newValue))
     {
         fprintf(stderr, "The simInfo field can only be set with avtSimulationInformation objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetSimInfo(*PyavtSimulationInformation_FromPyObject(newValue));
@@ -2590,7 +2374,7 @@ avtDatabaseMetaData_SetReplacementMask(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the replacementMask in the object.
     obj->data->SetReplacementMask((int)ival);
@@ -2879,14 +2663,16 @@ PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -3032,7 +2818,7 @@ avtDatabaseMetaData_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

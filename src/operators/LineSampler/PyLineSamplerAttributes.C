@@ -439,7 +439,7 @@ LineSamplerAttributes_SetMeshGeometry(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the meshGeometry in the object.
     if(ival >= 0 && ival < 3)
@@ -450,7 +450,7 @@ LineSamplerAttributes_SetMeshGeometry(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Cartesian, Cylindrical, Toroidal.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -472,7 +472,7 @@ LineSamplerAttributes_SetArrayConfiguration(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the arrayConfiguration in the object.
     if(ival >= 0 && ival < 2)
@@ -483,7 +483,7 @@ LineSamplerAttributes_SetArrayConfiguration(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Geometry, Manual.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -505,7 +505,7 @@ LineSamplerAttributes_SetBoundary(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the boundary in the object.
     if(ival >= 0 && ival < 2)
@@ -516,7 +516,7 @@ LineSamplerAttributes_SetBoundary(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Data, Wall.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -538,7 +538,7 @@ LineSamplerAttributes_SetInstanceId(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the instanceId in the object.
     obj->data->SetInstanceId((int)ival);
@@ -562,7 +562,7 @@ LineSamplerAttributes_SetNArrays(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the nArrays in the object.
     obj->data->SetNArrays((int)ival);
@@ -586,7 +586,7 @@ LineSamplerAttributes_SetToroidalArrayAngle(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the toroidalArrayAngle in the object.
     obj->data->SetToroidalArrayAngle(dval);
@@ -610,7 +610,7 @@ LineSamplerAttributes_SetNChannels(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the nChannels in the object.
     obj->data->SetNChannels((int)ival);
@@ -634,7 +634,7 @@ LineSamplerAttributes_SetChannelProjection(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the channelProjection in the object.
     if(ival >= 0 && ival < 3)
@@ -645,7 +645,7 @@ LineSamplerAttributes_SetChannelProjection(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Divergent, Parallel, Grid.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -667,7 +667,7 @@ LineSamplerAttributes_SetChannelLayoutType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the channelLayoutType in the object.
     if(ival >= 0 && ival < 2)
@@ -678,7 +678,7 @@ LineSamplerAttributes_SetChannelLayoutType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "ChannelAbsolute, ChannelRelative.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -700,7 +700,7 @@ LineSamplerAttributes_SetChannelOffset(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the channelOffset in the object.
     obj->data->SetChannelOffset(dval);
@@ -724,7 +724,7 @@ LineSamplerAttributes_SetChannelAngle(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the channelAngle in the object.
     obj->data->SetChannelAngle(dval);
@@ -748,7 +748,7 @@ LineSamplerAttributes_SetNRows(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the nRows in the object.
     obj->data->SetNRows((int)ival);
@@ -772,7 +772,7 @@ LineSamplerAttributes_SetRowOffset(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the rowOffset in the object.
     obj->data->SetRowOffset(dval);
@@ -850,7 +850,7 @@ LineSamplerAttributes_SetArrayAxis(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the arrayAxis in the object.
     if(ival >= 0 && ival < 2)
@@ -861,7 +861,7 @@ LineSamplerAttributes_SetArrayAxis(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "R, Z.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -883,7 +883,7 @@ LineSamplerAttributes_SetPoloidalAngleStart(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the poloidalAngleStart in the object.
     obj->data->SetPoloidalAngleStart(dval);
@@ -907,7 +907,7 @@ LineSamplerAttributes_SetPoloidalAngleStop(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the poloidalAngleStop in the object.
     obj->data->SetPoloidalAngleStop(dval);
@@ -931,7 +931,7 @@ LineSamplerAttributes_SetPoloialAngle(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the poloialAngle in the object.
     obj->data->SetPoloialAngle(dval);
@@ -955,7 +955,7 @@ LineSamplerAttributes_SetPoloialRTilt(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the poloialRTilt in the object.
     obj->data->SetPoloialRTilt(dval);
@@ -979,7 +979,7 @@ LineSamplerAttributes_SetPoloialZTilt(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the poloialZTilt in the object.
     obj->data->SetPoloialZTilt(dval);
@@ -1003,7 +1003,7 @@ LineSamplerAttributes_SetToroidalAngle(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the toroidalAngle in the object.
     obj->data->SetToroidalAngle(dval);
@@ -1027,7 +1027,7 @@ LineSamplerAttributes_SetFlipToroidalAngle(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the flipToroidalAngle in the object.
     obj->data->SetFlipToroidalAngle(ival != 0);
@@ -1051,7 +1051,7 @@ LineSamplerAttributes_SetViewGeometry(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the viewGeometry in the object.
     if(ival >= 0 && ival < 3)
@@ -1062,7 +1062,7 @@ LineSamplerAttributes_SetViewGeometry(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Points, Lines, Surfaces.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1084,7 +1084,7 @@ LineSamplerAttributes_SetViewDimension(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the viewDimension in the object.
     if(ival >= 0 && ival < 3)
@@ -1095,7 +1095,7 @@ LineSamplerAttributes_SetViewDimension(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "One, Two, Three.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1117,7 +1117,7 @@ LineSamplerAttributes_SetDonotApplyToAll(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the donotApplyToAll in the object.
     obj->data->SetDonotApplyToAll(ival != 0);
@@ -1141,7 +1141,7 @@ LineSamplerAttributes_SetHeightPlotScale(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the heightPlotScale in the object.
     obj->data->SetHeightPlotScale(dval);
@@ -1165,7 +1165,7 @@ LineSamplerAttributes_SetChannelPlotOffset(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the channelPlotOffset in the object.
     obj->data->SetChannelPlotOffset(dval);
@@ -1189,7 +1189,7 @@ LineSamplerAttributes_SetArrayPlotOffset(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the arrayPlotOffset in the object.
     obj->data->SetArrayPlotOffset(dval);
@@ -1213,7 +1213,7 @@ LineSamplerAttributes_SetDisplayTime(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the displayTime in the object.
     if(ival >= 0 && ival < 3)
@@ -1224,7 +1224,7 @@ LineSamplerAttributes_SetDisplayTime(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Step, Time, Cycle.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1246,7 +1246,7 @@ LineSamplerAttributes_SetChannelGeometry(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the channelGeometry in the object.
     if(ival >= 0 && ival < 4)
@@ -1257,7 +1257,7 @@ LineSamplerAttributes_SetChannelGeometry(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "Point, Line, Cylinder, Cone.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1279,7 +1279,7 @@ LineSamplerAttributes_SetRadius(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the radius in the object.
     obj->data->SetRadius(dval);
@@ -1303,7 +1303,7 @@ LineSamplerAttributes_SetDivergence(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the divergence in the object.
     obj->data->SetDivergence(dval);
@@ -1327,7 +1327,7 @@ LineSamplerAttributes_SetChannelProfile(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the channelProfile in the object.
     if(ival >= 0 && ival < 2)
@@ -1338,7 +1338,7 @@ LineSamplerAttributes_SetChannelProfile(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "TopHat, Gaussian.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1360,7 +1360,7 @@ LineSamplerAttributes_SetStandardDeviation(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the standardDeviation in the object.
     obj->data->SetStandardDeviation(dval);
@@ -1384,7 +1384,7 @@ LineSamplerAttributes_SetSampleDistance(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDistance in the object.
     obj->data->SetSampleDistance(dval);
@@ -1408,7 +1408,7 @@ LineSamplerAttributes_SetSampleVolume(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleVolume in the object.
     obj->data->SetSampleVolume(dval);
@@ -1432,7 +1432,7 @@ LineSamplerAttributes_SetSampleArc(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleArc in the object.
     obj->data->SetSampleArc(dval);
@@ -1456,7 +1456,7 @@ LineSamplerAttributes_SetChannelIntegration(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the channelIntegration in the object.
     if(ival >= 0 && ival < 2)
@@ -1467,7 +1467,7 @@ LineSamplerAttributes_SetChannelIntegration(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "NoChannelIntegration, IntegrateAlongChannel.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1489,7 +1489,7 @@ LineSamplerAttributes_SetToroidalIntegration(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the toroidalIntegration in the object.
     if(ival >= 0 && ival < 3)
@@ -1500,7 +1500,7 @@ LineSamplerAttributes_SetToroidalIntegration(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "NoToroidalIntegration, ToroidalTimeSample, IntegrateToroidally.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1522,7 +1522,7 @@ LineSamplerAttributes_SetToroidalAngleSampling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the toroidalAngleSampling in the object.
     if(ival >= 0 && ival < 2)
@@ -1533,7 +1533,7 @@ LineSamplerAttributes_SetToroidalAngleSampling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "ToroidalAngleAbsoluteSampling, ToroidalAngleRelativeSampling.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1555,7 +1555,7 @@ LineSamplerAttributes_SetToroidalAngleStart(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the toroidalAngleStart in the object.
     obj->data->SetToroidalAngleStart(dval);
@@ -1579,7 +1579,7 @@ LineSamplerAttributes_SetToroidalAngleStop(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the toroidalAngleStop in the object.
     obj->data->SetToroidalAngleStop(dval);
@@ -1603,7 +1603,7 @@ LineSamplerAttributes_SetToroidalAngleStride(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the toroidalAngleStride in the object.
     obj->data->SetToroidalAngleStride(dval);
@@ -1627,7 +1627,7 @@ LineSamplerAttributes_SetTimeSampling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeSampling in the object.
     if(ival >= 0 && ival < 2)
@@ -1638,7 +1638,7 @@ LineSamplerAttributes_SetTimeSampling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "CurrentTimeStep, MultipleTimeSteps.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1660,7 +1660,7 @@ LineSamplerAttributes_SetTimeStepStart(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeStepStart in the object.
     obj->data->SetTimeStepStart((int)ival);
@@ -1684,7 +1684,7 @@ LineSamplerAttributes_SetTimeStepStop(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeStepStop in the object.
     obj->data->SetTimeStepStop((int)ival);
@@ -1708,7 +1708,7 @@ LineSamplerAttributes_SetTimeStepStride(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeStepStride in the object.
     obj->data->SetTimeStepStride((int)ival);
@@ -1858,7 +1858,7 @@ LineSamplerAttributes_SetNChannelListArrays(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the nChannelListArrays in the object.
     obj->data->SetNChannelListArrays((int)ival);
@@ -1882,7 +1882,7 @@ LineSamplerAttributes_SetChannelListToroidalArrayAngle(PyObject *self, PyObject 
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the channelListToroidalArrayAngle in the object.
     obj->data->SetChannelListToroidalArrayAngle(dval);
@@ -1906,7 +1906,7 @@ LineSamplerAttributes_SetChannelListToroidalAngle(PyObject *self, PyObject *args
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the channelListToroidalAngle in the object.
     obj->data->SetChannelListToroidalAngle(dval);
@@ -2370,14 +2370,16 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -2523,7 +2525,7 @@ LineSamplerAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

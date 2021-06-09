@@ -309,7 +309,7 @@ PickAttributes_SetShowIncidentElements(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showIncidentElements in the object.
     obj->data->SetShowIncidentElements(ival != 0);
@@ -333,7 +333,7 @@ PickAttributes_SetShowNodeId(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showNodeId in the object.
     obj->data->SetShowNodeId(ival != 0);
@@ -357,7 +357,7 @@ PickAttributes_SetShowNodeDomainLogicalCoords(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showNodeDomainLogicalCoords in the object.
     obj->data->SetShowNodeDomainLogicalCoords(ival != 0);
@@ -381,7 +381,7 @@ PickAttributes_SetShowNodeBlockLogicalCoords(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showNodeBlockLogicalCoords in the object.
     obj->data->SetShowNodeBlockLogicalCoords(ival != 0);
@@ -405,7 +405,7 @@ PickAttributes_SetShowNodePhysicalCoords(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showNodePhysicalCoords in the object.
     obj->data->SetShowNodePhysicalCoords(ival != 0);
@@ -429,7 +429,7 @@ PickAttributes_SetShowZoneId(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showZoneId in the object.
     obj->data->SetShowZoneId(ival != 0);
@@ -453,7 +453,7 @@ PickAttributes_SetShowZoneDomainLogicalCoords(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showZoneDomainLogicalCoords in the object.
     obj->data->SetShowZoneDomainLogicalCoords(ival != 0);
@@ -477,7 +477,7 @@ PickAttributes_SetShowZoneBlockLogicalCoords(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showZoneBlockLogicalCoords in the object.
     obj->data->SetShowZoneBlockLogicalCoords(ival != 0);
@@ -501,7 +501,7 @@ PickAttributes_SetDoTimeCurve(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the doTimeCurve in the object.
     obj->data->SetDoTimeCurve(ival != 0);
@@ -525,7 +525,7 @@ PickAttributes_SetConciseOutput(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the conciseOutput in the object.
     obj->data->SetConciseOutput(ival != 0);
@@ -549,7 +549,7 @@ PickAttributes_SetShowTimeStep(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showTimeStep in the object.
     obj->data->SetShowTimeStep(ival != 0);
@@ -573,7 +573,7 @@ PickAttributes_SetShowMeshName(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showMeshName in the object.
     obj->data->SetShowMeshName(ival != 0);
@@ -597,7 +597,7 @@ PickAttributes_SetBlockPieceName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the blockPieceName in the object.
     obj->data->SetBlockPieceName(std::string(str));
@@ -621,7 +621,7 @@ PickAttributes_SetGroupPieceName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the groupPieceName in the object.
     obj->data->SetGroupPieceName(std::string(str));
@@ -645,7 +645,7 @@ PickAttributes_SetUseLabelAsPickLetter(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useLabelAsPickLetter in the object.
     obj->data->SetUseLabelAsPickLetter(ival != 0);
@@ -669,7 +669,7 @@ PickAttributes_SetShowGlobalIds(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showGlobalIds in the object.
     obj->data->SetShowGlobalIds(ival != 0);
@@ -693,7 +693,7 @@ PickAttributes_SetShowPickLetter(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showPickLetter in the object.
     obj->data->SetShowPickLetter(ival != 0);
@@ -717,7 +717,7 @@ PickAttributes_SetElementLabel(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the elementLabel in the object.
     obj->data->SetElementLabel(std::string(str));
@@ -741,7 +741,7 @@ PickAttributes_SetReusePickLetter(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the reusePickLetter in the object.
     obj->data->SetReusePickLetter(ival != 0);
@@ -765,7 +765,7 @@ PickAttributes_SetShowPickHighlight(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showPickHighlight in the object.
     obj->data->SetShowPickHighlight(ival != 0);
@@ -789,7 +789,7 @@ PickAttributes_SetNotifyEnabled(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the notifyEnabled in the object.
     obj->data->SetNotifyEnabled(ival != 0);
@@ -813,7 +813,7 @@ PickAttributes_SetMeshCoordType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the meshCoordType in the object.
     if(ival >= 0 && ival < 3)
@@ -824,7 +824,7 @@ PickAttributes_SetMeshCoordType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "XY, RZ, ZR.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -846,7 +846,7 @@ PickAttributes_SetCreateSpreadsheet(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the createSpreadsheet in the object.
     obj->data->SetCreateSpreadsheet(ival != 0);
@@ -870,7 +870,7 @@ PickAttributes_SetFloatFormat(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the floatFormat in the object.
     obj->data->SetFloatFormat(std::string(str));
@@ -894,7 +894,7 @@ PickAttributes_SetTimePreserveCoord(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timePreserveCoord in the object.
     obj->data->SetTimePreserveCoord(ival != 0);
@@ -918,7 +918,7 @@ PickAttributes_SetTimeCurveType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeCurveType in the object.
     if(ival >= 0 && ival < 2)
@@ -929,7 +929,7 @@ PickAttributes_SetTimeCurveType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Single_Y_Axis, Multiple_Y_Axes.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1005,7 +1005,7 @@ PickAttributes_SetRemovedPicks(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the removedPicks in the object.
     obj->data->SetRemovedPicks(std::string(str));
@@ -1029,7 +1029,7 @@ PickAttributes_SetSwivelFocusToPick(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the swivelFocusToPick in the object.
     obj->data->SetSwivelFocusToPick(ival != 0);
@@ -1053,7 +1053,7 @@ PickAttributes_SetOverridePickLabel(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the overridePickLabel in the object.
     obj->data->SetOverridePickLabel(ival != 0);
@@ -1077,7 +1077,7 @@ PickAttributes_SetForcedPickLabel(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the forcedPickLabel in the object.
     obj->data->SetForcedPickLabel(std::string(str));
@@ -1101,7 +1101,7 @@ PickAttributes_SetRemoveLabelTwins(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the removeLabelTwins in the object.
     obj->data->SetRemoveLabelTwins(ival != 0);
@@ -1372,14 +1372,16 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1525,7 +1527,7 @@ PickAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

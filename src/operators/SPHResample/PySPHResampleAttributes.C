@@ -86,7 +86,7 @@ SPHResampleAttributes_SetMinX(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minX in the object.
     obj->data->SetMinX(fval);
@@ -110,7 +110,7 @@ SPHResampleAttributes_SetMaxX(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxX in the object.
     obj->data->SetMaxX(fval);
@@ -134,7 +134,7 @@ SPHResampleAttributes_SetXnum(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the xnum in the object.
     obj->data->SetXnum((int)ival);
@@ -158,7 +158,7 @@ SPHResampleAttributes_SetMinY(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minY in the object.
     obj->data->SetMinY(fval);
@@ -182,7 +182,7 @@ SPHResampleAttributes_SetMaxY(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxY in the object.
     obj->data->SetMaxY(fval);
@@ -206,7 +206,7 @@ SPHResampleAttributes_SetYnum(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the ynum in the object.
     obj->data->SetYnum((int)ival);
@@ -230,7 +230,7 @@ SPHResampleAttributes_SetMinZ(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minZ in the object.
     obj->data->SetMinZ(fval);
@@ -254,7 +254,7 @@ SPHResampleAttributes_SetMaxZ(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxZ in the object.
     obj->data->SetMaxZ(fval);
@@ -278,7 +278,7 @@ SPHResampleAttributes_SetZnum(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the znum in the object.
     obj->data->SetZnum((int)ival);
@@ -302,7 +302,7 @@ SPHResampleAttributes_SetTensorSupportVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tensorSupportVariable in the object.
     obj->data->SetTensorSupportVariable(std::string(str));
@@ -326,7 +326,7 @@ SPHResampleAttributes_SetWeightVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the weightVariable in the object.
     obj->data->SetWeightVariable(std::string(str));
@@ -350,7 +350,7 @@ SPHResampleAttributes_SetRK(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the RK in the object.
     obj->data->SetRK(ival != 0);
@@ -483,14 +483,16 @@ PySPHResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -636,7 +638,7 @@ SPHResampleAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

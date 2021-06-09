@@ -398,7 +398,7 @@ PseudocolorAttributes_SetScaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scaling in the object.
     if(ival >= 0 && ival < 3)
@@ -409,7 +409,7 @@ PseudocolorAttributes_SetScaling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, Skew.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -431,7 +431,7 @@ PseudocolorAttributes_SetSkewFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the skewFactor in the object.
     obj->data->SetSkewFactor(dval);
@@ -455,7 +455,7 @@ PseudocolorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the limitsMode in the object.
     if(ival >= 0 && ival < 2)
@@ -466,7 +466,7 @@ PseudocolorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "OriginalData, ActualData.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -488,7 +488,7 @@ PseudocolorAttributes_SetMinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minFlag in the object.
     obj->data->SetMinFlag(ival != 0);
@@ -512,7 +512,7 @@ PseudocolorAttributes_SetMin(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the min in the object.
     obj->data->SetMin(dval);
@@ -536,7 +536,7 @@ PseudocolorAttributes_SetUseBelowMinColor(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useBelowMinColor in the object.
     obj->data->SetUseBelowMinColor(ival != 0);
@@ -637,7 +637,7 @@ PseudocolorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxFlag in the object.
     obj->data->SetMaxFlag(ival != 0);
@@ -661,7 +661,7 @@ PseudocolorAttributes_SetMax(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the max in the object.
     obj->data->SetMax(dval);
@@ -685,7 +685,7 @@ PseudocolorAttributes_SetUseAboveMaxColor(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useAboveMaxColor in the object.
     obj->data->SetUseAboveMaxColor(ival != 0);
@@ -786,7 +786,7 @@ PseudocolorAttributes_SetCentering(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the centering in the object.
     if(ival >= 0 && ival < 3)
@@ -797,7 +797,7 @@ PseudocolorAttributes_SetCentering(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Natural, Nodal, Zonal.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -819,7 +819,7 @@ PseudocolorAttributes_SetColorTableName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorTableName in the object.
     obj->data->SetColorTableName(std::string(str));
@@ -843,7 +843,7 @@ PseudocolorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the invertColorTable in the object.
     obj->data->SetInvertColorTable(ival != 0);
@@ -867,7 +867,7 @@ PseudocolorAttributes_SetOpacityType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityType in the object.
     if(ival >= 0 && ival < 5)
@@ -879,7 +879,7 @@ PseudocolorAttributes_SetOpacityType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "ColorTable, FullyOpaque, Constant, Ramp, VariableRange"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -901,7 +901,7 @@ PseudocolorAttributes_SetOpacityVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityVariable in the object.
     obj->data->SetOpacityVariable(std::string(str));
@@ -925,7 +925,7 @@ PseudocolorAttributes_SetOpacity(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacity in the object.
     obj->data->SetOpacity(dval);
@@ -949,7 +949,7 @@ PseudocolorAttributes_SetOpacityVarMin(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityVarMin in the object.
     obj->data->SetOpacityVarMin(dval);
@@ -973,7 +973,7 @@ PseudocolorAttributes_SetOpacityVarMax(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityVarMax in the object.
     obj->data->SetOpacityVarMax(dval);
@@ -997,7 +997,7 @@ PseudocolorAttributes_SetOpacityVarMinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityVarMinFlag in the object.
     obj->data->SetOpacityVarMinFlag(ival != 0);
@@ -1021,7 +1021,7 @@ PseudocolorAttributes_SetOpacityVarMaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacityVarMaxFlag in the object.
     obj->data->SetOpacityVarMaxFlag(ival != 0);
@@ -1045,7 +1045,7 @@ PseudocolorAttributes_SetPointSize(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointSize in the object.
     obj->data->SetPointSize(dval);
@@ -1069,7 +1069,7 @@ PseudocolorAttributes_SetPointType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     if(ival >= 0 && ival < 8)
     {
@@ -1082,7 +1082,7 @@ PseudocolorAttributes_SetPointType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
                         "SphereGeometry, Point, Sphere.");
-        return NULL;
+        return PyExc_ValueError;
     }
 
     Py_INCREF(Py_None);
@@ -1104,7 +1104,7 @@ PseudocolorAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointSizeVarEnabled in the object.
     obj->data->SetPointSizeVarEnabled(ival != 0);
@@ -1128,7 +1128,7 @@ PseudocolorAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointSizeVar in the object.
     obj->data->SetPointSizeVar(std::string(str));
@@ -1152,7 +1152,7 @@ PseudocolorAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointSizePixels in the object.
     obj->data->SetPointSizePixels((int)ival);
@@ -1176,7 +1176,7 @@ PseudocolorAttributes_SetLineType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineType in the object.
     if(ival >= 0 && ival < 3)
@@ -1187,7 +1187,7 @@ PseudocolorAttributes_SetLineType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Line, Tube, Ribbon.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1209,7 +1209,7 @@ PseudocolorAttributes_SetLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineWidth in the object.
     obj->data->SetLineWidth(ival);
@@ -1233,7 +1233,7 @@ PseudocolorAttributes_SetTubeResolution(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tubeResolution in the object.
     obj->data->SetTubeResolution((int)ival);
@@ -1257,7 +1257,7 @@ PseudocolorAttributes_SetTubeRadiusSizeType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tubeRadiusSizeType in the object.
     if(ival >= 0 && ival < 2)
@@ -1268,7 +1268,7 @@ PseudocolorAttributes_SetTubeRadiusSizeType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Absolute, FractionOfBBox.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1290,7 +1290,7 @@ PseudocolorAttributes_SetTubeRadiusAbsolute(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tubeRadiusAbsolute in the object.
     obj->data->SetTubeRadiusAbsolute(dval);
@@ -1314,7 +1314,7 @@ PseudocolorAttributes_SetTubeRadiusBBox(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tubeRadiusBBox in the object.
     obj->data->SetTubeRadiusBBox(dval);
@@ -1338,7 +1338,7 @@ PseudocolorAttributes_SetTubeRadiusVarEnabled(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tubeRadiusVarEnabled in the object.
     obj->data->SetTubeRadiusVarEnabled(ival != 0);
@@ -1362,7 +1362,7 @@ PseudocolorAttributes_SetTubeRadiusVar(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tubeRadiusVar in the object.
     obj->data->SetTubeRadiusVar(std::string(str));
@@ -1386,7 +1386,7 @@ PseudocolorAttributes_SetTubeRadiusVarRatio(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tubeRadiusVarRatio in the object.
     obj->data->SetTubeRadiusVarRatio(dval);
@@ -1410,7 +1410,7 @@ PseudocolorAttributes_SetTailStyle(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tailStyle in the object.
     if(ival >= 0 && ival < 3)
@@ -1421,7 +1421,7 @@ PseudocolorAttributes_SetTailStyle(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "None, Spheres, Cones.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1443,7 +1443,7 @@ PseudocolorAttributes_SetHeadStyle(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the headStyle in the object.
     if(ival >= 0 && ival < 3)
@@ -1454,7 +1454,7 @@ PseudocolorAttributes_SetHeadStyle(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "None, Spheres, Cones.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1476,7 +1476,7 @@ PseudocolorAttributes_SetEndPointRadiusSizeType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the endPointRadiusSizeType in the object.
     if(ival >= 0 && ival < 2)
@@ -1487,7 +1487,7 @@ PseudocolorAttributes_SetEndPointRadiusSizeType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Absolute, FractionOfBBox.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1509,7 +1509,7 @@ PseudocolorAttributes_SetEndPointRadiusAbsolute(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the endPointRadiusAbsolute in the object.
     obj->data->SetEndPointRadiusAbsolute(dval);
@@ -1533,7 +1533,7 @@ PseudocolorAttributes_SetEndPointRadiusBBox(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the endPointRadiusBBox in the object.
     obj->data->SetEndPointRadiusBBox(dval);
@@ -1557,7 +1557,7 @@ PseudocolorAttributes_SetEndPointResolution(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the endPointResolution in the object.
     obj->data->SetEndPointResolution((int)ival);
@@ -1581,7 +1581,7 @@ PseudocolorAttributes_SetEndPointRatio(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the endPointRatio in the object.
     obj->data->SetEndPointRatio(dval);
@@ -1605,7 +1605,7 @@ PseudocolorAttributes_SetEndPointRadiusVarEnabled(PyObject *self, PyObject *args
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the endPointRadiusVarEnabled in the object.
     obj->data->SetEndPointRadiusVarEnabled(ival != 0);
@@ -1629,7 +1629,7 @@ PseudocolorAttributes_SetEndPointRadiusVar(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the endPointRadiusVar in the object.
     obj->data->SetEndPointRadiusVar(std::string(str));
@@ -1653,7 +1653,7 @@ PseudocolorAttributes_SetEndPointRadiusVarRatio(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the endPointRadiusVarRatio in the object.
     obj->data->SetEndPointRadiusVarRatio(dval);
@@ -1677,7 +1677,7 @@ PseudocolorAttributes_SetRenderSurfaces(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the renderSurfaces in the object.
     obj->data->SetRenderSurfaces((int)ival);
@@ -1701,7 +1701,7 @@ PseudocolorAttributes_SetRenderWireframe(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the renderWireframe in the object.
     obj->data->SetRenderWireframe((int)ival);
@@ -1725,7 +1725,7 @@ PseudocolorAttributes_SetRenderPoints(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the renderPoints in the object.
     obj->data->SetRenderPoints((int)ival);
@@ -1749,7 +1749,7 @@ PseudocolorAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the smoothingLevel in the object.
     obj->data->SetSmoothingLevel((int)ival);
@@ -1773,7 +1773,7 @@ PseudocolorAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the legendFlag in the object.
     obj->data->SetLegendFlag(ival != 0);
@@ -1797,7 +1797,7 @@ PseudocolorAttributes_SetLightingFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lightingFlag in the object.
     obj->data->SetLightingFlag(ival != 0);
@@ -2475,14 +2475,16 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -2628,7 +2630,7 @@ PseudocolorAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

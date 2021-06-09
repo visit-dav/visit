@@ -89,7 +89,7 @@ avtSpeciesMetaData_SetName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the name in the object.
     obj->data->name = std::string(str);
@@ -113,7 +113,7 @@ avtSpeciesMetaData_SetOriginalName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the originalName in the object.
     obj->data->originalName = std::string(str);
@@ -137,7 +137,7 @@ avtSpeciesMetaData_SetValidVariable(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the validVariable in the object.
     obj->data->validVariable = (ival != 0);
@@ -161,7 +161,7 @@ avtSpeciesMetaData_SetMeshName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the meshName in the object.
     obj->data->meshName = std::string(str);
@@ -185,7 +185,7 @@ avtSpeciesMetaData_SetMaterialName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the materialName in the object.
     obj->data->materialName = std::string(str);
@@ -209,7 +209,7 @@ avtSpeciesMetaData_SetNumMaterials(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numMaterials in the object.
     obj->data->numMaterials = (int)ival;
@@ -232,17 +232,9 @@ avtSpeciesMetaData_GetSpecies(PyObject *self, PyObject *args)
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetSpecies().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetSpecies().size() == 0)
-            snprintf(msg, 400, "In avtSpeciesMetaData::GetSpecies : The index %d is invalid because species is empty.", index);
-        else
-            snprintf(msg, 400, "In avtSpeciesMetaData::GetSpecies : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetSpecies().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -269,14 +261,9 @@ avtSpeciesMetaData_AddSpecies(PyObject *self, PyObject *args)
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyavtMatSpeciesMetaData_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The avtSpeciesMetaData::AddSpecies method only accepts avtMatSpeciesMetaData objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     avtMatSpeciesMetaData *newData = PyavtMatSpeciesMetaData_FromPyObject(element);
     obj->data->AddSpecies(*newData);
     obj->data->SelectSpecies();
@@ -316,15 +303,10 @@ avtSpeciesMetaData_RemoveSpecies(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSpecies())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In avtSpeciesMetaData::RemoveSpecies : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return avtSpeciesMetaData_Remove_One_Species(self, index);
 }
@@ -430,14 +412,16 @@ PyavtSpeciesMetaData_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -583,7 +567,7 @@ avtSpeciesMetaData_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

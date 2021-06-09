@@ -207,7 +207,7 @@ Axes3D_SetVisible(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the visible in the object.
     obj->data->SetVisible(ival != 0);
@@ -231,7 +231,7 @@ Axes3D_SetAutoSetTicks(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the autoSetTicks in the object.
     obj->data->SetAutoSetTicks(ival != 0);
@@ -255,7 +255,7 @@ Axes3D_SetAutoSetScaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the autoSetScaling in the object.
     obj->data->SetAutoSetScaling(ival != 0);
@@ -279,7 +279,7 @@ Axes3D_SetLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineWidth in the object.
     obj->data->SetLineWidth(ival);
@@ -303,7 +303,7 @@ Axes3D_SetTickLocation(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tickLocation in the object.
     if(ival >= 0 && ival < 3)
@@ -314,7 +314,7 @@ Axes3D_SetTickLocation(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Inside, Outside, Both.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -336,7 +336,7 @@ Axes3D_SetAxesType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the axesType in the object.
     if(ival >= 0 && ival < 5)
@@ -348,7 +348,7 @@ Axes3D_SetAxesType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "ClosestTriad, FurthestTriad, OutsideEdges, StaticTriad, StaticEdges"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -370,7 +370,7 @@ Axes3D_SetTriadFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the triadFlag in the object.
     obj->data->SetTriadFlag(ival != 0);
@@ -394,7 +394,7 @@ Axes3D_SetBboxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the bboxFlag in the object.
     obj->data->SetBboxFlag(ival != 0);
@@ -418,11 +418,11 @@ Axes3D_SetXAxis(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyAxisAttributes_Check(newValue))
     {
         fprintf(stderr, "The xAxis field can only be set with AxisAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetXAxis(*PyAxisAttributes_FromPyObject(newValue));
@@ -454,11 +454,11 @@ Axes3D_SetYAxis(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyAxisAttributes_Check(newValue))
     {
         fprintf(stderr, "The yAxis field can only be set with AxisAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetYAxis(*PyAxisAttributes_FromPyObject(newValue));
@@ -490,11 +490,11 @@ Axes3D_SetZAxis(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyAxisAttributes_Check(newValue))
     {
         fprintf(stderr, "The zAxis field can only be set with AxisAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetZAxis(*PyAxisAttributes_FromPyObject(newValue));
@@ -526,7 +526,7 @@ Axes3D_SetSetBBoxLocation(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the setBBoxLocation in the object.
     obj->data->SetSetBBoxLocation(ival != 0);
@@ -658,7 +658,7 @@ Axes3D_SetTriadLineWidth(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the triadLineWidth in the object.
     obj->data->SetTriadLineWidth(fval);
@@ -682,7 +682,7 @@ Axes3D_SetTriadFont(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the triadFont in the object.
     obj->data->SetTriadFont((int)ival);
@@ -706,7 +706,7 @@ Axes3D_SetTriadBold(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the triadBold in the object.
     obj->data->SetTriadBold(ival != 0);
@@ -730,7 +730,7 @@ Axes3D_SetTriadItalic(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the triadItalic in the object.
     obj->data->SetTriadItalic(ival != 0);
@@ -754,7 +754,7 @@ Axes3D_SetTriadSetManually(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the triadSetManually in the object.
     obj->data->SetTriadSetManually(ival != 0);
@@ -947,14 +947,16 @@ PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1100,7 +1102,7 @@ Axes3D_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

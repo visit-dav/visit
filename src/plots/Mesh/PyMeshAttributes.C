@@ -210,7 +210,7 @@ MeshAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the legendFlag in the object.
     obj->data->SetLegendFlag(ival != 0);
@@ -234,7 +234,7 @@ MeshAttributes_SetLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineWidth in the object.
     obj->data->SetLineWidth(ival);
@@ -335,7 +335,7 @@ MeshAttributes_SetMeshColorSource(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the meshColorSource in the object.
     if(ival >= 0 && ival < 3)
@@ -346,7 +346,7 @@ MeshAttributes_SetMeshColorSource(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Foreground, MeshCustom, MeshRandom.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -368,7 +368,7 @@ MeshAttributes_SetOpaqueColorSource(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opaqueColorSource in the object.
     if(ival >= 0 && ival < 3)
@@ -379,7 +379,7 @@ MeshAttributes_SetOpaqueColorSource(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Background, OpaqueCustom, OpaqueRandom.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -401,7 +401,7 @@ MeshAttributes_SetOpaqueMode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opaqueMode in the object.
     if(ival >= 0 && ival < 3)
@@ -412,7 +412,7 @@ MeshAttributes_SetOpaqueMode(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Auto, On, Off.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -434,7 +434,7 @@ MeshAttributes_SetPointSize(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointSize in the object.
     obj->data->SetPointSize(dval);
@@ -535,7 +535,7 @@ MeshAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the smoothingLevel in the object.
     if(ival >= 0 && ival < 3)
@@ -546,7 +546,7 @@ MeshAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "None, Fast, High.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -568,7 +568,7 @@ MeshAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointSizeVarEnabled in the object.
     obj->data->SetPointSizeVarEnabled(ival != 0);
@@ -592,7 +592,7 @@ MeshAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointSizeVar in the object.
     obj->data->SetPointSizeVar(std::string(str));
@@ -616,7 +616,7 @@ MeshAttributes_SetPointType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     if(ival >= 0 && ival < 8)
     {
@@ -629,7 +629,7 @@ MeshAttributes_SetPointType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
                         "SphereGeometry, Point, Sphere.");
-        return NULL;
+        return PyExc_ValueError;
     }
 
     Py_INCREF(Py_None);
@@ -651,7 +651,7 @@ MeshAttributes_SetShowInternal(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the showInternal in the object.
     obj->data->SetShowInternal(ival != 0);
@@ -675,7 +675,7 @@ MeshAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointSizePixels in the object.
     obj->data->SetPointSizePixels((int)ival);
@@ -699,7 +699,7 @@ MeshAttributes_SetOpacity(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the opacity in the object.
     obj->data->SetOpacity(dval);
@@ -982,14 +982,16 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1135,7 +1137,7 @@ MeshAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

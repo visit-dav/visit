@@ -401,7 +401,7 @@ ScatterAttributes_SetVar1(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1 in the object.
     obj->data->SetVar1(std::string(str));
@@ -425,7 +425,7 @@ ScatterAttributes_SetVar1Role(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1Role in the object.
     if(ival >= 0 && ival < 5)
@@ -437,7 +437,7 @@ ScatterAttributes_SetVar1Role(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Coordinate0, Coordinate1, Coordinate2, Color, None"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -459,7 +459,7 @@ ScatterAttributes_SetVar1MinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1MinFlag in the object.
     obj->data->SetVar1MinFlag(ival != 0);
@@ -483,7 +483,7 @@ ScatterAttributes_SetVar1MaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1MaxFlag in the object.
     obj->data->SetVar1MaxFlag(ival != 0);
@@ -507,7 +507,7 @@ ScatterAttributes_SetVar1Min(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1Min in the object.
     obj->data->SetVar1Min(dval);
@@ -531,7 +531,7 @@ ScatterAttributes_SetVar1Max(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1Max in the object.
     obj->data->SetVar1Max(dval);
@@ -555,7 +555,7 @@ ScatterAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1Scaling in the object.
     if(ival >= 0 && ival < 3)
@@ -566,7 +566,7 @@ ScatterAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, Skew.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -588,7 +588,7 @@ ScatterAttributes_SetVar1SkewFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var1SkewFactor in the object.
     obj->data->SetVar1SkewFactor(dval);
@@ -612,7 +612,7 @@ ScatterAttributes_SetVar2Role(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2Role in the object.
     if(ival >= 0 && ival < 5)
@@ -624,7 +624,7 @@ ScatterAttributes_SetVar2Role(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Coordinate0, Coordinate1, Coordinate2, Color, None"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -646,7 +646,7 @@ ScatterAttributes_SetVar2(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2 in the object.
     obj->data->SetVar2(std::string(str));
@@ -670,7 +670,7 @@ ScatterAttributes_SetVar2MinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2MinFlag in the object.
     obj->data->SetVar2MinFlag(ival != 0);
@@ -694,7 +694,7 @@ ScatterAttributes_SetVar2MaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2MaxFlag in the object.
     obj->data->SetVar2MaxFlag(ival != 0);
@@ -718,7 +718,7 @@ ScatterAttributes_SetVar2Min(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2Min in the object.
     obj->data->SetVar2Min(dval);
@@ -742,7 +742,7 @@ ScatterAttributes_SetVar2Max(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2Max in the object.
     obj->data->SetVar2Max(dval);
@@ -766,7 +766,7 @@ ScatterAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2Scaling in the object.
     if(ival >= 0 && ival < 3)
@@ -777,7 +777,7 @@ ScatterAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, Skew.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -799,7 +799,7 @@ ScatterAttributes_SetVar2SkewFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var2SkewFactor in the object.
     obj->data->SetVar2SkewFactor(dval);
@@ -823,7 +823,7 @@ ScatterAttributes_SetVar3Role(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3Role in the object.
     if(ival >= 0 && ival < 5)
@@ -835,7 +835,7 @@ ScatterAttributes_SetVar3Role(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Coordinate0, Coordinate1, Coordinate2, Color, None"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -857,7 +857,7 @@ ScatterAttributes_SetVar3(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3 in the object.
     obj->data->SetVar3(std::string(str));
@@ -881,7 +881,7 @@ ScatterAttributes_SetVar3MinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3MinFlag in the object.
     obj->data->SetVar3MinFlag(ival != 0);
@@ -905,7 +905,7 @@ ScatterAttributes_SetVar3MaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3MaxFlag in the object.
     obj->data->SetVar3MaxFlag(ival != 0);
@@ -929,7 +929,7 @@ ScatterAttributes_SetVar3Min(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3Min in the object.
     obj->data->SetVar3Min(dval);
@@ -953,7 +953,7 @@ ScatterAttributes_SetVar3Max(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3Max in the object.
     obj->data->SetVar3Max(dval);
@@ -977,7 +977,7 @@ ScatterAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3Scaling in the object.
     if(ival >= 0 && ival < 3)
@@ -988,7 +988,7 @@ ScatterAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, Skew.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1010,7 +1010,7 @@ ScatterAttributes_SetVar3SkewFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var3SkewFactor in the object.
     obj->data->SetVar3SkewFactor(dval);
@@ -1034,7 +1034,7 @@ ScatterAttributes_SetVar4Role(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var4Role in the object.
     if(ival >= 0 && ival < 5)
@@ -1046,7 +1046,7 @@ ScatterAttributes_SetVar4Role(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Coordinate0, Coordinate1, Coordinate2, Color, None"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1068,7 +1068,7 @@ ScatterAttributes_SetVar4(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var4 in the object.
     obj->data->SetVar4(std::string(str));
@@ -1092,7 +1092,7 @@ ScatterAttributes_SetVar4MinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var4MinFlag in the object.
     obj->data->SetVar4MinFlag(ival != 0);
@@ -1116,7 +1116,7 @@ ScatterAttributes_SetVar4MaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var4MaxFlag in the object.
     obj->data->SetVar4MaxFlag(ival != 0);
@@ -1140,7 +1140,7 @@ ScatterAttributes_SetVar4Min(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var4Min in the object.
     obj->data->SetVar4Min(dval);
@@ -1164,7 +1164,7 @@ ScatterAttributes_SetVar4Max(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var4Max in the object.
     obj->data->SetVar4Max(dval);
@@ -1188,7 +1188,7 @@ ScatterAttributes_SetVar4Scaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var4Scaling in the object.
     if(ival >= 0 && ival < 3)
@@ -1199,7 +1199,7 @@ ScatterAttributes_SetVar4Scaling(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Linear, Log, Skew.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1221,7 +1221,7 @@ ScatterAttributes_SetVar4SkewFactor(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the var4SkewFactor in the object.
     obj->data->SetVar4SkewFactor(dval);
@@ -1245,7 +1245,7 @@ ScatterAttributes_SetPointSize(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointSize in the object.
     obj->data->SetPointSize(dval);
@@ -1269,7 +1269,7 @@ ScatterAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pointSizePixels in the object.
     obj->data->SetPointSizePixels((int)ival);
@@ -1293,7 +1293,7 @@ ScatterAttributes_SetPointType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     if(ival >= 0 && ival < 8)
     {
@@ -1306,7 +1306,7 @@ ScatterAttributes_SetPointType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
                         "SphereGeometry, Point, Sphere.");
-        return NULL;
+        return PyExc_ValueError;
     }
 
     Py_INCREF(Py_None);
@@ -1328,7 +1328,7 @@ ScatterAttributes_SetScaleCube(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scaleCube in the object.
     obj->data->SetScaleCube(ival != 0);
@@ -1352,7 +1352,7 @@ ScatterAttributes_SetColorType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorType in the object.
     if(ival >= 0 && ival < 3)
@@ -1363,7 +1363,7 @@ ScatterAttributes_SetColorType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "ColorByForegroundColor, ColorBySingleColor, ColorByColorTable.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1462,7 +1462,7 @@ ScatterAttributes_SetColorTableName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorTableName in the object.
     obj->data->SetColorTableName(std::string(str));
@@ -1486,7 +1486,7 @@ ScatterAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the invertColorTable in the object.
     obj->data->SetInvertColorTable(ival != 0);
@@ -1510,7 +1510,7 @@ ScatterAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the legendFlag in the object.
     obj->data->SetLegendFlag(ival != 0);
@@ -1998,14 +1998,16 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -2151,7 +2153,7 @@ ScatterAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

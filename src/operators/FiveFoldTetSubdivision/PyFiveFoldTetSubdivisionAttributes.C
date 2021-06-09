@@ -110,7 +110,7 @@ FiveFoldTetSubdivisionAttributes_SetOddParityHasSixNeighborhood(PyObject *self, 
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the oddParityHasSixNeighborhood in the object.
     obj->data->SetOddParityHasSixNeighborhood(ival != 0);
@@ -134,7 +134,7 @@ FiveFoldTetSubdivisionAttributes_SetAddComponentInformation(PyObject *self, PyOb
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the addComponentInformation in the object.
     obj->data->SetAddComponentInformation(ival != 0);
@@ -158,7 +158,7 @@ FiveFoldTetSubdivisionAttributes_SetIdVar(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the idVar in the object.
     obj->data->SetIdVar(std::string(str));
@@ -182,7 +182,7 @@ FiveFoldTetSubdivisionAttributes_SetValueVar(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the valueVar in the object.
     obj->data->SetValueVar(std::string(str));
@@ -206,7 +206,7 @@ FiveFoldTetSubdivisionAttributes_SetContourTreeFilename(PyObject *self, PyObject
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the contourTreeFilename in the object.
     obj->data->SetContourTreeFilename(std::string(str));
@@ -230,7 +230,7 @@ FiveFoldTetSubdivisionAttributes_SetIsovalue(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the isovalue in the object.
     obj->data->SetIsovalue(dval);
@@ -465,14 +465,16 @@ PyFiveFoldTetSubdivisionAttributes_setattr(PyObject *self, char *name, PyObject 
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -618,7 +620,7 @@ FiveFoldTetSubdivisionAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

@@ -715,7 +715,7 @@ IntegralCurveAttributes_SetSourceType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sourceType in the object.
     if(ival >= 0 && ival < 9)
@@ -728,7 +728,7 @@ IntegralCurveAttributes_SetSourceType(PyObject *self, PyObject *args)
                         "SpecifiedPoint, PointList, SpecifiedLine, Circle, SpecifiedPlane, "
                         "SpecifiedSphere, SpecifiedBox, Selection, FieldData"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1074,7 +1074,7 @@ IntegralCurveAttributes_SetRadius(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the radius in the object.
     obj->data->SetRadius(dval);
@@ -1206,7 +1206,7 @@ IntegralCurveAttributes_SetUseWholeBox(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useWholeBox in the object.
     obj->data->SetUseWholeBox(ival != 0);
@@ -1356,7 +1356,7 @@ IntegralCurveAttributes_SetSampleDensity0(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDensity0 in the object.
     obj->data->SetSampleDensity0((int)ival);
@@ -1380,7 +1380,7 @@ IntegralCurveAttributes_SetSampleDensity1(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDensity1 in the object.
     obj->data->SetSampleDensity1((int)ival);
@@ -1404,7 +1404,7 @@ IntegralCurveAttributes_SetSampleDensity2(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDensity2 in the object.
     obj->data->SetSampleDensity2((int)ival);
@@ -1428,7 +1428,7 @@ IntegralCurveAttributes_SetDataValue(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dataValue in the object.
     if(ival >= 0 && ival < 14)
@@ -1442,7 +1442,7 @@ IntegralCurveAttributes_SetDataValue(PyObject *self, PyObject *args)
                         "ArcLength, TimeAbsolute, TimeRelative, AverageDistanceFromSeed, "
                         "CorrelationDistance, ClosedCurve, Difference, Variable, "
                         "VariableAtSeed.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1464,7 +1464,7 @@ IntegralCurveAttributes_SetDataVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the dataVariable in the object.
     obj->data->SetDataVariable(std::string(str));
@@ -1488,7 +1488,7 @@ IntegralCurveAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the integrationDirection in the object.
     if(ival >= 0 && ival < 6)
@@ -1500,7 +1500,7 @@ IntegralCurveAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Forward, Backward, Both, ForwardDirectionless, BackwardDirectionless, "
                         "BothDirectionless.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1522,7 +1522,7 @@ IntegralCurveAttributes_SetMaxSteps(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxSteps in the object.
     obj->data->SetMaxSteps((int)ival);
@@ -1546,7 +1546,7 @@ IntegralCurveAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the terminateByDistance in the object.
     obj->data->SetTerminateByDistance(ival != 0);
@@ -1570,7 +1570,7 @@ IntegralCurveAttributes_SetTermDistance(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the termDistance in the object.
     obj->data->SetTermDistance(dval);
@@ -1594,7 +1594,7 @@ IntegralCurveAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the terminateByTime in the object.
     obj->data->SetTerminateByTime(ival != 0);
@@ -1618,7 +1618,7 @@ IntegralCurveAttributes_SetTermTime(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the termTime in the object.
     obj->data->SetTermTime(dval);
@@ -1642,7 +1642,7 @@ IntegralCurveAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxStepLength in the object.
     obj->data->SetMaxStepLength(dval);
@@ -1666,7 +1666,7 @@ IntegralCurveAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the limitMaximumTimestep in the object.
     obj->data->SetLimitMaximumTimestep(ival != 0);
@@ -1690,7 +1690,7 @@ IntegralCurveAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxTimeStep in the object.
     obj->data->SetMaxTimeStep(dval);
@@ -1714,7 +1714,7 @@ IntegralCurveAttributes_SetRelTol(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the relTol in the object.
     obj->data->SetRelTol(dval);
@@ -1738,7 +1738,7 @@ IntegralCurveAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolSizeType in the object.
     if(ival >= 0 && ival < 2)
@@ -1749,7 +1749,7 @@ IntegralCurveAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Absolute, FractionOfBBox.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1771,7 +1771,7 @@ IntegralCurveAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolAbsolute in the object.
     obj->data->SetAbsTolAbsolute(dval);
@@ -1795,7 +1795,7 @@ IntegralCurveAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the absTolBBox in the object.
     obj->data->SetAbsTolBBox(dval);
@@ -1819,7 +1819,7 @@ IntegralCurveAttributes_SetFieldType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fieldType in the object.
     if(ival >= 0 && ival < 6)
@@ -1831,7 +1831,7 @@ IntegralCurveAttributes_SetFieldType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Default, FlashField, M3DC12DField, M3DC13DField, Nek5000Field, "
                         "NektarPPField.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1853,7 +1853,7 @@ IntegralCurveAttributes_SetFieldConstant(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fieldConstant in the object.
     obj->data->SetFieldConstant(dval);
@@ -1931,7 +1931,7 @@ IntegralCurveAttributes_SetIntegrationType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the integrationType in the object.
     if(ival >= 0 && ival < 6)
@@ -1943,7 +1943,7 @@ IntegralCurveAttributes_SetIntegrationType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Euler, Leapfrog, DormandPrince, AdamsBashforth, RK4, "
                         "M3DC12DIntegrator.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1965,7 +1965,7 @@ IntegralCurveAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the parallelizationAlgorithmType in the object.
     if(ival >= 0 && ival < 4)
@@ -1976,7 +1976,7 @@ IntegralCurveAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "LoadOnDemand, ParallelStaticDomains, MasterSlave, VisItSelects.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -1998,7 +1998,7 @@ IntegralCurveAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxProcessCount in the object.
     obj->data->SetMaxProcessCount((int)ival);
@@ -2022,7 +2022,7 @@ IntegralCurveAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxDomainCacheSize in the object.
     obj->data->SetMaxDomainCacheSize((int)ival);
@@ -2046,7 +2046,7 @@ IntegralCurveAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the workGroupSize in the object.
     obj->data->SetWorkGroupSize((int)ival);
@@ -2070,7 +2070,7 @@ IntegralCurveAttributes_SetPathlines(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlines in the object.
     obj->data->SetPathlines(ival != 0);
@@ -2094,7 +2094,7 @@ IntegralCurveAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyO
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesOverrideStartingTimeFlag in the object.
     obj->data->SetPathlinesOverrideStartingTimeFlag(ival != 0);
@@ -2118,7 +2118,7 @@ IntegralCurveAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObjec
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesOverrideStartingTime in the object.
     obj->data->SetPathlinesOverrideStartingTime(dval);
@@ -2142,7 +2142,7 @@ IntegralCurveAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesPeriod in the object.
     obj->data->SetPathlinesPeriod(dval);
@@ -2166,7 +2166,7 @@ IntegralCurveAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the pathlinesCMFE in the object.
     if(ival >= 0 && ival < 2)
@@ -2177,7 +2177,7 @@ IntegralCurveAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "CONN_CMFE, POS_CMFE.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -2199,7 +2199,7 @@ IntegralCurveAttributes_SetDisplayGeometry(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the displayGeometry in the object.
     if(ival >= 0 && ival < 3)
@@ -2210,7 +2210,7 @@ IntegralCurveAttributes_SetDisplayGeometry(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Lines, Tubes, Ribbons.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -2232,7 +2232,7 @@ IntegralCurveAttributes_SetCleanupMethod(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cleanupMethod in the object.
     if(ival >= 0 && ival < 4)
@@ -2243,7 +2243,7 @@ IntegralCurveAttributes_SetCleanupMethod(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "NoCleanup, Merge, Before, After.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -2265,7 +2265,7 @@ IntegralCurveAttributes_SetCleanupThreshold(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cleanupThreshold in the object.
     obj->data->SetCleanupThreshold(dval);
@@ -2289,7 +2289,7 @@ IntegralCurveAttributes_SetCropBeginFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cropBeginFlag in the object.
     obj->data->SetCropBeginFlag(ival != 0);
@@ -2313,7 +2313,7 @@ IntegralCurveAttributes_SetCropBegin(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cropBegin in the object.
     obj->data->SetCropBegin(dval);
@@ -2337,7 +2337,7 @@ IntegralCurveAttributes_SetCropEndFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cropEndFlag in the object.
     obj->data->SetCropEndFlag(ival != 0);
@@ -2361,7 +2361,7 @@ IntegralCurveAttributes_SetCropEnd(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cropEnd in the object.
     obj->data->SetCropEnd(dval);
@@ -2385,7 +2385,7 @@ IntegralCurveAttributes_SetCropValue(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the cropValue in the object.
     if(ival >= 0 && ival < 3)
@@ -2396,7 +2396,7 @@ IntegralCurveAttributes_SetCropValue(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Distance, Time, StepNumber.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -2418,7 +2418,7 @@ IntegralCurveAttributes_SetSampleDistance0(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDistance0 in the object.
     obj->data->SetSampleDistance0(dval);
@@ -2442,7 +2442,7 @@ IntegralCurveAttributes_SetSampleDistance1(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDistance1 in the object.
     obj->data->SetSampleDistance1(dval);
@@ -2466,7 +2466,7 @@ IntegralCurveAttributes_SetSampleDistance2(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sampleDistance2 in the object.
     obj->data->SetSampleDistance2(dval);
@@ -2490,7 +2490,7 @@ IntegralCurveAttributes_SetFillInterior(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the fillInterior in the object.
     obj->data->SetFillInterior(ival != 0);
@@ -2514,7 +2514,7 @@ IntegralCurveAttributes_SetRandomSamples(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the randomSamples in the object.
     obj->data->SetRandomSamples(ival != 0);
@@ -2538,7 +2538,7 @@ IntegralCurveAttributes_SetRandomSeed(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the randomSeed in the object.
     obj->data->SetRandomSeed((int)ival);
@@ -2562,7 +2562,7 @@ IntegralCurveAttributes_SetNumberOfRandomSamples(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numberOfRandomSamples in the object.
     obj->data->SetNumberOfRandomSamples((int)ival);
@@ -2586,7 +2586,7 @@ IntegralCurveAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueAdvectionWarnings in the object.
     obj->data->SetIssueAdvectionWarnings(ival != 0);
@@ -2610,7 +2610,7 @@ IntegralCurveAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueBoundaryWarnings in the object.
     obj->data->SetIssueBoundaryWarnings(ival != 0);
@@ -2634,7 +2634,7 @@ IntegralCurveAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *ar
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueTerminationWarnings in the object.
     obj->data->SetIssueTerminationWarnings(ival != 0);
@@ -2658,7 +2658,7 @@ IntegralCurveAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueStepsizeWarnings in the object.
     obj->data->SetIssueStepsizeWarnings(ival != 0);
@@ -2682,7 +2682,7 @@ IntegralCurveAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueStiffnessWarnings in the object.
     obj->data->SetIssueStiffnessWarnings(ival != 0);
@@ -2706,7 +2706,7 @@ IntegralCurveAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject 
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the issueCriticalPointsWarnings in the object.
     obj->data->SetIssueCriticalPointsWarnings(ival != 0);
@@ -2730,7 +2730,7 @@ IntegralCurveAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the criticalPointThreshold in the object.
     obj->data->SetCriticalPointThreshold(dval);
@@ -2754,7 +2754,7 @@ IntegralCurveAttributes_SetCorrelationDistanceAngTol(PyObject *self, PyObject *a
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the correlationDistanceAngTol in the object.
     obj->data->SetCorrelationDistanceAngTol(dval);
@@ -2778,7 +2778,7 @@ IntegralCurveAttributes_SetCorrelationDistanceMinDistAbsolute(PyObject *self, Py
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the correlationDistanceMinDistAbsolute in the object.
     obj->data->SetCorrelationDistanceMinDistAbsolute(dval);
@@ -2802,7 +2802,7 @@ IntegralCurveAttributes_SetCorrelationDistanceMinDistBBox(PyObject *self, PyObje
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the correlationDistanceMinDistBBox in the object.
     obj->data->SetCorrelationDistanceMinDistBBox(dval);
@@ -2826,7 +2826,7 @@ IntegralCurveAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObje
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the correlationDistanceMinDistType in the object.
     if(ival >= 0 && ival < 2)
@@ -2837,7 +2837,7 @@ IntegralCurveAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObje
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "Absolute, FractionOfBBox.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -2859,7 +2859,7 @@ IntegralCurveAttributes_SetSelection(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the selection in the object.
     obj->data->SetSelection(std::string(str));
@@ -3480,14 +3480,16 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -3633,7 +3635,7 @@ IntegralCurveAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

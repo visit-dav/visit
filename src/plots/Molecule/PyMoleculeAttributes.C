@@ -223,7 +223,7 @@ MoleculeAttributes_SetDrawAtomsAs(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the drawAtomsAs in the object.
     if(ival >= 0 && ival < 3)
@@ -234,7 +234,7 @@ MoleculeAttributes_SetDrawAtomsAs(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "NoAtoms, SphereAtoms, ImposterAtoms.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -256,7 +256,7 @@ MoleculeAttributes_SetScaleRadiusBy(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scaleRadiusBy in the object.
     if(ival >= 0 && ival < 4)
@@ -267,7 +267,7 @@ MoleculeAttributes_SetScaleRadiusBy(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "Fixed, Covalent, Atomic, Variable.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -289,7 +289,7 @@ MoleculeAttributes_SetDrawBondsAs(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the drawBondsAs in the object.
     if(ival >= 0 && ival < 3)
@@ -300,7 +300,7 @@ MoleculeAttributes_SetDrawBondsAs(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "NoBonds, LineBonds, CylinderBonds.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -322,7 +322,7 @@ MoleculeAttributes_SetColorBonds(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorBonds in the object.
     if(ival >= 0 && ival < 2)
@@ -333,7 +333,7 @@ MoleculeAttributes_SetColorBonds(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "ColorByAtom, SingleColor.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -432,7 +432,7 @@ MoleculeAttributes_SetRadiusVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the radiusVariable in the object.
     obj->data->SetRadiusVariable(std::string(str));
@@ -456,7 +456,7 @@ MoleculeAttributes_SetRadiusScaleFactor(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the radiusScaleFactor in the object.
     obj->data->SetRadiusScaleFactor(fval);
@@ -480,7 +480,7 @@ MoleculeAttributes_SetRadiusFixed(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the radiusFixed in the object.
     obj->data->SetRadiusFixed(fval);
@@ -504,7 +504,7 @@ MoleculeAttributes_SetAtomSphereQuality(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the atomSphereQuality in the object.
     if(ival >= 0 && ival < 4)
@@ -515,7 +515,7 @@ MoleculeAttributes_SetAtomSphereQuality(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "Low, Medium, High, Super.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -537,7 +537,7 @@ MoleculeAttributes_SetBondCylinderQuality(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the bondCylinderQuality in the object.
     if(ival >= 0 && ival < 4)
@@ -548,7 +548,7 @@ MoleculeAttributes_SetBondCylinderQuality(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
                         "Low, Medium, High, Super.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -570,7 +570,7 @@ MoleculeAttributes_SetBondRadius(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the bondRadius in the object.
     obj->data->SetBondRadius(fval);
@@ -594,7 +594,7 @@ MoleculeAttributes_SetBondLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the bondLineWidth in the object.
     obj->data->SetBondLineWidth(ival);
@@ -618,7 +618,7 @@ MoleculeAttributes_SetElementColorTable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the elementColorTable in the object.
     obj->data->SetElementColorTable(std::string(str));
@@ -642,7 +642,7 @@ MoleculeAttributes_SetResidueTypeColorTable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the residueTypeColorTable in the object.
     obj->data->SetResidueTypeColorTable(std::string(str));
@@ -666,7 +666,7 @@ MoleculeAttributes_SetResidueSequenceColorTable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the residueSequenceColorTable in the object.
     obj->data->SetResidueSequenceColorTable(std::string(str));
@@ -690,7 +690,7 @@ MoleculeAttributes_SetContinuousColorTable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the continuousColorTable in the object.
     obj->data->SetContinuousColorTable(std::string(str));
@@ -714,7 +714,7 @@ MoleculeAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the legendFlag in the object.
     obj->data->SetLegendFlag(ival != 0);
@@ -738,7 +738,7 @@ MoleculeAttributes_SetMinFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the minFlag in the object.
     obj->data->SetMinFlag(ival != 0);
@@ -762,7 +762,7 @@ MoleculeAttributes_SetScalarMin(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scalarMin in the object.
     obj->data->SetScalarMin(fval);
@@ -786,7 +786,7 @@ MoleculeAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the maxFlag in the object.
     obj->data->SetMaxFlag(ival != 0);
@@ -810,7 +810,7 @@ MoleculeAttributes_SetScalarMax(PyObject *self, PyObject *args)
 
     float fval;
     if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the scalarMax in the object.
     obj->data->SetScalarMax(fval);
@@ -1083,14 +1083,16 @@ PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1236,7 +1238,7 @@ MoleculeAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

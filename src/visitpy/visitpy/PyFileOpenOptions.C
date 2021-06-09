@@ -247,17 +247,9 @@ FileOpenOptions_GetOpenOptions(PyObject *self, PyObject *args)
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     if(index < 0 || (size_t)index >= obj->data->GetOpenOptions().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetOpenOptions().size() == 0)
-            snprintf(msg, 400, "In FileOpenOptions::GetOpenOptions : The index %d is invalid because openOptions is empty.", index);
-        else
-            snprintf(msg, 400, "In FileOpenOptions::GetOpenOptions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetOpenOptions().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -284,14 +276,9 @@ FileOpenOptions_AddOpenOptions(PyObject *self, PyObject *args)
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyDBOptionsAttributes_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The FileOpenOptions::AddOpenOptions method only accepts DBOptionsAttributes objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyExc_TypeError;
     DBOptionsAttributes *newData = PyDBOptionsAttributes_FromPyObject(element);
     obj->data->AddOpenOptions(*newData);
     obj->data->SelectOpenOptions();
@@ -331,15 +318,10 @@ FileOpenOptions_RemoveOpenOptions(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyExc_TypeError;
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
     if(index < 0 || index >= obj->data->GetNumOpenOptions())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In FileOpenOptions::RemoveOpenOptions : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyExc_IndexError;
 
     return FileOpenOptions_Remove_One_OpenOptions(self, index);
 }
@@ -551,14 +533,16 @@ PyFileOpenOptions_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -704,7 +688,7 @@ FileOpenOptions_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

@@ -146,11 +146,11 @@ MultiCurveAttributes_SetDefaultPalette(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyColorControlPointList_Check(newValue))
     {
         fprintf(stderr, "The defaultPalette field can only be set with ColorControlPointList objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetDefaultPalette(*PyColorControlPointList_FromPyObject(newValue));
@@ -259,7 +259,7 @@ MultiCurveAttributes_SetColorType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the colorType in the object.
     if(ival >= 0 && ival < 2)
@@ -270,7 +270,7 @@ MultiCurveAttributes_SetColorType(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "ColorBySingleColor, ColorByMultipleColors.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -517,7 +517,7 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
     }
 
     if(index < 0 || index >= cL.GetNumColors())
-        return NULL;
+        return PyExc_IndexError;
 
     // Set the color in the object.
     if(setTheColor)
@@ -540,7 +540,7 @@ MultiCurveAttributes_GetMultiColor(PyObject *self, PyObject *args)
     if(PyArg_ParseTuple(args, "i", &index))
     {
         if(index < 0 || index >= cL.GetNumColors())
-            return NULL;
+            return PyExc_IndexError;
 
         // Allocate a tuple the with enough entries to hold the singleColor.
         retval = PyTuple_New(4);
@@ -579,7 +579,7 @@ MultiCurveAttributes_SetLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineWidth in the object.
     obj->data->SetLineWidth(ival);
@@ -603,7 +603,7 @@ MultiCurveAttributes_SetYAxisTitleFormat(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the yAxisTitleFormat in the object.
     obj->data->SetYAxisTitleFormat(std::string(str));
@@ -627,7 +627,7 @@ MultiCurveAttributes_SetUseYAxisTickSpacing(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the useYAxisTickSpacing in the object.
     obj->data->SetUseYAxisTickSpacing(ival != 0);
@@ -651,7 +651,7 @@ MultiCurveAttributes_SetYAxisTickSpacing(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the yAxisTickSpacing in the object.
     obj->data->SetYAxisTickSpacing(dval);
@@ -675,7 +675,7 @@ MultiCurveAttributes_SetDisplayMarkers(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the displayMarkers in the object.
     obj->data->SetDisplayMarkers(ival != 0);
@@ -699,7 +699,7 @@ MultiCurveAttributes_SetMarkerScale(PyObject *self, PyObject *args)
 
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the markerScale in the object.
     obj->data->SetMarkerScale(dval);
@@ -723,7 +723,7 @@ MultiCurveAttributes_SetMarkerLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the markerLineWidth in the object.
     obj->data->SetMarkerLineWidth(ival);
@@ -747,7 +747,7 @@ MultiCurveAttributes_SetMarkerVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the markerVariable in the object.
     obj->data->SetMarkerVariable(std::string(str));
@@ -771,7 +771,7 @@ MultiCurveAttributes_SetDisplayIds(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the displayIds in the object.
     obj->data->SetDisplayIds(ival != 0);
@@ -795,7 +795,7 @@ MultiCurveAttributes_SetIdVariable(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the idVariable in the object.
     obj->data->SetIdVariable(std::string(str));
@@ -819,7 +819,7 @@ MultiCurveAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the legendFlag in the object.
     obj->data->SetLegendFlag(ival != 0);
@@ -1021,14 +1021,16 @@ PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1174,7 +1176,7 @@ MultiCurveAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

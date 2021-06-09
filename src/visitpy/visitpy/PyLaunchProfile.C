@@ -232,7 +232,7 @@ LaunchProfile_SetProfileName(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the profileName in the object.
     obj->data->SetProfileName(std::string(str));
@@ -256,7 +256,7 @@ LaunchProfile_SetTimeout(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeout in the object.
     obj->data->SetTimeout((int)ival);
@@ -280,7 +280,7 @@ LaunchProfile_SetNumProcessors(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numProcessors in the object.
     obj->data->SetNumProcessors((int)ival);
@@ -304,7 +304,7 @@ LaunchProfile_SetNumNodesSet(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numNodesSet in the object.
     obj->data->SetNumNodesSet(ival != 0);
@@ -328,7 +328,7 @@ LaunchProfile_SetNumNodes(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numNodes in the object.
     obj->data->SetNumNodes((int)ival);
@@ -352,7 +352,7 @@ LaunchProfile_SetPartitionSet(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the partitionSet in the object.
     obj->data->SetPartitionSet(ival != 0);
@@ -376,7 +376,7 @@ LaunchProfile_SetPartition(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the partition in the object.
     obj->data->SetPartition(std::string(str));
@@ -400,7 +400,7 @@ LaunchProfile_SetBankSet(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the bankSet in the object.
     obj->data->SetBankSet(ival != 0);
@@ -424,7 +424,7 @@ LaunchProfile_SetBank(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the bank in the object.
     obj->data->SetBank(std::string(str));
@@ -448,7 +448,7 @@ LaunchProfile_SetTimeLimitSet(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeLimitSet in the object.
     obj->data->SetTimeLimitSet(ival != 0);
@@ -472,7 +472,7 @@ LaunchProfile_SetTimeLimit(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the timeLimit in the object.
     obj->data->SetTimeLimit(std::string(str));
@@ -496,7 +496,7 @@ LaunchProfile_SetLaunchMethodSet(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the launchMethodSet in the object.
     obj->data->SetLaunchMethodSet(ival != 0);
@@ -520,7 +520,7 @@ LaunchProfile_SetLaunchMethod(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the launchMethod in the object.
     obj->data->SetLaunchMethod(std::string(str));
@@ -544,7 +544,7 @@ LaunchProfile_SetForceStatic(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the forceStatic in the object.
     obj->data->SetForceStatic(ival != 0);
@@ -568,7 +568,7 @@ LaunchProfile_SetForceDynamic(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the forceDynamic in the object.
     obj->data->SetForceDynamic(ival != 0);
@@ -592,7 +592,7 @@ LaunchProfile_SetActive(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the active in the object.
     obj->data->SetActive(ival != 0);
@@ -671,7 +671,7 @@ LaunchProfile_SetParallel(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the parallel in the object.
     obj->data->SetParallel(ival != 0);
@@ -695,7 +695,7 @@ LaunchProfile_SetLaunchArgsSet(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the launchArgsSet in the object.
     obj->data->SetLaunchArgsSet(ival != 0);
@@ -719,7 +719,7 @@ LaunchProfile_SetLaunchArgs(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the launchArgs in the object.
     obj->data->SetLaunchArgs(std::string(str));
@@ -743,7 +743,7 @@ LaunchProfile_SetSublaunchArgsSet(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sublaunchArgsSet in the object.
     obj->data->SetSublaunchArgsSet(ival != 0);
@@ -767,7 +767,7 @@ LaunchProfile_SetSublaunchArgs(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sublaunchArgs in the object.
     obj->data->SetSublaunchArgs(std::string(str));
@@ -791,7 +791,7 @@ LaunchProfile_SetSublaunchPreCmdSet(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sublaunchPreCmdSet in the object.
     obj->data->SetSublaunchPreCmdSet(ival != 0);
@@ -815,7 +815,7 @@ LaunchProfile_SetSublaunchPreCmd(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sublaunchPreCmd in the object.
     obj->data->SetSublaunchPreCmd(std::string(str));
@@ -839,7 +839,7 @@ LaunchProfile_SetSublaunchPostCmdSet(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sublaunchPostCmdSet in the object.
     obj->data->SetSublaunchPostCmdSet(ival != 0);
@@ -863,7 +863,7 @@ LaunchProfile_SetSublaunchPostCmd(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the sublaunchPostCmd in the object.
     obj->data->SetSublaunchPostCmd(std::string(str));
@@ -887,7 +887,7 @@ LaunchProfile_SetMachinefileSet(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the machinefileSet in the object.
     obj->data->SetMachinefileSet(ival != 0);
@@ -911,7 +911,7 @@ LaunchProfile_SetMachinefile(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the machinefile in the object.
     obj->data->SetMachinefile(std::string(str));
@@ -935,7 +935,7 @@ LaunchProfile_SetVisitSetsUpEnv(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the visitSetsUpEnv in the object.
     obj->data->SetVisitSetsUpEnv(ival != 0);
@@ -959,7 +959,7 @@ LaunchProfile_SetCanDoHWAccel(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the canDoHWAccel in the object.
     obj->data->SetCanDoHWAccel(ival != 0);
@@ -983,7 +983,7 @@ LaunchProfile_SetGPUsPerNode(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the GPUsPerNode in the object.
     obj->data->SetGPUsPerNode((int)ival);
@@ -1007,7 +1007,7 @@ LaunchProfile_SetXArguments(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the XArguments in the object.
     obj->data->SetXArguments(std::string(str));
@@ -1031,7 +1031,7 @@ LaunchProfile_SetLaunchXServers(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the launchXServers in the object.
     obj->data->SetLaunchXServers(ival != 0);
@@ -1055,7 +1055,7 @@ LaunchProfile_SetXDisplay(PyObject *self, PyObject *args)
 
     char *str;
     if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the XDisplay in the object.
     obj->data->SetXDisplay(std::string(str));
@@ -1079,7 +1079,7 @@ LaunchProfile_SetNumThreads(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the numThreads in the object.
     obj->data->SetNumThreads((int)ival);
@@ -1103,7 +1103,7 @@ LaunchProfile_SetConstrainNodeProcs(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the constrainNodeProcs in the object.
     obj->data->SetConstrainNodeProcs(ival != 0);
@@ -1518,14 +1518,16 @@ PyLaunchProfile_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1671,7 +1673,7 @@ LaunchProfile_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }

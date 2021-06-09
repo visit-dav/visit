@@ -135,7 +135,7 @@ Axes2D_SetVisible(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the visible in the object.
     obj->data->SetVisible(ival != 0);
@@ -159,7 +159,7 @@ Axes2D_SetAutoSetTicks(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the autoSetTicks in the object.
     obj->data->SetAutoSetTicks(ival != 0);
@@ -183,7 +183,7 @@ Axes2D_SetAutoSetScaling(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the autoSetScaling in the object.
     obj->data->SetAutoSetScaling(ival != 0);
@@ -207,7 +207,7 @@ Axes2D_SetLineWidth(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the lineWidth in the object.
     obj->data->SetLineWidth(ival);
@@ -231,7 +231,7 @@ Axes2D_SetTickLocation(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tickLocation in the object.
     if(ival >= 0 && ival < 3)
@@ -242,7 +242,7 @@ Axes2D_SetTickLocation(PyObject *self, PyObject *args)
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
                         "Inside, Outside, Both.");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -264,7 +264,7 @@ Axes2D_SetTickAxes(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+        return PyExc_TypeError;
 
     // Set the tickAxes in the object.
     if(ival >= 0 && ival < 5)
@@ -276,7 +276,7 @@ Axes2D_SetTickAxes(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Off, Bottom, Left, BottomLeft, All"
                         ".");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     Py_INCREF(Py_None);
@@ -298,11 +298,11 @@ Axes2D_SetXAxis(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyAxisAttributes_Check(newValue))
     {
         fprintf(stderr, "The xAxis field can only be set with AxisAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetXAxis(*PyAxisAttributes_FromPyObject(newValue));
@@ -334,11 +334,11 @@ Axes2D_SetYAxis(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return NULL;
+        return PyExc_TypeError;
     if(!PyAxisAttributes_Check(newValue))
     {
         fprintf(stderr, "The yAxis field can only be set with AxisAttributes objects.\n");
-        return NULL;
+        return PyExc_TypeError;
     }
 
     obj->data->SetYAxis(*PyAxisAttributes_FromPyObject(newValue));
@@ -473,14 +473,16 @@ PyAxes2D_setattr(PyObject *self, char *name, PyObject *args)
         Py_DECREF(obj);
 
     Py_DECREF(tuple);
-    if( obj == NULL)
+    if      (obj == NULL)
         PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
     else if (obj == PyExc_NameError)
         obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
     else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
     else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item assigned to attribute: '%s'", name);
+        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
+    else if (obj == PyExc_IndexError)
+        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -626,7 +628,7 @@ Axes2D_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return NULL;
+            return PyExc_TypeError;
         else
             PyErr_Clear();
     }
