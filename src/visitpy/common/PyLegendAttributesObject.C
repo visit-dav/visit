@@ -593,7 +593,6 @@ LegendAttributesObject_SetCustomTitle(PyObject *self, PyObject *args)
 
     // Set the font height in the object.
 /*CUSTOM*/
-cerr << "  LAO_SetCustomTitle: " << sval << endl;
     obj->data->GetOptions().GetEntry("customTitle")->SetValue(sval);
     UpdateAnnotationHelper(obj->data);
 
