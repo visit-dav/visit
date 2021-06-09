@@ -319,7 +319,7 @@ class AttsGeneratorInt : public virtual Int , public virtual PythonGeneratorFiel
     {
         c << "    int ival;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         if(accessType == AccessPublic)
@@ -568,7 +568,7 @@ class AttsGeneratorBool : public virtual Bool , public virtual PythonGeneratorFi
     {
         c << "    int ival;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
@@ -617,7 +617,7 @@ class AttsGeneratorFloat : public virtual Float , public virtual PythonGenerator
     {
         c << "    float fval;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"f\", &fval))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
@@ -866,7 +866,7 @@ class AttsGeneratorDouble : public virtual Double , public virtual PythonGenerat
     {
         c << "    double dval;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"d\", &dval))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
@@ -1117,7 +1117,7 @@ class AttsGeneratorUChar : public virtual UChar , public virtual PythonGenerator
     {
         c << "    unsigned char uval;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"c\", &uval))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
@@ -1386,7 +1386,7 @@ class AttsGeneratorString : public virtual String , public virtual PythonGenerat
     {
         c << "    char *str;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
@@ -1525,7 +1525,7 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual Pytho
     {
         c << "    char *str;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
@@ -1676,7 +1676,7 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual PythonG
     {
         c << "    int ival;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
@@ -1721,7 +1721,7 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual PythonGener
     {
         c << "    double dval;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"d\", &dval))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
@@ -1766,7 +1766,7 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual P
     {
         c << "    char *str;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    obj->data->";
@@ -1984,7 +1984,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "    }" << Endl;
             c << Endl;
             c << "    if(index < 0 || index >= cL.GetNumColors())" << Endl;
-            c << "        return NULL;" << Endl;
+            c << "        return PyExc_IndexError;" << Endl;
             c << Endl;
             c << "    // Set the color in the object." << Endl;
             c << "    if(setTheColor)" << Endl;
@@ -1996,11 +1996,11 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
         {
             c << "    PyObject *newValue = NULL;" << Endl;
             c << "    if(!PyArg_ParseTuple(args, \"O\", &newValue))" << Endl;
-            c << "        return NULL;" << Endl;
+            c << "        return PyExc_TypeError;" << Endl;
             c << "    if(!Py" << attType << "_Check(newValue))" << Endl;
             c << "    {" << Endl;
             c << "        fprintf(stderr, \"The " << name << " field can only be set with " << attType << " objects.\\n\");" << Endl;
-            c << "        return NULL;" << Endl;
+            c << "        return PyExc_TypeError;" << Endl;
             c << "    }" << Endl;
             c << Endl;
             if(accessType == Field::AccessPublic)
@@ -2021,7 +2021,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "    if(PyArg_ParseTuple(args, \"i\", &index))" << Endl;
             c << "    {" << Endl;
             c << "        if(index < 0 || index >= cL.GetNumColors())" << Endl;
-            c << "            return NULL;" << Endl;
+            c << "            return PyExc_IndexError;" << Endl;
             c << Endl;
             c << "        // Allocate a tuple the with enough entries to hold the singleColor." << Endl;
             c << "        retval = PyTuple_New(4);" << Endl;
@@ -2139,17 +2139,9 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
     {
         c << "    int index;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << "    if(index < 0 || (size_t)index >= obj->data->Get" << Name << "().size())" << Endl;
-        c << "    {" << Endl;
-        c << "        char msg[400] = {'\\0'};" << Endl;
-        c << "        if(obj->data->Get" << Name << "().size() == 0)" << Endl;
-        c << "            snprintf(msg, 400, \"In " << className << "::Get" << Name << " : The index %d is invalid because " << name << " is empty.\", index);" << Endl;
-        c << "        else" << Endl;
-        c << "            snprintf(msg, 400, \"In " << className << "::Get" << Name << " : The index %d is invalid. Use index values in: [0, %ld).\",  index, obj->data->Get" << Name << "().size());" << Endl;
-        c << "        PyErr_SetString(PyExc_IndexError, msg);" << Endl;
-        c << "        return NULL;" << Endl;
-        c << "    }" << Endl;
+        c << "        return PyExc_IndexError;" << Endl;
         c << Endl;
         c << "    // Since the new object will point to data owned by the this object," << Endl;
         c << "    // we need to increment the reference count." << Endl;
@@ -2181,14 +2173,9 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
         c << "    PyObject *element = NULL;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"O\", &element))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << "    if(!Py" << attType << "_Check(element))" << Endl;
-        c << "    {" << Endl;
-        c << "        char msg[400] = {'\\0'};" << Endl;
-        c << "        snprintf(msg, 400, \"The " << className << "::Add" << Name << " method only accepts " << attType << " objects.\");" << Endl;
-        c << "        PyErr_SetString(PyExc_TypeError, msg);" << Endl;
-        c << "        return NULL;" << Endl;
-        c << "    }" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << "    " << attType << " *newData = Py" << attType << "_FromPyObject(element);" << Endl;
         if(accessType != Field::AccessPublic)
         {
@@ -2242,18 +2229,13 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "{" << Endl;
         c << "    int index;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
         if(accessType == Field::AccessPublic)
             c << "    if(index < 0 || index >= obj->data->" << name << ".size())" << Endl;
         else
             c << "    if(index < 0 || index >= obj->data->GetNum" << Name << plural << "())" << Endl;
-        c << "    {" << Endl;
-        c << "        char msg[400] = {'\\0'};" << Endl;
-        c << "        snprintf(msg, 400, \"In " << className << "::Remove" << Name << " : Index %d is out of range\", index);" << Endl;
-        c << "        PyErr_SetString(PyExc_IndexError, msg);" << Endl;
-        c << "        return NULL;" << Endl;
-        c << "    }" << Endl;
+        c << "        return PyExc_IndexError;" << Endl;
         c << Endl;
         c << "    return " << className << "_Remove_One_" << Name << "(self, index);" << Endl;
         c << "}" << Endl;
@@ -2333,7 +2315,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
     {
         c << "    int ival;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    if(ival >= 0 && ival < " << enumType->values.size() << ")" << Endl;
@@ -2360,7 +2342,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
                 c << "\"\n                        \"";
         }
         c << ".\");" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << "    }"<< Endl;
     }
 
@@ -2505,7 +2487,7 @@ class AttsGeneratorMapNode : public virtual MapNode , public virtual PythonGener
     { \
         c << "    int ival;" << Endl; \
         c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl; \
-        c << "        return NULL;" << Endl; \
+        c << "        return PyExc_TypeError;" << Endl; \
         c << Endl; \
         QString T(type); T.replace("Field", "");\
         if(accessType == AccessPublic) \
@@ -2698,7 +2680,7 @@ class AttsGeneratorScaleMode : public virtual PythonGeneratorField, public virtu
     {
         c << "    int ival;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    if(ival >= 0 && ival <= 1)" << Endl;
@@ -2709,7 +2691,7 @@ class AttsGeneratorScaleMode : public virtual PythonGeneratorField, public virtu
         c << "                        \"Valid values are in the range of [0,1]. \"" << Endl;
         c << "                        \"You can also use the following names: \"" << Endl;
         c << "                        \"\\\"LINEAR\\\", \\\"LOG\\\"\\n\");" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_ValueError;" << Endl;
         c << "    }" << Endl;
     }
 
@@ -2757,7 +2739,7 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
     {
         c << "    int ival;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_TypeError;" << Endl;
         c << Endl;
         c << "    if(ival >= 0 && ival < " << GetNValues() << ")" << Endl;
         c << "    {" << Endl;
@@ -2787,7 +2769,7 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
                 c << "\"\n                        \"";
         }
         c << ".\");" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyExc_ValueError;" << Endl;
         c << "    }"<< Endl;
     }
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -3306,14 +3288,16 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "        Py_DECREF(obj);" << Endl;
         c << Endl;
         c << "    Py_DECREF(tuple);" << Endl;
-        c << "    if( obj == NULL)" << Endl;
+        c << "    if      (obj == NULL)" << Endl;
         c << "        PyErr_Format(PyExc_RuntimeError, \"Unknown problem while assigning to attribute: '\%s'\", name);" << Endl;
         c << "    else if (obj == PyExc_NameError)" << Endl;
         c << "        obj = PyErr_Format(obj, \"Unknown attribute name: '\%s'\", name);" << Endl;
         c << "    else if (obj == PyExc_TypeError)" << Endl;
-        c << "        obj = PyErr_Format(obj, \"Problem with type of item assigned to attribute: '\%s'\", name);" << Endl;
+        c << "        obj = PyErr_Format(obj, \"Problem with type of item while assigning to attribute: '\%s'\", name);" << Endl;
         c << "    else if (obj == PyExc_ValueError)" << Endl;
-        c << "        obj = PyErr_Format(obj, \"Problem with length/size of item assigned to attribute: '\%s'\", name);" << Endl;
+        c << "        obj = PyErr_Format(obj, \"Problem with length/size of item while assigning to attribute: '\%s'\", name);" << Endl;
+        c << "    else if (obj == PyExc_IndexError)" << Endl;
+        c << "        obj = PyErr_Format(obj, \"Problem with index of item while assigning to attribute: '\%s'\", name);" << Endl;
         c << Endl;
         c << "    return (obj != NULL) ? 0 : -1;" << Endl;
         c << "}" << Endl;
@@ -3623,7 +3607,7 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << "    if (!PyArg_ParseTuple(args, \"i\", &useCurrent))" << Endl;
             c << "    {" << Endl;
             c << "        if (!PyArg_ParseTuple(args, \"\"))" << Endl;
-            c << "            return NULL;" << Endl;
+            c << "            return PyExc_TypeError;" << Endl;
             c << "        else" << Endl;
             c << "            PyErr_Clear();" << Endl;
             c << "    }" << Endl;
