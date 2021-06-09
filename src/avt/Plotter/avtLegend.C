@@ -954,7 +954,7 @@ avtLegend::GetCalculatedLabels(stringVector &)
 }
 
 // ****************************************************************************
-//  Method: avtLegend::SetTitle
+//  Method: avtLegend::SetCustomTitle
 //
 //  Purpose:
 //      Sets the custom title.
