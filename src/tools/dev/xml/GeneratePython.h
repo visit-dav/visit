@@ -317,10 +317,30 @@ class AttsGeneratorInt : public virtual Int , public virtual PythonGeneratorFiel
         : Field("int",n,l), Int(n,l), PythonGeneratorField("int",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return PyExc_TypeError;" << Endl;
+        c << "    PyObject *embedded_args = 0;" << Endl;
         c << Endl;
+        c << "    // break open args seq. if we think it matches this API's needs" << Endl;
+        c << "    if (PySequence_Check(args) && PySequence_Size(args) == 1)" << Endl;
+        c << "    {" << Endl;
+        c << "        embedded_args = PySequence_GetItem(args, 0);" << Endl;
+        c << "        if (PyNumber_Check(embedded_args))" << Endl;
+        c << "            args = embedded_args;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    if (PySequence_Check(args))" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"expecting a single number arg\");" << Endl;
+        c << Endl;
+        c << "    if (!PyNumber_Check(args))" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"arg is not a number type\");" << Endl;
+        c << Endl;
+        c << "    long val = PyLong_AsLong(args);" << Endl;
+        c << "    int ival = int(val);" << Endl;
+        c << Endl;
+        c << "    if ((val == -1.0 && PyErr_Occurred()) || ival != val)" << Endl;
+        c << "    {" << Endl;
+        c << "        PyErr_Clear();" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"arg not interpretable as C int\");" << Endl;
+        c << "    }" << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         if(accessType == AccessPublic)
             c << "    obj->data->" << name << " = (" << type << ")ival;" << Endl;
@@ -361,51 +381,55 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
         : Field("intArray",n,l), IntArray(s,n,l), PythonGeneratorField("intArray",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
+        c << "    PyObject *embedded_args = 0;" << Endl;
         c << "    int *ivals = obj->data->";
         if(accessType == Field::AccessPublic)
             c << name;
         else
             c << MethodNameGet() << "()";
         c << ";" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"";
-        int i;
-        for(i = 0; i < length; ++i)
-            c << "i";
-        c << "\", ";
-        for(i = 0; i < length; ++i)
-        {
-            c << "&ivals[" << i << "]";
-            if(i < length - 1)
-                c << ", ";
-        }
-        c << "))" << Endl;
+        c << Endl;
+        c << "    if (!PySequence_Check(args))" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting a sequence of args\");" << Endl;
+        c << Endl;
+        c << "    // break open args seq. if we think it matches this API's needs" << Endl;
+        c << "    if (PySequence_Size(args) == 1)" << Endl;
         c << "    {" << Endl;
-        c << "        PyObject     *tuple;" << Endl;
-        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "            return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "        if(PyTuple_Check(tuple))" << Endl;
-        c << "        {" << Endl;
-        c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
-        c << "                return PyExc_ValueError;" << Endl;
-        c << Endl;
-        c << "            PyErr_Clear();" << Endl;
-        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
-        c << "            {" << Endl;
-        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
-        c << "                if(PyFloat_Check(item))" << Endl;
-        c << "                    ivals[i] = int(PyFloat_AS_DOUBLE(item));" << Endl;
-        c << "                else if(PyInt_Check(item))" << Endl;
-        c << "                    ivals[i] = int(PyInt_AS_LONG(item));" << Endl;
-        c << "                else if(PyLong_Check(item))" << Endl;
-        c << "                    ivals[i] = int(PyLong_AsDouble(item));" << Endl;
-        c << "                else" << Endl;
-        c << "                    return PyExc_TypeError;" << Endl;
-        c << "            }" << Endl;
-        c << "        }" << Endl;
-        c << "        else" << Endl;
-        c << "            return PyExc_TypeError;" << Endl;
+        c << "        embedded_args = PySequence_GetItem(args, 0);" << Endl;
+        c << "        if (PySequence_Check(embedded_args) && " << Endl;
+        c << "            PySequence_Size(embedded_args) == " << length << ")" << Endl;
+        c << "            args = embedded_args;" << Endl;
         c << "    }" << Endl;
+        c << Endl;
+        c << "    if (PySequence_Size(args) != " << length << ")" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting " << length << " args\");" << Endl;
+        c << Endl;
+        c << "    for (int i = 0; i < PySequence_Size(args); i++)" << Endl;
+        c << "    {" << Endl;
+        c << "        PyObject *item = PySequence_GetItem(args, i);" << Endl;
+        c << Endl;
+        c << "        if (!PyNumber_Check(item))" << Endl;
+        c << "        {" << Endl;
+        c << "            Py_DECREF(item);" << Endl;
+        c << "            return PyErr_Format(PyExc_TypeError, \"arg %d is not a number type\", i);" << Endl;
+        c << "        }" << Endl;
+        c << Endl;
+        c << "        long val = PyLong_AsLong(item);" << Endl;
+        c << "        int ival = int(val);" << Endl;
+        c << Endl;
+        c << "        if ((val == -1.0 && PyErr_Occurred()) || ival != val)" << Endl;
+        c << "        {" << Endl;
+        c << "            Py_DECREF(item);" << Endl;
+        c << "            PyErr_Clear();" << Endl;
+        c << "            return PyErr_Format(PyExc_TypeError, \"arg %d not interpretable as C int\", i);" << Endl;
+        c << "        }" << Endl;
+        c << "        Py_DECREF(item);" << Endl;
+        c << Endl;
+        c << "        ivals[i] = ival;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    if (embedded_args)" << Endl;
+        c << "        Py_DECREF(embedded_args);" << Endl;
         c << Endl;
         c << "    // Mark the " << name << " in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
@@ -471,43 +495,50 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         else
             c << MethodNameGet() << "()";
         c << ";" << Endl;
-        c << "    PyObject   *tuple;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "        return PyExc_ValueError;" << Endl;
+
+
         c << Endl;
-        c << "    if(PyTuple_Check(tuple))" << Endl;
+        c << "    if (PySequence_Check(args))" << Endl;
         c << "    {" << Endl;
-        c << "        vec.resize(PyTuple_Size(tuple));" << Endl;
-        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
+        c << "        vec.resize(PySequence_Size(args));" << Endl;
+        c << "        for (int i = 0; i < PySequence_Size(args); i++)" << Endl;
         c << "        {" << Endl;
-        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
-        c << "            if(PyFloat_Check(item))" << Endl;
-        c << "                vec[i] = int(PyFloat_AS_DOUBLE(item));" << Endl;
-        c << "            else if(PyInt_Check(item))" << Endl;
-        c << "                vec[i] = int(PyInt_AS_LONG(item));" << Endl;
-        c << "            else if(PyLong_Check(item))" << Endl;
-        c << "                vec[i] = int(PyLong_AsLong(item));" << Endl;
-        c << "            else" << Endl;
-        c << "                return PyExc_TypeError;" << Endl;
+        c << "            PyObject *item = PySequence_GetItem(args, i);" << Endl;
+        c << Endl;
+        c << "            if (!PyNumber_Check(item))" << Endl;
+        c << "            {" << Endl;
+        c << "                Py_DECREF(item);" << Endl;
+        c << "                return PyErr_Format(PyExc_TypeError, \"arg %d is not a number type\", i);" << Endl;
+        c << "            }" << Endl;
+        c << Endl;
+        c << "            long val = PyLong_AsLong(item);" << Endl;
+        c << "            int ival = int(val);" << Endl;
+        c << Endl;
+        c << "            if ((val == -1.0 && PyErr_Occurred()) || ival != val)" << Endl;
+        c << "            {" << Endl;
+        c << "                Py_DECREF(item);" << Endl;
+        c << "                PyErr_Clear();" << Endl;
+        c << "                return PyErr_Format(PyExc_TypeError, \"arg %d not interpretable C int\", i);" << Endl;
+        c << "            }" << Endl;
+        c << "            Py_DECREF(item);" << Endl;
+        c << Endl;
+        c << "            vec[i] = ival;" << Endl;
         c << "        }" << Endl;
         c << "    }" << Endl;
-        c << "    else if(PyFloat_Check(tuple))" << Endl;
+        c << "    else if (PyNumber_Check(args))" << Endl;
         c << "    {" << Endl;
         c << "        vec.resize(1);" << Endl;
-        c << "        vec[0] = int(PyFloat_AS_DOUBLE(tuple));" << Endl;
-        c << "    }" << Endl;
-        c << "    else if(PyInt_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        vec[0] = int(PyInt_AS_LONG(tuple));" << Endl;
-        c << "    }" << Endl;
-        c << "    else if(PyLong_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        vec[0] = int(PyLong_AsLong(tuple));" << Endl;
+        c << "        long val = PyLong_AsLong(args);" << Endl;
+        c << "        int ival = int(val);" << Endl;
+        c << "        if ((val == -1.0 && PyErr_Occurred()) || ival != val)" << Endl;
+        c << "        {" << Endl;
+        c << "            PyErr_Clear();" << Endl;
+        c << "            return PyErr_Format(PyExc_TypeError, \"number not interpretable C int\");" << Endl;
+        c << "        }" << Endl;
+        c << "        vec[0] = ival;" << Endl;
         c << "    }" << Endl;
         c << "    else" << Endl;
-        c << "        return PyExc_TypeError;" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"arg(s) must be one or more ints\");" << Endl;
         c << Endl;
         c << "    // Mark the "<<name<<" in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
