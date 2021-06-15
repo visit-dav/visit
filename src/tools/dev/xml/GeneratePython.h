@@ -308,10 +308,10 @@ class PythonGeneratorField : public virtual Field
 };
 
 //
-// Handle code blocks for attribute members which are single, scalar values
-//    * cType is the type of the destination member of the Attribute object
-//    * pyType is the type returned from Python
-//    * pyFunc is the Python function call to obtain the PyType value.
+// Handle SET code blocks for attribute members which are single, scalar values
+//    * cType is the type of the destination member of the Attribute object.
+//    * pyType is the type returned from Python interpreter.
+//    * pyFunc is the Python function call to obtain the pyType value.
 //
 #define WRITE_SET_METHOD_BODY_FOR_SCALAR(cType, pyType, pyFunc) \
         c << "    PyObject *embedded_args = 0;" << Endl; \
@@ -352,6 +352,123 @@ class PythonGeneratorField : public virtual Field
             c << "    obj->data->" << name << " = cval;" << Endl; \
         else \
             c << "    obj->data->" << MethodNameSet() << "(cval);" << Endl;
+
+#define WRITE_SET_METHOD_BODY_FOR_ARRAY(cType, pyType, pyFunc) \
+        c << "    PyObject *embedded_args = 0;" << Endl; \
+        c << "    " #cType " *vals = obj->data->"; \
+        if(accessType == Field::AccessPublic) \
+            c << name; \
+        else \
+            c << MethodNameGet() << "()"; \
+        c << ";" << Endl; \
+        c << Endl; \
+        c << "    if (!PySequence_Check(args) || PyUnicode_Check(args))" << Endl; \
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting a sequence of numeric args\");" << Endl; \
+        c << Endl; \
+        c << "    // break open args seq. if we think it matches this API's needs" << Endl; \
+        c << "    if (PySequence_Size(args) == 1)" << Endl; \
+        c << "    {" << Endl; \
+        c << "        embedded_args = PySequence_GetItem(args, 0);" << Endl; \
+        c << "        if (PySequence_Check(embedded_args) && " << Endl; \
+        c << "            PySequence_Size(embedded_args) == " << length << ")" << Endl; \
+        c << "            args = embedded_args;" << Endl; \
+        c << "    }" << Endl; \
+        c << Endl; \
+        c << "    if (PySequence_Size(args) != " << length << ")" << Endl; \
+        c << "    {" << Endl; \
+        c << "        Py_XDECREF(embedded_args);" << Endl; \
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting " << length << " numeric args\");" << Endl; \
+        c << "    }" << Endl; \
+        c << Endl; \
+        c << "    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)" << Endl; \
+        c << "    {" << Endl; \
+        c << "        PyObject *item = PySequence_GetItem(args, i);" << Endl; \
+        c << Endl; \
+        c << "        if (!PyNumber_Check(item))" << Endl; \
+        c << "        {" << Endl; \
+        c << "            Py_DECREF(item);" << Endl; \
+        c << "            Py_XDECREF(embedded_args);" << Endl; \
+        c << "            return PyErr_Format(PyExc_TypeError, \"arg %d is not a number type\", (int) i);" << Endl; \
+        c << "        }" << Endl; \
+        c << Endl; \
+        c << "        " #pyType " val = " #pyFunc "(item);" << Endl; \
+        c << "        " #cType " cval = " #cType "(val);" << Endl; \
+        c << Endl; \
+        c << "        if ((val == -1.0 && PyErr_Occurred()) || cval != val)" << Endl; \
+        c << "        {" << Endl; \
+        c << "            Py_XDECREF(embedded_args);" << Endl; \
+        c << "            Py_DECREF(item);" << Endl; \
+        c << "            PyErr_Clear();" << Endl; \
+        c << "            return PyErr_Format(PyExc_TypeError, \"arg %d not interpretable as C++ " #cType "\", (int) i);" << Endl; \
+        c << "        }" << Endl; \
+        c << "        Py_DECREF(item);" << Endl; \
+        c << Endl; \
+        c << "        vals[i] = cval;" << Endl; \
+        c << "    }" << Endl; \
+        c << Endl; \
+        c << "    Py_XDECREF(embedded_args);" << Endl; \
+        c << Endl; \
+        c << "    // Mark the " << name << " in the object as modified." << Endl; \
+        if(accessType == Field::AccessPublic) \
+            c << "    obj->data->SelectAll();" << Endl; \
+        else \
+            c << "    obj->data->Select" << Name << "();" << Endl;
+
+#define WRITE_SET_METHOD_BODY_FOR_VECTOR(cType, pyType, pyFunc) \
+        c << "    " #cType "Vector  &vec = obj->data->"; \
+        if(accessType == Field::AccessPublic) \
+            c << name; \
+        else \
+            c << MethodNameGet() << "()"; \
+        c << ";" << Endl; \
+        c << Endl; \
+        c << "    if (PySequence_Check(args) && !PyUnicode_Check(args))" << Endl; \
+        c << "    {" << Endl; \
+        c << "        vec.resize(PySequence_Size(args));" << Endl; \
+        c << "        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)" << Endl; \
+        c << "        {" << Endl; \
+        c << "            PyObject *item = PySequence_GetItem(args, i);" << Endl; \
+        c << Endl; \
+        c << "            if (!PyNumber_Check(item))" << Endl; \
+        c << "            {" << Endl; \
+        c << "                Py_DECREF(item);" << Endl; \
+        c << "                return PyErr_Format(PyExc_TypeError, \"arg %d is not a number type\", i);" << Endl; \
+        c << "            }" << Endl; \
+        c << Endl; \
+        c << "            " #pyType " val = " #pyFunc "(item);" << Endl; \
+        c << "            " #cType " cval = " #cType "(val);" << Endl; \
+        c << Endl; \
+        c << "            if ((val == -1.0 && PyErr_Occurred()) || cval != val)" << Endl; \
+        c << "            {" << Endl; \
+        c << "                Py_DECREF(item);" << Endl; \
+        c << "                PyErr_Clear();" << Endl; \
+        c << "                return PyErr_Format(PyExc_TypeError, \"arg %d not interpretable as C++ " #cType "\", (int) i);" << Endl; \
+        c << "            }" << Endl; \
+        c << "            Py_DECREF(item);" << Endl; \
+        c << Endl; \
+        c << "            vec[i] = cval;" << Endl; \
+        c << "        }" << Endl; \
+        c << "    }" << Endl; \
+        c << "    else if (PyNumber_Check(args))" << Endl; \
+        c << "    {" << Endl; \
+        c << "        vec.resize(1);" << Endl; \
+        c << "        " #pyType " val = " #pyFunc "(args);" << Endl; \
+        c << "        " #cType " cval = " #cType "(val);" << Endl; \
+        c << "        if ((val == -1.0 && PyErr_Occurred()) || cval != val)" << Endl; \
+        c << "        {" << Endl; \
+        c << "            PyErr_Clear();" << Endl; \
+        c << "            return PyErr_Format(PyExc_TypeError, \"number not interpretable as C++ " #cType "\");" << Endl; \
+        c << "        }" << Endl; \
+        c << "        vec[0] = cval;" << Endl; \
+        c << "    }" << Endl; \
+        c << "    else" << Endl; \
+        c << "        return PyErr_Format(PyExc_TypeError, \"arg(s) must be one or more " #cType "s\");" << Endl; \
+        c << Endl; \
+        c << "    // Mark the "<<name<<" in the object as modified." << Endl; \
+        if(accessType == Field::AccessPublic) \
+            c << "    obj->data->SelectAll();" << Endl; \
+        else \
+            c << "    obj->data->Select"<<Name<<"();" << Endl;
 
 //
 // ------------------------------------ Int -----------------------------------
@@ -399,61 +516,7 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
         : Field("intArray",n,l), IntArray(s,n,l), PythonGeneratorField("intArray",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    PyObject *embedded_args = 0;" << Endl;
-        c << "    int *ivals = obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name;
-        else
-            c << MethodNameGet() << "()";
-        c << ";" << Endl;
-        c << Endl;
-        c << "    if (!PySequence_Check(args))" << Endl;
-        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting a sequence of args\");" << Endl;
-        c << Endl;
-        c << "    // break open args seq. if we think it matches this API's needs" << Endl;
-        c << "    if (PySequence_Size(args) == 1)" << Endl;
-        c << "    {" << Endl;
-        c << "        embedded_args = PySequence_GetItem(args, 0);" << Endl;
-        c << "        if (PySequence_Check(embedded_args) && " << Endl;
-        c << "            PySequence_Size(embedded_args) == " << length << ")" << Endl;
-        c << "            args = embedded_args;" << Endl;
-        c << "    }" << Endl;
-        c << Endl;
-        c << "    if (PySequence_Size(args) != " << length << ")" << Endl;
-        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting " << length << " args\");" << Endl;
-        c << Endl;
-        c << "    for (int i = 0; i < PySequence_Size(args); i++)" << Endl;
-        c << "    {" << Endl;
-        c << "        PyObject *item = PySequence_GetItem(args, i);" << Endl;
-        c << Endl;
-        c << "        if (!PyNumber_Check(item))" << Endl;
-        c << "        {" << Endl;
-        c << "            Py_DECREF(item);" << Endl;
-        c << "            return PyErr_Format(PyExc_TypeError, \"arg %d is not a number type\", i);" << Endl;
-        c << "        }" << Endl;
-        c << Endl;
-        c << "        long val = PyLong_AsLong(item);" << Endl;
-        c << "        int ival = int(val);" << Endl;
-        c << Endl;
-        c << "        if ((val == -1.0 && PyErr_Occurred()) || ival != val)" << Endl;
-        c << "        {" << Endl;
-        c << "            Py_DECREF(item);" << Endl;
-        c << "            PyErr_Clear();" << Endl;
-        c << "            return PyErr_Format(PyExc_TypeError, \"arg %d not interpretable as C int\", i);" << Endl;
-        c << "        }" << Endl;
-        c << "        Py_DECREF(item);" << Endl;
-        c << Endl;
-        c << "        ivals[i] = ival;" << Endl;
-        c << "    }" << Endl;
-        c << Endl;
-        c << "    if (embedded_args)" << Endl;
-        c << "        Py_DECREF(embedded_args);" << Endl;
-        c << Endl;
-        c << "    // Mark the " << name << " in the object as modified." << Endl;
-        if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << Endl;
-        else
-            c << "    obj->data->Select" << Name << "();" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_ARRAY(int, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -507,60 +570,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         : Field("intVector",n,l), IntVector(n,l), PythonGeneratorField("intVector",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    intVector  &vec = obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name;
-        else
-            c << MethodNameGet() << "()";
-        c << ";" << Endl;
-        c << Endl;
-        c << "    if (PySequence_Check(args))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(PySequence_Size(args));" << Endl;
-        c << "        for (int i = 0; i < PySequence_Size(args); i++)" << Endl;
-        c << "        {" << Endl;
-        c << "            PyObject *item = PySequence_GetItem(args, i);" << Endl;
-        c << Endl;
-        c << "            if (!PyNumber_Check(item))" << Endl;
-        c << "            {" << Endl;
-        c << "                Py_DECREF(item);" << Endl;
-        c << "                return PyErr_Format(PyExc_TypeError, \"arg %d is not a number type\", i);" << Endl;
-        c << "            }" << Endl;
-        c << Endl;
-        c << "            long val = PyLong_AsLong(item);" << Endl;
-        c << "            int ival = int(val);" << Endl;
-        c << Endl;
-        c << "            if ((val == -1.0 && PyErr_Occurred()) || ival != val)" << Endl;
-        c << "            {" << Endl;
-        c << "                Py_DECREF(item);" << Endl;
-        c << "                PyErr_Clear();" << Endl;
-        c << "                return PyErr_Format(PyExc_TypeError, \"arg %d not interpretable as a C int\", i);" << Endl;
-        c << "            }" << Endl;
-        c << "            Py_DECREF(item);" << Endl;
-        c << Endl;
-        c << "            vec[i] = ival;" << Endl;
-        c << "        }" << Endl;
-        c << "    }" << Endl;
-        c << "    else if (PyNumber_Check(args))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        long val = PyLong_AsLong(args);" << Endl;
-        c << "        int ival = int(val);" << Endl;
-        c << "        if ((val == -1.0 && PyErr_Occurred()) || ival != val)" << Endl;
-        c << "        {" << Endl;
-        c << "            PyErr_Clear();" << Endl;
-        c << "            return PyErr_Format(PyExc_TypeError, \"number not interpretable C int\");" << Endl;
-        c << "        }" << Endl;
-        c << "        vec[0] = ival;" << Endl;
-        c << "    }" << Endl;
-        c << "    else" << Endl;
-        c << "        return PyErr_Format(PyExc_TypeError, \"arg(s) must be one or more ints\");" << Endl;
-        c << Endl;
-        c << "    // Mark the "<<name<<" in the object as modified." << Endl;
-        if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << Endl;
-        else
-            c << "    obj->data->Select"<<Name<<"();" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_VECTOR(int, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -688,57 +698,7 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
         : Field("floatArray",n,l), FloatArray(s,n,l), PythonGeneratorField("floatArray",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    float *fvals = obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name;
-        else
-            c << MethodNameGet() << "()";
-        c << ";" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"";
-        int i;
-        for(i = 0; i < length; ++i)
-            c << "f";
-        c << "\", ";
-        for(i = 0; i < length; ++i)
-        {
-            c << "&fvals[" << i << "]";
-            if(i < length - 1)
-                c << ", ";
-        }
-        c << "))" << Endl;
-        c << "    {" << Endl;
-        c << "        PyObject     *tuple;" << Endl;
-        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "            return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "        if(PyTuple_Check(tuple))" << Endl;
-        c << "        {" << Endl;
-        c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
-        c << "                return PyExc_ValueError;" << Endl;
-        c << Endl;
-        c << "            PyErr_Clear();" << Endl;
-        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
-        c << "            {" << Endl;
-        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
-        c << "                if(PyFloat_Check(item))" << Endl;
-        c << "                    fvals[i] = float(PyFloat_AS_DOUBLE(item));" << Endl;
-        c << "                else if(PyInt_Check(item))" << Endl;
-        c << "                    fvals[i] = float(PyInt_AS_LONG(item));" << Endl;
-        c << "                else if(PyLong_Check(item))" << Endl;
-        c << "                    fvals[i] = float(PyLong_AsDouble(item));" << Endl;
-        c << "                else" << Endl;
-        c << "                    return PyExc_TypeError;" << Endl;
-        c << "            }" << Endl;
-        c << "        }" << Endl;
-        c << "        else" << Endl;
-        c << "            return PyExc_TypeError;" << Endl;
-        c << "    }" << Endl;
-        c << Endl;
-        c << "    // Mark the " << name << " in the object as modified." << Endl;
-        if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << Endl;
-        else
-            c << "    obj->data->Select" << Name << "();" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_ARRAY(float, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -790,55 +750,7 @@ class AttsGeneratorFloatVector : public virtual FloatVector , public virtual Pyt
         : Field("floatVector",n,l), FloatVector(n,l), PythonGeneratorField("floatVector",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    floatVector  &vec = obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name;
-        else
-            c << MethodNameGet() << "()";
-        c << ";" << Endl;
-        c << "    PyObject     *tuple;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "        return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "    if(PyTuple_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(PyTuple_Size(tuple));" << Endl;
-        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
-        c << "        {" << Endl;
-        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
-        c << "            if(PyFloat_Check(item))" << Endl;
-        c << "                vec[i] = float(PyFloat_AS_DOUBLE(item));" << Endl;
-        c << "            else if(PyInt_Check(item))" << Endl;
-        c << "                vec[i] = float(PyInt_AS_LONG(item));" << Endl;
-        c << "            else if(PyLong_Check(item))" << Endl;
-        c << "                vec[i] = float(PyLong_AsDouble(item));" << Endl;
-        c << "            else" << Endl;
-        c << "                return PyExc_TypeError;" << Endl;
-        c << "        }" << Endl;
-        c << "    }" << Endl;
-        c << "    else if(PyFloat_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        vec[0] = float(PyFloat_AS_DOUBLE(tuple));" << Endl;
-        c << "    }" << Endl;
-        c << "    else if(PyInt_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        vec[0] = float(PyInt_AS_LONG(tuple));" << Endl;
-        c << "    }" << Endl;
-        c << "    else if(PyLong_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        vec[0] = float(PyLong_AsDouble(tuple));" << Endl;
-        c << "    }" << Endl;
-        c << "    else" << Endl;
-        c << "        return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "    // Mark the "<<name<<" in the object as modified." << Endl;
-        if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << Endl;
-        else
-            c << "    obj->data->Select"<<Name<<"();" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_VECTOR(float, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -928,57 +840,7 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Pyt
         : Field("doubleArray",n,l), DoubleArray(s,n,l), PythonGeneratorField("doubleArray",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    double *dvals = obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name;
-        else
-            c << MethodNameGet() << "()";
-        c << ";" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"";
-        int i;
-        for(i = 0; i < length; ++i)
-            c << "d";
-        c << "\", ";
-        for(i = 0; i < length; ++i)
-        {
-            c << "&dvals[" << i << "]";
-            if(i < length - 1)
-                c << ", ";
-        }
-        c << "))" << Endl;
-        c << "    {" << Endl;
-        c << "        PyObject     *tuple;" << Endl;
-        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "            return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "        if(PyTuple_Check(tuple))" << Endl;
-        c << "        {" << Endl;
-        c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
-        c << "                return PyExc_ValueError;" << Endl;
-        c << Endl;
-        c << "            PyErr_Clear();" << Endl;
-        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
-        c << "            {" << Endl;
-        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
-        c << "                if(PyFloat_Check(item))" << Endl;
-        c << "                    dvals[i] = PyFloat_AS_DOUBLE(item);" << Endl;
-        c << "                else if(PyInt_Check(item))" << Endl;
-        c << "                    dvals[i] = double(PyInt_AS_LONG(item));" << Endl;
-        c << "                else if(PyLong_Check(item))" << Endl;
-        c << "                    dvals[i] = PyLong_AsDouble(item);" << Endl;
-        c << "                else" << Endl;
-        c << "                    return PyExc_TypeError;" << Endl;
-        c << "            }" << Endl;
-        c << "        }" << Endl;
-        c << "        else" << Endl;
-        c << "            return PyExc_TypeError;" << Endl;
-        c << "    }" << Endl;
-        c << Endl;
-        c << "    // Mark the " << name << " in the object as modified." << Endl;
-        if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << Endl;
-        else
-            c << "    obj->data->Select" << Name << "();" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_ARRAY(double, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1032,55 +894,7 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
         : Field("doubleVector",n,l), DoubleVector(n,l), PythonGeneratorField("doubleVector",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    doubleVector  &vec = obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name;
-        else
-            c << MethodNameGet() << "()";
-        c << ";" << Endl;
-        c << "    PyObject     *tuple;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "        return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "    if(PyTuple_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(PyTuple_Size(tuple));" << Endl;
-        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
-        c << "        {" << Endl;
-        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
-        c << "            if(PyFloat_Check(item))" << Endl;
-        c << "                vec[i] = PyFloat_AS_DOUBLE(item);" << Endl;
-        c << "            else if(PyInt_Check(item))" << Endl;
-        c << "                vec[i] = double(PyInt_AS_LONG(item));" << Endl;
-        c << "            else if(PyLong_Check(item))" << Endl;
-        c << "                vec[i] = PyLong_AsDouble(item);" << Endl;
-        c << "            else" << Endl;
-        c << "                return PyExc_TypeError;" << Endl;
-        c << "        }" << Endl;
-        c << "    }" << Endl;
-        c << "    else if(PyFloat_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        vec[0] = PyFloat_AS_DOUBLE(tuple);" << Endl;
-        c << "    }" << Endl;
-        c << "    else if(PyInt_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        vec[0] = double(PyInt_AS_LONG(tuple));" << Endl;
-        c << "    }" << Endl;
-        c << "    else if(PyLong_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        vec[0] = PyLong_AsDouble(tuple);" << Endl;
-        c << "    }" << Endl;
-        c << "    else" << Endl;
-        c << "        return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "    // Mark the "<<name<<" in the object as modified." << Endl;
-        if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << Endl;
-        else
-            c << "    obj->data->Select"<<Name<<"();" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_VECTOR(double, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1170,62 +984,7 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
         : Field("ucharArray",n,l), UCharArray(s,n,l), PythonGeneratorField("ucharArray",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    unsigned char *cvals = obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name;
-        else
-            c << MethodNameGet() << "()";
-        c << ";" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"";
-        int i;
-        for(i = 0; i < length; ++i)
-            c << "c";
-        c << "\", ";
-        for(i = 0; i < length; ++i)
-        {
-            c << "&cvals[" << i << "]";
-            if(i < length - 1)
-                c << ", ";
-        }
-        c << "))" << Endl;
-        c << "    {" << Endl;
-        c << "        PyObject     *tuple;" << Endl;
-        c << "        if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "            return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "        if(PyTuple_Check(tuple))" << Endl;
-        c << "        {" << Endl;
-        c << "            if(PyTuple_Size(tuple) != " << length << ")" << Endl;
-        c << "                return PyExc_ValueError;" << Endl;
-        c << Endl;
-        c << "            PyErr_Clear();" << Endl;
-        c << "            for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
-        c << "            {" << Endl;
-        c << "                int c;" << Endl;
-        c << "                PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
-        c << "                if(PyFloat_Check(item))" << Endl;
-        c << "                    c = int(PyFloat_AS_DOUBLE(item));" << Endl;
-        c << "                else if(PyInt_Check(item))" << Endl;
-        c << "                    c = int(PyInt_AS_LONG(item));" << Endl;
-        c << "                else if(PyLong_Check(item))" << Endl;
-        c << "                    c = int(PyLong_AsDouble(item));" << Endl;
-        c << "                else" << Endl;
-        c << "                    return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "                if(c < 0) c = 0;" << Endl;
-        c << "                if(c > 255) c = 255;" << Endl;
-        c << "                cvals[i] = (unsigned char)(c);" << Endl;
-        c << "            }" << Endl;
-        c << "        }" << Endl;
-        c << "        else" << Endl;
-        c << "            return PyExc_TypeError;" << Endl;
-        c << "    }" << Endl;
-        c << Endl;
-        c << "    // Mark the " << name << " in the object as modified." << Endl;
-        if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << Endl;
-        else
-            c << "    obj->data->Select" << Name << "();" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_ARRAY(unsigned char, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1279,69 +1038,7 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
         : Field("ucharVector",n,l), UCharVector(n,l), PythonGeneratorField("ucharVector",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    unsignedCharVector  &vec = obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name;
-        else
-            c << MethodNameGet() << "()";
-        c << ";" << Endl;
-        c << "    PyObject     *tuple;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"O\", &tuple))" << Endl;
-        c << "        return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "    if(PyTuple_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(PyTuple_Size(tuple));" << Endl;
-        c << "        for(int i = 0; i < PyTuple_Size(tuple); ++i)" << Endl;
-        c << "        {" << Endl;
-        c << "            int c;" << Endl;
-        c << "            PyObject *item = PyTuple_GET_ITEM(tuple, i);" << Endl;
-        c << "            if(PyFloat_Check(item))" << Endl;
-        c << "                c = int(PyFloat_AS_DOUBLE(item));" << Endl;
-        c << "            else if(PyInt_Check(item))" << Endl;
-        c << "                c = int(PyInt_AS_LONG(item));" << Endl;
-        c << "            else if(PyLong_Check(item))" << Endl;
-        c << "                c = int(PyLong_AsDouble(item));" << Endl;
-        c << "            else" << Endl;
-        c << "                return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "            if(c < 0) c = 0;" << Endl;
-        c << "            if(c > 255) c = 255;" << Endl;
-        c << "            vec[i] = (unsigned char)(c);" << Endl;
-        c << "        }" << Endl;
-        c << "    }" << Endl;
-        c << "    else if(PyFloat_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        int c = int(PyFloat_AS_DOUBLE(tuple));" << Endl;
-        c << "        if(c < 0) c = 0;" << Endl;
-        c << "        if(c > 255) c = 255;" << Endl;
-        c << "        vec[0] = (unsigned char)(c);" << Endl;
-        c << "    }" << Endl;
-        c << "    else if(PyInt_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        int c = int(PyInt_AS_LONG(tuple));" << Endl;
-        c << "        if(c < 0) c = 0;" << Endl;
-        c << "        if(c > 255) c = 255;" << Endl;
-        c << "        vec[0] = (unsigned char)(c);" << Endl;
-        c << "    }" << Endl;
-        c << "    else if(PyLong_Check(tuple))" << Endl;
-        c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
-        c << "        int c = PyLong_AsLong(tuple);" << Endl;
-        c << "        if(c < 0) c = 0;" << Endl;
-        c << "        if(c > 255) c = 255;" << Endl;
-        c << "        vec[0] = (unsigned char)(c);" << Endl;
-        c << "    }" << Endl;
-        c << "    else" << Endl;
-        c << "        return PyExc_TypeError;" << Endl;
-        c << Endl;
-        c << "    // Mark the "<<name<<" in the object as modified." << Endl;
-        if(accessType == Field::AccessPublic)
-            c << "    obj->data->SelectAll();" << Endl;
-        else
-            c << "    obj->data->Select"<<Name<<"();" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_VECTOR(unsigned char, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
