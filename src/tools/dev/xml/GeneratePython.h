@@ -326,9 +326,11 @@ class PythonGeneratorField : public virtual Field
 //
 // In addition to the above difference, the Python interpreter itself also passes
 // the arguments to these differently. In the assignment approach, it passes the
-// args as a tuple. In the Set function call approach, it takes the args and packages
-// them as the *first* member of a tuple of size one and passes that tuple. It
-// effectively wraps them by one level of indirection into an extra tuple.
+// args either as a single, scalar value, if that is what is being assigned or as
+// a tuple if multiple items are being assigned. In the Set function call approach,
+// it takes the whatever args are present (even if just a single, scalar value) and
+// packages them as the *first* member of a tuple of size one and passes that tuple.
+// It effectively wraps them by one level of indirection into an extra tuple.
 //
 // The macro'd code blocks below attempt to detect the case where the interpreter
 // has packaged the args into the first member of a tuple of size 1 and then
@@ -341,7 +343,7 @@ class PythonGeneratorField : public virtual Field
 //    * pyType is the type returned from Python interpreter.
 //    * pyFunc is the Python function call to obtain the pyType value.
 //
-#define WRITE_SET_METHOD_BODY_FOR_SCALAR(cType, pyType, pyFunc) \
+#define WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(cType, pyType, pyFunc) \
         c << "    PyObject *packaged_args = 0;" << Endl; \
         c << Endl; \
         c << "    // Handle args packaged into a tuple of size one" << Endl; \
@@ -383,13 +385,49 @@ class PythonGeneratorField : public virtual Field
         else \
             c << "    obj->data->" << MethodNameSet() << "(cval);" << Endl;
 
+#define WRITE_SET_METHOD_BODY_FOR_SINGLE_STRING \
+        c << "    PyObject *packaged_args = 0;" << Endl; \
+        c << Endl; \
+        c << "    // Handle args packaged as first member of a tuple of size one" << Endl; \
+        c << "    // if we think the unpackaged args matches our needs" << Endl; \
+        c << "    if (PySequence_Check(args) && PySequence_Size(args) == 1)" << Endl; \
+        c << "    {" << Endl; \
+        c << "        packaged_args = PySequence_GetItem(args, 0);" << Endl; \
+        c << "        if (PyUnicode_Check(packaged_args))" << Endl; \
+        c << "            args = packaged_args;" << Endl; \
+        c << "    }" << Endl; \
+        c << Endl; \
+        c << "    if (!PyUnicode_Check(args))" << Endl; \
+        c << "    {" << Endl; \
+        c << "        Py_XDECREF(packaged_args);" << Endl; \
+        c << "        return PyErr_Format(PyExc_TypeError, \"arg is not a unicode string\");" << Endl; \
+        c << "    }" << Endl; \
+        c << Endl; \
+        c << "    char const *val = PyUnicode_AsUTF8(args);" << Endl; \
+        c << "    std::string cval = std::string(val);" << Endl; \
+        c << Endl; \
+        c << "    if (val == 0 && PyErr_Occurred())" << Endl; \
+        c << "    {" << Endl; \
+        c << "        Py_XDECREF(packaged_args);" << Endl; \
+        c << "        PyErr_Clear();" << Endl; \
+        c << "        return PyErr_Format(PyExc_TypeError, \"arg not interpretable as utf8 string\");" << Endl; \
+        c << "    }" << Endl; \
+        c << Endl; \
+        c << "    Py_XDECREF(packaged_args);" << Endl; \
+        c << Endl; \
+        c << "    // Set the " << name << " in the object." << Endl; \
+        if(accessType == AccessPublic) \
+            c << "    obj->data->" << name << " = cval;" << Endl; \
+        else \
+            c << "    obj->data->" << MethodNameSet() << "(cval);" << Endl;
+
 //
 // Handle SET code blocks for attribute members which are array values.
 //    * cType is the type of the destination member of the Attribute object.
 //    * pyType is the type returned from Python interpreter.
 //    * pyFunc is the Python function call to obtain the pyType value.
 //
-#define WRITE_SET_METHOD_BODY_FOR_ARRAY(cType, pyType, pyFunc) \
+#define WRITE_SET_METHOD_BODY_FOR_ARRAY_OF_NUMBERS(cType, pyType, pyFunc) \
         c << "    PyObject *packaged_args = 0;" << Endl; \
         c << "    " #cType " *vals = obj->data->"; \
         if(accessType == Field::AccessPublic) \
@@ -456,7 +494,7 @@ class PythonGeneratorField : public virtual Field
 //    * pyType is the type returned from Python interpreter.
 //    * pyFunc is the Python function call to obtain the pyType value.
 //
-#define WRITE_SET_METHOD_BODY_FOR_VECTOR(cType, pyType, pyFunc) \
+#define WRITE_SET_METHOD_BODY_FOR_VECTOR_OF_NUMBERS(cType, pyType, pyFunc) \
         c << "    " #cType "Vector  &vec = obj->data->"; \
         if(accessType == Field::AccessPublic) \
             c << name; \
@@ -522,7 +560,7 @@ class AttsGeneratorInt : public virtual Int , public virtual PythonGeneratorFiel
         : Field("int",n,l), Int(n,l), PythonGeneratorField("int",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR(int, long, PyLong_AsLong)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(int, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -558,7 +596,7 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual PythonGen
         : Field("intArray",n,l), IntArray(s,n,l), PythonGeneratorField("intArray",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_ARRAY(int, long, PyLong_AsLong)
+        WRITE_SET_METHOD_BODY_FOR_ARRAY_OF_NUMBERS(int, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -612,7 +650,7 @@ class AttsGeneratorIntVector : public virtual IntVector , public virtual PythonG
         : Field("intVector",n,l), IntVector(n,l), PythonGeneratorField("intVector",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_VECTOR(int, long, PyLong_AsLong)
+        WRITE_SET_METHOD_BODY_FOR_VECTOR_OF_NUMBERS(int, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -665,7 +703,7 @@ class AttsGeneratorBool : public virtual Bool , public virtual PythonGeneratorFi
         : Field("bool",n,l), Bool(n,l), PythonGeneratorField("bool",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR(bool, long, PyLong_AsLong)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(bool, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -704,7 +742,7 @@ class AttsGeneratorFloat : public virtual Float , public virtual PythonGenerator
         : Field("float",n,l), Float(n,l), PythonGeneratorField("float",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR(float, double, PyFloat_AsDouble)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(float, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -740,7 +778,7 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual Pytho
         : Field("floatArray",n,l), FloatArray(s,n,l), PythonGeneratorField("floatArray",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_ARRAY(float, double, PyFloat_AsDouble)
+        WRITE_SET_METHOD_BODY_FOR_ARRAY_OF_NUMBERS(float, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -792,7 +830,7 @@ class AttsGeneratorFloatVector : public virtual FloatVector , public virtual Pyt
         : Field("floatVector",n,l), FloatVector(n,l), PythonGeneratorField("floatVector",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_VECTOR(float, double, PyFloat_AsDouble)
+        WRITE_SET_METHOD_BODY_FOR_VECTOR_OF_NUMBERS(float, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -846,7 +884,7 @@ class AttsGeneratorDouble : public virtual Double , public virtual PythonGenerat
         : Field("double",n,l), Double(n,l), PythonGeneratorField("double",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR(double, double, PyFloat_AsDouble)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(double, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -882,7 +920,7 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Pyt
         : Field("doubleArray",n,l), DoubleArray(s,n,l), PythonGeneratorField("doubleArray",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_ARRAY(double, double, PyFloat_AsDouble)
+        WRITE_SET_METHOD_BODY_FOR_ARRAY_OF_NUMBERS(double, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -936,7 +974,7 @@ class AttsGeneratorDoubleVector : public virtual DoubleVector , public virtual P
         : Field("doubleVector",n,l), DoubleVector(n,l), PythonGeneratorField("doubleVector",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_VECTOR(double, double, PyFloat_AsDouble)
+        WRITE_SET_METHOD_BODY_FOR_VECTOR_OF_NUMBERS(double, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -990,7 +1028,7 @@ class AttsGeneratorUChar : public virtual UChar , public virtual PythonGenerator
         : Field("uchar",n,l), UChar(n,l), PythonGeneratorField("uchar",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR(unsigned char, long, PyLong_AsLong)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(unsigned char, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1026,7 +1064,7 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
         : Field("ucharArray",n,l), UCharArray(s,n,l), PythonGeneratorField("ucharArray",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_ARRAY(unsigned char, long, PyLong_AsLong)
+        WRITE_SET_METHOD_BODY_FOR_ARRAY_OF_NUMBERS(unsigned char, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1080,7 +1118,7 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
         : Field("ucharVector",n,l), UCharVector(n,l), PythonGeneratorField("ucharVector",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_VECTOR(unsigned char, long, PyLong_AsLong)
+        WRITE_SET_METHOD_BODY_FOR_VECTOR_OF_NUMBERS(unsigned char, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1133,40 +1171,7 @@ class AttsGeneratorString : public virtual String , public virtual PythonGenerat
         : Field("string",n,l), String(n,l), PythonGeneratorField("string",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    PyObject *packaged_args = 0;" << Endl; \
-        c << Endl; \
-        c << "    // Handle args packaged as first member of a tuple of size one" << Endl; \
-        c << "    // if we think the unpackaged args matches our needs" << Endl; \
-        c << "    if (PySequence_Check(args) && PySequence_Size(args) == 1)" << Endl; \
-        c << "    {" << Endl; \
-        c << "        packaged_args = PySequence_GetItem(args, 0);" << Endl; \
-        c << "        if (PyUnicode_Check(packaged_args))" << Endl; \
-        c << "            args = packaged_args;" << Endl; \
-        c << "    }" << Endl; \
-        c << Endl; \
-        c << "    if (!PyUnicode_Check(args))" << Endl; \
-        c << "    {" << Endl; \
-        c << "        Py_XDECREF(packaged_args);" << Endl; \
-        c << "        return PyErr_Format(PyExc_TypeError, \"arg is not a string type\");" << Endl; \
-        c << "    }" << Endl; \
-        c << Endl; \
-        c << "    char const *val = PyUnicode_AsUTF8(args);" << Endl; \
-        c << "    std::string cval = std::string(val);" << Endl; \
-        c << Endl; \
-        c << "    if ((val == 0 && PyErr_Occurred()) || cval != val)" << Endl; \
-        c << "    {" << Endl; \
-        c << "        Py_XDECREF(packaged_args);" << Endl; \
-        c << "        PyErr_Clear();" << Endl; \
-        c << "        return PyErr_Format(PyExc_TypeError, \"arg not interpretable as C++ string\");" << Endl; \
-        c << "    }" << Endl; \
-        c << Endl; \
-        c << "    Py_XDECREF(packaged_args);" << Endl; \
-        c << Endl; \
-        c << "    // Set the " << name << " in the object." << Endl; \
-        if(accessType == AccessPublic) \
-            c << "    obj->data->" << name << " = cval;" << Endl; \
-        else \
-            c << "    obj->data->" << MethodNameSet() << "(cval);" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_SINGLE_STRING
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1202,60 +1207,60 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         : Field("stringVector",n,l), StringVector(n,l), PythonGeneratorField("stringVector",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    stringVector  &vec = obj->data->"; \
-        if(accessType == Field::AccessPublic) \
-            c << name; \
-        else \
-            c << MethodNameGet() << "()"; \
-        c << ";" << Endl; \
-        c << Endl; \
-        c << "    if (PyUnicode_Check(args))" << Endl; \
-        c << "    {" << Endl; \
-        c << "        vec.resize(1);" << Endl; \
-        c << "        char const *val = PyUnicode_AsUTF8(args);" << Endl; \
-        c << "        std::string cval = std::string(val);" << Endl; \
-        c << "        if ((val == 0 && PyErr_Occurred()) || cval != val)" << Endl; \
-        c << "        {" << Endl; \
-        c << "            PyErr_Clear();" << Endl; \
-        c << "            return PyErr_Format(PyExc_TypeError, \"arg not interpretable as C++ string\");" << Endl; \
-        c << "        }" << Endl; \
-        c << "        vec[0] = cval;" << Endl; \
-        c << "    }" << Endl; \
-        c << "    else if (PySequence_Check(args))" << Endl; \
-        c << "    {" << Endl; \
+        c << "    stringVector  &vec = obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << ";" << Endl;
+        c << Endl;
+        c << "    if (PyUnicode_Check(args))" << Endl;
+        c << "    {" << Endl;
+        c << "        vec.resize(1);" << Endl;
+        c << "        char const *val = PyUnicode_AsUTF8(args);" << Endl;
+        c << "        std::string cval = std::string(val);" << Endl;
+        c << "        if ((val == 0 && PyErr_Occurred()) || cval != val)" << Endl;
+        c << "        {" << Endl;
+        c << "            PyErr_Clear();" << Endl;
+        c << "            return PyErr_Format(PyExc_TypeError, \"arg not interpretable as C++ string\");" << Endl;
+        c << "        }" << Endl;
+        c << "        vec[0] = cval;" << Endl;
+        c << "    }" << Endl;
+        c << "    else if (PySequence_Check(args))" << Endl;
+        c << "    {" << Endl;
 #warning WE MODIFY VECTOR BEFORE WE KNOW THIS OPERATION SUCCEEDS. SHOULD WE BUILD UP A COPY AND ASSIGN IT INSTEAD
-        c << "        vec.resize(PySequence_Size(args));" << Endl; \
-        c << "        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)" << Endl; \
-        c << "        {" << Endl; \
-        c << "            PyObject *item = PySequence_GetItem(args, i);" << Endl; \
-        c << Endl; \
-        c << "            if (!PyUnicode_Check(item))" << Endl; \
-        c << "            {" << Endl; \
-        c << "                Py_DECREF(item);" << Endl; \
-        c << "                return PyErr_Format(PyExc_TypeError, \"arg %d is not a unicode string\", (int) i);" << Endl; \
-        c << "            }" << Endl; \
-        c << Endl; \
-        c << "            char const *val = PyUnicode_AsUTF8(item);" << Endl; \
-        c << "            std::string cval = std::string(val);" << Endl; \
-        c << Endl; \
-        c << "            if ((val == 0 && PyErr_Occurred()) || cval != val)" << Endl; \
-        c << "            {" << Endl; \
-        c << "                Py_DECREF(item);" << Endl; \
-        c << "                PyErr_Clear();" << Endl; \
-        c << "                return PyErr_Format(PyExc_TypeError, \"arg %d not interpretable as C++ string\", (int) i);" << Endl; \
-        c << "            }" << Endl; \
-        c << "            Py_DECREF(item);" << Endl; \
-        c << Endl; \
-        c << "            vec[i] = cval;" << Endl; \
-        c << "        }" << Endl; \
-        c << "    }" << Endl; \
-        c << "    else" << Endl; \
-        c << "        return PyErr_Format(PyExc_TypeError, \"arg(s) must be one or more string(s)\");" << Endl; \
-        c << Endl; \
-        c << "    // Mark the "<<name<<" in the object as modified." << Endl; \
-        if(accessType == Field::AccessPublic) \
-            c << "    obj->data->SelectAll();" << Endl; \
-        else \
+        c << "        vec.resize(PySequence_Size(args));" << Endl;
+        c << "        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)" << Endl;
+        c << "        {" << Endl;
+        c << "            PyObject *item = PySequence_GetItem(args, i);" << Endl;
+        c << Endl;
+        c << "            if (!PyUnicode_Check(item))" << Endl;
+        c << "            {" << Endl;
+        c << "                Py_DECREF(item);" << Endl;
+        c << "                return PyErr_Format(PyExc_TypeError, \"arg %d is not a unicode string\", (int) i);" << Endl;
+        c << "            }" << Endl;
+        c << Endl;
+        c << "            char const *val = PyUnicode_AsUTF8(item);" << Endl;
+        c << "            std::string cval = std::string(val);" << Endl;
+        c << Endl;
+        c << "            if ((val == 0 && PyErr_Occurred()) || cval != val)" << Endl;
+        c << "            {" << Endl;
+        c << "                Py_DECREF(item);" << Endl;
+        c << "                PyErr_Clear();" << Endl;
+        c << "                return PyErr_Format(PyExc_TypeError, \"arg %d not interpretable as C++ string\", (int) i);" << Endl;
+        c << "            }" << Endl;
+        c << "            Py_DECREF(item);" << Endl;
+        c << Endl;
+        c << "            vec[i] = cval;" << Endl;
+        c << "        }" << Endl;
+        c << "    }" << Endl;
+        c << "    else" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"arg(s) must be one or more string(s)\");" << Endl;
+        c << Endl;
+        c << "    // Mark the "<<name<<" in the object as modified." << Endl;
+        if(accessType == Field::AccessPublic)
+            c << "    obj->data->SelectAll();" << Endl;
+        else
             c << "    obj->data->Select"<<Name<<"();" << Endl;
     }
 
@@ -1310,16 +1315,7 @@ class AttsGeneratorColorTable : public virtual ColorTable , public virtual Pytho
         : Field("colortable",n,l), ColorTable(n,l), PythonGeneratorField("colortable",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    char *str;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << Endl;
-        c << "        return NULL;" << Endl;
-        c << Endl;
-        c << "    // Set the " << name << " in the object." << Endl;
-        c << "    obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name << " = std::string(str);" << Endl;
-        else
-            c << MethodNameSet() << "(std::string(str));" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_SINGLE_STRING
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1461,16 +1457,8 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual PythonG
         : Field("linewidth",n,l), LineWidth(n,l), PythonGeneratorField("linewidth",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return NULL;" << Endl;
-        c << Endl;
-        c << "    // Set the " << name << " in the object." << Endl;
-        c << "    obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name << " = ival;" << Endl;
-        else
-            c << MethodNameSet() << "(ival);" << Endl;
+#warning WE SHOULD RANGE CHECK THIS BUT WE DON'T KNOW MAX HERE
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(int, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1506,16 +1494,7 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual PythonGener
         : Field("opacity",n,l), Opacity(n,l), PythonGeneratorField("opacity",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    double dval;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"d\", &dval))" << Endl;
-        c << "        return NULL;" << Endl;
-        c << Endl;
-        c << "    // Set the " << name << " in the object." << Endl;
-        c << "    obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name << " = dval;" << Endl;
-        else
-            c << MethodNameSet() << "(dval);" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(double, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1551,16 +1530,7 @@ class AttsGeneratorVariableName : public virtual VariableName , public virtual P
         : Field("variablename",n,l), VariableName(n,l), PythonGeneratorField("variablename",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    char *str;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"s\", &str))" << Endl;
-        c << "        return NULL;" << Endl;
-        c << Endl;
-        c << "    // Set the " << name << " in the object." << Endl;
-        c << "    obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name << " = std::string(str);" << Endl;
-        else
-            c << MethodNameSet() << "(std::string(str));" << Endl;
+        WRITE_SET_METHOD_BODY_FOR_SINGLE_STRING
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1657,7 +1627,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                        {" << Endl;
             c << "                            // Make sure that the tuple is the right size." << Endl;
             c << "                            if(PyTuple_Size(pyobj) < cL.GetNumColors())" << Endl;
-            c << "                                return NULL;" << Endl;
+            c << "                                return PyErr_Format(PyExc_IndexError, \"color tuple size=%d, expected=%d\", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());" << Endl;
             c << Endl;
             c << "                            // Make sure that the tuple is the right size." << Endl;
             c << "                            int *C = new int[4 * cL.GetNumColors()];" << Endl;
@@ -1681,14 +1651,14 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                                        else" << Endl;
             c << "                                        {" << Endl;
             c << "                                           delete [] C;" << Endl;
-            c << "                                           return NULL;" << Endl;
+            c << "                                           return PyErr_Format(PyExc_ValueError, \"Unable to interpret component %d at index %d as a color component\",j,i);" << Endl;
             c << "                                        }" << Endl;
             c << "                                    }" << Endl;
             c << "                                }" << Endl;
             c << "                                else" << Endl;
             c << "                                {" << Endl;
             c << "                                    delete [] C;" << Endl;
-            c << "                                    return NULL;" << Endl;
+            c << "                                    return PyErr_Format(PyExc_ValueError, \"Color tuple must be size 3 or 4\");" << Endl;
             c << "                                }" << Endl;
             c << "                            }" << Endl;
             c << Endl;
@@ -1700,7 +1670,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                        {" << Endl;
             c << "                            // Make sure that the list is the right size." << Endl;
             c << "                            if(PyList_Size(pyobj) < cL.GetNumColors())" << Endl;
-            c << "                                return NULL;" << Endl;
+            c << "                                return PyErr_Format(PyExc_IndexError, \"color tuple size=%d, expected=%d\", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());" << Endl;
             c << Endl;
             c << "                            // Make sure that the tuple is the right size." << Endl;
             c << "                            int *C = new int[4 * cL.GetNumColors()];" << Endl;
@@ -1724,14 +1694,14 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                                        else" << Endl;
             c << "                                        {" << Endl;
             c << "                                           delete [] C;" << Endl;
-            c << "                                           return NULL;" << Endl;
+            c << "                                           return PyErr_Format(PyExc_ValueError, \"Unable to interpret component %d at index %d as a color component\",j,i);" << Endl;
             c << "                                        }" << Endl;
             c << "                                    }" << Endl;
             c << "                                }" << Endl;
             c << "                                else" << Endl;
             c << "                                {" << Endl;
             c << "                                    delete [] C;" << Endl;
-            c << "                                    return NULL;" << Endl;
+            c << "                                    return PyErr_Format(PyExc_ValueError, \"Color tuple must be size 3 or 4\");" << Endl;
             c << "                                }" << Endl;
             c << "                            }" << Endl;
             c << Endl;
@@ -1741,7 +1711,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                            delete [] C;" << Endl;
             c << "                        }" << Endl;
             c << "                        else" << Endl;
-            c << "                            return NULL;" << Endl;
+            c << "                            return PyErr_Format(PyExc_TypeError, \"Expecting tuple or list\");" << Endl;
             c << "                    }" << Endl;
             c << "                }" << Endl;
             c << "                else" << Endl;
@@ -1751,7 +1721,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << Endl;
             c << "                    // Make sure that the tuple is the right size." << Endl;
             c << "                    if(PyTuple_Size(pyobj) < 3 || PyTuple_Size(pyobj) > 4)" << Endl;
-            c << "                        return NULL;" << Endl;
+            c << "                        return PyErr_Format(PyExc_ValueError, \"Color tuple must be size 3 or 4\");" << Endl;
             c << Endl;
             c << "                    // Make sure that all elements in the tuple are ints." << Endl;
             c << "                    for(int i = 0; i < PyTuple_Size(pyobj); ++i)" << Endl;
@@ -1762,7 +1732,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "                        else if(PyFloat_Check(item))" << Endl;
             c << "                            c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(pyobj, i)));" << Endl;
             c << "                        else" << Endl;
-            c << "                            return NULL;" << Endl;
+            c << "                            return PyErr_Format(PyExc_ValueError, \"Unable to interpret component %d as a color component\", i);" << Endl;
             c << "                    }" << Endl;
             c << "                }" << Endl;
             c << "            }" << Endl;
@@ -1771,7 +1741,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "    }" << Endl;
             c << Endl;
             c << "    if(index < 0 || index >= cL.GetNumColors())" << Endl;
-            c << "        return NULL;" << Endl;
+            c << "        return PyErr_Format(PyExc_ValueError, \"color index out of range 0 <= i < %d\", (int) cL.GetNumColors());" << Endl;
             c << Endl;
             c << "    // Set the color in the object." << Endl;
             c << "    if(setTheColor)" << Endl;
@@ -1785,10 +1755,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
             c << "    if(!PyArg_ParseTuple(args, \"O\", &newValue))" << Endl;
             c << "        return NULL;" << Endl;
             c << "    if(!Py" << attType << "_Check(newValue))" << Endl;
-            c << "    {" << Endl;
-            c << "        fprintf(stderr, \"The " << name << " field can only be set with " << attType << " objects.\\n\");" << Endl;
-            c << "        return NULL;" << Endl;
-            c << "    }" << Endl;
+            c << "        return PyErr_Format(PyExc_TypeError, \"Field " << name << " can be set only with " << attType << " objects\");" << Endl;
             c << Endl;
             if(accessType == Field::AccessPublic)
                 c << "    obj->data->" << name << " = *Py" << attType << "_FromPyObject(newValue);" << Endl;
@@ -1962,7 +1929,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "    if(!PyArg_ParseTuple(args, \"O\", &element))" << Endl;
         c << "        return NULL;" << Endl;
         c << "    if(!Py" << attType << "_Check(element))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"expected attr object of type " << attType << "\");" << Endl;
         c << "    " << attType << " *newData = Py" << attType << "_FromPyObject(element);" << Endl;
         if(accessType != Field::AccessPublic)
         {
@@ -2100,37 +2067,58 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         : Field("enum",n,l), Enum(t,n,l), PythonGeneratorField("enum",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "    PyObject *packaged_args = 0;" << Endl;
+        c << Endl;
+        c << "    // Handle args packaged into a tuple of size one" << Endl;
+        c << "    // if we think the unpackaged args matches our needs" << Endl;
+        c << "    if (PySequence_Check(args) && PySequence_Size(args) == 1)" << Endl;
+        c << "    {" << Endl;
+        c << "        packaged_args = PySequence_GetItem(args, 0);" << Endl;
+        c << "        if (PyNumber_Check(packaged_args))" << Endl;
+        c << "            args = packaged_args;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    if (PySequence_Check(args))" << Endl;
+        c << "    {" << Endl;
+        c << "        Py_XDECREF(packaged_args);" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"expecting a single number arg\");" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    if (!PyNumber_Check(args))" << Endl;
+        c << "    {" << Endl;
+        c << "        Py_XDECREF(packaged_args);" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"arg is not a number type\");" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    long val = PyLong_AsLong(args);" << Endl;
+        c << "    int cval = int(val);" << Endl;
+        c << Endl;
+        c << "    if ((val == -1.0 && PyErr_Occurred()) || cval != val)" << Endl;
+        c << "    {" << Endl;
+        c << "        Py_XDECREF(packaged_args);" << Endl;
+        c << "        PyErr_Clear();" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"arg not interpretable as C++ int\");" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    if (cval < 0 || cval >= " << enumType->values.size() << ")" << Endl;
+        c << "    {" << Endl;
+        c << "        std::stringstream ss;" << Endl;
+        c << "        ss << \"An invalid " << name << " value was given.\" << std::endl;" << Endl;
+        c << "        ss << \"Valid values are in the range [0," << enumType->values.size()-1 << "].\" << std::endl;" << Endl;
+        c << "        ss << \"You can also use the following symbolic names:\";" << Endl;
+        for (size_t i = 0; i < enumType->values.size(); i++)
+            c << "        ss << \"\\n\\t" << enumType->values[i] << "\";" << Endl;
+        c << "        return PyErr_Format(PyExc_ValueError, ss.str().c_str());" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
+        c << "    Py_XDECREF(packaged_args);" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
-        c << "    if(ival >= 0 && ival < " << enumType->values.size() << ")" << Endl;
-        c << "        obj->data->";
+        c << "    obj->data->";
         if(accessType == Field::AccessPublic)
-            c << name << " = " << GetCPPName(true,className) << "(ival);" << Endl;
+            c << name << " = " << GetCPPName(true,className) << "(cval);" << Endl;
         else
-            c << MethodNameSet() << "(" << GetCPPName(true,className) << "(ival));" << Endl;
-        c << "    else" << Endl;
-        c << "    {" << Endl;
-        c << "        fprintf(stderr, \"An invalid " << name
-          << " value was given. \"" << Endl;
-        c << "                        \"Valid values are in the range of [0,"
-          << enumType->values.size()-1 << "]. \"" << Endl;
-        c << "                        \"You can also use the following names: \""
-          << Endl;
-        c << "                        \"";
-        for(size_t i = 0; i < enumType->values.size(); ++i)
-        {
-            c << enumType->values[i];
-            if(i < enumType->values.size() - 1)
-                c << ", ";
-            if(i  > 0 && i%4==0)
-                c << "\"\n                        \"";
-        }
-        c << ".\");" << Endl;
-        c << "        return NULL;" << Endl;
-        c << "    }"<< Endl;
+            c << MethodNameSet() << "(" << GetCPPName(true,className) << "(cval));" << Endl;
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -3071,7 +3059,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << Endl;
         c << "    // if we don't have an object and no error is set, produce a generic message" << Endl;
         c << "    if (obj == NULL && !PyErr_Occurred())" << Endl;
-        c << "        PyErr_Format(PyExc_RuntimeError, \"Unknown problem operating on attribute: '\%s'\", name);" << Endl;
+        c << "        PyErr_Format(PyExc_RuntimeError, \"'\%s' is unknown or hit an unknown problem\", name);" << Endl;
         c << Endl;
         c << "    return (obj != NULL) ? 0 : -1;" << Endl;
         c << "}" << Endl;
