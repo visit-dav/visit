@@ -69,7 +69,6 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Pipeline
 ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sinks
 ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/Plotter
-${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
 ${VISIT_INCLUDE_DIR}/avt/QtVisWindow
 ${VISIT_INCLUDE_DIR}/avt/View
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/Colleagues
@@ -88,6 +87,7 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
+${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
 )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )

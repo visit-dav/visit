@@ -381,16 +381,11 @@ replicate the image in each of the X and Y image directions.
 Annotation Objects
 ~~~~~~~~~~~~~~~~~~
 
-So far, the annotations that have been described can only have a single
-instance. To provide more flexibility in the types and numbers of annotations,
-VisIt_ allows you to create annotation objects, which are objects that
-are added to the visualization window to convey information about the
-visualization. Currently, VisIt_ supports six types of annotation objects:
-2D text objects, 3D text objects, time slider objects, 2D line objects, 3D
-line objects and image objects. All of those types of annotation objects
-will be described herein. The **Objects** tab, in the **Annotation Window**
-(:numref:`Figure %s <fig-MakingItPretty-AnnotationObjects>` ) is devoted
-to managing the list of annotation objects and setting their properties.
+So far, the annotations that have been described can only have a single instance.
+To provide more flexibility in the types and numbers of annotations, VisIt_ allows you to create annotation objects, which are objects that are added to the visualization window to convey information about the visualization.
+Currently, VisIt_ supports six types of user-creatable annotation objects (2D text, 3D text, time slider, 2D line, 3D line, image) and one automatically generated object tied to specific plots: Legend.
+All of those types of annotation objects will be described herein.
+The **Objects** tab, in the **Annotation Window** (:numref:`Figure %s <fig-MakingItPretty-AnnotationObjects>` ) is devoted to managing the list of annotation objects and setting their properties.
 
 .. _fig-MakingItPretty-AnnotationObjects:
 
@@ -816,3 +811,83 @@ an image transparent before VisIt_ displays it as an image annotation
 object, click on the **Transparent color** check box and then select a
 new color by clicking on the **Transparent color** button and picking a
 new color from the **Popup color menu**.
+
+Legend annotation objects
+"""""""""""""""""""""""""
+
+Legends are automatically added when plots are created, and have names that include the plot type.
+:numref:`Figure %s <legned_multiple_image>` shows multiple legends listed in the **Annotation Objects** tab.
+The Legend annotation object interface can be used to customize the legends position, size, tick labels and aspects of its appearance.
+
+.. _legend_multiple_image:
+
+.. figure:: images/legend_multiple_objects.png
+
+    Multiple legends in the **Annotation Objects** tab. 
+
+The **Position** tab, shown in :numref:`Figure %s <legend_position_image>` has controls for position, size and orientation.
+VisIt generally controls the positions of legends, but if you want a specific legend to be placed elsewhere in the visualization window, uncheck the **Let VisIt manage legend position** checkbox and modify the **Legend position**.
+The 2D coordinate used to position the legend matches the legend's lower left corner.
+To change the position of a legend, enter a new 2D coordinate into the
+**Legend position** text field.
+You can also click the down arrow next to the **Legend position** text field to interactively choose a new lower left coordinate using the screen positioning control, which represents the visualization window.
+The screen positioning control, shown in :numref:`Figure %s <fig-MakingItPretty-AnnotationObjectPosition>`, lets you move a set of cross-hairs to any point on a square area that represents the visualization window.
+Once you release the left mouse button, the location of the cross-hairs is used as the new coordinate for the legend's lower left corner.
+
+The **X scale** and **Y scale** spin boxes control the size of the legend, with values of '100%' being the default size.  You can enter new values using the text field or use the + and - buttons to the right of the text field.
+
+The **Orientation** of the legend is changed using the corresponding drop-down menu, with options: **Vertical, Text on Right**; **Vertical, Text on Left**; **Horizontal, Text on Top** and **Horizonatal, Text on Bottom**.
+
+.. _legend_position_image:
+
+.. figure:: images/legend_position.png
+
+    The legend object interface for position
+
+
+The **Tick marks** tab, shown in :numref:`Figure %s <legend_tickmarks_image>`, allows you to change the display of a legend's tick marks.
+You can turn off the drawing of tickmarks completely by choosing the **None** option in the **Draw** dropdown menu. 
+Other **Draw** options are **Values** (the default), **Labels** and **Values and Labels**.
+Legends usually only have **Values** defined for tick marks, so to display **Labels**, you would have to define them by unchecking the **Let VisIt determine tick labels** checkbox and modifying the **Specify tick values and labels** table.
+It starts out with the **Values** column filled in with defaults.
+You can modify those, add text to the **Labels column** and change the number of table items by using the **Add tick value** and **Delete selected value** buttons.
+When modifying, adding, or deleting values in the table, keep in mind they must fall within the Min/Max range of the current plot or they won't be displayed in the legend.
+Not all plot types allow adding or deleting values.
+
+:numref:`Figure %s <legend_filledboundary_image>` shows an example of modifying and displaying **Labels** for a :ref:`boundary_plot_head`. The **Values** have both a number and the name of the material, and the **Labels** were added so that only the material names would be displayed in the legend.
+
+.. _legend_filledboundary_image:
+
+.. figure:: images/legend_filledboundary.png
+
+    An example of modifying the Labels on a filled boundary legend
+
+
+:numref:`Figure %s <legend_appearance_image>` shows the controls for changing the **Appearance** of a legend.
+
+The **Bounding box** checkbox controls whether or not a background bounding box is drawn behind the legend.  When checked, widgets for controlling the color and opacity of the background bounding box will become active.
+
+The title can be turned off via the **Draw title** checkbox.
+A custom title can be specified via the **Custom title** checkbox and text edit widgets.
+
+The **Draw min/max** checkbox controls whether or not Min/Max text (where applicable) will be added to the legend.
+
+By unchecking the **Use foreground color** checkbox, you can change the color of the legend's text and tickmarks via the **Text color** button.
+
+**Number format** controls the fromat for tick mark and Min/Max values.
+You can modify the font style via the **Font height** text edit, **Font family** dropdown menu and **Bold** and **Italic** check boxes. (**Shadow** is currently disabled).
+
+
+.. _legend_appearance_image:
+
+.. figure:: images/legend_appearance.png
+
+    The legend object interface for appearance
+
+:numref:`Figure %s <legend_modified_image>` shows an example of a modified legend, where position, orientation, size, tick marks, background font height and font family have all been changed.
+
+.. _legend_modified_image:
+
+.. figure:: images/legend_modified.png
+
+   Example of a modified legend

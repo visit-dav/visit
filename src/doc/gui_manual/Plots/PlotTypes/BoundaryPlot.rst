@@ -1,3 +1,5 @@
+.. _boundary_plot_head:
+
 Boundary and FilledBoundary Plots
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
