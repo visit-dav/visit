@@ -437,21 +437,55 @@ LineSamplerAttributes_SetMeshGeometry(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid meshGeometry value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tCartesian";
+        ss << "\n\tCylindrical";
+        ss << "\n\tToroidal";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the meshGeometry in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetMeshGeometry(LineSamplerAttributes::MeshGeometry(ival));
-    else
-    {
-        fprintf(stderr, "An invalid meshGeometry value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Cartesian, Cylindrical, Toroidal.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetMeshGeometry(LineSamplerAttributes::MeshGeometry(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -470,21 +504,54 @@ LineSamplerAttributes_SetArrayConfiguration(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid arrayConfiguration value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tGeometry";
+        ss << "\n\tManual";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the arrayConfiguration in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetArrayConfiguration(LineSamplerAttributes::ArrayConfiguration(ival));
-    else
-    {
-        fprintf(stderr, "An invalid arrayConfiguration value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Geometry, Manual.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetArrayConfiguration(LineSamplerAttributes::ArrayConfiguration(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -503,21 +570,54 @@ LineSamplerAttributes_SetBoundary(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid boundary value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tData";
+        ss << "\n\tWall";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the boundary in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetBoundary(LineSamplerAttributes::Boundary(ival));
-    else
-    {
-        fprintf(stderr, "An invalid boundary value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Data, Wall.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetBoundary(LineSamplerAttributes::Boundary(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -536,12 +636,43 @@ LineSamplerAttributes_SetInstanceId(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the instanceId in the object.
-    obj->data->SetInstanceId((int)ival);
+    obj->data->SetInstanceId(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -560,12 +691,43 @@ LineSamplerAttributes_SetNArrays(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the nArrays in the object.
-    obj->data->SetNArrays((int)ival);
+    obj->data->SetNArrays(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -584,12 +746,43 @@ LineSamplerAttributes_SetToroidalArrayAngle(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the toroidalArrayAngle in the object.
-    obj->data->SetToroidalArrayAngle(dval);
+    obj->data->SetToroidalArrayAngle(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -608,12 +801,43 @@ LineSamplerAttributes_SetNChannels(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the nChannels in the object.
-    obj->data->SetNChannels((int)ival);
+    obj->data->SetNChannels(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -632,21 +856,55 @@ LineSamplerAttributes_SetChannelProjection(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid channelProjection value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tDivergent";
+        ss << "\n\tParallel";
+        ss << "\n\tGrid";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the channelProjection in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetChannelProjection(LineSamplerAttributes::ChannelProjection(ival));
-    else
-    {
-        fprintf(stderr, "An invalid channelProjection value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Divergent, Parallel, Grid.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetChannelProjection(LineSamplerAttributes::ChannelProjection(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -665,21 +923,54 @@ LineSamplerAttributes_SetChannelLayoutType(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid channelLayoutType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tChannelAbsolute";
+        ss << "\n\tChannelRelative";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the channelLayoutType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetChannelLayoutType(LineSamplerAttributes::ChannelLayoutType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid channelLayoutType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "ChannelAbsolute, ChannelRelative.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetChannelLayoutType(LineSamplerAttributes::ChannelLayoutType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -698,12 +989,43 @@ LineSamplerAttributes_SetChannelOffset(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the channelOffset in the object.
-    obj->data->SetChannelOffset(dval);
+    obj->data->SetChannelOffset(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -722,12 +1044,43 @@ LineSamplerAttributes_SetChannelAngle(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the channelAngle in the object.
-    obj->data->SetChannelAngle(dval);
+    obj->data->SetChannelAngle(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -746,12 +1099,43 @@ LineSamplerAttributes_SetNRows(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the nRows in the object.
-    obj->data->SetNRows((int)ival);
+    obj->data->SetNRows(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -770,12 +1154,43 @@ LineSamplerAttributes_SetRowOffset(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the rowOffset in the object.
-    obj->data->SetRowOffset(dval);
+    obj->data->SetRowOffset(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -794,35 +1209,54 @@ LineSamplerAttributes_SetArrayOrigin(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double *dvals = obj->data->GetArrayOrigin();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetArrayOrigin();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return PyExc_TypeError;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return PyExc_ValueError;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    return PyExc_TypeError;
-            }
-        }
-        else
-            return PyExc_TypeError;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the arrayOrigin in the object as modified.
     obj->data->SelectArrayOrigin();
@@ -848,21 +1282,54 @@ LineSamplerAttributes_SetArrayAxis(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid arrayAxis value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tR";
+        ss << "\n\tZ";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the arrayAxis in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetArrayAxis(LineSamplerAttributes::ArrayAxis(ival));
-    else
-    {
-        fprintf(stderr, "An invalid arrayAxis value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "R, Z.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetArrayAxis(LineSamplerAttributes::ArrayAxis(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -881,12 +1348,43 @@ LineSamplerAttributes_SetPoloidalAngleStart(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the poloidalAngleStart in the object.
-    obj->data->SetPoloidalAngleStart(dval);
+    obj->data->SetPoloidalAngleStart(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -905,12 +1403,43 @@ LineSamplerAttributes_SetPoloidalAngleStop(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the poloidalAngleStop in the object.
-    obj->data->SetPoloidalAngleStop(dval);
+    obj->data->SetPoloidalAngleStop(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -929,12 +1458,43 @@ LineSamplerAttributes_SetPoloialAngle(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the poloialAngle in the object.
-    obj->data->SetPoloialAngle(dval);
+    obj->data->SetPoloialAngle(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -953,12 +1513,43 @@ LineSamplerAttributes_SetPoloialRTilt(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the poloialRTilt in the object.
-    obj->data->SetPoloialRTilt(dval);
+    obj->data->SetPoloialRTilt(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -977,12 +1568,43 @@ LineSamplerAttributes_SetPoloialZTilt(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the poloialZTilt in the object.
-    obj->data->SetPoloialZTilt(dval);
+    obj->data->SetPoloialZTilt(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1001,12 +1623,43 @@ LineSamplerAttributes_SetToroidalAngle(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the toroidalAngle in the object.
-    obj->data->SetToroidalAngle(dval);
+    obj->data->SetToroidalAngle(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1025,12 +1678,43 @@ LineSamplerAttributes_SetFlipToroidalAngle(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the flipToroidalAngle in the object.
-    obj->data->SetFlipToroidalAngle(ival != 0);
+    obj->data->SetFlipToroidalAngle(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1049,21 +1733,55 @@ LineSamplerAttributes_SetViewGeometry(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid viewGeometry value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tPoints";
+        ss << "\n\tLines";
+        ss << "\n\tSurfaces";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the viewGeometry in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetViewGeometry(LineSamplerAttributes::ViewGeometry(ival));
-    else
-    {
-        fprintf(stderr, "An invalid viewGeometry value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Points, Lines, Surfaces.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetViewGeometry(LineSamplerAttributes::ViewGeometry(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1082,21 +1800,55 @@ LineSamplerAttributes_SetViewDimension(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid viewDimension value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tOne";
+        ss << "\n\tTwo";
+        ss << "\n\tThree";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the viewDimension in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetViewDimension(LineSamplerAttributes::ViewDimension(ival));
-    else
-    {
-        fprintf(stderr, "An invalid viewDimension value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "One, Two, Three.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetViewDimension(LineSamplerAttributes::ViewDimension(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1115,12 +1867,43 @@ LineSamplerAttributes_SetDonotApplyToAll(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the donotApplyToAll in the object.
-    obj->data->SetDonotApplyToAll(ival != 0);
+    obj->data->SetDonotApplyToAll(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1139,12 +1922,43 @@ LineSamplerAttributes_SetHeightPlotScale(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the heightPlotScale in the object.
-    obj->data->SetHeightPlotScale(dval);
+    obj->data->SetHeightPlotScale(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1163,12 +1977,43 @@ LineSamplerAttributes_SetChannelPlotOffset(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the channelPlotOffset in the object.
-    obj->data->SetChannelPlotOffset(dval);
+    obj->data->SetChannelPlotOffset(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1187,12 +2032,43 @@ LineSamplerAttributes_SetArrayPlotOffset(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the arrayPlotOffset in the object.
-    obj->data->SetArrayPlotOffset(dval);
+    obj->data->SetArrayPlotOffset(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1211,21 +2087,55 @@ LineSamplerAttributes_SetDisplayTime(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid displayTime value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tStep";
+        ss << "\n\tTime";
+        ss << "\n\tCycle";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the displayTime in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetDisplayTime(LineSamplerAttributes::DisplayTime(ival));
-    else
-    {
-        fprintf(stderr, "An invalid displayTime value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Step, Time, Cycle.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetDisplayTime(LineSamplerAttributes::DisplayTime(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1244,21 +2154,56 @@ LineSamplerAttributes_SetChannelGeometry(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid channelGeometry value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tPoint";
+        ss << "\n\tLine";
+        ss << "\n\tCylinder";
+        ss << "\n\tCone";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the channelGeometry in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetChannelGeometry(LineSamplerAttributes::ChannelGeometry(ival));
-    else
-    {
-        fprintf(stderr, "An invalid channelGeometry value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "Point, Line, Cylinder, Cone.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetChannelGeometry(LineSamplerAttributes::ChannelGeometry(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1277,12 +2222,43 @@ LineSamplerAttributes_SetRadius(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the radius in the object.
-    obj->data->SetRadius(dval);
+    obj->data->SetRadius(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1301,12 +2277,43 @@ LineSamplerAttributes_SetDivergence(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the divergence in the object.
-    obj->data->SetDivergence(dval);
+    obj->data->SetDivergence(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1325,21 +2332,54 @@ LineSamplerAttributes_SetChannelProfile(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid channelProfile value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tTopHat";
+        ss << "\n\tGaussian";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the channelProfile in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetChannelProfile(LineSamplerAttributes::ChannelProfile(ival));
-    else
-    {
-        fprintf(stderr, "An invalid channelProfile value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "TopHat, Gaussian.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetChannelProfile(LineSamplerAttributes::ChannelProfile(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1358,12 +2398,43 @@ LineSamplerAttributes_SetStandardDeviation(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the standardDeviation in the object.
-    obj->data->SetStandardDeviation(dval);
+    obj->data->SetStandardDeviation(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1382,12 +2453,43 @@ LineSamplerAttributes_SetSampleDistance(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sampleDistance in the object.
-    obj->data->SetSampleDistance(dval);
+    obj->data->SetSampleDistance(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1406,12 +2508,43 @@ LineSamplerAttributes_SetSampleVolume(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sampleVolume in the object.
-    obj->data->SetSampleVolume(dval);
+    obj->data->SetSampleVolume(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1430,12 +2563,43 @@ LineSamplerAttributes_SetSampleArc(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the sampleArc in the object.
-    obj->data->SetSampleArc(dval);
+    obj->data->SetSampleArc(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1454,21 +2618,54 @@ LineSamplerAttributes_SetChannelIntegration(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid channelIntegration value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tNoChannelIntegration";
+        ss << "\n\tIntegrateAlongChannel";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the channelIntegration in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetChannelIntegration(LineSamplerAttributes::ChannelIntegration(ival));
-    else
-    {
-        fprintf(stderr, "An invalid channelIntegration value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "NoChannelIntegration, IntegrateAlongChannel.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetChannelIntegration(LineSamplerAttributes::ChannelIntegration(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1487,21 +2684,55 @@ LineSamplerAttributes_SetToroidalIntegration(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid toroidalIntegration value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tNoToroidalIntegration";
+        ss << "\n\tToroidalTimeSample";
+        ss << "\n\tIntegrateToroidally";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the toroidalIntegration in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetToroidalIntegration(LineSamplerAttributes::ToroidalIntegration(ival));
-    else
-    {
-        fprintf(stderr, "An invalid toroidalIntegration value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "NoToroidalIntegration, ToroidalTimeSample, IntegrateToroidally.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetToroidalIntegration(LineSamplerAttributes::ToroidalIntegration(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1520,21 +2751,54 @@ LineSamplerAttributes_SetToroidalAngleSampling(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid toroidalAngleSampling value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tToroidalAngleAbsoluteSampling";
+        ss << "\n\tToroidalAngleRelativeSampling";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the toroidalAngleSampling in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetToroidalAngleSampling(LineSamplerAttributes::ToroidalAngleSampling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid toroidalAngleSampling value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "ToroidalAngleAbsoluteSampling, ToroidalAngleRelativeSampling.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetToroidalAngleSampling(LineSamplerAttributes::ToroidalAngleSampling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1553,12 +2817,43 @@ LineSamplerAttributes_SetToroidalAngleStart(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the toroidalAngleStart in the object.
-    obj->data->SetToroidalAngleStart(dval);
+    obj->data->SetToroidalAngleStart(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1577,12 +2872,43 @@ LineSamplerAttributes_SetToroidalAngleStop(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the toroidalAngleStop in the object.
-    obj->data->SetToroidalAngleStop(dval);
+    obj->data->SetToroidalAngleStop(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1601,12 +2927,43 @@ LineSamplerAttributes_SetToroidalAngleStride(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the toroidalAngleStride in the object.
-    obj->data->SetToroidalAngleStride(dval);
+    obj->data->SetToroidalAngleStride(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1625,21 +2982,54 @@ LineSamplerAttributes_SetTimeSampling(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid timeSampling value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tCurrentTimeStep";
+        ss << "\n\tMultipleTimeSteps";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeSampling in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetTimeSampling(LineSamplerAttributes::TimeSampling(ival));
-    else
-    {
-        fprintf(stderr, "An invalid timeSampling value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "CurrentTimeStep, MultipleTimeSteps.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetTimeSampling(LineSamplerAttributes::TimeSampling(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1658,12 +3048,43 @@ LineSamplerAttributes_SetTimeStepStart(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeStepStart in the object.
-    obj->data->SetTimeStepStart((int)ival);
+    obj->data->SetTimeStepStart(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1682,12 +3103,43 @@ LineSamplerAttributes_SetTimeStepStop(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeStepStop in the object.
-    obj->data->SetTimeStepStop((int)ival);
+    obj->data->SetTimeStepStop(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1706,12 +3158,43 @@ LineSamplerAttributes_SetTimeStepStride(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeStepStride in the object.
-    obj->data->SetTimeStepStride((int)ival);
+    obj->data->SetTimeStepStride(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1730,44 +3213,49 @@ LineSamplerAttributes_SetChannelList(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    doubleVector  &vec = obj->data->GetChannelList();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_TypeError;
+    doubleVector &vec = obj->data->GetChannelList();
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        vec.resize(1);
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                return PyExc_TypeError;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
     // Mark the channelList in the object as modified.
     obj->data->SelectChannelList();
@@ -1793,44 +3281,49 @@ LineSamplerAttributes_SetWallList(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    doubleVector  &vec = obj->data->GetWallList();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_TypeError;
+    doubleVector &vec = obj->data->GetWallList();
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        vec.resize(1);
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                return PyExc_TypeError;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
     // Mark the wallList in the object as modified.
     obj->data->SelectWallList();
@@ -1856,12 +3349,43 @@ LineSamplerAttributes_SetNChannelListArrays(PyObject *self, PyObject *args)
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the nChannelListArrays in the object.
-    obj->data->SetNChannelListArrays((int)ival);
+    obj->data->SetNChannelListArrays(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1880,12 +3404,43 @@ LineSamplerAttributes_SetChannelListToroidalArrayAngle(PyObject *self, PyObject 
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the channelListToroidalArrayAngle in the object.
-    obj->data->SetChannelListToroidalArrayAngle(dval);
+    obj->data->SetChannelListToroidalArrayAngle(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1904,12 +3459,43 @@ LineSamplerAttributes_SetChannelListToroidalAngle(PyObject *self, PyObject *args
 {
     LineSamplerAttributesObject *obj = (LineSamplerAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the channelListToroidalAngle in the object.
-    obj->data->SetChannelListToroidalAngle(dval);
+    obj->data->SetChannelListToroidalAngle(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2254,132 +3840,119 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
 int
 PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "meshGeometry") == 0)
-        obj = LineSamplerAttributes_SetMeshGeometry(self, tuple);
+        obj = LineSamplerAttributes_SetMeshGeometry(self, args);
     else if(strcmp(name, "arrayConfiguration") == 0)
-        obj = LineSamplerAttributes_SetArrayConfiguration(self, tuple);
+        obj = LineSamplerAttributes_SetArrayConfiguration(self, args);
     else if(strcmp(name, "boundary") == 0)
-        obj = LineSamplerAttributes_SetBoundary(self, tuple);
+        obj = LineSamplerAttributes_SetBoundary(self, args);
     else if(strcmp(name, "instanceId") == 0)
-        obj = LineSamplerAttributes_SetInstanceId(self, tuple);
+        obj = LineSamplerAttributes_SetInstanceId(self, args);
     else if(strcmp(name, "nArrays") == 0)
-        obj = LineSamplerAttributes_SetNArrays(self, tuple);
+        obj = LineSamplerAttributes_SetNArrays(self, args);
     else if(strcmp(name, "toroidalArrayAngle") == 0)
-        obj = LineSamplerAttributes_SetToroidalArrayAngle(self, tuple);
+        obj = LineSamplerAttributes_SetToroidalArrayAngle(self, args);
     else if(strcmp(name, "nChannels") == 0)
-        obj = LineSamplerAttributes_SetNChannels(self, tuple);
+        obj = LineSamplerAttributes_SetNChannels(self, args);
     else if(strcmp(name, "channelProjection") == 0)
-        obj = LineSamplerAttributes_SetChannelProjection(self, tuple);
+        obj = LineSamplerAttributes_SetChannelProjection(self, args);
     else if(strcmp(name, "channelLayoutType") == 0)
-        obj = LineSamplerAttributes_SetChannelLayoutType(self, tuple);
+        obj = LineSamplerAttributes_SetChannelLayoutType(self, args);
     else if(strcmp(name, "channelOffset") == 0)
-        obj = LineSamplerAttributes_SetChannelOffset(self, tuple);
+        obj = LineSamplerAttributes_SetChannelOffset(self, args);
     else if(strcmp(name, "channelAngle") == 0)
-        obj = LineSamplerAttributes_SetChannelAngle(self, tuple);
+        obj = LineSamplerAttributes_SetChannelAngle(self, args);
     else if(strcmp(name, "nRows") == 0)
-        obj = LineSamplerAttributes_SetNRows(self, tuple);
+        obj = LineSamplerAttributes_SetNRows(self, args);
     else if(strcmp(name, "rowOffset") == 0)
-        obj = LineSamplerAttributes_SetRowOffset(self, tuple);
+        obj = LineSamplerAttributes_SetRowOffset(self, args);
     else if(strcmp(name, "arrayOrigin") == 0)
-        obj = LineSamplerAttributes_SetArrayOrigin(self, tuple);
+        obj = LineSamplerAttributes_SetArrayOrigin(self, args);
     else if(strcmp(name, "arrayAxis") == 0)
-        obj = LineSamplerAttributes_SetArrayAxis(self, tuple);
+        obj = LineSamplerAttributes_SetArrayAxis(self, args);
     else if(strcmp(name, "poloidalAngleStart") == 0)
-        obj = LineSamplerAttributes_SetPoloidalAngleStart(self, tuple);
+        obj = LineSamplerAttributes_SetPoloidalAngleStart(self, args);
     else if(strcmp(name, "poloidalAngleStop") == 0)
-        obj = LineSamplerAttributes_SetPoloidalAngleStop(self, tuple);
+        obj = LineSamplerAttributes_SetPoloidalAngleStop(self, args);
     else if(strcmp(name, "poloialAngle") == 0)
-        obj = LineSamplerAttributes_SetPoloialAngle(self, tuple);
+        obj = LineSamplerAttributes_SetPoloialAngle(self, args);
     else if(strcmp(name, "poloialRTilt") == 0)
-        obj = LineSamplerAttributes_SetPoloialRTilt(self, tuple);
+        obj = LineSamplerAttributes_SetPoloialRTilt(self, args);
     else if(strcmp(name, "poloialZTilt") == 0)
-        obj = LineSamplerAttributes_SetPoloialZTilt(self, tuple);
+        obj = LineSamplerAttributes_SetPoloialZTilt(self, args);
     else if(strcmp(name, "toroidalAngle") == 0)
-        obj = LineSamplerAttributes_SetToroidalAngle(self, tuple);
+        obj = LineSamplerAttributes_SetToroidalAngle(self, args);
     else if(strcmp(name, "flipToroidalAngle") == 0)
-        obj = LineSamplerAttributes_SetFlipToroidalAngle(self, tuple);
+        obj = LineSamplerAttributes_SetFlipToroidalAngle(self, args);
     else if(strcmp(name, "viewGeometry") == 0)
-        obj = LineSamplerAttributes_SetViewGeometry(self, tuple);
+        obj = LineSamplerAttributes_SetViewGeometry(self, args);
     else if(strcmp(name, "viewDimension") == 0)
-        obj = LineSamplerAttributes_SetViewDimension(self, tuple);
+        obj = LineSamplerAttributes_SetViewDimension(self, args);
     else if(strcmp(name, "donotApplyToAll") == 0)
-        obj = LineSamplerAttributes_SetDonotApplyToAll(self, tuple);
+        obj = LineSamplerAttributes_SetDonotApplyToAll(self, args);
     else if(strcmp(name, "heightPlotScale") == 0)
-        obj = LineSamplerAttributes_SetHeightPlotScale(self, tuple);
+        obj = LineSamplerAttributes_SetHeightPlotScale(self, args);
     else if(strcmp(name, "channelPlotOffset") == 0)
-        obj = LineSamplerAttributes_SetChannelPlotOffset(self, tuple);
+        obj = LineSamplerAttributes_SetChannelPlotOffset(self, args);
     else if(strcmp(name, "arrayPlotOffset") == 0)
-        obj = LineSamplerAttributes_SetArrayPlotOffset(self, tuple);
+        obj = LineSamplerAttributes_SetArrayPlotOffset(self, args);
     else if(strcmp(name, "displayTime") == 0)
-        obj = LineSamplerAttributes_SetDisplayTime(self, tuple);
+        obj = LineSamplerAttributes_SetDisplayTime(self, args);
     else if(strcmp(name, "channelGeometry") == 0)
-        obj = LineSamplerAttributes_SetChannelGeometry(self, tuple);
+        obj = LineSamplerAttributes_SetChannelGeometry(self, args);
     else if(strcmp(name, "radius") == 0)
-        obj = LineSamplerAttributes_SetRadius(self, tuple);
+        obj = LineSamplerAttributes_SetRadius(self, args);
     else if(strcmp(name, "divergence") == 0)
-        obj = LineSamplerAttributes_SetDivergence(self, tuple);
+        obj = LineSamplerAttributes_SetDivergence(self, args);
     else if(strcmp(name, "channelProfile") == 0)
-        obj = LineSamplerAttributes_SetChannelProfile(self, tuple);
+        obj = LineSamplerAttributes_SetChannelProfile(self, args);
     else if(strcmp(name, "standardDeviation") == 0)
-        obj = LineSamplerAttributes_SetStandardDeviation(self, tuple);
+        obj = LineSamplerAttributes_SetStandardDeviation(self, args);
     else if(strcmp(name, "sampleDistance") == 0)
-        obj = LineSamplerAttributes_SetSampleDistance(self, tuple);
+        obj = LineSamplerAttributes_SetSampleDistance(self, args);
     else if(strcmp(name, "sampleVolume") == 0)
-        obj = LineSamplerAttributes_SetSampleVolume(self, tuple);
+        obj = LineSamplerAttributes_SetSampleVolume(self, args);
     else if(strcmp(name, "sampleArc") == 0)
-        obj = LineSamplerAttributes_SetSampleArc(self, tuple);
+        obj = LineSamplerAttributes_SetSampleArc(self, args);
     else if(strcmp(name, "channelIntegration") == 0)
-        obj = LineSamplerAttributes_SetChannelIntegration(self, tuple);
+        obj = LineSamplerAttributes_SetChannelIntegration(self, args);
     else if(strcmp(name, "toroidalIntegration") == 0)
-        obj = LineSamplerAttributes_SetToroidalIntegration(self, tuple);
+        obj = LineSamplerAttributes_SetToroidalIntegration(self, args);
     else if(strcmp(name, "toroidalAngleSampling") == 0)
-        obj = LineSamplerAttributes_SetToroidalAngleSampling(self, tuple);
+        obj = LineSamplerAttributes_SetToroidalAngleSampling(self, args);
     else if(strcmp(name, "toroidalAngleStart") == 0)
-        obj = LineSamplerAttributes_SetToroidalAngleStart(self, tuple);
+        obj = LineSamplerAttributes_SetToroidalAngleStart(self, args);
     else if(strcmp(name, "toroidalAngleStop") == 0)
-        obj = LineSamplerAttributes_SetToroidalAngleStop(self, tuple);
+        obj = LineSamplerAttributes_SetToroidalAngleStop(self, args);
     else if(strcmp(name, "toroidalAngleStride") == 0)
-        obj = LineSamplerAttributes_SetToroidalAngleStride(self, tuple);
+        obj = LineSamplerAttributes_SetToroidalAngleStride(self, args);
     else if(strcmp(name, "timeSampling") == 0)
-        obj = LineSamplerAttributes_SetTimeSampling(self, tuple);
+        obj = LineSamplerAttributes_SetTimeSampling(self, args);
     else if(strcmp(name, "timeStepStart") == 0)
-        obj = LineSamplerAttributes_SetTimeStepStart(self, tuple);
+        obj = LineSamplerAttributes_SetTimeStepStart(self, args);
     else if(strcmp(name, "timeStepStop") == 0)
-        obj = LineSamplerAttributes_SetTimeStepStop(self, tuple);
+        obj = LineSamplerAttributes_SetTimeStepStop(self, args);
     else if(strcmp(name, "timeStepStride") == 0)
-        obj = LineSamplerAttributes_SetTimeStepStride(self, tuple);
+        obj = LineSamplerAttributes_SetTimeStepStride(self, args);
     else if(strcmp(name, "channelList") == 0)
-        obj = LineSamplerAttributes_SetChannelList(self, tuple);
+        obj = LineSamplerAttributes_SetChannelList(self, args);
     else if(strcmp(name, "wallList") == 0)
-        obj = LineSamplerAttributes_SetWallList(self, tuple);
+        obj = LineSamplerAttributes_SetWallList(self, args);
     else if(strcmp(name, "nChannelListArrays") == 0)
-        obj = LineSamplerAttributes_SetNChannelListArrays(self, tuple);
+        obj = LineSamplerAttributes_SetNChannelListArrays(self, args);
     else if(strcmp(name, "channelListToroidalArrayAngle") == 0)
-        obj = LineSamplerAttributes_SetChannelListToroidalArrayAngle(self, tuple);
+        obj = LineSamplerAttributes_SetChannelListToroidalArrayAngle(self, args);
     else if(strcmp(name, "channelListToroidalAngle") == 0)
-        obj = LineSamplerAttributes_SetChannelListToroidalAngle(self, tuple);
+        obj = LineSamplerAttributes_SetChannelListToroidalAngle(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -2525,7 +4098,7 @@ LineSamplerAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

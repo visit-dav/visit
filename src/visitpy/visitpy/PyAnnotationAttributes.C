@@ -213,12 +213,9 @@ AnnotationAttributes_SetAxes2D(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyAxes2D_Check(newValue))
-    {
-        fprintf(stderr, "The axes2D field can only be set with Axes2D objects.\n");
-        return PyExc_TypeError;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field axes2D can be set only with Axes2D objects");
 
     obj->data->SetAxes2D(*PyAxes2D_FromPyObject(newValue));
 
@@ -249,12 +246,9 @@ AnnotationAttributes_SetAxes3D(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyAxes3D_Check(newValue))
-    {
-        fprintf(stderr, "The axes3D field can only be set with Axes3D objects.\n");
-        return PyExc_TypeError;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field axes3D can be set only with Axes3D objects");
 
     obj->data->SetAxes3D(*PyAxes3D_FromPyObject(newValue));
 
@@ -283,12 +277,43 @@ AnnotationAttributes_SetUserInfoFlag(PyObject *self, PyObject *args)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the userInfoFlag in the object.
-    obj->data->SetUserInfoFlag(ival != 0);
+    obj->data->SetUserInfoFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -309,12 +334,9 @@ AnnotationAttributes_SetUserInfoFont(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyFontAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The userInfoFont field can only be set with FontAttributes objects.\n");
-        return PyExc_TypeError;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field userInfoFont can be set only with FontAttributes objects");
 
     obj->data->SetUserInfoFont(*PyFontAttributes_FromPyObject(newValue));
 
@@ -343,12 +365,43 @@ AnnotationAttributes_SetDatabaseInfoFlag(PyObject *self, PyObject *args)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the databaseInfoFlag in the object.
-    obj->data->SetDatabaseInfoFlag(ival != 0);
+    obj->data->SetDatabaseInfoFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -367,12 +420,43 @@ AnnotationAttributes_SetTimeInfoFlag(PyObject *self, PyObject *args)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeInfoFlag in the object.
-    obj->data->SetTimeInfoFlag(ival != 0);
+    obj->data->SetTimeInfoFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -393,12 +477,9 @@ AnnotationAttributes_SetDatabaseInfoFont(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyFontAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The databaseInfoFont field can only be set with FontAttributes objects.\n");
-        return PyExc_TypeError;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field databaseInfoFont can be set only with FontAttributes objects");
 
     obj->data->SetDatabaseInfoFont(*PyFontAttributes_FromPyObject(newValue));
 
@@ -427,22 +508,57 @@ AnnotationAttributes_SetDatabaseInfoExpansionMode(PyObject *self, PyObject *args
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid databaseInfoExpansionMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tFile";
+        ss << "\n\tDirectory";
+        ss << "\n\tFull";
+        ss << "\n\tSmart";
+        ss << "\n\tSmartDirectory";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the databaseInfoExpansionMode in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetDatabaseInfoExpansionMode(AnnotationAttributes::PathExpansionMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid databaseInfoExpansionMode value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "File, Directory, Full, Smart, SmartDirectory"
-                        ".");
-        return PyExc_TypeError;
-    }
+    obj->data->SetDatabaseInfoExpansionMode(AnnotationAttributes::PathExpansionMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -461,12 +577,43 @@ AnnotationAttributes_SetDatabaseInfoTimeScale(PyObject *self, PyObject *args)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the databaseInfoTimeScale in the object.
-    obj->data->SetDatabaseInfoTimeScale(dval);
+    obj->data->SetDatabaseInfoTimeScale(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -485,12 +632,43 @@ AnnotationAttributes_SetDatabaseInfoTimeOffset(PyObject *self, PyObject *args)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the databaseInfoTimeOffset in the object.
-    obj->data->SetDatabaseInfoTimeOffset(dval);
+    obj->data->SetDatabaseInfoTimeOffset(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -509,12 +687,43 @@ AnnotationAttributes_SetLegendInfoFlag(PyObject *self, PyObject *args)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the legendInfoFlag in the object.
-    obj->data->SetLegendInfoFlag(ival != 0);
+    obj->data->SetLegendInfoFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -558,14 +767,14 @@ AnnotationAttributes_SetBackgroundColor(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 if(!PyTuple_Check(tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return PyExc_ValueError;
+                    return NULL;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -576,7 +785,7 @@ AnnotationAttributes_SetBackgroundColor(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return PyExc_TypeError;
+                        return NULL;
                 }
             }
         }
@@ -635,14 +844,14 @@ AnnotationAttributes_SetForegroundColor(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 if(!PyTuple_Check(tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return PyExc_ValueError;
+                    return NULL;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -653,7 +862,7 @@ AnnotationAttributes_SetForegroundColor(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return PyExc_TypeError;
+                        return NULL;
                 }
             }
         }
@@ -687,22 +896,57 @@ AnnotationAttributes_SetGradientBackgroundStyle(PyObject *self, PyObject *args)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid gradientBackgroundStyle value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tTopToBottom";
+        ss << "\n\tBottomToTop";
+        ss << "\n\tLeftToRight";
+        ss << "\n\tRightToLeft";
+        ss << "\n\tRadial";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the gradientBackgroundStyle in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetGradientBackgroundStyle(AnnotationAttributes::GradientStyle(ival));
-    else
-    {
-        fprintf(stderr, "An invalid gradientBackgroundStyle value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "TopToBottom, BottomToTop, LeftToRight, RightToLeft, Radial"
-                        ".");
-        return PyExc_TypeError;
-    }
+    obj->data->SetGradientBackgroundStyle(AnnotationAttributes::GradientStyle(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -746,14 +990,14 @@ AnnotationAttributes_SetGradientColor1(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 if(!PyTuple_Check(tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return PyExc_ValueError;
+                    return NULL;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -764,7 +1008,7 @@ AnnotationAttributes_SetGradientColor1(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return PyExc_TypeError;
+                        return NULL;
                 }
             }
         }
@@ -823,14 +1067,14 @@ AnnotationAttributes_SetGradientColor2(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 if(!PyTuple_Check(tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return PyExc_ValueError;
+                    return NULL;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -841,7 +1085,7 @@ AnnotationAttributes_SetGradientColor2(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return PyExc_TypeError;
+                        return NULL;
                 }
             }
         }
@@ -875,21 +1119,56 @@ AnnotationAttributes_SetBackgroundMode(PyObject *self, PyObject *args)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid backgroundMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tSolid";
+        ss << "\n\tGradient";
+        ss << "\n\tImage";
+        ss << "\n\tImageSphere";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the backgroundMode in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetBackgroundMode(AnnotationAttributes::BackgroundMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid backgroundMode value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "Solid, Gradient, Image, ImageSphere.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetBackgroundMode(AnnotationAttributes::BackgroundMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -908,12 +1187,37 @@ AnnotationAttributes_SetBackgroundImage(PyObject *self, PyObject *args)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the backgroundImage in the object.
-    obj->data->SetBackgroundImage(std::string(str));
+    obj->data->SetBackgroundImage(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -932,12 +1236,43 @@ AnnotationAttributes_SetImageRepeatX(PyObject *self, PyObject *args)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the imageRepeatX in the object.
-    obj->data->SetImageRepeatX((int)ival);
+    obj->data->SetImageRepeatX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -956,12 +1291,43 @@ AnnotationAttributes_SetImageRepeatY(PyObject *self, PyObject *args)
 {
     AnnotationAttributesObject *obj = (AnnotationAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the imageRepeatY in the object.
-    obj->data->SetImageRepeatY((int)ival);
+    obj->data->SetImageRepeatY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -982,12 +1348,9 @@ AnnotationAttributes_SetAxesArray(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyAxesArray_Check(newValue))
-    {
-        fprintf(stderr, "The axesArray field can only be set with AxesArray objects.\n");
-        return PyExc_TypeError;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field axesArray can be set only with AxesArray objects");
 
     obj->data->SetAxesArray(*PyAxesArray_FromPyObject(newValue));
 
@@ -1158,70 +1521,57 @@ PyAnnotationAttributes_getattr(PyObject *self, char *name)
 int
 PyAnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "axes2D") == 0)
-        obj = AnnotationAttributes_SetAxes2D(self, tuple);
+        obj = AnnotationAttributes_SetAxes2D(self, args);
     else if(strcmp(name, "axes3D") == 0)
-        obj = AnnotationAttributes_SetAxes3D(self, tuple);
+        obj = AnnotationAttributes_SetAxes3D(self, args);
     else if(strcmp(name, "userInfoFlag") == 0)
-        obj = AnnotationAttributes_SetUserInfoFlag(self, tuple);
+        obj = AnnotationAttributes_SetUserInfoFlag(self, args);
     else if(strcmp(name, "userInfoFont") == 0)
-        obj = AnnotationAttributes_SetUserInfoFont(self, tuple);
+        obj = AnnotationAttributes_SetUserInfoFont(self, args);
     else if(strcmp(name, "databaseInfoFlag") == 0)
-        obj = AnnotationAttributes_SetDatabaseInfoFlag(self, tuple);
+        obj = AnnotationAttributes_SetDatabaseInfoFlag(self, args);
     else if(strcmp(name, "timeInfoFlag") == 0)
-        obj = AnnotationAttributes_SetTimeInfoFlag(self, tuple);
+        obj = AnnotationAttributes_SetTimeInfoFlag(self, args);
     else if(strcmp(name, "databaseInfoFont") == 0)
-        obj = AnnotationAttributes_SetDatabaseInfoFont(self, tuple);
+        obj = AnnotationAttributes_SetDatabaseInfoFont(self, args);
     else if(strcmp(name, "databaseInfoExpansionMode") == 0)
-        obj = AnnotationAttributes_SetDatabaseInfoExpansionMode(self, tuple);
+        obj = AnnotationAttributes_SetDatabaseInfoExpansionMode(self, args);
     else if(strcmp(name, "databaseInfoTimeScale") == 0)
-        obj = AnnotationAttributes_SetDatabaseInfoTimeScale(self, tuple);
+        obj = AnnotationAttributes_SetDatabaseInfoTimeScale(self, args);
     else if(strcmp(name, "databaseInfoTimeOffset") == 0)
-        obj = AnnotationAttributes_SetDatabaseInfoTimeOffset(self, tuple);
+        obj = AnnotationAttributes_SetDatabaseInfoTimeOffset(self, args);
     else if(strcmp(name, "legendInfoFlag") == 0)
-        obj = AnnotationAttributes_SetLegendInfoFlag(self, tuple);
+        obj = AnnotationAttributes_SetLegendInfoFlag(self, args);
     else if(strcmp(name, "backgroundColor") == 0)
-        obj = AnnotationAttributes_SetBackgroundColor(self, tuple);
+        obj = AnnotationAttributes_SetBackgroundColor(self, args);
     else if(strcmp(name, "foregroundColor") == 0)
-        obj = AnnotationAttributes_SetForegroundColor(self, tuple);
+        obj = AnnotationAttributes_SetForegroundColor(self, args);
     else if(strcmp(name, "gradientBackgroundStyle") == 0)
-        obj = AnnotationAttributes_SetGradientBackgroundStyle(self, tuple);
+        obj = AnnotationAttributes_SetGradientBackgroundStyle(self, args);
     else if(strcmp(name, "gradientColor1") == 0)
-        obj = AnnotationAttributes_SetGradientColor1(self, tuple);
+        obj = AnnotationAttributes_SetGradientColor1(self, args);
     else if(strcmp(name, "gradientColor2") == 0)
-        obj = AnnotationAttributes_SetGradientColor2(self, tuple);
+        obj = AnnotationAttributes_SetGradientColor2(self, args);
     else if(strcmp(name, "backgroundMode") == 0)
-        obj = AnnotationAttributes_SetBackgroundMode(self, tuple);
+        obj = AnnotationAttributes_SetBackgroundMode(self, args);
     else if(strcmp(name, "backgroundImage") == 0)
-        obj = AnnotationAttributes_SetBackgroundImage(self, tuple);
+        obj = AnnotationAttributes_SetBackgroundImage(self, args);
     else if(strcmp(name, "imageRepeatX") == 0)
-        obj = AnnotationAttributes_SetImageRepeatX(self, tuple);
+        obj = AnnotationAttributes_SetImageRepeatX(self, args);
     else if(strcmp(name, "imageRepeatY") == 0)
-        obj = AnnotationAttributes_SetImageRepeatY(self, tuple);
+        obj = AnnotationAttributes_SetImageRepeatY(self, args);
     else if(strcmp(name, "axesArray") == 0)
-        obj = AnnotationAttributes_SetAxesArray(self, tuple);
+        obj = AnnotationAttributes_SetAxesArray(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1367,7 +1717,7 @@ AnnotationAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

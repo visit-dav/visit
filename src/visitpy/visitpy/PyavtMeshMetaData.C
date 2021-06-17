@@ -462,12 +462,37 @@ avtMeshMetaData_SetName(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the name in the object.
-    obj->data->name = std::string(str);
+    obj->data->name = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -486,12 +511,37 @@ avtMeshMetaData_SetOriginalName(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the originalName in the object.
-    obj->data->originalName = std::string(str);
+    obj->data->originalName = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -510,12 +560,43 @@ avtMeshMetaData_SetValidVariable(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the validVariable in the object.
-    obj->data->validVariable = (ival != 0);
+    obj->data->validVariable = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -536,7 +617,7 @@ avtMeshMetaData_SetMeshType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+        return NULL;
 
     obj->data->meshType = (avtMeshType)ival;
 
@@ -559,7 +640,7 @@ avtMeshMetaData_SetMeshCoordType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+        return NULL;
 
     obj->data->meshCoordType = (avtMeshCoordType)ival;
 
@@ -580,12 +661,43 @@ avtMeshMetaData_SetCellOrigin(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the cellOrigin in the object.
-    obj->data->cellOrigin = (int)ival;
+    obj->data->cellOrigin = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -604,12 +716,43 @@ avtMeshMetaData_SetSpatialDimension(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the spatialDimension in the object.
-    obj->data->spatialDimension = (int)ival;
+    obj->data->spatialDimension = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -628,12 +771,43 @@ avtMeshMetaData_SetHasLogicalBounds(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hasLogicalBounds in the object.
-    obj->data->hasLogicalBounds = (ival != 0);
+    obj->data->hasLogicalBounds = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -652,35 +826,54 @@ avtMeshMetaData_SetLogicalBounds(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int *ivals = obj->data->logicalBounds;
-    if(!PyArg_ParseTuple(args, "iii", &ivals[0], &ivals[1], &ivals[2]))
+    PyObject *packaged_args = 0;
+    int *vals = obj->data->logicalBounds;
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return PyExc_TypeError;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return PyExc_ValueError;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    ivals[i] = int(PyFloat_AS_DOUBLE(item));
-                else if(PyInt_Check(item))
-                    ivals[i] = int(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    ivals[i] = int(PyLong_AsDouble(item));
-                else
-                    return PyExc_TypeError;
-            }
-        }
-        else
-            return PyExc_TypeError;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        long val = PyLong_AsLong(item);
+        int cval = int(val);
+
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the logicalBounds in the object as modified.
     obj->data->SelectAll();
@@ -706,12 +899,43 @@ avtMeshMetaData_SetHasNumberCells(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hasNumberCells in the object.
-    obj->data->hasNumberCells = (ival != 0);
+    obj->data->hasNumberCells = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -730,12 +954,43 @@ avtMeshMetaData_SetNumberCells(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numberCells in the object.
-    obj->data->numberCells = (int)ival;
+    obj->data->numberCells = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -754,12 +1009,43 @@ avtMeshMetaData_SetTopologicalDimension(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the topologicalDimension in the object.
-    obj->data->topologicalDimension = (int)ival;
+    obj->data->topologicalDimension = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -778,12 +1064,37 @@ avtMeshMetaData_SetXUnits(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xUnits in the object.
-    obj->data->xUnits = std::string(str);
+    obj->data->xUnits = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -802,12 +1113,37 @@ avtMeshMetaData_SetYUnits(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yUnits in the object.
-    obj->data->yUnits = std::string(str);
+    obj->data->yUnits = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -826,12 +1162,37 @@ avtMeshMetaData_SetZUnits(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zUnits in the object.
-    obj->data->zUnits = std::string(str);
+    obj->data->zUnits = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -850,12 +1211,37 @@ avtMeshMetaData_SetXLabel(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xLabel in the object.
-    obj->data->xLabel = std::string(str);
+    obj->data->xLabel = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -874,12 +1260,37 @@ avtMeshMetaData_SetYLabel(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yLabel in the object.
-    obj->data->yLabel = std::string(str);
+    obj->data->yLabel = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -898,12 +1309,37 @@ avtMeshMetaData_SetZLabel(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zLabel in the object.
-    obj->data->zLabel = std::string(str);
+    obj->data->zLabel = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -922,12 +1358,43 @@ avtMeshMetaData_SetHasSpatialExtents(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hasSpatialExtents in the object.
-    obj->data->hasSpatialExtents = (ival != 0);
+    obj->data->hasSpatialExtents = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -946,35 +1413,54 @@ avtMeshMetaData_SetMinSpatialExtents(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    double *dvals = obj->data->minSpatialExtents;
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->minSpatialExtents;
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return PyExc_TypeError;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return PyExc_ValueError;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    return PyExc_TypeError;
-            }
-        }
-        else
-            return PyExc_TypeError;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the minSpatialExtents in the object as modified.
     obj->data->SelectAll();
@@ -1000,35 +1486,54 @@ avtMeshMetaData_SetMaxSpatialExtents(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    double *dvals = obj->data->maxSpatialExtents;
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->maxSpatialExtents;
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return PyExc_TypeError;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return PyExc_ValueError;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    return PyExc_TypeError;
-            }
-        }
-        else
-            return PyExc_TypeError;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the maxSpatialExtents in the object as modified.
     obj->data->SelectAll();
@@ -1054,12 +1559,43 @@ avtMeshMetaData_SetNumBlocks(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numBlocks in the object.
-    obj->data->numBlocks = (int)ival;
+    obj->data->numBlocks = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1078,12 +1614,43 @@ avtMeshMetaData_SetBlockOrigin(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the blockOrigin in the object.
-    obj->data->blockOrigin = (int)ival;
+    obj->data->blockOrigin = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1102,12 +1669,37 @@ avtMeshMetaData_SetBlockPieceName(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the blockPieceName in the object.
-    obj->data->blockPieceName = std::string(str);
+    obj->data->blockPieceName = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1126,12 +1718,37 @@ avtMeshMetaData_SetBlockTitle(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the blockTitle in the object.
-    obj->data->blockTitle = std::string(str);
+    obj->data->blockTitle = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1151,35 +1768,48 @@ avtMeshMetaData_SetBlockNames(PyObject *self, PyObject *args)
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
     stringVector  &vec = obj->data->blockNames;
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_TypeError;
 
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-            {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
-            }
-            else
-                return PyExc_TypeError;
-        }
-    }
-    else if(PyString_Check(tuple))
+    if (PyUnicode_Check(args))
     {
         vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if ((val == 0 && PyErr_Occurred()) || cval != val)
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if ((val == 0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
     }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
     // Mark the blockNames in the object as modified.
     obj->data->SelectAll();
@@ -1207,12 +1837,9 @@ avtMeshMetaData_SetBlockNameScheme(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyNameschemeAttributes_Check(newValue))
-    {
-        fprintf(stderr, "The blockNameScheme field can only be set with NameschemeAttributes objects.\n");
-        return PyExc_TypeError;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field blockNameScheme can be set only with NameschemeAttributes objects");
 
     obj->data->blockNameScheme = *PyNameschemeAttributes_FromPyObject(newValue);
 
@@ -1241,12 +1868,43 @@ avtMeshMetaData_SetNumGroups(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numGroups in the object.
-    obj->data->numGroups = (int)ival;
+    obj->data->numGroups = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1265,12 +1923,43 @@ avtMeshMetaData_SetGroupOrigin(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the groupOrigin in the object.
-    obj->data->groupOrigin = (int)ival;
+    obj->data->groupOrigin = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1289,12 +1978,37 @@ avtMeshMetaData_SetGroupPieceName(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the groupPieceName in the object.
-    obj->data->groupPieceName = std::string(str);
+    obj->data->groupPieceName = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1313,12 +2027,37 @@ avtMeshMetaData_SetGroupTitle(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the groupTitle in the object.
-    obj->data->groupTitle = std::string(str);
+    obj->data->groupTitle = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1338,35 +2077,48 @@ avtMeshMetaData_SetGroupNames(PyObject *self, PyObject *args)
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
     stringVector  &vec = obj->data->groupNames;
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_TypeError;
 
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-            {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
-            }
-            else
-                return PyExc_TypeError;
-        }
-    }
-    else if(PyString_Check(tuple))
+    if (PyUnicode_Check(args))
     {
         vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if ((val == 0 && PyErr_Occurred()) || cval != val)
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if ((val == 0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
     }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
     // Mark the groupNames in the object as modified.
     obj->data->SelectAll();
@@ -1392,44 +2144,49 @@ avtMeshMetaData_SetGroupIds(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    intVector  &vec = obj->data->groupIds;
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_ValueError;
+    intVector &vec = obj->data->groupIds;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        vec.resize(1);
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                return PyExc_TypeError;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
     // Mark the groupIds in the object as modified.
     obj->data->SelectAll();
@@ -1455,44 +2212,49 @@ avtMeshMetaData_SetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    intVector  &vec = obj->data->groupIdsBasedOnRange;
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_ValueError;
+    intVector &vec = obj->data->groupIdsBasedOnRange;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        vec.resize(1);
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                return PyExc_TypeError;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
     // Mark the groupIdsBasedOnRange in the object as modified.
     obj->data->SelectAll();
@@ -1518,12 +2280,43 @@ avtMeshMetaData_SetDisjointElements(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the disjointElements in the object.
-    obj->data->disjointElements = (ival != 0);
+    obj->data->disjointElements = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1544,7 +2337,7 @@ avtMeshMetaData_SetContainsGhostZones(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+        return NULL;
 
     obj->data->containsGhostZones = (avtGhostType)ival;
 
@@ -1565,12 +2358,43 @@ avtMeshMetaData_SetContainsOriginalCells(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the containsOriginalCells in the object.
-    obj->data->containsOriginalCells = (ival != 0);
+    obj->data->containsOriginalCells = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1589,12 +2413,43 @@ avtMeshMetaData_SetContainsOriginalNodes(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the containsOriginalNodes in the object.
-    obj->data->containsOriginalNodes = (ival != 0);
+    obj->data->containsOriginalNodes = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1613,12 +2468,43 @@ avtMeshMetaData_SetContainsGlobalNodeIds(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the containsGlobalNodeIds in the object.
-    obj->data->containsGlobalNodeIds = (ival != 0);
+    obj->data->containsGlobalNodeIds = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1637,12 +2523,43 @@ avtMeshMetaData_SetContainsGlobalZoneIds(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the containsGlobalZoneIds in the object.
-    obj->data->containsGlobalZoneIds = (ival != 0);
+    obj->data->containsGlobalZoneIds = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1663,7 +2580,7 @@ avtMeshMetaData_SetLoadBalanceScheme(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+        return NULL;
 
     obj->data->loadBalanceScheme = (LoadBalanceScheme)ival;
 
@@ -1684,12 +2601,43 @@ avtMeshMetaData_SetNodesAreCritical(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the nodesAreCritical in the object.
-    obj->data->nodesAreCritical = (ival != 0);
+    obj->data->nodesAreCritical = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1708,35 +2656,54 @@ avtMeshMetaData_SetUnitCellVectors(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    float *fvals = obj->data->unitCellVectors;
-    if(!PyArg_ParseTuple(args, "fffffffff", &fvals[0], &fvals[1], &fvals[2], &fvals[3], &fvals[4], &fvals[5], &fvals[6], &fvals[7], &fvals[8]))
+    PyObject *packaged_args = 0;
+    float *vals = obj->data->unitCellVectors;
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return PyExc_TypeError;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 9)
-                return PyExc_ValueError;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
-                else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
-                else
-                    return PyExc_TypeError;
-            }
-        }
-        else
-            return PyExc_TypeError;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 9)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 9)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 9 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        float cval = float(val);
+
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ float", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the unitCellVectors in the object as modified.
     obj->data->SelectAll();
@@ -1762,35 +2729,54 @@ avtMeshMetaData_SetUnitCellOrigin(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    float *fvals = obj->data->unitCellOrigin;
-    if(!PyArg_ParseTuple(args, "fff", &fvals[0], &fvals[1], &fvals[2]))
+    PyObject *packaged_args = 0;
+    float *vals = obj->data->unitCellOrigin;
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return PyExc_TypeError;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return PyExc_ValueError;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
-                else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
-                else
-                    return PyExc_TypeError;
-            }
-        }
-        else
-            return PyExc_TypeError;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        float cval = float(val);
+
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ float", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the unitCellOrigin in the object as modified.
     obj->data->SelectAll();
@@ -1816,12 +2802,43 @@ avtMeshMetaData_SetRectilinearGridHasTransform(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the rectilinearGridHasTransform in the object.
-    obj->data->rectilinearGridHasTransform = (ival != 0);
+    obj->data->rectilinearGridHasTransform = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1840,35 +2857,54 @@ avtMeshMetaData_SetRectilinearGridTransform(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    double *dvals = obj->data->rectilinearGridTransform;
-    if(!PyArg_ParseTuple(args, "dddddddddddddddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3], &dvals[4], &dvals[5], &dvals[6], &dvals[7], &dvals[8], &dvals[9], &dvals[10], &dvals[11], &dvals[12], &dvals[13], &dvals[14], &dvals[15]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->rectilinearGridTransform;
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return PyExc_TypeError;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 16)
-                return PyExc_ValueError;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    return PyExc_TypeError;
-            }
-        }
-        else
-            return PyExc_TypeError;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 16)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 16)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 16 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the rectilinearGridTransform in the object as modified.
     obj->data->SelectAll();
@@ -1894,12 +2930,43 @@ avtMeshMetaData_SetNodeOrigin(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the nodeOrigin in the object.
-    obj->data->nodeOrigin = (int)ival;
+    obj->data->nodeOrigin = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1918,12 +2985,43 @@ avtMeshMetaData_SetContainsExteriorBoundaryGhosts(PyObject *self, PyObject *args
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the containsExteriorBoundaryGhosts in the object.
-    obj->data->containsExteriorBoundaryGhosts = (ival != 0);
+    obj->data->containsExteriorBoundaryGhosts = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1942,12 +3040,43 @@ avtMeshMetaData_SetHideFromGUI(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hideFromGUI in the object.
-    obj->data->hideFromGUI = (ival != 0);
+    obj->data->hideFromGUI = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1966,12 +3095,43 @@ avtMeshMetaData_SetLODs(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the LODs in the object.
-    obj->data->LODs = (int)ival;
+    obj->data->LODs = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1990,12 +3150,43 @@ avtMeshMetaData_SetPresentGhostZoneTypes(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the presentGhostZoneTypes in the object.
-    obj->data->presentGhostZoneTypes = (int)ival;
+    obj->data->presentGhostZoneTypes = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2014,12 +3205,43 @@ avtMeshMetaData_SetZonesWereSplit(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the zonesWereSplit in the object.
-    obj->data->zonesWereSplit = (ival != 0);
+    obj->data->zonesWereSplit = cval;
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2321,132 +3543,119 @@ PyavtMeshMetaData_getattr(PyObject *self, char *name)
 int
 PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "name") == 0)
-        obj = avtMeshMetaData_SetName(self, tuple);
+        obj = avtMeshMetaData_SetName(self, args);
     else if(strcmp(name, "originalName") == 0)
-        obj = avtMeshMetaData_SetOriginalName(self, tuple);
+        obj = avtMeshMetaData_SetOriginalName(self, args);
     else if(strcmp(name, "validVariable") == 0)
-        obj = avtMeshMetaData_SetValidVariable(self, tuple);
+        obj = avtMeshMetaData_SetValidVariable(self, args);
     else if(strcmp(name, "meshType") == 0)
-        obj = avtMeshMetaData_SetMeshType(self, tuple);
+        obj = avtMeshMetaData_SetMeshType(self, args);
     else if(strcmp(name, "meshCoordType") == 0)
-        obj = avtMeshMetaData_SetMeshCoordType(self, tuple);
+        obj = avtMeshMetaData_SetMeshCoordType(self, args);
     else if(strcmp(name, "cellOrigin") == 0)
-        obj = avtMeshMetaData_SetCellOrigin(self, tuple);
+        obj = avtMeshMetaData_SetCellOrigin(self, args);
     else if(strcmp(name, "spatialDimension") == 0)
-        obj = avtMeshMetaData_SetSpatialDimension(self, tuple);
+        obj = avtMeshMetaData_SetSpatialDimension(self, args);
     else if(strcmp(name, "hasLogicalBounds") == 0)
-        obj = avtMeshMetaData_SetHasLogicalBounds(self, tuple);
+        obj = avtMeshMetaData_SetHasLogicalBounds(self, args);
     else if(strcmp(name, "logicalBounds") == 0)
-        obj = avtMeshMetaData_SetLogicalBounds(self, tuple);
+        obj = avtMeshMetaData_SetLogicalBounds(self, args);
     else if(strcmp(name, "hasNumberCells") == 0)
-        obj = avtMeshMetaData_SetHasNumberCells(self, tuple);
+        obj = avtMeshMetaData_SetHasNumberCells(self, args);
     else if(strcmp(name, "numberCells") == 0)
-        obj = avtMeshMetaData_SetNumberCells(self, tuple);
+        obj = avtMeshMetaData_SetNumberCells(self, args);
     else if(strcmp(name, "topologicalDimension") == 0)
-        obj = avtMeshMetaData_SetTopologicalDimension(self, tuple);
+        obj = avtMeshMetaData_SetTopologicalDimension(self, args);
     else if(strcmp(name, "xUnits") == 0)
-        obj = avtMeshMetaData_SetXUnits(self, tuple);
+        obj = avtMeshMetaData_SetXUnits(self, args);
     else if(strcmp(name, "yUnits") == 0)
-        obj = avtMeshMetaData_SetYUnits(self, tuple);
+        obj = avtMeshMetaData_SetYUnits(self, args);
     else if(strcmp(name, "zUnits") == 0)
-        obj = avtMeshMetaData_SetZUnits(self, tuple);
+        obj = avtMeshMetaData_SetZUnits(self, args);
     else if(strcmp(name, "xLabel") == 0)
-        obj = avtMeshMetaData_SetXLabel(self, tuple);
+        obj = avtMeshMetaData_SetXLabel(self, args);
     else if(strcmp(name, "yLabel") == 0)
-        obj = avtMeshMetaData_SetYLabel(self, tuple);
+        obj = avtMeshMetaData_SetYLabel(self, args);
     else if(strcmp(name, "zLabel") == 0)
-        obj = avtMeshMetaData_SetZLabel(self, tuple);
+        obj = avtMeshMetaData_SetZLabel(self, args);
     else if(strcmp(name, "hasSpatialExtents") == 0)
-        obj = avtMeshMetaData_SetHasSpatialExtents(self, tuple);
+        obj = avtMeshMetaData_SetHasSpatialExtents(self, args);
     else if(strcmp(name, "minSpatialExtents") == 0)
-        obj = avtMeshMetaData_SetMinSpatialExtents(self, tuple);
+        obj = avtMeshMetaData_SetMinSpatialExtents(self, args);
     else if(strcmp(name, "maxSpatialExtents") == 0)
-        obj = avtMeshMetaData_SetMaxSpatialExtents(self, tuple);
+        obj = avtMeshMetaData_SetMaxSpatialExtents(self, args);
     else if(strcmp(name, "numBlocks") == 0)
-        obj = avtMeshMetaData_SetNumBlocks(self, tuple);
+        obj = avtMeshMetaData_SetNumBlocks(self, args);
     else if(strcmp(name, "blockOrigin") == 0)
-        obj = avtMeshMetaData_SetBlockOrigin(self, tuple);
+        obj = avtMeshMetaData_SetBlockOrigin(self, args);
     else if(strcmp(name, "blockPieceName") == 0)
-        obj = avtMeshMetaData_SetBlockPieceName(self, tuple);
+        obj = avtMeshMetaData_SetBlockPieceName(self, args);
     else if(strcmp(name, "blockTitle") == 0)
-        obj = avtMeshMetaData_SetBlockTitle(self, tuple);
+        obj = avtMeshMetaData_SetBlockTitle(self, args);
     else if(strcmp(name, "blockNames") == 0)
-        obj = avtMeshMetaData_SetBlockNames(self, tuple);
+        obj = avtMeshMetaData_SetBlockNames(self, args);
     else if(strcmp(name, "blockNameScheme") == 0)
-        obj = avtMeshMetaData_SetBlockNameScheme(self, tuple);
+        obj = avtMeshMetaData_SetBlockNameScheme(self, args);
     else if(strcmp(name, "numGroups") == 0)
-        obj = avtMeshMetaData_SetNumGroups(self, tuple);
+        obj = avtMeshMetaData_SetNumGroups(self, args);
     else if(strcmp(name, "groupOrigin") == 0)
-        obj = avtMeshMetaData_SetGroupOrigin(self, tuple);
+        obj = avtMeshMetaData_SetGroupOrigin(self, args);
     else if(strcmp(name, "groupPieceName") == 0)
-        obj = avtMeshMetaData_SetGroupPieceName(self, tuple);
+        obj = avtMeshMetaData_SetGroupPieceName(self, args);
     else if(strcmp(name, "groupTitle") == 0)
-        obj = avtMeshMetaData_SetGroupTitle(self, tuple);
+        obj = avtMeshMetaData_SetGroupTitle(self, args);
     else if(strcmp(name, "groupNames") == 0)
-        obj = avtMeshMetaData_SetGroupNames(self, tuple);
+        obj = avtMeshMetaData_SetGroupNames(self, args);
     else if(strcmp(name, "groupIds") == 0)
-        obj = avtMeshMetaData_SetGroupIds(self, tuple);
+        obj = avtMeshMetaData_SetGroupIds(self, args);
     else if(strcmp(name, "groupIdsBasedOnRange") == 0)
-        obj = avtMeshMetaData_SetGroupIdsBasedOnRange(self, tuple);
+        obj = avtMeshMetaData_SetGroupIdsBasedOnRange(self, args);
     else if(strcmp(name, "disjointElements") == 0)
-        obj = avtMeshMetaData_SetDisjointElements(self, tuple);
+        obj = avtMeshMetaData_SetDisjointElements(self, args);
     else if(strcmp(name, "containsGhostZones") == 0)
-        obj = avtMeshMetaData_SetContainsGhostZones(self, tuple);
+        obj = avtMeshMetaData_SetContainsGhostZones(self, args);
     else if(strcmp(name, "containsOriginalCells") == 0)
-        obj = avtMeshMetaData_SetContainsOriginalCells(self, tuple);
+        obj = avtMeshMetaData_SetContainsOriginalCells(self, args);
     else if(strcmp(name, "containsOriginalNodes") == 0)
-        obj = avtMeshMetaData_SetContainsOriginalNodes(self, tuple);
+        obj = avtMeshMetaData_SetContainsOriginalNodes(self, args);
     else if(strcmp(name, "containsGlobalNodeIds") == 0)
-        obj = avtMeshMetaData_SetContainsGlobalNodeIds(self, tuple);
+        obj = avtMeshMetaData_SetContainsGlobalNodeIds(self, args);
     else if(strcmp(name, "containsGlobalZoneIds") == 0)
-        obj = avtMeshMetaData_SetContainsGlobalZoneIds(self, tuple);
+        obj = avtMeshMetaData_SetContainsGlobalZoneIds(self, args);
     else if(strcmp(name, "loadBalanceScheme") == 0)
-        obj = avtMeshMetaData_SetLoadBalanceScheme(self, tuple);
+        obj = avtMeshMetaData_SetLoadBalanceScheme(self, args);
     else if(strcmp(name, "nodesAreCritical") == 0)
-        obj = avtMeshMetaData_SetNodesAreCritical(self, tuple);
+        obj = avtMeshMetaData_SetNodesAreCritical(self, args);
     else if(strcmp(name, "unitCellVectors") == 0)
-        obj = avtMeshMetaData_SetUnitCellVectors(self, tuple);
+        obj = avtMeshMetaData_SetUnitCellVectors(self, args);
     else if(strcmp(name, "unitCellOrigin") == 0)
-        obj = avtMeshMetaData_SetUnitCellOrigin(self, tuple);
+        obj = avtMeshMetaData_SetUnitCellOrigin(self, args);
     else if(strcmp(name, "rectilinearGridHasTransform") == 0)
-        obj = avtMeshMetaData_SetRectilinearGridHasTransform(self, tuple);
+        obj = avtMeshMetaData_SetRectilinearGridHasTransform(self, args);
     else if(strcmp(name, "rectilinearGridTransform") == 0)
-        obj = avtMeshMetaData_SetRectilinearGridTransform(self, tuple);
+        obj = avtMeshMetaData_SetRectilinearGridTransform(self, args);
     else if(strcmp(name, "nodeOrigin") == 0)
-        obj = avtMeshMetaData_SetNodeOrigin(self, tuple);
+        obj = avtMeshMetaData_SetNodeOrigin(self, args);
     else if(strcmp(name, "containsExteriorBoundaryGhosts") == 0)
-        obj = avtMeshMetaData_SetContainsExteriorBoundaryGhosts(self, tuple);
+        obj = avtMeshMetaData_SetContainsExteriorBoundaryGhosts(self, args);
     else if(strcmp(name, "hideFromGUI") == 0)
-        obj = avtMeshMetaData_SetHideFromGUI(self, tuple);
+        obj = avtMeshMetaData_SetHideFromGUI(self, args);
     else if(strcmp(name, "LODs") == 0)
-        obj = avtMeshMetaData_SetLODs(self, tuple);
+        obj = avtMeshMetaData_SetLODs(self, args);
     else if(strcmp(name, "presentGhostZoneTypes") == 0)
-        obj = avtMeshMetaData_SetPresentGhostZoneTypes(self, tuple);
+        obj = avtMeshMetaData_SetPresentGhostZoneTypes(self, args);
     else if(strcmp(name, "zonesWereSplit") == 0)
-        obj = avtMeshMetaData_SetZonesWereSplit(self, tuple);
+        obj = avtMeshMetaData_SetZonesWereSplit(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -2592,7 +3801,7 @@ avtMeshMetaData_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

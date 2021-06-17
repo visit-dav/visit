@@ -105,12 +105,37 @@ avtSimulationCommandSpecification_SetName(PyObject *self, PyObject *args)
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the name in the object.
-    obj->data->SetName(std::string(str));
+    obj->data->SetName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -129,21 +154,56 @@ avtSimulationCommandSpecification_SetArgumentType(PyObject *self, PyObject *args
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid argumentType value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tCmdArgNone";
+        ss << "\n\tCmdArgInt";
+        ss << "\n\tCmdArgFloat";
+        ss << "\n\tCmdArgString";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the argumentType in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetArgumentType(avtSimulationCommandSpecification::CommandArgumentType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid argumentType value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "CmdArgNone, CmdArgInt, CmdArgFloat, CmdArgString.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetArgumentType(avtSimulationCommandSpecification::CommandArgumentType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -162,12 +222,37 @@ avtSimulationCommandSpecification_SetClassName(PyObject *self, PyObject *args)
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the className in the object.
-    obj->data->SetClassName(std::string(str));
+    obj->data->SetClassName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -186,12 +271,43 @@ avtSimulationCommandSpecification_SetEnabled(PyObject *self, PyObject *args)
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the enabled in the object.
-    obj->data->SetEnabled(ival != 0);
+    obj->data->SetEnabled(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -210,12 +326,37 @@ avtSimulationCommandSpecification_SetParent(PyObject *self, PyObject *args)
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the parent in the object.
-    obj->data->SetParent(std::string(str));
+    obj->data->SetParent(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -234,12 +375,43 @@ avtSimulationCommandSpecification_SetIsOn(PyObject *self, PyObject *args)
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the isOn in the object.
-    obj->data->SetIsOn(ival != 0);
+    obj->data->SetIsOn(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -258,12 +430,37 @@ avtSimulationCommandSpecification_SetSignal(PyObject *self, PyObject *args)
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the signal in the object.
-    obj->data->SetSignal(std::string(str));
+    obj->data->SetSignal(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -282,12 +479,37 @@ avtSimulationCommandSpecification_SetText(PyObject *self, PyObject *args)
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the text in the object.
-    obj->data->SetText(std::string(str));
+    obj->data->SetText(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -306,12 +528,37 @@ avtSimulationCommandSpecification_SetUiType(PyObject *self, PyObject *args)
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the uiType in the object.
-    obj->data->SetUiType(std::string(str));
+    obj->data->SetUiType(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -330,12 +577,37 @@ avtSimulationCommandSpecification_SetValue(PyObject *self, PyObject *args)
 {
     avtSimulationCommandSpecificationObject *obj = (avtSimulationCommandSpecificationObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the value in the object.
-    obj->data->SetValue(std::string(str));
+    obj->data->SetValue(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -430,48 +702,35 @@ PyavtSimulationCommandSpecification_getattr(PyObject *self, char *name)
 int
 PyavtSimulationCommandSpecification_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "name") == 0)
-        obj = avtSimulationCommandSpecification_SetName(self, tuple);
+        obj = avtSimulationCommandSpecification_SetName(self, args);
     else if(strcmp(name, "argumentType") == 0)
-        obj = avtSimulationCommandSpecification_SetArgumentType(self, tuple);
+        obj = avtSimulationCommandSpecification_SetArgumentType(self, args);
     else if(strcmp(name, "className") == 0)
-        obj = avtSimulationCommandSpecification_SetClassName(self, tuple);
+        obj = avtSimulationCommandSpecification_SetClassName(self, args);
     else if(strcmp(name, "enabled") == 0)
-        obj = avtSimulationCommandSpecification_SetEnabled(self, tuple);
+        obj = avtSimulationCommandSpecification_SetEnabled(self, args);
     else if(strcmp(name, "parent") == 0)
-        obj = avtSimulationCommandSpecification_SetParent(self, tuple);
+        obj = avtSimulationCommandSpecification_SetParent(self, args);
     else if(strcmp(name, "isOn") == 0)
-        obj = avtSimulationCommandSpecification_SetIsOn(self, tuple);
+        obj = avtSimulationCommandSpecification_SetIsOn(self, args);
     else if(strcmp(name, "signal") == 0)
-        obj = avtSimulationCommandSpecification_SetSignal(self, tuple);
+        obj = avtSimulationCommandSpecification_SetSignal(self, args);
     else if(strcmp(name, "text") == 0)
-        obj = avtSimulationCommandSpecification_SetText(self, tuple);
+        obj = avtSimulationCommandSpecification_SetText(self, args);
     else if(strcmp(name, "uiType") == 0)
-        obj = avtSimulationCommandSpecification_SetUiType(self, tuple);
+        obj = avtSimulationCommandSpecification_SetUiType(self, args);
     else if(strcmp(name, "value") == 0)
-        obj = avtSimulationCommandSpecification_SetValue(self, tuple);
+        obj = avtSimulationCommandSpecification_SetValue(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -617,7 +876,7 @@ avtSimulationCommandSpecification_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

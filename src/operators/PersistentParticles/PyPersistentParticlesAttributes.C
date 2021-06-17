@@ -112,12 +112,43 @@ PersistentParticlesAttributes_SetStartIndex(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startIndex in the object.
-    obj->data->SetStartIndex((int)ival);
+    obj->data->SetStartIndex(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -136,12 +167,43 @@ PersistentParticlesAttributes_SetStopIndex(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stopIndex in the object.
-    obj->data->SetStopIndex((int)ival);
+    obj->data->SetStopIndex(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -160,12 +222,43 @@ PersistentParticlesAttributes_SetStride(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stride in the object.
-    obj->data->SetStride((int)ival);
+    obj->data->SetStride(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -184,21 +277,54 @@ PersistentParticlesAttributes_SetStartPathType(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid startPathType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tAbsolute";
+        ss << "\n\tRelative";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startPathType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetStartPathType(PersistentParticlesAttributes::PathTypeEnum(ival));
-    else
-    {
-        fprintf(stderr, "An invalid startPathType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Absolute, Relative.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetStartPathType(PersistentParticlesAttributes::PathTypeEnum(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -217,21 +343,54 @@ PersistentParticlesAttributes_SetStopPathType(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid stopPathType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tAbsolute";
+        ss << "\n\tRelative";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stopPathType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetStopPathType(PersistentParticlesAttributes::PathTypeEnum(ival));
-    else
-    {
-        fprintf(stderr, "An invalid stopPathType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Absolute, Relative.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetStopPathType(PersistentParticlesAttributes::PathTypeEnum(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -250,12 +409,37 @@ PersistentParticlesAttributes_SetTraceVariableX(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the traceVariableX in the object.
-    obj->data->SetTraceVariableX(std::string(str));
+    obj->data->SetTraceVariableX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -274,12 +458,37 @@ PersistentParticlesAttributes_SetTraceVariableY(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the traceVariableY in the object.
-    obj->data->SetTraceVariableY(std::string(str));
+    obj->data->SetTraceVariableY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -298,12 +507,37 @@ PersistentParticlesAttributes_SetTraceVariableZ(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the traceVariableZ in the object.
-    obj->data->SetTraceVariableZ(std::string(str));
+    obj->data->SetTraceVariableZ(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -322,12 +556,43 @@ PersistentParticlesAttributes_SetConnectParticles(PyObject *self, PyObject *args
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the connectParticles in the object.
-    obj->data->SetConnectParticles(ival != 0);
+    obj->data->SetConnectParticles(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -346,12 +611,43 @@ PersistentParticlesAttributes_SetShowPoints(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showPoints in the object.
-    obj->data->SetShowPoints(ival != 0);
+    obj->data->SetShowPoints(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -370,12 +666,37 @@ PersistentParticlesAttributes_SetIndexVariable(PyObject *self, PyObject *args)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the indexVariable in the object.
-    obj->data->SetIndexVariable(std::string(str));
+    obj->data->SetIndexVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -475,50 +796,37 @@ PyPersistentParticlesAttributes_getattr(PyObject *self, char *name)
 int
 PyPersistentParticlesAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "startIndex") == 0)
-        obj = PersistentParticlesAttributes_SetStartIndex(self, tuple);
+        obj = PersistentParticlesAttributes_SetStartIndex(self, args);
     else if(strcmp(name, "stopIndex") == 0)
-        obj = PersistentParticlesAttributes_SetStopIndex(self, tuple);
+        obj = PersistentParticlesAttributes_SetStopIndex(self, args);
     else if(strcmp(name, "stride") == 0)
-        obj = PersistentParticlesAttributes_SetStride(self, tuple);
+        obj = PersistentParticlesAttributes_SetStride(self, args);
     else if(strcmp(name, "startPathType") == 0)
-        obj = PersistentParticlesAttributes_SetStartPathType(self, tuple);
+        obj = PersistentParticlesAttributes_SetStartPathType(self, args);
     else if(strcmp(name, "stopPathType") == 0)
-        obj = PersistentParticlesAttributes_SetStopPathType(self, tuple);
+        obj = PersistentParticlesAttributes_SetStopPathType(self, args);
     else if(strcmp(name, "traceVariableX") == 0)
-        obj = PersistentParticlesAttributes_SetTraceVariableX(self, tuple);
+        obj = PersistentParticlesAttributes_SetTraceVariableX(self, args);
     else if(strcmp(name, "traceVariableY") == 0)
-        obj = PersistentParticlesAttributes_SetTraceVariableY(self, tuple);
+        obj = PersistentParticlesAttributes_SetTraceVariableY(self, args);
     else if(strcmp(name, "traceVariableZ") == 0)
-        obj = PersistentParticlesAttributes_SetTraceVariableZ(self, tuple);
+        obj = PersistentParticlesAttributes_SetTraceVariableZ(self, args);
     else if(strcmp(name, "connectParticles") == 0)
-        obj = PersistentParticlesAttributes_SetConnectParticles(self, tuple);
+        obj = PersistentParticlesAttributes_SetConnectParticles(self, args);
     else if(strcmp(name, "showPoints") == 0)
-        obj = PersistentParticlesAttributes_SetShowPoints(self, tuple);
+        obj = PersistentParticlesAttributes_SetShowPoints(self, args);
     else if(strcmp(name, "indexVariable") == 0)
-        obj = PersistentParticlesAttributes_SetIndexVariable(self, tuple);
+        obj = PersistentParticlesAttributes_SetIndexVariable(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -664,7 +972,7 @@ PersistentParticlesAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

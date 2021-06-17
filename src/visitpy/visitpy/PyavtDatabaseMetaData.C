@@ -390,12 +390,43 @@ avtDatabaseMetaData_SetHasTemporalExtents(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hasTemporalExtents in the object.
-    obj->data->SetHasTemporalExtents(ival != 0);
+    obj->data->SetHasTemporalExtents(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -414,12 +445,43 @@ avtDatabaseMetaData_SetMinTemporalExtents(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minTemporalExtents in the object.
-    obj->data->SetMinTemporalExtents(dval);
+    obj->data->SetMinTemporalExtents(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -438,12 +500,43 @@ avtDatabaseMetaData_SetMaxTemporalExtents(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxTemporalExtents in the object.
-    obj->data->SetMaxTemporalExtents(dval);
+    obj->data->SetMaxTemporalExtents(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -462,12 +555,43 @@ avtDatabaseMetaData_SetNumStates(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numStates in the object.
-    obj->data->SetNumStates((int)ival);
+    obj->data->SetNumStates(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -486,12 +610,43 @@ avtDatabaseMetaData_SetIsVirtualDatabase(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the isVirtualDatabase in the object.
-    obj->data->SetIsVirtualDatabase(ival != 0);
+    obj->data->SetIsVirtualDatabase(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -510,12 +665,43 @@ avtDatabaseMetaData_SetMustRepopulateOnStateChange(PyObject *self, PyObject *arg
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the mustRepopulateOnStateChange in the object.
-    obj->data->SetMustRepopulateOnStateChange(ival != 0);
+    obj->data->SetMustRepopulateOnStateChange(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -534,12 +720,43 @@ avtDatabaseMetaData_SetMustAlphabetizeVariables(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the mustAlphabetizeVariables in the object.
-    obj->data->SetMustAlphabetizeVariables(ival != 0);
+    obj->data->SetMustAlphabetizeVariables(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -558,12 +775,43 @@ avtDatabaseMetaData_SetFormatCanDoDomainDecomposition(PyObject *self, PyObject *
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the formatCanDoDomainDecomposition in the object.
-    obj->data->SetFormatCanDoDomainDecomposition(ival != 0);
+    obj->data->SetFormatCanDoDomainDecomposition(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -582,12 +830,43 @@ avtDatabaseMetaData_SetFormatCanDoMultires(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the formatCanDoMultires in the object.
-    obj->data->SetFormatCanDoMultires(ival != 0);
+    obj->data->SetFormatCanDoMultires(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -606,12 +885,43 @@ avtDatabaseMetaData_SetUseCatchAllMesh(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useCatchAllMesh in the object.
-    obj->data->SetUseCatchAllMesh(ival != 0);
+    obj->data->SetUseCatchAllMesh(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -630,12 +940,37 @@ avtDatabaseMetaData_SetTimeStepPath(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the timeStepPath in the object.
-    obj->data->SetTimeStepPath(std::string(str));
+    obj->data->SetTimeStepPath(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -655,35 +990,48 @@ avtDatabaseMetaData_SetTimeStepNames(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
     stringVector  &vec = obj->data->GetTimeStepNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_TypeError;
 
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-            {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
-            }
-            else
-                return PyExc_TypeError;
-        }
-    }
-    else if(PyString_Check(tuple))
+    if (PyUnicode_Check(args))
     {
         vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if ((val == 0 && PyErr_Occurred()) || cval != val)
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if ((val == 0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
     }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
     // Mark the timeStepNames in the object as modified.
     obj->data->SelectTimeStepNames();
@@ -709,44 +1057,49 @@ avtDatabaseMetaData_SetCycles(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    intVector  &vec = obj->data->GetCycles();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_ValueError;
+    intVector &vec = obj->data->GetCycles();
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        vec.resize(1);
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                return PyExc_TypeError;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
     // Mark the cycles in the object as modified.
     obj->data->SelectCycles();
@@ -772,44 +1125,49 @@ avtDatabaseMetaData_SetCyclesAreAccurate(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    intVector  &vec = obj->data->GetCyclesAreAccurate();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_ValueError;
+    intVector &vec = obj->data->GetCyclesAreAccurate();
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        vec.resize(1);
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                return PyExc_TypeError;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
     // Mark the cyclesAreAccurate in the object as modified.
     obj->data->SelectCyclesAreAccurate();
@@ -835,44 +1193,49 @@ avtDatabaseMetaData_SetTimes(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    doubleVector  &vec = obj->data->GetTimes();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_TypeError;
+    doubleVector &vec = obj->data->GetTimes();
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        vec.resize(1);
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                return PyExc_TypeError;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
     // Mark the times in the object as modified.
     obj->data->SelectTimes();
@@ -898,44 +1261,49 @@ avtDatabaseMetaData_SetTimesAreAccurate(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    intVector  &vec = obj->data->GetTimesAreAccurate();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_ValueError;
+    intVector &vec = obj->data->GetTimesAreAccurate();
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        vec.resize(1);
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                return PyExc_TypeError;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
     // Mark the timesAreAccurate in the object as modified.
     obj->data->SelectTimesAreAccurate();
@@ -961,12 +1329,37 @@ avtDatabaseMetaData_SetDatabaseName(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the databaseName in the object.
-    obj->data->SetDatabaseName(std::string(str));
+    obj->data->SetDatabaseName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -985,12 +1378,37 @@ avtDatabaseMetaData_SetFileFormat(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the fileFormat in the object.
-    obj->data->SetFileFormat(std::string(str));
+    obj->data->SetFileFormat(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1009,12 +1427,37 @@ avtDatabaseMetaData_SetDatabaseComment(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the databaseComment in the object.
-    obj->data->SetDatabaseComment(std::string(str));
+    obj->data->SetDatabaseComment(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1035,12 +1478,9 @@ avtDatabaseMetaData_SetExprList(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyExpressionList_Check(newValue))
-    {
-        fprintf(stderr, "The exprList field can only be set with ExpressionList objects.\n");
-        return PyExc_TypeError;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field exprList can be set only with ExpressionList objects");
 
     obj->data->SetExprList(*PyExpressionList_FromPyObject(newValue));
 
@@ -1070,9 +1510,9 @@ avtDatabaseMetaData_GetMeshes(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetMeshes().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1099,9 +1539,9 @@ avtDatabaseMetaData_AddMeshes(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtMeshMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtMeshMetaData");
     avtMeshMetaData *newData = PyavtMeshMetaData_FromPyObject(element);
     obj->data->AddMeshes(*newData);
     obj->data->SelectMeshes();
@@ -1141,10 +1581,10 @@ avtDatabaseMetaData_RemoveMeshes(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumMeshes())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_Meshes(self, index);
 }
@@ -1169,9 +1609,9 @@ avtDatabaseMetaData_GetSubsets(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSubsets().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1198,9 +1638,9 @@ avtDatabaseMetaData_AddSubsets(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtSubsetsMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtSubsetsMetaData");
     avtSubsetsMetaData *newData = PyavtSubsetsMetaData_FromPyObject(element);
     obj->data->AddSubsets(*newData);
     obj->data->SelectSubsets();
@@ -1240,10 +1680,10 @@ avtDatabaseMetaData_RemoveSubsets(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSubsets())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_Subsets(self, index);
 }
@@ -1268,9 +1708,9 @@ avtDatabaseMetaData_GetScalars(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetScalars().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1297,9 +1737,9 @@ avtDatabaseMetaData_AddScalars(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtScalarMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtScalarMetaData");
     avtScalarMetaData *newData = PyavtScalarMetaData_FromPyObject(element);
     obj->data->AddScalars(*newData);
     obj->data->SelectScalars();
@@ -1339,10 +1779,10 @@ avtDatabaseMetaData_RemoveScalars(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumScalars())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_Scalars(self, index);
 }
@@ -1367,9 +1807,9 @@ avtDatabaseMetaData_GetVectors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetVectors().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1396,9 +1836,9 @@ avtDatabaseMetaData_AddVectors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtVectorMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtVectorMetaData");
     avtVectorMetaData *newData = PyavtVectorMetaData_FromPyObject(element);
     obj->data->AddVectors(*newData);
     obj->data->SelectVectors();
@@ -1438,10 +1878,10 @@ avtDatabaseMetaData_RemoveVectors(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumVectors())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_Vectors(self, index);
 }
@@ -1466,9 +1906,9 @@ avtDatabaseMetaData_GetTensors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetTensors().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1495,9 +1935,9 @@ avtDatabaseMetaData_AddTensors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtTensorMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtTensorMetaData");
     avtTensorMetaData *newData = PyavtTensorMetaData_FromPyObject(element);
     obj->data->AddTensors(*newData);
     obj->data->SelectTensors();
@@ -1537,10 +1977,10 @@ avtDatabaseMetaData_RemoveTensors(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumTensors())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_Tensors(self, index);
 }
@@ -1565,9 +2005,9 @@ avtDatabaseMetaData_GetSymmTensors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSymmTensors().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1594,9 +2034,9 @@ avtDatabaseMetaData_AddSymmTensors(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtSymmetricTensorMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtSymmetricTensorMetaData");
     avtSymmetricTensorMetaData *newData = PyavtSymmetricTensorMetaData_FromPyObject(element);
     obj->data->AddSymmTensors(*newData);
     obj->data->SelectSymmTensors();
@@ -1636,10 +2076,10 @@ avtDatabaseMetaData_RemoveSymmTensors(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSymmTensors())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_SymmTensors(self, index);
 }
@@ -1664,9 +2104,9 @@ avtDatabaseMetaData_GetArrays(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetArrays().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1693,9 +2133,9 @@ avtDatabaseMetaData_AddArrays(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtArrayMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtArrayMetaData");
     avtArrayMetaData *newData = PyavtArrayMetaData_FromPyObject(element);
     obj->data->AddArrays(*newData);
     obj->data->SelectArrays();
@@ -1735,10 +2175,10 @@ avtDatabaseMetaData_RemoveArrays(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumArrays())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_Arrays(self, index);
 }
@@ -1763,9 +2203,9 @@ avtDatabaseMetaData_GetMaterials(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetMaterials().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1792,9 +2232,9 @@ avtDatabaseMetaData_AddMaterials(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtMaterialMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtMaterialMetaData");
     avtMaterialMetaData *newData = PyavtMaterialMetaData_FromPyObject(element);
     obj->data->AddMaterials(*newData);
     obj->data->SelectMaterials();
@@ -1834,10 +2274,10 @@ avtDatabaseMetaData_RemoveMaterials(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumMaterials())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_Materials(self, index);
 }
@@ -1862,9 +2302,9 @@ avtDatabaseMetaData_GetSpecies(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSpecies().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1891,9 +2331,9 @@ avtDatabaseMetaData_AddSpecies(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtSpeciesMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtSpeciesMetaData");
     avtSpeciesMetaData *newData = PyavtSpeciesMetaData_FromPyObject(element);
     obj->data->AddSpecies(*newData);
     obj->data->SelectSpecies();
@@ -1933,10 +2373,10 @@ avtDatabaseMetaData_RemoveSpecies(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumSpecies())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_Species(self, index);
 }
@@ -1961,9 +2401,9 @@ avtDatabaseMetaData_GetCurves(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetCurves().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1990,9 +2430,9 @@ avtDatabaseMetaData_AddCurves(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtCurveMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtCurveMetaData");
     avtCurveMetaData *newData = PyavtCurveMetaData_FromPyObject(element);
     obj->data->AddCurves(*newData);
     obj->data->SelectCurves();
@@ -2032,10 +2472,10 @@ avtDatabaseMetaData_RemoveCurves(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumCurves())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_Curves(self, index);
 }
@@ -2060,9 +2500,9 @@ avtDatabaseMetaData_GetLabels(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetLabels().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2089,9 +2529,9 @@ avtDatabaseMetaData_AddLabels(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtLabelMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtLabelMetaData");
     avtLabelMetaData *newData = PyavtLabelMetaData_FromPyObject(element);
     obj->data->AddLabels(*newData);
     obj->data->SelectLabels();
@@ -2131,10 +2571,10 @@ avtDatabaseMetaData_RemoveLabels(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumLabels())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_Labels(self, index);
 }
@@ -2159,9 +2599,9 @@ avtDatabaseMetaData_GetDefaultPlots(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetDefaultPlots().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2188,9 +2628,9 @@ avtDatabaseMetaData_AddDefaultPlots(PyObject *self, PyObject *args)
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtDefaultPlotMetaData_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type avtDefaultPlotMetaData");
     avtDefaultPlotMetaData *newData = PyavtDefaultPlotMetaData_FromPyObject(element);
     obj->data->AddDefaultPlots(*newData);
     obj->data->SelectDefaultPlots();
@@ -2230,10 +2670,10 @@ avtDatabaseMetaData_RemoveDefaultPlots(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     if(index < 0 || index >= obj->data->GetNumDefaultPlots())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return avtDatabaseMetaData_Remove_One_DefaultPlots(self, index);
 }
@@ -2257,12 +2697,43 @@ avtDatabaseMetaData_SetIsSimulation(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the isSimulation in the object.
-    obj->data->SetIsSimulation(ival != 0);
+    obj->data->SetIsSimulation(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2283,12 +2754,9 @@ avtDatabaseMetaData_SetSimInfo(PyObject *self, PyObject *args)
 
     PyObject *newValue = NULL;
     if(!PyArg_ParseTuple(args, "O", &newValue))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyavtSimulationInformation_Check(newValue))
-    {
-        fprintf(stderr, "The simInfo field can only be set with avtSimulationInformation objects.\n");
-        return PyExc_TypeError;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field simInfo can be set only with avtSimulationInformation objects");
 
     obj->data->SetSimInfo(*PyavtSimulationInformation_FromPyObject(newValue));
 
@@ -2318,35 +2786,48 @@ avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(PyObject *self, PyObject *
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
     stringVector  &vec = obj->data->GetSuggestedDefaultSILRestriction();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_TypeError;
 
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-            {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
-            }
-            else
-                return PyExc_TypeError;
-        }
-    }
-    else if(PyString_Check(tuple))
+    if (PyUnicode_Check(args))
     {
         vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if ((val == 0 && PyErr_Occurred()) || cval != val)
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if ((val == 0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
     }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
     // Mark the suggestedDefaultSILRestriction in the object as modified.
     obj->data->SelectSuggestedDefaultSILRestriction();
@@ -2372,12 +2853,43 @@ avtDatabaseMetaData_SetReplacementMask(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the replacementMask in the object.
-    obj->data->SetReplacementMask((int)ival);
+    obj->data->SetReplacementMask(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -2603,76 +3115,63 @@ PyavtDatabaseMetaData_getattr(PyObject *self, char *name)
 int
 PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "hasTemporalExtents") == 0)
-        obj = avtDatabaseMetaData_SetHasTemporalExtents(self, tuple);
+        obj = avtDatabaseMetaData_SetHasTemporalExtents(self, args);
     else if(strcmp(name, "minTemporalExtents") == 0)
-        obj = avtDatabaseMetaData_SetMinTemporalExtents(self, tuple);
+        obj = avtDatabaseMetaData_SetMinTemporalExtents(self, args);
     else if(strcmp(name, "maxTemporalExtents") == 0)
-        obj = avtDatabaseMetaData_SetMaxTemporalExtents(self, tuple);
+        obj = avtDatabaseMetaData_SetMaxTemporalExtents(self, args);
     else if(strcmp(name, "numStates") == 0)
-        obj = avtDatabaseMetaData_SetNumStates(self, tuple);
+        obj = avtDatabaseMetaData_SetNumStates(self, args);
     else if(strcmp(name, "isVirtualDatabase") == 0)
-        obj = avtDatabaseMetaData_SetIsVirtualDatabase(self, tuple);
+        obj = avtDatabaseMetaData_SetIsVirtualDatabase(self, args);
     else if(strcmp(name, "mustRepopulateOnStateChange") == 0)
-        obj = avtDatabaseMetaData_SetMustRepopulateOnStateChange(self, tuple);
+        obj = avtDatabaseMetaData_SetMustRepopulateOnStateChange(self, args);
     else if(strcmp(name, "mustAlphabetizeVariables") == 0)
-        obj = avtDatabaseMetaData_SetMustAlphabetizeVariables(self, tuple);
+        obj = avtDatabaseMetaData_SetMustAlphabetizeVariables(self, args);
     else if(strcmp(name, "formatCanDoDomainDecomposition") == 0)
-        obj = avtDatabaseMetaData_SetFormatCanDoDomainDecomposition(self, tuple);
+        obj = avtDatabaseMetaData_SetFormatCanDoDomainDecomposition(self, args);
     else if(strcmp(name, "formatCanDoMultires") == 0)
-        obj = avtDatabaseMetaData_SetFormatCanDoMultires(self, tuple);
+        obj = avtDatabaseMetaData_SetFormatCanDoMultires(self, args);
     else if(strcmp(name, "useCatchAllMesh") == 0)
-        obj = avtDatabaseMetaData_SetUseCatchAllMesh(self, tuple);
+        obj = avtDatabaseMetaData_SetUseCatchAllMesh(self, args);
     else if(strcmp(name, "timeStepPath") == 0)
-        obj = avtDatabaseMetaData_SetTimeStepPath(self, tuple);
+        obj = avtDatabaseMetaData_SetTimeStepPath(self, args);
     else if(strcmp(name, "timeStepNames") == 0)
-        obj = avtDatabaseMetaData_SetTimeStepNames(self, tuple);
+        obj = avtDatabaseMetaData_SetTimeStepNames(self, args);
     else if(strcmp(name, "cycles") == 0)
-        obj = avtDatabaseMetaData_SetCycles(self, tuple);
+        obj = avtDatabaseMetaData_SetCycles(self, args);
     else if(strcmp(name, "cyclesAreAccurate") == 0)
-        obj = avtDatabaseMetaData_SetCyclesAreAccurate(self, tuple);
+        obj = avtDatabaseMetaData_SetCyclesAreAccurate(self, args);
     else if(strcmp(name, "times") == 0)
-        obj = avtDatabaseMetaData_SetTimes(self, tuple);
+        obj = avtDatabaseMetaData_SetTimes(self, args);
     else if(strcmp(name, "timesAreAccurate") == 0)
-        obj = avtDatabaseMetaData_SetTimesAreAccurate(self, tuple);
+        obj = avtDatabaseMetaData_SetTimesAreAccurate(self, args);
     else if(strcmp(name, "databaseName") == 0)
-        obj = avtDatabaseMetaData_SetDatabaseName(self, tuple);
+        obj = avtDatabaseMetaData_SetDatabaseName(self, args);
     else if(strcmp(name, "fileFormat") == 0)
-        obj = avtDatabaseMetaData_SetFileFormat(self, tuple);
+        obj = avtDatabaseMetaData_SetFileFormat(self, args);
     else if(strcmp(name, "databaseComment") == 0)
-        obj = avtDatabaseMetaData_SetDatabaseComment(self, tuple);
+        obj = avtDatabaseMetaData_SetDatabaseComment(self, args);
     else if(strcmp(name, "exprList") == 0)
-        obj = avtDatabaseMetaData_SetExprList(self, tuple);
+        obj = avtDatabaseMetaData_SetExprList(self, args);
     else if(strcmp(name, "isSimulation") == 0)
-        obj = avtDatabaseMetaData_SetIsSimulation(self, tuple);
+        obj = avtDatabaseMetaData_SetIsSimulation(self, args);
     else if(strcmp(name, "simInfo") == 0)
-        obj = avtDatabaseMetaData_SetSimInfo(self, tuple);
+        obj = avtDatabaseMetaData_SetSimInfo(self, args);
     else if(strcmp(name, "suggestedDefaultSILRestriction") == 0)
-        obj = avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(self, tuple);
+        obj = avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(self, args);
     else if(strcmp(name, "replacementMask") == 0)
-        obj = avtDatabaseMetaData_SetReplacementMask(self, tuple);
+        obj = avtDatabaseMetaData_SetReplacementMask(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -2818,7 +3317,7 @@ avtDatabaseMetaData_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

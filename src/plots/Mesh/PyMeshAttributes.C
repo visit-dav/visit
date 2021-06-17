@@ -208,12 +208,43 @@ MeshAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
+    obj->data->SetLegendFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -232,12 +263,43 @@ MeshAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -281,14 +343,14 @@ MeshAttributes_SetMeshColor(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 if(!PyTuple_Check(tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return PyExc_ValueError;
+                    return NULL;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -299,7 +361,7 @@ MeshAttributes_SetMeshColor(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return PyExc_TypeError;
+                        return NULL;
                 }
             }
         }
@@ -333,21 +395,55 @@ MeshAttributes_SetMeshColorSource(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid meshColorSource value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tForeground";
+        ss << "\n\tMeshCustom";
+        ss << "\n\tMeshRandom";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the meshColorSource in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetMeshColorSource(MeshAttributes::MeshColor(ival));
-    else
-    {
-        fprintf(stderr, "An invalid meshColorSource value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Foreground, MeshCustom, MeshRandom.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetMeshColorSource(MeshAttributes::MeshColor(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -366,21 +462,55 @@ MeshAttributes_SetOpaqueColorSource(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid opaqueColorSource value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tBackground";
+        ss << "\n\tOpaqueCustom";
+        ss << "\n\tOpaqueRandom";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the opaqueColorSource in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetOpaqueColorSource(MeshAttributes::OpaqueColor(ival));
-    else
-    {
-        fprintf(stderr, "An invalid opaqueColorSource value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Background, OpaqueCustom, OpaqueRandom.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetOpaqueColorSource(MeshAttributes::OpaqueColor(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -399,21 +529,55 @@ MeshAttributes_SetOpaqueMode(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid opaqueMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tAuto";
+        ss << "\n\tOn";
+        ss << "\n\tOff";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the opaqueMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetOpaqueMode(MeshAttributes::OpaqueMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid opaqueMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Auto, On, Off.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetOpaqueMode(MeshAttributes::OpaqueMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -432,12 +596,43 @@ MeshAttributes_SetPointSize(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointSize in the object.
-    obj->data->SetPointSize(dval);
+    obj->data->SetPointSize(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -481,14 +676,14 @@ MeshAttributes_SetOpaqueColor(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 if(!PyTuple_Check(tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return PyExc_ValueError;
+                    return NULL;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -499,7 +694,7 @@ MeshAttributes_SetOpaqueColor(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return PyExc_TypeError;
+                        return NULL;
                 }
             }
         }
@@ -533,21 +728,55 @@ MeshAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid smoothingLevel value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tNone";
+        ss << "\n\tFast";
+        ss << "\n\tHigh";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the smoothingLevel in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetSmoothingLevel(MeshAttributes::SmoothingLevel(ival));
-    else
-    {
-        fprintf(stderr, "An invalid smoothingLevel value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "None, Fast, High.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetSmoothingLevel(MeshAttributes::SmoothingLevel(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -566,12 +795,43 @@ MeshAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointSizeVarEnabled in the object.
-    obj->data->SetPointSizeVarEnabled(ival != 0);
+    obj->data->SetPointSizeVarEnabled(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -590,12 +850,37 @@ MeshAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointSizeVar in the object.
-    obj->data->SetPointSizeVar(std::string(str));
+    obj->data->SetPointSizeVar(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -616,7 +901,7 @@ MeshAttributes_SetPointType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+        return NULL;
 
     if(ival >= 0 && ival < 8)
     {
@@ -629,7 +914,7 @@ MeshAttributes_SetPointType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
                         "SphereGeometry, Point, Sphere.");
-        return PyExc_ValueError;
+        return NULL;
     }
 
     Py_INCREF(Py_None);
@@ -649,12 +934,43 @@ MeshAttributes_SetShowInternal(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showInternal in the object.
-    obj->data->SetShowInternal(ival != 0);
+    obj->data->SetShowInternal(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -673,12 +989,43 @@ MeshAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointSizePixels in the object.
-    obj->data->SetPointSizePixels((int)ival);
+    obj->data->SetPointSizePixels(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -697,12 +1044,43 @@ MeshAttributes_SetOpacity(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the opacity in the object.
-    obj->data->SetOpacity(dval);
+    obj->data->SetOpacity(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -887,9 +1265,10 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
     }
     if (lineStyleFound)
     {
-        fprintf(stdout, "lineStyle is no longer a valid Mesh "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "lineStyle is no longer a valid Mesh "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
     return Py_FindMethod(PyMeshAttributes_methods, self, name);
@@ -898,43 +1277,38 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
 int
 PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "legendFlag") == 0)
-        obj = MeshAttributes_SetLegendFlag(self, tuple);
+        obj = MeshAttributes_SetLegendFlag(self, args);
     else if(strcmp(name, "lineWidth") == 0)
-        obj = MeshAttributes_SetLineWidth(self, tuple);
+        obj = MeshAttributes_SetLineWidth(self, args);
     else if(strcmp(name, "meshColor") == 0)
-        obj = MeshAttributes_SetMeshColor(self, tuple);
+        obj = MeshAttributes_SetMeshColor(self, args);
     else if(strcmp(name, "meshColorSource") == 0)
-        obj = MeshAttributes_SetMeshColorSource(self, tuple);
+        obj = MeshAttributes_SetMeshColorSource(self, args);
     else if(strcmp(name, "opaqueColorSource") == 0)
-        obj = MeshAttributes_SetOpaqueColorSource(self, tuple);
+        obj = MeshAttributes_SetOpaqueColorSource(self, args);
     else if(strcmp(name, "opaqueMode") == 0)
-        obj = MeshAttributes_SetOpaqueMode(self, tuple);
+        obj = MeshAttributes_SetOpaqueMode(self, args);
     else if(strcmp(name, "pointSize") == 0)
-        obj = MeshAttributes_SetPointSize(self, tuple);
+        obj = MeshAttributes_SetPointSize(self, args);
     else if(strcmp(name, "opaqueColor") == 0)
-        obj = MeshAttributes_SetOpaqueColor(self, tuple);
+        obj = MeshAttributes_SetOpaqueColor(self, args);
     else if(strcmp(name, "smoothingLevel") == 0)
-        obj = MeshAttributes_SetSmoothingLevel(self, tuple);
+        obj = MeshAttributes_SetSmoothingLevel(self, args);
     else if(strcmp(name, "pointSizeVarEnabled") == 0)
-        obj = MeshAttributes_SetPointSizeVarEnabled(self, tuple);
+        obj = MeshAttributes_SetPointSizeVarEnabled(self, args);
     else if(strcmp(name, "pointSizeVar") == 0)
-        obj = MeshAttributes_SetPointSizeVar(self, tuple);
+        obj = MeshAttributes_SetPointSizeVar(self, args);
     else if(strcmp(name, "pointType") == 0)
-        obj = MeshAttributes_SetPointType(self, tuple);
+        obj = MeshAttributes_SetPointType(self, args);
     else if(strcmp(name, "showInternal") == 0)
-        obj = MeshAttributes_SetShowInternal(self, tuple);
+        obj = MeshAttributes_SetShowInternal(self, args);
     else if(strcmp(name, "pointSizePixels") == 0)
-        obj = MeshAttributes_SetPointSizePixels(self, tuple);
+        obj = MeshAttributes_SetPointSizePixels(self, args);
     else if(strcmp(name, "opacity") == 0)
-        obj = MeshAttributes_SetOpacity(self, tuple);
+        obj = MeshAttributes_SetOpacity(self, args);
 
     // Try and handle legacy fields in MeshAttributes
     if(obj == NULL)
@@ -942,56 +1316,47 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
         MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
         if(strcmp(name, "backgroundFlag") == 0)
         {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            int ival = -1;
+            PyErr_WarnEx(NULL, "'backgroundFlag' is obsolete. Use 'opaqueColor'.", 2);
+            PyArg_ParseTuple(args, "i", &ival);
+            if (ival != -1)
             {
-                Py_DECREF(tuple);
-                return -1;
+                if (ival == 0)
+                    meshObj->data->SetOpaqueColorSource(MeshAttributes::OpaqueCustom);
+                else 
+                    meshObj->data->SetOpaqueColorSource(MeshAttributes::Background);
             }
-            if(ival == 0)
-                meshObj->data->SetOpaqueColorSource(MeshAttributes::OpaqueCustom);
-            else
-                meshObj->data->SetOpaqueColorSource(MeshAttributes::Background);
-
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "foregroundFlag") == 0)
         {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            int ival = -1;
+            PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Use 'meshColor'.", 2);
+            PyArg_ParseTuple(args, "i", &ival);
+            if (ival != -1)
             {
-                Py_DECREF(tuple);
-                return -1;
+                if (ival == 0)
+                    meshObj->data->SetMeshColorSource(MeshAttributes::MeshCustom);
+                else
+                    meshObj->data->SetMeshColorSource(MeshAttributes::Foreground);
             }
-            if(ival == 0)
-                meshObj->data->SetMeshColorSource(MeshAttributes::MeshCustom);
-            else
-                meshObj->data->SetMeshColorSource(MeshAttributes::Foreground);
-
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 2);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
     }
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1137,7 +1502,7 @@ MeshAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

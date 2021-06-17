@@ -93,12 +93,43 @@ InverseGhostZoneAttributes_SetRequestGhostZones(PyObject *self, PyObject *args)
 {
     InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the requestGhostZones in the object.
-    obj->data->SetRequestGhostZones(ival != 0);
+    obj->data->SetRequestGhostZones(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -117,12 +148,43 @@ InverseGhostZoneAttributes_SetShowDuplicated(PyObject *self, PyObject *args)
 {
     InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showDuplicated in the object.
-    obj->data->SetShowDuplicated(ival != 0);
+    obj->data->SetShowDuplicated(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -141,12 +203,43 @@ InverseGhostZoneAttributes_SetShowEnhancedConnectivity(PyObject *self, PyObject 
 {
     InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showEnhancedConnectivity in the object.
-    obj->data->SetShowEnhancedConnectivity(ival != 0);
+    obj->data->SetShowEnhancedConnectivity(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -165,12 +258,43 @@ InverseGhostZoneAttributes_SetShowReducedConnectivity(PyObject *self, PyObject *
 {
     InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showReducedConnectivity in the object.
-    obj->data->SetShowReducedConnectivity(ival != 0);
+    obj->data->SetShowReducedConnectivity(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -189,12 +313,43 @@ InverseGhostZoneAttributes_SetShowAMRRefined(PyObject *self, PyObject *args)
 {
     InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showAMRRefined in the object.
-    obj->data->SetShowAMRRefined(ival != 0);
+    obj->data->SetShowAMRRefined(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -213,12 +368,43 @@ InverseGhostZoneAttributes_SetShowExterior(PyObject *self, PyObject *args)
 {
     InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showExterior in the object.
-    obj->data->SetShowExterior(ival != 0);
+    obj->data->SetShowExterior(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -237,12 +423,43 @@ InverseGhostZoneAttributes_SetShowNotApplicable(PyObject *self, PyObject *args)
 {
     InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the showNotApplicable in the object.
-    obj->data->SetShowNotApplicable(ival != 0);
+    obj->data->SetShowNotApplicable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -316,42 +533,29 @@ PyInverseGhostZoneAttributes_getattr(PyObject *self, char *name)
 int
 PyInverseGhostZoneAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "requestGhostZones") == 0)
-        obj = InverseGhostZoneAttributes_SetRequestGhostZones(self, tuple);
+        obj = InverseGhostZoneAttributes_SetRequestGhostZones(self, args);
     else if(strcmp(name, "showDuplicated") == 0)
-        obj = InverseGhostZoneAttributes_SetShowDuplicated(self, tuple);
+        obj = InverseGhostZoneAttributes_SetShowDuplicated(self, args);
     else if(strcmp(name, "showEnhancedConnectivity") == 0)
-        obj = InverseGhostZoneAttributes_SetShowEnhancedConnectivity(self, tuple);
+        obj = InverseGhostZoneAttributes_SetShowEnhancedConnectivity(self, args);
     else if(strcmp(name, "showReducedConnectivity") == 0)
-        obj = InverseGhostZoneAttributes_SetShowReducedConnectivity(self, tuple);
+        obj = InverseGhostZoneAttributes_SetShowReducedConnectivity(self, args);
     else if(strcmp(name, "showAMRRefined") == 0)
-        obj = InverseGhostZoneAttributes_SetShowAMRRefined(self, tuple);
+        obj = InverseGhostZoneAttributes_SetShowAMRRefined(self, args);
     else if(strcmp(name, "showExterior") == 0)
-        obj = InverseGhostZoneAttributes_SetShowExterior(self, tuple);
+        obj = InverseGhostZoneAttributes_SetShowExterior(self, args);
     else if(strcmp(name, "showNotApplicable") == 0)
-        obj = InverseGhostZoneAttributes_SetShowNotApplicable(self, tuple);
+        obj = InverseGhostZoneAttributes_SetShowNotApplicable(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -497,7 +701,7 @@ InverseGhostZoneAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

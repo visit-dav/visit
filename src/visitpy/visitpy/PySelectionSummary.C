@@ -98,12 +98,37 @@ SelectionSummary_SetName(PyObject *self, PyObject *args)
 {
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the name in the object.
-    obj->data->SetName(std::string(str));
+    obj->data->SetName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -123,9 +148,9 @@ SelectionSummary_GetVariables(PyObject *self, PyObject *args)
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetVariables().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -152,9 +177,9 @@ SelectionSummary_AddVariables(PyObject *self, PyObject *args)
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PySelectionVariableSummary_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type SelectionVariableSummary");
     SelectionVariableSummary *newData = PySelectionVariableSummary_FromPyObject(element);
     obj->data->AddVariables(*newData);
     obj->data->SelectVariables();
@@ -194,10 +219,10 @@ SelectionSummary_RemoveVariables(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
     if(index < 0 || index >= obj->data->GetNumVariables())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return SelectionSummary_Remove_One_Variables(self, index);
 }
@@ -221,12 +246,43 @@ SelectionSummary_SetCellCount(PyObject *self, PyObject *args)
 {
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the cellCount in the object.
-    obj->data->SetCellCount((int)ival);
+    obj->data->SetCellCount(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -245,12 +301,43 @@ SelectionSummary_SetTotalCellCount(PyObject *self, PyObject *args)
 {
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the totalCellCount in the object.
-    obj->data->SetTotalCellCount((int)ival);
+    obj->data->SetTotalCellCount(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -269,44 +356,49 @@ SelectionSummary_SetHistogramValues(PyObject *self, PyObject *args)
 {
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
 
-    doubleVector  &vec = obj->data->GetHistogramValues();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_TypeError;
+    doubleVector &vec = obj->data->GetHistogramValues();
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        vec.resize(1);
+        double val = PyFloat_AsDouble(args);
+        double cval = double(val);
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = PyFloat_AS_DOUBLE(item);
-            else if(PyInt_Check(item))
-                vec[i] = double(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = PyLong_AsDouble(item);
-            else
-                return PyExc_TypeError;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            double cval = double(val);
+
+            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyFloat_AS_DOUBLE(tuple);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = double(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = PyLong_AsDouble(tuple);
-    }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
     // Mark the histogramValues in the object as modified.
     obj->data->SelectHistogramValues();
@@ -332,12 +424,43 @@ SelectionSummary_SetHistogramMinBin(PyObject *self, PyObject *args)
 {
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the histogramMinBin in the object.
-    obj->data->SetHistogramMinBin(dval);
+    obj->data->SetHistogramMinBin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -356,12 +479,43 @@ SelectionSummary_SetHistogramMaxBin(PyObject *self, PyObject *args)
 {
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the histogramMaxBin in the object.
-    obj->data->SetHistogramMaxBin(dval);
+    obj->data->SetHistogramMaxBin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -438,40 +592,27 @@ PySelectionSummary_getattr(PyObject *self, char *name)
 int
 PySelectionSummary_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "name") == 0)
-        obj = SelectionSummary_SetName(self, tuple);
+        obj = SelectionSummary_SetName(self, args);
     else if(strcmp(name, "cellCount") == 0)
-        obj = SelectionSummary_SetCellCount(self, tuple);
+        obj = SelectionSummary_SetCellCount(self, args);
     else if(strcmp(name, "totalCellCount") == 0)
-        obj = SelectionSummary_SetTotalCellCount(self, tuple);
+        obj = SelectionSummary_SetTotalCellCount(self, args);
     else if(strcmp(name, "histogramValues") == 0)
-        obj = SelectionSummary_SetHistogramValues(self, tuple);
+        obj = SelectionSummary_SetHistogramValues(self, args);
     else if(strcmp(name, "histogramMinBin") == 0)
-        obj = SelectionSummary_SetHistogramMinBin(self, tuple);
+        obj = SelectionSummary_SetHistogramMinBin(self, args);
     else if(strcmp(name, "histogramMaxBin") == 0)
-        obj = SelectionSummary_SetHistogramMaxBin(self, tuple);
+        obj = SelectionSummary_SetHistogramMaxBin(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -617,7 +758,7 @@ SelectionSummary_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

@@ -197,21 +197,55 @@ FilledBoundaryAttributes_SetColorType(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid colorType value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tColorBySingleColor";
+        ss << "\n\tColorByMultipleColors";
+        ss << "\n\tColorByColorTable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorType in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetColorType(FilledBoundaryAttributes::ColoringMethod(ival));
-    else
-    {
-        fprintf(stderr, "An invalid colorType value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "ColorBySingleColor, ColorByMultipleColors, ColorByColorTable.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetColorType(FilledBoundaryAttributes::ColoringMethod(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -230,12 +264,37 @@ FilledBoundaryAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
+    obj->data->SetColorTableName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -254,12 +313,43 @@ FilledBoundaryAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the invertColorTable in the object.
-    obj->data->SetInvertColorTable(ival != 0);
+    obj->data->SetInvertColorTable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -278,12 +368,43 @@ FilledBoundaryAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
+    obj->data->SetLegendFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -302,12 +423,43 @@ FilledBoundaryAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -351,14 +503,14 @@ FilledBoundaryAttributes_SetSingleColor(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 if(!PyTuple_Check(tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return PyExc_ValueError;
+                    return NULL;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -369,7 +521,7 @@ FilledBoundaryAttributes_SetSingleColor(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return PyExc_TypeError;
+                        return NULL;
                 }
             }
         }
@@ -439,7 +591,7 @@ FilledBoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the tuple is the right size.
                             if(PyTuple_Size(pyobj) < cL.GetNumColors())
-                                return PyExc_ValueError;
+                                return PyErr_Format(PyExc_IndexError, "color tuple size=%d, expected=%d", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());
 
                             // Make sure that the tuple is the right size.
                             int *C = new int[4 * cL.GetNumColors()];
@@ -463,14 +615,14 @@ FilledBoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else
                                         {
                                            delete [] C;
-                                           return PyExc_TypeError;
+                                           return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d at index %d as a color component",j,i);
                                         }
                                     }
                                 }
                                 else
                                 {
                                     delete [] C;
-                                    return PyExc_ValueError;
+                                    return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
                                 }
                             }
 
@@ -482,7 +634,7 @@ FilledBoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the list is the right size.
                             if(PyList_Size(pyobj) < cL.GetNumColors())
-                                return PyExc_ValueError;
+                                return PyErr_Format(PyExc_IndexError, "color tuple size=%d, expected=%d", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());
 
                             // Make sure that the tuple is the right size.
                             int *C = new int[4 * cL.GetNumColors()];
@@ -506,14 +658,14 @@ FilledBoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else
                                         {
                                            delete [] C;
-                                           return PyExc_TypeError;
+                                           return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d at index %d as a color component",j,i);
                                         }
                                     }
                                 }
                                 else
                                 {
                                     delete [] C;
-                                    return PyExc_ValueError;
+                                    return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
                                 }
                             }
 
@@ -523,17 +675,17 @@ FilledBoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             delete [] C;
                         }
                         else
-                            return PyExc_TypeError;
+                            return PyErr_Format(PyExc_TypeError, "Expecting tuple or list");
                     }
                 }
                 else
                 {
                     if(!PyTuple_Check(pyobj))
-                        return PyExc_TypeError;
+                        return NULL;
 
                     // Make sure that the tuple is the right size.
                     if(PyTuple_Size(pyobj) < 3 || PyTuple_Size(pyobj) > 4)
-                        return PyExc_ValueError;
+                        return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
 
                     // Make sure that all elements in the tuple are ints.
                     for(int i = 0; i < PyTuple_Size(pyobj); ++i)
@@ -544,7 +696,7 @@ FilledBoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         else if(PyFloat_Check(item))
                             c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(pyobj, i)));
                         else
-                            return PyExc_TypeError;
+                            return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d as a color component", i);
                     }
                 }
             }
@@ -553,7 +705,7 @@ FilledBoundaryAttributes_SetMultiColor(PyObject *self, PyObject *args)
     }
 
     if(index < 0 || index >= cL.GetNumColors())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_ValueError, "color index out of range 0 <= i < %d", (int) cL.GetNumColors());
 
     // Set the color in the object.
     if(setTheColor)
@@ -576,7 +728,7 @@ FilledBoundaryAttributes_GetMultiColor(PyObject *self, PyObject *args)
     if(PyArg_ParseTuple(args, "i", &index))
     {
         if(index < 0 || index >= cL.GetNumColors())
-            return PyExc_IndexError;
+            return NULL;
 
         // Allocate a tuple the with enough entries to hold the singleColor.
         retval = PyTuple_New(4);
@@ -614,35 +766,48 @@ FilledBoundaryAttributes_SetBoundaryNames(PyObject *self, PyObject *args)
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
     stringVector  &vec = obj->data->GetBoundaryNames();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_TypeError;
 
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-            {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
-            }
-            else
-                return PyExc_TypeError;
-        }
-    }
-    else if(PyString_Check(tuple))
+    if (PyUnicode_Check(args))
     {
         vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if ((val == 0 && PyErr_Occurred()) || cval != val)
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if ((val == 0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
     }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
     // Mark the boundaryNames in the object as modified.
     obj->data->SelectBoundaryNames();
@@ -668,12 +833,43 @@ FilledBoundaryAttributes_SetOpacity(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the opacity in the object.
-    obj->data->SetOpacity(dval);
+    obj->data->SetOpacity(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -692,12 +888,43 @@ FilledBoundaryAttributes_SetWireframe(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the wireframe in the object.
-    obj->data->SetWireframe(ival != 0);
+    obj->data->SetWireframe(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -716,12 +943,43 @@ FilledBoundaryAttributes_SetDrawInternal(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the drawInternal in the object.
-    obj->data->SetDrawInternal(ival != 0);
+    obj->data->SetDrawInternal(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -740,12 +998,43 @@ FilledBoundaryAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the smoothingLevel in the object.
-    obj->data->SetSmoothingLevel((int)ival);
+    obj->data->SetSmoothingLevel(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -764,12 +1053,43 @@ FilledBoundaryAttributes_SetCleanZonesOnly(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the cleanZonesOnly in the object.
-    obj->data->SetCleanZonesOnly(ival != 0);
+    obj->data->SetCleanZonesOnly(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -813,14 +1133,14 @@ FilledBoundaryAttributes_SetMixedColor(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 if(!PyTuple_Check(tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return PyExc_ValueError;
+                    return NULL;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -831,7 +1151,7 @@ FilledBoundaryAttributes_SetMixedColor(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return PyExc_TypeError;
+                        return NULL;
                 }
             }
         }
@@ -865,12 +1185,43 @@ FilledBoundaryAttributes_SetPointSize(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointSize in the object.
-    obj->data->SetPointSize(dval);
+    obj->data->SetPointSize(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -891,7 +1242,7 @@ FilledBoundaryAttributes_SetPointType(PyObject *self, PyObject *args)
 
     int ival;
     if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+        return NULL;
 
     if(ival >= 0 && ival < 8)
     {
@@ -904,7 +1255,7 @@ FilledBoundaryAttributes_SetPointType(PyObject *self, PyObject *args)
                         "You can also use the following names: "
                         "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
                         "SphereGeometry, Point, Sphere.");
-        return PyExc_ValueError;
+        return NULL;
     }
 
     Py_INCREF(Py_None);
@@ -924,12 +1275,43 @@ FilledBoundaryAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointSizeVarEnabled in the object.
-    obj->data->SetPointSizeVarEnabled(ival != 0);
+    obj->data->SetPointSizeVarEnabled(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -948,12 +1330,37 @@ FilledBoundaryAttributes_SetPointSizeVar(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointSizeVar in the object.
-    obj->data->SetPointSizeVar(std::string(str));
+    obj->data->SetPointSizeVar(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -972,12 +1379,43 @@ FilledBoundaryAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pointSizePixels in the object.
-    obj->data->SetPointSizePixels((int)ival);
+    obj->data->SetPointSizePixels(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1144,9 +1582,10 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
     }
     if (strcmp(name, "filledFlag") == 0)
     {
-        fprintf(stdout, "filledFlag is no longer a valid FilledBoundary "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "filledFlag is no longer a valid FilledBoundary "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
     // lineStyle and it's possible enumerations
@@ -1172,16 +1611,18 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
     }
     if (boundaryTypeFound)
     {
-        fprintf(stdout, "boundaryType is no longer a valid FilledBoundary "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "boundaryType is no longer a valid FilledBoundary "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
     if (lineStyleFound)
     {
-        fprintf(stdout, "lineStyle is no longer a valid FilledBoundary "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "lineStyle is no longer a valid FilledBoundary "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
     return Py_FindMethod(PyFilledBoundaryAttributes_methods, self, name);
@@ -1190,85 +1631,75 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
 int
 PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "colorType") == 0)
-        obj = FilledBoundaryAttributes_SetColorType(self, tuple);
+        obj = FilledBoundaryAttributes_SetColorType(self, args);
     else if(strcmp(name, "colorTableName") == 0)
-        obj = FilledBoundaryAttributes_SetColorTableName(self, tuple);
+        obj = FilledBoundaryAttributes_SetColorTableName(self, args);
     else if(strcmp(name, "invertColorTable") == 0)
-        obj = FilledBoundaryAttributes_SetInvertColorTable(self, tuple);
+        obj = FilledBoundaryAttributes_SetInvertColorTable(self, args);
     else if(strcmp(name, "legendFlag") == 0)
-        obj = FilledBoundaryAttributes_SetLegendFlag(self, tuple);
+        obj = FilledBoundaryAttributes_SetLegendFlag(self, args);
     else if(strcmp(name, "lineWidth") == 0)
-        obj = FilledBoundaryAttributes_SetLineWidth(self, tuple);
+        obj = FilledBoundaryAttributes_SetLineWidth(self, args);
     else if(strcmp(name, "singleColor") == 0)
-        obj = FilledBoundaryAttributes_SetSingleColor(self, tuple);
+        obj = FilledBoundaryAttributes_SetSingleColor(self, args);
     else if(strcmp(name, "multiColor") == 0)
-        obj = FilledBoundaryAttributes_SetMultiColor(self, tuple);
+        obj = FilledBoundaryAttributes_SetMultiColor(self, args);
     else if(strcmp(name, "boundaryNames") == 0)
-        obj = FilledBoundaryAttributes_SetBoundaryNames(self, tuple);
+        obj = FilledBoundaryAttributes_SetBoundaryNames(self, args);
     else if(strcmp(name, "opacity") == 0)
-        obj = FilledBoundaryAttributes_SetOpacity(self, tuple);
+        obj = FilledBoundaryAttributes_SetOpacity(self, args);
     else if(strcmp(name, "wireframe") == 0)
-        obj = FilledBoundaryAttributes_SetWireframe(self, tuple);
+        obj = FilledBoundaryAttributes_SetWireframe(self, args);
     else if(strcmp(name, "drawInternal") == 0)
-        obj = FilledBoundaryAttributes_SetDrawInternal(self, tuple);
+        obj = FilledBoundaryAttributes_SetDrawInternal(self, args);
     else if(strcmp(name, "smoothingLevel") == 0)
-        obj = FilledBoundaryAttributes_SetSmoothingLevel(self, tuple);
+        obj = FilledBoundaryAttributes_SetSmoothingLevel(self, args);
     else if(strcmp(name, "cleanZonesOnly") == 0)
-        obj = FilledBoundaryAttributes_SetCleanZonesOnly(self, tuple);
+        obj = FilledBoundaryAttributes_SetCleanZonesOnly(self, args);
     else if(strcmp(name, "mixedColor") == 0)
-        obj = FilledBoundaryAttributes_SetMixedColor(self, tuple);
+        obj = FilledBoundaryAttributes_SetMixedColor(self, args);
     else if(strcmp(name, "pointSize") == 0)
-        obj = FilledBoundaryAttributes_SetPointSize(self, tuple);
+        obj = FilledBoundaryAttributes_SetPointSize(self, args);
     else if(strcmp(name, "pointType") == 0)
-        obj = FilledBoundaryAttributes_SetPointType(self, tuple);
+        obj = FilledBoundaryAttributes_SetPointType(self, args);
     else if(strcmp(name, "pointSizeVarEnabled") == 0)
-        obj = FilledBoundaryAttributes_SetPointSizeVarEnabled(self, tuple);
+        obj = FilledBoundaryAttributes_SetPointSizeVarEnabled(self, args);
     else if(strcmp(name, "pointSizeVar") == 0)
-        obj = FilledBoundaryAttributes_SetPointSizeVar(self, tuple);
+        obj = FilledBoundaryAttributes_SetPointSizeVar(self, args);
     else if(strcmp(name, "pointSizePixels") == 0)
-        obj = FilledBoundaryAttributes_SetPointSizePixels(self, tuple);
+        obj = FilledBoundaryAttributes_SetPointSizePixels(self, args);
 
     // Try and handle legacy fields
     if(obj == NULL)
     {
         if(strcmp(name, "filledFlag") == 0)
         {
+            PyErr_WarnEx(NULL, "'filledFlag' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "boundaryType") == 0)
         {
+            PyErr_WarnEx(NULL, "'boundaryType' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
     }
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1414,7 +1845,7 @@ FilledBoundaryAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

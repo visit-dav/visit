@@ -73,9 +73,9 @@ GaussianControlPointList_GetControlPoints(PyObject *self, PyObject *args)
     GaussianControlPointListObject *obj = (GaussianControlPointListObject *)self;
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetControlPoints().size())
-        return PyExc_IndexError;
+        return NULL;
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -102,9 +102,9 @@ GaussianControlPointList_AddControlPoints(PyObject *self, PyObject *args)
     GaussianControlPointListObject *obj = (GaussianControlPointListObject *)self;
     PyObject *element = NULL;
     if(!PyArg_ParseTuple(args, "O", &element))
-        return PyExc_TypeError;
+        return NULL;
     if(!PyGaussianControlPoint_Check(element))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type GaussianControlPoint");
     GaussianControlPoint *newData = PyGaussianControlPoint_FromPyObject(element);
     obj->data->AddControlPoints(*newData);
     obj->data->SelectControlPoints();
@@ -144,10 +144,10 @@ GaussianControlPointList_RemoveControlPoints(PyObject *self, PyObject *args)
 {
     int index;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     GaussianControlPointListObject *obj = (GaussianControlPointListObject *)self;
     if(index < 0 || index >= obj->data->GetNumControlPoints())
-        return PyExc_IndexError;
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return GaussianControlPointList_Remove_One_ControlPoints(self, index);
 }
@@ -205,28 +205,15 @@ PyGaussianControlPointList_getattr(PyObject *self, char *name)
 int
 PyGaussianControlPointList_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -372,7 +359,7 @@ GaussianControlPointList_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

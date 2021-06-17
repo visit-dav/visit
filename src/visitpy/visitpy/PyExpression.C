@@ -137,12 +137,37 @@ Expression_SetName(PyObject *self, PyObject *args)
 {
     ExpressionObject *obj = (ExpressionObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the name in the object.
-    obj->data->SetName(std::string(str));
+    obj->data->SetName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -161,12 +186,37 @@ Expression_SetDefinition(PyObject *self, PyObject *args)
 {
     ExpressionObject *obj = (ExpressionObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the definition in the object.
-    obj->data->SetDefinition(std::string(str));
+    obj->data->SetDefinition(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -185,12 +235,43 @@ Expression_SetHidden(PyObject *self, PyObject *args)
 {
     ExpressionObject *obj = (ExpressionObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hidden in the object.
-    obj->data->SetHidden(ival != 0);
+    obj->data->SetHidden(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -209,23 +290,62 @@ Expression_SetType(PyObject *self, PyObject *args)
 {
     ExpressionObject *obj = (ExpressionObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 10)
+    {
+        std::stringstream ss;
+        ss << "An invalid type value was given." << std::endl;
+        ss << "Valid values are in the range [0,9]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tUnknown";
+        ss << "\n\tScalarMeshVar";
+        ss << "\n\tVectorMeshVar";
+        ss << "\n\tTensorMeshVar";
+        ss << "\n\tSymmetricTensorMeshVar";
+        ss << "\n\tArrayMeshVar";
+        ss << "\n\tCurveMeshVar";
+        ss << "\n\tMesh";
+        ss << "\n\tMaterial";
+        ss << "\n\tSpecies";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the type in the object.
-    if(ival >= 0 && ival < 10)
-        obj->data->SetType(Expression::ExprType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid type value was given. "
-                        "Valid values are in the range of [0,9]. "
-                        "You can also use the following names: "
-                        "Unknown, ScalarMeshVar, VectorMeshVar, TensorMeshVar, SymmetricTensorMeshVar, "
-                        "ArrayMeshVar, CurveMeshVar, Mesh, Material, "
-                        "Species.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetType(Expression::ExprType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -244,12 +364,43 @@ Expression_SetFromDB(PyObject *self, PyObject *args)
 {
     ExpressionObject *obj = (ExpressionObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the fromDB in the object.
-    obj->data->SetFromDB(ival != 0);
+    obj->data->SetFromDB(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -268,12 +419,43 @@ Expression_SetFromOperator(PyObject *self, PyObject *args)
 {
     ExpressionObject *obj = (ExpressionObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the fromOperator in the object.
-    obj->data->SetFromOperator(ival != 0);
+    obj->data->SetFromOperator(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -292,12 +474,37 @@ Expression_SetOperatorName(PyObject *self, PyObject *args)
 {
     ExpressionObject *obj = (ExpressionObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the operatorName in the object.
-    obj->data->SetOperatorName(std::string(str));
+    obj->data->SetOperatorName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -316,12 +523,37 @@ Expression_SetMeshName(PyObject *self, PyObject *args)
 {
     ExpressionObject *obj = (ExpressionObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the meshName in the object.
-    obj->data->SetMeshName(std::string(str));
+    obj->data->SetMeshName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -340,12 +572,37 @@ Expression_SetDbName(PyObject *self, PyObject *args)
 {
     ExpressionObject *obj = (ExpressionObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dbName in the object.
-    obj->data->SetDbName(std::string(str));
+    obj->data->SetDbName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -364,12 +621,43 @@ Expression_SetAutoExpression(PyObject *self, PyObject *args)
 {
     ExpressionObject *obj = (ExpressionObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the autoExpression in the object.
-    obj->data->SetAutoExpression(ival != 0);
+    obj->data->SetAutoExpression(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -476,48 +764,35 @@ PyExpression_getattr(PyObject *self, char *name)
 int
 PyExpression_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "name") == 0)
-        obj = Expression_SetName(self, tuple);
+        obj = Expression_SetName(self, args);
     else if(strcmp(name, "definition") == 0)
-        obj = Expression_SetDefinition(self, tuple);
+        obj = Expression_SetDefinition(self, args);
     else if(strcmp(name, "hidden") == 0)
-        obj = Expression_SetHidden(self, tuple);
+        obj = Expression_SetHidden(self, args);
     else if(strcmp(name, "type") == 0)
-        obj = Expression_SetType(self, tuple);
+        obj = Expression_SetType(self, args);
     else if(strcmp(name, "fromDB") == 0)
-        obj = Expression_SetFromDB(self, tuple);
+        obj = Expression_SetFromDB(self, args);
     else if(strcmp(name, "fromOperator") == 0)
-        obj = Expression_SetFromOperator(self, tuple);
+        obj = Expression_SetFromOperator(self, args);
     else if(strcmp(name, "operatorName") == 0)
-        obj = Expression_SetOperatorName(self, tuple);
+        obj = Expression_SetOperatorName(self, args);
     else if(strcmp(name, "meshName") == 0)
-        obj = Expression_SetMeshName(self, tuple);
+        obj = Expression_SetMeshName(self, args);
     else if(strcmp(name, "dbName") == 0)
-        obj = Expression_SetDbName(self, tuple);
+        obj = Expression_SetDbName(self, args);
     else if(strcmp(name, "autoExpression") == 0)
-        obj = Expression_SetAutoExpression(self, tuple);
+        obj = Expression_SetAutoExpression(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -663,7 +938,7 @@ Expression_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

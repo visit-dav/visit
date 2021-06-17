@@ -286,12 +286,43 @@ RenderingAttributes_SetAntialiasing(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the antialiasing in the object.
-    obj->data->SetAntialiasing(ival != 0);
+    obj->data->SetAntialiasing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -310,12 +341,43 @@ RenderingAttributes_SetOrderComposite(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the orderComposite in the object.
-    obj->data->SetOrderComposite(ival != 0);
+    obj->data->SetOrderComposite(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -334,12 +396,43 @@ RenderingAttributes_SetDepthCompositeThreads(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the depthCompositeThreads in the object.
-    obj->data->SetDepthCompositeThreads((int)ival);
+    obj->data->SetDepthCompositeThreads(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -358,12 +451,43 @@ RenderingAttributes_SetDepthCompositeBlocking(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the depthCompositeBlocking in the object.
-    obj->data->SetDepthCompositeBlocking((int)ival);
+    obj->data->SetDepthCompositeBlocking(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -382,12 +506,43 @@ RenderingAttributes_SetAlphaCompositeThreads(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the alphaCompositeThreads in the object.
-    obj->data->SetAlphaCompositeThreads((int)ival);
+    obj->data->SetAlphaCompositeThreads(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -406,12 +561,43 @@ RenderingAttributes_SetAlphaCompositeBlocking(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the alphaCompositeBlocking in the object.
-    obj->data->SetAlphaCompositeBlocking((int)ival);
+    obj->data->SetAlphaCompositeBlocking(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -430,12 +616,43 @@ RenderingAttributes_SetDepthPeeling(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the depthPeeling in the object.
-    obj->data->SetDepthPeeling(ival != 0);
+    obj->data->SetDepthPeeling(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -454,12 +671,43 @@ RenderingAttributes_SetOcclusionRatio(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the occlusionRatio in the object.
-    obj->data->SetOcclusionRatio(dval);
+    obj->data->SetOcclusionRatio(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -478,12 +726,43 @@ RenderingAttributes_SetNumberOfPeels(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numberOfPeels in the object.
-    obj->data->SetNumberOfPeels((int)ival);
+    obj->data->SetNumberOfPeels(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -502,12 +781,43 @@ RenderingAttributes_SetMultiresolutionMode(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the multiresolutionMode in the object.
-    obj->data->SetMultiresolutionMode(ival != 0);
+    obj->data->SetMultiresolutionMode(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -526,12 +836,43 @@ RenderingAttributes_SetMultiresolutionCellSize(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the multiresolutionCellSize in the object.
-    obj->data->SetMultiresolutionCellSize(fval);
+    obj->data->SetMultiresolutionCellSize(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -550,21 +891,55 @@ RenderingAttributes_SetGeometryRepresentation(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid geometryRepresentation value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tSurfaces";
+        ss << "\n\tWireframe";
+        ss << "\n\tPoints";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the geometryRepresentation in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetGeometryRepresentation(RenderingAttributes::GeometryRepresentation(ival));
-    else
-    {
-        fprintf(stderr, "An invalid geometryRepresentation value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Surfaces, Wireframe, Points.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetGeometryRepresentation(RenderingAttributes::GeometryRepresentation(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -583,12 +958,43 @@ RenderingAttributes_SetStereoRendering(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stereoRendering in the object.
-    obj->data->SetStereoRendering(ival != 0);
+    obj->data->SetStereoRendering(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -607,21 +1013,56 @@ RenderingAttributes_SetStereoType(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid stereoType value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tRedBlue";
+        ss << "\n\tInterlaced";
+        ss << "\n\tCrystalEyes";
+        ss << "\n\tRedGreen";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stereoType in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetStereoType(RenderingAttributes::StereoTypes(ival));
-    else
-    {
-        fprintf(stderr, "An invalid stereoType value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "RedBlue, Interlaced, CrystalEyes, RedGreen.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetStereoType(RenderingAttributes::StereoTypes(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -640,12 +1081,43 @@ RenderingAttributes_SetNotifyForEachRender(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the notifyForEachRender in the object.
-    obj->data->SetNotifyForEachRender(ival != 0);
+    obj->data->SetNotifyForEachRender(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -664,21 +1136,55 @@ RenderingAttributes_SetScalableActivationMode(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid scalableActivationMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tNever";
+        ss << "\n\tAlways";
+        ss << "\n\tAuto";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scalableActivationMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetScalableActivationMode(RenderingAttributes::TriStateMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid scalableActivationMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Never, Always, Auto.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetScalableActivationMode(RenderingAttributes::TriStateMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -697,12 +1203,43 @@ RenderingAttributes_SetScalableAutoThreshold(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scalableAutoThreshold in the object.
-    obj->data->SetScalableAutoThreshold((int)ival);
+    obj->data->SetScalableAutoThreshold(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -721,12 +1258,43 @@ RenderingAttributes_SetSpecularFlag(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the specularFlag in the object.
-    obj->data->SetSpecularFlag(ival != 0);
+    obj->data->SetSpecularFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -745,12 +1313,43 @@ RenderingAttributes_SetSpecularCoeff(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the specularCoeff in the object.
-    obj->data->SetSpecularCoeff(fval);
+    obj->data->SetSpecularCoeff(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -769,12 +1368,43 @@ RenderingAttributes_SetSpecularPower(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the specularPower in the object.
-    obj->data->SetSpecularPower(fval);
+    obj->data->SetSpecularPower(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -818,14 +1448,14 @@ RenderingAttributes_SetSpecularColor(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 if(!PyTuple_Check(tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return PyExc_ValueError;
+                    return NULL;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -836,7 +1466,7 @@ RenderingAttributes_SetSpecularColor(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return PyExc_TypeError;
+                        return NULL;
                 }
             }
         }
@@ -870,12 +1500,43 @@ RenderingAttributes_SetDoShadowing(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the doShadowing in the object.
-    obj->data->SetDoShadowing(ival != 0);
+    obj->data->SetDoShadowing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -894,12 +1555,43 @@ RenderingAttributes_SetShadowStrength(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the shadowStrength in the object.
-    obj->data->SetShadowStrength(dval);
+    obj->data->SetShadowStrength(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -918,12 +1610,43 @@ RenderingAttributes_SetDoDepthCueing(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the doDepthCueing in the object.
-    obj->data->SetDoDepthCueing(ival != 0);
+    obj->data->SetDoDepthCueing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -942,12 +1665,43 @@ RenderingAttributes_SetDepthCueingAutomatic(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the depthCueingAutomatic in the object.
-    obj->data->SetDepthCueingAutomatic(ival != 0);
+    obj->data->SetDepthCueingAutomatic(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -966,35 +1720,54 @@ RenderingAttributes_SetStartCuePoint(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    double *dvals = obj->data->GetStartCuePoint();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetStartCuePoint();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return PyExc_TypeError;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return PyExc_ValueError;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    return PyExc_TypeError;
-            }
-        }
-        else
-            return PyExc_TypeError;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the startCuePoint in the object as modified.
     obj->data->SelectStartCuePoint();
@@ -1020,35 +1793,54 @@ RenderingAttributes_SetEndCuePoint(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    double *dvals = obj->data->GetEndCuePoint();
-    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    PyObject *packaged_args = 0;
+    double *vals = obj->data->GetEndCuePoint();
+
+    if (!PySequence_Check(args) || PyUnicode_Check(args))
+        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
+
+    // break open args seq. if we think it matches this API's needs
+    if (PySequence_Size(args) == 1)
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-            return PyExc_TypeError;
-
-        if(PyTuple_Check(tuple))
-        {
-            if(PyTuple_Size(tuple) != 3)
-                return PyExc_ValueError;
-
-            PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
-            {
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    dvals[i] = PyFloat_AS_DOUBLE(item);
-                else if(PyInt_Check(item))
-                    dvals[i] = double(PyInt_AS_LONG(item));
-                else if(PyLong_Check(item))
-                    dvals[i] = PyLong_AsDouble(item);
-                else
-                    return PyExc_TypeError;
-            }
-        }
-        else
-            return PyExc_TypeError;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
+            PySequence_Size(packaged_args) == 3)
+            args = packaged_args;
     }
+
+    if (PySequence_Size(args) != 3)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "Expecting 3 numeric args");
+    }
+
+    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+    {
+        PyObject *item = PySequence_GetItem(args, i);
+
+        if (!PyNumber_Check(item))
+        {
+            Py_DECREF(item);
+            Py_XDECREF(packaged_args);
+            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+        }
+
+        double val = PyFloat_AsDouble(item);
+        double cval = double(val);
+
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        Py_DECREF(item);
+
+        vals[i] = cval;
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the endCuePoint in the object as modified.
     obj->data->SelectEndCuePoint();
@@ -1074,21 +1866,55 @@ RenderingAttributes_SetCompressionActivationMode(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid compressionActivationMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tNever";
+        ss << "\n\tAlways";
+        ss << "\n\tAuto";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the compressionActivationMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetCompressionActivationMode(RenderingAttributes::TriStateMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid compressionActivationMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Never, Always, Auto.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetCompressionActivationMode(RenderingAttributes::TriStateMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1107,12 +1933,43 @@ RenderingAttributes_SetColorTexturingFlag(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorTexturingFlag in the object.
-    obj->data->SetColorTexturingFlag(ival != 0);
+    obj->data->SetColorTexturingFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1131,21 +1988,55 @@ RenderingAttributes_SetCompactDomainsActivationMode(PyObject *self, PyObject *ar
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid compactDomainsActivationMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tNever";
+        ss << "\n\tAlways";
+        ss << "\n\tAuto";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the compactDomainsActivationMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetCompactDomainsActivationMode(RenderingAttributes::TriStateMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid compactDomainsActivationMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Never, Always, Auto.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetCompactDomainsActivationMode(RenderingAttributes::TriStateMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1164,12 +2055,43 @@ RenderingAttributes_SetCompactDomainsAutoThreshold(PyObject *self, PyObject *arg
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the compactDomainsAutoThreshold in the object.
-    obj->data->SetCompactDomainsAutoThreshold((int)ival);
+    obj->data->SetCompactDomainsAutoThreshold(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1188,12 +2110,43 @@ RenderingAttributes_SetOsprayRendering(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayRendering in the object.
-    obj->data->SetOsprayRendering(ival != 0);
+    obj->data->SetOsprayRendering(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1212,12 +2165,43 @@ RenderingAttributes_SetOspraySPP(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the ospraySPP in the object.
-    obj->data->SetOspraySPP((int)ival);
+    obj->data->SetOspraySPP(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1236,12 +2220,43 @@ RenderingAttributes_SetOsprayAO(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayAO in the object.
-    obj->data->SetOsprayAO((int)ival);
+    obj->data->SetOsprayAO(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1260,12 +2275,43 @@ RenderingAttributes_SetOsprayShadows(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayShadows in the object.
-    obj->data->SetOsprayShadows(ival != 0);
+    obj->data->SetOsprayShadows(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1488,98 +2534,85 @@ PyRenderingAttributes_getattr(PyObject *self, char *name)
 int
 PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "antialiasing") == 0)
-        obj = RenderingAttributes_SetAntialiasing(self, tuple);
+        obj = RenderingAttributes_SetAntialiasing(self, args);
     else if(strcmp(name, "orderComposite") == 0)
-        obj = RenderingAttributes_SetOrderComposite(self, tuple);
+        obj = RenderingAttributes_SetOrderComposite(self, args);
     else if(strcmp(name, "depthCompositeThreads") == 0)
-        obj = RenderingAttributes_SetDepthCompositeThreads(self, tuple);
+        obj = RenderingAttributes_SetDepthCompositeThreads(self, args);
     else if(strcmp(name, "depthCompositeBlocking") == 0)
-        obj = RenderingAttributes_SetDepthCompositeBlocking(self, tuple);
+        obj = RenderingAttributes_SetDepthCompositeBlocking(self, args);
     else if(strcmp(name, "alphaCompositeThreads") == 0)
-        obj = RenderingAttributes_SetAlphaCompositeThreads(self, tuple);
+        obj = RenderingAttributes_SetAlphaCompositeThreads(self, args);
     else if(strcmp(name, "alphaCompositeBlocking") == 0)
-        obj = RenderingAttributes_SetAlphaCompositeBlocking(self, tuple);
+        obj = RenderingAttributes_SetAlphaCompositeBlocking(self, args);
     else if(strcmp(name, "depthPeeling") == 0)
-        obj = RenderingAttributes_SetDepthPeeling(self, tuple);
+        obj = RenderingAttributes_SetDepthPeeling(self, args);
     else if(strcmp(name, "occlusionRatio") == 0)
-        obj = RenderingAttributes_SetOcclusionRatio(self, tuple);
+        obj = RenderingAttributes_SetOcclusionRatio(self, args);
     else if(strcmp(name, "numberOfPeels") == 0)
-        obj = RenderingAttributes_SetNumberOfPeels(self, tuple);
+        obj = RenderingAttributes_SetNumberOfPeels(self, args);
     else if(strcmp(name, "multiresolutionMode") == 0)
-        obj = RenderingAttributes_SetMultiresolutionMode(self, tuple);
+        obj = RenderingAttributes_SetMultiresolutionMode(self, args);
     else if(strcmp(name, "multiresolutionCellSize") == 0)
-        obj = RenderingAttributes_SetMultiresolutionCellSize(self, tuple);
+        obj = RenderingAttributes_SetMultiresolutionCellSize(self, args);
     else if(strcmp(name, "geometryRepresentation") == 0)
-        obj = RenderingAttributes_SetGeometryRepresentation(self, tuple);
+        obj = RenderingAttributes_SetGeometryRepresentation(self, args);
     else if(strcmp(name, "stereoRendering") == 0)
-        obj = RenderingAttributes_SetStereoRendering(self, tuple);
+        obj = RenderingAttributes_SetStereoRendering(self, args);
     else if(strcmp(name, "stereoType") == 0)
-        obj = RenderingAttributes_SetStereoType(self, tuple);
+        obj = RenderingAttributes_SetStereoType(self, args);
     else if(strcmp(name, "notifyForEachRender") == 0)
-        obj = RenderingAttributes_SetNotifyForEachRender(self, tuple);
+        obj = RenderingAttributes_SetNotifyForEachRender(self, args);
     else if(strcmp(name, "scalableActivationMode") == 0)
-        obj = RenderingAttributes_SetScalableActivationMode(self, tuple);
+        obj = RenderingAttributes_SetScalableActivationMode(self, args);
     else if(strcmp(name, "scalableAutoThreshold") == 0)
-        obj = RenderingAttributes_SetScalableAutoThreshold(self, tuple);
+        obj = RenderingAttributes_SetScalableAutoThreshold(self, args);
     else if(strcmp(name, "specularFlag") == 0)
-        obj = RenderingAttributes_SetSpecularFlag(self, tuple);
+        obj = RenderingAttributes_SetSpecularFlag(self, args);
     else if(strcmp(name, "specularCoeff") == 0)
-        obj = RenderingAttributes_SetSpecularCoeff(self, tuple);
+        obj = RenderingAttributes_SetSpecularCoeff(self, args);
     else if(strcmp(name, "specularPower") == 0)
-        obj = RenderingAttributes_SetSpecularPower(self, tuple);
+        obj = RenderingAttributes_SetSpecularPower(self, args);
     else if(strcmp(name, "specularColor") == 0)
-        obj = RenderingAttributes_SetSpecularColor(self, tuple);
+        obj = RenderingAttributes_SetSpecularColor(self, args);
     else if(strcmp(name, "doShadowing") == 0)
-        obj = RenderingAttributes_SetDoShadowing(self, tuple);
+        obj = RenderingAttributes_SetDoShadowing(self, args);
     else if(strcmp(name, "shadowStrength") == 0)
-        obj = RenderingAttributes_SetShadowStrength(self, tuple);
+        obj = RenderingAttributes_SetShadowStrength(self, args);
     else if(strcmp(name, "doDepthCueing") == 0)
-        obj = RenderingAttributes_SetDoDepthCueing(self, tuple);
+        obj = RenderingAttributes_SetDoDepthCueing(self, args);
     else if(strcmp(name, "depthCueingAutomatic") == 0)
-        obj = RenderingAttributes_SetDepthCueingAutomatic(self, tuple);
+        obj = RenderingAttributes_SetDepthCueingAutomatic(self, args);
     else if(strcmp(name, "startCuePoint") == 0)
-        obj = RenderingAttributes_SetStartCuePoint(self, tuple);
+        obj = RenderingAttributes_SetStartCuePoint(self, args);
     else if(strcmp(name, "endCuePoint") == 0)
-        obj = RenderingAttributes_SetEndCuePoint(self, tuple);
+        obj = RenderingAttributes_SetEndCuePoint(self, args);
     else if(strcmp(name, "compressionActivationMode") == 0)
-        obj = RenderingAttributes_SetCompressionActivationMode(self, tuple);
+        obj = RenderingAttributes_SetCompressionActivationMode(self, args);
     else if(strcmp(name, "colorTexturingFlag") == 0)
-        obj = RenderingAttributes_SetColorTexturingFlag(self, tuple);
+        obj = RenderingAttributes_SetColorTexturingFlag(self, args);
     else if(strcmp(name, "compactDomainsActivationMode") == 0)
-        obj = RenderingAttributes_SetCompactDomainsActivationMode(self, tuple);
+        obj = RenderingAttributes_SetCompactDomainsActivationMode(self, args);
     else if(strcmp(name, "compactDomainsAutoThreshold") == 0)
-        obj = RenderingAttributes_SetCompactDomainsAutoThreshold(self, tuple);
+        obj = RenderingAttributes_SetCompactDomainsAutoThreshold(self, args);
     else if(strcmp(name, "osprayRendering") == 0)
-        obj = RenderingAttributes_SetOsprayRendering(self, tuple);
+        obj = RenderingAttributes_SetOsprayRendering(self, args);
     else if(strcmp(name, "ospraySPP") == 0)
-        obj = RenderingAttributes_SetOspraySPP(self, tuple);
+        obj = RenderingAttributes_SetOspraySPP(self, args);
     else if(strcmp(name, "osprayAO") == 0)
-        obj = RenderingAttributes_SetOsprayAO(self, tuple);
+        obj = RenderingAttributes_SetOsprayAO(self, args);
     else if(strcmp(name, "osprayShadows") == 0)
-        obj = RenderingAttributes_SetOsprayShadows(self, tuple);
+        obj = RenderingAttributes_SetOsprayShadows(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1725,7 +2758,7 @@ RenderingAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

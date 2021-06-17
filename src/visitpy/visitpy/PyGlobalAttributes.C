@@ -239,35 +239,48 @@ GlobalAttributes_SetSources(PyObject *self, PyObject *args)
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
     stringVector  &vec = obj->data->GetSources();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_TypeError;
 
-    if(PyTuple_Check(tuple))
-    {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
-        {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyString_Check(item))
-            {
-                char *item_cstr = PyString_AsString(item);
-                vec[i] = std::string(item_cstr);
-                PyString_AsString_Cleanup(item_cstr);
-            }
-            else
-                return PyExc_TypeError;
-        }
-    }
-    else if(PyString_Check(tuple))
+    if (PyUnicode_Check(args))
     {
         vec.resize(1);
-        char *tuple_cstr = PyString_AsString(tuple);
-        vec[0] = std::string(tuple_cstr);
-        PyString_AsString_Cleanup(tuple_cstr);
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if ((val == 0 && PyErr_Occurred()) || cval != val)
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if ((val == 0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
     }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
     // Mark the sources in the object as modified.
     obj->data->SelectSources();
@@ -293,44 +306,49 @@ GlobalAttributes_SetWindows(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    intVector  &vec = obj->data->GetWindows();
-    PyObject   *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return PyExc_ValueError;
+    intVector &vec = obj->data->GetWindows();
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        vec.resize(1);
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
         {
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                vec[i] = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                vec[i] = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                vec[i] = int(PyLong_AsLong(item));
-            else
-                return PyExc_TypeError;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyInt_AS_LONG(tuple));
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        vec[0] = int(PyLong_AsLong(tuple));
-    }
     else
-        return PyExc_TypeError;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
     // Mark the windows in the object as modified.
     obj->data->SelectWindows();
@@ -356,12 +374,43 @@ GlobalAttributes_SetActiveWindow(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the activeWindow in the object.
-    obj->data->SetActiveWindow((int)ival);
+    obj->data->SetActiveWindow(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -380,12 +429,43 @@ GlobalAttributes_SetIconifiedFlag(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the iconifiedFlag in the object.
-    obj->data->SetIconifiedFlag(ival != 0);
+    obj->data->SetIconifiedFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -404,12 +484,43 @@ GlobalAttributes_SetAutoUpdateFlag(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the autoUpdateFlag in the object.
-    obj->data->SetAutoUpdateFlag(ival != 0);
+    obj->data->SetAutoUpdateFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -428,12 +539,43 @@ GlobalAttributes_SetReplacePlots(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the replacePlots in the object.
-    obj->data->SetReplacePlots(ival != 0);
+    obj->data->SetReplacePlots(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -452,12 +594,43 @@ GlobalAttributes_SetApplyOperator(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the applyOperator in the object.
-    obj->data->SetApplyOperator(ival != 0);
+    obj->data->SetApplyOperator(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -476,12 +649,43 @@ GlobalAttributes_SetApplySelection(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the applySelection in the object.
-    obj->data->SetApplySelection(ival != 0);
+    obj->data->SetApplySelection(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -500,12 +704,43 @@ GlobalAttributes_SetApplyWindow(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the applyWindow in the object.
-    obj->data->SetApplyWindow(ival != 0);
+    obj->data->SetApplyWindow(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -524,12 +759,43 @@ GlobalAttributes_SetExecuting(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the executing in the object.
-    obj->data->SetExecuting(ival != 0);
+    obj->data->SetExecuting(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -548,12 +814,43 @@ GlobalAttributes_SetWindowLayout(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the windowLayout in the object.
-    obj->data->SetWindowLayout((int)ival);
+    obj->data->SetWindowLayout(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -572,12 +869,43 @@ GlobalAttributes_SetMakeDefaultConfirm(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the makeDefaultConfirm in the object.
-    obj->data->SetMakeDefaultConfirm(ival != 0);
+    obj->data->SetMakeDefaultConfirm(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -596,12 +924,43 @@ GlobalAttributes_SetCloneWindowOnFirstRef(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the cloneWindowOnFirstRef in the object.
-    obj->data->SetCloneWindowOnFirstRef(ival != 0);
+    obj->data->SetCloneWindowOnFirstRef(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -620,12 +979,43 @@ GlobalAttributes_SetAutomaticallyAddOperator(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the automaticallyAddOperator in the object.
-    obj->data->SetAutomaticallyAddOperator(ival != 0);
+    obj->data->SetAutomaticallyAddOperator(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -644,12 +1034,43 @@ GlobalAttributes_SetTryHarderCyclesTimes(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tryHarderCyclesTimes in the object.
-    obj->data->SetTryHarderCyclesTimes(ival != 0);
+    obj->data->SetTryHarderCyclesTimes(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -668,12 +1089,43 @@ GlobalAttributes_SetTreatAllDBsAsTimeVarying(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the treatAllDBsAsTimeVarying in the object.
-    obj->data->SetTreatAllDBsAsTimeVarying(ival != 0);
+    obj->data->SetTreatAllDBsAsTimeVarying(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -692,12 +1144,43 @@ GlobalAttributes_SetCreateMeshQualityExpressions(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the createMeshQualityExpressions in the object.
-    obj->data->SetCreateMeshQualityExpressions(ival != 0);
+    obj->data->SetCreateMeshQualityExpressions(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -716,12 +1199,43 @@ GlobalAttributes_SetCreateTimeDerivativeExpressions(PyObject *self, PyObject *ar
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the createTimeDerivativeExpressions in the object.
-    obj->data->SetCreateTimeDerivativeExpressions(ival != 0);
+    obj->data->SetCreateTimeDerivativeExpressions(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -740,12 +1254,43 @@ GlobalAttributes_SetCreateVectorMagnitudeExpressions(PyObject *self, PyObject *a
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the createVectorMagnitudeExpressions in the object.
-    obj->data->SetCreateVectorMagnitudeExpressions(ival != 0);
+    obj->data->SetCreateVectorMagnitudeExpressions(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -764,12 +1309,43 @@ GlobalAttributes_SetNewPlotsInheritSILRestriction(PyObject *self, PyObject *args
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the newPlotsInheritSILRestriction in the object.
-    obj->data->SetNewPlotsInheritSILRestriction(ival != 0);
+    obj->data->SetNewPlotsInheritSILRestriction(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -788,12 +1364,43 @@ GlobalAttributes_SetUserDirForSessionFiles(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the userDirForSessionFiles in the object.
-    obj->data->SetUserDirForSessionFiles(ival != 0);
+    obj->data->SetUserDirForSessionFiles(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -812,12 +1419,43 @@ GlobalAttributes_SetSaveCrashRecoveryFile(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the saveCrashRecoveryFile in the object.
-    obj->data->SetSaveCrashRecoveryFile(ival != 0);
+    obj->data->SetSaveCrashRecoveryFile(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -836,12 +1474,43 @@ GlobalAttributes_SetIgnoreExtentsFromDbs(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the ignoreExtentsFromDbs in the object.
-    obj->data->SetIgnoreExtentsFromDbs(ival != 0);
+    obj->data->SetIgnoreExtentsFromDbs(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -860,12 +1529,43 @@ GlobalAttributes_SetExpandNewPlots(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the expandNewPlots in the object.
-    obj->data->SetExpandNewPlots(ival != 0);
+    obj->data->SetExpandNewPlots(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -884,12 +1584,43 @@ GlobalAttributes_SetUserRestoreSessionFile(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the userRestoreSessionFile in the object.
-    obj->data->SetUserRestoreSessionFile(ival != 0);
+    obj->data->SetUserRestoreSessionFile(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -908,21 +1639,55 @@ GlobalAttributes_SetPrecisionType(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid precisionType value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tFloat";
+        ss << "\n\tNative";
+        ss << "\n\tDouble";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the precisionType in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetPrecisionType(GlobalAttributes::PrecisionType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid precisionType value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Float, Native, Double.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetPrecisionType(GlobalAttributes::PrecisionType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -941,21 +1706,54 @@ GlobalAttributes_SetBackendType(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid backendType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tVTK";
+        ss << "\n\tVTKM";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the backendType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetBackendType(GlobalAttributes::BackendType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid backendType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "VTK, VTKM.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetBackendType(GlobalAttributes::BackendType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -974,12 +1772,43 @@ GlobalAttributes_SetRemoveDuplicateNodes(PyObject *self, PyObject *args)
 {
     GlobalAttributesObject *obj = (GlobalAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the removeDuplicateNodes in the object.
-    obj->data->SetRemoveDuplicateNodes(ival != 0);
+    obj->data->SetRemoveDuplicateNodes(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1149,84 +1978,71 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
 int
 PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "sources") == 0)
-        obj = GlobalAttributes_SetSources(self, tuple);
+        obj = GlobalAttributes_SetSources(self, args);
     else if(strcmp(name, "windows") == 0)
-        obj = GlobalAttributes_SetWindows(self, tuple);
+        obj = GlobalAttributes_SetWindows(self, args);
     else if(strcmp(name, "activeWindow") == 0)
-        obj = GlobalAttributes_SetActiveWindow(self, tuple);
+        obj = GlobalAttributes_SetActiveWindow(self, args);
     else if(strcmp(name, "iconifiedFlag") == 0)
-        obj = GlobalAttributes_SetIconifiedFlag(self, tuple);
+        obj = GlobalAttributes_SetIconifiedFlag(self, args);
     else if(strcmp(name, "autoUpdateFlag") == 0)
-        obj = GlobalAttributes_SetAutoUpdateFlag(self, tuple);
+        obj = GlobalAttributes_SetAutoUpdateFlag(self, args);
     else if(strcmp(name, "replacePlots") == 0)
-        obj = GlobalAttributes_SetReplacePlots(self, tuple);
+        obj = GlobalAttributes_SetReplacePlots(self, args);
     else if(strcmp(name, "applyOperator") == 0)
-        obj = GlobalAttributes_SetApplyOperator(self, tuple);
+        obj = GlobalAttributes_SetApplyOperator(self, args);
     else if(strcmp(name, "applySelection") == 0)
-        obj = GlobalAttributes_SetApplySelection(self, tuple);
+        obj = GlobalAttributes_SetApplySelection(self, args);
     else if(strcmp(name, "applyWindow") == 0)
-        obj = GlobalAttributes_SetApplyWindow(self, tuple);
+        obj = GlobalAttributes_SetApplyWindow(self, args);
     else if(strcmp(name, "executing") == 0)
-        obj = GlobalAttributes_SetExecuting(self, tuple);
+        obj = GlobalAttributes_SetExecuting(self, args);
     else if(strcmp(name, "windowLayout") == 0)
-        obj = GlobalAttributes_SetWindowLayout(self, tuple);
+        obj = GlobalAttributes_SetWindowLayout(self, args);
     else if(strcmp(name, "makeDefaultConfirm") == 0)
-        obj = GlobalAttributes_SetMakeDefaultConfirm(self, tuple);
+        obj = GlobalAttributes_SetMakeDefaultConfirm(self, args);
     else if(strcmp(name, "cloneWindowOnFirstRef") == 0)
-        obj = GlobalAttributes_SetCloneWindowOnFirstRef(self, tuple);
+        obj = GlobalAttributes_SetCloneWindowOnFirstRef(self, args);
     else if(strcmp(name, "automaticallyAddOperator") == 0)
-        obj = GlobalAttributes_SetAutomaticallyAddOperator(self, tuple);
+        obj = GlobalAttributes_SetAutomaticallyAddOperator(self, args);
     else if(strcmp(name, "tryHarderCyclesTimes") == 0)
-        obj = GlobalAttributes_SetTryHarderCyclesTimes(self, tuple);
+        obj = GlobalAttributes_SetTryHarderCyclesTimes(self, args);
     else if(strcmp(name, "treatAllDBsAsTimeVarying") == 0)
-        obj = GlobalAttributes_SetTreatAllDBsAsTimeVarying(self, tuple);
+        obj = GlobalAttributes_SetTreatAllDBsAsTimeVarying(self, args);
     else if(strcmp(name, "createMeshQualityExpressions") == 0)
-        obj = GlobalAttributes_SetCreateMeshQualityExpressions(self, tuple);
+        obj = GlobalAttributes_SetCreateMeshQualityExpressions(self, args);
     else if(strcmp(name, "createTimeDerivativeExpressions") == 0)
-        obj = GlobalAttributes_SetCreateTimeDerivativeExpressions(self, tuple);
+        obj = GlobalAttributes_SetCreateTimeDerivativeExpressions(self, args);
     else if(strcmp(name, "createVectorMagnitudeExpressions") == 0)
-        obj = GlobalAttributes_SetCreateVectorMagnitudeExpressions(self, tuple);
+        obj = GlobalAttributes_SetCreateVectorMagnitudeExpressions(self, args);
     else if(strcmp(name, "newPlotsInheritSILRestriction") == 0)
-        obj = GlobalAttributes_SetNewPlotsInheritSILRestriction(self, tuple);
+        obj = GlobalAttributes_SetNewPlotsInheritSILRestriction(self, args);
     else if(strcmp(name, "userDirForSessionFiles") == 0)
-        obj = GlobalAttributes_SetUserDirForSessionFiles(self, tuple);
+        obj = GlobalAttributes_SetUserDirForSessionFiles(self, args);
     else if(strcmp(name, "saveCrashRecoveryFile") == 0)
-        obj = GlobalAttributes_SetSaveCrashRecoveryFile(self, tuple);
+        obj = GlobalAttributes_SetSaveCrashRecoveryFile(self, args);
     else if(strcmp(name, "ignoreExtentsFromDbs") == 0)
-        obj = GlobalAttributes_SetIgnoreExtentsFromDbs(self, tuple);
+        obj = GlobalAttributes_SetIgnoreExtentsFromDbs(self, args);
     else if(strcmp(name, "expandNewPlots") == 0)
-        obj = GlobalAttributes_SetExpandNewPlots(self, tuple);
+        obj = GlobalAttributes_SetExpandNewPlots(self, args);
     else if(strcmp(name, "userRestoreSessionFile") == 0)
-        obj = GlobalAttributes_SetUserRestoreSessionFile(self, tuple);
+        obj = GlobalAttributes_SetUserRestoreSessionFile(self, args);
     else if(strcmp(name, "precisionType") == 0)
-        obj = GlobalAttributes_SetPrecisionType(self, tuple);
+        obj = GlobalAttributes_SetPrecisionType(self, args);
     else if(strcmp(name, "backendType") == 0)
-        obj = GlobalAttributes_SetBackendType(self, tuple);
+        obj = GlobalAttributes_SetBackendType(self, args);
     else if(strcmp(name, "removeDuplicateNodes") == 0)
-        obj = GlobalAttributes_SetRemoveDuplicateNodes(self, tuple);
+        obj = GlobalAttributes_SetRemoveDuplicateNodes(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1372,7 +2188,7 @@ GlobalAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

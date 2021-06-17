@@ -221,21 +221,55 @@ MoleculeAttributes_SetDrawAtomsAs(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid drawAtomsAs value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tNoAtoms";
+        ss << "\n\tSphereAtoms";
+        ss << "\n\tImposterAtoms";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the drawAtomsAs in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetDrawAtomsAs(MoleculeAttributes::AtomRenderingMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid drawAtomsAs value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "NoAtoms, SphereAtoms, ImposterAtoms.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetDrawAtomsAs(MoleculeAttributes::AtomRenderingMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -254,21 +288,56 @@ MoleculeAttributes_SetScaleRadiusBy(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid scaleRadiusBy value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tFixed";
+        ss << "\n\tCovalent";
+        ss << "\n\tAtomic";
+        ss << "\n\tVariable";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scaleRadiusBy in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetScaleRadiusBy(MoleculeAttributes::RadiusType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid scaleRadiusBy value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "Fixed, Covalent, Atomic, Variable.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetScaleRadiusBy(MoleculeAttributes::RadiusType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -287,21 +356,55 @@ MoleculeAttributes_SetDrawBondsAs(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid drawBondsAs value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tNoBonds";
+        ss << "\n\tLineBonds";
+        ss << "\n\tCylinderBonds";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the drawBondsAs in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetDrawBondsAs(MoleculeAttributes::BondRenderingMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid drawBondsAs value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "NoBonds, LineBonds, CylinderBonds.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetDrawBondsAs(MoleculeAttributes::BondRenderingMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -320,21 +423,54 @@ MoleculeAttributes_SetColorBonds(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid colorBonds value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tColorByAtom";
+        ss << "\n\tSingleColor";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorBonds in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetColorBonds(MoleculeAttributes::BondColoringMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid colorBonds value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "ColorByAtom, SingleColor.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetColorBonds(MoleculeAttributes::BondColoringMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -378,14 +514,14 @@ MoleculeAttributes_SetBondSingleColor(PyObject *self, PyObject *args)
             {
                 PyObject *tuple = NULL;
                 if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 if(!PyTuple_Check(tuple))
-                    return PyExc_TypeError;
+                    return NULL;
 
                 // Make sure that the tuple is the right size.
                 if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return PyExc_ValueError;
+                    return NULL;
 
                 // Make sure that all elements in the tuple are ints.
                 for(int i = 0; i < PyTuple_Size(tuple); ++i)
@@ -396,7 +532,7 @@ MoleculeAttributes_SetBondSingleColor(PyObject *self, PyObject *args)
                     else if(PyFloat_Check(item))
                         c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
                     else
-                        return PyExc_TypeError;
+                        return NULL;
                 }
             }
         }
@@ -430,12 +566,37 @@ MoleculeAttributes_SetRadiusVariable(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the radiusVariable in the object.
-    obj->data->SetRadiusVariable(std::string(str));
+    obj->data->SetRadiusVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -454,12 +615,43 @@ MoleculeAttributes_SetRadiusScaleFactor(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the radiusScaleFactor in the object.
-    obj->data->SetRadiusScaleFactor(fval);
+    obj->data->SetRadiusScaleFactor(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -478,12 +670,43 @@ MoleculeAttributes_SetRadiusFixed(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the radiusFixed in the object.
-    obj->data->SetRadiusFixed(fval);
+    obj->data->SetRadiusFixed(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -502,21 +725,56 @@ MoleculeAttributes_SetAtomSphereQuality(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid atomSphereQuality value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tLow";
+        ss << "\n\tMedium";
+        ss << "\n\tHigh";
+        ss << "\n\tSuper";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the atomSphereQuality in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetAtomSphereQuality(MoleculeAttributes::DetailLevel(ival));
-    else
-    {
-        fprintf(stderr, "An invalid atomSphereQuality value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "Low, Medium, High, Super.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetAtomSphereQuality(MoleculeAttributes::DetailLevel(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -535,21 +793,56 @@ MoleculeAttributes_SetBondCylinderQuality(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 4)
+    {
+        std::stringstream ss;
+        ss << "An invalid bondCylinderQuality value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tLow";
+        ss << "\n\tMedium";
+        ss << "\n\tHigh";
+        ss << "\n\tSuper";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the bondCylinderQuality in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetBondCylinderQuality(MoleculeAttributes::DetailLevel(ival));
-    else
-    {
-        fprintf(stderr, "An invalid bondCylinderQuality value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "Low, Medium, High, Super.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetBondCylinderQuality(MoleculeAttributes::DetailLevel(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -568,12 +861,43 @@ MoleculeAttributes_SetBondRadius(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the bondRadius in the object.
-    obj->data->SetBondRadius(fval);
+    obj->data->SetBondRadius(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -592,12 +916,43 @@ MoleculeAttributes_SetBondLineWidth(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the bondLineWidth in the object.
-    obj->data->SetBondLineWidth(ival);
+    obj->data->SetBondLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -616,12 +971,37 @@ MoleculeAttributes_SetElementColorTable(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the elementColorTable in the object.
-    obj->data->SetElementColorTable(std::string(str));
+    obj->data->SetElementColorTable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -640,12 +1020,37 @@ MoleculeAttributes_SetResidueTypeColorTable(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the residueTypeColorTable in the object.
-    obj->data->SetResidueTypeColorTable(std::string(str));
+    obj->data->SetResidueTypeColorTable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -664,12 +1069,37 @@ MoleculeAttributes_SetResidueSequenceColorTable(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the residueSequenceColorTable in the object.
-    obj->data->SetResidueSequenceColorTable(std::string(str));
+    obj->data->SetResidueSequenceColorTable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -688,12 +1118,37 @@ MoleculeAttributes_SetContinuousColorTable(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the continuousColorTable in the object.
-    obj->data->SetContinuousColorTable(std::string(str));
+    obj->data->SetContinuousColorTable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -712,12 +1167,43 @@ MoleculeAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
+    obj->data->SetLegendFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -736,12 +1222,43 @@ MoleculeAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minFlag in the object.
-    obj->data->SetMinFlag(ival != 0);
+    obj->data->SetMinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -760,12 +1277,43 @@ MoleculeAttributes_SetScalarMin(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scalarMin in the object.
-    obj->data->SetScalarMin(fval);
+    obj->data->SetScalarMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -784,12 +1332,43 @@ MoleculeAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxFlag in the object.
-    obj->data->SetMaxFlag(ival != 0);
+    obj->data->SetMaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -808,12 +1387,43 @@ MoleculeAttributes_SetScalarMax(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scalarMax in the object.
-    obj->data->SetScalarMax(fval);
+    obj->data->SetScalarMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1009,9 +1619,10 @@ PyMoleculeAttributes_getattr(PyObject *self, char *name)
     }
     if (bondLineStyleFound)
     {
-        fprintf(stdout, "bondLineStyle is no longer a valid Molecule "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "bondLineStyle is no longer a valid Molecule "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
     return Py_FindMethod(PyMoleculeAttributes_methods, self, name);
@@ -1020,79 +1631,67 @@ PyMoleculeAttributes_getattr(PyObject *self, char *name)
 int
 PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "drawAtomsAs") == 0)
-        obj = MoleculeAttributes_SetDrawAtomsAs(self, tuple);
+        obj = MoleculeAttributes_SetDrawAtomsAs(self, args);
     else if(strcmp(name, "scaleRadiusBy") == 0)
-        obj = MoleculeAttributes_SetScaleRadiusBy(self, tuple);
+        obj = MoleculeAttributes_SetScaleRadiusBy(self, args);
     else if(strcmp(name, "drawBondsAs") == 0)
-        obj = MoleculeAttributes_SetDrawBondsAs(self, tuple);
+        obj = MoleculeAttributes_SetDrawBondsAs(self, args);
     else if(strcmp(name, "colorBonds") == 0)
-        obj = MoleculeAttributes_SetColorBonds(self, tuple);
+        obj = MoleculeAttributes_SetColorBonds(self, args);
     else if(strcmp(name, "bondSingleColor") == 0)
-        obj = MoleculeAttributes_SetBondSingleColor(self, tuple);
+        obj = MoleculeAttributes_SetBondSingleColor(self, args);
     else if(strcmp(name, "radiusVariable") == 0)
-        obj = MoleculeAttributes_SetRadiusVariable(self, tuple);
+        obj = MoleculeAttributes_SetRadiusVariable(self, args);
     else if(strcmp(name, "radiusScaleFactor") == 0)
-        obj = MoleculeAttributes_SetRadiusScaleFactor(self, tuple);
+        obj = MoleculeAttributes_SetRadiusScaleFactor(self, args);
     else if(strcmp(name, "radiusFixed") == 0)
-        obj = MoleculeAttributes_SetRadiusFixed(self, tuple);
+        obj = MoleculeAttributes_SetRadiusFixed(self, args);
     else if(strcmp(name, "atomSphereQuality") == 0)
-        obj = MoleculeAttributes_SetAtomSphereQuality(self, tuple);
+        obj = MoleculeAttributes_SetAtomSphereQuality(self, args);
     else if(strcmp(name, "bondCylinderQuality") == 0)
-        obj = MoleculeAttributes_SetBondCylinderQuality(self, tuple);
+        obj = MoleculeAttributes_SetBondCylinderQuality(self, args);
     else if(strcmp(name, "bondRadius") == 0)
-        obj = MoleculeAttributes_SetBondRadius(self, tuple);
+        obj = MoleculeAttributes_SetBondRadius(self, args);
     else if(strcmp(name, "bondLineWidth") == 0)
-        obj = MoleculeAttributes_SetBondLineWidth(self, tuple);
+        obj = MoleculeAttributes_SetBondLineWidth(self, args);
     else if(strcmp(name, "elementColorTable") == 0)
-        obj = MoleculeAttributes_SetElementColorTable(self, tuple);
+        obj = MoleculeAttributes_SetElementColorTable(self, args);
     else if(strcmp(name, "residueTypeColorTable") == 0)
-        obj = MoleculeAttributes_SetResidueTypeColorTable(self, tuple);
+        obj = MoleculeAttributes_SetResidueTypeColorTable(self, args);
     else if(strcmp(name, "residueSequenceColorTable") == 0)
-        obj = MoleculeAttributes_SetResidueSequenceColorTable(self, tuple);
+        obj = MoleculeAttributes_SetResidueSequenceColorTable(self, args);
     else if(strcmp(name, "continuousColorTable") == 0)
-        obj = MoleculeAttributes_SetContinuousColorTable(self, tuple);
+        obj = MoleculeAttributes_SetContinuousColorTable(self, args);
     else if(strcmp(name, "legendFlag") == 0)
-        obj = MoleculeAttributes_SetLegendFlag(self, tuple);
+        obj = MoleculeAttributes_SetLegendFlag(self, args);
     else if(strcmp(name, "minFlag") == 0)
-        obj = MoleculeAttributes_SetMinFlag(self, tuple);
+        obj = MoleculeAttributes_SetMinFlag(self, args);
     else if(strcmp(name, "scalarMin") == 0)
-        obj = MoleculeAttributes_SetScalarMin(self, tuple);
+        obj = MoleculeAttributes_SetScalarMin(self, args);
     else if(strcmp(name, "maxFlag") == 0)
-        obj = MoleculeAttributes_SetMaxFlag(self, tuple);
+        obj = MoleculeAttributes_SetMaxFlag(self, args);
     else if(strcmp(name, "scalarMax") == 0)
-        obj = MoleculeAttributes_SetScalarMax(self, tuple);
+        obj = MoleculeAttributes_SetScalarMax(self, args);
 
     // Try and handle legacy fields
     if(obj == NULL)
     {
         if(strcmp(name, "bondLineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'bondLineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
     }
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -1238,7 +1837,7 @@ MoleculeAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

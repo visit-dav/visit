@@ -160,12 +160,43 @@ StatisticalTrendsAttributes_SetStartIndex(PyObject *self, PyObject *args)
 {
     StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startIndex in the object.
-    obj->data->SetStartIndex((int)ival);
+    obj->data->SetStartIndex(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -184,12 +215,43 @@ StatisticalTrendsAttributes_SetStopIndex(PyObject *self, PyObject *args)
 {
     StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stopIndex in the object.
-    obj->data->SetStopIndex((int)ival);
+    obj->data->SetStopIndex(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -208,12 +270,43 @@ StatisticalTrendsAttributes_SetStride(PyObject *self, PyObject *args)
 {
     StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stride in the object.
-    obj->data->SetStride((int)ival);
+    obj->data->SetStride(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -232,21 +325,54 @@ StatisticalTrendsAttributes_SetStartTrendType(PyObject *self, PyObject *args)
 {
     StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid startTrendType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tAbsolute";
+        ss << "\n\tRelative";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the startTrendType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetStartTrendType(StatisticalTrendsAttributes::TrendTypeEnum(ival));
-    else
-    {
-        fprintf(stderr, "An invalid startTrendType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Absolute, Relative.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetStartTrendType(StatisticalTrendsAttributes::TrendTypeEnum(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -265,21 +391,54 @@ StatisticalTrendsAttributes_SetStopTrendType(PyObject *self, PyObject *args)
 {
     StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid stopTrendType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tAbsolute";
+        ss << "\n\tRelative";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stopTrendType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetStopTrendType(StatisticalTrendsAttributes::TrendTypeEnum(ival));
-    else
-    {
-        fprintf(stderr, "An invalid stopTrendType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Absolute, Relative.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetStopTrendType(StatisticalTrendsAttributes::TrendTypeEnum(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -298,22 +457,58 @@ StatisticalTrendsAttributes_SetStatisticType(PyObject *self, PyObject *args)
 {
     StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 6)
+    {
+        std::stringstream ss;
+        ss << "An invalid statisticType value was given." << std::endl;
+        ss << "Valid values are in the range [0,5]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tSum";
+        ss << "\n\tMean";
+        ss << "\n\tVariance";
+        ss << "\n\tStandardDeviation";
+        ss << "\n\tSlope";
+        ss << "\n\tResiduals";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the statisticType in the object.
-    if(ival >= 0 && ival < 6)
-        obj->data->SetStatisticType(StatisticalTrendsAttributes::StatisticTypeEnum(ival));
-    else
-    {
-        fprintf(stderr, "An invalid statisticType value was given. "
-                        "Valid values are in the range of [0,5]. "
-                        "You can also use the following names: "
-                        "Sum, Mean, Variance, StandardDeviation, Slope, "
-                        "Residuals.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetStatisticType(StatisticalTrendsAttributes::StatisticTypeEnum(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -332,21 +527,55 @@ StatisticalTrendsAttributes_SetTrendAxis(PyObject *self, PyObject *args)
 {
     StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid trendAxis value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tStep";
+        ss << "\n\tTime";
+        ss << "\n\tCycle";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the trendAxis in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetTrendAxis(StatisticalTrendsAttributes::TrendAxisEnum(ival));
-    else
-    {
-        fprintf(stderr, "An invalid trendAxis value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Step, Time, Cycle.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetTrendAxis(StatisticalTrendsAttributes::TrendAxisEnum(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -365,21 +594,54 @@ StatisticalTrendsAttributes_SetVariableSource(PyObject *self, PyObject *args)
 {
     StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid variableSource value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tDefault";
+        ss << "\n\tOperatorExpression";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the variableSource in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetVariableSource(StatisticalTrendsAttributes::VariableSourceEnum(ival));
-    else
-    {
-        fprintf(stderr, "An invalid variableSource value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Default, OperatorExpression.");
-        return PyExc_TypeError;
-    }
+    obj->data->SetVariableSource(StatisticalTrendsAttributes::VariableSourceEnum(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -492,44 +754,31 @@ PyStatisticalTrendsAttributes_getattr(PyObject *self, char *name)
 int
 PyStatisticalTrendsAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "startIndex") == 0)
-        obj = StatisticalTrendsAttributes_SetStartIndex(self, tuple);
+        obj = StatisticalTrendsAttributes_SetStartIndex(self, args);
     else if(strcmp(name, "stopIndex") == 0)
-        obj = StatisticalTrendsAttributes_SetStopIndex(self, tuple);
+        obj = StatisticalTrendsAttributes_SetStopIndex(self, args);
     else if(strcmp(name, "stride") == 0)
-        obj = StatisticalTrendsAttributes_SetStride(self, tuple);
+        obj = StatisticalTrendsAttributes_SetStride(self, args);
     else if(strcmp(name, "startTrendType") == 0)
-        obj = StatisticalTrendsAttributes_SetStartTrendType(self, tuple);
+        obj = StatisticalTrendsAttributes_SetStartTrendType(self, args);
     else if(strcmp(name, "stopTrendType") == 0)
-        obj = StatisticalTrendsAttributes_SetStopTrendType(self, tuple);
+        obj = StatisticalTrendsAttributes_SetStopTrendType(self, args);
     else if(strcmp(name, "statisticType") == 0)
-        obj = StatisticalTrendsAttributes_SetStatisticType(self, tuple);
+        obj = StatisticalTrendsAttributes_SetStatisticType(self, args);
     else if(strcmp(name, "trendAxis") == 0)
-        obj = StatisticalTrendsAttributes_SetTrendAxis(self, tuple);
+        obj = StatisticalTrendsAttributes_SetTrendAxis(self, args);
     else if(strcmp(name, "variableSource") == 0)
-        obj = StatisticalTrendsAttributes_SetVariableSource(self, tuple);
+        obj = StatisticalTrendsAttributes_SetVariableSource(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -675,7 +924,7 @@ StatisticalTrendsAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }

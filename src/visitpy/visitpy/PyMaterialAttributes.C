@@ -125,12 +125,43 @@ MaterialAttributes_SetSmoothing(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the smoothing in the object.
-    obj->data->SetSmoothing(ival != 0);
+    obj->data->SetSmoothing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -149,12 +180,43 @@ MaterialAttributes_SetForceMIR(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the forceMIR in the object.
-    obj->data->SetForceMIR(ival != 0);
+    obj->data->SetForceMIR(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -173,12 +235,43 @@ MaterialAttributes_SetCleanZonesOnly(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the cleanZonesOnly in the object.
-    obj->data->SetCleanZonesOnly(ival != 0);
+    obj->data->SetCleanZonesOnly(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -197,12 +290,43 @@ MaterialAttributes_SetNeedValidConnectivity(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the needValidConnectivity in the object.
-    obj->data->SetNeedValidConnectivity(ival != 0);
+    obj->data->SetNeedValidConnectivity(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -221,22 +345,57 @@ MaterialAttributes_SetAlgorithm(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid algorithm value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << "\n\tEquiT";
+        ss << "\n\tEquiZ";
+        ss << "\n\tIsovolume";
+        ss << "\n\tPLIC";
+        ss << "\n\tDiscrete";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the algorithm in the object.
-    if(ival >= 0 && ival < 5)
-        obj->data->SetAlgorithm(MaterialAttributes::Algorithm(ival));
-    else
-    {
-        fprintf(stderr, "An invalid algorithm value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "EquiT, EquiZ, Isovolume, PLIC, Discrete"
-                        ".");
-        return PyExc_TypeError;
-    }
+    obj->data->SetAlgorithm(MaterialAttributes::Algorithm(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -255,12 +414,43 @@ MaterialAttributes_SetIterationEnabled(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the iterationEnabled in the object.
-    obj->data->SetIterationEnabled(ival != 0);
+    obj->data->SetIterationEnabled(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -279,12 +469,43 @@ MaterialAttributes_SetNumIterations(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the numIterations in the object.
-    obj->data->SetNumIterations((int)ival);
+    obj->data->SetNumIterations(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -303,12 +524,43 @@ MaterialAttributes_SetIterationDamping(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the iterationDamping in the object.
-    obj->data->SetIterationDamping(fval);
+    obj->data->SetIterationDamping(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -327,12 +579,43 @@ MaterialAttributes_SetSimplifyHeavilyMixedZones(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the simplifyHeavilyMixedZones in the object.
-    obj->data->SetSimplifyHeavilyMixedZones(ival != 0);
+    obj->data->SetSimplifyHeavilyMixedZones(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -351,12 +634,43 @@ MaterialAttributes_SetMaxMaterialsPerZone(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxMaterialsPerZone in the object.
-    obj->data->SetMaxMaterialsPerZone((int)ival);
+    obj->data->SetMaxMaterialsPerZone(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -375,12 +689,43 @@ MaterialAttributes_SetIsoVolumeFraction(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the isoVolumeFraction in the object.
-    obj->data->SetIsoVolumeFraction(fval);
+    obj->data->SetIsoVolumeFraction(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -399,12 +744,43 @@ MaterialAttributes_SetAnnealingTime(PyObject *self, PyObject *args)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return PyExc_TypeError;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the annealingTime in the object.
-    obj->data->SetAnnealingTime((int)ival);
+    obj->data->SetAnnealingTime(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -509,52 +885,39 @@ PyMaterialAttributes_getattr(PyObject *self, char *name)
 int
 PyMaterialAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = PyExc_NameError;
+    PyObject *obj = NULL;
 
     if(strcmp(name, "smoothing") == 0)
-        obj = MaterialAttributes_SetSmoothing(self, tuple);
+        obj = MaterialAttributes_SetSmoothing(self, args);
     else if(strcmp(name, "forceMIR") == 0)
-        obj = MaterialAttributes_SetForceMIR(self, tuple);
+        obj = MaterialAttributes_SetForceMIR(self, args);
     else if(strcmp(name, "cleanZonesOnly") == 0)
-        obj = MaterialAttributes_SetCleanZonesOnly(self, tuple);
+        obj = MaterialAttributes_SetCleanZonesOnly(self, args);
     else if(strcmp(name, "needValidConnectivity") == 0)
-        obj = MaterialAttributes_SetNeedValidConnectivity(self, tuple);
+        obj = MaterialAttributes_SetNeedValidConnectivity(self, args);
     else if(strcmp(name, "algorithm") == 0)
-        obj = MaterialAttributes_SetAlgorithm(self, tuple);
+        obj = MaterialAttributes_SetAlgorithm(self, args);
     else if(strcmp(name, "iterationEnabled") == 0)
-        obj = MaterialAttributes_SetIterationEnabled(self, tuple);
+        obj = MaterialAttributes_SetIterationEnabled(self, args);
     else if(strcmp(name, "numIterations") == 0)
-        obj = MaterialAttributes_SetNumIterations(self, tuple);
+        obj = MaterialAttributes_SetNumIterations(self, args);
     else if(strcmp(name, "iterationDamping") == 0)
-        obj = MaterialAttributes_SetIterationDamping(self, tuple);
+        obj = MaterialAttributes_SetIterationDamping(self, args);
     else if(strcmp(name, "simplifyHeavilyMixedZones") == 0)
-        obj = MaterialAttributes_SetSimplifyHeavilyMixedZones(self, tuple);
+        obj = MaterialAttributes_SetSimplifyHeavilyMixedZones(self, args);
     else if(strcmp(name, "maxMaterialsPerZone") == 0)
-        obj = MaterialAttributes_SetMaxMaterialsPerZone(self, tuple);
+        obj = MaterialAttributes_SetMaxMaterialsPerZone(self, args);
     else if(strcmp(name, "isoVolumeFraction") == 0)
-        obj = MaterialAttributes_SetIsoVolumeFraction(self, tuple);
+        obj = MaterialAttributes_SetIsoVolumeFraction(self, args);
     else if(strcmp(name, "annealingTime") == 0)
-        obj = MaterialAttributes_SetAnnealingTime(self, tuple);
+        obj = MaterialAttributes_SetAnnealingTime(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if      (obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unknown problem while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_NameError)
-        obj = PyErr_Format(obj, "Unknown attribute name: '%s'", name);
-    else if (obj == PyExc_TypeError)
-        obj = PyErr_Format(obj, "Problem with type of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_ValueError)
-        obj = PyErr_Format(obj, "Problem with length/size of item while assigning to attribute: '%s'", name);
-    else if (obj == PyExc_IndexError)
-        obj = PyErr_Format(obj, "Problem with index of item while assigning to attribute: '%s'", name);
+    // if we don't have an object and no error is set, produce a generic message
+    if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
 
     return (obj != NULL) ? 0 : -1;
 }
@@ -700,7 +1063,7 @@ MaterialAttributes_new(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &useCurrent))
     {
         if (!PyArg_ParseTuple(args, ""))
-            return PyExc_TypeError;
+            return NULL;
         else
             PyErr_Clear();
     }
