@@ -129,7 +129,7 @@ def MoleculeOnly():
     # get Fresh atts
     mol = MoleculeAttributes()
     # set up sphere imposters
-    mol.drawAtomsAs = mol.SphereImposters
+    mol.drawAtomsAs = mol.ImposterAtoms
     SetPlotOptions(mol)
     DrawPlots()
     SaveTestImage("molecule_05")
