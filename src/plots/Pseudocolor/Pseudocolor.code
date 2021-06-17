@@ -34,9 +34,10 @@ Postfix:
     }
     if (lineStyleFound)
     {
-        fprintf(stdout, "lineStyle is no longer a valid Pseudocolor "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "lineStyle is no longer a valid Pseudocolor "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
 
@@ -49,22 +50,22 @@ Postfix:
         PseudocolorAttributesObject *PseudocolorObj = (PseudocolorAttributesObject *)self;
         if(strcmp(name, "useColorTableOpacity") == 0)
         {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            PyErr_WarnEx(NULL, "'useColorTableOpacity' is obsolete. Use 'opacityType'", 3);
+            int ival = -1;
+            PyArg_ParseTuple(args, "i", &ival);
+            if (ival != -1)
             {
-                Py_DECREF(tuple);
-                return -1;
+                if(ival == 0)
+                    PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Constant);
+                else
+                    PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::ColorTable);
             }
-            if(ival == 0)
-                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Constant);
-            else
-                PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::ColorTable);
-
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }

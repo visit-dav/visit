@@ -40,9 +40,10 @@ Postfix:
     }
     if (lineStyleFound)
     {
-        fprintf(stdout, "lineStyle is no longer a valid Mesh "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "lineStyle is no longer a valid Mesh "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
 
@@ -55,38 +56,37 @@ Postfix:
         MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
         if(strcmp(name, "backgroundFlag") == 0)
         {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            int ival = -1;
+            PyErr_WarnEx(NULL, "'backgroundFlag' is obsolete. Use 'opaqueColor'.", 2);
+            PyArg_ParseTuple(args, "i", &ival);
+            if (ival != -1)
             {
-                Py_DECREF(tuple);
-                return -1;
+                if (ival == 0)
+                    meshObj->data->SetOpaqueColorSource(MeshAttributes::OpaqueCustom);
+                else 
+                    meshObj->data->SetOpaqueColorSource(MeshAttributes::Background);
             }
-            if(ival == 0)
-                meshObj->data->SetOpaqueColorSource(MeshAttributes::OpaqueCustom);
-            else
-                meshObj->data->SetOpaqueColorSource(MeshAttributes::Background);
-
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "foregroundFlag") == 0)
         {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            int ival = -1;
+            PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Use 'meshColor'.", 2);
+            PyArg_ParseTuple(args, "i", &ival);
+            if (ival != -1)
             {
-                Py_DECREF(tuple);
-                return -1;
+                if (ival == 0)
+                    meshObj->data->SetMeshColorSource(MeshAttributes::MeshCustom);
+                else
+                    meshObj->data->SetMeshColorSource(MeshAttributes::Foreground);
             }
-            if(ival == 0)
-                meshObj->data->SetMeshColorSource(MeshAttributes::MeshCustom);
-            else
-                meshObj->data->SetMeshColorSource(MeshAttributes::Foreground);
-
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 2);
             Py_INCREF(Py_None);
             obj = Py_None;
         }

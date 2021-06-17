@@ -5,20 +5,20 @@ Postfix:
     // Try to handle legacy fields
     if(obj == NULL)
     {
-#define GETCOLOR if(!PyArg_ParseTuple(tuple, "iiii", &c[0], &c[1], &c[2], &c[3])) \
+#define GETCOLOR if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3])) \
     { \
         c[3] = 255; \
-        if(!PyArg_ParseTuple(tuple, "iii", &c[0], &c[1], &c[2])) \
+        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2])) \
         { \
             double dr, dg, db, da; \
-            if(PyArg_ParseTuple(tuple, "dddd", &dr, &dg, &db, &da)) \
+            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da)) \
             { \
                 c[0] = int(dr); \
                 c[1] = int(dg); \
                 c[2] = int(db); \
                 c[3] = int(da); \
             } \
-            else if(PyArg_ParseTuple(tuple, "ddd", &dr, &dg, &db)) \
+            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db)) \
             { \
                 c[0] = int(dr); \
                 c[1] = int(dg); \
@@ -28,7 +28,7 @@ Postfix:
             else \
             { \
                 PyObject *obj = NULL; \
-                if(!PyArg_ParseTuple(tuple, "O", &obj)) \
+                if(!PyArg_ParseTuple(args, "O", &obj)) \
                     success = false; \
                 if(!PyTuple_Check(obj)) \
                     success = false; \
@@ -54,53 +54,49 @@ Postfix:
         FontAttributes font2 = LabelObj->data->GetTextFont2();
         if(strcmp(name, "textHeight1") == 0)
         {
-            double val;
-            if(!PyArg_ParseTuple(tuple, "d", &val))
+            PyErr_WarnEx(NULL, "'textHeight1' is obsolete. Trying to accomodate.", 3);
+            double val = -1.0;
+            PyArg_ParseTuple(args, "d", &val);
+            if (val != -1.0)
             {
-                Py_DECREF(tuple);
-                return -1;
+                // Increase the value, new labels are smaller, we want
+                // a better approximation of the original size
+                font1.SetScale((val+0.02)*100);
             }
-            // Increase the value, new labels are smaller, we want
-            // a better approximation of the original size
-            font1.SetScale((val+0.02)*100);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "textHeight2") == 0)
         {
-            double val;
-            if(!PyArg_ParseTuple(tuple, "d", &val))
+            PyErr_WarnEx(NULL, "'textHeight2' is obsolete. Trying to accomodate.", 3);
+            double val = -1.0;
+            PyArg_ParseTuple(args, "d", &val);
+            if (val != -1.0)
             {
-                Py_DECREF(tuple);
-                return -1;
+                // Increase the value, new labels are smaller, we want
+                // a better approximation of the original size
+                font2.SetScale((val+0.02)*100);
             }
-            // Increase the value, new labels are smaller, we want
-            // a better approximation of the original size
-            font2.SetScale((val+0.02)*100);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "specifyTextColor1") == 0)
         {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
-            {
-                Py_DECREF(tuple);
-                return -1;
-            }
-            font1.SetUseForegroundColor(ival == 0 ? 1: 0);
+            PyErr_WarnEx(NULL, "'specifyTextColor1' is obsolete. Trying to accomodate.", 3);
+            int ival = -1;
+            PyArg_ParseTuple(args, "i", &ival);
+            if (ival != -1)
+                font1.SetUseForegroundColor(ival == 0 ? 1: 0);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "specifyTextColor2") == 0)
         {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
-            {
-                Py_DECREF(tuple);
-                return -1;
-            }
-            font2.SetUseForegroundColor(ival == 0 ? 1: 0);
+            PyErr_WarnEx(NULL, "'specifyTextColor2' is obsolete. Trying to accomodate.", 3);
+            int ival = -1;
+            PyArg_ParseTuple(args, "i", &ival);
+            if (ival != -1)
+                font2.SetUseForegroundColor(ival == 0 ? 1: 0);
             Py_INCREF(Py_None);
             obj = Py_None;
         }

@@ -198,9 +198,10 @@ Postfix:
     }
     if (lineStyleFound)
     {
-        fprintf(stdout, "lineStyle is no longer a valid Vector "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "lineStyle is no longer a valid Vector "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
 
@@ -214,38 +215,37 @@ Postfix:
         VectorAttributesObject *VectorObj = (VectorAttributesObject *)self;
         if(strcmp(name, "colorByMag") == 0)
         {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            int ival = -1;
+            PyErr_WarnEx(NULL, "'colorByMag' is obsolete. Use 'colorByMagnitude'.", 3);
+            PyArg_ParseTuple(args, "i", &ival);
+            if (ival != -1)
             {
-                Py_DECREF(tuple);
-                return -1;
+                if (ival == 0)
+                    VectorObj->data->SetColorByMagnitude(false);
+                else
+                    VectorObj->data->SetColorByMagnitude(true);
             }
-            if(ival == 0)
-                VectorObj->data->SetColorByMagnitude(false);
-            else
-                VectorObj->data->SetColorByMagnitude(true);
-
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         if(strcmp(name, "highQuality") == 0)
         {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            int ival = -1;
+            PyErr_WarnEx(NULL, "'highQuality' is obsolete. Use 'geometryQuality'.", 3);
+            PyArg_ParseTuple(args, "i", &ival);
+            if (ival != -1)
             {
-                Py_DECREF(tuple);
-                return -1;
+                if (ival == 0)
+                    VectorObj->data->SetGeometryQuality(VectorAttributes::Fast);
+                else
+                    VectorObj->data->SetGeometryQuality(VectorAttributes::High);
             }
-            if(ival == 0)
-                VectorObj->data->SetGeometryQuality(VectorAttributes::Fast);
-            else
-                VectorObj->data->SetGeometryQuality(VectorAttributes::High);
-
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }

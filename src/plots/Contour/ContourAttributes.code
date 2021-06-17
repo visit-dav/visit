@@ -727,9 +727,9 @@ Postfix:
     }
     if (lineStyleFound)
     {
-        fprintf(stdout, "lineStyle is no longer a valid Contour "
+        PyErr_WarnEx(NULL, "lineStyle is no longer a valid Contour "
                        "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+                       "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
 
@@ -743,6 +743,7 @@ Postfix:
     {
         if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
