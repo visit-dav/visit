@@ -264,6 +264,8 @@ MoleculeMapperHelper::CreateCylinderBetweenTwoPoints(double *p0, double *p1,
 //  Creation:    January 25, 2010
 //
 //  Modifications:
+//    Kathleen Biagas, June 16, 2021
+//    Add normals for all inserted ids.
 //
 // ****************************************************************************
 
@@ -318,10 +320,12 @@ MoleculeMapperHelper::CreateCylinderCap(double *p0, double *p1, int half,
     if (half==0)
       {
       ids->InsertNextId(pts->InsertNextPoint(p1[0] + r*v0[0], p1[1] + r*v0[1], p1[2] + r*v0[2]));
+      normals->InsertNextTypedTuple(vc);
       }
     else
       {
       ids->InsertNextId(pts->InsertNextPoint(p0[0] + r*v0[0], p0[1] + r*v0[1], p0[2] + r*v0[2]));
+      normals->InsertNextTypedTuple(vc);
       }
     }
 
@@ -900,6 +904,12 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
 
 //----------------------------------------------------------------------------
 // Generate position, scale, and orientation vectors for each bond cylinder
+//
+//  Modifications:
+//    Kathleen Biagas, June 16, 2021
+//    Use separate color arrays for lines and cylinders as they have different
+//    number of cells.
+//
 void vtkVisItMoleculeMapper::UpdateBondPolyData()
 {
   this->BondLinesPolyData->Initialize();
@@ -919,9 +929,12 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
   vtkNew<vtkCellArray> cylPolys;
   vtkNew<vtkFloatArray> cylNorms;
   cylNorms->SetNumberOfComponents(3);
-  vtkNew<vtkUnsignedCharArray> bondColors;
-  bondColors->SetName("Colors");
-  bondColors->SetNumberOfComponents(3);
+  vtkNew<vtkUnsignedCharArray> cylinderBondColors;
+  cylinderBondColors->SetName("Colors");
+  cylinderBondColors->SetNumberOfComponents(3);
+  vtkNew<vtkUnsignedCharArray> lineBondColors;
+  lineBondColors->SetName("Colors");
+  lineBondColors->SetNumberOfComponents(3);
 
   bool primary_is_cell_centered = false;
   vtkDataArray *primary = input->GetPointData()->GetScalars();
@@ -1114,7 +1127,8 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
           {
           unsigned char bc[3] = {255,0, 0};
           for (int i = 0;i < ncells; ++i)
-            bondColors->InsertNextTypedTuple(this->BondColor);
+            cylinderBondColors->InsertNextTypedTuple(this->BondColor);
+          lineBondColors->InsertNextTypedTuple(this->BondColor);
           }
         else // (this->BondColorMode == ColorByAtom)
           {
@@ -1128,7 +1142,8 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
             {
             int level = element_number % this->NumColors;
             for (int i = 0;i < ncells; ++i)
-              bondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
+              cylinderBondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
+            lineBondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
             }
           else if (color_by_levels)
             {
@@ -1138,13 +1153,15 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
               const unsigned char *rgb =
               levelsLUT->MapValue(level);
               for (int i = 0;i < ncells; ++i)
-                bondColors->InsertNextTypedTuple(rgb);
+                cylinderBondColors->InsertNextTypedTuple(rgb);
+              lineBondColors->InsertNextTypedTuple(rgb);
               }
             else
               {
               level = level % this->NumColors;
               for (int i = 0;i < ncells; ++i)
-                bondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
+                cylinderBondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
+              lineBondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
               }
             }
           else
@@ -1161,7 +1178,8 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
             if (color > this->NumColors-1)
               color = this->NumColors-1;
             for (int i = 0;i < ncells; ++i)
-              bondColors->InsertNextTypedTuple(&this->MolColors[4*color]);
+              cylinderBondColors->InsertNextTypedTuple(&this->MolColors[4*color]);
+            lineBondColors->InsertNextTypedTuple(&this->MolColors[4*color]);
             }
           } // color by atom
         } // for half
@@ -1170,10 +1188,10 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
     } // for number of lines
   this->BondLinesPolyData->SetPoints(linePoints);
   this->BondLinesPolyData->SetLines(lineLines.GetPointer());
-  this->BondLinesPolyData->GetCellData()->SetScalars(bondColors.GetPointer());
+  this->BondLinesPolyData->GetCellData()->SetScalars(lineBondColors.GetPointer());
   this->BondCylsPolyData->SetPoints(cylPoints);
   this->BondCylsPolyData->SetPolys(cylPolys.GetPointer());
-  this->BondCylsPolyData->GetCellData()->SetScalars(bondColors.GetPointer());
+  this->BondCylsPolyData->GetCellData()->SetScalars(cylinderBondColors.GetPointer());
   this->BondCylsPolyData->GetPointData()->SetNormals(cylNorms.GetPointer());
 }
 
