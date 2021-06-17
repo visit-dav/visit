@@ -308,16 +308,17 @@ class PythonGeneratorField : public virtual Field
 };
 
 //
+// Programmer: Mark C. Miller, Wed Jun 16 18:03:36 PDT 2021
+//
 // We apparently support two approaches to setting values in a VisIt attributes
 // object; 1) via assignment operator (=), 2) via function call to Set method.
 // Examples:
 //
 //     ca = CylinderAttributes()
-//     ca.point1=1,2,3
-//     ca.point1=(1,2,3) # treated by Python interpreter same as above
-//     ca.SetPoint1(1,2,3)
-//
-// It turns out that the Python interpreter handles these differently.
+//     ca.radius=1.1       # handled by Python as single scalar object
+//     ca.point1=(1,2,3)   # handled by Python as tuple
+//     ca.point1=1,2,3     # handled by Python same as above
+//     ca.SetPoint1(1,2,3) # handled by Python as ((1,2,3),)
 //
 // The assignment operator (1) passes through the object's setattr() method and
 // that method (as implemented here) then turns around and calls the Set function
@@ -325,16 +326,22 @@ class PythonGeneratorField : public virtual Field
 // object's setattr() method and arrives in the Set function directly.
 //
 // In addition to the above difference, the Python interpreter itself also passes
-// the arguments to these differently. In the assignment approach, it passes the
-// args either as a single, scalar value, if that is what is being assigned or as
-// a tuple if multiple items are being assigned. In the Set function call approach,
-// it takes the whatever args are present (even if just a single, scalar value) and
-// packages them as the *first* member of a tuple of size one and passes that tuple.
-// It effectively wraps them by one level of indirection into an extra tuple.
+// the arguments here to the C/C++ extension library differently. In the assignment
+// approach, it passes the args AS GIVEN. If a single scalar value is assigned,
+// that is what arrives here. If a comma separated group of values is assigned (e.g.
+// = b,c,d) a tuple arrives here. If a list is assigned, that list arrives here.
+// In the Set function call approach, it takes whatever args are present (even
+// if just a single, scalar value) and packages them as the *first* member of a
+// tuple of size one and passes that tuple. It effectively wraps them by one level
+// of indirection into an extra tuple.
 //
 // The macro'd code blocks below attempt to detect the case where the interpreter
 // has packaged the args into the first member of a tuple of size 1 and then
-// undo that packaging before proceeding normally.
+// undo that packaging before proceeding normally when it makes sense to do so.
+//
+// Many lines of code are common among these macros. They could be re-factored
+// into even smaller pieces further. However, that does complicate the coding
+// and usage also and so I opted not to factor further.
 //
 
 //
@@ -495,7 +502,7 @@ class PythonGeneratorField : public virtual Field
 //    * pyFunc is the Python function call to obtain the pyType value.
 //
 #define WRITE_SET_METHOD_BODY_FOR_VECTOR_OF_NUMBERS(cType, pyType, pyFunc) \
-        c << "    " #cType "Vector  &vec = obj->data->"; \
+        c << "    " #cType "Vector &vec = obj->data->"; \
         if(accessType == Field::AccessPublic) \
             c << name; \
         else \
@@ -1028,7 +1035,8 @@ class AttsGeneratorUChar : public virtual UChar , public virtual PythonGenerator
         : Field("uchar",n,l), UChar(n,l), PythonGeneratorField("uchar",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(unsigned char, long, PyLong_AsLong)
+        c << "    typedef unsigned char uchar;" << Endl; // necessary alias for unsigned char
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(uchar, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1064,7 +1072,8 @@ class AttsGeneratorUCharArray : public virtual UCharArray , public virtual Pytho
         : Field("ucharArray",n,l), UCharArray(s,n,l), PythonGeneratorField("ucharArray",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_ARRAY_OF_NUMBERS(unsigned char, long, PyLong_AsLong)
+        c << "    typedef unsigned char uchar;" << Endl; // necessary alias for unsigned char
+        WRITE_SET_METHOD_BODY_FOR_ARRAY_OF_NUMBERS(uchar, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1118,7 +1127,8 @@ class AttsGeneratorUCharVector : public virtual UCharVector , public virtual Pyt
         : Field("ucharVector",n,l), UCharVector(n,l), PythonGeneratorField("ucharVector",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_VECTOR_OF_NUMBERS(unsigned char, long, PyLong_AsLong)
+        c << "    typedef unsigned char uchar;" << Endl; // necessary alias for unsigned char
+        WRITE_SET_METHOD_BODY_FOR_VECTOR_OF_NUMBERS(uchar, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
