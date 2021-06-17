@@ -123,6 +123,23 @@ def MoleculeOnly():
     SaveTestImage("molecule_04")
 
     DeleteAllPlots()
+
+    # ensure viewer doesn't crash when atoms drawn as SphereImposters and scaleRadisyBy option is changed
+    AddPlot("Molecule", "element")
+    # get Fresh atts
+    mol = MoleculeAttributes()
+    # set up sphere imposters
+    mol.drawAtomsAs = mol.SphereImposters
+    SetPlotOptions(mol)
+    DrawPlots()
+    SaveTestImage("molecule_05")
+    # now change scaleRadiusBy
+    mol.scaleRadiusBy = mol.Covalent
+    SetPlotOptions(mol)
+    DrawPlots()
+    SaveTestImage("molecule_06")
+
+    DeleteAllPlots()
     CloseDatabase(data_path("ProteinDataBank_test_data/crotamine.pdb"))
 
 def ReplicateAddBonds():
