@@ -386,25 +386,38 @@ vtkVisItMoleculeMapper::vtkVisItMoleculeMapper()
 
   // ATOMS
   // Setup glyph sources
-  sphere->LatLongTessellationOn();
-  sphere->SetRadius(1.0);
-  sphere->SetThetaResolution(12);
-  sphere->SetPhiResolution(7);
-  sphere->Update();
+  this->sphere = vtkSphereSource::New();
+  this->sphere->LatLongTessellationOn();
+  this->sphere->SetRadius(1.0);
+  this->sphere->SetThetaResolution(12);
+  this->sphere->SetPhiResolution(7);
+  this->sphere->Update();
+
+  this->AtomMapper = vtkGlyph3DMapper::New();
   this->AtomMapper->SetSourceConnection(sphere->GetOutputPort());
   this->AtomMapper->SetScaleModeToScaleByMagnitude();
 
+  this->AtomPolyData = vtkPolyData::New();
   // Connect the trivial producers to forward the glyph polydata
-  this->AtomOutput->SetOutput(this->AtomPolyData.GetPointer());
+
+  this->AtomOutput = vtkTrivialProducer::New();
+  this->AtomOutput->SetOutput(this->AtomPolyData);
   this->AtomMapper->SetInputConnection (this->AtomOutput->GetOutputPort());
 
+  this->ImposterMapper = vtkPointMapper::New();
   this->ImposterMapper->SetColorModeToMapScalars();
   this->ImposterMapper->SetScalarModeToUsePointData();
   this->ImposterMapper->UseImpostersOn();
   this->ImposterMapper->SetInputConnection(this->AtomOutput->GetOutputPort());
 
   // Connect the trivial producers to forward the glyph polydata
-  this->BondOutput->SetOutput(this->BondLinesPolyData.GetPointer());
+  this->BondLinesPolyData = vtkPolyData::New();
+  this->BondCylsPolyData = vtkPolyData::New();
+
+  this->BondOutput = vtkTrivialProducer::New();
+  this->BondOutput->SetOutput(this->BondLinesPolyData);
+
+  this->BondMapper = vtkPolyDataMapper::New();
   this->BondMapper->SetInputConnection
     (this->BondOutput->GetOutputPort());
 
@@ -420,6 +433,16 @@ vtkVisItMoleculeMapper::~vtkVisItMoleculeMapper()
     delete[] this->MolColors;
   this->MolColors = NULL;
   delete this->Helper;
+
+  this->sphere->Delete();
+  this->AtomPolyData->Delete();
+  this->AtomOutput->Delete();
+  this->BondLinesPolyData->Delete();
+  this->BondCylsPolyData->Delete();
+  this->BondOutput->Delete();
+  this->AtomMapper->Delete();
+  this->ImposterMapper->Delete();
+  this->BondMapper->Delete();
 }
 
 
@@ -1192,9 +1215,9 @@ void vtkVisItMoleculeMapper::SetDrawBondsAs(int type)
 {
   DrawBondsAs = type;
   if (DrawBondsAs == vtkVisItMoleculeMapper::Lines)
-    this->BondOutput->SetOutput(this->BondLinesPolyData.GetPointer());
+    this->BondOutput->SetOutput(this->BondLinesPolyData);
   else
-    this->BondOutput->SetOutput(this->BondCylsPolyData.GetPointer());
+    this->BondOutput->SetOutput(this->BondCylsPolyData);
   this->BondMapper->Modified();
 }
 
