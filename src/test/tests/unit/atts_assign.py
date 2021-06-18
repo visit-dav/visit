@@ -3,7 +3,11 @@
 #
 #  Test Case:  atts_assign.py
 #
-#  Tests:      Behavior of assignment for attribute objects
+#  Tests: Behavior of assignment for attribute objects. Ensures good cases
+#  succeed and bad cases fail with specific python exceptions. Tests variety
+#  of types present in members of VisIt attribute objects. Tests both
+#  assignment usage (e.g. atts.memberName=...) and setter function usage
+#  (e.g. atts.SetMemberName(...))
 #
 #  Mark C. Miller, Tue Jun  8 15:51:59 PDT 2021
 #
@@ -17,10 +21,6 @@ def TestAssignmentToTuple():
 
     ca = CylinderAttributes()
     
-    #
-    # First, test cases that should fail
-    #
-
     # Non-existent member name 'point'
     try:
         ca.point = 1,2,3
@@ -89,9 +89,6 @@ def TestAssignmentToTuple():
             TestFOA('ca.SetPoint1(%s)'%repr(fails[i]), '%s:%s'%(LINE(),i))
             pass
 
-    #
-    # Now test cases that should work
-    #
     try:
         ca.point1 = 1,2,3
         TestPOA('ca.point1=1,2,3')
@@ -122,7 +119,6 @@ def TestAssignmentToBool():
 
     ca = CylinderAttributes()
 
-    # assign tuple to bool
     try:
         ca.inverse = 1,2
         TestFOA('ca.inverse=1,2', LINE())
@@ -282,7 +278,6 @@ def TestAssignmentToDouble():
 
     ca = CylinderAttributes()
 
-    # assign tuple to double
     try:
         ca.radius = 1,2
         TestFOA('ca.radius=1,2', LINE())
@@ -384,12 +379,17 @@ def TestAssignmentToString():
         except:
             TestFOA('ca.SetDesignator(%s)'%repr(works[i]), LINE()) 
 
+# Scalar assignments
 TestAssignmentToBool()
 TestAssignmentToInt()
 TestAssignmentToFloat()
 TestAssignmentToDouble()
 TestAssignmentToString()
 TestAssignmentToTuple()
+
+# Array assignments
+
+# Vector assignments
 
     
 Exit()
