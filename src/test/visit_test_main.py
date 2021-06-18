@@ -1868,12 +1868,12 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
             if isinstance(actual, bool) and isinstance(expected, bool):
                 rndprec = 0
                 result = oper(actual, expected)
-                actual_str = "%s"%actual
-                expected_str = "%s"%expected
+                actual_str = '%s'%actual
+                expected_str = '%s'%expected
             else:
                 result = oper(round(float(actual), rndprec),round(float(expected), rndprec))
-                actual_str = "%.*f"%(rndprec,round(float(actual),rndprec))
-                expected_str = "%.*f"%(rndprec,round(float(expected),rndprec))
+                actual_str = '%.*f'%(rndprec,round(float(actual),rndprec))
+                expected_str = '%.*f'%(rndprec,round(float(expected),rndprec))
         except:
             result = oper(str(actual), str(expected))
             actual_str = str(actual)
@@ -1883,8 +1883,8 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
             rndact = [round(float(x),rndprec) for x in actual]
             rndexp = [round(float(x),rndprec) for x in expected]
             result = oper(rndact,rndexp)
-            actual_str = ["%.*f"%(rndprec,round(float(x),rndprec)) for x in actual]
-            expected_str = ["%.*f"%(rndprec,round(float(x),rndprec)) for x in expected]
+            actual_str = ['%.*f'%(rndprec,round(float(x),rndprec)) for x in actual]
+            expected_str = ['%.*f'%(rndprec,round(float(x),rndprec)) for x in expected]
         except:
             result = oper(str(actual),str(expected))
             actual_str = str(actual)
@@ -1892,39 +1892,12 @@ def TestValueOp(case_name, actual, expected, rndprec=5, oper=operator.eq, dolog=
     if dolog:
         skip = TestEnv.check_skip(case_name)
         if skip:
-            TestEnv.results["numskip"] += 1
+            TestEnv.results['numskip'] += 1
         if result == False and not skip:
-            TestEnv.results["maxds"] = max(TestEnv.results["maxds"], 2)
+            TestEnv.results['maxds'] = max(TestEnv.results['maxds'], 2)
         LogValueTestResult(case_name,oper.__name__,result,
-            "%s .%s. %s (prec=%d)" % (actual_str,oper.__name__,expected_str,rndprec),skip)
+            '%s .%s. %s (prec=%d)' % (actual_str,oper.__name__,expected_str,rndprec),skip)
     return result
-
-# Python equiv. of C __LINE__ useful to differentiate multiple FOA instances
-# Useful as line arg to TestFOA()/FailOnArrival()
-def LINE():
-    return str(sys._getframe(1).f_lineno)
-
-#
-# The ...OnArrival methods are useful for cases where the majority of logic for
-# determining a passed or failed test exists primarily as the python code itself
-# being executed. A good example is unit/atts_assign.py. While there may be many
-# instances of FOA with the same name argument, they can be differentiated by the
-# line arg. However, there should be only a single POA instance with the same
-# name.
-#
-def FailOnArrival(name, line="unk"):
-    return TestValueEQ(name+':'+line, False, True)
-
-def PassOnArrival(name):
-    return TestValueEQ(name, True, True)
-
-# Alias for FailOnArrival
-def TestFOA(name, line="unk"):
-    return FailOnArrival(name, line)
-
-# Alias for PassOnArrival
-def TestPOA(name):
-    return PassOnArrival(name)
 
 # actual == expected
 def TestValueEQ(case_name, actual, expected, rndprec=5):
@@ -1973,6 +1946,33 @@ def TestValueIN(case_name, bucket, expected, rndprec=5, eqoper=operator.eq):
     LogValueTestResult(case_name,eqoper.__name__,result,
         "%s .in. %s (prec=%d, at=%d)" % (str(expected),str(bucket),rndprec,at),skip)
     return result
+
+# Python equiv. of C __LINE__ useful to tag multiple FOA instances
+# Useful as tag arg to TestFOA()/FailOnArrival()
+def LINE():
+    return str(sys._getframe(1).f_lineno)
+
+#
+# The ...OnArrival methods are useful for cases where the majority of logic for
+# determining a passed or failed test exists primarily as the python code itself
+# being executed. A good example is unit/atts_assign.py. While there may be many
+# instances of FOA with the same name argument, they can be differentiated by the
+# line arg. However, there should be only a single POA instance with the same
+# name.
+#
+def FailOnArrival(name, tag='unk'):
+    return TestValueEQ(name+':'+tag, False, True)
+
+def PassOnArrival(name):
+    return TestValueEQ(name, True, True)
+
+# Alias for FailOnArrival
+def TestFOA(name, tag='unk'):
+    return FailOnArrival(name, tag)
+
+# Alias for PassOnArrival
+def TestPOA(name):
+    return PassOnArrival(name)
 
 # ----------------------------------------------------------------------------
 # Function: TestSection
