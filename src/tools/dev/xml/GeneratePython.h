@@ -349,8 +349,9 @@ class PythonGeneratorField : public virtual Field
 //    * cType is the type of the destination member of the Attribute object.
 //    * pyType is the type returned from Python interpreter.
 //    * pyFunc is the Python function call to obtain the pyType value.
+//    * ckVal (usually just 'val') a value to check cval for conversion error 
 //
-#define WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(cType, pyType, pyFunc) \
+#define WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(cType, pyType, pyFunc, ckVal) \
         c << "    PyObject *packaged_args = 0;" << Endl; \
         c << Endl; \
         c << "    // Handle args packaged into a tuple of size one" << Endl; \
@@ -377,7 +378,7 @@ class PythonGeneratorField : public virtual Field
         c << "    " #pyType " val = " #pyFunc "(args);" << Endl; \
         c << "    " #cType " cval = " #cType "(val);" << Endl; \
         c << Endl; \
-        c << "    if ((val == -1.0 && PyErr_Occurred()) || cval != val)" << Endl; \
+        c << "    if ((val == -1 && PyErr_Occurred()) || cval != " #ckVal ")" << Endl; \
         c << "    {" << Endl; \
         c << "        Py_XDECREF(packaged_args);" << Endl; \
         c << "        PyErr_Clear();" << Endl; \
@@ -475,7 +476,7 @@ class PythonGeneratorField : public virtual Field
         c << "        " #pyType " val = " #pyFunc "(item);" << Endl; \
         c << "        " #cType " cval = " #cType "(val);" << Endl; \
         c << Endl; \
-        c << "        if ((val == -1.0 && PyErr_Occurred()) || cval != val)" << Endl; \
+        c << "        if ((val == -1 && PyErr_Occurred()) || cval != val)" << Endl; \
         c << "        {" << Endl; \
         c << "            Py_XDECREF(packaged_args);" << Endl; \
         c << "            Py_DECREF(item);" << Endl; \
@@ -502,23 +503,18 @@ class PythonGeneratorField : public virtual Field
 //    * pyFunc is the Python function call to obtain the pyType value.
 //
 #define WRITE_SET_METHOD_BODY_FOR_VECTOR_OF_NUMBERS(cType, pyType, pyFunc) \
-        c << "    " #cType "Vector &vec = obj->data->"; \
-        if(accessType == Field::AccessPublic) \
-            c << name; \
-        else \
-            c << MethodNameGet() << "()"; \
-        c << ";" << Endl; \
+        c << "    " #cType "Vector vec;" << Endl; \
         c << Endl; \
         c << "    if (PyNumber_Check(args))" << Endl; \
         c << "    {" << Endl; \
-        c << "        vec.resize(1);" << Endl; \
         c << "        " #pyType " val = " #pyFunc "(args);" << Endl; \
         c << "        " #cType " cval = " #cType "(val);" << Endl; \
-        c << "        if ((val == -1.0 && PyErr_Occurred()) || cval != val)" << Endl; \
+        c << "        if ((val == -1 && PyErr_Occurred()) || cval != val)" << Endl; \
         c << "        {" << Endl; \
         c << "            PyErr_Clear();" << Endl; \
         c << "            return PyErr_Format(PyExc_TypeError, \"number not interpretable as C++ " #cType "\");" << Endl; \
         c << "        }" << Endl; \
+        c << "        vec.resize(1);" << Endl; \
         c << "        vec[0] = cval;" << Endl; \
         c << "    }" << Endl; \
         c << "    else if (PySequence_Check(args) && !PyUnicode_Check(args))" << Endl; \
@@ -537,7 +533,7 @@ class PythonGeneratorField : public virtual Field
         c << "            " #pyType " val = " #pyFunc "(item);" << Endl; \
         c << "            " #cType " cval = " #cType "(val);" << Endl; \
         c << Endl; \
-        c << "            if ((val == -1.0 && PyErr_Occurred()) || cval != val)" << Endl; \
+        c << "            if ((val == -1 && PyErr_Occurred()) || cval != val)" << Endl; \
         c << "            {" << Endl; \
         c << "                Py_DECREF(item);" << Endl; \
         c << "                PyErr_Clear();" << Endl; \
@@ -551,6 +547,12 @@ class PythonGeneratorField : public virtual Field
         c << "    else" << Endl; \
         c << "        return PyErr_Format(PyExc_TypeError, \"arg(s) must be one or more " #cType "s\");" << Endl; \
         c << Endl; \
+        c << "    obj->data->"; \
+        if(accessType == Field::AccessPublic) \
+            c << name; \
+        else \
+            c << MethodNameGet() << "()"; \
+        c << " = vec;" << Endl; \
         c << "    // Mark the "<<name<<" in the object as modified." << Endl; \
         if(accessType == Field::AccessPublic) \
             c << "    obj->data->SelectAll();" << Endl; \
@@ -567,7 +569,7 @@ class AttsGeneratorInt : public virtual Int , public virtual PythonGeneratorFiel
         : Field("int",n,l), Int(n,l), PythonGeneratorField("int",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(int, long, PyLong_AsLong)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(int, long, PyLong_AsLong, val)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -710,7 +712,7 @@ class AttsGeneratorBool : public virtual Bool , public virtual PythonGeneratorFi
         : Field("bool",n,l), Bool(n,l), PythonGeneratorField("bool",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(bool, long, PyLong_AsLong)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(bool, long, PyLong_AsLong, bool(val))
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -749,7 +751,7 @@ class AttsGeneratorFloat : public virtual Float , public virtual PythonGenerator
         : Field("float",n,l), Float(n,l), PythonGeneratorField("float",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(float, double, PyFloat_AsDouble)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(float, double, PyFloat_AsDouble, val)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -891,7 +893,7 @@ class AttsGeneratorDouble : public virtual Double , public virtual PythonGenerat
         : Field("double",n,l), Double(n,l), PythonGeneratorField("double",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(double, double, PyFloat_AsDouble)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(double, double, PyFloat_AsDouble, val)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1036,7 +1038,7 @@ class AttsGeneratorUChar : public virtual UChar , public virtual PythonGenerator
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    typedef unsigned char uchar;" << Endl; // necessary alias for unsigned char
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(uchar, long, PyLong_AsLong)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(uchar, long, PyLong_AsLong, val)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1217,16 +1219,10 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         : Field("stringVector",n,l), StringVector(n,l), PythonGeneratorField("stringVector",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    stringVector  &vec = obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name;
-        else
-            c << MethodNameGet() << "()";
-        c << ";" << Endl;
+        c << "    stringVector vec;" << Endl;
         c << Endl;
         c << "    if (PyUnicode_Check(args))" << Endl;
         c << "    {" << Endl;
-        c << "        vec.resize(1);" << Endl;
         c << "        char const *val = PyUnicode_AsUTF8(args);" << Endl;
         c << "        std::string cval = std::string(val);" << Endl;
         c << "        if ((val == 0 && PyErr_Occurred()) || cval != val)" << Endl;
@@ -1234,11 +1230,11 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << "            PyErr_Clear();" << Endl;
         c << "            return PyErr_Format(PyExc_TypeError, \"arg not interpretable as C++ string\");" << Endl;
         c << "        }" << Endl;
+        c << "        vec.resize(1);" << Endl;
         c << "        vec[0] = cval;" << Endl;
         c << "    }" << Endl;
         c << "    else if (PySequence_Check(args))" << Endl;
         c << "    {" << Endl;
-#warning WE MODIFY VECTOR BEFORE WE KNOW THIS OPERATION SUCCEEDS. SHOULD WE BUILD UP A COPY AND ASSIGN IT INSTEAD
         c << "        vec.resize(PySequence_Size(args));" << Endl;
         c << "        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)" << Endl;
         c << "        {" << Endl;
@@ -1267,6 +1263,12 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << "    else" << Endl;
         c << "        return PyErr_Format(PyExc_TypeError, \"arg(s) must be one or more string(s)\");" << Endl;
         c << Endl;
+        c << "    obj->data->";
+        if(accessType == Field::AccessPublic)
+            c << name;
+        else
+            c << MethodNameGet() << "()";
+        c << " = vec;" << Endl;
         c << "    // Mark the "<<name<<" in the object as modified." << Endl;
         if(accessType == Field::AccessPublic)
             c << "    obj->data->SelectAll();" << Endl;
@@ -1467,8 +1469,7 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual PythonG
         : Field("linewidth",n,l), LineWidth(n,l), PythonGeneratorField("linewidth",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-#warning WE SHOULD RANGE CHECK THIS BUT WE DON'T KNOW MAX HERE
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(int, long, PyLong_AsLong)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(int, long, PyLong_AsLong, val)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1504,7 +1505,7 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual PythonGener
         : Field("opacity",n,l), Opacity(n,l), PythonGeneratorField("opacity",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(double, double, PyFloat_AsDouble)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(double, double, PyFloat_AsDouble, val)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -2103,7 +2104,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         c << "    long val = PyLong_AsLong(args);" << Endl;
         c << "    int cval = int(val);" << Endl;
         c << Endl;
-        c << "    if ((val == -1.0 && PyErr_Occurred()) || cval != val)" << Endl;
+        c << "    if ((val == -1 && PyErr_Occurred()) || cval != val)" << Endl;
         c << "    {" << Endl;
         c << "        Py_XDECREF(packaged_args);" << Endl;
         c << "        PyErr_Clear();" << Endl;
@@ -3043,7 +3044,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         }
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
-        c << "    PyObject *obj = NULL;" << Endl;
+        c << "    PyObject nullobj;" << Endl;
+        c << "    PyObject *obj = &nullobj;" << Endl;
         c << Endl;
 
         // Figure out the first field that can write a _setattr method.
@@ -3067,9 +3069,13 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    if (obj != NULL)" << Endl;
         c << "        Py_DECREF(obj);" << Endl;
         c << Endl;
-        c << "    // if we don't have an object and no error is set, produce a generic message" << Endl;
-        c << "    if (obj == NULL && !PyErr_Occurred())" << Endl;
-        c << "        PyErr_Format(PyExc_RuntimeError, \"'\%s' is unknown or hit an unknown problem\", name);" << Endl;
+        c << "    if (obj == &nullobj)" << Endl;
+        c << "    {" << Endl;
+        c << "        obj = NULL;" << Endl;
+        c << "        PyErr_Format(PyExc_NameError, \"name '\%s' is not defined\", name);" << Endl;
+        c << "    }" << Endl;
+        c << "    else if (obj == NULL && !PyErr_Occurred())" << Endl;
+        c << "        PyErr_Format(PyExc_RuntimeError, \"unknown problem with '\%s'\", name);" << Endl;
         c << Endl;
         c << "    return (obj != NULL) ? 0 : -1;" << Endl;
         c << "}" << Endl;
