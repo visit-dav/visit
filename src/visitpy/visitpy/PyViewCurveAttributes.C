@@ -147,7 +147,7 @@ ViewCurveAttributes_SetDomainCoords(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -220,7 +220,7 @@ ViewCurveAttributes_SetRangeCoords(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -293,7 +293,7 @@ ViewCurveAttributes_SetViewportCoords(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -454,7 +454,8 @@ PyViewCurveAttributes_getattr(PyObject *self, char *name)
 int
 PyViewCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "domainCoords") == 0)
         obj = ViewCurveAttributes_SetDomainCoords(self, args);
@@ -470,9 +471,13 @@ PyViewCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

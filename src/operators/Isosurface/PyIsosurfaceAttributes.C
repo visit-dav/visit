@@ -168,7 +168,7 @@ IsosurfaceAttributes_SetContourNLevels(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -197,18 +197,18 @@ IsosurfaceAttributes_SetContourValue(PyObject *self, PyObject *args)
 {
     IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
 
-    doubleVector &vec = obj->data->GetContourValue();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -227,7 +227,7 @@ IsosurfaceAttributes_SetContourValue(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -241,6 +241,7 @@ IsosurfaceAttributes_SetContourValue(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetContourValue() = vec;
     // Mark the contourValue in the object as modified.
     obj->data->SelectContourValue();
 
@@ -265,18 +266,18 @@ IsosurfaceAttributes_SetContourPercent(PyObject *self, PyObject *args)
 {
     IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)self;
 
-    doubleVector &vec = obj->data->GetContourPercent();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -295,7 +296,7 @@ IsosurfaceAttributes_SetContourPercent(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -309,6 +310,7 @@ IsosurfaceAttributes_SetContourPercent(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetContourPercent() = vec;
     // Mark the contourPercent in the object as modified.
     obj->data->SelectContourPercent();
 
@@ -359,7 +361,7 @@ IsosurfaceAttributes_SetContourMethod(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -426,7 +428,7 @@ IsosurfaceAttributes_SetMinFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -481,7 +483,7 @@ IsosurfaceAttributes_SetMin(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -536,7 +538,7 @@ IsosurfaceAttributes_SetMaxFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -591,7 +593,7 @@ IsosurfaceAttributes_SetMax(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -646,7 +648,7 @@ IsosurfaceAttributes_SetScaling(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -814,7 +816,8 @@ PyIsosurfaceAttributes_getattr(PyObject *self, char *name)
 int
 PyIsosurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "contourNLevels") == 0)
         obj = IsosurfaceAttributes_SetContourNLevels(self, args);
@@ -840,9 +843,13 @@ PyIsosurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

@@ -90,18 +90,18 @@ ExtractPointFunction2DAttributes_SetI(PyObject *self, PyObject *args)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
 
-    intVector &vec = obj->data->GetI();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -120,7 +120,7 @@ ExtractPointFunction2DAttributes_SetI(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -134,6 +134,7 @@ ExtractPointFunction2DAttributes_SetI(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetI() = vec;
     // Mark the I in the object as modified.
     obj->data->SelectI();
 
@@ -158,18 +159,18 @@ ExtractPointFunction2DAttributes_SetJ(PyObject *self, PyObject *args)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)self;
 
-    intVector &vec = obj->data->GetJ();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -188,7 +189,7 @@ ExtractPointFunction2DAttributes_SetJ(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -202,6 +203,7 @@ ExtractPointFunction2DAttributes_SetJ(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetJ() = vec;
     // Mark the J in the object as modified.
     obj->data->SelectJ();
 
@@ -261,7 +263,8 @@ PyExtractPointFunction2DAttributes_getattr(PyObject *self, char *name)
 int
 PyExtractPointFunction2DAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "I") == 0)
         obj = ExtractPointFunction2DAttributes_SetI(self, args);
@@ -271,9 +274,13 @@ PyExtractPointFunction2DAttributes_setattr(PyObject *self, char *name, PyObject 
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

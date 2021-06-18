@@ -216,7 +216,7 @@ LabelAttributes_SetLegendFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -271,7 +271,7 @@ LabelAttributes_SetShowNodes(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -326,7 +326,7 @@ LabelAttributes_SetShowCells(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -381,7 +381,7 @@ LabelAttributes_SetRestrictNumberOfLabels(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -436,7 +436,7 @@ LabelAttributes_SetDrawLabelsFacing(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -503,7 +503,7 @@ LabelAttributes_SetLabelDisplayFormat(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -570,7 +570,7 @@ LabelAttributes_SetNumberOfLabels(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -691,7 +691,7 @@ LabelAttributes_SetHorizontalJustification(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -758,7 +758,7 @@ LabelAttributes_SetVerticalJustification(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -825,7 +825,7 @@ LabelAttributes_SetDepthTestMode(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1029,7 +1029,8 @@ PyLabelAttributes_getattr(PyObject *self, char *name)
 int
 PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "legendFlag") == 0)
         obj = LabelAttributes_SetLegendFlag(self, args);
@@ -1189,9 +1190,13 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

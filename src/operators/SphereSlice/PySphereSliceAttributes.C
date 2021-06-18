@@ -111,7 +111,7 @@ SphereSliceAttributes_SetOrigin(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -175,7 +175,7 @@ SphereSliceAttributes_SetRadius(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -239,7 +239,8 @@ PySphereSliceAttributes_getattr(PyObject *self, char *name)
 int
 PySphereSliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "origin") == 0)
         obj = SphereSliceAttributes_SetOrigin(self, args);
@@ -249,9 +250,13 @@ PySphereSliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

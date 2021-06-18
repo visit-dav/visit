@@ -574,7 +574,7 @@ LCSAttributes_SetSourceType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -649,7 +649,7 @@ LCSAttributes_SetResolution(PyObject *self, PyObject *args)
         long val = PyLong_AsLong(item);
         int cval = int(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -713,7 +713,7 @@ LCSAttributes_SetUseDataSetStart(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -788,7 +788,7 @@ LCSAttributes_SetStartPosition(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -852,7 +852,7 @@ LCSAttributes_SetUseDataSetEnd(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -927,7 +927,7 @@ LCSAttributes_SetEndPosition(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -991,7 +991,7 @@ LCSAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1058,7 +1058,7 @@ LCSAttributes_SetAuxiliaryGrid(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1125,7 +1125,7 @@ LCSAttributes_SetAuxiliaryGridSpacing(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1180,7 +1180,7 @@ LCSAttributes_SetMaxSteps(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1235,7 +1235,7 @@ LCSAttributes_SetOperationType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1305,7 +1305,7 @@ LCSAttributes_SetCauchyGreenTensor(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1371,7 +1371,7 @@ LCSAttributes_SetEigenComponent(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1442,7 +1442,7 @@ LCSAttributes_SetEigenWeight(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1497,7 +1497,7 @@ LCSAttributes_SetOperatorType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1563,7 +1563,7 @@ LCSAttributes_SetTerminationType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1630,7 +1630,7 @@ LCSAttributes_SetTerminateBySize(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1685,7 +1685,7 @@ LCSAttributes_SetTermSize(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1740,7 +1740,7 @@ LCSAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1795,7 +1795,7 @@ LCSAttributes_SetTermDistance(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1850,7 +1850,7 @@ LCSAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1905,7 +1905,7 @@ LCSAttributes_SetTermTime(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1960,7 +1960,7 @@ LCSAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2015,7 +2015,7 @@ LCSAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2070,7 +2070,7 @@ LCSAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2125,7 +2125,7 @@ LCSAttributes_SetRelTol(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2180,7 +2180,7 @@ LCSAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2246,7 +2246,7 @@ LCSAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2301,7 +2301,7 @@ LCSAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2356,7 +2356,7 @@ LCSAttributes_SetFieldType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2426,7 +2426,7 @@ LCSAttributes_SetFieldConstant(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2490,7 +2490,7 @@ LCSAttributes_SetVelocitySource(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -2554,7 +2554,7 @@ LCSAttributes_SetIntegrationType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2624,7 +2624,7 @@ LCSAttributes_SetClampLogValues(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2679,7 +2679,7 @@ LCSAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2747,7 +2747,7 @@ LCSAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2802,7 +2802,7 @@ LCSAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2857,7 +2857,7 @@ LCSAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2912,7 +2912,7 @@ LCSAttributes_SetPathlines(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2967,7 +2967,7 @@ LCSAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObject *arg
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3022,7 +3022,7 @@ LCSAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3077,7 +3077,7 @@ LCSAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3132,7 +3132,7 @@ LCSAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3198,7 +3198,7 @@ LCSAttributes_SetThresholdLimit(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3253,7 +3253,7 @@ LCSAttributes_SetRadialLimit(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3308,7 +3308,7 @@ LCSAttributes_SetBoundaryLimit(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3363,7 +3363,7 @@ LCSAttributes_SetSeedLimit(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3418,7 +3418,7 @@ LCSAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3473,7 +3473,7 @@ LCSAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3528,7 +3528,7 @@ LCSAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3583,7 +3583,7 @@ LCSAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3638,7 +3638,7 @@ LCSAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3693,7 +3693,7 @@ LCSAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3748,7 +3748,7 @@ LCSAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -4141,7 +4141,8 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
 int
 PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "sourceType") == 0)
         obj = LCSAttributes_SetSourceType(self, args);
@@ -4255,9 +4256,13 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

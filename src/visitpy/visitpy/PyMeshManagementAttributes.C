@@ -151,18 +151,18 @@ MeshManagementAttributes_SetDiscretizationTolerance(PyObject *self, PyObject *ar
 {
     MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
 
-    doubleVector &vec = obj->data->GetDiscretizationTolerance();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -181,7 +181,7 @@ MeshManagementAttributes_SetDiscretizationTolerance(PyObject *self, PyObject *ar
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -195,6 +195,7 @@ MeshManagementAttributes_SetDiscretizationTolerance(PyObject *self, PyObject *ar
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetDiscretizationTolerance() = vec;
     // Mark the discretizationTolerance in the object as modified.
     obj->data->SelectDiscretizationTolerance();
 
@@ -219,18 +220,18 @@ MeshManagementAttributes_SetDiscretizationToleranceX(PyObject *self, PyObject *a
 {
     MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
 
-    doubleVector &vec = obj->data->GetDiscretizationToleranceX();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -249,7 +250,7 @@ MeshManagementAttributes_SetDiscretizationToleranceX(PyObject *self, PyObject *a
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -263,6 +264,7 @@ MeshManagementAttributes_SetDiscretizationToleranceX(PyObject *self, PyObject *a
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetDiscretizationToleranceX() = vec;
     // Mark the discretizationToleranceX in the object as modified.
     obj->data->SelectDiscretizationToleranceX();
 
@@ -287,18 +289,18 @@ MeshManagementAttributes_SetDiscretizationToleranceY(PyObject *self, PyObject *a
 {
     MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
 
-    doubleVector &vec = obj->data->GetDiscretizationToleranceY();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -317,7 +319,7 @@ MeshManagementAttributes_SetDiscretizationToleranceY(PyObject *self, PyObject *a
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -331,6 +333,7 @@ MeshManagementAttributes_SetDiscretizationToleranceY(PyObject *self, PyObject *a
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetDiscretizationToleranceY() = vec;
     // Mark the discretizationToleranceY in the object as modified.
     obj->data->SelectDiscretizationToleranceY();
 
@@ -355,18 +358,18 @@ MeshManagementAttributes_SetDiscretizationToleranceZ(PyObject *self, PyObject *a
 {
     MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)self;
 
-    doubleVector &vec = obj->data->GetDiscretizationToleranceZ();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -385,7 +388,7 @@ MeshManagementAttributes_SetDiscretizationToleranceZ(PyObject *self, PyObject *a
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -399,6 +402,7 @@ MeshManagementAttributes_SetDiscretizationToleranceZ(PyObject *self, PyObject *a
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetDiscretizationToleranceZ() = vec;
     // Mark the discretizationToleranceZ in the object as modified.
     obj->data->SelectDiscretizationToleranceZ();
 
@@ -449,7 +453,7 @@ MeshManagementAttributes_SetDiscretizationMode(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -516,7 +520,7 @@ MeshManagementAttributes_SetDiscretizeBoundaryOnly(PyObject *self, PyObject *arg
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -571,7 +575,7 @@ MeshManagementAttributes_SetPassNativeCSG(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -662,7 +666,8 @@ PyMeshManagementAttributes_getattr(PyObject *self, char *name)
 int
 PyMeshManagementAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "discretizationTolerance") == 0)
         obj = MeshManagementAttributes_SetDiscretizationTolerance(self, args);
@@ -682,9 +687,13 @@ PyMeshManagementAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

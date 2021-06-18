@@ -248,18 +248,18 @@ CreateBondsAttributes_SetAtomicNumber1(PyObject *self, PyObject *args)
 {
     CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
 
-    intVector &vec = obj->data->GetAtomicNumber1();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -278,7 +278,7 @@ CreateBondsAttributes_SetAtomicNumber1(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -292,6 +292,7 @@ CreateBondsAttributes_SetAtomicNumber1(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetAtomicNumber1() = vec;
     // Mark the atomicNumber1 in the object as modified.
     obj->data->SelectAtomicNumber1();
 
@@ -316,18 +317,18 @@ CreateBondsAttributes_SetAtomicNumber2(PyObject *self, PyObject *args)
 {
     CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
 
-    intVector &vec = obj->data->GetAtomicNumber2();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -346,7 +347,7 @@ CreateBondsAttributes_SetAtomicNumber2(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -360,6 +361,7 @@ CreateBondsAttributes_SetAtomicNumber2(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetAtomicNumber2() = vec;
     // Mark the atomicNumber2 in the object as modified.
     obj->data->SelectAtomicNumber2();
 
@@ -384,18 +386,18 @@ CreateBondsAttributes_SetMinDist(PyObject *self, PyObject *args)
 {
     CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
 
-    doubleVector &vec = obj->data->GetMinDist();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -414,7 +416,7 @@ CreateBondsAttributes_SetMinDist(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -428,6 +430,7 @@ CreateBondsAttributes_SetMinDist(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetMinDist() = vec;
     // Mark the minDist in the object as modified.
     obj->data->SelectMinDist();
 
@@ -452,18 +455,18 @@ CreateBondsAttributes_SetMaxDist(PyObject *self, PyObject *args)
 {
     CreateBondsAttributesObject *obj = (CreateBondsAttributesObject *)self;
 
-    doubleVector &vec = obj->data->GetMaxDist();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -482,7 +485,7 @@ CreateBondsAttributes_SetMaxDist(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -496,6 +499,7 @@ CreateBondsAttributes_SetMaxDist(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetMaxDist() = vec;
     // Mark the maxDist in the object as modified.
     obj->data->SelectMaxDist();
 
@@ -546,7 +550,7 @@ CreateBondsAttributes_SetMaxBondsClamp(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -601,7 +605,7 @@ CreateBondsAttributes_SetAddPeriodicBonds(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -656,7 +660,7 @@ CreateBondsAttributes_SetUseUnitCellVectors(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -711,7 +715,7 @@ CreateBondsAttributes_SetPeriodicInX(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -766,7 +770,7 @@ CreateBondsAttributes_SetPeriodicInY(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -821,7 +825,7 @@ CreateBondsAttributes_SetPeriodicInZ(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -885,7 +889,7 @@ CreateBondsAttributes_SetXVector(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -958,7 +962,7 @@ CreateBondsAttributes_SetYVector(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -1031,7 +1035,7 @@ CreateBondsAttributes_SetZVector(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -1152,7 +1156,8 @@ PyCreateBondsAttributes_getattr(PyObject *self, char *name)
 int
 PyCreateBondsAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "elementVariable") == 0)
         obj = CreateBondsAttributes_SetElementVariable(self, args);
@@ -1186,9 +1191,13 @@ PyCreateBondsAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

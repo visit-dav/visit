@@ -249,18 +249,18 @@ ContourAttributes_SetChangedColors(PyObject *self, PyObject *args)
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
     typedef unsigned char uchar;
-    ucharVector &vec = obj->data->GetChangedColors();
+    ucharVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         uchar cval = uchar(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ uchar");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -279,7 +279,7 @@ ContourAttributes_SetChangedColors(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             uchar cval = uchar(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -293,6 +293,7 @@ ContourAttributes_SetChangedColors(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more uchars");
 
+    obj->data->GetChangedColors() = vec;
     // Mark the changedColors in the object as modified.
     obj->data->SelectChangedColors();
 
@@ -343,7 +344,7 @@ ContourAttributes_SetColorType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -459,7 +460,7 @@ ContourAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -514,7 +515,7 @@ ContourAttributes_SetLegendFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -569,7 +570,7 @@ ContourAttributes_SetLineWidth(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -911,7 +912,7 @@ ContourAttributes_SetContourNLevels(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -940,18 +941,18 @@ ContourAttributes_SetContourValue(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    doubleVector &vec = obj->data->GetContourValue();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -970,7 +971,7 @@ ContourAttributes_SetContourValue(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -984,6 +985,7 @@ ContourAttributes_SetContourValue(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetContourValue() = vec;
     // Mark the contourValue in the object as modified.
     obj->data->SelectContourValue();
 
@@ -1008,18 +1010,18 @@ ContourAttributes_SetContourPercent(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
 
-    doubleVector &vec = obj->data->GetContourPercent();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -1038,7 +1040,7 @@ ContourAttributes_SetContourPercent(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -1052,6 +1054,7 @@ ContourAttributes_SetContourPercent(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetContourPercent() = vec;
     // Mark the contourPercent in the object as modified.
     obj->data->SelectContourPercent();
 
@@ -1102,7 +1105,7 @@ ContourAttributes_SetContourMethod(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1169,7 +1172,7 @@ ContourAttributes_SetMinFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1224,7 +1227,7 @@ ContourAttributes_SetMaxFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1279,7 +1282,7 @@ ContourAttributes_SetMin(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1334,7 +1337,7 @@ ContourAttributes_SetMax(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1389,7 +1392,7 @@ ContourAttributes_SetScaling(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1455,7 +1458,7 @@ ContourAttributes_SetWireframe(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1637,7 +1640,8 @@ PyContourAttributes_getattr(PyObject *self, char *name)
 int
 PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "defaultPalette") == 0)
         obj = ContourAttributes_SetDefaultPalette(self, args);
@@ -1691,9 +1695,13 @@ PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

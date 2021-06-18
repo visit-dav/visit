@@ -136,18 +136,18 @@ QueryAttributes_SetResultsValue(PyObject *self, PyObject *args)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)self;
 
-    doubleVector &vec = obj->data->GetResultsValue();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -166,7 +166,7 @@ QueryAttributes_SetResultsValue(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -180,6 +180,7 @@ QueryAttributes_SetResultsValue(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetResultsValue() = vec;
     // Mark the resultsValue in the object as modified.
     obj->data->SelectResultsValue();
 
@@ -230,7 +231,7 @@ QueryAttributes_SetTimeStep(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -538,7 +539,8 @@ PyQueryAttributes_getattr(PyObject *self, char *name)
 int
 PyQueryAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "resultsMessage") == 0)
         obj = QueryAttributes_SetResultsMessage(self, args);
@@ -558,9 +560,13 @@ PyQueryAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

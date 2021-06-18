@@ -586,7 +586,7 @@ avtMeshMetaData_SetValidVariable(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -687,7 +687,7 @@ avtMeshMetaData_SetCellOrigin(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -742,7 +742,7 @@ avtMeshMetaData_SetSpatialDimension(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -797,7 +797,7 @@ avtMeshMetaData_SetHasLogicalBounds(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -861,7 +861,7 @@ avtMeshMetaData_SetLogicalBounds(PyObject *self, PyObject *args)
         long val = PyLong_AsLong(item);
         int cval = int(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -925,7 +925,7 @@ avtMeshMetaData_SetHasNumberCells(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -980,7 +980,7 @@ avtMeshMetaData_SetNumberCells(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1035,7 +1035,7 @@ avtMeshMetaData_SetTopologicalDimension(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1384,7 +1384,7 @@ avtMeshMetaData_SetHasSpatialExtents(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1448,7 +1448,7 @@ avtMeshMetaData_SetMinSpatialExtents(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -1521,7 +1521,7 @@ avtMeshMetaData_SetMaxSpatialExtents(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -1585,7 +1585,7 @@ avtMeshMetaData_SetNumBlocks(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1640,7 +1640,7 @@ avtMeshMetaData_SetBlockOrigin(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1767,11 +1767,10 @@ avtMeshMetaData_SetBlockNames(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    stringVector  &vec = obj->data->blockNames;
+    stringVector vec;
 
     if (PyUnicode_Check(args))
     {
-        vec.resize(1);
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
         if ((val == 0 && PyErr_Occurred()) || cval != val)
@@ -1779,6 +1778,7 @@ avtMeshMetaData_SetBlockNames(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args))
@@ -1811,6 +1811,7 @@ avtMeshMetaData_SetBlockNames(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->blockNames = vec;
     // Mark the blockNames in the object as modified.
     obj->data->SelectAll();
 
@@ -1894,7 +1895,7 @@ avtMeshMetaData_SetNumGroups(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1949,7 +1950,7 @@ avtMeshMetaData_SetGroupOrigin(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2076,11 +2077,10 @@ avtMeshMetaData_SetGroupNames(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    stringVector  &vec = obj->data->groupNames;
+    stringVector vec;
 
     if (PyUnicode_Check(args))
     {
-        vec.resize(1);
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
         if ((val == 0 && PyErr_Occurred()) || cval != val)
@@ -2088,6 +2088,7 @@ avtMeshMetaData_SetGroupNames(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args))
@@ -2120,6 +2121,7 @@ avtMeshMetaData_SetGroupNames(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->groupNames = vec;
     // Mark the groupNames in the object as modified.
     obj->data->SelectAll();
 
@@ -2144,18 +2146,18 @@ avtMeshMetaData_SetGroupIds(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    intVector &vec = obj->data->groupIds;
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -2174,7 +2176,7 @@ avtMeshMetaData_SetGroupIds(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -2188,6 +2190,7 @@ avtMeshMetaData_SetGroupIds(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->groupIds = vec;
     // Mark the groupIds in the object as modified.
     obj->data->SelectAll();
 
@@ -2212,18 +2215,18 @@ avtMeshMetaData_SetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    intVector &vec = obj->data->groupIdsBasedOnRange;
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -2242,7 +2245,7 @@ avtMeshMetaData_SetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -2256,6 +2259,7 @@ avtMeshMetaData_SetGroupIdsBasedOnRange(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->groupIdsBasedOnRange = vec;
     // Mark the groupIdsBasedOnRange in the object as modified.
     obj->data->SelectAll();
 
@@ -2306,7 +2310,7 @@ avtMeshMetaData_SetDisjointElements(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2384,7 +2388,7 @@ avtMeshMetaData_SetContainsOriginalCells(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2439,7 +2443,7 @@ avtMeshMetaData_SetContainsOriginalNodes(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2494,7 +2498,7 @@ avtMeshMetaData_SetContainsGlobalNodeIds(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2549,7 +2553,7 @@ avtMeshMetaData_SetContainsGlobalZoneIds(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2627,7 +2631,7 @@ avtMeshMetaData_SetNodesAreCritical(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2691,7 +2695,7 @@ avtMeshMetaData_SetUnitCellVectors(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         float cval = float(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -2764,7 +2768,7 @@ avtMeshMetaData_SetUnitCellOrigin(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         float cval = float(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -2828,7 +2832,7 @@ avtMeshMetaData_SetRectilinearGridHasTransform(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2892,7 +2896,7 @@ avtMeshMetaData_SetRectilinearGridTransform(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -2956,7 +2960,7 @@ avtMeshMetaData_SetNodeOrigin(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3011,7 +3015,7 @@ avtMeshMetaData_SetContainsExteriorBoundaryGhosts(PyObject *self, PyObject *args
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3066,7 +3070,7 @@ avtMeshMetaData_SetHideFromGUI(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3121,7 +3125,7 @@ avtMeshMetaData_SetLODs(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3176,7 +3180,7 @@ avtMeshMetaData_SetPresentGhostZoneTypes(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3231,7 +3235,7 @@ avtMeshMetaData_SetZonesWereSplit(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3543,7 +3547,8 @@ PyavtMeshMetaData_getattr(PyObject *self, char *name)
 int
 PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "name") == 0)
         obj = avtMeshMetaData_SetName(self, args);
@@ -3653,9 +3658,13 @@ PyavtMeshMetaData_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

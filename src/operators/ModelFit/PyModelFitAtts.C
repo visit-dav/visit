@@ -234,11 +234,10 @@ ModelFitAtts_SetVars(PyObject *self, PyObject *args)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
 
-    stringVector  &vec = obj->data->GetVars();
+    stringVector vec;
 
     if (PyUnicode_Check(args))
     {
-        vec.resize(1);
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
         if ((val == 0 && PyErr_Occurred()) || cval != val)
@@ -246,6 +245,7 @@ ModelFitAtts_SetVars(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args))
@@ -278,6 +278,7 @@ ModelFitAtts_SetVars(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetVars() = vec;
     // Mark the Vars in the object as modified.
     obj->data->SelectVars();
 
@@ -302,18 +303,18 @@ ModelFitAtts_SetNumVars(PyObject *self, PyObject *args)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
 
-    intVector &vec = obj->data->GetNumVars();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -332,7 +333,7 @@ ModelFitAtts_SetNumVars(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -346,6 +347,7 @@ ModelFitAtts_SetNumVars(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetNumVars() = vec;
     // Mark the numVars in the object as modified.
     obj->data->SelectNumVars();
 
@@ -370,18 +372,18 @@ ModelFitAtts_SetTuples(PyObject *self, PyObject *args)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
 
-    doubleVector &vec = obj->data->GetTuples();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -400,7 +402,7 @@ ModelFitAtts_SetTuples(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -414,6 +416,7 @@ ModelFitAtts_SetTuples(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetTuples() = vec;
     // Mark the Tuples in the object as modified.
     obj->data->SelectTuples();
 
@@ -439,18 +442,18 @@ ModelFitAtts_SetStatTuples(PyObject *self, PyObject *args)
     ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
 
     typedef unsigned char uchar;
-    ucharVector &vec = obj->data->GetStatTuples();
+    ucharVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         uchar cval = uchar(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ uchar");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -469,7 +472,7 @@ ModelFitAtts_SetStatTuples(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             uchar cval = uchar(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -483,6 +486,7 @@ ModelFitAtts_SetStatTuples(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more uchars");
 
+    obj->data->GetStatTuples() = vec;
     // Mark the StatTuples in the object as modified.
     obj->data->SelectStatTuples();
 
@@ -507,18 +511,18 @@ ModelFitAtts_SetNumTups(PyObject *self, PyObject *args)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
 
-    intVector &vec = obj->data->GetNumTups();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -537,7 +541,7 @@ ModelFitAtts_SetNumTups(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -551,6 +555,7 @@ ModelFitAtts_SetNumTups(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetNumTups() = vec;
     // Mark the numTups in the object as modified.
     obj->data->SelectNumTups();
 
@@ -575,18 +580,18 @@ ModelFitAtts_SetThold(PyObject *self, PyObject *args)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
 
-    doubleVector &vec = obj->data->GetThold();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -605,7 +610,7 @@ ModelFitAtts_SetThold(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -619,6 +624,7 @@ ModelFitAtts_SetThold(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetThold() = vec;
     // Mark the thold in the object as modified.
     obj->data->SelectThold();
 
@@ -643,18 +649,18 @@ ModelFitAtts_SetSelectionType(PyObject *self, PyObject *args)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
 
-    intVector &vec = obj->data->GetSelectionType();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -673,7 +679,7 @@ ModelFitAtts_SetSelectionType(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -687,6 +693,7 @@ ModelFitAtts_SetSelectionType(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetSelectionType() = vec;
     // Mark the selectionType in the object as modified.
     obj->data->SelectSelectionType();
 
@@ -711,18 +718,18 @@ ModelFitAtts_SetDistanceType(PyObject *self, PyObject *args)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
 
-    intVector &vec = obj->data->GetDistanceType();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -741,7 +748,7 @@ ModelFitAtts_SetDistanceType(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -755,6 +762,7 @@ ModelFitAtts_SetDistanceType(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetDistanceType() = vec;
     // Mark the distanceType in the object as modified.
     obj->data->SelectDistanceType();
 
@@ -779,18 +787,18 @@ ModelFitAtts_SetInputSpace(PyObject *self, PyObject *args)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
 
-    intVector &vec = obj->data->GetInputSpace();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -809,7 +817,7 @@ ModelFitAtts_SetInputSpace(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -823,6 +831,7 @@ ModelFitAtts_SetInputSpace(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetInputSpace() = vec;
     // Mark the inputSpace in the object as modified.
     obj->data->SelectInputSpace();
 
@@ -847,11 +856,10 @@ ModelFitAtts_SetModelNames(PyObject *self, PyObject *args)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
 
-    stringVector  &vec = obj->data->GetModelNames();
+    stringVector vec;
 
     if (PyUnicode_Check(args))
     {
-        vec.resize(1);
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
         if ((val == 0 && PyErr_Occurred()) || cval != val)
@@ -859,6 +867,7 @@ ModelFitAtts_SetModelNames(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args))
@@ -891,6 +900,7 @@ ModelFitAtts_SetModelNames(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetModelNames() = vec;
     // Mark the modelNames in the object as modified.
     obj->data->SelectModelNames();
 
@@ -915,18 +925,18 @@ ModelFitAtts_SetModelNums(PyObject *self, PyObject *args)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)self;
 
-    intVector &vec = obj->data->GetModelNums();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -945,7 +955,7 @@ ModelFitAtts_SetModelNums(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -959,6 +969,7 @@ ModelFitAtts_SetModelNums(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetModelNums() = vec;
     // Mark the modelNums in the object as modified.
     obj->data->SelectModelNums();
 
@@ -1054,7 +1065,8 @@ PyModelFitAtts_getattr(PyObject *self, char *name)
 int
 PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "Vars") == 0)
         obj = ModelFitAtts_SetVars(self, args);
@@ -1082,9 +1094,13 @@ PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

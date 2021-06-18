@@ -148,7 +148,7 @@ ExportDBAttributes_SetAllTimes(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -422,11 +422,10 @@ ExportDBAttributes_SetVariables(PyObject *self, PyObject *args)
 {
     ExportDBAttributesObject *obj = (ExportDBAttributesObject *)self;
 
-    stringVector  &vec = obj->data->GetVariables();
+    stringVector vec;
 
     if (PyUnicode_Check(args))
     {
-        vec.resize(1);
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
         if ((val == 0 && PyErr_Occurred()) || cval != val)
@@ -434,6 +433,7 @@ ExportDBAttributes_SetVariables(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args))
@@ -466,6 +466,7 @@ ExportDBAttributes_SetVariables(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetVariables() = vec;
     // Mark the variables in the object as modified.
     obj->data->SelectVariables();
 
@@ -516,7 +517,7 @@ ExportDBAttributes_SetWriteUsingGroups(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -571,7 +572,7 @@ ExportDBAttributes_SetGroupSize(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -700,7 +701,8 @@ PyExportDBAttributes_getattr(PyObject *self, char *name)
 int
 PyExportDBAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "allTimes") == 0)
         obj = ExportDBAttributes_SetAllTimes(self, args);
@@ -726,9 +728,13 @@ PyExportDBAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

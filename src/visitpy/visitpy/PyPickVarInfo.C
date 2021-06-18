@@ -300,11 +300,10 @@ PickVarInfo_SetNames(PyObject *self, PyObject *args)
 {
     PickVarInfoObject *obj = (PickVarInfoObject *)self;
 
-    stringVector  &vec = obj->data->GetNames();
+    stringVector vec;
 
     if (PyUnicode_Check(args))
     {
-        vec.resize(1);
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
         if ((val == 0 && PyErr_Occurred()) || cval != val)
@@ -312,6 +311,7 @@ PickVarInfo_SetNames(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args))
@@ -344,6 +344,7 @@ PickVarInfo_SetNames(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetNames() = vec;
     // Mark the names in the object as modified.
     obj->data->SelectNames();
 
@@ -368,18 +369,18 @@ PickVarInfo_SetValues(PyObject *self, PyObject *args)
 {
     PickVarInfoObject *obj = (PickVarInfoObject *)self;
 
-    doubleVector &vec = obj->data->GetValues();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -398,7 +399,7 @@ PickVarInfo_SetValues(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -412,6 +413,7 @@ PickVarInfo_SetValues(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetValues() = vec;
     // Mark the values in the object as modified.
     obj->data->SelectValues();
 
@@ -436,11 +438,10 @@ PickVarInfo_SetMixNames(PyObject *self, PyObject *args)
 {
     PickVarInfoObject *obj = (PickVarInfoObject *)self;
 
-    stringVector  &vec = obj->data->GetMixNames();
+    stringVector vec;
 
     if (PyUnicode_Check(args))
     {
-        vec.resize(1);
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
         if ((val == 0 && PyErr_Occurred()) || cval != val)
@@ -448,6 +449,7 @@ PickVarInfo_SetMixNames(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args))
@@ -480,6 +482,7 @@ PickVarInfo_SetMixNames(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetMixNames() = vec;
     // Mark the mixNames in the object as modified.
     obj->data->SelectMixNames();
 
@@ -504,18 +507,18 @@ PickVarInfo_SetMixValues(PyObject *self, PyObject *args)
 {
     PickVarInfoObject *obj = (PickVarInfoObject *)self;
 
-    doubleVector &vec = obj->data->GetMixValues();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -534,7 +537,7 @@ PickVarInfo_SetMixValues(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -548,6 +551,7 @@ PickVarInfo_SetMixValues(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetMixValues() = vec;
     // Mark the mixValues in the object as modified.
     obj->data->SelectMixValues();
 
@@ -598,7 +602,7 @@ PickVarInfo_SetMixVar(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -653,7 +657,7 @@ PickVarInfo_SetCentering(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -743,18 +747,18 @@ PickVarInfo_SetNumMatsPerZone(PyObject *self, PyObject *args)
 {
     PickVarInfoObject *obj = (PickVarInfoObject *)self;
 
-    intVector &vec = obj->data->GetNumMatsPerZone();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -773,7 +777,7 @@ PickVarInfo_SetNumMatsPerZone(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -787,6 +791,7 @@ PickVarInfo_SetNumMatsPerZone(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetNumMatsPerZone() = vec;
     // Mark the numMatsPerZone in the object as modified.
     obj->data->SelectNumMatsPerZone();
 
@@ -811,11 +816,10 @@ PickVarInfo_SetMatNames(PyObject *self, PyObject *args)
 {
     PickVarInfoObject *obj = (PickVarInfoObject *)self;
 
-    stringVector  &vec = obj->data->GetMatNames();
+    stringVector vec;
 
     if (PyUnicode_Check(args))
     {
-        vec.resize(1);
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
         if ((val == 0 && PyErr_Occurred()) || cval != val)
@@ -823,6 +827,7 @@ PickVarInfo_SetMatNames(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args))
@@ -855,6 +860,7 @@ PickVarInfo_SetMatNames(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetMatNames() = vec;
     // Mark the matNames in the object as modified.
     obj->data->SelectMatNames();
 
@@ -879,18 +885,18 @@ PickVarInfo_SetNumSpecsPerMat(PyObject *self, PyObject *args)
 {
     PickVarInfoObject *obj = (PickVarInfoObject *)self;
 
-    intVector &vec = obj->data->GetNumSpecsPerMat();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -909,7 +915,7 @@ PickVarInfo_SetNumSpecsPerMat(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -923,6 +929,7 @@ PickVarInfo_SetNumSpecsPerMat(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetNumSpecsPerMat() = vec;
     // Mark the numSpecsPerMat in the object as modified.
     obj->data->SelectNumSpecsPerMat();
 
@@ -1084,7 +1091,8 @@ PyPickVarInfo_getattr(PyObject *self, char *name)
 int
 PyPickVarInfo_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "variableName") == 0)
         obj = PickVarInfo_SetVariableName(self, args);
@@ -1116,9 +1124,13 @@ PyPickVarInfo_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }

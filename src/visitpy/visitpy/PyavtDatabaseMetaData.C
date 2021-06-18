@@ -416,7 +416,7 @@ avtDatabaseMetaData_SetHasTemporalExtents(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -471,7 +471,7 @@ avtDatabaseMetaData_SetMinTemporalExtents(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -526,7 +526,7 @@ avtDatabaseMetaData_SetMaxTemporalExtents(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -581,7 +581,7 @@ avtDatabaseMetaData_SetNumStates(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -636,7 +636,7 @@ avtDatabaseMetaData_SetIsVirtualDatabase(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -691,7 +691,7 @@ avtDatabaseMetaData_SetMustRepopulateOnStateChange(PyObject *self, PyObject *arg
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -746,7 +746,7 @@ avtDatabaseMetaData_SetMustAlphabetizeVariables(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -801,7 +801,7 @@ avtDatabaseMetaData_SetFormatCanDoDomainDecomposition(PyObject *self, PyObject *
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -856,7 +856,7 @@ avtDatabaseMetaData_SetFormatCanDoMultires(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -911,7 +911,7 @@ avtDatabaseMetaData_SetUseCatchAllMesh(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -989,11 +989,10 @@ avtDatabaseMetaData_SetTimeStepNames(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    stringVector  &vec = obj->data->GetTimeStepNames();
+    stringVector vec;
 
     if (PyUnicode_Check(args))
     {
-        vec.resize(1);
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
         if ((val == 0 && PyErr_Occurred()) || cval != val)
@@ -1001,6 +1000,7 @@ avtDatabaseMetaData_SetTimeStepNames(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args))
@@ -1033,6 +1033,7 @@ avtDatabaseMetaData_SetTimeStepNames(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetTimeStepNames() = vec;
     // Mark the timeStepNames in the object as modified.
     obj->data->SelectTimeStepNames();
 
@@ -1057,18 +1058,18 @@ avtDatabaseMetaData_SetCycles(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    intVector &vec = obj->data->GetCycles();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -1087,7 +1088,7 @@ avtDatabaseMetaData_SetCycles(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -1101,6 +1102,7 @@ avtDatabaseMetaData_SetCycles(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetCycles() = vec;
     // Mark the cycles in the object as modified.
     obj->data->SelectCycles();
 
@@ -1125,18 +1127,18 @@ avtDatabaseMetaData_SetCyclesAreAccurate(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    intVector &vec = obj->data->GetCyclesAreAccurate();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -1155,7 +1157,7 @@ avtDatabaseMetaData_SetCyclesAreAccurate(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -1169,6 +1171,7 @@ avtDatabaseMetaData_SetCyclesAreAccurate(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetCyclesAreAccurate() = vec;
     // Mark the cyclesAreAccurate in the object as modified.
     obj->data->SelectCyclesAreAccurate();
 
@@ -1193,18 +1196,18 @@ avtDatabaseMetaData_SetTimes(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    doubleVector &vec = obj->data->GetTimes();
+    doubleVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -1223,7 +1226,7 @@ avtDatabaseMetaData_SetTimes(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -1237,6 +1240,7 @@ avtDatabaseMetaData_SetTimes(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more doubles");
 
+    obj->data->GetTimes() = vec;
     // Mark the times in the object as modified.
     obj->data->SelectTimes();
 
@@ -1261,18 +1265,18 @@ avtDatabaseMetaData_SetTimesAreAccurate(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    intVector &vec = obj->data->GetTimesAreAccurate();
+    intVector vec;
 
     if (PyNumber_Check(args))
     {
-        vec.resize(1);
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+        if ((val == -1 && PyErr_Occurred()) || cval != val)
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args) && !PyUnicode_Check(args))
@@ -1291,7 +1295,7 @@ avtDatabaseMetaData_SetTimesAreAccurate(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+            if ((val == -1 && PyErr_Occurred()) || cval != val)
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -1305,6 +1309,7 @@ avtDatabaseMetaData_SetTimesAreAccurate(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
 
+    obj->data->GetTimesAreAccurate() = vec;
     // Mark the timesAreAccurate in the object as modified.
     obj->data->SelectTimesAreAccurate();
 
@@ -2723,7 +2728,7 @@ avtDatabaseMetaData_SetIsSimulation(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2785,11 +2790,10 @@ avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(PyObject *self, PyObject *
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
 
-    stringVector  &vec = obj->data->GetSuggestedDefaultSILRestriction();
+    stringVector vec;
 
     if (PyUnicode_Check(args))
     {
-        vec.resize(1);
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
         if ((val == 0 && PyErr_Occurred()) || cval != val)
@@ -2797,6 +2801,7 @@ avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(PyObject *self, PyObject *
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
         }
+        vec.resize(1);
         vec[0] = cval;
     }
     else if (PySequence_Check(args))
@@ -2829,6 +2834,7 @@ avtDatabaseMetaData_SetSuggestedDefaultSILRestriction(PyObject *self, PyObject *
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
+    obj->data->GetSuggestedDefaultSILRestriction() = vec;
     // Mark the suggestedDefaultSILRestriction in the object as modified.
     obj->data->SelectSuggestedDefaultSILRestriction();
 
@@ -2879,7 +2885,7 @@ avtDatabaseMetaData_SetReplacementMask(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1.0 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3115,7 +3121,8 @@ PyavtDatabaseMetaData_getattr(PyObject *self, char *name)
 int
 PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject *obj = NULL;
+    PyObject nullobj;
+    PyObject *obj = &nullobj;
 
     if(strcmp(name, "hasTemporalExtents") == 0)
         obj = avtDatabaseMetaData_SetHasTemporalExtents(self, args);
@@ -3169,9 +3176,13 @@ PyavtDatabaseMetaData_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    // if we don't have an object and no error is set, produce a generic message
-    if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "'%s' is unknown or hit an unknown problem", name);
+    if (obj == &nullobj)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
 
     return (obj != NULL) ? 0 : -1;
 }
