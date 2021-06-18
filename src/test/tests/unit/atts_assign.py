@@ -8,166 +8,388 @@
 #  Mark C. Miller, Tue Jun  8 15:51:59 PDT 2021
 #
 # ----------------------------------------------------------------------------
-def TestTupleAssignment():
 
-    TestSection("Tuple assignment")
+# Some useful global variables
+X = [2,4,6]
+
+def TestAssignmentToTuple():
+    TestSection('Assignment to tuple member (of CylinderAttributes())')
 
     ca = CylinderAttributes()
-    X = [1,2,3]
     
+    #
+    # First, test cases that should fail
+    #
+
     # Non-existent member name 'point'
     try:
         ca.point = 1,2,3
-        TestFOA('NameError', LINE())
+        TestFOA('ca.point=1,2,3', LINE())
     except NameError:
-        TestPOA('NameError')
+        TestPOA('ca.point=1,2,3')
         pass
     except:
-        TestFOA('NameError', LINE())
+        TestFOA('ca.point=1,2,3', LINE())
+        pass
+
+    # Non-existent member name 'point'
+    try:
+        ca.SetPoint(1,2,3)
+        TestFOA('ca.SetPoint(1,2,3)', LINE())
+    except ValueError:
+        TestPOA('ca.SetPoint(1,2,3)')
+        pass
+    except:
+        TestFOA('ca.SetPoint(1,2,3)', LINE())
         pass
     
     # CSV too short
     try:
-        ca.point2 = 1,2
-        TestFOA('Short CSV ValueError', LINE())
-    except ValueError:
-        TestPOA('Short CSV ValueError')
+        ca.point1 = 1,2
+        TestFOA('ca.point1=1,2', LINE())
+    except TypeError:
+        TestPOA('ca.point1=1,2')
         pass
     except:
-        TestFOA('Short CSV ValueError', LINE())
+        TestFOA('ca.point1=1,2', LINE())
         pass
     
     # CSV too long
     try:
-        ca.point2 = 1,2,3,4
-        TestFOA('Long CSV ValueError', LINE())
-    except ValueError:
-        TestPOA('Long CSV ValueError')
-        pass
-    except:
-        TestFOA('Long CSV ValueError', LINE())
-        pass
-    
-    # tuple too short
-    try:
-        ca.point2 = (1,2)
-        TestFOA('Short tuple ValueError', LINE())
-    except ValueError:
-        TestPOA('Short tuple ValueError')
-        pass
-    except:
-        TestFOA('Short tuple ValueError', LINE())
-        pass
-    
-    # tuple too long
-    try:
-        ca.point2 = (1,2,3,4)
-        TestFOA('Long tuple ValueError', LINE())
-    except ValueError:
-        TestPOA('Long tuple ValueError')
-        pass
-    except:
-        TestFOA('Long tuple ValueError', LINE())
-        pass
-    
-    # assign string to tuple
-    try:
-        ca.point2 = 'mark'
-        TestFOA('tuple=string TypeError', LINE())
+        ca.point1 = 1,2,3,4
+        TestFOA('ca.point1=1,2,3,4', LINE())
     except TypeError:
-        TestPOA('tuple=string TypeError')
+        TestPOA('ca.point1=1,2,3,4')
         pass
     except:
-        TestFOA('tuple=string TypeError', LINE())
-        pass
-    
-    # assign array to scalar members
-    try:
-        ca.point2 = (X,X,X)
-        TestFOA('scalar-member=array TypeError', LINE())
-    except TypeError:
-        TestPOA('scalar-member=array TypeError')
-        pass
-    except:
-        TestFOA('scalar-member=array TypeError', LINE())
-        pass
-    
-    # assign string to scalar members
-    try:
-        ca.point2 = ('a','b','c')
-        TestFOA('scalar-member=string TypeError', LINE())
-    except TypeError:
-        TestPOA('scalar-member=string TypeError')
-        pass
-    except:
-        TestFOA('scalar-member=string TypeError', LINE())
-        pass
-    
-    try:
-        # correct CSV length and valid member types
-        ca.point2 = 1,2,3
-        # correct tuple length and valid member types
-        ca.point2 = (1,2,3)
-        # correct tuple length and valid member types
-        ca.point2 = (1.1,2.2,3.3)
-        # correct tuple length and valid member types
-        ca.point2 = tuple(X)
-        TestPOA('Valid tuple assignment')
-    except:
-        TestFOA('Valid tuple assignment', LINE())
+        TestFOA('ca.point1=1,2,3,4', LINE())
         pass
 
-def TestScalarAssignment():
-    TestSection("Scalar assignment")
+    # The above cases can't be put in a loop. Put remaining cases in a loop
+    fails = [(1,2), (1,2,3,4), '123', (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3)]
+    for i in range(len(fails)):
+        try:
+            ca.point1 = fails[i]
+            TestFOA('ca.point1=%s'%repr(fails[i]), '%s:%s'%(LINE(),i))
+        except TypeError:
+            TestPOA('ca.point1=%s'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ca.point1=%s'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            pass
+
+    for i in range(len(fails)):
+        try:
+            ca.SetPoint1(fails[i])
+            TestFOA('ca.SetPoint1(%s)'%repr(fails[i]), '%s:%s'%(LINE(),i))
+        except TypeError:
+            TestPOA('ca.SetPoint1(%s)'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ca.SetPoint1(%s)'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            pass
+
+    #
+    # Now test cases that should work
+    #
+    try:
+        ca.point1 = 1,2,3
+        TestPOA('ca.point1=1,2,3')
+    except:
+        TestFOA('ca.point1=1,2,3', LINE())
+        pass
+
+    works = [(1,2,3), (1.1,2.2,3.3), tuple(X)]
+    for i in range(len(works)):
+        try:
+            ca.point1 = works[i]
+            TestPOA('ca.point1=%s'%repr(works[i]))
+        except:
+            TestFOA('ca.point1=%s'%repr(works[i]), '%s:%s'%(LINE(),i))
+            pass
+
+    works = [(1,2,3), (1.1,2.2,3.3), tuple(X)]
+    for i in range(len(works)):
+        try:
+            ca.SetPoint1(works[i])
+            TestPOA('ca.SetPoint1(%s)'%repr(works[i]))
+        except:
+            TestFOA('ca.SetPoint1(%s)'%repr(works[i]), '%s:%s'%(LINE(),i))
+            pass
+
+def TestAssignmentToBool():
+    TestSection('Assignment to bool member (of CylinderAttributes())')
 
     ca = CylinderAttributes()
 
-    # assign string to int
+    # assign tuple to bool
     try:
-        ca.inverse = "mark"
-        TestFOA('int=string TypeError', LINE())
+        ca.inverse = 1,2
+        TestFOA('ca.inverse=1,2', LINE())
     except TypeError:
-        TestPOA('int=string TypeError')
+        TestPOA('ca.inverse=1,2')
         pass
     except:
-        TestFOA('int=string TypeError', LINE())
+        TestFOA('ca.inverse=1,2', LINE())
         pass
 
-    # assign double to int
+    fails = ['123', 1+2j, X, None]
+    for i in range(len(fails)):
+        try:
+            ca.inverse = fails[i]
+            TestFOA('ca.inverse=%s'%repr(fails[i]), '%s:%s'%(LINE(),i))
+        except TypeError:
+            TestPOA('ca.inverse=%s'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ca.inverse=%s'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            pass
+
+    for i in range(len(fails)):
+        try:
+            ca.SetInverse(fails[i])
+            TestFOA('ca.SetInverse(%s)'%repr(fails[i]), '%s:%s'%(LINE(),i))
+        except TypeError:
+            TestPOA('ca.SetInverse(%s)'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ca.SetInverse(%s)'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            pass
+
+    works = [0, 1, 5, True, False]
+    for i in range(len(works)):
+        try:
+            ca.inverse = works[i]
+            TestPOA('ca.inverse=%s'%repr(works[i]))
+        except:
+            TestFOA('ca.inverse=%s'%repr(works[i]), LINE()) 
+
+    for i in range(len(works)):
+        try:
+            ca.SetInverse(works[i])
+            TestPOA('ca.SetInverse(%s)'%repr(works[i]))
+        except:
+            TestFOA('ca.SetInverse(%s)'%repr(works[i]), LINE()) 
+
+def TestAssignmentToInt():
+    TestSection('Assignment to int member (of VolumeAttributes())')
+
+    va = VolumeAttributes()
+
     try:
-        ca.inverse = 5.5
-        TestFOA('int=double TypeError', LINE())
+        va.samplesPerRay = 1,2
+        TestFOA('va.samplesPerRay=1,2', LINE())
     except TypeError:
-        TestPOA('int=double TypeError')
+        TestPOA('va.samplesPerRay=1,2')
         pass
     except:
-        TestFOA('int=double TypeError', LINE())
+        TestFOA('va.samplesPerRay=1,2', LINE())
         pass
 
-    # assign string to double
+    fails = ['123', 1+2j, None, X, 123123123123123123123123123123]
+    for i in range(len(fails)):
+        try:
+            va.samplesPerRay = fails[i]
+            TestFOA('va.samplesPerRay=%s'%repr(fails[i]), LINE())
+        except TypeError:
+            TestPOA('va.samplesPerRay=%s'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('va.samplesPerRay=%s'%repr(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            va.SetSamplesPerRay(fails[i])
+            TestFOA('va.SetSamplesPerRay(%s)'%repr(fails[i]), LINE())
+        except TypeError:
+            TestPOA('va.SetSamplesPerRay(%s)'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('va.SetSamplesPerRay(%s)'%repr(fails[i]), LINE())
+            pass
+
+    works = [0, 1, -1, 5, True, False]
+    for i in range(len(works)):
+        try:
+            va.samplesPerRay = works[i]
+            TestPOA('va.samplesPerRay=%s'%repr(works[i]))
+        except:
+            TestFOA('va.samplesPerRay=%s'%repr(works[i]), LINE()) 
+
+    for i in range(len(works)):
+        try:
+            va.SetSamplesPerRay(works[i])
+            TestPOA('va.SetSamplesPerRay(%s)'%repr(works[i]))
+        except:
+            TestFOA('va.SetSamplesPerRay(%s)'%repr(works[i]), LINE()) 
+
+def TestAssignmentToFloat():
+    TestSection('Assignment to float member (of VolumeAttributes())')
+
+    va = VolumeAttributes()
+
     try:
-        ca.radius = "mark"
-        TestFOA('double=string TypeError', LINE())
+        va.opacityAttenuation = 1,2
+        TestFOA('va.opacityAttenuation=1,2', LINE())
     except TypeError:
-        TestPOA('double=string TypeError')
+        TestPOA('va.opacityAttenuation=1,2')
         pass
     except:
-        TestFOA('double=string TypeError', LINE())
+        TestFOA('va.opacityAttenuation=1,2', LINE())
         pass
 
-    # valid assignments
+    fails = ['123', 1+2j, None, X]
+    for i in range(len(fails)):
+        try:
+            va.opacityAttenuation = fails[i]
+            TestFOA('va.opacityAttenuation=%s'%repr(fails[i]), LINE())
+        except TypeError:
+            TestPOA('va.opacityAttenuation=%s'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('va.opacityAttenuation=%s'%repr(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            va.SetOpacityAttenuation(fails[i])
+            TestFOA('va.SetOpacityAttenuation(%s)'%repr(fails[i]), LINE())
+        except TypeError:
+            TestPOA('va.SetOpacityAttenuation(%s)'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('va.SetOpacityAttenuation(%s)'%repr(fails[i]), LINE())
+            pass
+
+    works = [0, 1, -1, 5.5, 1.1E-479, 1.1E+479, True, False]
+    for i in range(len(works)):
+        try:
+            va.opacityAttenuation = works[i]
+            TestPOA('va.opacityAttenuation=%s'%repr(works[i]))
+        except:
+            TestFOA('va.opacityAttenuation=%s'%repr(works[i]), LINE()) 
+
+    for i in range(len(works)):
+        try:
+            va.SetOpacityAttenuation(works[i])
+            TestPOA('va.SetOpacityAttenuation(%s)'%repr(works[i]))
+        except:
+            TestFOA('va.SetOpacityAttenuation(%s)'%repr(works[i]), LINE()) 
+
+def TestAssignmentToDouble():
+    TestSection('Assignment to double member (of CylinderAttributes())')
+
+    ca = CylinderAttributes()
+
+    # assign tuple to double
     try:
-        ca.inverse = 1
-        ca.inverse = 5
-        ca.inverse = True
-        ca.radius = -1
-        ca.radius = 5.5
-        ca.radius = True
-        TestPOA('Valid scalar assignment')
+        ca.radius = 1,2
+        TestFOA('ca.radius=1,2', LINE())
+    except TypeError:
+        TestPOA('ca.radius=1,2')
+        pass
     except:
-        TestFOA('Valid scalar assignment', LINE()) 
+        TestFOA('ca.radius=1,2', LINE())
+        pass
 
-TestTupleAssignment()
-TestScalarAssignment()
+    fails = ['123', 1+2j, None, X]
+    for i in range(len(fails)):
+        try:
+            ca.radius = fails[i]
+            TestFOA('ca.radius=%s'%repr(fails[i]), LINE())
+        except TypeError:
+            TestPOA('ca.radius=%s'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ca.radius=%s'%repr(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            ca.SetRadius(fails[i])
+            TestFOA('ca.SetRadius(%s)'%repr(fails[i]), LINE())
+        except TypeError:
+            TestPOA('ca.SetRadius(%s)'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ca.SetRadius(%s)'%repr(fails[i]), LINE())
+            pass
+
+    works = [0, 1, -1, 5.5, 1.1E-479, 1.1E+479, True, False]
+    for i in range(len(works)):
+        try:
+            ca.radius = works[i]
+            TestPOA('ca.radius=%s'%repr(works[i]))
+        except:
+            TestFOA('ca.radius=%s'%repr(works[i]), LINE()) 
+
+    for i in range(len(works)):
+        try:
+            ca.SetRadius(works[i])
+            TestPOA('ca.SetRadius(%s)'%repr(works[i]))
+        except:
+            TestFOA('ca.SetRadius(%s)'%repr(works[i]), LINE()) 
+
+def TestAssignmentToString():
+    TestSection('Assignment to string member (of CurveAttributes())')
+
+    ca = CurveAttributes()
+
+    try:
+        ca.designator = "123","abc"
+        TestFOA('ca.designator="123","abc"', LINE())
+    except TypeError:
+        TestPOA('ca.designator="123","abc"')
+        pass
+    except:
+        TestFOA('ca.designator="123","abc"', LINE())
+        pass
+
+    fails = [0, 1, 1.1, 1+2j, None, X]
+    for i in range(len(fails)):
+        try:
+            ca.designator = fails[i]
+            TestFOA('ca.designator=%s'%repr(fails[i]), LINE())
+        except TypeError:
+            TestPOA('ca.designator=%s'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ca.designator=%s'%repr(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            ca.SetDesignator(fails[i])
+            TestFOA('ca.SetDesignator(%s)'%repr(fails[i]), LINE())
+        except TypeError:
+            TestPOA('ca.SetDesignator(%s)'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ca.SetDesignator(%s)'%repr(fails[i]), LINE())
+            pass
+
+    works = ['123', 'abc', '']
+    for i in range(len(works)):
+        try:
+            ca.designator = works[i]
+            TestPOA('ca.designator=%s'%repr(works[i]))
+        except:
+            TestFOA('ca.designator=%s'%repr(works[i]), LINE()) 
+
+    for i in range(len(works)):
+        try:
+            ca.SetDesignator(works[i])
+            TestPOA('ca.SetDesignator(%s)'%repr(works[i]))
+        except:
+            TestFOA('ca.SetDesignator(%s)'%repr(works[i]), LINE()) 
+
+TestAssignmentToBool()
+TestAssignmentToInt()
+TestAssignmentToFloat()
+TestAssignmentToDouble()
+TestAssignmentToString()
+TestAssignmentToTuple()
+
     
 Exit()
