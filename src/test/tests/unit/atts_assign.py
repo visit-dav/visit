@@ -385,6 +385,7 @@ TestAssignmentToInt()
 TestAssignmentToFloat()
 TestAssignmentToDouble()
 TestAssignmentToString()
+# Enum scalars (which get range checked)
 TestAssignmentToTuple()
 
 # Array assignments
