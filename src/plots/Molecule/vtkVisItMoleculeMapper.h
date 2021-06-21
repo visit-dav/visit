@@ -11,10 +11,8 @@
 #define vtkVisItMoleculeMapper_h
 
 #include <vtkDataSetMapper.h>
-#include <vtkNew.h> // For vtkNew
 
-
-#include <string> 
+#include <string>
 
 class vtkGlyph3DMapper;
 class vtkLookupTable;
@@ -33,7 +31,7 @@ class MoleculeMapperHelper;
 //   Subclass of vtkPolyDataMapper that glyphs polydata representing
 //   molecular data.
 //       Points(Atoms) are glyphed as spheres.
-//       Lines (Bonds) may be glyphed as cylinders. 
+//       Lines (Bonds) may be glyphed as cylinders.
 //
 // Notes:
 //   Taken partly from vtkMoleculeMapper, modified to accept vtkPolyData as
@@ -41,12 +39,14 @@ class MoleculeMapperHelper;
 //
 //   Also taken partly from avtOpenGLMoleculeRenderer.
 //
-//  Programmer: Kathleen Biagas 
-//  Creation:   July 22, 2016 
+//  Programmer: Kathleen Biagas
+//  Creation:   July 22, 2016
 //
 //  Modifications:
+//    Kathleen Biagas, June 16, 2021
+//    Remove use of vtkNew for ivars, was causing crash on deletion of class.
 //
-// **************************************************************************** 
+// ****************************************************************************
 
 class vtkVisItMoleculeMapper : public vtkDataSetMapper
 {
@@ -87,7 +87,7 @@ public:
   };
 
   enum Quality{
-    Low = 0,     
+    Low = 0,
     Medium,
     High,
     Super
@@ -312,12 +312,12 @@ protected:
 
   // Description:
   // Cached variables and update methods
-  vtkNew<vtkSphereSource> sphere;
-  vtkNew<vtkPolyData> AtomPolyData;
-  vtkNew<vtkTrivialProducer> AtomOutput;
-  vtkNew<vtkPolyData> BondLinesPolyData;
-  vtkNew<vtkPolyData> BondCylsPolyData;
-  vtkNew<vtkTrivialProducer> BondOutput;
+  vtkSphereSource *sphere;
+  vtkPolyData *AtomPolyData;
+  vtkTrivialProducer *AtomOutput;
+  vtkPolyData *BondLinesPolyData;
+  vtkPolyData *BondCylsPolyData;
+  vtkTrivialProducer *BondOutput;
   bool AtomDataInitialized;
   bool BondDataInitialized;
   virtual void UpdatePolyData();
@@ -326,13 +326,13 @@ protected:
 
   // Description:
   // Internal mappers
-  vtkNew<vtkGlyph3DMapper>  AtomMapper;
-  vtkNew<vtkPointMapper>    ImposterMapper;
-  vtkNew<vtkPolyDataMapper> BondMapper;
+  vtkGlyph3DMapper  *AtomMapper;
+  vtkPointMapper    *ImposterMapper;
+  vtkPolyDataMapper *BondMapper;
 
 
 private:
-  vtkVisItMoleculeMapper(const vtkVisItMoleculeMapper&); 
+  vtkVisItMoleculeMapper(const vtkVisItMoleculeMapper&);
   void operator=(const vtkVisItMoleculeMapper&);
 
   void SetColors(void);
