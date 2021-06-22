@@ -353,6 +353,11 @@ MoleculeMapperHelper::CreateCylinderCap(double *p0, double *p1, int half,
 vtkStandardNewMacro(vtkVisItMoleculeMapper)
 
 //----------------------------------------------------------------------------
+// Modifications:
+//   Kathleen Biagas, Fri Jun 18 2021
+//   Register 'AtomPolyData' to this class to prevent strange crash under
+//   certain conditions when plot attributes update. (Bug #5794)
+
 vtkVisItMoleculeMapper::vtkVisItMoleculeMapper()
   : RenderAtoms(true),
     DrawAtomsAs(Spheres),
@@ -398,6 +403,7 @@ vtkVisItMoleculeMapper::vtkVisItMoleculeMapper()
   this->AtomMapper->SetScaleModeToScaleByMagnitude();
 
   this->AtomPolyData = vtkPolyData::New();
+  this->AtomPolyData->Register(this);
   // Connect the trivial producers to forward the glyph polydata
 
   this->AtomOutput = vtkTrivialProducer::New();
@@ -684,6 +690,12 @@ void vtkVisItMoleculeMapper::UpdatePolyData()
 
 //----------------------------------------------------------------------------
 // Generate scale and position information for each atom sphere
+//
+// Modifications:
+//   Kathleen Biagas, Fri Jun 18 2021
+//   Register 'scol' array to this class to prevent strange crash under
+//   certain conditions when plot attributes update. (Bug #5794)
+
 void vtkVisItMoleculeMapper::UpdateAtomPolyData()
 {
   this->AtomPolyData->Initialize();
@@ -801,6 +813,7 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
   scol->SetName("Colors");
   scol->SetNumberOfComponents(4);
   scol->Allocate(numverts*3);
+  scol->Register(this);
 
   vtkPoints *pts = points->NewInstance();
   pts->Allocate(numverts*4);
