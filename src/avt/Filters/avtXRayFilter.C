@@ -1904,7 +1904,7 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
           
     }
 
-    debug1 << "[XRayFilter] total errors: " << total_errors<<"\n";
+    debug1 << "[XRayFilter] total errors: " << total_errors << std::endl;
 
     nLinesPerDataset = (int)cells_matched.size();
 
