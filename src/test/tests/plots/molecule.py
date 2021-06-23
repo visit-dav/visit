@@ -38,7 +38,7 @@ def SaveTestImage(name):
     swa = SaveWindowAttributes()
     swa.width = 500
     swa.height = 500
-    swa.screenCapture = 0
+    swa.screenCapture = 1
     Test(name, swa)
     SetSaveWindowAttributes(backup)
 
@@ -124,7 +124,7 @@ def MoleculeOnly():
 
     DeleteAllPlots()
 
-    # ensure viewer doesn't crash when atoms drawn as SphereImposters and scaleRadisyBy option is changed
+    # ensure engine/viewer doesn't crash when using ImposterAtoms and scaleRadiusBy option is changed
     AddPlot("Molecule", "element")
     # get Fresh atts
     mol = MoleculeAttributes()
@@ -135,16 +135,23 @@ def MoleculeOnly():
     SaveTestImage("molecule_05")
     # now change scaleRadiusBy
     mol.scaleRadiusBy = mol.Covalent
+    mol.radiusScaleFactor=4
     SetPlotOptions(mol)
     DrawPlots()
     SaveTestImage("molecule_06")
+
+    # changing radiusScaleFactor while using Imposter atoms used to crash the viewer
+    mol.radiusScaleFactor=0.002
+    SetPlotOptions(mol)
+    DrawPlots()
+    SaveTestImage("molecule_07")
 
     DeleteAllPlots()
     CloseDatabase(data_path("ProteinDataBank_test_data/crotamine.pdb"))
 
 def ReplicateAddBonds():
+    TestSection("Replicate and CreateBonds operators with Molecule plot")
     SetWhiteBackground()
-    # Using Replicate and CreateBonds operators
     OpenDatabase(data_path("vasp_test_data", "GaO40W12", "OUTCAR"))
     AddPlot("Mesh", "unitCell")
     AddPlot("Molecule", "element")
@@ -196,24 +203,20 @@ def ReplicateAddBonds():
     SaveTestImage("mol_rep_bonds_04")
 
     # have the CreateBonds operator create periodic bonds
-    # this is commented out because the cylinders created are black.
-    # Uncomment this when Bug #5780 is fixed
-    #cb.addPeriodicBonds = 1
-    #cb.useUnitCellVectors = 1
-    #SetOperatorOptions(cb)
-    #DrawPlots()  
+    cb.addPeriodicBonds = 1
+    cb.useUnitCellVectors = 1
+    SetOperatorOptions(cb)
+    DrawPlots()  
 
-    #SaveTestImage("mol_rep_bonds_05")
+    SaveTestImage("mol_rep_bonds_05")
 
     # Change bond style to lines
-    # this is commented out because the lines are colored incorrectly
-    # Uncomment this when Bug #5780 is fixed
-    #mol.drawBondsAs = mol.LineBonds
-    #mol.bondLineWidth = 5
-    #SetPlotOptions(mol)
-    #DrawPlots()  
+    mol.drawBondsAs = mol.LineBonds
+    mol.bondLineWidth = 5
+    SetPlotOptions(mol)
+    DrawPlots()  
 
-    #SaveTestImage("mol_rep_bonds_06")
+    SaveTestImage("mol_rep_bonds_06")
 
     # Change atom radius
     mol.drawBondsAs = mol.CylinderBonds
@@ -226,7 +229,6 @@ def ReplicateAddBonds():
 
     DeleteAllPlots()
     CloseDatabase(data_path("vasp_test_data", "GaO40W12", "OUTCAR"))
-
 
 MoleculeOnly()
 ReplicateAddBonds()
