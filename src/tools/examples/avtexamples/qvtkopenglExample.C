@@ -11,7 +11,7 @@
 #include <iostream>
 
 int
-MCVMain(int argc, char *argv[])
+main(int argc, char **argv)
 {
     int retval = 0;
 
@@ -37,10 +37,4 @@ MCVMain(int argc, char *argv[])
     retval = mainApp->exec();
 
     return retval;
-}
-
-int
-main(int argc, char **argv)
-{
-    return MCVMain(argc, argv);
 }
