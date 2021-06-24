@@ -25,6 +25,7 @@
 
 #include <vtkQtRenderWindow.h>
 
+#include <array>
 #include <iostream>
 
 GUIWindow2::GUIWindow2() : QMainWindow()
