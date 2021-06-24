@@ -329,11 +329,6 @@ vtkRubberBandMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* acto
 //    Kathleen Biagas, Mon Jun 11 15:48:10 MST 2012
 //    Remove ifdef preventing this method from bein used on _WIN32
 //
-//    Alister Maguire, Thu Jun 24 10:57:30 PDT 2021
-//    Scale by the devicePixelRatio so that we avoid issues with retina
-//    displays. I also moved code from vtkRubberBandMapper2D_body.C into
-//    this file for the sake of readability.
-//
 // ***************************************************************************
 
 void
