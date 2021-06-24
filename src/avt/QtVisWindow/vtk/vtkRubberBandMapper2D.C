@@ -50,7 +50,7 @@ struct vtkRubberBandMapper2DPrivate
     }
 
     ~vtkRubberBandMapper2DPrivate()
-    { 
+    {
         ReleaseGraphicsResources();
     }
 
@@ -106,7 +106,7 @@ struct vtkRubberBandMapper2DPrivate
 
 // ***************************************************************************
 //  Modifications:
-//    Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002 
+//    Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002
 //    Replace 'New' method with Macro to match VTK 4.0 API.
 // ***************************************************************************
 
@@ -115,47 +115,47 @@ vtkStandardNewMacro(vtkRubberBandMapper2D);
 // ****************************************************************************
 // Method: vtkRubberBandMapper2D::vtkRubberBandMapper2D
 //
-// Purpose: 
+// Purpose:
 //   Constructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 13 10:04:25 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkRubberBandMapper2D::vtkRubberBandMapper2D() : vtkPolyDataMapper2D()
 {
-    d = new vtkRubberBandMapper2DPrivate;
+    privateInstance = new vtkRubberBandMapper2DPrivate;
 }
 
 // ****************************************************************************
 // Method: vtkRubberBandMapper2D::~vtkRubberBandMapper2D
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 13 10:04:03 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 vtkRubberBandMapper2D::~vtkRubberBandMapper2D()
 {
-    if(d != 0)
+    if(privateInstance != 0)
     {
-        delete d;
-        d = 0;
+        delete privateInstance;
+        privateInstance = 0;
     }
 }
 
 // ****************************************************************************
 // Method: vtkRubberBandMapper2D::ReleaseGraphicsResources
 //
-// Purpose: 
+// Purpose:
 //   Releases the mapper's graphics resources.
 //
 // Arguments:
@@ -168,13 +168,13 @@ vtkRubberBandMapper2D::~vtkRubberBandMapper2D()
 // Creation:   Mon Mar 13 10:01:08 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 vtkRubberBandMapper2D::ReleaseGraphicsResources(vtkWindow *win)
 {
-    d->ReleaseGraphicsResources();
+    privateInstance->ReleaseGraphicsResources();
 
     // Call the superclass's ReleaseGraphicsResources method.
     vtkPolyDataMapper2D::ReleaseGraphicsResources(win);
@@ -183,7 +183,7 @@ vtkRubberBandMapper2D::ReleaseGraphicsResources(vtkWindow *win)
 // ****************************************************************************
 // Method: vtkRubberBandMapper2D::SetWidget
 //
-// Purpose: 
+// Purpose:
 //   Set the widget that we want to draw over.
 //
 // Arguments:
@@ -193,19 +193,19 @@ vtkRubberBandMapper2D::ReleaseGraphicsResources(vtkWindow *win)
 // Creation:   Fri Oct 14 14:27:04 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 vtkRubberBandMapper2D::SetWidget(QWidget *w)
 {
-    d->widget = w;
+    privateInstance->widget = w;
 }
 
 // ****************************************************************************
 // Method: vtkRubberBandMapper2D::RenderOverlay
 //
-// Purpose: 
+// Purpose:
 //   Render the polydata as an "overlay".
 //
 // Arguments:
@@ -216,15 +216,15 @@ vtkRubberBandMapper2D::SetWidget(QWidget *w)
 // Creation:   Fri Oct 14 14:19:53 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 vtkRubberBandMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* actor)
 {
-    if(d->widget != 0)
+    if(privateInstance->widget != 0)
     {
-        switch(d->SelectBestRenderer())
+        switch(privateInstance->SelectBestRenderer())
         {
         case 1:
             RenderOverlay_X11(viewport, actor);
@@ -308,7 +308,7 @@ vtkRubberBandMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* acto
     // Get the drawable to draw into
     Drawable drawable = (Drawable) windowId;
     if (!drawable) vtkErrorMacro(<<"Window returned NULL drawable!");
-  
+
     // Set up the forground color
     XWindowAttributes attr;
     XGetWindowAttributes(displayId,windowId,&attr);
@@ -328,6 +328,12 @@ vtkRubberBandMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* acto
 //  Modifications:
 //    Kathleen Biagas, Mon Jun 11 15:48:10 MST 2012
 //    Remove ifdef preventing this method from bein used on _WIN32
+//
+//    Alister Maguire, Thu Jun 24 10:57:30 PDT 2021
+//    Scale by the devicePixelRatio so that we avoid issues with retina
+//    displays. I also moved code from vtkRubberBandMapper2D_body.C into
+//    this file for the sake of readability.
+//
 // ***************************************************************************
 
 void
@@ -352,7 +358,7 @@ vtkRubberBandMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor
     painter.drawLine(QLine(x1, y1, x2, y2));
 
 #define FLUSH_AND_SYNC() \
-    d->overlay->setPixmap(pixmap);
+    privateInstance->overlay->setPixmap(pixmap);
 
 #define CLEAN_UP()
 
@@ -361,11 +367,12 @@ vtkRubberBandMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor
 #define END_POLYLINE()
 
     int x,y,w,h;
-    QPoint tl(d->widget->mapToGlobal(QPoint(0,0)));
+    QPoint tl(privateInstance->widget->mapToGlobal(QPoint(0,0)));
+
     x = tl.x();
     y = tl.y();
-    w = d->widget->width();
-    h = d->widget->height();
+    w = privateInstance->widget->width();
+    h = privateInstance->widget->height();
 
     QPixmap pixmap(w, h);
     pixmap.fill(Qt::transparent);
@@ -373,19 +380,19 @@ vtkRubberBandMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor
     //
     // Try and create the window if we've not yet created it.
     //
-    if(d->overlay == 0)
+    if(privateInstance->overlay == 0)
     {
-        d->overlay = new QLabel(0, Qt::FramelessWindowHint);
-        d->overlay->setAttribute(Qt::WA_TranslucentBackground);
+        privateInstance->overlay = new QLabel(0, Qt::FramelessWindowHint);
+        privateInstance->overlay->setAttribute(Qt::WA_TranslucentBackground);
         // FIXME? We should need the following, but it triggers a Qt
         // bug and  strangely everything seems to work without it.
-        // overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
-        d->overlay->setAutoFillBackground(false);
-        d->overlay->setPixmap(pixmap);
+        //privateInstance->overlay->setAttribute(Qt::WA_TransparentForMouseEvents);
+        privateInstance->overlay->setAutoFillBackground(false);
+        privateInstance->overlay->setPixmap(pixmap);
     }
 
-    d->overlay->setGeometry(x, y, w, h);
-    d->overlay->show();
+    privateInstance->overlay->setGeometry(x, y, w, h);
+    privateInstance->overlay->show();
 
     // Clear the window so it's ready for us to draw.
     QPainter painter(&pixmap);
@@ -394,5 +401,173 @@ vtkRubberBandMapper2D::RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor
     double* actorColor = actor->GetProperty()->GetColor();
     SET_FOREGROUND_D(actorColor);
 
-#include <vtkRubberBandMapper2D_body.C>
+    int numPts;
+    vtkPolyData *input= vtkPolyData::SafeDownCast(this->GetInput());
+    vtkIdType npts, *pts;
+    int j;
+    vtkPoints *p, *displayPts;
+    vtkCellArray *aPrim;
+    vtkUnsignedCharArray *c=NULL;
+    unsigned char *rgba;
+    double *ftmp;
+    int cellScalars = 0;
+    int cellNum = 0;
+    int lastX, lastY, X, Y;
+    int currSize = 1024;
+    vtkDebugMacro (<< "vtkRubberBandMapper2D::RenderOverlay");
+
+    if ( input == NULL )
+    {
+        vtkErrorMacro(<< "No input!");
+        CLEAN_UP();
+        return;
+    }
+    else
+    {
+        numPts = input->GetNumberOfPoints();
+    }
+
+    if (numPts == 0)
+    {
+        vtkDebugMacro(<< "No points!");
+        CLEAN_UP();
+        return;
+    }
+
+    if ( this->LookupTable == NULL )
+    {
+        this->CreateDefaultLookupTable();
+    }
+
+    //
+    // if something has changed regenrate colors and display lists
+    // if required
+    //
+    if ( this->GetMTime() > this->BuildTime ||
+         input->GetMTime() > this->BuildTime ||
+         this->LookupTable->GetMTime() > this->BuildTime ||
+         actor->GetProperty()->GetMTime() > this->BuildTime)
+    {
+         // sets this->Colors as side effect
+        this->MapScalars(1.0);
+        this->BuildTime.Modified();
+    }
+
+    // Get the position of the text actor
+    int* actorPos =
+        actor->GetPositionCoordinate()->GetComputedLocalDisplayValue(viewport);
+
+    // Transform the points, if necessary
+    p = input->GetPoints();
+    if ( this->TransformCoordinate )
+    {
+        int *itmp;
+        numPts = p->GetNumberOfPoints();
+        displayPts = vtkPoints::New();
+        displayPts->SetNumberOfPoints(numPts);
+        for ( j=0; j < numPts; j++ )
+        {
+            this->TransformCoordinate->SetValue(p->GetPoint(j));
+            itmp = this->TransformCoordinate->GetComputedDisplayValue(viewport);
+            displayPts->SetPoint(j, itmp[0], itmp[1], 0.0);
+        }
+        p = displayPts;
+    }
+
+    // Get colors
+    if ( this->Colors )
+    {
+        c = this->Colors;
+        if (!input->GetPointData()->GetScalars())
+        {
+            cellScalars = 1;
+        }
+    }
+
+    // Draw the polygons.
+    aPrim = input->GetPolys();
+    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); cellNum++)
+    {
+        if (c)
+        {
+            if (cellScalars)
+                rgba = c->GetPointer(4*cellNum);
+            else
+                rgba = c->GetPointer(4*pts[0]);
+
+            SET_FOREGROUND(rgba);
+        }
+
+        RESIZE_POINT_ARRAY(points, npts, currSize);
+
+        for (j = 0; j < npts; j++)
+        {
+            ftmp = p->GetPoint(pts[j]);
+            STORE_POINT(points[j],
+                        actorPos[0] + ftmp[0],
+                        actorPos[1] - ftmp[1]);
+        }
+
+        DRAW_POLYGON(points, npts);
+    }
+
+    //
+    // Draw the lines.
+    // We need to scale our coordinates by the devicePixelRatio, which takes
+    // the OSX retina display into account. From the docs:
+    //
+    //     "Common values are 1 for normal-dpi displays and 2 for high-dpi
+    //     'retina' displays."
+    //
+    int devicePixelRatio = privateInstance->widget->devicePixelRatio();
+    aPrim = input->GetLines();
+    for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); cellNum++)
+    {
+        if (c && cellScalars)
+        {
+            rgba = c->GetPointer(4*cellNum);
+            SET_FOREGROUND(rgba);
+        }
+        ftmp = p->GetPoint(pts[0]);
+
+        lastX = (int)(actorPos[0] + ftmp[0]) / devicePixelRatio;
+        lastY = (int)(actorPos[1] - ftmp[1]) / devicePixelRatio;
+        BEGIN_POLYLINE(lastX, lastY);
+
+        for (j = 1; j < npts; j++)
+        {
+            ftmp = p->GetPoint(pts[j]);
+            if (c && !cellScalars)
+            {
+                rgba = c->GetPointer(4*pts[j]);
+                SET_FOREGROUND(rgba)
+            }
+            X = (int)(actorPos[0] + ftmp[0]) / devicePixelRatio;
+            Y = (int)(actorPos[1] - ftmp[1]) / devicePixelRatio;
+
+            DRAW_XOR_LINE(lastX, lastY, X, Y);
+
+            lastX = X;
+            lastY = Y;
+        }
+
+        END_POLYLINE();
+    }
+
+    // Finish drawing.
+    FLUSH_AND_SYNC();
+
+    // Clean up.
+    CLEAN_UP();
+    if ( this->TransformCoordinate )
+        p->Delete();
+
+#undef STORE_POINT
+#undef DRAW_POLYGON
+#undef RESIZE_POINT_ARRAY
+#undef SET_FOREGROUND_D
+#undef SET_FOREGROUND
+#undef DRAW_XOR_LINE
+#undef FLUSH_AND_SYNC
+#undef CLEAN_UP
 }
