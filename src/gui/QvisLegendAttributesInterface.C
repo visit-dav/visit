@@ -32,7 +32,7 @@
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::QvisLegendAttributesInterface
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisLegendAttributesInterface class.
 //
 // Arguments:
@@ -72,7 +72,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
 
     tabs = new QTabWidget(0);
     topLayout->addWidget(tabs);
-    
+
     int row = 0;
 
     // Position tab
@@ -136,8 +136,8 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
             this, SLOT(orientationChanged(int)));
     pLayout->addWidget(orientationComboBox, row, 1, 1, 3);
     pLayout->addWidget(new QLabel(tr("Orientation"), this), row, 0);
-  
-    tabs->addTab(position, tr("Position")); 
+
+    tabs->addTab(position, tr("Position"));
 
     row = 0;
     // Tick Marks tab
@@ -148,7 +148,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
 
     // controls for tick values and labels
     tickControl = new QCheckBox(tr("Let VisIt determine tick labels"), this);
-    connect(tickControl, SIGNAL(toggled(bool)), this, 
+    connect(tickControl, SIGNAL(toggled(bool)), this,
             SLOT(tickControlToggled(bool)));
     tLayout->addWidget(tickControl, row, 0, 1, 4);
     ++row;
@@ -164,7 +164,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
 
     numTicksLabel = new QLabel(tr("Num ticks"), this);
     tLayout->addWidget(numTicksLabel, row, 0);
-    numTicksLabel->setBuddy(numTicksSpinBox); 
+    numTicksLabel->setBuddy(numTicksSpinBox);
 
     minMaxCheckBox = new QCheckBox(tr("Inclusive of min and max"), this);
     connect(minMaxCheckBox, SIGNAL(toggled(bool)), this,
@@ -189,7 +189,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     suppliedLabelsBox->setTitle(tr("Specify tick values and labels"));
 
     // play with row spans to see if can get the table to display more rows.
-    tLayout->addWidget(suppliedLabelsBox, row, 0, 1, 4); 
+    tLayout->addWidget(suppliedLabelsBox, row, 0, 1, 4);
     QGridLayout *suppliedLabelsLayout = new QGridLayout(suppliedLabelsBox);
     suppliedLabels = new QTableWidget(this);
 
@@ -220,7 +220,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
 
     tabs->addTab(tickMarks, tr("Tick marks"));
 
-    row = 0;   
+    row = 0;
     // Tick marks tab
     QWidget *appearance = new QWidget(tabs);
     QVBoxLayout *vLayout2 = new QVBoxLayout(appearance);
@@ -334,14 +334,14 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::~QvisLegendAttributesInterface
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisLegendAttributesInterface class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisLegendAttributesInterface::~QvisLegendAttributesInterface()
@@ -351,7 +351,7 @@ QvisLegendAttributesInterface::~QvisLegendAttributesInterface()
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::GetMenuText
 //
-// Purpose: 
+// Purpose:
 //   Returns the text to use in the annotation list box.
 //
 // Arguments:
@@ -377,7 +377,7 @@ QvisLegendAttributesInterface::~QvisLegendAttributesInterface()
 QString
 QvisLegendAttributesInterface::GetMenuText(const AnnotationObject &annot) const
 {
-    // Look for the name of a plot in the plot list that has the same name as 
+    // Look for the name of a plot in the plot list that has the same name as
     // the annotation object. There should be a match because of how plots are
     // created.
     QString retval, plotDescription;
@@ -406,7 +406,7 @@ QvisLegendAttributesInterface::SetBool(int bit, bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::UpdateControls
 //
-// Purpose: 
+// Purpose:
 //   Updates the controls in the interface using the data in the Annotation
 //   object pointed to by the annot pointer.
 //
@@ -431,6 +431,10 @@ QvisLegendAttributesInterface::SetBool(int bit, bool val)
 //
 //   Kathleen Bonnell, Thu Oct  1 14:46:14 PDT 2009
 //   Added controls that allow users to modifiy tick values and labels.
+//
+//   Kathleen Biagas, Thu June 23, 2021
+//   Use QString's 'arg' instead of 'asprintf' when creating QStrings from
+//   suppliedValues doubles. Allows user to see more precision in the values.
 //
 // ****************************************************************************
 
@@ -460,7 +464,7 @@ QvisLegendAttributesInterface::UpdateControls()
     heightSpinBox->setValue(h);
     heightSpinBox->blockSignals(false);
 
-    // Set the orientation.  
+    // Set the orientation.
     orientationComboBox->blockSignals(true);
     if (GetBool(LEGEND_ORIENTATION0))
     {
@@ -485,7 +489,7 @@ QvisLegendAttributesInterface::UpdateControls()
     tickControl->blockSignals(false);
 
     numTicksSpinBox->blockSignals(true);
-    numTicksSpinBox->setEnabled(type == LEGEND_TYPE_VARIABLE && 
+    numTicksSpinBox->setEnabled(type == LEGEND_TYPE_VARIABLE &&
                                 GetBool(LEGEND_CONTROL_TICKS));
     numTicksLabel->setEnabled(type == LEGEND_TYPE_VARIABLE &&
                               GetBool(LEGEND_CONTROL_TICKS));
@@ -505,21 +509,19 @@ QvisLegendAttributesInterface::UpdateControls()
         doubleVector sv = annot->GetOptions().GetEntry("suppliedValues")->AsDoubleVector();
         size = (int)sv.size();
         ResizeSuppliedLabelsList(size);
-        QString fmt(formatString->text());
         suppliedLabels->horizontalHeaderItem(0)->setText(tr("Values"));
         for (int i = 0; i < size; ++i)
         {
-            // Qt recommends that asprintf not be used, they recommend
-            // QTextStream or QString.arg. But neither of these will take
-            // the formatString in its current form. Would have to rethink
-            // the format interface.
-            temp = QString::asprintf(fmt.toStdString().c_str(), sv[i]);
+            // even though there is a format string, use the default formatting
+            // for QString.arg so user can see more precision on the values
+            // default format is similar to "%g"
+            temp = QString("%1").arg(sv[i]);
             suppliedLabels->item(i, 0)->setText(temp.simplified());
             suppliedLabels->item(i, 0)->setFlags(
                      Qt::ItemIsSelectable|Qt::ItemIsEditable|Qt::ItemIsEnabled);
         }
     }
-    else 
+    else
     {
         stringVector sv = annot->GetOptions().GetEntry("suppliedValuesStrings")->AsStringVector();
         size = (int)sv.size();
@@ -532,14 +534,14 @@ QvisLegendAttributesInterface::UpdateControls()
             suppliedLabels->item(i, 0)->setFlags(Qt::NoItemFlags);
         }
     }
- 
+
     stringVector sl = annot->GetOptions().GetEntry("suppliedLabels")->AsStringVector();
     size = (int)sl.size();
     for (int i = 0; i < suppliedLabels->rowCount(); ++i)
     {
         if (i < size)
             suppliedLabels->item(i, 1)->setText(sl[i].c_str());
-        else 
+        else
             suppliedLabels->item(i, 1)->setText("");
     }
 
@@ -557,7 +559,7 @@ QvisLegendAttributesInterface::UpdateControls()
 
     //
     // Set the text color. If we're using the foreground color for the text
-    // color then make the button be white and only let the user change the 
+    // color then make the button be white and only let the user change the
     // opacity.
     //
 #ifdef TEXT_OPACITY_SUPPORTED
@@ -643,7 +645,7 @@ QvisLegendAttributesInterface::UpdateControls()
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values for the text fields.
 //
 // Arguments:
@@ -742,7 +744,7 @@ QvisLegendAttributesInterface::GetCurrentValues(int which_widget)
         double d;
         doubleVector temp;
         stringVector stemp;
-        QString txt; 
+        QString txt;
         int nRows = suppliedLabels->rowCount();
 
         // Qt 4.6 on Mac doesn't update properly.  This trick tickles it
@@ -781,15 +783,15 @@ QvisLegendAttributesInterface::layoutChanged(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::positionChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   position line edit.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -804,7 +806,7 @@ QvisLegendAttributesInterface::positionChanged(double x, double y)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::widthChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the value of the width
 //   spin box changes.
 //
@@ -815,7 +817,7 @@ QvisLegendAttributesInterface::positionChanged(double x, double y)
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -833,7 +835,7 @@ QvisLegendAttributesInterface::widthChanged(int w)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::heightChanged
 //
-// Purpose: 
+// Purpose:
 //   This a Qt slot function that is called when the value of the height spin
 //   box changes.
 //
@@ -844,7 +846,7 @@ QvisLegendAttributesInterface::widthChanged(int w)
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -862,18 +864,18 @@ QvisLegendAttributesInterface::heightChanged(int h)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::orientationChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the orientation is changed.
 //
 // Arguments:
-//   orientation: an int acting as an enum, mapping to 
+//   orientation: an int acting as an enum, mapping to
 //   enum avtLegend::LegendOrientation and the options in the combo box.
 //
 // Programmer: Dave Bremer
 // Creation:   Fri Oct  3 13:57:16 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -888,15 +890,15 @@ QvisLegendAttributesInterface::orientationChanged(int orientation)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::textChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   text line edit.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -910,16 +912,16 @@ QvisLegendAttributesInterface::textChanged()
 // Class: QvisLegendAttributesInterface::fontHeightChanged
 //
 // Purpose:
-//   This is a Qt slot function that is called when return is pressed in the 
+//   This is a Qt slot function that is called when return is pressed in the
 //   fontHeight line edit.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Mar 21 09:27:24 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -932,7 +934,7 @@ QvisLegendAttributesInterface::fontHeightChanged()
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::textColorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new start color is
 //   selected.
 //
@@ -943,7 +945,7 @@ QvisLegendAttributesInterface::fontHeightChanged()
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -958,7 +960,7 @@ QvisLegendAttributesInterface::textColorChanged(const QColor &c)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::textOpacityChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new start opacity is
 //   selected.
 //
@@ -969,7 +971,7 @@ QvisLegendAttributesInterface::textColorChanged(const QColor &c)
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -989,7 +991,7 @@ QvisLegendAttributesInterface::textOpacityChanged(int opacity)
 // Creation:   Wed Mar 21 15:34:13 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1002,7 +1004,7 @@ QvisLegendAttributesInterface::drawBoundingBoxToggled(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::boundingBoxColorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new bounding box color is
 //   selected.
 //
@@ -1013,7 +1015,7 @@ QvisLegendAttributesInterface::drawBoundingBoxToggled(bool val)
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1028,7 +1030,7 @@ QvisLegendAttributesInterface::boundingBoxColorChanged(const QColor &c)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::textOpacityChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new bounding box opacity
 //   is selected.
 //
@@ -1039,7 +1041,7 @@ QvisLegendAttributesInterface::boundingBoxColorChanged(const QColor &c)
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1055,7 +1057,7 @@ QvisLegendAttributesInterface::boundingBoxOpacityChanged(int opacity)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::fontFamilyChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the font family is changed.
 //
 // Arguments:
@@ -1065,7 +1067,7 @@ QvisLegendAttributesInterface::boundingBoxOpacityChanged(int opacity)
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1079,14 +1081,14 @@ QvisLegendAttributesInterface::fontFamilyChanged(int family)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::drawMinmaxToggled
 //
-// Purpose: 
+// Purpose:
 //   Called when the draw min/max checkbox is toggled.
 //
 // Programmer: Hank Childs
 // Creation:   January 23, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1100,14 +1102,14 @@ QvisLegendAttributesInterface::drawMinmaxToggled(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::drawTitleToggled
 //
-// Purpose: 
+// Purpose:
 //   Called when the draw title checkbox is toggled.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 26 12:02:51 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1121,7 +1123,7 @@ QvisLegendAttributesInterface::drawTitleToggled(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::boldToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the bold checkbox is toggled.
 //
 // Arguments:
@@ -1131,7 +1133,7 @@ QvisLegendAttributesInterface::drawTitleToggled(bool val)
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1145,7 +1147,7 @@ QvisLegendAttributesInterface::boldToggled(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::italicToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the italic checkbox is toggled.
 //
 // Arguments:
@@ -1155,7 +1157,7 @@ QvisLegendAttributesInterface::boldToggled(bool val)
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1169,7 +1171,7 @@ QvisLegendAttributesInterface::italicToggled(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::shadowToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the shadow checkbox is
 //   toggled.
 //
@@ -1180,7 +1182,7 @@ QvisLegendAttributesInterface::italicToggled(bool val)
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1194,7 +1196,7 @@ QvisLegendAttributesInterface::shadowToggled(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::useForegroundColorToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the useForegroundColor
 //   check box is clicked.
 //
@@ -1205,7 +1207,7 @@ QvisLegendAttributesInterface::shadowToggled(bool val)
 // Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1219,18 +1221,18 @@ QvisLegendAttributesInterface::useForegroundColorToggled(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::tickControlToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the tickControl
 //   check box is clicked.
 //
 // Arguments:
 //   val : The new setting for LEGEND_CONTROL_TICKS
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   October 1, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1244,18 +1246,18 @@ QvisLegendAttributesInterface::tickControlToggled(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::numTicksChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the numTicks
 //   spin box is modified.
 //
 // Arguments:
 //   val : The new setting for numTicks
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   October 1, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1269,18 +1271,18 @@ QvisLegendAttributesInterface::numTicksChanged(int n)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::minMaxToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the minMax
 //   check box is clicked.
 //
 // Arguments:
 //   val : The new setting for LEGEND_MINMAX_INCLUSIVE
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   October 1, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1294,18 +1296,18 @@ QvisLegendAttributesInterface::minMaxToggled(bool val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::drawLabelsChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the drawLabels
 //   combo box is modified.
 //
 // Arguments:
 //   val : The new setting for LEGEND_DRAW_VALUES
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   October 1, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1321,17 +1323,17 @@ QvisLegendAttributesInterface::drawLabelsChanged(int val)
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::addSuppliedLabelsRow
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called with the addRow push button
 //   is clicked.
 //
 // Arguments:
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   October 1, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisLegendAttributesInterface::addSuppliedLabelsRow()
@@ -1343,17 +1345,17 @@ QvisLegendAttributesInterface::addSuppliedLabelsRow()
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::addSuppliedLabelsRow
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called with the deleteRow push button
 //   is clicked.
 //
 // Arguments:
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   October 1, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1367,18 +1369,18 @@ QvisLegendAttributesInterface::deleteSelectedRow()
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::ResizeSuppliedLabelsList
 //
-// Purpose: 
-//   This is an internal method to change the number of rowsn in the 
+// Purpose:
+//   This is an internal method to change the number of rowsn in the
 //   QTableWidget where users enter their own values for labels.
 //
 // Arguments:
-//   newSize : The new size for the table. 
+//   newSize : The new size for the table.
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   October 1, 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
