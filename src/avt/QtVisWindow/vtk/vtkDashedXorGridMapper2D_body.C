@@ -95,6 +95,12 @@
     }
 
     // Draw the lines.
+    // We need to scale our coordinates by the devicePixelRatio, which takes
+    // the OSX retina display into account. From the docs:
+    //
+    //     "Common values are 1 for normal-dpi displays and 2 for high-dpi
+    //     'retina' displays."
+    //
     int devicePixelRatio = privateInstance->widget->devicePixelRatio();
     aPrim = input->GetLines();
     for (aPrim->InitTraversal(); aPrim->GetNextCell(npts,pts); cellNum++)
