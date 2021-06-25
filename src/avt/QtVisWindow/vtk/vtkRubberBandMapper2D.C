@@ -290,7 +290,7 @@ vtkRubberBandMapper2D::RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* acto
     XPoint *points = new XPoint [1024];
 
     Display* displayId = (Display*) QX11Info::display();
-    Window windowId = (Window) d->widget->winId();
+    Window windowId = (Window) privateInstance->widget->winId();
 
     Screen *screen = XDefaultScreenOfDisplay(displayId);
     int screenN = XScreenNumberOfScreen(screen);
