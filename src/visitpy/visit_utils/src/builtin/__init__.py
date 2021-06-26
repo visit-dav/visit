@@ -22,7 +22,7 @@ from .writescript import WriteScript
 from .convert2to3 import ConvertPy2to3
 from .convert2to3 import GetAutoPy2to3
 from .convert2to3 import SetAutoPy2to3
-
+from .apropos import apropos
 
 #
 # Import PySide2 if it exists.
