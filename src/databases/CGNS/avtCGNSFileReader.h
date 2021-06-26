@@ -22,6 +22,7 @@
 
 class vtkDataArray;
 class vtkDataSet;
+class vtkUnstructuredGrid;
 class avtDatabaseMetaData;
 
 using namespace std;
@@ -50,6 +51,10 @@ using namespace std;
 //    Eric Brugger, Thu Jul  2 10:56:36 PDT 2020
 //    Corrected a bug that caused a crash when doing a Subset plot of "zones"
 //    when reading data decomposed across multiple CGNS files.
+//
+//    Alister Maguire, Tue Mar  2 08:01:12 PST 2021
+//    Added ReadMixedAndNamedElementSections, ReadNGonSections,
+//    ReadNGonAndNFaceSections.
 //
 // ****************************************************************************
 
@@ -125,6 +130,20 @@ protected:
                                               const cgsize_t *, int, int);
     vtkDataSet *           GetUnstructuredMesh(int, int, int, const char *,
                                                const cgsize_t *, int, int);
+    void                   ReadMixedAndNamedElementSections(
+                               vtkUnstructuredGrid *,
+                               const char *, std::vector<int> &,
+                               int, int, int, int);
+    void                   ReadNGonSections(
+                               vtkUnstructuredGrid *,
+                               const char *, std::vector<int> &,
+                               int, int, int, int);
+    void                   ReadNGonAndNFaceSections(
+                               vtkUnstructuredGrid *,
+                               const char *,
+                               std::vector<int> &,
+                               std::vector<int> &,
+                               int, int, int, int);
 
     void PrintVarInfo(ostream &out, const VarInfo &var, const char *indent);
     void PrintStringVarInfoMap(ostream &out, const StringVarInfoMap &vars, const char *indent);

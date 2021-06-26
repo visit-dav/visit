@@ -26,6 +26,9 @@
 #    Kathleen Biagas, Fri Oct 9, 2020
 #    Changed how the virtual database is opened (remove .gz).
 #
+#    Kathleen Biagas, Fri Mar 12, 2021
+#    Close sphere.2d.hdf5.gz to prevent HDF5 error message.
+#
 # ----------------------------------------------------------------------------
 
 #
@@ -80,5 +83,7 @@ OpenDatabase(data_path("zipwrapper_test_data/sphere.2d.hdf5.gz"))
 AddPlot("FilledBoundary","materials")
 DrawPlots()
 Test("ZipWrapper_07")
+DeleteAllPlots()
+CloseDatabase(data_path("zipwrapper_test_data/sphere.2d.hdf5.gz"))
 
 Exit()

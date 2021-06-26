@@ -78,8 +78,8 @@ class EXPRESSION_API avtMultipleInputMathExpression
 
     protected:
         virtual vtkDataArray *DeriveVariable(vtkDataSet*, int);
-        virtual vtkDataArray *ExractCenteredData(avtCentering*, vtkDataSet*,
-                                                 const char*);
+        virtual vtkDataArray *ExtractCenteredData(avtCentering*, vtkDataSet*,
+                                                  const char*);
         virtual vtkDataArray *CreateOutputVariable();
         virtual vtkDataArray *CreateOutputVariable(int);
         virtual vtkDataArray *DoOperation() = 0;

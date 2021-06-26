@@ -36,7 +36,7 @@
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
 #6. bv_<module>_build builds the module
 
-export VISIT_VERSION=${VISIT_VERSION:-"3.1.4"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.2.0"}
 
 ####
 # Trunk:
@@ -88,6 +88,18 @@ declare -a grouplibs_comment
 declare -a grouplibs_enabled
 declare -a defaultLicenses
 declare -a args
+
+function quick_check_for_help
+{
+    for arg in "$@";
+    do
+        if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+            echo 0 # in sh, 0 return ==> ok
+            return
+        fi
+    done
+    echo 1 # in sh, non-zero return ==> not-ok
+}
 
 function check_for_versioning
 {
@@ -259,17 +271,11 @@ configure_support_files
 #import helper functions..
 . $bv_PREFIX/helper_funcs.sh
 
+# Test a key version compare function there
+test_compare_version_strings
+
 #import visit
 . $bv_PREFIX/bv_visit.sh
-
-#handle -h or --help arg early to avoid delays
-#for arg in "$@";
-#do
-#    if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-#        usage
-#        exit 2
-#    fi
-#done
 
 #These options can be read from a file..
 . $bv_PREFIX/bv_xml_parser.sh
@@ -286,7 +292,9 @@ defaultLicenses=$(xmlp_get_license "$@")
 
 for license in `echo $defaultLicenses`
 do
-    info "Processing $license license."
+    if [[ $(quick_check_for_help $@) -ne 0 ]]; then
+        info "Processing $license license."
+    fi
 
     #read in contents for this license
     parseXmlModuleContents $license
@@ -365,14 +373,13 @@ done
 
 function check_default_args
 {
-    #handle -h or --help arg early to avoid delays
+    if [[ $(quick_check_for_help $@) -eq 0 ]]; then
+        usage
+        exit 2
+    fi
+
     for arg in "$@";
     do
-        if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-            usage
-            exit 2
-        fi
-
         if [[ "$arg" == "--write-unified-file" ]]; then
             next_arg="write-unified-file"
         elif [[ "$next_arg" == "write-unified-file" ]]; then
@@ -448,6 +455,7 @@ function bv_write_unified_file
     echo "declare -a defaultLicenses" >> $OUTPUT_bv_FILE
     echo "declare -a args" >> $OUTPUT_bv_FILE
 
+    declare -f quick_check_for_help >> $OUTPUT_bv_FILE
     declare -f check_for_versioning >> $OUTPUT_bv_FILE
     declare -f call_build_visit >> $OUTPUT_bv_FILE
     declare -f configure_support_files >> $OUTPUT_bv_FILE

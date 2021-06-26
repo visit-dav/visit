@@ -528,7 +528,7 @@ QvisIntegralCurveWindow::CreateIntegrationTab(QWidget *pageIntegration)
     samplingLayout->addWidget(sampleDistance[1], sRow, 3);
     samplingLayout->addWidget(sampleDistanceLabel[2], sRow, 4);
     samplingLayout->addWidget(sampleDistance[2], sRow, 5);
-    
+
     sRow++;
 
     // Create the field group box.
@@ -741,7 +741,8 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
 
     dataValueComboBox = new QComboBox(dataGroup);
     dataValueComboBox->addItem(tr("Solid Color"), IntegralCurveAttributes::Solid);
-    dataValueComboBox->addItem(tr("Random Color"), IntegralCurveAttributes::SeedPointID);
+    dataValueComboBox->addItem(tr("Random"), IntegralCurveAttributes::Random);
+    dataValueComboBox->addItem(tr("Seed Point ID"), IntegralCurveAttributes::SeedPointID);
     dataValueComboBox->addItem(tr("Vector magnitude"), IntegralCurveAttributes::Speed);
     dataValueComboBox->addItem(tr("Vorticity magnitude"), IntegralCurveAttributes::Vorticity);
     dataValueComboBox->addItem(tr("Arc length"), IntegralCurveAttributes::ArcLength);
@@ -752,6 +753,7 @@ QvisIntegralCurveWindow::CreateAppearanceTab(QWidget *pageAppearance)
     dataValueComboBox->addItem(tr("Closed Curve"), IntegralCurveAttributes::ClosedCurve);
     dataValueComboBox->addItem(tr("Difference"), IntegralCurveAttributes::Difference);
     dataValueComboBox->addItem(tr("Variable"), IntegralCurveAttributes::Variable);
+    dataValueComboBox->addItem(tr("Variable at Seed"), IntegralCurveAttributes::VariableAtSeed);
     connect(dataValueComboBox, SIGNAL(activated(int)),
             this, SLOT(dataValueChanged(int)));
     dataLayout->addWidget(dataValueComboBox, 0, 1);
@@ -1375,7 +1377,8 @@ QvisIntegralCurveWindow::UpdateWindow(bool doAll)
             dataValueComboBox->setCurrentIndex(int(atts->GetDataValue()));
             dataValueComboBox->blockSignals(false);
 
-            if (atts->GetDataValue() == IntegralCurveAttributes::Variable)
+            if (atts->GetDataValue() == IntegralCurveAttributes::Variable ||
+                atts->GetDataValue() == IntegralCurveAttributes::VariableAtSeed)
             {
                 dataVariable->setEnabled(true);
                 dataVariable->show();

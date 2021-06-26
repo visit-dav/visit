@@ -8,6 +8,7 @@
 #if !defined(_WIN32)
 #include <strings.h>
 #else
+#include <algorithm>
 #include <process.h> // for _getpid
 #endif
 #include <map>
@@ -591,13 +592,32 @@ static void WakeMainThread(Subject *, void *)
 #define THREAD_INIT()
 #endif
 
+// ---------------------------------------------------------------
+//
+// Our PyEval_AcquireLock() solution did not work in Python 3.
+// This lead to CLI crashing whenever a lock was requested
+// (the primary case was command line recording, but there
+//  may be others)
+//
+// Prior locking solution worked fine in Python 2, so we keep
+// it when Python 2 is in play, but provide a new Python 3
+// solution using on PyGILState_Ensure() + PyGILState_Release()
+//
+// ---------------------------------------------------------------
+
+// ---------------------------------------------------------------
 // Locks the Python interpreter by one thread.
-PyThreadState *
+VISIT_PY_THREAD_LOCK_STATE
 VisItLockPythonInterpreter()
 {
+#if defined(IS_PY3K)
+    // python 3 imp
+    return PyGILState_Ensure();
+#else
+    // python 2 imp
+
     // get the global lock
     PyEval_AcquireLock();
-
     // get a reference to the PyInterpreterState
     PyInterpreterState * mainInterpreterState = mainThreadState->interp;
     // create a thread state object for this thread
@@ -605,20 +625,29 @@ VisItLockPythonInterpreter()
     // swap in my thread state
     PyThreadState_Swap(myThreadState);
     return myThreadState;
+#endif
 }
 
+// ---------------------------------------------------------------
 // Unlocks the Python interpreter by one thread.
 void
-VisItUnlockPythonInterpreter(PyThreadState *myThreadState)
+VisItUnlockPythonInterpreter(VISIT_PY_THREAD_LOCK_STATE state)
 {
+#if defined(IS_PY3K)
+    // python 3 imp
+    PyGILState_Release(state);
+#else
+    // python 2 imp
+
     // clear the thread state
     PyThreadState_Swap(NULL);
     // clear out any cruft from thread state object
-    PyThreadState_Clear(myThreadState);
+    PyThreadState_Clear(state);
     // delete my thread state object
-    PyThreadState_Delete(myThreadState);
+    PyThreadState_Delete(state);
     // release our hold on the global interpreter
     PyEval_ReleaseLock();
+#endif
 }
 
 // ****************************************************************************
@@ -16893,7 +16922,7 @@ visit_exec_client_method(void *data)
     ClientMethod *m = (ClientMethod *)cbData[0];
     bool acquireLock = cbData[1] ? true : false;
 
-    PyThreadState *myThreadState = 0;
+    VISIT_PY_THREAD_LOCK_STATE myThreadState;
 
     if(acquireLock)
         myThreadState = VisItLockPythonInterpreter();
@@ -19518,6 +19547,9 @@ cli_initvisit(int debugLevel, bool verbose,
 //   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
 //   Added book keeping to track execution stack of source files.
 //
+//   Kathleen Biagas, Tue Apr 20 2021 
+//   On Windows, convert fileName's backslashes to forward (Python 3 change).
+//
 // ****************************************************************************
 
 void
@@ -19529,9 +19561,13 @@ cli_runscript(const char *fileName)
         FILE *fp = fopen(fileName, "r");
         if(fp)
         {
+            std::string fn(fileName);
+#ifdef WIN32
+            std::replace(fn.begin(), fn.end(), '\\', '/');
+#endif
             // book keeping for source stack
             std::string pycmd  = "__visit_source_file__ = ";
-            pycmd += " os.path.abspath('" + std::string(fileName) + "')\n";
+            pycmd += " os.path.abspath('" + fn + "')\n";
             pycmd += "__visit_source_stack__.append(__visit_source_file__)\n";
             PyRun_SimpleString(pycmd.c_str());
 
@@ -20095,6 +20131,9 @@ visit_eventloop(void *)
 //   Hari Krishnan, Brad Whitlock, Tue Mar 5 14:47:PST 2013
 //   Do not synchronize when using embedded viewer. It will cause deadlock.
 //
+//   Cyrus Harrison, Wed Feb 24 16:09:45 PST 2021
+//   Adjustments for Pyside 2 support. 
+//
 // ****************************************************************************
 
 static int
@@ -20119,7 +20158,7 @@ Synchronize()
 
         /// should only run once?
         while(syncCount != syncAtts->GetSyncTag()) {
-            PyRun_SimpleString("visit.__VisIt_PySide_Idle_Hook__()");
+            PyRun_SimpleString("visit_utils.builtin.pyside_support.__VisIt_PySide_Idle_Hook__()");
         }
         syncCount++;
         return 0;

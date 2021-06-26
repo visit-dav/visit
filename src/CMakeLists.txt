@@ -469,7 +469,21 @@
 #    subdir's CMakeLists.txt
 #
 #    Kathleen Biagas, Mon Oct 26, 2020
-#    Add VISIT_ENABLE_UNIT_TESTS option (on by default).>> develop
+#    Add VISIT_ENABLE_UNIT_TESTS option (on by default).
+#
+#    Kathleen Biagas, Thu Feb 18, 2021
+#    Added logic to support codesigning Windows releases.
+#
+#    Kathleen Biagas, Thu Apr 22, 2021
+#    Removed addition of tools/DataManualExamples/Simulations for static
+#    builds, the directory structure has changed and the examples are now
+#    in 'tools/data'.  'tools' and 'tools/data' are added unconditionally.
+#    'DataManualExamples' is dependent on VISIT_ENABLE_DATA_MANUAL_EXAMPLES
+#    being ON.
+#
+#    Eric Brugger, Wed May  5 08:31:16 PDT 2021
+#    Set VISIT_GIT_VERSION from the file GIT_VERSION if we are not in a
+#    git checkout.
 #
 #****************************************************************************
 
@@ -1742,12 +1756,15 @@ ENDFUNCTION(MAC_NIB_INSTALL)
 
 #-----------------------------------------------------------------------------
 # Read the GIT version
+# If we are in a git repo, get the version using git, otherwise try the
+# file GIT_VERSION, which will be present in a source code tar file
+# created by visit-dist.
 #-----------------------------------------------------------------------------
 #dummy revision, in case commands fail
-SET(VISIT_GIT_VERSION "Unknown")
-    IF (EXISTS ${VISIT_SOURCE_DIR}/../.git)
-        # Only try and determine the version number if it looks like
-        # we're in a working copy (a .git directory should be present)
+set(VISIT_GIT_VERSION "Unknown")
+if (EXISTS ${VISIT_SOURCE_DIR}/../.git)
+    # Only try and determine the version number if it looks like
+    # we're in a working copy (a .git directory should be present)
     find_package(Git QUIET)
     if(Git_FOUND)
         # if we would prefer the full hash, remove --short in the command
@@ -1759,11 +1776,15 @@ SET(VISIT_GIT_VERSION "Unknown")
             ERROR_QUIET
             OUTPUT_STRIP_TRAILING_WHITESPACE)
         if(${found_it} EQUAL 0)
-            SET(VISIT_GIT_VERSION ${git_rev})
+            set(VISIT_GIT_VERSION ${git_rev})
         endif()
         unset(found_it)
         unset(git_rev)
     endif()
+else (EXISTS ${VISIT_SOURCE_DIR}/../.git)
+    if (EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
+        file(STRINGS ${VISIT_SOURCE_DIR}/GIT_VERSION VISIT_GIT_VERSION)
+    endif (EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -2144,14 +2165,6 @@ IF(VISIT_STATIC)
     ADD_SUBDIRECTORY(engine/main)
     ADD_SUBDIRECTORY(sim/V2/static)
 
-    # Make it possible to build some sim examples since we've created the
-    # static sim library.
-    IF(NOT WIN32)
-        IF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-            ADD_SUBDIRECTORY(tools/DataManualExamples/Simulations)
-        ENDIF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-    ENDIF(NOT WIN32)
-
     IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
         ADD_SUBDIRECTORY(mdserver/main)
     ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
@@ -2246,6 +2259,9 @@ ELSE (NOT WIN32)
         FILE(TO_NATIVE_PATH ${VISIT_WINDOWS_DIR} VWD_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_INSTALL_PREFIX} CIP_NATIVE)
         FILE(TO_NATIVE_PATH ${CMAKE_CURRENT_BINARY_DIR} CBD_NATIVE)
+        if(CODESIGN_HASH)
+           set(codesign "/DCODESIGN_HASH=${CODESIGN_HASH}")
+        endif()
         ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
             COMMAND ${MAKENSIS}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
@@ -2254,6 +2270,7 @@ ELSE (NOT WIN32)
                     /DBIN_DIR=${CBD_NATIVE}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
             COMMAND ${MAKENSIS}
+                    ${codesign}
                     /DVisItVersion=${VISIT_VERSION}
                     /DCOMPILER=${VISIT_MSVC_VERSION}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
@@ -2266,8 +2283,12 @@ ELSE (NOT WIN32)
                     ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
         )
         ADD_CUSTOM_TARGET(_PACKAGE ALL DEPENDS visit${VISIT_VERSION}.exe)
-        ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P cmake_install.cmake)
+        if(NOT CODESIGN_HASH)
+          # not building a signed release
+          # make INSTALL be a prereq for _PACKAGE.
+          ADD_CUSTOM_COMMAND(TARGET _PACKAGE PRE_BUILD
+              COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P cmake_install.cmake)
+        endif()
         SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES
                               EXCLUDE_FROM_DEFAULT_BUILD 1
                               EXCLUDE_FROM_ALL 1 )

@@ -23,6 +23,9 @@ function bv_mfem_depends_on
     if [[ "$DO_FMS" == "yes" ]] ; then
         depends_on="$depends_on fms"
     fi
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        depends_on="$depends_on hdf5"
+    fi
 
     echo $depends_on
 }
@@ -105,6 +108,42 @@ function bv_mfem_dry_run
     fi
 }
 
+function apply_mfem_patch
+{
+    # On IBM PPC systems the system defines "__VSX__" but some of the
+    # VSX functions are not defined with gcc, which VisIt typically
+    # uses. To avoid this we disable all the VSX coding. This is ok
+    # since VSX just optimizes performance, so no functionality is lost.
+    patch -p0 << \EOF
+diff -c ./linalg/simd/vsx128.hpp.orig ./linalg/simd/vsx128.hpp
+*** ./linalg/simd/vsx128.hpp.orig	Tue Mar  9 06:55:45 2021
+--- ./linalg/simd/vsx128.hpp	Tue Mar  9 06:57:37 2021
+***************
+*** 12,18 ****
+  #ifndef MFEM_SIMD_VSX128_HPP
+  #define MFEM_SIMD_VSX128_HPP
+  
+! #ifdef __VSX__
+  
+  #include "../../config/tconfig.hpp"
+  #include <altivec.h>
+--- 12,18 ----
+  #ifndef MFEM_SIMD_VSX128_HPP
+  #define MFEM_SIMD_VSX128_HPP
+  
+! #ifdef __VSX_NOMATCH__
+  
+  #include "../../config/tconfig.hpp"
+  #include <altivec.h>
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MFEM patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 # *************************************************************************** #
 #                            Function 8, build_mfem
 # *************************************************************************** #
@@ -120,17 +159,36 @@ function build_mfem
         return 1
     fi
 
+    #
+    # Apply patches.
+    #
     cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
+
+    info "Patching MFEM"
+    apply_mfem_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_mfem == 1 ]] ; then
+            warn "Giving up on MFEM build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    #
+    # Build MFEM.
+    #
     mkdir build
     cd build || error "Can't cd to MFEM build dir."
-
-    # Version 4.0 now requires c++11
-    CXXFLAGS="-std=c++11 ${CXXFLAGS}"
 
     vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} $CFLAGS\""
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS\""
+    # Version 4.0 now requires c++11
+    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS -std=c++11\""
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/mfem/${MFEM_VERSION}/${VISITARCH}"
     if test "x${DO_STATIC_BUILD}" = "xyes" ; then
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
@@ -143,6 +201,8 @@ function build_mfem
     fi
     if [[ "$DO_FMS" == "yes" ]] ; then
         vopts="${vopts} -DMFEM_USE_FMS=ON -DFMS_DIR=${VISITDIR}/fms/${FMS_VERSION}/${VISITARCH}"
+    else
+        vopts="${vopts} -DMFEM_USE_FMS=OFF"
     fi
     vopts="${vopts} -DMFEM_USE_ZLIB=ON"
 

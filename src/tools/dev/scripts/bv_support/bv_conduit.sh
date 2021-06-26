@@ -22,7 +22,7 @@ function bv_conduit_depends_on
     fi
 
     if [[ "$DO_PYTHON" == "yes" ]] ; then
-        depends_on="python"
+        depends_on="$depends_on python"
     fi
 
     if [[ "$DO_MPICH" == "yes" ]] ; then

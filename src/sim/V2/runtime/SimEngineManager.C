@@ -6,6 +6,7 @@
 
 #include <CompactSILRestrictionAttributes.h>
 #include <EngineList.h>
+#include <ExportDBAttributes.h>
 #include <ExpressionList.h>
 #include <GlobalAttributes.h>
 #include <MaterialAttributes.h>
@@ -1414,17 +1415,21 @@ SimEngineManager::SaveNamedSelection(const EngineKey &/*ek*/,
 // Creation:   Mon Sep 22 22:12:03 PDT 2014
 //
 // Modifications:
+//   Kathleen Biagas, Fri Apr 23,2021
+//   Update to new signature with return atts.
 //
 // ****************************************************************************
 
 bool
 SimEngineManager::ExportDatabases(const EngineKey &/*ek*/,
                                   const intVector &ids,
-                                  const ExportDBAttributes &expAtts, 
-                                  const std::string &timeSuffix)
+                                  const ExportDBAttributes *expAtts,
+                                  const std::string &timeSuffix,
+                                  ExportDBAttributes &retAtts)
 {
     StackTimer t0("SimEngineManager::ExportDatabases");
-    engine->GetNetMgr()->ExportDatabases(ids, expAtts, timeSuffix);
+    retAtts = *expAtts;
+    engine->GetNetMgr()->ExportDatabases(ids, &retAtts, timeSuffix);
     return true;
 }
 

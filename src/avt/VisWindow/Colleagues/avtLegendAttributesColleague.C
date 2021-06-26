@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                              avtLegendAttributesColleague.C               //
-// ************************************************************************* //
+// **************************************************************************
+//  avtLegendAttributesColleague.C
+// **************************************************************************
 #include <avtLegendAttributesColleague.h>
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
@@ -37,7 +37,7 @@ SetBool(AnnotationObject &annot, int bit, bool val)
 // ****************************************************************************
 // Method: avtLegendAttributesColleague::avtLegendAttributesColleague
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the avtLegendAttributesColleague class.
 //
 // Arguments:
@@ -47,7 +47,7 @@ SetBool(AnnotationObject &annot, int bit, bool val)
 // Creation:   Tue Mar 20 10:57:05 PDT 2007
 //
 // Modifications:
-//   
+//
 //    Hank Childs, Fri Jan 23 15:31:06 PST 2009
 //    Add support for draw min/max.
 //
@@ -58,6 +58,9 @@ SetBool(AnnotationObject &annot, int bit, bool val)
 //    AnnotationObject::SetPosition expects/uses 3 values. We were only
 //    passing arrays of 2 values which lead to "invalid read" reported by
 //    the address sanitizer. changed to use arrays with 3 values.
+//
+//    Kathleen Biagas, Tue June 22, 2021
+//    Ensure suppliedLabels is created.
 //
 // ****************************************************************************
 
@@ -71,6 +74,7 @@ avtLegendAttributesColleague::avtLegendAttributesColleague(
     SetBool(atts, LEGEND_ORIENTATION0,     false);
     SetBool(atts, LEGEND_ORIENTATION1,     false);
     SetBool(atts, LEGEND_DRAW_TITLE,       true);
+    SetBool(atts, LEGEND_CUSTOM_TITLE,     false);
     SetBool(atts, LEGEND_DRAW_MINMAX,      true);
     SetBool(atts, LEGEND_CONTROL_TICKS,    true);
     SetBool(atts, LEGEND_MINMAX_INCLUSIVE, true);
@@ -101,24 +105,32 @@ avtLegendAttributesColleague::avtLegendAttributesColleague(
     atts.SetFontItalic(false);
     atts.SetFontShadow(false);
 
-    // Set the default number of ticks 
+    // Set the default number of ticks
     atts.GetOptions().GetEntry("numTicks")->SetValue(5);
 
     // Set the default legend type to variable
     atts.GetOptions().GetEntry("legendType")->SetValue(0);
+
+    // Set the default custom title
+    atts.GetOptions().GetEntry("customTitle")->SetValue("");
+
+    // Provide an empty 'suppliedLabels' entry to satisfy python print
+    // interface, where we want this entry available, even if unset or empty.
+    stringVector suppliedLabels;
+    atts.GetOptions().GetEntry("suppliedLabels")->SetValue(suppliedLabels);
 }
 
 // ****************************************************************************
 // Method: avtLegendAttributesColleague::~avtLegendAttributesColleague
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the avtLegendAttributesColleague class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 20 10:57:05 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 avtLegendAttributesColleague::~avtLegendAttributesColleague()
@@ -128,17 +140,17 @@ avtLegendAttributesColleague::~avtLegendAttributesColleague()
 // ****************************************************************************
 // Method: avtLegendAttributesColleague::AddToRenderer
 //
-// Purpose: 
+// Purpose:
 //   This method adds the text actor to the renderer.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 20 10:57:05 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-void 
+void
 avtLegendAttributesColleague::AddToRenderer()
 {
     // Legends are not added to the renderer via this object.
@@ -147,14 +159,14 @@ avtLegendAttributesColleague::AddToRenderer()
 // ****************************************************************************
 // Method: avtLegendAttributesColleague::RemoveFromRenderer
 //
-// Purpose: 
+// Purpose:
 //   This method removes the text actor from the renderer.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 20 10:57:05 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -166,7 +178,7 @@ avtLegendAttributesColleague::RemoveFromRenderer()
 // ****************************************************************************
 // Method: avtLegendAttributesColleague::Hide
 //
-// Purpose: 
+// Purpose:
 //   This method toggles the visible flag and either adds or removes the text
 //   actor to/from the renderer.
 //
@@ -174,7 +186,7 @@ avtLegendAttributesColleague::RemoveFromRenderer()
 // Creation:   Tue Mar 20 10:57:05 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -186,7 +198,7 @@ avtLegendAttributesColleague::Hide()
 // ****************************************************************************
 // Method: avtLegendAttributesColleague::SetOptions
 //
-// Purpose: 
+// Purpose:
 //   This method sets the text actor's properties from the values in the
 //   annotation object.
 //
@@ -212,7 +224,7 @@ avtLegendAttributesColleague::SetOptions(const AnnotationObject &annot)
 // ****************************************************************************
 // Method: avtLegendAttributesColleague::GetOptions
 //
-// Purpose: 
+// Purpose:
 //   This method stores the text label's attributes in an object that can
 //   be passed back to the client.
 //
@@ -223,7 +235,7 @@ avtLegendAttributesColleague::SetOptions(const AnnotationObject &annot)
 // Creation:   Tue Mar 20 10:57:05 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -240,7 +252,7 @@ avtLegendAttributesColleague::GetOptions(AnnotationObject &annot)
 // ****************************************************************************
 // Method: avtLegendAttributesColleague::UpdatePlotList
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the plot list changes. Its job is to make sure
 //   that the time slider always shows the right time.
 //
@@ -267,7 +279,7 @@ avtLegendAttributesColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 // ****************************************************************************
 // Method: avtLegendAttributesColleague::ManageLayout
 //
-// Purpose: 
+// Purpose:
 //   Sets the legend scale and returns whether the legend's layout is managed
 //   by VisWinAnnotations.
 //
@@ -276,13 +288,13 @@ avtLegendAttributesColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 //
 // Returns:    True if the legend's position will be managed.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 22 02:12:54 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -297,15 +309,15 @@ avtLegendAttributesColleague::ManageLayout(avtLegend_p legend) const
 // ****************************************************************************
 // Method: avtLegendAttributesColleague::CustomizeLegend
 //
-// Purpose: 
+// Purpose:
 //   This method customizes the legend properties.
 //
 // Arguments:
 //   legend : The legend to be customized.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 22 02:13:46 PDT 2007
@@ -315,7 +327,7 @@ avtLegendAttributesColleague::ManageLayout(avtLegend_p legend) const
 //   Added title visibility.
 //
 //   Dave Bremer, Wed Oct 15 16:37:37 PDT 2008
-//   I set the orientation first now, because it will affect the 
+//   I set the orientation first now, because it will affect the
 //   call to legend->GetLegendSize()
 //
 //   Hank Childs, Fri Jan 23 15:35:46 PST 2009
@@ -323,6 +335,9 @@ avtLegendAttributesColleague::ManageLayout(avtLegend_p legend) const
 //
 //   Kathleen Bonnell, Thu Oct  1 14:35:03 PDT 2009
 //   Added support for user control of tick values and labels.
+//
+//   Kathleen Biagas, Wed May 19, 2021
+//   Added support for custom title.
 //
 // ****************************************************************************
 
@@ -368,7 +383,7 @@ avtLegendAttributesColleague::CustomizeLegend(avtLegend_p legend)
         legend->SetNumTicks(atts.GetOptions().GetEntry("numTicks")->AsInt());
         legend->SetMinMaxInclusive(GetBool(atts, LEGEND_MINMAX_INCLUSIVE));
     }
-    else 
+    else
     {
         legend->SetUseSuppliedLabels(true);
         legend->SetSuppliedValues(atts.GetOptions().GetEntry("suppliedValues")->AsDoubleVector());
@@ -395,10 +410,13 @@ avtLegendAttributesColleague::CustomizeLegend(avtLegend_p legend)
     // Set whether the title is drawn.
     legend->SetTitleVisibility(GetBool(atts, LEGEND_DRAW_TITLE));
 
+    legend->SetCustomTitle(atts.GetOptions().GetEntry("customTitle")->AsString());
+    legend->UseCustomTitle(GetBool(atts, LEGEND_CUSTOM_TITLE));
+
     // Set whether the labels are drawn.
     int dv = GetBool(atts, LEGEND_DRAW_VALUES) ? 1 : 0;
     int dl = GetBool(atts, LEGEND_DRAW_LABELS) ? 2 : 0;
-    
+
     legend->SetLabelVisibility(dl + dv);
 
     // Set whether the labels are drawn.

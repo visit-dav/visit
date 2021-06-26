@@ -24,7 +24,7 @@ MacOS X:
 
 Downloads:
 
-1. Download visit3_2_0.darwin-x86_64-10_13.dmg and copy it to the desktop.
+1. Download visit3_2_0.darwin-x86_64-10_15.dmg and copy it to the desktop.
 
 2. Double click on the file to open it. This will cause MacOS to mount the
    disk image and open it in Finder.
@@ -55,11 +55,14 @@ Unix (gzipped tar file):
 
         "platform" will be one of the following:
 
-            linux-x86_64-ubuntu18
+            linux-x86_64-centos8
             linux-x86_64-debian9
-            linux-x86_64-fedora27
+            linux-x86_64-debian10
+            linux-x86_64-fedora31
             linux-x86_64-rhel7
             linux-x86_64-rhel7-wmesa
+            linux-x86_64-ubuntu18
+            linux-x86_64-ubuntu20
 
         The one you use should match the name of the accompanying
         distribution file.

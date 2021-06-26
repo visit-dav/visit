@@ -28,12 +28,12 @@ function bv_cgns_depends_on
 
 function bv_cgns_info
 {
-    export CGNS_FILE=${CGNS_FILE:-"CGNS-4.1.2.tar.gz"}
-    export CGNS_VERSION=${CGNS_VERSION:-"4.1.2"}
+    export CGNS_FILE=${CGNS_FILE:-"CGNS-4.1.0.tar.gz"}
+    export CGNS_VERSION=${CGNS_VERSION:-"4.1.0"}
     export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"4.1"}
-    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"CGNS-4.1.2/src"}
-    export CGNS_MD5_CHECKSUM="771d9c5b64d9764dc1f5afb42ee1984d"
-    export CGNS_SHA256_CHECKSUM="951653956f509b8a64040f1440c77f5ee0e6e2bf0a9eef1248d370f60a400050"
+    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"CGNS-4.1.0/src"}
+    export CGNS_MD5_CHECKSUM="f90b85ae10693d4db0825c7ce61c6f73"
+    export CGNS_SHA256_CHECKSUM="b4584e4d0fa52c737a0fb4738157a88581df251c8c5886175ee287e1777e99fd"
 }
 
 function bv_cgns_print
@@ -87,12 +87,13 @@ function bv_cgns_dry_run
     fi
 }
 
-function apply_cgns_412_patch
+function apply_cgns_410_patch
 {
+    info "Patching CGNS 4.1.0"
     patch -p0 << \EOF
-diff -c CGNS-4.1.2/src/configure.orig CGNS-4.1.2/src/configure
-*** CGNS-4.1.2/src/configure.orig	Thu Feb 11 17:51:22 2021
---- CGNS-4.1.2/src/configure	Fri Feb 12 07:55:02 2021
+diff -c CGNS-4.1.0/src/configure.orig CGNS-4.1.0/src/configure
+*** CGNS-4.1.0/src/configure.orig	Thu Feb 11 17:51:22 2021
+--- CGNS-4.1.0/src/configure	Fri Feb 12 07:55:02 2021
 ***************
 *** 5939,5945 ****
     $as_echo_n "(cached) " >&6
@@ -268,13 +269,31 @@ EOF
         return 1
     fi
 
+    patch -p0 << \EOF
+diff -u CGNS-4.1.0/src/Makefile.in.orig CGNS-4.1.0/src/Makefile.in
+--- CGNS-4.1.0/src/Makefile.in.orig	2021-01-29 09:15:50.000000000 -0800
++++ CGNS-4.1.0/src/Makefile.in	2021-05-05 08:52:32.000000000 -0700
+@@ -53,7 +53,7 @@
+ 
+ $(CGNSLIB) : $(OBJDIR) $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS)
+ 	-@$(RM) $@
+-	@AR_LIB@ $@ $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS)
++	@AR_LIB@ $@ $(LDFLAGS) $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS) $(CLIBS)
+ 	@RAN_LIB@ $@
+ 
+ $(OBJDIR) :
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
     return 0
 }
 
 function apply_cgns_patch
 {
-    if [[ ${CGNS_VERSION} == "4.1.2" ]] ; then
-        apply_cgns_412_patch
+    if [[ ${CGNS_VERSION} == "4.1.0" ]] ; then
+        apply_cgns_410_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -355,21 +374,35 @@ function build_cgns
     fi
 
     # optionally add HDF5 and szip to the configure.
+    LIBS_ENV=""
+    LDFLAGS_ENV=""
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
+        LIBS_ENV="-lhdf5"
+        LDFLAGS_ENV="-L$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
+            LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib"
             H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+            LIBS_ENV="$LIBS_ENV -lsz"
         fi
+        LIBS_ENV="$LIBS_ENV -lz"
+        LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
         H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
     fi
+
+    # Disable fortran
+    FORTRANARGS="--with-fortran=no"
+
     info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-        ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
+        LDFLAGS=\"$LDFLAGS_ENV\" LIBS=\"$LIBS_ENV\" \
+        ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
 
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
+        LDFLAGS="$LDFLAGS_ENV" LIBS="$LIBS_ENV" \
+        ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
 
     if [[ $? != 0 ]] ; then
         warn "CGNS configure failed.  Giving up"
@@ -381,7 +414,7 @@ function build_cgns
     #
     info "Building CGNS . . . (~2 minutes)"
 
-    $MAKE
+    $MAKE cgns
     if [[ $? != 0 ]] ; then
         warn "CGNS build failed.  Giving up"
         return 1
@@ -392,7 +425,7 @@ function build_cgns
     #
     info "Installing CGNS . . ."
 
-    $MAKE install
+    $MAKE install-cgns
     if [[ $? != 0 ]] ; then
         warn "CGNS install failed.  Giving up"
         return 1

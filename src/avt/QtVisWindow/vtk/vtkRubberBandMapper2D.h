@@ -11,6 +11,12 @@
 class QWidget;
 struct vtkRubberBandMapper2DPrivate;
 
+// ***************************************************************************
+//  Modifications:
+//    Alister Maguire, Thu Jun 24 10:57:30 PDT 2021
+//    Changed the name of class variable "d" to "privateInstance".
+//
+// ***************************************************************************
 class QTVISWINDOW_API vtkRubberBandMapper2D : public vtkPolyDataMapper2D
 {
 public:
@@ -36,7 +42,7 @@ protected:
   void RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* actor);
   void RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor);
 
-  vtkRubberBandMapper2DPrivate *d;
+  vtkRubberBandMapper2DPrivate *privateInstance;
 
 private:
   vtkRubberBandMapper2D(const vtkRubberBandMapper2D&);

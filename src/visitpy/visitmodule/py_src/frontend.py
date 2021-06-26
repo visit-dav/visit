@@ -27,46 +27,66 @@
 #  Use 'splitlines' instead of split("\n"), use list version of first 
 #  argmument for Popen command, so that it works on Windows.
 #
-#   Brad Whitlock, Thu Mar 14 14:19:13 PDT 2013
-#   Fix __read_visit_env so the Windows changes get executed on Windows and the
-#   previous way gets executed for non-Windows -- so it works again on 
-#   non-Windows.
+#  Brad Whitlock, Thu Mar 14 14:19:13 PDT 2013
+#  Fix __read_visit_env so the Windows changes get executed on Windows and the
+#  previous way gets executed for non-Windows -- so it works again on 
+#  non-Windows.
 #
-#   Cyrus Harrison, Thu Apr  9 09:19:24 PDT 2020
-#   Update Popen call for Python 3.
+#  Cyrus Harrison, Thu Apr  9 09:19:24 PDT 2020
+#  Update Popen call for Python 3.
 #
+#  Cyrus Harrison, Wed Feb 24 16:13:34 PST 2021
+#  Update due to refactor of PySide 2 module logic.
+#
+#  Kathleen Biagas, Thu Jun 3, 2021
+#  Changes for Windows:
+#    Retrieve vdir from VISITLOC env var if the vdir arg in Launch commands
+#      wasn't set.
+#    Add '-nodialog' to 'visit.exe -env' command so that environment string
+#      can be retrieved. Otherwise we get a dialog box and nothing to stdout.
 ###############################################################################
 
 import sys
 import subprocess
 import os
 import imp
+import visit_utils
 
 from os.path import join as pjoin
 
-__all__ = ["Launch","LaunchNowin","LaunchWithProxy","LaunchPySide","LaunchPyQt","AddArgument","SetDebugLevel","GetDebugLevel"]
+__all__ = ["Launch",
+           "LaunchNowin",
+           "LaunchWithProxy",
+           "LaunchPySide",
+           "LaunchPyQt",
+           "AddArgument","SetDebugLevel","GetDebugLevel"]
+
+def GetVDir(vdir):
+    if sys.platform.startswith("win") and vdir==None and 'VISITLOC' in os.environ:
+        return os.environ['VISITLOC']
+
+    return vdir
 
 def Launch(vdir=None):
-    return VisItModuleState.launch(vdir)
+    return VisItModuleState.launch(GetVDir(vdir))
 
 def LaunchNowin(vdir=None):
     VisItModuleState.add_argument("-nowin")
-    return VisItModuleState.launch(vdir)
+    return VisItModuleState.launch(GetVDir(vdir))
 
 def LaunchWithProxy(vdir=None,proxy=None):
-    return VisItModuleState.launch(vdir,proxy)
+    return VisItModuleState.launch(GetVDir(vdir),proxy)
 
 def LaunchPySide(vdir=None,args=None):
     VisItModuleState.add_argument("-pyuiembedded")
-    from . import pyside_support
-    ret = pyside_support.LaunchPyViewer(args)
-    return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
+    ret = visit_utils.builtin.pyside_support.LaunchPyViewer(args)
+    return VisItModuleState.launch(GetVDir(vdir),ret.GetViewerProxyPtr())
 
 def LaunchPyQt(vdir=None,args=None):
     VisItModuleState.add_argument("-pyuiembedded")
     from . import pyqt_support
-    ret = pyqt_support.LaunchPyViewer(args)
-    return VisItModuleState.launch(vdir,ret.GetViewerProxyPtr())
+    ret = visit_utils.builtin.pyqt_support.LaunchPyViewer(args)
+    return VisItModuleState.launch(GetVDir(vdir),ret.GetViewerProxyPtr())
 
 def AddArgument(arg):
     return VisItModuleState.add_argument(arg)
@@ -90,7 +110,7 @@ class VisItModuleState(object):
             vcmd = cls.__visit_cmd(vdir,cls.launch_args)
             env  = cls.__read_visit_env(vcmd)
             mod  = cls.__visit_module_path(env["LIBPATH"])
-            #print "Using visitmodule: %s" % mod
+            #print("Using visitmodule: %s" % mod)
             for k in list(env.keys()):
                 if k != "LIBPATH" and k != "VISITARCHHOME":
                     os.environ[k] = env[k]
@@ -196,7 +216,7 @@ class VisItModuleState(object):
             vcmd = pjoin(vdir,vcmd)
         for arg in args:
             vcmd += " %s" % str(arg)
-        #print "[visit command: %s]" % vcmd
+        #print("[visit command: %s]" % vcmd)
         return vcmd
     @classmethod
     def __visit_module_path(cls,libpath):
@@ -218,8 +238,7 @@ class VisItModuleState(object):
     @classmethod
     def __read_visit_env(cls,vcmd):
         if sys.platform.startswith("win"):
-            pcmd = vcmd.strip().split(' ')
-            pcmd.append("-env")
+            pcmd = [vcmd, "-env", "-nodialog"]
         else:
             pcmd = vcmd + " -env"
         # universal_newlines needed to make sure

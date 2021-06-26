@@ -1396,6 +1396,7 @@ EngineMethods::ConstructDataBinning(const int id, const ConstructDataBinningAttr
 //    id         the id of the network to be cloned.
 //    atts       the attributes to export the database.
 //    timeSuffix a time state string that will be put into the exported filename.
+//    retatts    the attributes that will be returned (possibly changed dirname)
 //
 //  Programmer:  Hank Childs
 //  Creation:    May 26, 2005
@@ -1408,11 +1409,16 @@ EngineMethods::ConstructDataBinning(const int id, const ConstructDataBinningAttr
 //    Brad Whitlock, Thu Jul 24 22:18:34 EDT 2014
 //    Pass timeSuffix.
 //
+//    Kathleen Biagas, Fri Apr 23 2021
+//    Added return atts.
+//
 // ****************************************************************************
 
 void
-EngineMethods::ExportDatabases(const intVector &ids, const ExportDBAttributes &atts,
-    const std::string &timeSuffix)
+EngineMethods::ExportDatabases(const intVector &ids,
+    const ExportDBAttributes *atts,
+    const std::string &timeSuffix,
+    ExportDBAttributes &retAtts)
 {
     state->exportDatabaseRPC(ids, atts, timeSuffix);
     if (state->exportDatabaseRPC.GetStatus() == VisItRPC::error)
@@ -1420,6 +1426,7 @@ EngineMethods::ExportDatabases(const intVector &ids, const ExportDBAttributes &a
         RECONSTITUTE_EXCEPTION(state->exportDatabaseRPC.GetExceptionType(),
                                state->exportDatabaseRPC.Message());
     }
+    retAtts = state->exportDatabaseRPC.GetReturnAtts();
 }
 
 // ****************************************************************************

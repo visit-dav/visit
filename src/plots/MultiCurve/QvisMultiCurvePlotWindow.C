@@ -19,6 +19,7 @@
 #include <QvisColorManagerWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
+#include <QvisVariableButton.h>
 
 
 // ****************************************************************************
@@ -96,6 +97,10 @@ QvisMultiCurvePlotWindow::~QvisMultiCurvePlotWindow()
 //
 //   Eric Brugger, Fri Feb 15 16:36:01 PST 2013
 //   I added markerScale and markerLineWidth.
+//
+//   Kathleen Biagas, Wed May 5, 2021 
+//   Changed markerVariable and idVariable to QvisVariableButton per github 
+//   ticket #1961.
 //
 // ****************************************************************************
 
@@ -192,9 +197,10 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
 
     markerVariableLabel = new QLabel(tr("Marker variable"), central);
     mainLayout->addWidget(markerVariableLabel,7,0);
-    markerVariable = new QLineEdit(central);
-    connect(markerVariable, SIGNAL(returnPressed()),
-            this, SLOT(markerVariableProcessText()));
+    markerVariable = new QvisVariableButton(true, true, true, QvisVariableButton::Scalars, central);
+    markerVariable->setDefaultVariable("default");
+    connect(markerVariable, SIGNAL(activated(const QString&)),
+            this, SLOT(markerVariableChanged(const QString&)));
     mainLayout->addWidget(markerVariable, 7,1);
 
     displayIds = new QCheckBox(tr("Display ids"), central);
@@ -204,9 +210,9 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
 
     idVariableLabel = new QLabel(tr("Id variable"), central);
     mainLayout->addWidget(idVariableLabel,9,0);
-    idVariable = new QLineEdit(central);
-    connect(idVariable, SIGNAL(returnPressed()),
-            this, SLOT(idVariableProcessText()));
+    idVariable = new QvisVariableButton(true, true, true, QvisVariableButton::Scalars, central);
+    connect(idVariable, SIGNAL(activated(const QString&)),
+            this, SLOT(idVariableChanged(const QString&)));
     mainLayout->addWidget(idVariable, 9,1);
 
     displayLegend = new QCheckBox(tr("Legend"), central);
@@ -248,6 +254,9 @@ QvisMultiCurvePlotWindow::CreateWindowContents()
 //   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
 //   Use helper function DoubleToQString for consistency in formatting across
 //   all windows.
+//
+//   Kathleen Biagas, Wed May 12, 2021
+//   markerVariable and idVariable controls were changed to QvisVariableButton.
 //
 // ****************************************************************************
 
@@ -332,7 +341,9 @@ QvisMultiCurvePlotWindow::UpdateWindow(bool doAll)
             markerLineWidth->blockSignals(false);
             break;
           case MultiCurveAttributes::ID_markerVariable:
+            markerVariable->blockSignals(true);
             markerVariable->setText(QString(atts->GetMarkerVariable().c_str()));
+            markerVariable->blockSignals(false);
             break;
           case MultiCurveAttributes::ID_displayIds:
             displayIds->blockSignals(true);
@@ -340,7 +351,9 @@ QvisMultiCurvePlotWindow::UpdateWindow(bool doAll)
             displayIds->blockSignals(false);
             break;
           case MultiCurveAttributes::ID_idVariable:
+            idVariable->blockSignals(true);
             idVariable->setText(QString(atts->GetIdVariable().c_str()));
+            idVariable->blockSignals(false);
             break;
           case MultiCurveAttributes::ID_legendFlag:
             displayLegend->blockSignals(true);
@@ -479,6 +492,10 @@ QvisMultiCurvePlotWindow::UpdateMultipleAreaColors()
 //   Eric Brugger, Fri Feb 15 16:36:01 PST 2013
 //   I added markerScale and markerLineWidth.
 //
+//   Kathleen Biagas, Wed May 12, 2021
+//   Removed ID_markerVariable and ID_idVariable as controls were changed
+//   to QvisVariableButtons.
+//
 // ****************************************************************************
 
 void
@@ -524,34 +541,6 @@ QvisMultiCurvePlotWindow::GetCurrentValues(int which_widget)
         {
             ResettingError(tr("Marker scale"), DoubleToQString(atts->GetMarkerScale()));
             atts->SetMarkerScale(atts->GetMarkerScale());
-        }
-    }
-
-    // Do markerVariable
-    if(which_widget == MultiCurveAttributes::ID_markerVariable || doAll)
-    {
-        QString temp = markerVariable->displayText();
-        if(!temp.isEmpty())
-            atts->SetMarkerVariable(temp.toStdString());
-        else
-        {
-            ResettingError(tr("Marker variable"),
-                QString(atts->GetMarkerVariable().c_str()));
-            atts->SetMarkerVariable(atts->GetMarkerVariable());
-        }
-    }
-
-    // Do idVariable
-    if(which_widget == MultiCurveAttributes::ID_idVariable || doAll)
-    {
-        QString temp = idVariable->displayText();
-        if(!temp.isEmpty())
-            atts->SetIdVariable(temp.toStdString());
-        else
-        {
-            ResettingError(tr("Id variable"),
-                QString(atts->GetIdVariable().c_str()));
-            atts->SetIdVariable(atts->GetIdVariable());
         }
     }
 }
@@ -781,9 +770,10 @@ QvisMultiCurvePlotWindow::markerLineWidthChanged(int style)
 
 
 void
-QvisMultiCurvePlotWindow::markerVariableProcessText()
+QvisMultiCurvePlotWindow::markerVariableChanged(const QString &varName)
 {
-    GetCurrentValues(MultiCurveAttributes::ID_markerVariable);
+    atts->SetMarkerVariable(varName.toStdString());
+    SetUpdate(false);
     Apply();
 }
 
@@ -798,9 +788,10 @@ QvisMultiCurvePlotWindow::displayIdsChanged(bool val)
 
 
 void
-QvisMultiCurvePlotWindow::idVariableProcessText()
+QvisMultiCurvePlotWindow::idVariableChanged(const QString &varName)
 {
-    GetCurrentValues(MultiCurveAttributes::ID_idVariable);
+    atts->SetIdVariable(varName.toStdString());
+    SetUpdate(false);
     Apply();
 }
 

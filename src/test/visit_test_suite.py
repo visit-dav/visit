@@ -157,6 +157,10 @@ def parse_test_specific_limit(test_file):
 #    Added src_dir and cmake_cmd, for plugin-vs-install tests.
 #    If test has specified its own 'LIMIT' use it for the kill limit.
 #
+#    Kathleen Biagas, Thu Mar 4, 2021
+#    Utilize cleanup_delay when cleaning up run_dir when test finishes.
+#    Fixes issue of run_dir not being completely removed when run on Windows.
+#
 # ----------------------------------------------------------------------------
 def launch_visit_test(args):
     """
@@ -331,6 +335,7 @@ def launch_visit_test(args):
                                   ncores_files,
                                   dtime)
         if opts["cleanup"]:
+            time.sleep(opts["cleanup_delay"])
             try:
                 shutil.rmtree(run_dir)
             except OSError as e:

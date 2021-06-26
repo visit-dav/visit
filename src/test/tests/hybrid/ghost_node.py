@@ -9,6 +9,8 @@
 #  Date:       July 6, 2020 
 #
 #  Modifications:
+#    Kathleen Biagas, Fri Mar 12, 2021
+#    Added DeleteAllPlots before CloseDatabase.
 #
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
@@ -36,7 +38,7 @@ v.imageZoom = 1
 SetView3D(v)
 
 Test("ghost_node_01")
-
+DeleteAllPlots()
 CloseDatabase(silo_data_path("multi_curv3d.silo"))
 
 Exit()
