@@ -255,3 +255,24 @@ to the name of the function.
             value = 1. / float(n_to_the_d_power(n, -d)) 
 
     return value
+
+Finding Stuff from Python Prompt
+--------------------------------
+
+Most Python functions and objects in VisIt_ have ``_doc_`` strings specified.
+This means, you can use ``help(thing)`` to useful information about them.
+However, using Python's ``help()`` facility in this way does require prior knowledge of the name(s) of the things you want to use.
+If you are having trouble finding the right functions or objects, you can use ``apropos(regex)`` and you will get back a list of all objects and functions whose names, doc strings or stringified instances (objects) match the regular expression.
+For example, 
+
+::
+
+    >>> apropos("icosahedron")
+    ['SubsetAttributes', 'ScatterAttributes', 'PseudocolorAttributes', 'FilledBoundaryAttributes', 'MeshAttributes']
+    >>> apropos(".*mir.*")
+    ['SetDefaultMaterialAttributes', 'MaterialAttributes', 'GetMaterialAttributes', 'SetMaterialAttributes']
+    >>> apropos(".*reconstruct.*")
+    ['GetMeshManagementAttributes', 'SetDefaultMeshManagementAttributes', 'SetMeshManagementAttributes', 'SetDefaultMaterialAttributes', 'GetMaterialAttributes', 'SetMaterialAttributes']
+
+In `Python Regular Expressions <https://docs.python.org/3/library/re.html>`_ the ``.*`` is needed for any number of unspecified characters.
+See `this HOWTO <https://docs.python.org/3/howto/regex.html>`_ for more information about Python Regular Expressions.
