@@ -276,3 +276,4 @@ For example,
 
 In `Python Regular Expressions <https://docs.python.org/3/library/re.html>`_ the ``.*`` is needed for an arbitrary number of unspecified characters.
 See `this HOWTO <https://docs.python.org/3/howto/regex.html>`_ for more information about Python Regular Expressions.
+The function name ``apropos`` was inspired by a `function of similar name and purpose <https://en.wikipedia.org/wiki/Apropos_(Unix)>`_ in the Unix operating system. 
