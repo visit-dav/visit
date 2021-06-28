@@ -1047,7 +1047,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     <name>QvisAMRStitchCellWindow</name>
     <message>
         <source>Create cells of type</source>
-        <translation>Créer une cellule de type </translation>
+        <translation type="new">Créer des cellules de type </translation>
     </message>
     <message>
         <source>DualGridAndStitchCells</source>
@@ -1059,7 +1059,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>StitchCells</source>
-        <translation>Cellule point</translation>
+        <translation type="new">Cellule de couture</translation>
     </message>
     <message>
         <source>Add case number</source>
@@ -1067,11 +1067,11 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     </message>
     <message>
         <source>Only process listed domains</source>
-        <translation type="vanished">Seuls les processus de domaine répertorié</translation>
+        <translation type="vanished">Traiter uniquement les domaines listés</translation>
     </message>
     <message>
         <source>Domains</source>
-        <translation type="vanished">Domaine</translation>
+        <translation type="vanished">Domaines</translation>
     </message>
     <message>
         <source>Only process level</source>
@@ -1141,7 +1141,7 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>No annotations</source>
-        <translation>Aucune décoration</translation>
+        <translation type="new">Aucune annotation</translation>
     </message>
     <message>
         <source>Database</source>
@@ -1185,11 +1185,11 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>X axis</source>
-        <translation>Abscisses</translation>
+        <translation type="new">Abscisses (X)</translation>
     </message>
     <message>
         <source>Y axis</source>
-        <translation>Ordonnées</translation>
+        <translation type="new">Ordonnées (Y)</translation>
     </message>
     <message>
         <source>Auto scale label values</source>
@@ -1229,7 +1229,7 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>Bottom-left</source>
-        <translation>En bas et à gauche</translation>
+        <translation type="new">En bas à gauche</translation>
     </message>
     <message>
         <source>All axes</source>
@@ -10869,27 +10869,27 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Sphere imposters</source>
-        <translation>Pseudo sphère</translation>
+        <translation type="new">Pseudo sphères</translation>
     </message>
     <message>
         <source>Atom sphere quality</source>
-        <translation>Atome qualité de la sphère</translation>
+        <translation type="new">Qualité de la sphère atomique</translation>
     </message>
     <message>
         <source>Low</source>
-        <translation>Lent</translation>
+        <translation type="new">Basse</translation>
     </message>
     <message>
         <source>Medium</source>
-        <translation>Moyen</translation>
+        <translation type="new">Moyenne</translation>
     </message>
     <message>
         <source>High</source>
-        <translation>Haut</translation>
+        <translation type="new">Haute</translation>
     </message>
     <message>
         <source>Super</source>
-        <translation>Super</translation>
+        <translation type="new">Super</translation>
     </message>
     <message>
         <source>Radius based on</source>
@@ -10905,7 +10905,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Atomic radius</source>
-        <translation>rayon atomique</translation>
+        <translation type="new">Rayon atomique</translation>
     </message>
     <message>
         <source>Scalar variable</source>
@@ -10913,7 +10913,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Variable for atom radius</source>
-        <translation>Variable du rayon atomique</translation>
+        <translation type="new">Variable pour le rayon atomique</translation>
     </message>
     <message>
         <source>Atom radius scale factor</source>
@@ -10925,11 +10925,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Bonds</source>
-        <translation>Liens</translation>
+        <translation type="new">Liaisons</translation>
     </message>
     <message>
         <source>Draw bonds as</source>
-        <translation>Tracer les liens comme</translation>
+        <translation>Tracer les liaisons comme</translation>
     </message>
     <message>
         <source>Lines</source>
@@ -10941,11 +10941,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Bond cylinder quality</source>
-        <translation>Liaison qualité de cylindre</translation>
+        <translation type="new">Qualité du cylindre de liaison</translation>
     </message>
     <message>
         <source>Bond radius</source>
-        <translation>Liaison rayon</translation>
+        <translation type="new">Rayon de liaison</translation>
     </message>
     <message>
         <source>Bond line width</source>
@@ -10953,11 +10953,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Bond line style</source>
-        <translation type="vanished">Style de ligne de liaison</translation>
+        <translation type="vanished">Style de trait de liaison</translation>
     </message>
     <message>
         <source>Color bonds by</source>
-        <translation>Liaison par couleur</translation>
+        <translation type="new">Colorier les liaisons par</translation>
     </message>
     <message>
         <source>Adjacent atom color</source>
@@ -10981,7 +10981,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Element types</source>
-        <translation>Types d&apos;éléments</translation>
+        <translation type="new">Types d&apos;élément</translation>
     </message>
     <message>
         <source>Residue types</source>
