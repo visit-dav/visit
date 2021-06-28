@@ -8,9 +8,9 @@ except:
 #
 # Return the list of names of all methods where the specified regex
 # matches either in the method name or its doc string or a stringified
-# version of the object. Use a set to accumulate only unique results
-# but return the result as a list. The matching is performed all in
-# lower case.
+# version of the object. Use a set to accumulate only unique results,
+# converting it to a list before returning it as a result. The matching
+# is performed all in lower case.
 #
 def apropos(key):
     retval = set()
