@@ -1656,15 +1656,15 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>Boundary colors</source>
-        <translation>Couleurs de limite</translation>
+        <translation type="new">Couleurs des frontières</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation>Tableau de couleur</translation>
+        <translation type="new">Table de couleur</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation>Seul</translation>
+        <translation type="new">Unique</translation>
     </message>
     <message>
         <source>Multiple</source>
@@ -1692,11 +1692,11 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>Fast</source>
-        <translation>Vite</translation>
+        <translation type="new">Rapide</translation>
     </message>
     <message>
         <source>High</source>
-        <translation>Haute</translation>
+        <translation type="new">Elevé</translation>
     </message>
     <message>
         <source>Options</source>
@@ -1704,7 +1704,7 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>Point / Line Style</source>
-        <translation type="vanished">Point/ligne de style</translation>
+        <translation type="vanished">Style de Point/Ligne</translation>
     </message>
     <message>
         <source>Geometry</source>
@@ -1720,7 +1720,7 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>Lines</source>
-        <translation type="guess">Lignes</translation>
+        <translation type="new">Traits</translation>
     </message>
 </context>
 <context>
@@ -3068,15 +3068,15 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Create Cue For Current Location</source>
-        <translation>Créer une queue a l&apos;emplacement actuel</translation>
+        <translation type="new">Créer un repère pour l'emplacement actuel</translation>
     </message>
     <message>
         <source>Add Ball</source>
-        <translation>Ajouter une balle</translation>
+        <translation type="new">Ajouter une boule</translation>
     </message>
     <message>
         <source>Ball size</source>
-        <translation>Taille de la balle</translation>
+        <translation type="new">Taille de la boule</translation>
     </message>
     <message>
         <source>Add Line</source>
@@ -3085,7 +3085,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     <message>
         <source>Crop</source>
         <translatorcomment>Couper</translatorcomment>
-        <translation></translation>
+        <translation type="guess">Recadrer/Couper</translation>
     </message>
     <message>
         <source>Position of cue</source>
@@ -3157,7 +3157,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Polar to Cartesian</source>
-        <translation>Polaire en cartésien</translation>
+        <translation type="new">De Polaire à Cartésien</translation>
     </message>
     <message>
         <source>R_Theta</source>
@@ -5040,15 +5040,15 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>FilledBoundary colors</source>
-        <translation>Limite de couleurs pleine</translation>
+        <translation type="new">Couleurs matériaux pleins</translation>
     </message>
     <message>
         <source>Color table</source>
-        <translation>Tableau de couleur</translation>
+        <translation type="new">Table de couleur</translation>
     </message>
     <message>
         <source>Single</source>
-        <translation>Seul</translation>
+        <translation type="new">Unique</translation>
     </message>
     <message>
         <source>Multiple</source>
@@ -7425,7 +7425,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Switch to bounding box when changing views:</source>
-        <translation>Passer à la zone de délimitation lors du changement de vue :</translation>
+        <translation type="new">Tracer seulement la boîte englobante au changement de vue :</translation>
     </message>
     <message>
         <source>Always</source>
@@ -7441,7 +7441,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Auto (scalable rendering only)</source>
-        <translation type="guess">Auto (Seulement le rendu scalable)</translation>
+        <translation type="new">Auto (Seulement en rendu scalable)</translation>
     </message>
 </context>
 <context>
@@ -8219,11 +8219,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Left</source>
-        <translation>A gauche</translation>
+        <translation type="new">Gauche</translation>
     </message>
     <message>
         <source>Right</source>
-        <translation>A droite</translation>
+        <translation type="new">Droite</translation>
     </message>
     <message>
         <source>Horizontal justification</source>
@@ -8231,11 +8231,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Top</source>
-        <translation>Haut</translation>
+        <translation type="new">Haute</translation>
     </message>
     <message>
         <source>Bottom</source>
-        <translation>Bas</translation>
+        <translation type="new">Basse</translation>
     </message>
     <message>
         <source>Vertical justification</source>
@@ -11071,11 +11071,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Y-Axis title format</source>
-        <translation>Axe Y de format du titre</translation>
+        <translation type="new">Format du titre axe Y</translation>
     </message>
     <message>
         <source>Y-Axis tick spacing</source>
-        <translation>Axe Y de l&apos;espacement des marques</translation>
+        <translation type="new">Espacement des marques axe Y</translation>
     </message>
     <message>
         <source>Display markers</source>
@@ -11374,7 +11374,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>... but only when axis extents have been restricted</source>
-        <translation type="guess">... mais uniquement si les étendues des axes ont été limités</translation>
+        <translation type="guess">... mais uniquement si les étendues des axes ont été limitées</translation>
     </message>
     <message>
         <source>Draw context</source>
@@ -13746,7 +13746,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Post windows when shown</source>
-        <translation type="guess">Poster les fenêtres quand montrées</translation>
+        <translation type="new">Epingler les fenêtres quand montrées</translation>
     </message>
     <message>
         <source>Prompt before setting default attributes</source>
@@ -14000,7 +14000,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>High</source>
-        <translation type="guess">Haut (élevé)</translation>
+        <translation type="new">Elevé</translation>
     </message>
     <message>
         <source>Data</source>
@@ -14914,7 +14914,7 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Query after each render</source>
-        <translation type="guess">Efectuer la requête après chaque rendu</translation>
+        <translation type="new">Effectuer la requête après chaque rendu</translation>
     </message>
     <message>
         <source>Using Scalable Rendering: </source>
@@ -15042,7 +15042,7 @@ tout tri de géométrie est éliminé
     </message>
     <message>
         <source>Depth Compositer Threads</source>
-        <translation type="unfinished">Threads du compositeur de profondeur</translation>
+        <translation type="guess">Nombre de Threads du compositeur de profondeur</translation>
     </message>
     <message>
         <source>Sets the number of threads that process communication streams
