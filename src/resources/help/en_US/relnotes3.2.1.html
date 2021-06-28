@@ -34,8 +34,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with ghost zone generation that caused VisIt to not display any data when displaying data from a parallel Exodus file when subsetting based on ElementBlock.</li>
   <li>Fixed a bug with full frame mode that resulted in the labels from the label plot not being drawn correctly.</li>
   <li>Fixed a bug launching the CLI when specifying "-v 3.2" when the default version in that installation was still an older version of VisIt (e.g. 3.1.4).</li>
-  <li>Fixed crash with Molecule plot when drawn with Sphere Imposters for atoms and 'scaleRadiusBy' option is changed.</li> 
+  <li>Fixed crash with Molecule plot when drawn with Sphere Imposters for atoms and 'scaleRadiusBy' option is changed or 'radiusScaleFactor' is changed.</li> 
   <li>Fixed a bug in Molecule plot where created bonds colored by atom were being colored incorrectly.</li>
+  <li>Fixed crash of cli when attempting to 'print' a legend annotation object.</li>
+  <li>Fixed a bug with the Legend annotation object window where the <i>Values</i> column in the <i>Values/Labels</i> table in the <i>Tick marks</i> tab wasn't being prefilled.</li>
+  <li>Fixed a bug for Windows where importing VisIt into python failed due to inability to retrieve necessary enviroment variable information.</li>
+  <li>Fixed a bug that resulted in the rubber band zoom box being rendered incorrectly on Mac retina displays.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -43,6 +47,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Added a section on developing at GitHub to the developers manual.</li>
   <li>Datasets that contain AMR meshes are now treated as time varying by default. This will guard against issues that arise with time varying AMR meshes that aren't explicitly tagged as time varying within the datasets.</li>
+  <li>New feature to allow users while in zoom mode to rotate the view, using alt-left mouse drag. This new feature removes the need to use navigate mode to rotate.</li>
 </ul>
 
 <a name="Dev_changes"></a>
