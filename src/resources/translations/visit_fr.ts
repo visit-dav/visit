@@ -580,7 +580,7 @@
     </message>
     <message>
         <source>CracksClipper</source>
-        <translation>Fissure fixée</translation>
+        <translation type="new">Coupe-fissures</translation>
     </message>
     <message>
         <source>CreateBonds</source>
@@ -696,7 +696,7 @@
     </message>
     <message>
         <source>SurfCompPrep</source>
-        <translation></translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>ThreeSlice</source>
@@ -756,7 +756,7 @@
     </message>
     <message>
         <source>MultiresControl</source>
-        <translation>Control multiple</translation>
+        <translation type="new">Contrôle multi-résolution</translation>
     </message>
     <message>
         <source>PersistentParticles</source>
@@ -852,7 +852,7 @@
     </message>
     <message>
         <source>StatisticalTrends</source>
-        <translation>Tendance statistique</translation>
+        <translation type="new">Tendances statistique</translation>
     </message>
     <message>
         <source>Axis Aligned Slice 4D</source>
@@ -1641,7 +1641,7 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>High</source>
-        <translation>Fort</translation>
+        <translation type="guess">Elevé</translation>
     </message>
 </context>
 <context>
@@ -3534,7 +3534,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     <name>QvisDisplaceWindow</name>
     <message>
         <source>Displacement multiplier </source>
-        <translation>Multiplier de déplacement</translation>
+        <translation type="new">Multiplicateur de déplacement</translation>
     </message>
     <message>
         <source>Displacement variable</source>
@@ -4551,7 +4551,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
-        <translation type="vanished">Tolérances: max erreur for step &lt; max(abstol, reltol*velocity_i) for each component i</translation>
+        <translation type="vanished">Tolérances: max erreur for step &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
     </message>
     <message>
         <source>Relative tolerance</source>
@@ -4649,7 +4649,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Have VisIt select the best algorithm</source>
-        <translation type="vanished">Comment Visit sélectionne le meilleur algorithme</translation>
+        <translation type="vanished">Laisser Visit sélectionner le meilleur algorithme</translation>
     </message>
     <message>
         <source>Communication threshold</source>
@@ -5859,7 +5859,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Maximum</source>
-        <translation></translation>
+        <translation>Maximum</translation>
     </message>
     <message>
         <source>min</source>
@@ -6558,7 +6558,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>  </source>
-        <translation></translation>
+        <translation>  </translation>
     </message>
 </context>
 <context>
@@ -6710,7 +6710,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Random number seed</source>
-        <translation></translation>
+        <translation type="new">Graine de nombre aléatoire</translation>
     </message>
     <message>
         <source>Sample density 0</source>
@@ -6822,7 +6822,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
-        <translation>Tolérances: max erreur for step &lt; max(abstol, reltol*velocity_i) for each component i</translation>
+        <translation type="new">Tolérances: max erreur par itération &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
     </message>
     <message>
         <source>Relative tolerance</source>
@@ -7030,7 +7030,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Have VisIt select the best algorithm</source>
-        <translation>Comment Visit sélectionne le meilleur algorithme</translation>
+        <translation type="new">Laisser Visit sélectionner le meilleur algorithme</translation>
     </message>
     <message>
         <source>Communication threshold</source>
@@ -7668,11 +7668,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Forward</source>
-        <translation></translation>
+        <translation type="new">Avant</translation>
     </message>
     <message>
         <source>Backward</source>
-        <translation>Précédent</translation>
+        <translation type="new">Arrière</translation>
     </message>
     <message>
         <source>Integrator</source>
@@ -7712,7 +7712,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
-        <translation>Tolérances: max erreur for step &lt; max(abstol, reltol*velocity_i) for each component i</translation>
+        <translation type="guess">Tolérances: max erreur par itération &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
     </message>
     <message>
         <source>Relative tolerance</source>
@@ -7720,7 +7720,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Absolute tolerance</source>
-        <translation></translation>
+        <translation type="new">Tolérance absolue</translation>
     </message>
     <message>
         <source>Absolute</source>
@@ -7856,7 +7856,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Have VisIt select the best algorithm</source>
-        <translation>Comment Visit sélectionne le meilleur algorithme</translation>
+        <translation type="new">Laisser Visit sélectionner le meilleur algorithme</translation>
     </message>
     <message>
         <source>Communication threshold</source>
@@ -7904,7 +7904,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>StartPosition</source>
-        <translation></translation>
+        <translation>Position de démarrage</translation>
     </message>
     <message>
         <source>EndPosition</source>
@@ -10086,7 +10086,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Layouts</source>
-        <translation>Disposition</translation>
+        <translation type="new">Dispositions</translation>
     </message>
     <message>
         <source>Active window</source>
@@ -10672,15 +10672,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Wedge</source>
-        <translation>Coin</translation>
+        <translation type="new">Prisme triangulaire</translation>
     </message>
     <message>
         <source>wed_lower</source>
-        <translation>Coin_bas</translation>
+        <translation type="new">prisme_bas</translation>
     </message>
     <message>
         <source>wed_upper</source>
-        <translation>Coin_haut</translation>
+        <translation type="new">prisme_haut</translation>
     </message>
     <message>
         <source>Pyramid</source>
@@ -10708,7 +10708,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Quad</source>
-        <translation>Quad</translation>
+        <translation type="new">Quadrilatère</translation>
     </message>
     <message>
         <source>quad_lower</source>
@@ -11141,11 +11141,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Seed # or i j [k]</source>
-        <translation>Granule # ou i j [k]</translation>
+        <translation type="new">Numéro de graine ou i j [k]</translation>
     </message>
     <message>
         <source>Seed # is Global</source>
-        <translation>Granule # est globale</translation>
+        <translation>Numéro de graine est Global</translation>
     </message>
     <message>
         <source>Layers</source>
@@ -12833,7 +12833,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Have VisIt select the best algorithm</source>
-        <translation type="vanished">Comment Visit sélectionne le meilleur algorithme</translation>
+        <translation type="vanished">Laisser Visit sélectionner le meilleur algorithme</translation>
     </message>
     <message>
         <source>Streamlines vs Pathlines</source>
@@ -12976,7 +12976,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Field</source>
-        <translation></translation>
+        <translation type="new">Champ</translation>
     </message>
     <message>
         <source>Default</source>
@@ -13000,7 +13000,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Constant</source>
-        <translation></translation>
+        <translation>Constant</translation>
     </message>
     <message>
         <source>Velocity</source>
@@ -13044,7 +13044,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Tolerances: max error for step &lt; max(abstol, reltol*velocity_i) for each component i</source>
-        <translation>Tolérances: max erreur for step &lt; max(abstol, reltol*velocity_i) for each component i</translation>
+        <translation type="new">Tolérances: max erreur par itération &lt; max(abstol, reltol*velocity_i) pour chaque composante i</translation>
     </message>
     <message>
         <source>Relative tolerance</source>
@@ -13088,7 +13088,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Analysis type</source>
-        <translation>Analyses an 1</translation>
+        <translation type="new">Type d&apos;analyse</translation>
     </message>
     <message>
         <source>None - Punctures only</source>
@@ -13100,15 +13100,15 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Maximum toroidal winding</source>
-        <translation>Enroulement toroïdal maxi</translation>
+        <translation type="new">Enroulement toroïdal maximum</translation>
     </message>
     <message>
         <source>Override toroidal winding</source>
-        <translation>Enroulement toroïdal dépassé </translation>
+        <translation type="new">Outrepasser l&apos;enroulement toroïdal</translation>
     </message>
     <message>
         <source>Override poloidal winding</source>
-        <translation></translation>
+        <translation type="new">Outrepasser l&apos;enroulement poloïdal</translation>
     </message>
     <message>
         <source>Winding pair confidence</source>
@@ -13152,7 +13152,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Options</source>
-        <translation></translation>
+        <translation type="new">Options</translation>
     </message>
     <message>
         <source>Show chaotic fieldlines as points</source>
@@ -13292,7 +13292,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Remove</source>
-        <translation></translation>
+        <translation type="new">Enlever</translation>
     </message>
     <message>
         <source>Merge</source>
@@ -13368,7 +13368,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Have VisIt select the best algorithm</source>
-        <translation>Comment Visit sélectionne le meilleur algorithme</translation>
+        <translation type="new">Laisser Visit sélectionner le meilleur algorithme</translation>
     </message>
     <message>
         <source>Communication threshold</source>
@@ -13917,11 +13917,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Y-Axis Cartesian (x&apos; = x, y&apos; = z)</source>
-        <translation type="guess">>Axe Cartésien Y (x&apos; = x, y&apos; = z)</translation>
+        <translation type="new">Axe Cartésien Y (x&apos; = x, y&apos; = z)</translation>
     </message>
     <message>
         <source>Z-Axis Cartesian (x&apos; = x, y&apos; = y)</source>
-        <translation type="guess">>Axe Cartésien Z (x&apos; = x, y&apos; = y)</translation>
+        <translation type="new">Axe Cartésien Z (x&apos; = x, y&apos; = y)</translation>
     </message>
     <message>
         <source>X-Axis Cylindrical (x&apos; = x, y&apos; = r)</source>
@@ -13929,7 +13929,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Y-Axis Cylindrical (x&apos; = y, y&apos; = r)</source>
-        <translation type="guess">>Axe Y Cylindrique (x&apos; = y, y&apos; = r)</translation>
+        <translation type="guess">Axe Y Cylindrique (x&apos; = y, y&apos; = r)</translation>
     </message>
     <message>
         <source>Z-Axis Cylindrical (x&apos; = z, y&apos; = r)</source>
@@ -14072,7 +14072,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Opacity Max</source>
-        <translation type="guess">>Opacité maximale</translation>
+        <translation type="guess">Opacité maximale</translation>
     </message>
     <message>
         <source>Line </source>
@@ -14605,7 +14605,7 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Reflection quadrants</source>
-        <translation>Quadrants réflexion</translation>
+        <translation type="new">Quadrants de réflexion</translation>
     </message>
     <message>
         <source>Reflection Limits:</source>
@@ -18587,7 +18587,7 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>phi on a semi-infinite domain</source>
-        <translation type="guess">>phi sur un domaine semi-infini</translation>
+        <translation type="guess">phi sur un domaine semi-infini</translation>
     </message>
     <message>
         <source>     (lines only)</source>
