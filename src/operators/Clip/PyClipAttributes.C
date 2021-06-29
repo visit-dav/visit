@@ -294,8 +294,8 @@ ClipAttributes_SetQuality(PyObject *self, PyObject *args)
         ss << "An invalid quality value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tFast";
-        ss << "\n\tAccurate";
+        ss << " Fast";
+        ss << ", Accurate";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -360,8 +360,8 @@ ClipAttributes_SetFuncType(PyObject *self, PyObject *args)
         ss << "An invalid funcType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tPlane";
-        ss << "\n\tSphere";
+        ss << " Plane";
+        ss << ", Sphere";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1084,10 +1084,10 @@ ClipAttributes_SetPlaneToolControlledClipPlane(PyObject *self, PyObject *args)
         ss << "An invalid planeToolControlledClipPlane value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tPlane1";
-        ss << "\n\tPlane2";
-        ss << "\n\tPlane3";
+        ss << " None";
+        ss << ", Plane1";
+        ss << ", Plane2";
+        ss << ", Plane3";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1467,8 +1467,8 @@ PyClipAttributes_getattr(PyObject *self, char *name)
 int
 PyClipAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "quality") == 0)
         obj = ClipAttributes_SetQuality(self, args);
@@ -1508,7 +1508,7 @@ PyClipAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

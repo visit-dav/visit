@@ -242,8 +242,8 @@ HistogramAttributes_SetBasedOn(PyObject *self, PyObject *args)
         ss << "An invalid basedOn value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tManyVarsForSingleZone";
-        ss << "\n\tManyZonesForSingleVar";
+        ss << " ManyVarsForSingleZone";
+        ss << ", ManyZonesForSingleVar";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -308,9 +308,9 @@ HistogramAttributes_SetHistogramType(PyObject *self, PyObject *args)
         ss << "An invalid histogramType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tFrequency";
-        ss << "\n\tWeighted";
-        ss << "\n\tVariable";
+        ss << " Frequency";
+        ss << ", Weighted";
+        ss << ", Variable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -424,8 +424,8 @@ HistogramAttributes_SetLimitsMode(PyObject *self, PyObject *args)
         ss << "An invalid limitsMode value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tOriginalData";
-        ss << "\n\tCurrentPlot";
+        ss << " OriginalData";
+        ss << ", CurrentPlot";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -930,8 +930,8 @@ HistogramAttributes_SetOutputType(PyObject *self, PyObject *args)
         ss << "An invalid outputType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCurve";
-        ss << "\n\tBlock";
+        ss << " Curve";
+        ss << ", Block";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1128,9 +1128,9 @@ HistogramAttributes_SetDataScale(PyObject *self, PyObject *args)
         ss << "An invalid dataScale value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
-        ss << "\n\tSquareRoot";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", SquareRoot";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1195,9 +1195,9 @@ HistogramAttributes_SetBinScale(PyObject *self, PyObject *args)
         ss << "An invalid binScale value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
-        ss << "\n\tSquareRoot";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", SquareRoot";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1504,8 +1504,8 @@ PyHistogramAttributes_getattr(PyObject *self, char *name)
 int
 PyHistogramAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "basedOn") == 0)
         obj = HistogramAttributes_SetBasedOn(self, args);
@@ -1547,7 +1547,7 @@ PyHistogramAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = HistogramAttributes_SetComputeAsCDF(self, args);
 
     // Try and handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "lineStyle") == 0)
         {
@@ -1559,7 +1559,7 @@ PyHistogramAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

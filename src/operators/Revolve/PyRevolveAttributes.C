@@ -147,10 +147,10 @@ RevolveAttributes_SetMeshType(PyObject *self, PyObject *args)
         ss << "An invalid meshType value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAuto";
-        ss << "\n\tXY";
-        ss << "\n\tRZ";
-        ss << "\n\tZR";
+        ss << " Auto";
+        ss << ", XY";
+        ss << ", RZ";
+        ss << ", ZR";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -529,8 +529,8 @@ PyRevolveAttributes_getattr(PyObject *self, char *name)
 int
 PyRevolveAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "meshType") == 0)
         obj = RevolveAttributes_SetMeshType(self, args);
@@ -548,7 +548,7 @@ PyRevolveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

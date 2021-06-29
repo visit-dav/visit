@@ -371,9 +371,9 @@ WellBoreAttributes_SetColorType(PyObject *self, PyObject *args)
         ss << "An invalid colorType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tColorBySingleColor";
-        ss << "\n\tColorByMultipleColors";
-        ss << "\n\tColorByColorTable";
+        ss << " ColorBySingleColor";
+        ss << ", ColorByMultipleColors";
+        ss << ", ColorByColorTable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -829,8 +829,8 @@ WellBoreAttributes_SetDrawWellsAs(PyObject *self, PyObject *args)
         ss << "An invalid drawWellsAs value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLines";
-        ss << "\n\tCylinders";
+        ss << " Lines";
+        ss << ", Cylinders";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -895,10 +895,10 @@ WellBoreAttributes_SetWellCylinderQuality(PyObject *self, PyObject *args)
         ss << "An invalid wellCylinderQuality value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLow";
-        ss << "\n\tMedium";
-        ss << "\n\tHigh";
-        ss << "\n\tSuper";
+        ss << " Low";
+        ss << ", Medium";
+        ss << ", High";
+        ss << ", Super";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -950,7 +950,7 @@ WellBoreAttributes_SetWellRadius(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1073,10 +1073,10 @@ WellBoreAttributes_SetWellAnnotation(PyObject *self, PyObject *args)
         ss << "An invalid wellAnnotation value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tStemOnly";
-        ss << "\n\tNameOnly";
-        ss << "\n\tStemAndName";
+        ss << " None";
+        ss << ", StemOnly";
+        ss << ", NameOnly";
+        ss << ", StemAndName";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1128,7 +1128,7 @@ WellBoreAttributes_SetWellStemHeight(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1183,7 +1183,7 @@ WellBoreAttributes_SetWellNameScale(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1624,8 +1624,8 @@ PyWellBoreAttributes_getattr(PyObject *self, char *name)
 int
 PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "defaultPalette") == 0)
         obj = WellBoreAttributes_SetDefaultPalette(self, args);
@@ -1665,7 +1665,7 @@ PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = WellBoreAttributes_SetWellNames(self, args);
 
     // Try and handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "wellLineStyle") == 0)
         {
@@ -1677,7 +1677,7 @@ PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

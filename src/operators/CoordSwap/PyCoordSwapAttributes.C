@@ -154,9 +154,9 @@ CoordSwapAttributes_SetNewCoord1(PyObject *self, PyObject *args)
         ss << "An invalid newCoord1 value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCoord1";
-        ss << "\n\tCoord2";
-        ss << "\n\tCoord3";
+        ss << " Coord1";
+        ss << ", Coord2";
+        ss << ", Coord3";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -221,9 +221,9 @@ CoordSwapAttributes_SetNewCoord2(PyObject *self, PyObject *args)
         ss << "An invalid newCoord2 value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCoord1";
-        ss << "\n\tCoord2";
-        ss << "\n\tCoord3";
+        ss << " Coord1";
+        ss << ", Coord2";
+        ss << ", Coord3";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -288,9 +288,9 @@ CoordSwapAttributes_SetNewCoord3(PyObject *self, PyObject *args)
         ss << "An invalid newCoord3 value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCoord1";
-        ss << "\n\tCoord2";
-        ss << "\n\tCoord3";
+        ss << " Coord1";
+        ss << ", Coord2";
+        ss << ", Coord3";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -376,8 +376,8 @@ PyCoordSwapAttributes_getattr(PyObject *self, char *name)
 int
 PyCoordSwapAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "newCoord1") == 0)
         obj = CoordSwapAttributes_SetNewCoord1(self, args);
@@ -389,7 +389,7 @@ PyCoordSwapAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

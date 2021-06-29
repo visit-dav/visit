@@ -116,9 +116,9 @@ DualMeshAttributes_SetMode(PyObject *self, PyObject *args)
         ss << "An invalid mode value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAuto";
-        ss << "\n\tNodesToZones";
-        ss << "\n\tZonesToNodes";
+        ss << " Auto";
+        ss << ", NodesToZones";
+        ss << ", ZonesToNodes";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -182,8 +182,8 @@ PyDualMeshAttributes_getattr(PyObject *self, char *name)
 int
 PyDualMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "mode") == 0)
         obj = DualMeshAttributes_SetMode(self, args);
@@ -191,7 +191,7 @@ PyDualMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

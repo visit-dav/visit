@@ -329,16 +329,16 @@ Expression_SetType(PyObject *self, PyObject *args)
         ss << "An invalid type value was given." << std::endl;
         ss << "Valid values are in the range [0,9]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tUnknown";
-        ss << "\n\tScalarMeshVar";
-        ss << "\n\tVectorMeshVar";
-        ss << "\n\tTensorMeshVar";
-        ss << "\n\tSymmetricTensorMeshVar";
-        ss << "\n\tArrayMeshVar";
-        ss << "\n\tCurveMeshVar";
-        ss << "\n\tMesh";
-        ss << "\n\tMaterial";
-        ss << "\n\tSpecies";
+        ss << " Unknown";
+        ss << ", ScalarMeshVar";
+        ss << ", VectorMeshVar";
+        ss << ", TensorMeshVar";
+        ss << ", SymmetricTensorMeshVar";
+        ss << ", ArrayMeshVar";
+        ss << ", CurveMeshVar";
+        ss << ", Mesh";
+        ss << ", Material";
+        ss << ", Species";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -764,8 +764,8 @@ PyExpression_getattr(PyObject *self, char *name)
 int
 PyExpression_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "name") == 0)
         obj = Expression_SetName(self, args);
@@ -791,7 +791,7 @@ PyExpression_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

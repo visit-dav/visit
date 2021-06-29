@@ -1497,9 +1497,9 @@ PickAttributes_SetMeshCoordType(PyObject *self, PyObject *args)
         ss << "An invalid meshCoordType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tXY";
-        ss << "\n\tRZ";
-        ss << "\n\tZR";
+        ss << " XY";
+        ss << ", RZ";
+        ss << ", ZR";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1723,8 +1723,8 @@ PickAttributes_SetTimeCurveType(PyObject *self, PyObject *args)
         ss << "An invalid timeCurveType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSingle_Y_Axis";
-        ss << "\n\tMultiple_Y_Axes";
+        ss << " Single_Y_Axis";
+        ss << ", Multiple_Y_Axes";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2257,8 +2257,8 @@ PyPickAttributes_getattr(PyObject *self, char *name)
 int
 PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "variables") == 0)
         obj = PickAttributes_SetVariables(self, args);
@@ -2330,7 +2330,7 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

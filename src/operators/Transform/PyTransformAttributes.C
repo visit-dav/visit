@@ -572,8 +572,8 @@ TransformAttributes_SetRotateType(PyObject *self, PyObject *args)
         ss << "An invalid rotateType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tDeg";
-        ss << "\n\tRad";
+        ss << " Deg";
+        ss << ", Rad";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1151,9 +1151,9 @@ TransformAttributes_SetTransformType(PyObject *self, PyObject *args)
         ss << "An invalid transformType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSimilarity";
-        ss << "\n\tCoordinate";
-        ss << "\n\tLinear";
+        ss << " Similarity";
+        ss << ", Coordinate";
+        ss << ", Linear";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1218,9 +1218,9 @@ TransformAttributes_SetInputCoordSys(PyObject *self, PyObject *args)
         ss << "An invalid inputCoordSys value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCartesian";
-        ss << "\n\tCylindrical";
-        ss << "\n\tSpherical";
+        ss << " Cartesian";
+        ss << ", Cylindrical";
+        ss << ", Spherical";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1285,9 +1285,9 @@ TransformAttributes_SetOutputCoordSys(PyObject *self, PyObject *args)
         ss << "An invalid outputCoordSys value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCartesian";
-        ss << "\n\tCylindrical";
-        ss << "\n\tSpherical";
+        ss << " Cartesian";
+        ss << ", Cylindrical";
+        ss << ", Spherical";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2342,10 +2342,10 @@ TransformAttributes_SetVectorTransformMethod(PyObject *self, PyObject *args)
         ss << "An invalid vectorTransformMethod value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tAsPoint";
-        ss << "\n\tAsDisplacement";
-        ss << "\n\tAsDirection";
+        ss << " None";
+        ss << ", AsPoint";
+        ss << ", AsDisplacement";
+        ss << ", AsDirection";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2638,8 +2638,8 @@ PyTransformAttributes_getattr(PyObject *self, char *name)
 int
 PyTransformAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "doRotate") == 0)
         obj = TransformAttributes_SetDoRotate(self, args);
@@ -2719,7 +2719,7 @@ PyTransformAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

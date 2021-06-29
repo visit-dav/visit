@@ -193,10 +193,10 @@ avtSimulationCommandSpecification_SetArgumentType(PyObject *self, PyObject *args
         ss << "An invalid argumentType value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCmdArgNone";
-        ss << "\n\tCmdArgInt";
-        ss << "\n\tCmdArgFloat";
-        ss << "\n\tCmdArgString";
+        ss << " CmdArgNone";
+        ss << ", CmdArgInt";
+        ss << ", CmdArgFloat";
+        ss << ", CmdArgString";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -702,8 +702,8 @@ PyavtSimulationCommandSpecification_getattr(PyObject *self, char *name)
 int
 PyavtSimulationCommandSpecification_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "name") == 0)
         obj = avtSimulationCommandSpecification_SetName(self, args);
@@ -729,7 +729,7 @@ PyavtSimulationCommandSpecification_setattr(PyObject *self, char *name, PyObject
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

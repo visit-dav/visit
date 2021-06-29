@@ -561,8 +561,8 @@ LimitCycleAttributes_SetSourceType(PyObject *self, PyObject *args)
         ss << "An invalid sourceType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSpecifiedLine";
-        ss << "\n\tSpecifiedPlane";
+        ss << " SpecifiedLine";
+        ss << ", SpecifiedPlane";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1102,17 +1102,17 @@ LimitCycleAttributes_SetDataValue(PyObject *self, PyObject *args)
         ss << "An invalid dataValue value was given." << std::endl;
         ss << "Valid values are in the range [0,10]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSolid";
-        ss << "\n\tSeedPointID";
-        ss << "\n\tSpeed";
-        ss << "\n\tVorticity";
-        ss << "\n\tArcLength";
-        ss << "\n\tTimeAbsolute";
-        ss << "\n\tTimeRelative";
-        ss << "\n\tAverageDistanceFromSeed";
-        ss << "\n\tCorrelationDistance";
-        ss << "\n\tDifference";
-        ss << "\n\tVariable";
+        ss << " Solid";
+        ss << ", SeedPointID";
+        ss << ", Speed";
+        ss << ", Vorticity";
+        ss << ", ArcLength";
+        ss << ", TimeAbsolute";
+        ss << ", TimeRelative";
+        ss << ", AverageDistanceFromSeed";
+        ss << ", CorrelationDistance";
+        ss << ", Difference";
+        ss << ", Variable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1226,12 +1226,12 @@ LimitCycleAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
         ss << "An invalid integrationDirection value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tForward";
-        ss << "\n\tBackward";
-        ss << "\n\tBoth";
-        ss << "\n\tForwardDirectionless";
-        ss << "\n\tBackwardDirectionless";
-        ss << "\n\tBothDirectionless";
+        ss << " Forward";
+        ss << ", Backward";
+        ss << ", Both";
+        ss << ", ForwardDirectionless";
+        ss << ", BackwardDirectionless";
+        ss << ", BothDirectionless";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1791,8 +1791,8 @@ LimitCycleAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
         ss << "An invalid absTolSizeType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tFractionOfBBox";
+        ss << " Absolute";
+        ss << ", FractionOfBBox";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1967,12 +1967,12 @@ LimitCycleAttributes_SetFieldType(PyObject *self, PyObject *args)
         ss << "An invalid fieldType value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tDefault";
-        ss << "\n\tFlashField";
-        ss << "\n\tM3DC12DField";
-        ss << "\n\tM3DC13DField";
-        ss << "\n\tNek5000Field";
-        ss << "\n\tNektarPPField";
+        ss << " Default";
+        ss << ", FlashField";
+        ss << ", M3DC12DField";
+        ss << ", M3DC13DField";
+        ss << ", Nek5000Field";
+        ss << ", NektarPPField";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2165,12 +2165,12 @@ LimitCycleAttributes_SetIntegrationType(PyObject *self, PyObject *args)
         ss << "An invalid integrationType value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tEuler";
-        ss << "\n\tLeapfrog";
-        ss << "\n\tDormandPrince";
-        ss << "\n\tAdamsBashforth";
-        ss << "\n\tRK4";
-        ss << "\n\tM3DC12DIntegrator";
+        ss << " Euler";
+        ss << ", Leapfrog";
+        ss << ", DormandPrince";
+        ss << ", AdamsBashforth";
+        ss << ", RK4";
+        ss << ", M3DC12DIntegrator";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2235,10 +2235,10 @@ LimitCycleAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *a
         ss << "An invalid parallelizationAlgorithmType value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLoadOnDemand";
-        ss << "\n\tParallelStaticDomains";
-        ss << "\n\tMasterSlave";
-        ss << "\n\tVisItSelects";
+        ss << " LoadOnDemand";
+        ss << ", ParallelStaticDomains";
+        ss << ", MasterSlave";
+        ss << ", VisItSelects";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2688,8 +2688,8 @@ LimitCycleAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
         ss << "An invalid pathlinesCMFE value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCONN_CMFE";
-        ss << "\n\tPOS_CMFE";
+        ss << " CONN_CMFE";
+        ss << ", POS_CMFE";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3964,8 +3964,8 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObject 
         ss << "An invalid correlationDistanceMinDistType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tFractionOfBBox";
+        ss << " Absolute";
+        ss << ", FractionOfBBox";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -4345,8 +4345,8 @@ PyLimitCycleAttributes_getattr(PyObject *self, char *name)
 int
 PyLimitCycleAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "sourceType") == 0)
         obj = LimitCycleAttributes_SetSourceType(self, args);
@@ -4470,7 +4470,7 @@ PyLimitCycleAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

@@ -752,15 +752,15 @@ IntegralCurveAttributes_SetSourceType(PyObject *self, PyObject *args)
         ss << "An invalid sourceType value was given." << std::endl;
         ss << "Valid values are in the range [0,8]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSpecifiedPoint";
-        ss << "\n\tPointList";
-        ss << "\n\tSpecifiedLine";
-        ss << "\n\tCircle";
-        ss << "\n\tSpecifiedPlane";
-        ss << "\n\tSpecifiedSphere";
-        ss << "\n\tSpecifiedBox";
-        ss << "\n\tSelection";
-        ss << "\n\tFieldData";
+        ss << " SpecifiedPoint";
+        ss << ", PointList";
+        ss << ", SpecifiedLine";
+        ss << ", Circle";
+        ss << ", SpecifiedPlane";
+        ss << ", SpecifiedSphere";
+        ss << ", SpecifiedBox";
+        ss << ", Selection";
+        ss << ", FieldData";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1822,20 +1822,20 @@ IntegralCurveAttributes_SetDataValue(PyObject *self, PyObject *args)
         ss << "An invalid dataValue value was given." << std::endl;
         ss << "Valid values are in the range [0,13]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSolid";
-        ss << "\n\tRandom";
-        ss << "\n\tSeedPointID";
-        ss << "\n\tSpeed";
-        ss << "\n\tVorticity";
-        ss << "\n\tArcLength";
-        ss << "\n\tTimeAbsolute";
-        ss << "\n\tTimeRelative";
-        ss << "\n\tAverageDistanceFromSeed";
-        ss << "\n\tCorrelationDistance";
-        ss << "\n\tClosedCurve";
-        ss << "\n\tDifference";
-        ss << "\n\tVariable";
-        ss << "\n\tVariableAtSeed";
+        ss << " Solid";
+        ss << ", Random";
+        ss << ", SeedPointID";
+        ss << ", Speed";
+        ss << ", Vorticity";
+        ss << ", ArcLength";
+        ss << ", TimeAbsolute";
+        ss << ", TimeRelative";
+        ss << ", AverageDistanceFromSeed";
+        ss << ", CorrelationDistance";
+        ss << ", ClosedCurve";
+        ss << ", Difference";
+        ss << ", Variable";
+        ss << ", VariableAtSeed";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1949,12 +1949,12 @@ IntegralCurveAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
         ss << "An invalid integrationDirection value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tForward";
-        ss << "\n\tBackward";
-        ss << "\n\tBoth";
-        ss << "\n\tForwardDirectionless";
-        ss << "\n\tBackwardDirectionless";
-        ss << "\n\tBothDirectionless";
+        ss << " Forward";
+        ss << ", Backward";
+        ss << ", Both";
+        ss << ", ForwardDirectionless";
+        ss << ", BackwardDirectionless";
+        ss << ", BothDirectionless";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2514,8 +2514,8 @@ IntegralCurveAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
         ss << "An invalid absTolSizeType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tFractionOfBBox";
+        ss << " Absolute";
+        ss << ", FractionOfBBox";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2690,12 +2690,12 @@ IntegralCurveAttributes_SetFieldType(PyObject *self, PyObject *args)
         ss << "An invalid fieldType value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tDefault";
-        ss << "\n\tFlashField";
-        ss << "\n\tM3DC12DField";
-        ss << "\n\tM3DC13DField";
-        ss << "\n\tNek5000Field";
-        ss << "\n\tNektarPPField";
+        ss << " Default";
+        ss << ", FlashField";
+        ss << ", M3DC12DField";
+        ss << ", M3DC13DField";
+        ss << ", Nek5000Field";
+        ss << ", NektarPPField";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2888,12 +2888,12 @@ IntegralCurveAttributes_SetIntegrationType(PyObject *self, PyObject *args)
         ss << "An invalid integrationType value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tEuler";
-        ss << "\n\tLeapfrog";
-        ss << "\n\tDormandPrince";
-        ss << "\n\tAdamsBashforth";
-        ss << "\n\tRK4";
-        ss << "\n\tM3DC12DIntegrator";
+        ss << " Euler";
+        ss << ", Leapfrog";
+        ss << ", DormandPrince";
+        ss << ", AdamsBashforth";
+        ss << ", RK4";
+        ss << ", M3DC12DIntegrator";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2958,10 +2958,10 @@ IntegralCurveAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject
         ss << "An invalid parallelizationAlgorithmType value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLoadOnDemand";
-        ss << "\n\tParallelStaticDomains";
-        ss << "\n\tMasterSlave";
-        ss << "\n\tVisItSelects";
+        ss << " LoadOnDemand";
+        ss << ", ParallelStaticDomains";
+        ss << ", MasterSlave";
+        ss << ", VisItSelects";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3411,8 +3411,8 @@ IntegralCurveAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
         ss << "An invalid pathlinesCMFE value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCONN_CMFE";
-        ss << "\n\tPOS_CMFE";
+        ss << " CONN_CMFE";
+        ss << ", POS_CMFE";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3477,9 +3477,9 @@ IntegralCurveAttributes_SetDisplayGeometry(PyObject *self, PyObject *args)
         ss << "An invalid displayGeometry value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLines";
-        ss << "\n\tTubes";
-        ss << "\n\tRibbons";
+        ss << " Lines";
+        ss << ", Tubes";
+        ss << ", Ribbons";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3544,10 +3544,10 @@ IntegralCurveAttributes_SetCleanupMethod(PyObject *self, PyObject *args)
         ss << "An invalid cleanupMethod value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNoCleanup";
-        ss << "\n\tMerge";
-        ss << "\n\tBefore";
-        ss << "\n\tAfter";
+        ss << " NoCleanup";
+        ss << ", Merge";
+        ss << ", Before";
+        ss << ", After";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3887,9 +3887,9 @@ IntegralCurveAttributes_SetCropValue(PyObject *self, PyObject *args)
         ss << "An invalid cropValue value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tDistance";
-        ss << "\n\tTime";
-        ss << "\n\tStepNumber";
+        ss << " Distance";
+        ss << ", Time";
+        ss << ", StepNumber";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -4889,8 +4889,8 @@ IntegralCurveAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObje
         ss << "An invalid correlationDistanceMinDistType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tFractionOfBBox";
+        ss << " Absolute";
+        ss << ", FractionOfBBox";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -5410,8 +5410,8 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
 int
 PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "sourceType") == 0)
         obj = IntegralCurveAttributes_SetSourceType(self, args);
@@ -5559,7 +5559,7 @@ PyIntegralCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

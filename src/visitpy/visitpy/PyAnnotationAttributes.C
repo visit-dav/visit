@@ -547,11 +547,11 @@ AnnotationAttributes_SetDatabaseInfoExpansionMode(PyObject *self, PyObject *args
         ss << "An invalid databaseInfoExpansionMode value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tFile";
-        ss << "\n\tDirectory";
-        ss << "\n\tFull";
-        ss << "\n\tSmart";
-        ss << "\n\tSmartDirectory";
+        ss << " File";
+        ss << ", Directory";
+        ss << ", Full";
+        ss << ", Smart";
+        ss << ", SmartDirectory";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -935,11 +935,11 @@ AnnotationAttributes_SetGradientBackgroundStyle(PyObject *self, PyObject *args)
         ss << "An invalid gradientBackgroundStyle value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tTopToBottom";
-        ss << "\n\tBottomToTop";
-        ss << "\n\tLeftToRight";
-        ss << "\n\tRightToLeft";
-        ss << "\n\tRadial";
+        ss << " TopToBottom";
+        ss << ", BottomToTop";
+        ss << ", LeftToRight";
+        ss << ", RightToLeft";
+        ss << ", Radial";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1158,10 +1158,10 @@ AnnotationAttributes_SetBackgroundMode(PyObject *self, PyObject *args)
         ss << "An invalid backgroundMode value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSolid";
-        ss << "\n\tGradient";
-        ss << "\n\tImage";
-        ss << "\n\tImageSphere";
+        ss << " Solid";
+        ss << ", Gradient";
+        ss << ", Image";
+        ss << ", ImageSphere";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1521,8 +1521,8 @@ PyAnnotationAttributes_getattr(PyObject *self, char *name)
 int
 PyAnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "axes2D") == 0)
         obj = AnnotationAttributes_SetAxes2D(self, args);
@@ -1570,7 +1570,7 @@ PyAnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

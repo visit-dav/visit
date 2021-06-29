@@ -434,9 +434,9 @@ MeshAttributes_SetMeshColorSource(PyObject *self, PyObject *args)
         ss << "An invalid meshColorSource value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tForeground";
-        ss << "\n\tMeshCustom";
-        ss << "\n\tMeshRandom";
+        ss << " Foreground";
+        ss << ", MeshCustom";
+        ss << ", MeshRandom";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -501,9 +501,9 @@ MeshAttributes_SetOpaqueColorSource(PyObject *self, PyObject *args)
         ss << "An invalid opaqueColorSource value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tBackground";
-        ss << "\n\tOpaqueCustom";
-        ss << "\n\tOpaqueRandom";
+        ss << " Background";
+        ss << ", OpaqueCustom";
+        ss << ", OpaqueRandom";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -568,9 +568,9 @@ MeshAttributes_SetOpaqueMode(PyObject *self, PyObject *args)
         ss << "An invalid opaqueMode value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAuto";
-        ss << "\n\tOn";
-        ss << "\n\tOff";
+        ss << " Auto";
+        ss << ", On";
+        ss << ", Off";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -767,9 +767,9 @@ MeshAttributes_SetSmoothingLevel(PyObject *self, PyObject *args)
         ss << "An invalid smoothingLevel value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tFast";
-        ss << "\n\tHigh";
+        ss << " None";
+        ss << ", Fast";
+        ss << ", High";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1277,8 +1277,8 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
 int
 PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "legendFlag") == 0)
         obj = MeshAttributes_SetLegendFlag(self, args);
@@ -1312,7 +1312,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MeshAttributes_SetOpacity(self, args);
 
     // Try and handle legacy fields in MeshAttributes
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
         if(strcmp(name, "backgroundFlag") == 0)
@@ -1355,7 +1355,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

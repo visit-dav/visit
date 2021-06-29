@@ -307,9 +307,9 @@ DataBinningAttributes_SetNumDimensions(PyObject *self, PyObject *args)
         ss << "An invalid numDimensions value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tOne";
-        ss << "\n\tTwo";
-        ss << "\n\tThree";
+        ss << " One";
+        ss << ", Two";
+        ss << ", Three";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -374,10 +374,10 @@ DataBinningAttributes_SetDim1BinBasedOn(PyObject *self, PyObject *args)
         ss << "An invalid dim1BinBasedOn value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tX";
-        ss << "\n\tY";
-        ss << "\n\tZ";
-        ss << "\n\tVariable";
+        ss << " X";
+        ss << ", Y";
+        ss << ", Z";
+        ss << ", Variable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -711,10 +711,10 @@ DataBinningAttributes_SetDim2BinBasedOn(PyObject *self, PyObject *args)
         ss << "An invalid dim2BinBasedOn value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tX";
-        ss << "\n\tY";
-        ss << "\n\tZ";
-        ss << "\n\tVariable";
+        ss << " X";
+        ss << ", Y";
+        ss << ", Z";
+        ss << ", Variable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1048,10 +1048,10 @@ DataBinningAttributes_SetDim3BinBasedOn(PyObject *self, PyObject *args)
         ss << "An invalid dim3BinBasedOn value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tX";
-        ss << "\n\tY";
-        ss << "\n\tZ";
-        ss << "\n\tVariable";
+        ss << " X";
+        ss << ", Y";
+        ss << ", Z";
+        ss << ", Variable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1385,8 +1385,8 @@ DataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *args)
         ss << "An invalid outOfBoundsBehavior value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tClamp";
-        ss << "\n\tDiscard";
+        ss << " Clamp";
+        ss << ", Discard";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1451,15 +1451,15 @@ DataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *args)
         ss << "An invalid reductionOperator value was given." << std::endl;
         ss << "Valid values are in the range [0,8]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAverage";
-        ss << "\n\tMinimum";
-        ss << "\n\tMaximum";
-        ss << "\n\tStandardDeviation";
-        ss << "\n\tVariance";
-        ss << "\n\tSum";
-        ss << "\n\tCount";
-        ss << "\n\tRMS";
-        ss << "\n\tPDF";
+        ss << " Average";
+        ss << ", Minimum";
+        ss << ", Maximum";
+        ss << ", StandardDeviation";
+        ss << ", Variance";
+        ss << ", Sum";
+        ss << ", Count";
+        ss << ", RMS";
+        ss << ", PDF";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1628,8 +1628,8 @@ DataBinningAttributes_SetOutputType(PyObject *self, PyObject *args)
         ss << "An invalid outputType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tOutputOnBins";
-        ss << "\n\tOutputOnInputMesh";
+        ss << " OutputOnBins";
+        ss << ", OutputOnInputMesh";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1900,8 +1900,8 @@ PyDataBinningAttributes_getattr(PyObject *self, char *name)
 int
 PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "numDimensions") == 0)
         obj = DataBinningAttributes_SetNumDimensions(self, args);
@@ -1957,7 +1957,7 @@ PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

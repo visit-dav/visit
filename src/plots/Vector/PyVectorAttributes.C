@@ -265,8 +265,8 @@ VectorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
         ss << "An invalid glyphLocation value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAdaptsToMeshResolution";
-        ss << "\n\tUniformInSpace";
+        ss << " AdaptsToMeshResolution";
+        ss << ", UniformInSpace";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -551,8 +551,8 @@ VectorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
         ss << "An invalid limitsMode value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tOriginalData";
-        ss << "\n\tCurrentPlot";
+        ss << " OriginalData";
+        ss << ", CurrentPlot";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1293,8 +1293,8 @@ VectorAttributes_SetGlyphType(PyObject *self, PyObject *args)
         ss << "An invalid glyphType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tArrow";
-        ss << "\n\tEllipsoid";
+        ss << " Arrow";
+        ss << ", Ellipsoid";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1469,8 +1469,8 @@ VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
         ss << "An invalid lineStem value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCylinder";
-        ss << "\n\tLine";
+        ss << " Cylinder";
+        ss << ", Line";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1645,9 +1645,9 @@ VectorAttributes_SetVectorOrigin(PyObject *self, PyObject *args)
         ss << "An invalid vectorOrigin value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tHead";
-        ss << "\n\tMiddle";
-        ss << "\n\tTail";
+        ss << " Head";
+        ss << ", Middle";
+        ss << ", Tail";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1712,8 +1712,8 @@ VectorAttributes_SetGeometryQuality(PyObject *self, PyObject *args)
         ss << "An invalid geometryQuality value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tFast";
-        ss << "\n\tHigh";
+        ss << " Fast";
+        ss << ", High";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2005,8 +2005,8 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
 int
 PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "glyphLocation") == 0)
         obj = VectorAttributes_SetGlyphLocation(self, args);
@@ -2064,7 +2064,7 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VectorAttributes_SetAnimationStep(self, args);
 
    // Try and handle legacy fields in VectorAttributes
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         VectorAttributesObject *VectorObj = (VectorAttributesObject *)self;
         if(strcmp(name, "colorByMag") == 0)
@@ -2107,7 +2107,7 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

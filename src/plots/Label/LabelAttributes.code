@@ -3,7 +3,7 @@ Code: PyLabelAttributes_setattr
 Prefix:
 Postfix:
     // Try to handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
 #define GETCOLOR if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3])) \
     { \
@@ -27,20 +27,20 @@ Postfix:
             } \
             else \
             { \
-                PyObject *obj = NULL; \
-                if(!PyArg_ParseTuple(args, "O", &obj)) \
+                PyObject *obj2 = NULL; \
+                if(!PyArg_ParseTuple(args, "O", &obj2)) \
                     success = false; \
-                if(!PyTuple_Check(obj)) \
+                if(!PyTuple_Check(obj2)) \
                     success = false; \
-                if(PyTuple_Size(obj) < 3 || PyTuple_Size(obj) > 4) \
+                if(PyTuple_Size(obj2) < 3 || PyTuple_Size(obj2) > 4) \
                     success = false; \
-                for(int i = 0; i < PyTuple_Size(obj); ++i) \
+                for(int i = 0; i < PyTuple_Size(obj2); ++i) \
                 { \
-                    PyObject *item = PyTuple_GET_ITEM(obj, i); \
+                    PyObject *item = PyTuple_GET_ITEM(obj2, i); \
                     if(PyInt_Check(item)) \
-                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(obj, i))); \
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(obj2, i))); \
                     else if(PyFloat_Check(item)) \
-                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(obj, i))); \
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(obj2, i))); \
                     else \
                         success = false; \
                 } \
@@ -124,7 +124,7 @@ Postfix:
                 obj = Py_None;
             }
         }
-        if (obj != NULL)
+        if (obj != &NULL_PY_OBJ)
         {
             LabelObj->data->SetTextFont1(font1);
             LabelObj->data->SetTextFont2(font2);

@@ -745,8 +745,8 @@ RemapAttributes_SetVariableType(PyObject *self, PyObject *args)
         ss << "An invalid variableType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tintrinsic";
-        ss << "\n\textrinsic";
+        ss << " intrinsic";
+        ss << ", extrinsic";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -852,8 +852,8 @@ PyRemapAttributes_getattr(PyObject *self, char *name)
 int
 PyRemapAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "useExtents") == 0)
         obj = RemapAttributes_SetUseExtents(self, args);
@@ -883,7 +883,7 @@ PyRemapAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

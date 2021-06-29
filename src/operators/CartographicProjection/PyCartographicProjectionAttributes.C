@@ -151,17 +151,17 @@ CartographicProjectionAttributes_SetProjectionID(PyObject *self, PyObject *args)
         ss << "An invalid projectionID value was given." << std::endl;
         ss << "Valid values are in the range [0,10]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\taitoff";
-        ss << "\n\teck4";
-        ss << "\n\teqdc";
-        ss << "\n\thammer";
-        ss << "\n\tlaea";
-        ss << "\n\tlcc";
-        ss << "\n\tmerc";
-        ss << "\n\tmill";
-        ss << "\n\tmoll";
-        ss << "\n\tortho";
-        ss << "\n\twink2";
+        ss << " aitoff";
+        ss << ", eck4";
+        ss << ", eqdc";
+        ss << ", hammer";
+        ss << ", laea";
+        ss << ", lcc";
+        ss << ", merc";
+        ss << ", mill";
+        ss << ", moll";
+        ss << ", ortho";
+        ss << ", wink2";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -300,8 +300,8 @@ PyCartographicProjectionAttributes_getattr(PyObject *self, char *name)
 int
 PyCartographicProjectionAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "projectionID") == 0)
         obj = CartographicProjectionAttributes_SetProjectionID(self, args);
@@ -311,7 +311,7 @@ PyCartographicProjectionAttributes_setattr(PyObject *self, char *name, PyObject 
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

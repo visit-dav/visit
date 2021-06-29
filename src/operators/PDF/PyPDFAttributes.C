@@ -518,9 +518,9 @@ PDFAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
         ss << "An invalid var1Scaling value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
-        ss << "\n\tSkew";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -964,9 +964,9 @@ PDFAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
         ss << "An invalid var2Scaling value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
-        ss << "\n\tSkew";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1141,8 +1141,8 @@ PDFAttributes_SetNumAxes(PyObject *self, PyObject *args)
         ss << "An invalid numAxes value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tTwo";
-        ss << "\n\tThree";
+        ss << " Two";
+        ss << ", Three";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1476,9 +1476,9 @@ PDFAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
         ss << "An invalid var3Scaling value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
-        ss << "\n\tSkew";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1708,8 +1708,8 @@ PDFAttributes_SetDensityType(PyObject *self, PyObject *args)
         ss << "An invalid densityType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tProbability";
-        ss << "\n\tZoneCount";
+        ss << " Probability";
+        ss << ", ZoneCount";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1901,8 +1901,8 @@ PyPDFAttributes_getattr(PyObject *self, char *name)
 int
 PyPDFAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "var1") == 0)
         obj = PDFAttributes_SetVar1(self, args);
@@ -1962,7 +1962,7 @@ PyPDFAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

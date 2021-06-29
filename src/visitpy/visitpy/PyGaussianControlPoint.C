@@ -94,7 +94,7 @@ GaussianControlPoint_SetX(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -149,7 +149,7 @@ GaussianControlPoint_SetHeight(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -204,7 +204,7 @@ GaussianControlPoint_SetWidth(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -259,7 +259,7 @@ GaussianControlPoint_SetXBias(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -314,7 +314,7 @@ GaussianControlPoint_SetYBias(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -390,8 +390,8 @@ PyGaussianControlPoint_getattr(PyObject *self, char *name)
 int
 PyGaussianControlPoint_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "x") == 0)
         obj = GaussianControlPoint_SetX(self, args);
@@ -407,7 +407,7 @@ PyGaussianControlPoint_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

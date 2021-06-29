@@ -129,8 +129,8 @@ BoxAttributes_SetAmount(PyObject *self, PyObject *args)
         ss << "An invalid amount value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSome";
-        ss << "\n\tAll";
+        ss << " Some";
+        ss << ", All";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -605,8 +605,8 @@ PyBoxAttributes_getattr(PyObject *self, char *name)
 int
 PyBoxAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "amount") == 0)
         obj = BoxAttributes_SetAmount(self, args);
@@ -628,7 +628,7 @@ PyBoxAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

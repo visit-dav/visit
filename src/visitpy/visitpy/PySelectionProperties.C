@@ -395,8 +395,8 @@ SelectionProperties_SetSelectionType(PyObject *self, PyObject *args)
         ss << "An invalid selectionType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tBasicSelection";
-        ss << "\n\tCumulativeQuerySelection";
+        ss << " BasicSelection";
+        ss << ", CumulativeQuerySelection";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -461,10 +461,10 @@ SelectionProperties_SetIdVariableType(PyObject *self, PyObject *args)
         ss << "An invalid idVariableType value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tUseZoneIDForID";
-        ss << "\n\tUseGlobalZoneIDForID";
-        ss << "\n\tUseLocationsForID";
-        ss << "\n\tUseVariableForID";
+        ss << " UseZoneIDForID";
+        ss << ", UseGlobalZoneIDForID";
+        ss << ", UseLocationsForID";
+        ss << ", UseVariableForID";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -950,8 +950,8 @@ SelectionProperties_SetCombineRule(PyObject *self, PyObject *args)
         ss << "An invalid combineRule value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCombineAnd";
-        ss << "\n\tCombineOr";
+        ss << " CombineAnd";
+        ss << ", CombineOr";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1016,10 +1016,10 @@ SelectionProperties_SetHistogramType(PyObject *self, PyObject *args)
         ss << "An invalid histogramType value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tHistogramTime";
-        ss << "\n\tHistogramMatches";
-        ss << "\n\tHistogramID";
-        ss << "\n\tHistogramVariable";
+        ss << " HistogramTime";
+        ss << ", HistogramMatches";
+        ss << ", HistogramID";
+        ss << ", HistogramVariable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1445,8 +1445,8 @@ PySelectionProperties_getattr(PyObject *self, char *name)
 int
 PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "name") == 0)
         obj = SelectionProperties_SetName(self, args);
@@ -1490,7 +1490,7 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

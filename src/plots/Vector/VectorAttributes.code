@@ -210,7 +210,7 @@ Code: PyVectorAttributes_setattr
 Prefix:
 Postfix:
    // Try and handle legacy fields in VectorAttributes
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         VectorAttributesObject *VectorObj = (VectorAttributesObject *)self;
         if(strcmp(name, "colorByMag") == 0)

@@ -487,11 +487,11 @@ ScatterAttributes_SetVar1Role(PyObject *self, PyObject *args)
         ss << "An invalid var1Role value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCoordinate0";
-        ss << "\n\tCoordinate1";
-        ss << "\n\tCoordinate2";
-        ss << "\n\tColor";
-        ss << "\n\tNone";
+        ss << " Coordinate0";
+        ss << ", Coordinate1";
+        ss << ", Coordinate2";
+        ss << ", Color";
+        ss << ", None";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -776,9 +776,9 @@ ScatterAttributes_SetVar1Scaling(PyObject *self, PyObject *args)
         ss << "An invalid var1Scaling value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
-        ss << "\n\tSkew";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -898,11 +898,11 @@ ScatterAttributes_SetVar2Role(PyObject *self, PyObject *args)
         ss << "An invalid var2Role value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCoordinate0";
-        ss << "\n\tCoordinate1";
-        ss << "\n\tCoordinate2";
-        ss << "\n\tColor";
-        ss << "\n\tNone";
+        ss << " Coordinate0";
+        ss << ", Coordinate1";
+        ss << ", Coordinate2";
+        ss << ", Color";
+        ss << ", None";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1236,9 +1236,9 @@ ScatterAttributes_SetVar2Scaling(PyObject *self, PyObject *args)
         ss << "An invalid var2Scaling value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
-        ss << "\n\tSkew";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1358,11 +1358,11 @@ ScatterAttributes_SetVar3Role(PyObject *self, PyObject *args)
         ss << "An invalid var3Role value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCoordinate0";
-        ss << "\n\tCoordinate1";
-        ss << "\n\tCoordinate2";
-        ss << "\n\tColor";
-        ss << "\n\tNone";
+        ss << " Coordinate0";
+        ss << ", Coordinate1";
+        ss << ", Coordinate2";
+        ss << ", Color";
+        ss << ", None";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1696,9 +1696,9 @@ ScatterAttributes_SetVar3Scaling(PyObject *self, PyObject *args)
         ss << "An invalid var3Scaling value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
-        ss << "\n\tSkew";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1818,11 +1818,11 @@ ScatterAttributes_SetVar4Role(PyObject *self, PyObject *args)
         ss << "An invalid var4Role value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCoordinate0";
-        ss << "\n\tCoordinate1";
-        ss << "\n\tCoordinate2";
-        ss << "\n\tColor";
-        ss << "\n\tNone";
+        ss << " Coordinate0";
+        ss << ", Coordinate1";
+        ss << ", Coordinate2";
+        ss << ", Color";
+        ss << ", None";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2156,9 +2156,9 @@ ScatterAttributes_SetVar4Scaling(PyObject *self, PyObject *args)
         ss << "An invalid var4Scaling value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
-        ss << "\n\tSkew";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2478,9 +2478,9 @@ ScatterAttributes_SetColorType(PyObject *self, PyObject *args)
         ss << "An invalid colorType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tColorByForegroundColor";
-        ss << "\n\tColorBySingleColor";
-        ss << "\n\tColorByColorTable";
+        ss << " ColorByForegroundColor";
+        ss << ", ColorBySingleColor";
+        ss << ", ColorByColorTable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3052,8 +3052,8 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
 int
 PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "var1") == 0)
         obj = ScatterAttributes_SetVar1(self, args);
@@ -3206,7 +3206,7 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

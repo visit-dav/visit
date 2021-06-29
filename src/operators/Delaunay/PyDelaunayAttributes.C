@@ -116,9 +116,9 @@ DelaunayAttributes_SetDimension(PyObject *self, PyObject *args)
         ss << "An invalid dimension value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAutomatic";
-        ss << "\n\tTriangulation";
-        ss << "\n\tTetrahedralization";
+        ss << " Automatic";
+        ss << ", Triangulation";
+        ss << ", Tetrahedralization";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -182,8 +182,8 @@ PyDelaunayAttributes_getattr(PyObject *self, char *name)
 int
 PyDelaunayAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "dimension") == 0)
         obj = DelaunayAttributes_SetDimension(self, args);
@@ -191,7 +191,7 @@ PyDelaunayAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

@@ -464,9 +464,9 @@ Axes3D_SetTickLocation(PyObject *self, PyObject *args)
         ss << "An invalid tickLocation value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tInside";
-        ss << "\n\tOutside";
-        ss << "\n\tBoth";
+        ss << " Inside";
+        ss << ", Outside";
+        ss << ", Both";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -531,11 +531,11 @@ Axes3D_SetAxesType(PyObject *self, PyObject *args)
         ss << "An invalid axesType value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tClosestTriad";
-        ss << "\n\tFurthestTriad";
-        ss << "\n\tOutsideEdges";
-        ss << "\n\tStaticTriad";
-        ss << "\n\tStaticEdges";
+        ss << " ClosestTriad";
+        ss << ", FurthestTriad";
+        ss << ", OutsideEdges";
+        ss << ", StaticTriad";
+        ss << ", StaticEdges";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -997,7 +997,7 @@ Axes3D_SetTriadLineWidth(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1367,8 +1367,8 @@ PyAxes3D_getattr(PyObject *self, char *name)
 int
 PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "visible") == 0)
         obj = Axes3D_SetVisible(self, args);
@@ -1412,7 +1412,7 @@ PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

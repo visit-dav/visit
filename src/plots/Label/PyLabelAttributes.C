@@ -449,9 +449,9 @@ LabelAttributes_SetDrawLabelsFacing(PyObject *self, PyObject *args)
         ss << "An invalid drawLabelsFacing value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tFront";
-        ss << "\n\tBack";
-        ss << "\n\tFrontAndBack";
+        ss << " Front";
+        ss << ", Back";
+        ss << ", FrontAndBack";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -516,9 +516,9 @@ LabelAttributes_SetLabelDisplayFormat(PyObject *self, PyObject *args)
         ss << "An invalid labelDisplayFormat value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNatural";
-        ss << "\n\tLogicalIndex";
-        ss << "\n\tIndex";
+        ss << " Natural";
+        ss << ", LogicalIndex";
+        ss << ", Index";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -704,9 +704,9 @@ LabelAttributes_SetHorizontalJustification(PyObject *self, PyObject *args)
         ss << "An invalid horizontalJustification value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tHCenter";
-        ss << "\n\tLeft";
-        ss << "\n\tRight";
+        ss << " HCenter";
+        ss << ", Left";
+        ss << ", Right";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -771,9 +771,9 @@ LabelAttributes_SetVerticalJustification(PyObject *self, PyObject *args)
         ss << "An invalid verticalJustification value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tVCenter";
-        ss << "\n\tTop";
-        ss << "\n\tBottom";
+        ss << " VCenter";
+        ss << ", Top";
+        ss << ", Bottom";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -838,9 +838,9 @@ LabelAttributes_SetDepthTestMode(PyObject *self, PyObject *args)
         ss << "An invalid depthTestMode value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLABEL_DT_AUTO";
-        ss << "\n\tLABEL_DT_ALWAYS";
-        ss << "\n\tLABEL_DT_NEVER";
+        ss << " LABEL_DT_AUTO";
+        ss << ", LABEL_DT_ALWAYS";
+        ss << ", LABEL_DT_NEVER";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1029,8 +1029,8 @@ PyLabelAttributes_getattr(PyObject *self, char *name)
 int
 PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "legendFlag") == 0)
         obj = LabelAttributes_SetLegendFlag(self, args);
@@ -1060,7 +1060,7 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LabelAttributes_SetFormatTemplate(self, args);
 
     // Try to handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
 #define GETCOLOR if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3])) \
     { \
@@ -1084,20 +1084,20 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
             } \
             else \
             { \
-                PyObject *obj = NULL; \
-                if(!PyArg_ParseTuple(args, "O", &obj)) \
+                PyObject *obj2 = NULL; \
+                if(!PyArg_ParseTuple(args, "O", &obj2)) \
                     success = false; \
-                if(!PyTuple_Check(obj)) \
+                if(!PyTuple_Check(obj2)) \
                     success = false; \
-                if(PyTuple_Size(obj) < 3 || PyTuple_Size(obj) > 4) \
+                if(PyTuple_Size(obj2) < 3 || PyTuple_Size(obj2) > 4) \
                     success = false; \
-                for(int i = 0; i < PyTuple_Size(obj); ++i) \
+                for(int i = 0; i < PyTuple_Size(obj2); ++i) \
                 { \
-                    PyObject *item = PyTuple_GET_ITEM(obj, i); \
+                    PyObject *item = PyTuple_GET_ITEM(obj2, i); \
                     if(PyInt_Check(item)) \
-                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(obj, i))); \
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(obj2, i))); \
                     else if(PyFloat_Check(item)) \
-                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(obj, i))); \
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(obj2, i))); \
                     else \
                         success = false; \
                 } \
@@ -1181,7 +1181,7 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
                 obj = Py_None;
             }
         }
-        if (obj != NULL)
+        if (obj != &NULL_PY_OBJ)
         {
             LabelObj->data->SetTextFont1(font1);
             LabelObj->data->SetTextFont2(font2);
@@ -1190,7 +1190,7 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

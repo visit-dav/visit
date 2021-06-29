@@ -457,13 +457,13 @@ CurveAttributes_SetSymbol(PyObject *self, PyObject *args)
         ss << "An invalid symbol value was given." << std::endl;
         ss << "Valid values are in the range [0,6]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tPoint";
-        ss << "\n\tTriangleUp";
-        ss << "\n\tTriangleDown";
-        ss << "\n\tSquare";
-        ss << "\n\tCircle";
-        ss << "\n\tPlus";
-        ss << "\n\tX";
+        ss << " Point";
+        ss << ", TriangleUp";
+        ss << ", TriangleDown";
+        ss << ", Square";
+        ss << ", Circle";
+        ss << ", Plus";
+        ss << ", X";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -583,8 +583,8 @@ CurveAttributes_SetPointFillMode(PyObject *self, PyObject *args)
         ss << "An invalid pointFillMode value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tStatic";
-        ss << "\n\tDynamic";
+        ss << " Static";
+        ss << ", Dynamic";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -759,8 +759,8 @@ CurveAttributes_SetCurveColorSource(PyObject *self, PyObject *args)
         ss << "An invalid curveColorSource value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCycle";
-        ss << "\n\tCustom";
+        ss << " Cycle";
+        ss << ", Custom";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1545,10 +1545,10 @@ CurveAttributes_SetFillMode(PyObject *self, PyObject *args)
         ss << "An invalid fillMode value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNoFill";
-        ss << "\n\tSolid";
-        ss << "\n\tHorizontalGradient";
-        ss << "\n\tVerticalGradient";
+        ss << " NoFill";
+        ss << ", Solid";
+        ss << ", HorizontalGradient";
+        ss << ", VerticalGradient";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1822,8 +1822,8 @@ CurveAttributes_SetPolarCoordinateOrder(PyObject *self, PyObject *args)
         ss << "An invalid polarCoordinateOrder value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tR_Theta";
-        ss << "\n\tTheta_R";
+        ss << " R_Theta";
+        ss << ", Theta_R";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1888,8 +1888,8 @@ CurveAttributes_SetAngleUnits(PyObject *self, PyObject *args)
         ss << "An invalid angleUnits value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tRadians";
-        ss << "\n\tDegrees";
+        ss << " Radians";
+        ss << ", Degrees";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2144,8 +2144,8 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
 int
 PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "showLines") == 0)
         obj = CurveAttributes_SetShowLines(self, args);
@@ -2203,7 +2203,7 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = CurveAttributes_SetAngleUnits(self, args);
 
    // Try and handle legacy fields in CurveAttributes
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         CurveAttributesObject *CurveObj = (CurveAttributesObject *)self;
         if(strcmp(name, "color") == 0)
@@ -2254,7 +2254,7 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

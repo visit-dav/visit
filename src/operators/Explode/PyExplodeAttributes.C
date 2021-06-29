@@ -259,9 +259,9 @@ ExplodeAttributes_SetExplosionType(PyObject *self, PyObject *args)
         ss << "An invalid explosionType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tPoint";
-        ss << "\n\tPlane";
-        ss << "\n\tCylinder";
+        ss << " Point";
+        ss << ", Plane";
+        ss << ", Cylinder";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -960,8 +960,8 @@ ExplodeAttributes_SetExplosionPattern(PyObject *self, PyObject *args)
         ss << "An invalid explosionPattern value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tImpact";
-        ss << "\n\tScatter";
+        ss << " Impact";
+        ss << ", Scatter";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1312,8 +1312,8 @@ PyExplodeAttributes_getattr(PyObject *self, char *name)
 int
 PyExplodeAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "explosionType") == 0)
         obj = ExplodeAttributes_SetExplosionType(self, args);
@@ -1347,7 +1347,7 @@ PyExplodeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

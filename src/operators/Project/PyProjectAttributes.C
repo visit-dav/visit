@@ -152,12 +152,12 @@ ProjectAttributes_SetProjectionType(PyObject *self, PyObject *args)
         ss << "An invalid projectionType value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tZYCartesian";
-        ss << "\n\tXZCartesian";
-        ss << "\n\tXYCartesian";
-        ss << "\n\tXRCylindrical";
-        ss << "\n\tYRCylindrical";
-        ss << "\n\tZRCylindrical";
+        ss << " ZYCartesian";
+        ss << ", XZCartesian";
+        ss << ", XYCartesian";
+        ss << ", XRCylindrical";
+        ss << ", YRCylindrical";
+        ss << ", ZRCylindrical";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -222,10 +222,10 @@ ProjectAttributes_SetVectorTransformMethod(PyObject *self, PyObject *args)
         ss << "An invalid vectorTransformMethod value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tAsPoint";
-        ss << "\n\tAsDisplacement";
-        ss << "\n\tAsDirection";
+        ss << " None";
+        ss << ", AsPoint";
+        ss << ", AsDisplacement";
+        ss << ", AsDirection";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -310,8 +310,8 @@ PyProjectAttributes_getattr(PyObject *self, char *name)
 int
 PyProjectAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "projectionType") == 0)
         obj = ProjectAttributes_SetProjectionType(self, args);
@@ -321,7 +321,7 @@ PyProjectAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

@@ -163,9 +163,9 @@ ViewerClientAttributes_SetRenderingType(PyObject *self, PyObject *args)
         ss << "An invalid renderingType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tImage";
-        ss << "\n\tData";
+        ss << " None";
+        ss << ", Image";
+        ss << ", Data";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -725,8 +725,8 @@ PyViewerClientAttributes_getattr(PyObject *self, char *name)
 int
 PyViewerClientAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "renderingType") == 0)
         obj = ViewerClientAttributes_SetRenderingType(self, args);
@@ -750,7 +750,7 @@ PyViewerClientAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

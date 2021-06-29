@@ -241,9 +241,9 @@ ColorControlPointList_SetSmoothing(PyObject *self, PyObject *args)
         ss << "An invalid smoothing value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tLinear";
-        ss << "\n\tCubicSpline";
+        ss << " None";
+        ss << ", Linear";
+        ss << ", CubicSpline";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -487,8 +487,8 @@ PyColorControlPointList_getattr(PyObject *self, char *name)
 int
 PyColorControlPointList_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "smoothing") == 0)
         obj = ColorControlPointList_SetSmoothing(self, args);
@@ -502,7 +502,7 @@ PyColorControlPointList_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

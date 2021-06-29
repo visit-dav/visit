@@ -112,8 +112,8 @@ SurfaceNormalAttributes_SetCentering(PyObject *self, PyObject *args)
         ss << "An invalid centering value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tPoint";
-        ss << "\n\tCell";
+        ss << " Point";
+        ss << ", Cell";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -175,8 +175,8 @@ PySurfaceNormalAttributes_getattr(PyObject *self, char *name)
 int
 PySurfaceNormalAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "centering") == 0)
         obj = SurfaceNormalAttributes_SetCentering(self, args);
@@ -184,7 +184,7 @@ PySurfaceNormalAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

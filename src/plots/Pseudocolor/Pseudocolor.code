@@ -45,7 +45,7 @@ Code: PyPseudocolorAttributes_setattr
 Prefix:
 Postfix:
     // Try and handle legacy fields in PseudocolorAttributes
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         PseudocolorAttributesObject *PseudocolorObj = (PseudocolorAttributesObject *)self;
         if(strcmp(name, "useColorTableOpacity") == 0)

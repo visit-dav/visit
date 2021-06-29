@@ -509,15 +509,15 @@ ConstructDataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *ar
         ss << "An invalid reductionOperator value was given." << std::endl;
         ss << "Valid values are in the range [0,8]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAverage";
-        ss << "\n\tMinimum";
-        ss << "\n\tMaximum";
-        ss << "\n\tStandardDeviation";
-        ss << "\n\tVariance";
-        ss << "\n\tSum";
-        ss << "\n\tCount";
-        ss << "\n\tRMS";
-        ss << "\n\tPDF";
+        ss << " Average";
+        ss << ", Minimum";
+        ss << ", Maximum";
+        ss << ", StandardDeviation";
+        ss << ", Variance";
+        ss << ", Sum";
+        ss << ", Count";
+        ss << ", RMS";
+        ss << ", PDF";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -686,8 +686,8 @@ ConstructDataBinningAttributes_SetBinningScheme(PyObject *self, PyObject *args)
         ss << "An invalid binningScheme value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tUniform";
-        ss << "\n\tUnknown";
+        ss << " Uniform";
+        ss << ", Unknown";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1041,8 +1041,8 @@ ConstructDataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *
         ss << "An invalid outOfBoundsBehavior value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tClamp";
-        ss << "\n\tDiscard";
+        ss << " Clamp";
+        ss << ", Discard";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1191,8 +1191,8 @@ PyConstructDataBinningAttributes_getattr(PyObject *self, char *name)
 int
 PyConstructDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "name") == 0)
         obj = ConstructDataBinningAttributes_SetName(self, args);
@@ -1237,7 +1237,7 @@ PyConstructDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *a
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

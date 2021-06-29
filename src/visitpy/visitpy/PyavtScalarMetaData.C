@@ -364,11 +364,11 @@ avtScalarMetaData_SetEnumerationType(PyObject *self, PyObject *args)
         ss << "An invalid enumerationType value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tByValue";
-        ss << "\n\tByRange";
-        ss << "\n\tByBitMask";
-        ss << "\n\tByNChooseR";
+        ss << " None";
+        ss << ", ByValue";
+        ss << ", ByRange";
+        ss << ", ByBitMask";
+        ss << ", ByNChooseR";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -717,9 +717,9 @@ avtScalarMetaData_SetEnumPartialCellMode(PyObject *self, PyObject *args)
         ss << "An invalid enumPartialCellMode value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tInclude";
-        ss << "\n\tExclude";
-        ss << "\n\tDissect";
+        ss << " Include";
+        ss << ", Exclude";
+        ss << ", Dissect";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1101,11 +1101,11 @@ avtScalarMetaData_SetMissingDataType(PyObject *self, PyObject *args)
         ss << "An invalid missingDataType value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tMissingData_None";
-        ss << "\n\tMissingData_Value";
-        ss << "\n\tMissingData_Valid_Min";
-        ss << "\n\tMissingData_Valid_Max";
-        ss << "\n\tMissingData_Valid_Range";
+        ss << " MissingData_None";
+        ss << ", MissingData_Value";
+        ss << ", MissingData_Valid_Min";
+        ss << ", MissingData_Valid_Max";
+        ss << ", MissingData_Valid_Range";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1351,8 +1351,8 @@ PyavtScalarMetaData_setattr(PyObject *self, char *name, PyObject *args)
     else
         PyErr_Clear();
 
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "treatAsASCII") == 0)
         obj = avtScalarMetaData_SetTreatAsASCII(self, args);
@@ -1386,7 +1386,7 @@ PyavtScalarMetaData_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

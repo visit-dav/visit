@@ -183,9 +183,9 @@ IndexSelectAttributes_SetMaxDim(PyObject *self, PyObject *args)
         ss << "An invalid maxDim value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tOneD";
-        ss << "\n\tTwoD";
-        ss << "\n\tThreeD";
+        ss << " OneD";
+        ss << ", TwoD";
+        ss << ", ThreeD";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -250,9 +250,9 @@ IndexSelectAttributes_SetDim(PyObject *self, PyObject *args)
         ss << "An invalid dim value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tOneD";
-        ss << "\n\tTwoD";
-        ss << "\n\tThreeD";
+        ss << " OneD";
+        ss << ", TwoD";
+        ss << ", ThreeD";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1377,8 +1377,8 @@ PyIndexSelectAttributes_getattr(PyObject *self, char *name)
 int
 PyIndexSelectAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "maxDim") == 0)
         obj = IndexSelectAttributes_SetMaxDim(self, args);
@@ -1424,7 +1424,7 @@ PyIndexSelectAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

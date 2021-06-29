@@ -666,7 +666,7 @@ ParallelCoordinatesAttributes_SetContextGamma(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1018,7 +1018,7 @@ ParallelCoordinatesAttributes_SetFocusGamma(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1086,9 +1086,9 @@ ParallelCoordinatesAttributes_SetDrawFocusAs(PyObject *self, PyObject *args)
         ss << "An invalid drawFocusAs value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tIndividualLines";
-        ss << "\n\tBinsOfConstantColor";
-        ss << "\n\tBinsColoredByPopulation";
+        ss << " IndividualLines";
+        ss << ", BinsOfConstantColor";
+        ss << ", BinsColoredByPopulation";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1208,8 +1208,8 @@ PyParallelCoordinatesAttributes_getattr(PyObject *self, char *name)
 int
 PyParallelCoordinatesAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "scalarAxisNames") == 0)
         obj = ParallelCoordinatesAttributes_SetScalarAxisNames(self, args);
@@ -1245,7 +1245,7 @@ PyParallelCoordinatesAttributes_setattr(PyObject *self, char *name, PyObject *ar
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

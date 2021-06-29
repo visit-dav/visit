@@ -221,14 +221,14 @@ ReflectAttributes_SetOctant(PyObject *self, PyObject *args)
         ss << "An invalid octant value was given." << std::endl;
         ss << "Valid values are in the range [0,7]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tPXPYPZ";
-        ss << "\n\tNXPYPZ";
-        ss << "\n\tPXNYPZ";
-        ss << "\n\tNXNYPZ";
-        ss << "\n\tPXPYNZ";
-        ss << "\n\tNXPYNZ";
-        ss << "\n\tPXNYNZ";
-        ss << "\n\tNXNYNZ";
+        ss << " PXPYPZ";
+        ss << ", NXPYPZ";
+        ss << ", PXNYPZ";
+        ss << ", NXNYPZ";
+        ss << ", PXPYNZ";
+        ss << ", NXPYNZ";
+        ss << ", PXNYNZ";
+        ss << ", NXNYNZ";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -842,8 +842,8 @@ ReflectAttributes_SetReflectType(PyObject *self, PyObject *args)
         ss << "An invalid reflectType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tPlane";
-        ss << "\n\tAxis";
+        ss << " Plane";
+        ss << ", Axis";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -962,8 +962,8 @@ PyReflectAttributes_getattr(PyObject *self, char *name)
 int
 PyReflectAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "octant") == 0)
         obj = ReflectAttributes_SetOctant(self, args);
@@ -991,7 +991,7 @@ PyReflectAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

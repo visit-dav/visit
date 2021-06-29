@@ -693,8 +693,8 @@ PoincareAttributes_SetOpacityType(PyObject *self, PyObject *args)
         ss << "An invalid opacityType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tExplicit";
-        ss << "\n\tColorTable";
+        ss << " Explicit";
+        ss << ", ColorTable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -924,8 +924,8 @@ PoincareAttributes_SetPuncturePlotType(PyObject *self, PyObject *args)
         ss << "An invalid puncturePlotType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSingle";
-        ss << "\n\tDouble";
+        ss << " Single";
+        ss << ", Double";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1210,9 +1210,9 @@ PoincareAttributes_SetPuncturePlane(PyObject *self, PyObject *args)
         ss << "An invalid puncturePlane value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tPoloidal";
-        ss << "\n\tToroidal";
-        ss << "\n\tArbitrary";
+        ss << " Poloidal";
+        ss << ", Toroidal";
+        ss << ", Arbitrary";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1277,9 +1277,9 @@ PoincareAttributes_SetSourceType(PyObject *self, PyObject *args)
         ss << "An invalid sourceType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSpecifiedPoint";
-        ss << "\n\tPointList";
-        ss << "\n\tSpecifiedLine";
+        ss << " SpecifiedPoint";
+        ss << ", PointList";
+        ss << ", SpecifiedLine";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1687,12 +1687,12 @@ PoincareAttributes_SetFieldType(PyObject *self, PyObject *args)
         ss << "An invalid fieldType value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tDefault";
-        ss << "\n\tFlashField";
-        ss << "\n\tM3DC12DField";
-        ss << "\n\tM3DC13DField";
-        ss << "\n\tNek5000Field";
-        ss << "\n\tNektarPPField";
+        ss << " Default";
+        ss << ", FlashField";
+        ss << ", M3DC12DField";
+        ss << ", M3DC13DField";
+        ss << ", Nek5000Field";
+        ss << ", NektarPPField";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1940,12 +1940,12 @@ PoincareAttributes_SetIntegrationType(PyObject *self, PyObject *args)
         ss << "An invalid integrationType value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tEuler";
-        ss << "\n\tLeapfrog";
-        ss << "\n\tDormandPrince";
-        ss << "\n\tAdamsBashforth";
-        ss << "\n\tRK4";
-        ss << "\n\tM3DC12DIntegrator";
+        ss << " Euler";
+        ss << ", Leapfrog";
+        ss << ", DormandPrince";
+        ss << ", AdamsBashforth";
+        ss << ", RK4";
+        ss << ", M3DC12DIntegrator";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2010,8 +2010,8 @@ PoincareAttributes_SetCoordinateSystem(PyObject *self, PyObject *args)
         ss << "An invalid coordinateSystem value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCartesian";
-        ss << "\n\tCylindrical";
+        ss << " Cartesian";
+        ss << ", Cylindrical";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2296,8 +2296,8 @@ PoincareAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
         ss << "An invalid absTolSizeType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tFractionOfBBox";
+        ss << " Absolute";
+        ss << ", FractionOfBBox";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2472,8 +2472,8 @@ PoincareAttributes_SetAnalysis(PyObject *self, PyObject *args)
         ss << "An invalid analysis value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tNormal";
+        ss << " None";
+        ss << ", Normal";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2813,10 +2813,10 @@ PoincareAttributes_SetOverlaps(PyObject *self, PyObject *args)
         ss << "An invalid overlaps value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tRaw";
-        ss << "\n\tRemove";
-        ss << "\n\tMerge";
-        ss << "\n\tSmooth";
+        ss << " Raw";
+        ss << ", Remove";
+        ss << ", Merge";
+        ss << ", Smooth";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2881,8 +2881,8 @@ PoincareAttributes_SetMeshType(PyObject *self, PyObject *args)
         ss << "An invalid meshType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCurves";
-        ss << "\n\tSurfaces";
+        ss << " Curves";
+        ss << ", Surfaces";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3277,8 +3277,8 @@ PoincareAttributes_SetColorType(PyObject *self, PyObject *args)
         ss << "An invalid colorType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tColorBySingleColor";
-        ss << "\n\tColorByColorTable";
+        ss << " ColorBySingleColor";
+        ss << ", ColorByColorTable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3469,20 +3469,20 @@ PoincareAttributes_SetDataValue(PyObject *self, PyObject *args)
         ss << "An invalid dataValue value was given." << std::endl;
         ss << "Valid values are in the range [0,13]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSolid";
-        ss << "\n\tSafetyFactorQ";
-        ss << "\n\tSafetyFactorP";
-        ss << "\n\tSafetyFactorQ_NotP";
-        ss << "\n\tSafetyFactorP_NotQ";
-        ss << "\n\tToroidalWindings";
-        ss << "\n\tPoloidalWindingsQ";
-        ss << "\n\tPoloidalWindingsP";
-        ss << "\n\tFieldlineOrder";
-        ss << "\n\tPointOrder";
-        ss << "\n\tPlaneOrder";
-        ss << "\n\tWindingGroupOrder";
-        ss << "\n\tWindingPointOrder";
-        ss << "\n\tWindingPointOrderModulo";
+        ss << " Solid";
+        ss << ", SafetyFactorQ";
+        ss << ", SafetyFactorP";
+        ss << ", SafetyFactorQ_NotP";
+        ss << ", SafetyFactorP_NotQ";
+        ss << ", ToroidalWindings";
+        ss << ", PoloidalWindingsQ";
+        ss << ", PoloidalWindingsP";
+        ss << ", FieldlineOrder";
+        ss << ", PointOrder";
+        ss << ", PlaneOrder";
+        ss << ", WindingGroupOrder";
+        ss << ", WindingPointOrder";
+        ss << ", WindingPointOrderModulo";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -4421,10 +4421,10 @@ PoincareAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *arg
         ss << "An invalid parallelizationAlgorithmType value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLoadOnDemand";
-        ss << "\n\tParallelStaticDomains";
-        ss << "\n\tMasterSlave";
-        ss << "\n\tVisItSelects";
+        ss << " LoadOnDemand";
+        ss << ", ParallelStaticDomains";
+        ss << ", MasterSlave";
+        ss << ", VisItSelects";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -4874,8 +4874,8 @@ PoincareAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
         ss << "An invalid pathlinesCMFE value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCONN_CMFE";
-        ss << "\n\tPOS_CMFE";
+        ss << " CONN_CMFE";
+        ss << ", POS_CMFE";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -5640,8 +5640,8 @@ PyPoincareAttributes_getattr(PyObject *self, char *name)
 int
 PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "opacityType") == 0)
         obj = PoincareAttributes_SetOpacityType(self, args);
@@ -5801,7 +5801,7 @@ PyPoincareAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

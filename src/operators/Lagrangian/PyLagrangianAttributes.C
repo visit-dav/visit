@@ -309,12 +309,12 @@ LagrangianAttributes_SetXAxisSample(PyObject *self, PyObject *args)
         ss << "An invalid XAxisSample value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tStep";
-        ss << "\n\tTime";
-        ss << "\n\tArcLength";
-        ss << "\n\tSpeed";
-        ss << "\n\tVorticity";
-        ss << "\n\tVariable";
+        ss << " Step";
+        ss << ", Time";
+        ss << ", ArcLength";
+        ss << ", Speed";
+        ss << ", Vorticity";
+        ss << ", Variable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -379,12 +379,12 @@ LagrangianAttributes_SetYAxisSample(PyObject *self, PyObject *args)
         ss << "An invalid YAxisSample value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tStep";
-        ss << "\n\tTime";
-        ss << "\n\tArcLength";
-        ss << "\n\tSpeed";
-        ss << "\n\tVorticity";
-        ss << "\n\tVariable";
+        ss << " Step";
+        ss << ", Time";
+        ss << ", ArcLength";
+        ss << ", Speed";
+        ss << ", Vorticity";
+        ss << ", Variable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -532,8 +532,8 @@ PyLagrangianAttributes_getattr(PyObject *self, char *name)
 int
 PyLagrangianAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "seedPoint") == 0)
         obj = LagrangianAttributes_SetSeedPoint(self, args);
@@ -549,7 +549,7 @@ PyLagrangianAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

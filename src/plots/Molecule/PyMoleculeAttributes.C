@@ -260,9 +260,9 @@ MoleculeAttributes_SetDrawAtomsAs(PyObject *self, PyObject *args)
         ss << "An invalid drawAtomsAs value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNoAtoms";
-        ss << "\n\tSphereAtoms";
-        ss << "\n\tImposterAtoms";
+        ss << " NoAtoms";
+        ss << ", SphereAtoms";
+        ss << ", ImposterAtoms";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -327,10 +327,10 @@ MoleculeAttributes_SetScaleRadiusBy(PyObject *self, PyObject *args)
         ss << "An invalid scaleRadiusBy value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tFixed";
-        ss << "\n\tCovalent";
-        ss << "\n\tAtomic";
-        ss << "\n\tVariable";
+        ss << " Fixed";
+        ss << ", Covalent";
+        ss << ", Atomic";
+        ss << ", Variable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -395,9 +395,9 @@ MoleculeAttributes_SetDrawBondsAs(PyObject *self, PyObject *args)
         ss << "An invalid drawBondsAs value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNoBonds";
-        ss << "\n\tLineBonds";
-        ss << "\n\tCylinderBonds";
+        ss << " NoBonds";
+        ss << ", LineBonds";
+        ss << ", CylinderBonds";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -462,8 +462,8 @@ MoleculeAttributes_SetColorBonds(PyObject *self, PyObject *args)
         ss << "An invalid colorBonds value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tColorByAtom";
-        ss << "\n\tSingleColor";
+        ss << " ColorByAtom";
+        ss << ", SingleColor";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -641,7 +641,7 @@ MoleculeAttributes_SetRadiusScaleFactor(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -696,7 +696,7 @@ MoleculeAttributes_SetRadiusFixed(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -764,10 +764,10 @@ MoleculeAttributes_SetAtomSphereQuality(PyObject *self, PyObject *args)
         ss << "An invalid atomSphereQuality value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLow";
-        ss << "\n\tMedium";
-        ss << "\n\tHigh";
-        ss << "\n\tSuper";
+        ss << " Low";
+        ss << ", Medium";
+        ss << ", High";
+        ss << ", Super";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -832,10 +832,10 @@ MoleculeAttributes_SetBondCylinderQuality(PyObject *self, PyObject *args)
         ss << "An invalid bondCylinderQuality value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLow";
-        ss << "\n\tMedium";
-        ss << "\n\tHigh";
-        ss << "\n\tSuper";
+        ss << " Low";
+        ss << ", Medium";
+        ss << ", High";
+        ss << ", Super";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -887,7 +887,7 @@ MoleculeAttributes_SetBondRadius(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1303,7 +1303,7 @@ MoleculeAttributes_SetScalarMin(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1413,7 +1413,7 @@ MoleculeAttributes_SetScalarMax(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1631,8 +1631,8 @@ PyMoleculeAttributes_getattr(PyObject *self, char *name)
 int
 PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "drawAtomsAs") == 0)
         obj = MoleculeAttributes_SetDrawAtomsAs(self, args);
@@ -1678,7 +1678,7 @@ PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MoleculeAttributes_SetScalarMax(self, args);
 
     // Try and handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "bondLineStyle") == 0)
         {
@@ -1690,7 +1690,7 @@ PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

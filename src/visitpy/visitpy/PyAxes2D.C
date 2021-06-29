@@ -392,9 +392,9 @@ Axes2D_SetTickLocation(PyObject *self, PyObject *args)
         ss << "An invalid tickLocation value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tInside";
-        ss << "\n\tOutside";
-        ss << "\n\tBoth";
+        ss << " Inside";
+        ss << ", Outside";
+        ss << ", Both";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -459,11 +459,11 @@ Axes2D_SetTickAxes(PyObject *self, PyObject *args)
         ss << "An invalid tickAxes value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tOff";
-        ss << "\n\tBottom";
-        ss << "\n\tLeft";
-        ss << "\n\tBottomLeft";
-        ss << "\n\tAll";
+        ss << " Off";
+        ss << ", Bottom";
+        ss << ", Left";
+        ss << ", BottomLeft";
+        ss << ", All";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -632,8 +632,8 @@ PyAxes2D_getattr(PyObject *self, char *name)
 int
 PyAxes2D_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "visible") == 0)
         obj = Axes2D_SetVisible(self, args);
@@ -655,7 +655,7 @@ PyAxes2D_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

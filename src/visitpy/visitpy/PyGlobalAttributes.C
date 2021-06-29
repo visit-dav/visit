@@ -1680,9 +1680,9 @@ GlobalAttributes_SetPrecisionType(PyObject *self, PyObject *args)
         ss << "An invalid precisionType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tFloat";
-        ss << "\n\tNative";
-        ss << "\n\tDouble";
+        ss << " Float";
+        ss << ", Native";
+        ss << ", Double";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1747,8 +1747,8 @@ GlobalAttributes_SetBackendType(PyObject *self, PyObject *args)
         ss << "An invalid backendType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tVTK";
-        ss << "\n\tVTKM";
+        ss << " VTK";
+        ss << ", VTKM";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1980,8 +1980,8 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
 int
 PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "sources") == 0)
         obj = GlobalAttributes_SetSources(self, args);
@@ -2043,7 +2043,7 @@ PyGlobalAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

@@ -441,8 +441,8 @@ PyAxisAlignedSlice4DAttributes_getattr(PyObject *self, char *name)
 int
 PyAxisAlignedSlice4DAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "I") == 0)
         obj = AxisAlignedSlice4DAttributes_SetI(self, args);
@@ -456,7 +456,7 @@ PyAxisAlignedSlice4DAttributes_setattr(PyObject *self, char *name, PyObject *arg
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

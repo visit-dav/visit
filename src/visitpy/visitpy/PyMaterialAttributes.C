@@ -384,11 +384,11 @@ MaterialAttributes_SetAlgorithm(PyObject *self, PyObject *args)
         ss << "An invalid algorithm value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tEquiT";
-        ss << "\n\tEquiZ";
-        ss << "\n\tIsovolume";
-        ss << "\n\tPLIC";
-        ss << "\n\tDiscrete";
+        ss << " EquiT";
+        ss << ", EquiZ";
+        ss << ", Isovolume";
+        ss << ", PLIC";
+        ss << ", Discrete";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -550,7 +550,7 @@ MaterialAttributes_SetIterationDamping(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -715,7 +715,7 @@ MaterialAttributes_SetIsoVolumeFraction(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || cval != cval)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -885,8 +885,8 @@ PyMaterialAttributes_getattr(PyObject *self, char *name)
 int
 PyMaterialAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "smoothing") == 0)
         obj = MaterialAttributes_SetSmoothing(self, args);
@@ -916,7 +916,7 @@ PyMaterialAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

@@ -173,9 +173,9 @@ ElevateAttributes_SetUseXYLimits(PyObject *self, PyObject *args)
         ss << "An invalid useXYLimits value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNever";
-        ss << "\n\tAuto";
-        ss << "\n\tAlways";
+        ss << " Never";
+        ss << ", Auto";
+        ss << ", Always";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -240,8 +240,8 @@ ElevateAttributes_SetLimitsMode(PyObject *self, PyObject *args)
         ss << "An invalid limitsMode value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tOriginalData";
-        ss << "\n\tCurrentPlot";
+        ss << " OriginalData";
+        ss << ", CurrentPlot";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -306,9 +306,9 @@ ElevateAttributes_SetScaling(PyObject *self, PyObject *args)
         ss << "An invalid scaling value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
-        ss << "\n\tSkew";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -799,8 +799,8 @@ PyElevateAttributes_getattr(PyObject *self, char *name)
 int
 PyElevateAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "useXYLimits") == 0)
         obj = ElevateAttributes_SetUseXYLimits(self, args);
@@ -826,7 +826,7 @@ PyElevateAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

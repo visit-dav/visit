@@ -490,21 +490,21 @@ SaveWindowAttributes_SetFormat(PyObject *self, PyObject *args)
         ss << "An invalid format value was given." << std::endl;
         ss << "Valid values are in the range [0,14]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tBMP";
-        ss << "\n\tCURVE";
-        ss << "\n\tJPEG";
-        ss << "\n\tOBJ";
-        ss << "\n\tPNG";
-        ss << "\n\tPOSTSCRIPT";
-        ss << "\n\tPOVRAY";
-        ss << "\n\tPPM";
-        ss << "\n\tRGB";
-        ss << "\n\tSTL";
-        ss << "\n\tTIFF";
-        ss << "\n\tULTRA";
-        ss << "\n\tVTK";
-        ss << "\n\tPLY";
-        ss << "\n\tEXR";
+        ss << " BMP";
+        ss << ", CURVE";
+        ss << ", JPEG";
+        ss << ", OBJ";
+        ss << ", PNG";
+        ss << ", POSTSCRIPT";
+        ss << ", POVRAY";
+        ss << ", PPM";
+        ss << ", RGB";
+        ss << ", STL";
+        ss << ", TIFF";
+        ss << ", ULTRA";
+        ss << ", VTK";
+        ss << ", PLY";
+        ss << ", EXR";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1009,11 +1009,11 @@ SaveWindowAttributes_SetCompression(PyObject *self, PyObject *args)
         ss << "An invalid compression value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tPackBits";
-        ss << "\n\tJpeg";
-        ss << "\n\tDeflate";
-        ss << "\n\tLZW";
+        ss << " None";
+        ss << ", PackBits";
+        ss << ", Jpeg";
+        ss << ", Deflate";
+        ss << ", LZW";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1133,9 +1133,9 @@ SaveWindowAttributes_SetResConstraint(PyObject *self, PyObject *args)
         ss << "An invalid resConstraint value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNoConstraint";
-        ss << "\n\tEqualWidthHeight";
-        ss << "\n\tScreenProportions";
+        ss << " NoConstraint";
+        ss << ", EqualWidthHeight";
+        ss << ", ScreenProportions";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1495,8 +1495,8 @@ PySaveWindowAttributes_getattr(PyObject *self, char *name)
 int
 PySaveWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "outputToCurrentDirectory") == 0)
         obj = SaveWindowAttributes_SetOutputToCurrentDirectory(self, args);
@@ -1542,7 +1542,7 @@ PySaveWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

@@ -170,9 +170,9 @@ BoundaryAttributes_SetColorType(PyObject *self, PyObject *args)
         ss << "An invalid colorType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tColorBySingleColor";
-        ss << "\n\tColorByMultipleColors";
-        ss << "\n\tColorByColorTable";
+        ss << " ColorBySingleColor";
+        ss << ", ColorByMultipleColors";
+        ss << ", ColorByColorTable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1141,8 +1141,8 @@ PyBoundaryAttributes_getattr(PyObject *self, char *name)
 int
 PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "colorType") == 0)
         obj = BoundaryAttributes_SetColorType(self, args);
@@ -1168,7 +1168,7 @@ PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = BoundaryAttributes_SetSmoothingLevel(self, args);
 
     // Try and handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "filledFlag") == 0)
         {
@@ -1222,7 +1222,7 @@ PyBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

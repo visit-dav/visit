@@ -116,9 +116,9 @@ AMRStitchCellAttributes_SetCreateCellsOfType(PyObject *self, PyObject *args)
         ss << "An invalid CreateCellsOfType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tDualGridAndStitchCells";
-        ss << "\n\tDualGrid";
-        ss << "\n\tStitchCells";
+        ss << " DualGridAndStitchCells";
+        ss << ", DualGrid";
+        ss << ", StitchCells";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -182,8 +182,8 @@ PyAMRStitchCellAttributes_getattr(PyObject *self, char *name)
 int
 PyAMRStitchCellAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "CreateCellsOfType") == 0)
         obj = AMRStitchCellAttributes_SetCreateCellsOfType(self, args);
@@ -191,7 +191,7 @@ PyAMRStitchCellAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

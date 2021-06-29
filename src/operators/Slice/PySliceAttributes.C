@@ -232,11 +232,11 @@ SliceAttributes_SetOriginType(PyObject *self, PyObject *args)
         ss << "An invalid originType value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tPoint";
-        ss << "\n\tIntercept";
-        ss << "\n\tPercent";
-        ss << "\n\tZone";
-        ss << "\n\tNode";
+        ss << " Point";
+        ss << ", Intercept";
+        ss << ", Percent";
+        ss << ", Zone";
+        ss << ", Node";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -667,11 +667,11 @@ SliceAttributes_SetAxisType(PyObject *self, PyObject *args)
         ss << "An invalid axisType value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tXAxis";
-        ss << "\n\tYAxis";
-        ss << "\n\tZAxis";
-        ss << "\n\tArbitrary";
-        ss << "\n\tThetaPhi";
+        ss << " XAxis";
+        ss << ", YAxis";
+        ss << ", ZAxis";
+        ss << ", Arbitrary";
+        ss << ", ThetaPhi";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1321,8 +1321,8 @@ PySliceAttributes_getattr(PyObject *self, char *name)
 int
 PySliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "originType") == 0)
         obj = SliceAttributes_SetOriginType(self, args);
@@ -1362,7 +1362,7 @@ PySliceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

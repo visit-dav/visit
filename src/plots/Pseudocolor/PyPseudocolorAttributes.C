@@ -435,9 +435,9 @@ PseudocolorAttributes_SetScaling(PyObject *self, PyObject *args)
         ss << "An invalid scaling value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
-        ss << "\n\tSkew";
+        ss << " Linear";
+        ss << ", Log";
+        ss << ", Skew";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -557,8 +557,8 @@ PseudocolorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
         ss << "An invalid limitsMode value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tOriginalData";
-        ss << "\n\tActualData";
+        ss << " OriginalData";
+        ss << ", ActualData";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1107,9 +1107,9 @@ PseudocolorAttributes_SetCentering(PyObject *self, PyObject *args)
         ss << "An invalid centering value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNatural";
-        ss << "\n\tNodal";
-        ss << "\n\tZonal";
+        ss << " Natural";
+        ss << ", Nodal";
+        ss << ", Zonal";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1278,11 +1278,11 @@ PseudocolorAttributes_SetOpacityType(PyObject *self, PyObject *args)
         ss << "An invalid opacityType value was given." << std::endl;
         ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tColorTable";
-        ss << "\n\tFullyOpaque";
-        ss << "\n\tConstant";
-        ss << "\n\tRamp";
-        ss << "\n\tVariableRange";
+        ss << " ColorTable";
+        ss << ", FullyOpaque";
+        ss << ", Constant";
+        ss << ", Ramp";
+        ss << ", VariableRange";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1920,9 +1920,9 @@ PseudocolorAttributes_SetLineType(PyObject *self, PyObject *args)
         ss << "An invalid lineType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLine";
-        ss << "\n\tTube";
-        ss << "\n\tRibbon";
+        ss << " Line";
+        ss << ", Tube";
+        ss << ", Ribbon";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2097,8 +2097,8 @@ PseudocolorAttributes_SetTubeRadiusSizeType(PyObject *self, PyObject *args)
         ss << "An invalid tubeRadiusSizeType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tFractionOfBBox";
+        ss << " Absolute";
+        ss << ", FractionOfBBox";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2432,9 +2432,9 @@ PseudocolorAttributes_SetTailStyle(PyObject *self, PyObject *args)
         ss << "An invalid tailStyle value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tSpheres";
-        ss << "\n\tCones";
+        ss << " None";
+        ss << ", Spheres";
+        ss << ", Cones";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2499,9 +2499,9 @@ PseudocolorAttributes_SetHeadStyle(PyObject *self, PyObject *args)
         ss << "An invalid headStyle value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tSpheres";
-        ss << "\n\tCones";
+        ss << " None";
+        ss << ", Spheres";
+        ss << ", Cones";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2566,8 +2566,8 @@ PseudocolorAttributes_SetEndPointRadiusSizeType(PyObject *self, PyObject *args)
         ss << "An invalid endPointRadiusSizeType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tFractionOfBBox";
+        ss << " Absolute";
+        ss << ", FractionOfBBox";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3815,8 +3815,8 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
 int
 PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "scaling") == 0)
         obj = PseudocolorAttributes_SetScaling(self, args);
@@ -3926,7 +3926,7 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PseudocolorAttributes_SetPointColor(self, args);
 
     // Try and handle legacy fields in PseudocolorAttributes
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         PseudocolorAttributesObject *PseudocolorObj = (PseudocolorAttributesObject *)self;
         if(strcmp(name, "useColorTableOpacity") == 0)
@@ -3954,7 +3954,7 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

@@ -416,8 +416,8 @@ PyViewerClientInformationElement_getattr(PyObject *self, char *name)
 int
 PyViewerClientInformationElement_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "data") == 0)
         obj = ViewerClientInformationElement_SetData(self, args);
@@ -433,7 +433,7 @@ PyViewerClientInformationElement_setattr(PyObject *self, char *name, PyObject *a
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

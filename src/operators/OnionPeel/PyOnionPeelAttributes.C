@@ -164,8 +164,8 @@ OnionPeelAttributes_SetAdjacencyType(PyObject *self, PyObject *args)
         ss << "An invalid adjacencyType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNode";
-        ss << "\n\tFace";
+        ss << " Node";
+        ss << ", Face";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -562,8 +562,8 @@ OnionPeelAttributes_SetSeedType(PyObject *self, PyObject *args)
         ss << "An invalid seedType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSeedCell";
-        ss << "\n\tSeedNode";
+        ss << " SeedCell";
+        ss << ", SeedNode";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -717,8 +717,8 @@ PyOnionPeelAttributes_getattr(PyObject *self, char *name)
 int
 PyOnionPeelAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "adjacencyType") == 0)
         obj = OnionPeelAttributes_SetAdjacencyType(self, args);
@@ -742,7 +742,7 @@ PyOnionPeelAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

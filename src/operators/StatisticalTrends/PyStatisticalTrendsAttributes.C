@@ -364,8 +364,8 @@ StatisticalTrendsAttributes_SetStartTrendType(PyObject *self, PyObject *args)
         ss << "An invalid startTrendType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tRelative";
+        ss << " Absolute";
+        ss << ", Relative";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -430,8 +430,8 @@ StatisticalTrendsAttributes_SetStopTrendType(PyObject *self, PyObject *args)
         ss << "An invalid stopTrendType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tRelative";
+        ss << " Absolute";
+        ss << ", Relative";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -496,12 +496,12 @@ StatisticalTrendsAttributes_SetStatisticType(PyObject *self, PyObject *args)
         ss << "An invalid statisticType value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSum";
-        ss << "\n\tMean";
-        ss << "\n\tVariance";
-        ss << "\n\tStandardDeviation";
-        ss << "\n\tSlope";
-        ss << "\n\tResiduals";
+        ss << " Sum";
+        ss << ", Mean";
+        ss << ", Variance";
+        ss << ", StandardDeviation";
+        ss << ", Slope";
+        ss << ", Residuals";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -566,9 +566,9 @@ StatisticalTrendsAttributes_SetTrendAxis(PyObject *self, PyObject *args)
         ss << "An invalid trendAxis value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tStep";
-        ss << "\n\tTime";
-        ss << "\n\tCycle";
+        ss << " Step";
+        ss << ", Time";
+        ss << ", Cycle";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -633,8 +633,8 @@ StatisticalTrendsAttributes_SetVariableSource(PyObject *self, PyObject *args)
         ss << "An invalid variableSource value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tDefault";
-        ss << "\n\tOperatorExpression";
+        ss << " Default";
+        ss << ", OperatorExpression";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -754,8 +754,8 @@ PyStatisticalTrendsAttributes_getattr(PyObject *self, char *name)
 int
 PyStatisticalTrendsAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "startIndex") == 0)
         obj = StatisticalTrendsAttributes_SetStartIndex(self, args);
@@ -777,7 +777,7 @@ PyStatisticalTrendsAttributes_setattr(PyObject *self, char *name, PyObject *args
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

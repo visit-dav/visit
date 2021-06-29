@@ -476,9 +476,9 @@ LineSamplerAttributes_SetMeshGeometry(PyObject *self, PyObject *args)
         ss << "An invalid meshGeometry value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCartesian";
-        ss << "\n\tCylindrical";
-        ss << "\n\tToroidal";
+        ss << " Cartesian";
+        ss << ", Cylindrical";
+        ss << ", Toroidal";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -543,8 +543,8 @@ LineSamplerAttributes_SetArrayConfiguration(PyObject *self, PyObject *args)
         ss << "An invalid arrayConfiguration value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tGeometry";
-        ss << "\n\tManual";
+        ss << " Geometry";
+        ss << ", Manual";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -609,8 +609,8 @@ LineSamplerAttributes_SetBoundary(PyObject *self, PyObject *args)
         ss << "An invalid boundary value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tData";
-        ss << "\n\tWall";
+        ss << " Data";
+        ss << ", Wall";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -895,9 +895,9 @@ LineSamplerAttributes_SetChannelProjection(PyObject *self, PyObject *args)
         ss << "An invalid channelProjection value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tDivergent";
-        ss << "\n\tParallel";
-        ss << "\n\tGrid";
+        ss << " Divergent";
+        ss << ", Parallel";
+        ss << ", Grid";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -962,8 +962,8 @@ LineSamplerAttributes_SetChannelLayoutType(PyObject *self, PyObject *args)
         ss << "An invalid channelLayoutType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tChannelAbsolute";
-        ss << "\n\tChannelRelative";
+        ss << " ChannelAbsolute";
+        ss << ", ChannelRelative";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1321,8 +1321,8 @@ LineSamplerAttributes_SetArrayAxis(PyObject *self, PyObject *args)
         ss << "An invalid arrayAxis value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tR";
-        ss << "\n\tZ";
+        ss << " R";
+        ss << ", Z";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1772,9 +1772,9 @@ LineSamplerAttributes_SetViewGeometry(PyObject *self, PyObject *args)
         ss << "An invalid viewGeometry value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tPoints";
-        ss << "\n\tLines";
-        ss << "\n\tSurfaces";
+        ss << " Points";
+        ss << ", Lines";
+        ss << ", Surfaces";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1839,9 +1839,9 @@ LineSamplerAttributes_SetViewDimension(PyObject *self, PyObject *args)
         ss << "An invalid viewDimension value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tOne";
-        ss << "\n\tTwo";
-        ss << "\n\tThree";
+        ss << " One";
+        ss << ", Two";
+        ss << ", Three";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2126,9 +2126,9 @@ LineSamplerAttributes_SetDisplayTime(PyObject *self, PyObject *args)
         ss << "An invalid displayTime value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tStep";
-        ss << "\n\tTime";
-        ss << "\n\tCycle";
+        ss << " Step";
+        ss << ", Time";
+        ss << ", Cycle";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2193,10 +2193,10 @@ LineSamplerAttributes_SetChannelGeometry(PyObject *self, PyObject *args)
         ss << "An invalid channelGeometry value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tPoint";
-        ss << "\n\tLine";
-        ss << "\n\tCylinder";
-        ss << "\n\tCone";
+        ss << " Point";
+        ss << ", Line";
+        ss << ", Cylinder";
+        ss << ", Cone";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2371,8 +2371,8 @@ LineSamplerAttributes_SetChannelProfile(PyObject *self, PyObject *args)
         ss << "An invalid channelProfile value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tTopHat";
-        ss << "\n\tGaussian";
+        ss << " TopHat";
+        ss << ", Gaussian";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2657,8 +2657,8 @@ LineSamplerAttributes_SetChannelIntegration(PyObject *self, PyObject *args)
         ss << "An invalid channelIntegration value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNoChannelIntegration";
-        ss << "\n\tIntegrateAlongChannel";
+        ss << " NoChannelIntegration";
+        ss << ", IntegrateAlongChannel";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2723,9 +2723,9 @@ LineSamplerAttributes_SetToroidalIntegration(PyObject *self, PyObject *args)
         ss << "An invalid toroidalIntegration value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNoToroidalIntegration";
-        ss << "\n\tToroidalTimeSample";
-        ss << "\n\tIntegrateToroidally";
+        ss << " NoToroidalIntegration";
+        ss << ", ToroidalTimeSample";
+        ss << ", IntegrateToroidally";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2790,8 +2790,8 @@ LineSamplerAttributes_SetToroidalAngleSampling(PyObject *self, PyObject *args)
         ss << "An invalid toroidalAngleSampling value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tToroidalAngleAbsoluteSampling";
-        ss << "\n\tToroidalAngleRelativeSampling";
+        ss << " ToroidalAngleAbsoluteSampling";
+        ss << ", ToroidalAngleRelativeSampling";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3021,8 +3021,8 @@ LineSamplerAttributes_SetTimeSampling(PyObject *self, PyObject *args)
         ss << "An invalid timeSampling value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCurrentTimeStep";
-        ss << "\n\tMultipleTimeSteps";
+        ss << " CurrentTimeStep";
+        ss << ", MultipleTimeSteps";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3842,8 +3842,8 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
 int
 PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "meshGeometry") == 0)
         obj = LineSamplerAttributes_SetMeshGeometry(self, args);
@@ -3953,7 +3953,7 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

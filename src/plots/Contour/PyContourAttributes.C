@@ -357,9 +357,9 @@ ContourAttributes_SetColorType(PyObject *self, PyObject *args)
         ss << "An invalid colorType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tColorBySingleColor";
-        ss << "\n\tColorByMultipleColors";
-        ss << "\n\tColorByColorTable";
+        ss << " ColorBySingleColor";
+        ss << ", ColorByMultipleColors";
+        ss << ", ColorByColorTable";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1118,9 +1118,9 @@ ContourAttributes_SetContourMethod(PyObject *self, PyObject *args)
         ss << "An invalid contourMethod value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLevel";
-        ss << "\n\tValue";
-        ss << "\n\tPercent";
+        ss << " Level";
+        ss << ", Value";
+        ss << ", Percent";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1405,8 +1405,8 @@ ContourAttributes_SetScaling(PyObject *self, PyObject *args)
         ss << "An invalid scaling value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLinear";
-        ss << "\n\tLog";
+        ss << " Linear";
+        ss << ", Log";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1640,8 +1640,8 @@ PyContourAttributes_getattr(PyObject *self, char *name)
 int
 PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "defaultPalette") == 0)
         obj = ContourAttributes_SetDefaultPalette(self, args);
@@ -1683,7 +1683,7 @@ PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ContourAttributes_SetWireframe(self, args);
 
     // Try and handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "lineStyle") == 0)
         {
@@ -1695,7 +1695,7 @@ PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

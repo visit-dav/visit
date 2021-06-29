@@ -587,8 +587,8 @@ LCSAttributes_SetSourceType(PyObject *self, PyObject *args)
         ss << "An invalid sourceType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNativeMesh";
-        ss << "\n\tRegularGrid";
+        ss << " NativeMesh";
+        ss << ", RegularGrid";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -726,8 +726,8 @@ LCSAttributes_SetUseDataSetStart(PyObject *self, PyObject *args)
         ss << "An invalid UseDataSetStart value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tFull";
-        ss << "\n\tSubset";
+        ss << " Full";
+        ss << ", Subset";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -865,8 +865,8 @@ LCSAttributes_SetUseDataSetEnd(PyObject *self, PyObject *args)
         ss << "An invalid UseDataSetEnd value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tFull";
-        ss << "\n\tSubset";
+        ss << " Full";
+        ss << ", Subset";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1004,9 +1004,9 @@ LCSAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
         ss << "An invalid integrationDirection value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tForward";
-        ss << "\n\tBackward";
-        ss << "\n\tBoth";
+        ss << " Forward";
+        ss << ", Backward";
+        ss << ", Both";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1071,9 +1071,9 @@ LCSAttributes_SetAuxiliaryGrid(PyObject *self, PyObject *args)
         ss << "An invalid auxiliaryGrid value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tNone";
-        ss << "\n\tTwoDim";
-        ss << "\n\tThreeDim";
+        ss << " None";
+        ss << ", TwoDim";
+        ss << ", ThreeDim";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1248,12 +1248,12 @@ LCSAttributes_SetOperationType(PyObject *self, PyObject *args)
         ss << "An invalid operationType value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tIntegrationTime";
-        ss << "\n\tArcLength";
-        ss << "\n\tAverageDistanceFromSeed";
-        ss << "\n\tEigenValue";
-        ss << "\n\tEigenVector";
-        ss << "\n\tLyapunov";
+        ss << " IntegrationTime";
+        ss << ", ArcLength";
+        ss << ", AverageDistanceFromSeed";
+        ss << ", EigenValue";
+        ss << ", EigenVector";
+        ss << ", Lyapunov";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1318,8 +1318,8 @@ LCSAttributes_SetCauchyGreenTensor(PyObject *self, PyObject *args)
         ss << "An invalid cauchyGreenTensor value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLeft";
-        ss << "\n\tRight";
+        ss << " Left";
+        ss << ", Right";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1384,13 +1384,13 @@ LCSAttributes_SetEigenComponent(PyObject *self, PyObject *args)
         ss << "An invalid eigenComponent value was given." << std::endl;
         ss << "Valid values are in the range [0,6]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tSmallest";
-        ss << "\n\tIntermediate";
-        ss << "\n\tLargest";
-        ss << "\n\tPosShearVector";
-        ss << "\n\tNegShearVector";
-        ss << "\n\tPosLambdaShearVector";
-        ss << "\n\tNegLambdaShearVector";
+        ss << " Smallest";
+        ss << ", Intermediate";
+        ss << ", Largest";
+        ss << ", PosShearVector";
+        ss << ", NegShearVector";
+        ss << ", PosLambdaShearVector";
+        ss << ", NegLambdaShearVector";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1510,8 +1510,8 @@ LCSAttributes_SetOperatorType(PyObject *self, PyObject *args)
         ss << "An invalid operatorType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tBaseValue";
-        ss << "\n\tGradient";
+        ss << " BaseValue";
+        ss << ", Gradient";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -1576,9 +1576,9 @@ LCSAttributes_SetTerminationType(PyObject *self, PyObject *args)
         ss << "An invalid terminationType value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tTime";
-        ss << "\n\tDistance";
-        ss << "\n\tSize";
+        ss << " Time";
+        ss << ", Distance";
+        ss << ", Size";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2193,8 +2193,8 @@ LCSAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
         ss << "An invalid absTolSizeType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tFractionOfBBox";
+        ss << " Absolute";
+        ss << ", FractionOfBBox";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2369,12 +2369,12 @@ LCSAttributes_SetFieldType(PyObject *self, PyObject *args)
         ss << "An invalid fieldType value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tDefault";
-        ss << "\n\tFlashField";
-        ss << "\n\tM3DC12DField";
-        ss << "\n\tM3DC13DField";
-        ss << "\n\tNek5000Field";
-        ss << "\n\tNektarPPField";
+        ss << " Default";
+        ss << ", FlashField";
+        ss << ", M3DC12DField";
+        ss << ", M3DC13DField";
+        ss << ", Nek5000Field";
+        ss << ", NektarPPField";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2567,12 +2567,12 @@ LCSAttributes_SetIntegrationType(PyObject *self, PyObject *args)
         ss << "An invalid integrationType value was given." << std::endl;
         ss << "Valid values are in the range [0,5]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tEuler";
-        ss << "\n\tLeapfrog";
-        ss << "\n\tDormandPrince";
-        ss << "\n\tAdamsBashforth";
-        ss << "\n\tRK4";
-        ss << "\n\tM3DC12DIntegrator";
+        ss << " Euler";
+        ss << ", Leapfrog";
+        ss << ", DormandPrince";
+        ss << ", AdamsBashforth";
+        ss << ", RK4";
+        ss << ", M3DC12DIntegrator";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -2692,10 +2692,10 @@ LCSAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject *args)
         ss << "An invalid parallelizationAlgorithmType value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tLoadOnDemand";
-        ss << "\n\tParallelStaticDomains";
-        ss << "\n\tMasterSlave";
-        ss << "\n\tVisItSelects";
+        ss << " LoadOnDemand";
+        ss << ", ParallelStaticDomains";
+        ss << ", MasterSlave";
+        ss << ", VisItSelects";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3145,8 +3145,8 @@ LCSAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
         ss << "An invalid pathlinesCMFE value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tCONN_CMFE";
-        ss << "\n\tPOS_CMFE";
+        ss << " CONN_CMFE";
+        ss << ", POS_CMFE";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -4141,8 +4141,8 @@ PyLCSAttributes_getattr(PyObject *self, char *name)
 int
 PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "sourceType") == 0)
         obj = LCSAttributes_SetSourceType(self, args);
@@ -4256,7 +4256,7 @@ PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);

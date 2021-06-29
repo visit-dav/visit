@@ -316,8 +316,8 @@ PersistentParticlesAttributes_SetStartPathType(PyObject *self, PyObject *args)
         ss << "An invalid startPathType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tRelative";
+        ss << " Absolute";
+        ss << ", Relative";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -382,8 +382,8 @@ PersistentParticlesAttributes_SetStopPathType(PyObject *self, PyObject *args)
         ss << "An invalid stopPathType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << "\n\tAbsolute";
-        ss << "\n\tRelative";
+        ss << " Absolute";
+        ss << ", Relative";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -796,8 +796,8 @@ PyPersistentParticlesAttributes_getattr(PyObject *self, char *name)
 int
 PyPersistentParticlesAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject nullobj;
-    PyObject *obj = &nullobj;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "startIndex") == 0)
         obj = PersistentParticlesAttributes_SetStartIndex(self, args);
@@ -825,7 +825,7 @@ PyPersistentParticlesAttributes_setattr(PyObject *self, char *name, PyObject *ar
     if (obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &nullobj)
+    if (obj == &NULL_PY_OBJ)
     {
         obj = NULL;
         PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
