@@ -12,6 +12,7 @@
 #  Mark C. Miller, Tue Jun  8 15:51:59 PDT 2021
 #
 # ----------------------------------------------------------------------------
+import io, sys
 
 # Some useful global variables
 X = [2,4,6]
@@ -379,6 +380,44 @@ def TestAssignmentToString():
         except:
             TestFOA('ca.SetDesignator(%s)'%repr(works[i]), LINE()) 
 
+def TestDirOutput(obj, minlen = 5, names = None):
+    try:
+        x = [f for f in dir(obj) if not (f.startswith('__') and f.endswith('__'))]
+        if minlen and len(x) < minlen:
+            TestFOA('dir(%s): minlen: %d < %d'%(repr(obj),len(x),minlen), LINE()) 
+        x  = [n for n in names if n in x]
+        if len(x) != len(names):
+            TestFOA('dir(%s): names: %s'%(repr(obj), names), LINE()) 
+        TestPOA('dir(%s)'%repr())
+    except:
+        TestFOA('dir(%s)'%repr(obj), LINE()) 
+
+# Class to facilitate stdout redirect for testing `help()`
+class my_redirect_stdout(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = io.StringIO()
+        return self
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio    # free up some memory
+        sys.stdout = self._stdout
+
+# Below import works only for Python > 3.4
+# So, we use the class def above
+# from contextlib import redirect_stdout
+def TestHelpOutput(thing, minlen = 200, words = None):
+    try:
+        with my_redirect_stdout() as output:
+            help(thing)
+        if minlen and len(str(output)) < minlen:
+            TestFOA('dir(%s): minlen: %d < %d'%(repr(thing),len(output),minlen), LINE()) 
+        x  = [w for w in words if w in str(output)]
+        if len(x) != len(words):
+            TestFOA('dir(%s): words: %s'%(repr(thing), words), LINE()) 
+    except:
+        TestFOA('help(%s)'%repr(thing), LINE()) 
+    
 # Scalar assignments
 TestAssignmentToBool()
 TestAssignmentToInt()
@@ -392,5 +431,14 @@ TestAssignmentToTuple()
 
 # Vector assignments
 
+# Test that dir(x) appears to work
+#TestDirOutput(SILRestriction(), None, ['NumSets', 'TurnOnAll', 'Wholes', 'TopSets'])
+#TestDirOutput(PseudocolorAttributes(), 50)
+#TestDirOutput(ColorAttributeList(), None, ['AddColors', 'ClearColors', 'GetColors'])
+
+# Test Help
+#TestHelpOutput(AddPlot, None, ['plotType', 'variableName', 'inheritSIL'])
+#TestHelpOutput(CreateDatabaseCorrelation, None,
+#    ['IndexForIndexCorrelation', 'CycleCorrelation', 'StretchedIndexCorrelation'])
     
 Exit()
