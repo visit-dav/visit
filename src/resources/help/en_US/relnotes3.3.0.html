@@ -34,7 +34,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Updated the ORNL host file list to include only current machines.</li>
   <li>After a successful Export database, the informational message now contains the host and path to the export.</li>
-  <li>A new help function was added to the Python CLI named <code>apropos(regex)</code> similar in purpose to <a href="https://en.wikipedia.org/wiki/Apropos_(Unix)">Unix' apropos</a>. It makes finding the names of functions and objects much easier. It will return a list of the names of functions or objects where the regular expression matches either in the method name or in the documentation string for the method or in a stringified instance (objects only). All matching is case insensitive.</li>
+  <li>A new function was added to the Python CLI named <code>apropos(regex)</code> similar in purpose to <a href="https://en.wikipedia.org/wiki/Apropos_(Unix)">Unix' apropos</a>. It makes finding the names of functions and objects much easier. It will return a list of the names of functions or objects where the regular expression matches either in the method name or in the documentation string for the method or in a stringified instance (objects only). All matching is case insensitive.</li>
+  <li>Default behavior of Python's <code>help(thing)</code> was adjusted slightly to first present what <code>help(thing)</code> would normally produce but then to also follow it up with output from <code>apropos(thing)</code> when that output is non-empty.<li>
 </ul>
 
 <a name="Advanced_features"></a>
