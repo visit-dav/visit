@@ -863,7 +863,6 @@ IF (NOT WIN32)
   VISIT_3RDPARTY_VAR(OSMESA_DIR   "Path containing the OSMesa library's include and lib")
 ENDIF (NOT WIN32)
 VISIT_3RDPARTY_VAR(ICET_DIR   "Path containing the Ice-T library's include and lib")
-VISIT_3RDPARTY_VAR(TCMALLOC_DIR   "Path containing the tcmalloc library's include and lib")
 
 # Libraries some third-parties are dependent upon
 IF(WIN32)
@@ -1316,9 +1315,6 @@ endif()
 IF(VISIT_PARALLEL)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindIceT.cmake)
 ENDIF(VISIT_PARALLEL)
-
-# Include TCMALLOC support if we can.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTCMALLOC.cmake)
 
 # zlib
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
