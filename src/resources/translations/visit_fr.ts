@@ -363,7 +363,7 @@
     <name>MovieSequenceBTWipe</name>
     <message>
         <source>Wipe bottom to top</source>
-        <translation>Balayer le bas en haut</translation>
+        <translation type="new">Balayer de bas en haut</translation>
     </message>
 </context>
 <context>
@@ -576,7 +576,7 @@
     </message>
     <message>
         <source>CoordSwap</source>
-        <translation>Echange coordonnées</translation>
+        <translation type="new">Echanger les coordonnées</translation>
     </message>
     <message>
         <source>CracksClipper</source>
@@ -724,7 +724,7 @@
     </message>
     <message>
         <source>AMR Dual Grid and Stitch Cells</source>
-        <translation>AMR double grille et cellule piquée </translation>
+        <translation type="new">AMR Grille duale et Cellules de couture</translation>
     </message>
     <message>
         <source>ConnectedComponents</source>
@@ -744,7 +744,7 @@
     </message>
     <message>
         <source>Dual Mesh</source>
-        <translation>Double maille</translation>
+        <translation type="new">Maillage Dual</translation>
     </message>
     <message>
         <source>Edge</source>
@@ -784,7 +784,7 @@
     </message>
     <message>
         <source>Five Fold Tet Subdvision</source>
-        <translation>Pliage en cinq subdivision</translation>
+        <translation type="new">Découpage en cinq tétraèdres</translation>
     </message>
     <message>
         <source>LineSampler</source>
@@ -1047,19 +1047,19 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     <name>QvisAMRStitchCellWindow</name>
     <message>
         <source>Create cells of type</source>
-        <translation type="new">Créer des cellules de type </translation>
+        <translation type="new">Créer des cellules de type</translation>
     </message>
     <message>
         <source>DualGridAndStitchCells</source>
-        <translation>Cellule double grille et points </translation>
+        <translation type="new">Grille Duale et Cellules de couture</translation>
     </message>
     <message>
         <source>DualGrid</source>
-        <translation>Double grille</translation>
+        <translation>Grille Duale</translation>
     </message>
     <message>
         <source>StitchCells</source>
-        <translation type="new">Cellule de couture</translation>
+        <translation type="new">Cellules de couture</translation>
     </message>
     <message>
         <source>Add case number</source>
@@ -2865,7 +2865,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Maximum bonds per atom</source>
-        <translation>Maximum liaison par atome</translation>
+        <translation type="new">Nombre maximum de liaisons par atome</translation>
     </message>
     <message>
         <source>Note: first match is taken, so order is significant</source>
@@ -2925,7 +2925,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>The value for maxBonds must be between 1 and 100.</source>
-        <translation>La valeur de chaque maxlien doit être entre 1 et 100.</translation>
+        <translation type="new">La valeur de maxBonds (nombre max de liaisons) doit être comprise entre 1 et 100.</translation>
     </message>
     <message>
         <source>Bonding parameters</source>
@@ -2937,11 +2937,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Add periodic bonds</source>
-        <translation>Ajouter des liens périodiques </translation>
+        <translation type="new">Ajouter des liaisons périodiques </translation>
     </message>
     <message>
         <source>Periodic in</source>
-        <translation>périodique en </translation>
+        <translation type="new">Périodique en</translation>
     </message>
     <message>
         <source>X</source>
@@ -2957,7 +2957,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Use provided unit cell vectors</source>
-        <translation>Utiliser les unités de vecteurs de cellules fournis</translation>
+        <translation type="new">Utiliser les vecteurs de cellules unitaires fournis</translation>
     </message>
     <message>
         <source>Vector for X</source>
@@ -3564,7 +3564,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     <name>QvisEdgeWindow</name>
     <message>
         <source>dummy</source>
-        <translation>Obsolète</translation>
+        <translation type="new">factice</translation>
     </message>
 </context>
 <context>
@@ -4389,7 +4389,7 @@ et les expressions générées automatiquement</translation>
     <name>QvisExtrudeWindow</name>
     <message>
         <source>Extrusion axis</source>
-        <translation>Axes d&apos;extrusion</translation>
+        <translation type="new">Axe d&apos;extrusion</translation>
     </message>
     <message>
         <source>Length</source>
@@ -7326,7 +7326,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Step numbers</source>
-        <translation type="guess">Nombre de pas</translation>
+        <translation type="new">Numéros de pas</translation>
     </message>
     <message>
         <source>From</source>
@@ -7728,7 +7728,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Fraction of Bounding Box</source>
-        <translation>Fraction de la boite contour</translation>
+        <translation type="new">Fraction de la boîte englobante</translation>
     </message>
     <message>
         <source>Termination</source>
@@ -17284,11 +17284,11 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>Feature Angle</source>
-        <translation type="unfinished"></translation>
+        <translation type="new">Angle caractéristique</translation>
     </message>
     <message>
         <source>Max Edge Angle</source>
-        <translation type="unfinished"></translation>
+        <translation type="new">Angle de bord max</translation>
     </message>
     <message>
         <source>Smooth Along Boundaries</source>
@@ -18031,7 +18031,7 @@ coordonnées parallèles.</translation>
     <name>QvisTessellateWindow</name>
     <message>
         <source>Chord error</source>
-        <translation type="unfinished"></translation>
+        <translation type="new">Erreur de corde</translation>
     </message>
     <message>
         <source>Field criterion</source>
@@ -18666,7 +18666,7 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>X grid spacing</source>
-        <translation type="guess">espacement de la grille en X</translation>
+        <translation type="guess">Espacement de la grille en X</translation>
     </message>
     <message>
         <source>Use Y grid spacing</source>
@@ -18674,7 +18674,7 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Y grid spacing</source>
-        <translation type="guess">espacement de la grille en Y</translation>
+        <translation type="guess">Espacement de la grille en Y</translation>
     </message>
 </context>
 <context>
@@ -18724,7 +18724,7 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Tube form</source>
-        <translation type="guess">Form de tube</translation>
+        <translation type="guess">Forme de tube</translation>
     </message>
 </context>
 <context>
