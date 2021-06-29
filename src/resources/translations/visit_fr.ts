@@ -1257,7 +1257,7 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>Z axis</source>
-        <translation>Profondeur</translation>
+        <translation type="new">Profondeur (Z)</translation>
     </message>
     <message>
         <source>Closest triad</source>
@@ -1590,7 +1590,7 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>Materials</source>
-        <translation>Matériel</translation>
+        <translation type="new">Matériaux</translation>
     </message>
     <message>
         <source>Subsets</source>
@@ -1786,7 +1786,7 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>Cross-mesh field evaluations (CMFEs) take a field from a donor mesh and place that field on a target mesh.  To begin select the type of evaluation to setup:</source>
-        <translation type="guess">Les évaluations de champ entre maillages (CMFE) prennent un champ d'un maillage donneur et placent ce champ sur un maillage cible. Pour commencer, sélectionner le type d'évaluation à configurer :</translation>
+        <translation type="guess">Les évaluations de champ entre maillages (CMFE) prennent un champ d'un maillage donneur et placent ce champ sur un maillage cible. Sélectionner le type d'évaluation à configurer :</translation>
     </message>
     <message>
         <source>Between different time slices on the same mesh</source>
@@ -3950,7 +3950,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Delimiter</source>
-        <translation type="guess">Délimiteur,</translation>
+        <translation type="guess">Délimiteur</translation>
     </message>
     <message>
         <source>Add variable</source>
@@ -4011,7 +4011,7 @@ de l&apos;écriture sur le système de fichiers parallèle à grande échelle.
     </message>
     <message>
         <source>Material</source>
-        <translation>Matériel</translation>
+        <translation tyep="new">Matériau</translation>
     </message>
     <message>
         <source>Mesh</source>
@@ -5228,7 +5228,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Color tables</source>
-        <translation>Tableau de couleur</translation>
+        <translation type="new">Tables de couleur</translation>
     </message>
     <message>
         <source>Expressions</source>
@@ -5667,16 +5667,16 @@ utiliseront cette même fenêtre.</translation>
     <message>
         <source>These items can be overridden
 by the Lineout operator</source>
-        <translation>Ces éléments peuvent être remplacées
-par le opérateur d&apos;alignement</translation>
+        <translation type="new">Ces éléments peuvent être remplacés
+par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Use sampling</source>
-        <translation>Exemple d&apos;utilisation</translation>
+        <translation type="new">Utiliser un échantillonnage</translation>
     </message>
     <message>
         <source>Sample points</source>
-        <translation>Points d&apos;échantillon</translation>
+        <translation type="new">Nombre de points d&apos;échantillon</translation>
     </message>
     <message>
         <source>Create refline labels</source>
@@ -11916,7 +11916,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Concise output</source>
-        <translation>Sortie brève</translation>
+        <translation type="new">Sortie concise</translation>
     </message>
     <message>
         <source>Clear picks</source>
@@ -12521,7 +12521,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Color table</source>
-        <translation type="vanished">Tableau de couleur</translation>
+        <translation type="vanished">Table de couleur</translation>
     </message>
     <message>
         <source>Opacity</source>
@@ -14317,7 +14317,7 @@ même fenêtre.</translation>
     <name>QvisQueryWindow</name>
     <message>
         <source>Standard queries</source>
-        <translation type="guess"> Requêtes standards</translation>
+        <translation type="guess">Requêtes standards</translation>
     </message>
     <message>
         <source>Python query editor</source>
