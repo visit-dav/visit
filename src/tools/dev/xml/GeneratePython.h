@@ -751,7 +751,7 @@ class AttsGeneratorFloat : public virtual Float , public virtual PythonGenerator
         : Field("float",n,l), Float(n,l), PythonGeneratorField("float",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(float, double, PyFloat_AsDouble, val)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(float, double, PyFloat_AsDouble, cval)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -2118,7 +2118,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         c << "        ss << \"Valid values are in the range [0," << enumType->values.size()-1 << "].\" << std::endl;" << Endl;
         c << "        ss << \"You can also use the following symbolic names:\";" << Endl;
         for (size_t i = 0; i < enumType->values.size(); i++)
-            c << "        ss << \"\\n\\t" << enumType->values[i] << "\";" << Endl;
+            c << "        ss << \"" << (i?",":"") << " " << enumType->values[i] << "\";" << Endl;
         c << "        return PyErr_Format(PyExc_ValueError, ss.str().c_str());" << Endl;
         c << "    }" << Endl;
         c << Endl;
@@ -3044,8 +3044,8 @@ class PythonGeneratorAttribute : public GeneratorBase
         }
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
-        c << "    PyObject nullobj;" << Endl;
-        c << "    PyObject *obj = &nullobj;" << Endl;
+        c << "    PyObject NULL_PY_OBJ;" << Endl;
+        c << "    PyObject *obj = &NULL_PY_OBJ;" << Endl;
         c << Endl;
 
         // Figure out the first field that can write a _setattr method.
@@ -3069,7 +3069,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    if (obj != NULL)" << Endl;
         c << "        Py_DECREF(obj);" << Endl;
         c << Endl;
-        c << "    if (obj == &nullobj)" << Endl;
+        c << "    if (obj == &NULL_PY_OBJ)" << Endl;
         c << "    {" << Endl;
         c << "        obj = NULL;" << Endl;
         c << "        PyErr_Format(PyExc_NameError, \"name '\%s' is not defined\", name);" << Endl;
