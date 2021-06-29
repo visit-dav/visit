@@ -1888,7 +1888,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Connectivity-based CMFE</source>
-        <translation>CMFE base de la connectivité</translation>
+        <translation type="new">CMFE basé sur la la connectivité</translation>
     </message>
     <message>
         <source>The value at index &apos;i&apos; of the target is assigned</source>
@@ -1900,11 +1900,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>but requires that the meshes are congruent.</source>
-        <translation>mais exige que les mailles soient congruentes.</translation>
+        <translation type="new">mais exige que les maillages soient conformes.</translation>
     </message>
     <message>
         <source>Position-based CMFE</source>
-        <translation>CMFE base de la position</translation>
+        <translation type="new">CMFE basé sur la position</translation>
     </message>
     <message>
         <source>The value at index &apos;i&apos; from the target is evaluated</source>
@@ -1920,7 +1920,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>efficient, but is robust and works on non-congruent meshes.</source>
-        <translation>efficace, mais c&apos;est robuste et ça fonctionne sur les mailles non-congruentes.</translation>
+        <translation type="new">efficace, mais c&apos;est robuste et ça fonctionne sur les maillages non conformes.</translation>
     </message>
     <message>
         <source>&lt;u&gt;Handling for non-overlapping regions&lt;/u&gt;</source>
@@ -1940,7 +1940,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>How do you want to use your new CMFE expression?  What is its name?</source>
-        <translation>Comment voulez-vous utiliser votre expression CMFE ? Quelle est son nom ?</translation>
+        <translation type="new">Comment voulez-vous utiliser votre nouvelle expression CMFE ? Quel est son nom ?</translation>
     </message>
     <message>
         <source>Name of expression</source>
@@ -2937,7 +2937,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Add periodic bonds</source>
-        <translation type="new">Ajouter des liaisons périodiques </translation>
+        <translation type="new">Ajouter des liaisons périodiques</translation>
     </message>
     <message>
         <source>Periodic in</source>
@@ -5224,7 +5224,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Annotation</source>
-        <translation>Décorations</translation>
+        <translation type="new">Annotation</translation>
     </message>
     <message>
         <source>Color tables</source>
@@ -5630,7 +5630,7 @@ utiliseront cette même fenêtre.</translation>
     </message>
     <message>
         <source>Window #</source>
-        <translation>Fenêtre # </translation>
+        <translation type="new">Fenêtre number</translation>
     </message>
     <message>
         <source>Freeze in time</source>
@@ -9942,7 +9942,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>A&amp;nnotation . . .</source>
-        <translation>&amp;Formats et décorations . . .</translation>
+        <translation style="new">&amp;Formats et Annotations . . .</translation>
     </message>
     <message>
         <source>Color &amp;table . . .</source>
@@ -10102,11 +10102,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Annotations from</source>
-        <translation>Formats et décorations</translation>
+        <translation style="new">Annotations de</translation>
     </message>
     <message>
         <source>Plots from</source>
-        <translation>Tracés</translation>
+        <translation style="new">Tracés de</translation>
     </message>
     <message>
         <source>Everything from</source>
@@ -10162,7 +10162,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Copyright . . .</source>
-        <translation>Droit d&apos;auteur.</translation>
+        <translation>Droit d&apos;auteur . . .</translation>
     </message>
     <message>
         <source>Help . . .</source>
@@ -10170,7 +10170,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Release notes . . .</source>
-        <translation>Version . . .</translation>
+        <translation style="new">Notes de version . . .</translation>
     </message>
     <message>
         <source>Check for new version . . .</source>
@@ -10182,7 +10182,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Auto update</source>
-        <translation type="obsolete">Automatique</translation>
+        <translation type="obsolete">Mise à jour automatique</translation>
     </message>
     <message>
         <source>done</source>
@@ -10210,7 +10210,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Selections . . .</source>
-        <translation>Sélectionner.</translation>
+        <translation type="new">Sélections.</translation>
     </message>
     <message>
         <source>New</source>
@@ -14294,7 +14294,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Window #</source>
-        <translation type="correct">Fenêtre # </translation>
+        <translation type="new">Fenêtre number </translation>
     </message>
     <message>
         <source>The value of windowId was invalid. Resetting to the last good value of %1.</source>
