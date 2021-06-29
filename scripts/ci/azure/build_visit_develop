@@ -1,16 +1,17 @@
 #!/bin/bash
-export VISIT_VERSION=${VISIT_VERSION:-"3.1.4"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.2.0"}
 export TRUNK_BUILD="yes"
 export RC_BUILD="no"
 export TAGGED_BUILD="no"
 export INITIAL_PWD=$PWD
-export bv_PATH=src/tools/dev/scripts
+export bv_PATH=./src/tools/dev/scripts
 export bv_PREFIX=$bv_PATH/bv_support/
 export build_version=""
 export webroot="http://visit.ilight.com/svn/visit/"
 export webaddr="${webroot}/trunk/src/tools/dev/scripts/bv_support/"
 export visitroot="https://github.com/visit-dav/visit/releases/download/"
 export thirdpartyroot="https://github.com/visit-dav/third-party/releases/download/"
+export thirdpartyroot_dev="https://github.com/visit-dav/third-party/raw/master/lib"
 declare -a reqlibs
 declare -a optlibs
 declare -a grouplibs_name
@@ -19,6 +20,17 @@ declare -a grouplibs_comment
 declare -a grouplibs_enabled
 declare -a defaultLicenses
 declare -a args
+quick_check_for_help () 
+{ 
+    for arg in "$@";
+    do
+        if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
+            echo 0;
+            return;
+        fi;
+    done;
+    echo 1
+}
 check_for_versioning () 
 { 
     local next_arg="no";
@@ -200,10 +212,26 @@ function testvercomp ()
     fi
 }
 
+#
+# Way to get version digits from compiler output which is much less
+# sensitive to variations in how compiler vendors choose to output
+# this information. The tr filter replaces every space or dash with
+# a newline, turning each word of output into its own line. The
+# grep then looks for lines that have only digits and dots between
+# the beginning (^) and ending ($) of the line. The final grep takes
+# only lines that actually contain output, presumably the one and only
+# isolated version digit string.
+#
+function get_version_digits()
+{
+    retval=$($1 -v 2>&1 | tr ' -' '\n\n' | grep '^[0-9\.]*$' | grep .)
+    echo $retval
+}
+
 function check_minimum_compiler_version()
 {
    if [[ "$CXX_COMPILER" == "g++" ]] ; then
-        VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits g++)
         echo "g++ version $VERSION"
         testvercomp $VERSION 6.0 '<'
         if [[ $? == 0 ]] ; then
@@ -211,7 +239,7 @@ function check_minimum_compiler_version()
             exit 1
         fi
     elif [[ "$OPSYS" == "Darwin"  &&  "$CXX_COMPILER" == "clang++" ]] ; then 
-        VERSION=$(clang++ -v 2>&1 | grep "clang version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits clang++)
         echo "apple clang version $VERSION"
         testvercomp $VERSION 5.0 '<'
         if [[ $? == 0 ]] ; then
@@ -219,7 +247,7 @@ function check_minimum_compiler_version()
             exit 1
         fi
     elif [[ "$CXX_COMPILER" == "clang++" ]] ; then 
-        VERSION=$(clang++ -v 2>&1 | grep "clang version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits clang++)
         echo "clang version $VERSION"
         testvercomp $VERSION 3.3 '<'
         if [[ $? == 0 ]] ; then
@@ -227,7 +255,7 @@ function check_minimum_compiler_version()
             exit 1
         fi
     elif [[ "$CXX_COMPILER" == "icpc" ]] ; then 
-        VERSION=$(icpc -v 2>&1 | grep "icpc version" | cut -d' ' -f3 )
+        VERSION=$(get_version_digits icpc)
         if [[ $VERSION == "" ]] ; then
             VERSION=$(icpc -v 2>&1 | grep "icpc.orig version" | cut -d' ' -f3 )
         fi
@@ -501,8 +529,20 @@ function initialize_build_visit()
             export MACOSX_DEPLOYMENT_TARGET=10.13
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 18 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=10.14
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 19 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=10.15
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER_MAJOR} == 20 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=11.0
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         else
-            export MACOSX_DEPLOYMENT_TARGET=10.13
+            export MACOSX_DEPLOYMENT_TARGET=10.14
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         fi
@@ -515,18 +555,11 @@ function initialize_build_visit()
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export CXXFLAGS=${CXXFLAGS:-"-fno-common -fexceptions"}
         export FCFLAGS=${FCFLAGS:-$CFLAGS}
-        export MESA_TARGET=${MESA_TARGET:-"darwin"}
 	
     elif [[ "$OPSYS" == "Linux" ]]; then
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"
-        if [[ "$(uname -m)" == "i386" ]] ; then
-            ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86"} # Mesa-6.x
-            export MESA_TARGET=${MESA_TARGET:-"linux"}
-        elif [[ "$(uname -m)" == "i686" ]] ; then
-            ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86"} # Mesa-6.x
-            export MESA_TARGET=${MESA_TARGET:-"linux"}
-        elif [[ "$(uname -m)" == "x86_64" ]] ; then
+        if [[ "$(uname -m)" == "x86_64" ]] ; then
             CFLAGS="$CFLAGS -m64 -fPIC"
             FCFLAGS="$FCFLAGS -m64 -fPIC"
             if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
@@ -536,15 +569,12 @@ function initialize_build_visit()
             if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                 CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
-            ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86-64"} # Mesa-6.x
-            export MESA_TARGET=${MESA_TARGET:-"linux"}
         elif [[ "$(uname -m)" == "ppc64" ]] ; then
             if [[ "$C_COMPILER" == "xlc" ]] ; then
                 CFLAGS="$CFLAGS -qpic"
                 FCFLAGS="$FCFLAGS -qpic"
                 CXXFLAGS="$CXXFLAGS -qpic"
                 export CXX_COMPILER=${CXX_COMPILER-"xlC"}
-                export MESA_TARGET=${MESA_TARGET-"linux"}
             elif [[ "$C_COMPILER" == "bgxlc" ]] ; then
                 export CXX_COMPILER=${CXX_COMPILER-"bgxlC"}
             else
@@ -557,7 +587,6 @@ function initialize_build_visit()
                 if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                     CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
                 fi
-                export MESA_TARGET=${MESA_TARGET-"linux"}
             fi
         elif [[ "$(uname -m)" == "ppc64le" ]] ; then
             if [[ "$C_COMPILER" == "xlc" ]] ; then
@@ -565,7 +594,6 @@ function initialize_build_visit()
                 FCFLAGS="$FCFLAGS -qpic"
                 CXXFLAGS="$CXXFLAGS -qpic"
                 export CXX_COMPILER=${CXX_COMPILER-"xlC"}
-                export MESA_TARGET=${MESA_TARGET-"linux"}
                 QT_PLATFORM="linux-xlc" #aix-xlc"
             else
                 CFLAGS="$CFLAGS -fPIC"
@@ -577,7 +605,6 @@ function initialize_build_visit()
                 if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                     CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
                 fi
-                export MESA_TARGET=${MESA_TARGET-"linux"}
                 QT_PLATFORM="linux-g++"
             fi
         elif [[ "$(uname -m)" == "ia64" ]] ; then
@@ -596,7 +623,6 @@ function initialize_build_visit()
         export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
-        export MESA_TARGET=${MESA_TARGET:-"linux"}
     elif [[ "$OPSYS" == "AIX" ]]; then
         export ARCH="aix" # You can change this to say RHEL, SuSE, Fedora, etc.
         export SO_EXT="a"
@@ -606,7 +632,6 @@ function initialize_build_visit()
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MAKE=${MAKE:-"gmake"}
-        export MESA_TARGET=${MESA_TARGET:-"aix"}
     elif [[ "$OPSYS" == "IRIX64" ]]; then
         export ARCH="irix64" # You can change this to say RHEL, SuSE, Fedora, etc.
         export SO_EXT="so"
@@ -616,7 +641,6 @@ function initialize_build_visit()
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MAKE=${MAKE:-"gmake"}
-        export MESA_TARGET=${MESA_TARGET:-"irix6-64-dso"}
     elif [[ "$OPSYS" == "SunOS" ]]; then
         export ARCH=${ARCH:-"sunos5"}
         export SO_EXT="so"
@@ -626,7 +650,6 @@ function initialize_build_visit()
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MAKE=${MAKE:-"make"}
-        export MESA_TARGET=${MESA_TARGET:-"sunos5-gcc"}
     else
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"
@@ -1485,6 +1508,7 @@ function run_build_visit()
     # same log.
     #
     LINES="------------------------------------------------------------"
+    touch $LOG_FILE
     log $LINES
     log $0 $@
     log "Started:" $(date)
@@ -1533,7 +1557,8 @@ function run_build_visit()
                           "Bailing out."
                 fi
             else
-                info "The third party library location does not exist. Create it? [yes/no]"
+                info "The third party library location, \"$THIRD_PARTY_PATH\"" \
+                     "does not exist. Create it? [yes/no]"
                 read RESPONSE
                 if [[ "$RESPONSE" != "yes" ]] ; then
                     error "The third party library location does not exist." \
@@ -1679,6 +1704,105 @@ function run_build_visit()
 export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
 
 # *************************************************************************** #
+# Purpose: Flexible comparison function for version strings                   #
+#                                                                             #
+#   - Converts version string "4.101.3" to bash array (4 101 3)               #
+#   - Appends zeros to operand with fewer array members (4)==>(4 000 0)       #
+#   - Ensures appended zeros have same length as counterparts                 #
+#   - Prepends zeros to digit strings with fewer digits (4 9 3)==>(4 09 3)    #
+#   - Forms integer values from arrays (4 101 3)==>41013                      #
+#   - Compares integers using specified operator                              #
+#   - Sets status using test operator                                         #
+#                                                                             #
+# *************************************************************************** #
+function compare_version_strings
+{   
+    # default op is -lt and separator char is .
+    op=${3:-'-lt'}
+    sep=${4:-'.'}
+
+    # create array variables of digits from version string
+    vldigitarr=($(echo $1 | tr $sep ' '))
+    vrdigitarr=($(echo $2 | tr $sep ' '))
+
+    # append strings of zeros of equal length of missing digits
+    # "5"==>"0", "10"==>"00", "101"==>"000"
+    i=0
+    while [[ ${#vldigitarr[@]} -lt ${#vrdigitarr[@]} ]]; do
+        zeros=$(echo ${vrdigitarr[$i]} | tr '1234567890' '0000000000')
+        vldigitarr+=($zeros)
+        i=$((i+1))
+    done
+    while [[ ${#vrdigitarr[@]} -lt ${#vldigitarr[@]} ]]; do
+        zeros=$(echo ${vldigitarr[$i]} | tr '1234567890' '0000000000')
+        vrdigitarr+=($zeros)
+        i=$((i+1))
+    done
+
+    # prepend zeros to digit entries with fewer characters
+    i=0
+    while [[ $i -lt ${#vldigitarr[@]} ]]; do
+        vlndigits=$(echo ${vldigitarr[$i]} | wc -c)
+        vrndigits=$(echo ${vrdigitarr[$i]} | wc -c)
+        if [[ $vlndigits -lt $vrndigits ]]; then
+           ((vrndigits--))
+           zeros=$(printf '0%.0s' $(seq $vlndigits $vrndigits))
+           vldigitarr[$i]="${zeros}${vldigitarr[$i]}"
+        elif [[ $vrndigits -lt $vlndigits ]]; then
+           ((vlndigits--))
+           zeros=$(printf '0%.0s' $(seq $vrndigits $vlndigits))
+           vrdigitarr[$i]="${zeros}${vrdigitarr[$i]}"
+        fi
+        i=$((i+1))
+    done
+
+    # Turn arrays of digit strings into integers
+    # "4 10 3" ==> 4103
+    vlval=$(echo ${vldigitarr[@]} | tr -d ' ')
+    vrval=$(echo ${vrdigitarr[@]} | tr -d ' ')
+
+    test $vlval $op $vrval
+}
+
+function test_compare_version_strings
+{
+    # Test different operators
+    compare_version_strings 4.0.0 4.0.0 -eq
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.0.1 4.0.0 -gt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.0.0 4.0.1 -lt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.0.0 4.0.1 -ne
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test different sep chars
+    compare_version_strings 4-0-0 4-0-0 -eq -
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4%0%0 4%0%0 -eq %
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test implied zero digits
+    compare_version_strings 4.0.0 4 -eq
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4 4.0.0 -eq
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test digits that cross order of magnitude boundaries
+    compare_version_strings 4.9.3 4.10.3 -lt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.10.3 4.9.3 -gt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test some combinations
+    compare_version_strings 4.10 4.9.3 -gt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.9.101.3.0 4.10.0.3 -lt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+}
+
+# *************************************************************************** #
 # Function: errorFunc                                                         #
 #                                                                             #
 # Purpose: Error messages                                                     #
@@ -1701,9 +1825,31 @@ function errorFunc
 # *************************************************************************** #
 function log
 {
-    echo "$@" >> ${LOG_FILE}
+    if [[ "${LOG_FILE}" != "/dev/tty" && -w "${LOG_FILE}" ]] ; then
+        echo "$@" >> ${LOG_FILE}
+    fi
 }
+ 
+# *************************************************************************** #
+# Function: info                                                              #
+#                                                                             #
+# Purpose: Give an informative message to the user.                           #
+#                                                                             #
+# Programmer: Tom Fogal                                                       #
+# Date: Fri Oct  3 09:41:50 MDT 2008                                          #
+#                                                                             #
+# *************************************************************************** #
+function info
+{
+    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
+        echo -e "$@" 1>&3
+    else
+        echo -e "$@"
+    fi
 
+    # write message to log as well
+    log "$@"
+}
 
 # *************************************************************************** #
 # Function: warn                                                              #
@@ -1721,16 +1867,7 @@ function log
 # *************************************************************************** #
 function warn
 {
-    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        echo -e "$@" 1>&3
-    else
-        echo -e "$@"
-    fi
-
-    if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
-        # write message to log as well
-        log "$@"
-    fi
+    info $@
 }
 
 # *************************************************************************** #
@@ -1858,29 +1995,6 @@ function verify_optional_module_exists
     declare -F "bv_${optlib}_dry_run" &>/dev/null || errorFunc "${optlib} dry_run not found"
     declare -F "bv_${optlib}_is_installed" &>/dev/null || errorFunc "${optlib} is_installed not found"
     declare -F "bv_${optlib}_is_enabled" &>/dev/null || errorFunc "${optlib} is_enabled not found"
-}
-
-# *************************************************************************** #
-# Function: info                                                              #
-#                                                                             #
-# Purpose: Give an informative message to the user.                           #
-#                                                                             #
-# Programmer: Tom Fogal                                                       #
-# Date: Fri Oct  3 09:41:50 MDT 2008                                          #
-#                                                                             #
-# *************************************************************************** #
-function info
-{
-    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        echo "$@" 1>&3
-    else
-        echo "$@"
-    fi
-
-    if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
-        # write message to log as well
-        log "$@"
-    fi
 }
 
 # *************************************************************************** #
@@ -2063,7 +2177,7 @@ function verify_checksum_by_lookup
     # out function names and definitions from the search
     for var in $(set -o posix; set | grep _FILE=; set +o posix); do
         var=$(echo $var | cut -d '=' -f1)
-        if [ ${!var} = $dlfile ]; then
+        if [[ ${!var} = $dlfile ]]; then
             varbase=$(echo $var | sed -e 's/_FILE$//')
             md5sum_varname=${varbase}_MD5_CHECKSUM
             sha256_varname=${varbase}_SHA256_CHECKSUM
@@ -2198,6 +2312,16 @@ function download_file
                 fi
             fi
         done
+    fi
+
+    # if all else has failed, and running develop version of build_visit,
+    # then also check the master repo.
+    if [[ "$TRUNK_BUILD" == "yes" ]]; then
+        site="${thirdpartyroot_dev}"
+        try_download_file $site/$dfile $dfile
+        if [[ $? == 0 ]] ; then
+            return 0
+        fi
     fi
 
     return 1
@@ -2922,7 +3046,7 @@ function build_hostconf
         echo "VISIT_OPTION_DEFAULT(VISIT_USE_GLEW         OFF TYPE BOOL)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_DISABLE_SELECT   ON  TYPE BOOL)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_USE_NOSPIN_BCAST OFF TYPE BOOL)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR       \${VISITHOME}/mesa/$MESA_VERSION/\${VISITARCH})" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR       \${VISITHOME}/mesa/$MESAGL_VERSION/\${VISITARCH})" >> $HOSTCONF
         echo "ADD_DEFINITIONS(-DVISIT_BLUE_GENE_Q)" >> $HOSTCONF
         echo >> $HOSTCONF
     fi
@@ -3131,7 +3255,6 @@ function usage
     initialize_build_visit
 
     printf "Usage: %s [options]\n" $0
-    printf "%-15s %s [%s]\n" "--skip-opengl-context-check" "Skip check for minimum OpenGL context." "false"
 
     printf "\n"
     printf "BUILD OPTIONS\n"
@@ -3179,7 +3302,7 @@ function usage
         name=${grouplibs_name[$bv_i]}
         comment=${grouplibs_comment[$bv_i]}
         enabled=${grouplibs_enabled[$bv_i]}
-        printf "%-15s %s [%s]\n" "--$name" "$comment" "$enabled"
+        printf "%-20s %s [%s]\n" "--$name" "$comment" "$enabled"
     done
     printf "\n"
 
@@ -3228,8 +3351,8 @@ function usage
     printf "GIT OPTIONS\n"
     printf "\n"
 
-    printf "%-26s %s\n"      "--git" "Obtain the VisIt source code"
-    printf "%-26s %s [%s]\n" "" "from the GIT server" "$DO_GIT"
+    printf "%-20s %s\n"      "--git" "Obtain the VisIt source code"
+    printf "%-20s %s [%s]\n" "" "from the GIT server" "$DO_GIT"
 
     printf "\n"
     printf "MISC OPTIONS\n"
@@ -3240,10 +3363,14 @@ function usage
     printf "%-20s %s [%s]\n" "--download-only" "Only download the specified packages" "no"
     printf "%-20s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
     printf "%-20s %s [%s]\n" "-h, --help" "Display this help message." "no"
+    printf "%-20s <%s>\n" "--log-file"  "filename"
+    printf "%-20s %s [%s]\n" ""  "Write build log to provided filename" "$LOG_FILE"
     printf "%-20s %s [%s]\n" "--print-vars" "Display user settable environment variables" "no"
     printf "%-20s %s\n" "--server-components-only" ""
     printf "%-20s %s\n" "" "Only build VisIt's server components"
     printf "%-20s %s [%s]\n" "" "(mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
+    printf "%-20s %s\n" "--skip-opengl-context-check" ""
+    printf "%-20s %s\n" "" "Skip check for minimum OpenGL context."
     printf "%-20s %s [%s]\n" "--stdout" "Write build log to stdout" "no"
     printf "%-20s <%s>\n" "--write-unified-file"  "filename"
     printf "%-20s %s [%s]\n" ""  "Write single unified build_visit file using the provided filename" "$WRITE_UNIFIED_FILE"
@@ -5675,7 +5802,7 @@ function bv_boxlib_dry_run
 #                         Function 8.8, build_boxlib                          #
 # *************************************************************************** #
 
-function apply_boxlib_patch
+function apply_nan_inf_patch
 {
     patch -p0 << \EOF
 diff -c a/Src/C_BaseLib/FArrayBox.cpp ccse-1.3.5/Src/C_BaseLib/FArrayBox.cpp
@@ -5702,6 +5829,62 @@ EOF
 
     return 0;
 
+}
+
+function apply_darwin_patch_1
+{
+    patch -p0 << \EOF
+--- ccse-1.3.5/Src/C_BaseLib/VisMF.cpp	2021-03-30 08:21:05.000000000 -0700
++++ VisMF.cpp.new	2021-03-30 08:21:16.000000000 -0700
+@@ -200,16 +200,20 @@
+     {
+         ar[i].resize(M);
+ 
++        std::string line;
++        std::string delimiter = ",";
++        is >> line;
++
+         for (long j = 0; j < M; j++)
+         {
++            std::string nextValue = line.substr(0, line.find(delimiter));
++            line = line.substr(line.find(delimiter) + 1);
+ #ifdef BL_USE_FLOAT
+-            is >> dtemp >> ch;
++            dtemp = std::atof(nextValue.c_str()); 
+             ar[i][j] = static_cast<Real>(dtemp);
+ #else
+-            is >> ar[i][j] >> ch;
++            ar[i][j] = std::atof(nextValue.c_str());
+ #endif
+-	    if ( ch != ',' ) 
+-	      BoxLib::Error("Expected a ',' got something else");
+         }
+     }
+ 
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "darwin patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_boxlib_patch
+{
+    apply_nan_inf_patch
+    if [[ $? != 0 ]]; then
+        return 1
+    fi
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        apply_darwin_patch_1
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
+    return 0;
 }
 
 function build_boxlib
@@ -6088,13 +6271,12 @@ function bv_cgns_depends_on
 
 function bv_cgns_info
 {
-    export CGNS_FILE=${CGNS_FILE:-"cgnslib_3.2.1.tar.gz"}
-    export CGNS_VERSION=${CGNS_VERSION:-"3.2.1"}
-    export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"3.2"}
-    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"cgnslib_3.2.1/src"}
-    export CGNS_MD5_CHECKSUM="2d26f88b2058dcd0ee5ce58f483bfccb"
-    export CGNS_SHA256_CHECKSUM="34306316f04dbf6484343a4bc611b3bf912ac7dbc3c13b581defdaebbf6c1fc3"
-
+    export CGNS_FILE=${CGNS_FILE:-"CGNS-4.1.0.tar.gz"}
+    export CGNS_VERSION=${CGNS_VERSION:-"4.1.0"}
+    export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION:-"4.1"}
+    export CGNS_BUILD_DIR=${CGNS_BUILD_DIR:-"CGNS-4.1.0/src"}
+    export CGNS_MD5_CHECKSUM="f90b85ae10693d4db0825c7ce61c6f73"
+    export CGNS_SHA256_CHECKSUM="b4584e4d0fa52c737a0fb4738157a88581df251c8c5886175ee287e1777e99fd"
 }
 
 function bv_cgns_print
@@ -6148,123 +6330,213 @@ function bv_cgns_dry_run
     fi
 }
 
-function apply_cgns_321_darwin_patch
+function apply_cgns_410_patch
 {
+    info "Patching CGNS 4.1.0"
     patch -p0 << \EOF
-diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
-*** cgnslib_3.2.1/src/configure.orig    2015-04-27 15:11:36.000000000 -0700
---- cgnslib_3.2.1/src/configure 2015-04-27 14:24:48.000000000 -0700
+diff -c CGNS-4.1.0/src/configure.orig CGNS-4.1.0/src/configure
+*** CGNS-4.1.0/src/configure.orig	Thu Feb 11 17:51:22 2021
+--- CGNS-4.1.0/src/configure	Fri Feb 12 07:55:02 2021
 ***************
-*** 2324,2333 ****
-  echo "$ac_t""$shared" 1>&6
-  
-  if test $shared = all; then
-!   exts="so sl a"
-    shared=yes
+*** 5939,5945 ****
+    $as_echo_n "(cached) " >&6
   else
-!   exts="a so sl"
-  fi
-  if test $shared = yes; then
-    cgnsdir=`pwd`
---- 2324,2333 ----
-  echo "$ac_t""$shared" 1>&6
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
   
-  if test $shared = all; then
-!   exts="dylib so sl a"
-    shared=yes
+--- 5939,5945 ----
+    $as_echo_n "(cached) " >&6
   else
-!   exts="dylib a so sl"
-  fi
-  if test $shared = yes; then
-    cgnsdir=`pwd`
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$ZLIBLIB -lz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
 ***************
-*** 2352,2363 ****
-        shared=no
-      else
-        CFGFLAGS="-fPIC $CFGFLAGS"
-!       AR_LIB="\$(CC) -shared $SYSCFLAGS -Wl,-rpath,$LIBDIR:$cgnsdir/$BUILDDIR -o"
-!       EXT_LIB=so
-      fi
-    fi
-    if test $shared = yes; then
-!     RAN_LIB="\$(STRIP)"
-    fi
-  fi
+*** 5974,5980 ****
+  #define HAVE_LIBZ 1
+  _ACEOF
   
---- 2352,2363 ----
-        shared=no
+!   LIBS="-lz $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+--- 5974,5980 ----
+  #define HAVE_LIBZ 1
+  _ACEOF
+  
+!   LIBS="$ZLIBLIB -lz $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+***************
+*** 6031,6037 ****
+  
+  
+      if test $shared = yes; then
+!       ZLIBLIB="-L$zlib_lib"
       else
-        CFGFLAGS="-fPIC $CFGFLAGS"
-!       AR_LIB="\$(CC) -shared $SYSCFLAGS -Wl,-L$with_hdf5/lib -Wl,-lhdf5 -o"
-!       EXT_LIB=dylib
-      fi
+        if test -n "$zlib_lib"; then
+          for a in $exts ; do
+--- 6031,6037 ----
+  
+  
+      if test $shared = yes; then
+!       ZLIBLIB="-L$zlib_lib -lz"
+      else
+        if test -n "$zlib_lib"; then
+          for a in $exts ; do
+***************
+*** 6050,6056 ****
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+--- 6050,6056 ----
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$ZLIBLIB $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+***************
+*** 6085,6091 ****
+  #define HAVE_LIBZ 1
+  _ACEOF
+  
+!   LIBS="-lz $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+--- 6085,6091 ----
+  #define HAVE_LIBZ 1
+  _ACEOF
+  
+!   LIBS="$ZLIBLIB $LIBS"
+  
+  else
+    unset HAVE_ZLIB
+***************
+*** 6147,6153 ****
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lsz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+--- 6147,6153 ----
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$SZIPLIB -lsz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+***************
+*** 6182,6188 ****
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="-lsz $LIBS"
+  
+  else
+    unset HAVE_SZIP
+--- 6182,6188 ----
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="$SZIPLIB -lsz $LIBS"
+  
+  else
+    unset HAVE_SZIP
+***************
+*** 6239,6245 ****
+  
+  
+      if test $shared = yes; then
+!       SZIPLIB="-L$szip_lib"
+      else
+        if test -n "$szip_lib"; then
+          for a in $exts ; do
+--- 6239,6245 ----
+  
+  
+      if test $shared = yes; then
+!       SZIPLIB="-L$szip_lib -lsz"
+      else
+        if test -n "$szip_lib"; then
+          for a in $exts ; do
+***************
+*** 6258,6264 ****
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="-lsz  $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+--- 6258,6264 ----
+    $as_echo_n "(cached) " >&6
+  else
+    ac_check_lib_save_LIBS=$LIBS
+! LIBS="$SZIPLIB $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  /* end confdefs.h.  */
+  
+***************
+*** 6293,6299 ****
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="-lsz $LIBS"
+  
+  else
+    unset HAVE_SZIP
+--- 6293,6299 ----
+  #define HAVE_LIBSZ 1
+  _ACEOF
+  
+!   LIBS="$SZIPLIB $LIBS"
+  
+  else
+    unset HAVE_SZIP
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
-    if test $shared = yes; then
-!     RAN_LIB="\$(STRIP) -x"
-    fi
-  fi
 
+    patch -p0 << \EOF
+diff -u CGNS-4.1.0/src/Makefile.in.orig CGNS-4.1.0/src/Makefile.in
+--- CGNS-4.1.0/src/Makefile.in.orig	2021-01-29 09:15:50.000000000 -0800
++++ CGNS-4.1.0/src/Makefile.in	2021-05-05 08:52:32.000000000 -0700
+@@ -53,7 +53,7 @@
+ 
+ $(CGNSLIB) : $(OBJDIR) $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS)
+ 	-@$(RM) $@
+-	@AR_LIB@ $@ $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS)
++	@AR_LIB@ $@ $(LDFLAGS) $(CGNSOBJS) $(FGNSOBJS) $(ADFOBJS) $(F2COBJS) $(CLIBS)
+ 	@RAN_LIB@ $@
+ 
+ $(OBJDIR) :
 EOF
     if [[ $? != 0 ]] ; then
         return 1
     fi
 
     return 0
-}
-
-function apply_cgns_321_zlib_patch
-{
-    patch -p0 << \EOF
-diff -c cgnslib_3.2.1/src/configure.orig cgnslib_3.2.1/src/configure
-*** cgnslib_3.2.1/src/configure.orig    2013-06-19 21:04:00.000000000 -0700
---- cgnslib_3.2.1/src/configure 2015-04-27 15:03:16.000000000 -0700
-***************
-*** 2490,2495 ****
---- 2490,2496 ----
-  if test "${with_zlib+set}" = set; then
-    withval="$with_zlib"
-    withzlib=$withval
-+   ZLIBLIB=$withval
-  else
-    withzlib="no"
-  fi
-***************
-*** 2499,2504 ****
---- 2500,2506 ----
-    else
-      H5NEEDZLIB=1
-      if test -z "$withzlib" || test "$withzlib" = "yes"; then
-+       ZLIBLIB=""
-        zlibdir=""
-        echo "$ac_t""yes" 1>&6
-        ac_safe=`echo "zlib.h" | sed 'y%./+-%__p_%'`
-EOF
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_cgns_321_patch
-{
-
-    if [[ "$OPSYS" == "Darwin" ]] ; then
-        info "Applying OS X patch . . ."
-        apply_cgns_321_darwin_patch
-        apply_cgns_321_zlib_patch
-    else 
-        info "Applying patch . . ."
-        apply_cgns_321_zlib_patch
-    fi
-
-    return $?
 }
 
 function apply_cgns_patch
 {
-    if [[ ${CGNS_VERSION} == 3.2.1 ]] ; then
-        apply_cgns_321_patch
+    if [[ ${CGNS_VERSION} == "4.1.0" ]] ; then
+        apply_cgns_410_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -6345,31 +6617,35 @@ function build_cgns
     fi
 
     # optionally add HDF5 and szip to the configure.
+    LIBS_ENV=""
+    LDFLAGS_ENV=""
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
+        LIBS_ENV="-lhdf5"
+        LDFLAGS_ENV="-L$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
-            H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.$LIBEXT"
+            LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib"
+            H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+            LIBS_ENV="$LIBS_ENV -lsz"
         fi
-        H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib/libz.$LIBEXT"
+        LIBS_ENV="$LIBS_ENV -lz"
+        LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
+        H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
     fi
-    if [[ "$OPSYS" == "Darwin" ]] ; then
-        info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-       CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
 
-        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-            ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
-    else
-        info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-       CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-       ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
+    # Disable fortran
+    FORTRANARGS="--with-fortran=no"
 
-        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-            CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-            ./configure --enable-64bit ${cf_build_type} $H5ARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\"
-    fi
+    info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
+        LDFLAGS=\"$LDFLAGS_ENV\" LIBS=\"$LIBS_ENV\" \
+        ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
+
+    env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
+        LDFLAGS="$LDFLAGS_ENV" LIBS="$LIBS_ENV" \
+        ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
 
     if [[ $? != 0 ]] ; then
         warn "CGNS configure failed.  Giving up"
@@ -6381,22 +6657,18 @@ function build_cgns
     #
     info "Building CGNS . . . (~2 minutes)"
 
-    $MAKE
+    $MAKE cgns
     if [[ $? != 0 ]] ; then
         warn "CGNS build failed.  Giving up"
         return 1
     fi
+
     #
     # Install into the VisIt third party location.
     #
     info "Installing CGNS . . ."
 
-    mkdir "$VISITDIR/cgns"
-    mkdir "$VISITDIR/cgns/$CGNS_VERSION"
-    mkdir "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
-    mkdir "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/include"
-    mkdir "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib"
-    $MAKE install
+    $MAKE install-cgns
     if [[ $? != 0 ]] ; then
         warn "CGNS install failed.  Giving up"
         return 1
@@ -6995,7 +7267,11 @@ function bv_conduit_depends_on
     if [[ "$DO_HDF5" == "yes" ]] ; then
         depends_on="hdf5"
     fi
-    
+
+    if [[ "$DO_PYTHON" == "yes" ]] ; then
+        depends_on="$depends_on python"
+    fi
+
     if [[ "$DO_MPICH" == "yes" ]] ; then
         depends_on="$depends_on mpich"
     fi
@@ -7005,15 +7281,12 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.5.1"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.7.1"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
-    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.5.1"}
+    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.7.1"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    # For now since build_visit relies on a version tag in the third-party repo.
-    # The value for CONDUIT_URL can be removed after VisIt 3.2.0 comes out.
-    export CONDUIT_URL=${CONDUIT_URL:-"http://visit.ilight.com/assets"}
-    export CONDUIT_MD5_CHECKSUM="89dc8aabb43769fd686289eeabc6094b"
-    export CONDUIT_SHA256_CHECKSUM="40ada208a686f331f707bdf6f6e6ffa4dff4dc4dfdfafb0e052f514c932bfefa"
+    export CONDUIT_MD5_CHECKSUM="7f9bb79ef0a6bf42fa9bc05af3829e5b"
+    export CONDUIT_SHA256_CHECKSUM="460a480cf08fedbf5b38f707f94f20828798327adadb077f80dbab048fd0a07d"
 }
 
 function bv_conduit_print
@@ -7115,7 +7388,7 @@ function build_conduit
     # Remove the CMakeCache.txt files ... existing files sometimes prevent
     # fields from getting overwritten properly.
     #
-    rm -Rf $CONDUIT_BUILD_DIR}/CMakeCache.txt $CONDUIT_BUILD_DIR/*/CMakeCache.txt
+    rm -Rf $CONDUIT_BUILD_DIR/CMakeCache.txt $CONDUIT_BUILD_DIR/*/CMakeCache.txt
 
 
     conduit_build_mode="${VISIT_BUILD_MODE}"
@@ -7158,6 +7431,7 @@ function build_conduit
 
     if [[ "$DO_PYTHON" == "yes" ]] ; then
         cfg_opts="${cfg_opts} -DPYTHON_EXECUTABLE:STRING=$PYTHON_COMMAND"
+        cfg_opts="${cfg_opts} -DENABLE_PYTHON:STRING=TRUE"
     fi
 
     if [[ "$FC_COMPILER" != "no" ]] ; then
@@ -7215,7 +7489,7 @@ function build_conduit
     # Build Conduit
     #
     info "Building Conduit . . . (~5 minutes)"
-    $MAKE # don't use -j b/c gfortran can has issues with intermediate files
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
         warn "Conduit build failed.  Giving up"
         return 1
@@ -10583,10 +10857,14 @@ function bv_hdf5_depends_on
     if [[ "$USE_SYSTEM_HDF5" == "yes" ]]; then
         echo ""
     else
-        local depends_on="zlib"
+        local depends_on=""
+
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            depends_on="$depends_on zlib"
+        fi
 
         if [[ "$DO_SZIP" == "yes" ]] ; then
-            depends_on="$depends_on szip"    
+            depends_on="$depends_on szip"
         fi
 
         if [[ -n "$PAR_COMPILER" && "$DO_MOAB" == "yes"  && "$DO_MPICH" == "yes" ]]; then
@@ -10656,7 +10934,10 @@ function bv_hdf5_host_profile
                     >> $HOSTCONF 
             fi
 
-            ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
+            ZLIB_LIBDEP=""
+            if [[ "$DO_ZLIB" == "yes" ]] ; then
+                ZLIB_LIBDEP="\${VISITHOME}/zlib/\${ZLIB_VERSION}/\${VISITARCH}/lib z"
+            fi
             SZIP_LIBDEP=""
             if [[ "$DO_SZIP" == "yes" ]] ; then
                 SZIP_LIBDEP="\${VISITHOME}/szip/$SZIP_VERSION/\${VISITARCH}/lib sz"
@@ -10693,73 +10974,10 @@ function bv_hdf5_dry_run
     fi
 }
 
-function apply_hdf5_187_188_patch
-{
-    info "Patching hdf5"
-    patch -p0 << \EOF
-diff -c tools/lib/h5diff.c.orig tools/lib/h5diff.c
-*** tools/lib/h5diff.c.orig     2013-11-13 08:14:48.924716921 -0800
---- tools/lib/h5diff.c  2013-11-13 08:15:28.066716686 -0800
-***************
-*** 635,641 ****
-      char         filenames[2][MAX_FILENAME];
-      hsize_t      nfound = 0;
-      int i;
-!     //int i1, i2;
-      int l_ret;
-      const char * obj1fullname = NULL;
-      const char * obj2fullname = NULL;
---- 635,641 ----
-      char         filenames[2][MAX_FILENAME];
-      hsize_t      nfound = 0;
-      int i;
-!     /* int i1, i2; */
-      int l_ret;
-      const char * obj1fullname = NULL;
-      const char * obj2fullname = NULL;
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "HDF5 patch failed."
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_hdf5_187_thread_patch
-{
-    info "Patching thread hdf5"
-    patch -p0 << \EOF
-diff -c src/H5private.h.orig src/H5private.h
-*** src/H5private.h.orig    2014-07-28 10:46:54.821807839 -0700
---- src/H5private.h 2014-07-08 13:00:12.562002468 -0700
-***************
-*** 30,40 ****
-  
-  /* include the pthread header */
-  #ifdef H5_HAVE_THREADSAFE
-- #ifdef H5_HAVE_PTHREAD_H
-  #include <pthread.h>
-- #else /* H5_HAVE_PTHREAD_H */
-- #define H5_HAVE_WIN_THREADS
-- #endif /* H5_HAVE_PTHREAD_H */
-  #endif /* H5_HAVE_THREADSAFE */
-  
-  /*
---- 30,36 ----
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "HDF5 thread patch failed."
-        return 1
-    fi
-
-    return 0;
-}
-
 function apply_hdf5_1814_static_patch
 {
-    info "Patching hdf5 for static build"
-    patch -p0 << \EOF
+    info "Patching hdf5 1.8.14 for static build"
+    patch -p0 << EOF
 *** src/H5PL.c.orig    2015-10-23 11:51:35.000000000 -0700
 --- src/H5PL.c  2015-10-23 11:56:48.000000000 -0700
 ***************
@@ -11078,7 +11296,30 @@ function apply_hdf5_1814_static_patch
   #endif /*H5_VMS*/
 EOF
     if [[ $? != 0 ]] ; then
-        warn "HDF5 static patch failed."
+        warn "HDF5 1.8.14 static patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+
+function apply_hdf5_1814_isatty_patch
+{
+    info "Patching hdf5 1.8.14 for isatty"
+    patch -p0 << EOF
+--- hl/src/H5LTanalyze.c.orig	2014-11-07 04:53:42.000000000 -0800
++++ hl/src/H5LTanalyze.c	2021-02-01 13:40:36.000000000 -0800
+@@ -40,6 +40,7 @@
+ #include <string.h>
+ #include <errno.h>
+ #include <stdlib.h>
++#include <unistd.h>
+ 
+ /* end standard C headers. */
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "HDF5 1.8.14 isatty patch failed."
         return 1
     fi
 
@@ -11087,34 +11328,17 @@ EOF
 
 function apply_hdf5_patch
 {
-    if [[ "${HDF5_VERSION}" == 1.8.7 ]] ; then
-        apply_hdf5_187_188_patch
+    # Apply a patch for static if we build statically.
+    if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+        apply_hdf5_1814_static_patch
         if [[ $? != 0 ]]; then
             return 1
         fi
-        if [[ "$DO_THREAD_BUILD" == "yes" ]]; then
-            apply_hdf5_187_thread_patch
-            if [[ $? != 0 ]]; then
-                return 1
-            fi
-        fi
-    else
-        if [[ "${HDF5_VERSION}" == 1.8.8 ]] ; then
-            apply_hdf5_187_188_patch
-            if [[ $? != 0 ]]; then
-                return 1
-            fi
-        else
-            # Latest HDF5.
+    fi
 
-            # Apply a patch for static if we build statically.
-            if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
-                apply_hdf5_1814_static_patch
-                if [[ $? != 0 ]]; then
-                    return 1
-                fi
-            fi
-        fi
+    apply_hdf5_1814_isatty_patch
+    if [[ $? != 0 ]]; then
+        return 1
     fi
 
     return 0
@@ -11175,9 +11399,11 @@ function build_hdf5
         sz_dir="${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}"
         cf_szip="--with-szlib=${sz_dir}"
     fi
-    info "Configuring HDF5 with ZLib support."
-    cf_zlib="--with-zlib=${zlib_dir}"
-    zlib_dir="${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}"
+    cf_zlib=""
+    if [[ "$DO_ZLIB" == "yes" ]]; then
+        info "Configuring HDF5 with ZLib support."
+        cf_zlib="--with-zlib=\"${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}\""
+    fi
 
     # Disable Fortran on Darwin since it causes HDF5 builds to fail.
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -11371,9 +11597,9 @@ function bv_icet_print
 
 function bv_icet_print_usage
 {
-    printf "%-20s %s [%s]\n" "--icet" "Build Ice-T (parallel rendering lib)" "$DO_ICET"
-    printf "%-20s %s [%s]\n" "--no-icet" "Prevent Ice-T from being built" "$PREVENT_ICET"
-    printf "%-20s %s\n" "" "NOTE: Ice-T is automatically built with --enable-parallel."
+    printf "%-20s %s [%s]\n" "--icet" "Build IceT (parallel rendering lib)" "$DO_ICET"
+    printf "%-20s %s [%s]\n" "--no-icet" "Prevent IceT from being built" "$PREVENT_ICET"
+    printf "%-20s %s\n" "" "NOTE: IceT is automatically built with --enable-parallel."
 }
 
 function bv_icet_host_profile
@@ -11381,7 +11607,7 @@ function bv_icet_host_profile
     if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
-        echo "## Ice-T" >> $HOSTCONF
+        echo "## IceT" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_ICET_DIR \${VISITHOME}/icet/$ICET_VERSION/\${VISITARCH})" \
@@ -11396,7 +11622,7 @@ function bv_icet_ensure
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_ICET="no"
-            error "Unable to build Ice-T.  ${ICET_FILE} not found."
+            error "Unable to build IceT.  ${ICET_FILE} not found."
         fi
     fi
 }
@@ -11420,76 +11646,14 @@ function apply_icet_patch
 
 function build_icet
 {
-    PAR_INCLUDE_STRING=""
-    if [[ "$PAR_INCLUDE" != "" ]] ; then
-        PAR_INCLUDE_STRING=$PAR_INCLUDE
-    fi
-
-    if [[ "$PAR_COMPILER" != "" ]] ; then
-        if [[ "$OPSYS" == "Darwin" && "$PAR_COMPILER" == "/usr/bin/mpicc" ]]; then
-            PAR_INCLUDE_STRING="-I/usr/include/"
-        elif [[ "$OPSYS" == "Linux" && "$PAR_COMPILER" == "mpixlc" ]]; then
-            PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
-        else
-            if [[ -z "$PAR_INCLUDE_STRING" ]]; then
-                PAR_INCLUDE_STRING=`$PAR_COMPILER --showme:compile`
-                if [[ $? != 0 ]] ; then
-                    PAR_INCLUDE_STRING=`$PAR_COMPILER -show`
-                fi
-            fi
-        fi
-    fi
-
-    if [[ "$PAR_INCLUDE_STRING" == "" ]] ; then
-        warn "You must set either the PAR_COMPILER or PAR_INCLUDE environment variable to build Ice-T."
+    # We need to set MPI_COMPILER for CMake. We can get that from MPICH
+    # or from PAR_COMPILER. Note that DO_MPICH causes PAR_COMPILER to be
+    # set, so testing for that also catches using MPICH.
+    if [[ "$PAR_COMPILER" == "" ]] ; then
+        warn "To build IceT, you must either use MPICH (add --mpich) or set the PAR_COMPILER environment variable."
         warn "PAR_COMPILER should be of the form \"/path/to/mpi/bin/mpicc\""
-        warn "PAR_INCLUDE should be of the form \"-I/path/to/mpi/include\""
         warn "Giving Up!"
         return 1
-    fi
-
-    # IceT's CMake config doesn't take the compiler options, but rather the
-    # paths to certain files, and then it tries to build all of the appropriate
-    # options itself.  Since we only have the former, we need to guess at the
-    # latter.
-    # Our current guess is to take the first substring in PAR_INCLUDE, assume
-    # it's the appropriate -I option, and use it with the "-I" removed.  This
-    # is certainly not ideal -- for example, it will break if the user's
-    # MPI setup requires multiple include directories.
-
-    # Search all of the -I directories and take the first one containing mpi.h
-    PAR_INCLUDE_DIR=""
-    for arg in $PAR_INCLUDE_STRING ; do
-        if [[ "$arg" != "${arg#-I}" ]] ; then
-            if test -e "${arg#-I}/mpi.h" ; then
-                PAR_INCLUDE_DIR=${arg#-I}
-                break
-            fi
-        fi
-    done
-    # If we did not get a valid include directory, take the first -I directory.
-    if test -z "${PAR_INCLUDE_DIR}"  ; then
-        for arg in $PAR_INCLUDE_STRING ; do
-            if [[ "$arg" != "${arg#-I}" ]] ; then
-                PAR_INCLUDE_DIR=${arg#-I}
-                break
-            fi
-        done
-    fi
-
-    if test -z "${PAR_INCLUDE_DIR}"  ; then
-        if test -n "${PAR_INCLUDE}" ; then
-            warn "This script believes you have defined PAR_INCLUDE as: $PAR_INCLUDE"
-            warn "However, to build Ice-T, this script expects to parse a -I/path/to/mpi out of PAR_INCLUDE"
-        fi
-        warn "Could not determine the MPI include information which is needed to compile IceT."
-        if test -n "${PAR_INCLUDE}" ; then
-            error "Please re-run with the required \"-I\" option included in PAR_INCLUDE"
-        else
-            error "You need to specify either PAR_COMPILER or PAR_INCLUDE variable.  On many "
-            " systems, the output of \"mpicc -showme\" is good enough."
-            error ""
-        fi
     fi
 
     #
@@ -11501,76 +11665,76 @@ function build_icet
     prepare_build_dir $ICET_BUILD_DIR $ICET_FILE
     untarred_icet=$?
     if [[ $untarred_icet == -1 ]] ; then
-        warn "Unable to prepare Ice-T build directory. Giving Up!"
+        warn "Unable to prepare IceT build directory. Giving Up!"
         return 1
     fi
 
     apply_icet_patch
 
-    info "Executing CMake on Ice-T"
+    info "Executing CMake on IceT"
     cd $ICET_BUILD_DIR || error "Can't cd to IceT build dir."
     if [[ "$DO_STATIC_BUILD" == "no" ]]; then
         LIBEXT="${SO_EXT}"
     else
         LIBEXT="a"
     fi
-    touch fakempi.${LIBEXT}
     rm -f CMakeCache.txt
 
+    iopts=""
     if [[ "$OPSYS" == "Darwin" ]] ; then
         ${CMAKE_BIN} \
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-        -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
-        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}"\
-        -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
-        -DMPI_LIBRARY:FILEPATH="./fakempi.${LIBEXT}"\
-        -DBUILD_TESTING:BOOL=OFF\
-        .
+        iopts="${iopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+        iopts="${iopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+        iopts="${iopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
+        iopts="${iopts} -DCMAKE_INSTALL_PREFIX:PATH=$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"-fPIC ${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DMPI_COMPILER:PATH=${PAR_COMPILER}"
+        iopts="${iopts} -DBUILD_TESTING:BOOL=OFF"
     else
-        ${CMAKE_BIN} \
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-        -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-        -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"\
-        -DOPENGL_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DOPENGL_gl_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"\
-        -DCMAKE_C_FLAGS:STRING="-fPIC ${CFLAGS} ${C_OPT_FLAGS}"\
-        -DMPI_INCLUDE_PATH:PATH="${PAR_INCLUDE_DIR}"\
-        -DMPI_LIBRARY:FILEPATH="./fakempi.${LIBEXT}"\
-        -DBUILD_TESTING:BOOL=OFF\
-        .
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            iopts="${iopts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/include"
+            iopts="${iopts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/mesagl/${MESAGL_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
+        elif [[ "$DO_OSMESA" == "yes" ]] ; then
+            iopts="${iopts} -DOPENGL_INCLUDE_DIR:PATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/include"
+            iopts="${iopts} -DOPENGL_gl_LIBRARY:FILEPATH=$VISITDIR/osmesa/${OSMESA_VERSION}/${VISITARCH}/lib/libOSMesa.${LIBEXT}"
+        fi
+        iopts="${iopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+        iopts="${iopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+        iopts="${iopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+        iopts="${iopts} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON"
+        iopts="${iopts} -DCMAKE_INSTALL_PREFIX:PATH=$VISITDIR/icet/${ICET_VERSION}/${VISITARCH}"
+        iopts="${iopts} -DCMAKE_C_FLAGS:STRING=\"-fPIC ${CFLAGS} ${C_OPT_FLAGS}\""
+        iopts="${iopts} -DMPI_COMPILER:PATH=${PAR_COMPILER}"
+        iopts="${iopts} -DBUILD_TESTING:BOOL=OFF"
     fi
 
-    rm fakempi.${LIBEXT}
-
-    if [[ $? != 0 ]] ; then
-        warn "Cannot get CMAKE to create the makefiles.  Giving up."
-        return 1
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
+    echo "\"${CMAKE_BIN}\"" ${iopts} . > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "IceT configuration failed."
 
     #
-    # Now build Ice-T.
+    # Now build IceT.
     #
-    info "Building Ice-T . . . (~2 minutes)"
+    info "Building IceT . . . (~2 minutes)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "Ice-T did not build correctly.  Giving up."
+        warn "IceT did not build correctly.  Giving up."
         return 1
     fi
 
-    info "Installing Ice-T . . ."
+    info "Installing IceT . . ."
 
     $MAKE install
     if [[ $? != 0 ]] ; then
-        warn "Ice-T: 'make install' failed.  Giving up"
+        warn "IceT: 'make install' failed.  Giving up"
         return 1
     fi
 
@@ -11580,7 +11744,7 @@ function build_icet
     fi
 
     cd "$START_DIR"
-    echo "Done with Ice-T"
+    echo "Done with IceT"
     return 0
 }
 
@@ -11607,14 +11771,14 @@ function bv_icet_build
     if [[ "$DO_ICET" == "yes" && "$PREVENT_ICET" != "yes" ]] ; then
         check_if_installed "icet" $ICET_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping Ice-T build.  Ice-T is already installed."
+            info "Skipping IceT build.  IceT is already installed."
         else
-            info "Building Ice-T (~2 minutes)"
+            info "Building IceT (~2 minutes)"
             build_icet
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install Ice-T.  Bailing out."
+                error "Unable to build or install IceT.  Bailing out."
             fi
-            info "Done building Ice-T"
+            info "Done building IceT"
         fi
     fi
 }
@@ -11818,12 +11982,18 @@ function bv_llvm_depends_on
 
 function bv_llvm_info
 {
-    export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"5.0.0"}
+    export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"6.0.1"}
     export BV_LLVM_FILE=${BV_LLVM_FILE:-"llvm-${BV_LLVM_VERSION}.src.tar.xz"}
     export BV_LLVM_URL=${BV_LLVM_URL:-"http://releases.llvm.org/${BV_LLVM_VERSION}/"}
     export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
-    export LLVM_MD5_CHECKSUM="5ce9c5ad55243347ea0fdb4c16754be0"
-    export LLVM_SHA256_CHECKSUM="e35dcbae6084adcf4abb32514127c5eabd7d63b733852ccdb31e06f1373136da"
+    export BV_LLVM_MD5_CHECKSUM="c88c98709300ce2c285391f387fecce0"
+    export BV_LLVM_SHA256_CHECKSUM="b6d6c324f9c71494c0ccaf3dac1f16236d970002b42bb24a6c9e1634f7d0f4e2"
+
+    export BV_CLANG_URL=${BV_LLVM_URL}
+    export BV_CLANG_FILE="cfe-${BV_LLVM_VERSION}.src.tar.xz"
+    export BV_CLANG_BUILD_DIR="cfe-${BV_LLVM_VERSION}.src"
+    export BV_CLANG_MD5_CHECKSUM="4e419bd4e3b55aa06d872320f754bd85"
+    export BV_CLANG_SHA256_CHECKSUM="7c243f1485bddfdfedada3cd402ff4792ea82362ff91fbdac2dae67c6026b667"
 }
 
 function bv_llvm_print
@@ -11860,6 +12030,8 @@ function bv_llvm_initialize_vars
     else
         LLVM_LIB="${LLVM_LIB_DIR}/libLLVM.${SO_EXT}"
     fi
+    # needed for clang and pyside
+    export LLVM_INSTALL_DIR="${VISIT_LLVM_DIR}"
 }
 
 function bv_llvm_selected
@@ -11894,88 +12066,7 @@ function bv_llvm_dry_run
 
 function apply_llvm_patch
 {
-    # fixes a bug in LLVM 5.0.0
-    # where if the LLVM_BUILD_LLVM_DYLIB CMake var is set to ON,
-    # CMake will fail when checking an internal variable that is empty
-    # patch based on https://reviews.llvm.org/D31445
-
-    patch -p0 << \EOF
-*** tools/llvm-shlib/CMakeLists.txt.original     2018-06-14 16:16:13.185286160 -0500
---- tools/llvm-shlib/CMakeLists.txt      2018-06-14 16:16:59.773283611 -0500
-***************
-*** 36,42 ****
-
-  add_llvm_library(LLVM SHARED DISABLE_LLVM_LINK_LLVM_DYLIB SONAME ${SOURCES})
-
-! list(REMOVE_DUPLICATES LIB_NAMES)
-  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU) OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")) # FIXME: It should be "GNU ld for elf"
-    configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/simple_version_script.map.in
---- 36,44 ----
-
-  add_llvm_library(LLVM SHARED DISABLE_LLVM_LINK_LLVM_DYLIB SONAME ${SOURCES})
-
-! if(LIB_NAMES)
-!     list(REMOVE_DUPLICATES LIB_NAMES)
-! endif()
-  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU) OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")) # FIXME: It should be "GNU ld for elf"
-    configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/simple_version_script.map.in
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "llvm patch for tools/llvm-shlib/CMakeLists.txt failed"
-        return 1
-    fi
-
-    # fixes a bug in LLVM 5.0.0
-    # a vector<char> is cast to a vector<unsigned char>. This patch comes
-    # from http://lists.busybox.net/pipermail/buildroot/2018-May/221648.html
-    # This is presumably fixed in LLVM 6.0.0.
-
-    patch -p0 << \EOF
---- include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h.orig	2019-07-26 13:23:06.588925000 -0700
-+++ include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h	2019-07-26 13:23:53.990216000 -0700
-@@ -713,8 +713,8 @@
- 
-   uint32_t getTrampolineSize() const { return RemoteTrampolineSize; }
- 
--  Expected<std::vector<char>> readMem(char *Dst, JITTargetAddress Src,
--                                      uint64_t Size) {
-+  Expected<std::vector<uint8_t>> readMem(char *Dst, JITTargetAddress Src,
-+                                         uint64_t Size) {
-     // Check for an 'out-of-band' error, e.g. from an MM destructor.
-     if (ExistingError)
-       return std::move(ExistingError);
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "llvm patch for include/llvm/ExecutionEngine/Orc/OrcRemoteTargetClient.h failed"
-        return 1
-    fi
-
-    # fixes a bug in LLVM 5.0.0
-    # where a static_assert fails with icc 19.0.4.227. This patch removes
-    # the static_assert since it isn't critical for it to run.
-
-    patch -p0 << \EOF
-diff -c lib/IR/Attributes.cpp.orig lib/IR/Attributes.cpp
-*** lib/IR/Attributes.cpp.orig	Fri Nov 22 12:13:23 2019
---- lib/IR/Attributes.cpp	Fri Nov 22 12:13:45 2019
-***************
-*** 810,817 ****
-    static_assert(Attribute::EndAttrKinds <=
-                      sizeof(AvailableFunctionAttrs) * CHAR_BIT,
-                  "Too many attributes");
--   static_assert(attrIdxToArrayIdx(AttributeList::FunctionIndex) == 0U,
--                 "function should be stored in slot 0");
-    for (Attribute I : Sets[0]) {
-      if (!I.isStringAttribute())
-        AvailableFunctionAttrs |= 1ULL << I.getKindAsEnum();
---- 810,815 ----
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "llvm patch for lib/IR/Attributes.cpp failed"
-        return 1
-    fi
+    info "Currently no patches for llvm"
 }
 
 function build_llvm
@@ -11988,6 +12079,27 @@ function build_llvm
     if [[ $untarred_llvm == -1 ]] ; then
         warn "Unable to prepare LLVM build directory. Giving Up!"
         return 1
+    fi
+
+    # download clang
+    if ! test -f ${BV_CLANG_FILE} ; then
+        download_file ${BV_CLANG_FILE} ${BV_CLANG_URL}
+        if [[ $? != 0 ]] ; then
+            warn "Could not download ${BV_CLANG_FILE}"
+            return 1
+        fi
+    fi
+
+    # extract clang
+    if ! test -d clang ; then
+        info "Extracting clang ..."
+        uncompress_untar ${BV_CLANG_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${BV_CLANG_FILE}"
+            return 1
+        fi
+        # llvm build system expects the directory to be named clang
+        mv ${BV_CLANG_BUILD_DIR} clang
     fi
 
     #
@@ -12031,40 +12143,78 @@ function build_llvm
     rm -f CMakeCache.txt */CMakeCache.txt
 
     info "Configuring LLVM . . ."
+
+    llvm_opts=""
+    # standard cmake options
+    llvm_opts="${llvm_opts} -DCMAKE_INSTALL_PREFIX:PATH=${VISIT_LLVM_DIR}"
+    llvm_opts="${llvm_opts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+    llvm_opts="${llvm_opts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON"
+    llvm_opts="${llvm_opts} -DBUILD_SHARED_LIBS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+    llvm_opts="${llvm_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+    llvm_opts="${llvm_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    llvm_opts="${llvm_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+
+    # python?
     if [[ $DO_PYTHON == "yes" ]] ; then
-        LLVM_CMAKE_PYTHON="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_COMMAND"
+        llvm_opts="${llvm_opts} -DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_COMMAND"
     fi
 
     #
     # Determine the LLVM_TARGET_TO_BUILD.
     #
     if [[ "$(uname -m)" == "ppc64" || "$(uname -m)" == "ppc64le" ]]; then
-        LLVM_TARGET="PowerPC"
+        llvm_opts="${llvm_opts} -DLLVM_TARGETS_TO_BUILD:STRING=PowerPC"
     else
-        LLVM_TARGET="X86"
+        llvm_opts="${llvm_opts} -DLLVM_TARGETS_TO_BUILD:STRING=X86"
     fi
 
-    # LLVM documentation states thet BUILD_SHARED_LIBS is not to be used
-    # in conjuction with LLVM_BUILD_LLVM_DYLIB, and should only be used
-    # by LLVM developers.
-    ${CMAKE_COMMAND} \
-        -DCMAKE_INSTALL_PREFIX:PATH="${VISIT_LLVM_DIR}" \
-        -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
-        -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
-        -DBUILD_SHARED_LIBS:BOOL=OFF \
-        -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
-        -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER} \
-        -DLLVM_TARGETS_TO_BUILD=${LLVM_TARGET} \
-        -DLLVM_ENABLE_RTTI:BOOL=ON \
-        -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON \
-        $LLVM_CMAKE_PYTHON \
-        ../${BV_LLVM_SRC_DIR}
-    if [[ $? != 0 ]] ; then
-        warn "LLVM cmake failed.  Giving up"
-        return 1
+    llvm_opts="${llvm_opts} -DLLVM_ENABLE_RTTI:BOOL=ON"
+    llvm_opts="${llvm_opts} -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON"
+
+    # turn off things we don't need?
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_DOCS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_EXAMPLES:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_GO_TESTS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_TESTS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DLLVM_INCLUDE_UTILS:BOOL=OFF"
+
+
+    # options for building libclang
+    llvm_opts="${llvm_opts} -DLLVM_ENABLE_PROJECTS:STRING=clang"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_LIBCLANG_BUILD:BOOL=ON"
+    # turning off unnecessary tools
+    llvm_opts="${llvm_opts} -DCLANG_BUILD_TOOLS:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_ENABLE_ARCMT:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_ENABLE_STATIC_ANALYZER:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_INSTALL_SCANBUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_INSTALL_SCANVIEW:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_PLUGIN_SUPPORT:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_ARCMT_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_CHECK_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_DIFF_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FORMAT_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FORMAT_VS_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FUNC_MAPPING_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_FUZZER_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_IMPORT_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_OFFLOAD_BUNDLER_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_REFACTOR_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_CLANG_RENAME_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_C_ARCMT_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_C_INDEX_TEST_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_DIAGTOOL_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_DRIVER_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_HANDLE_CXX_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_BUILD_BUILD:BOOL=OFF"
+    llvm_opts="${llvm_opts} -DCLANG_TOOL_SCAN_VIEW_BUILD:BOOL=OFF"
+
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
+    echo "\"${CMAKE_COMMAND}\"" ${llvm_opts} ../${BV_LLVM_SRC_DIR} > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "LLVM configuration failed"
 
     info "Building LLVM . . ."
     ${MAKE} ${MAKE_OPT_FLAGS}
@@ -12325,19 +12475,18 @@ function bv_mesagl_depends_on
 
 function bv_mesagl_info
 {
-    export MESAGL_VERSION=${MESAGL_VERSION:-"17.2.8"}
-    export MESAGL_FILE=${MESAGL_FILE:-"mesa-$MESAGL_VERSION.tar.gz"}
-    export MESAGL_URL=${MESAGL_URL:-"https://mesa.freedesktop.org/archive/"}
+    export MESAGL_VERSION=${MESAGL_VERSION:-"17.3.9"}
+    export MESAGL_FILE=${MESAGL_FILE:-"mesa-$MESAGL_VERSION.tar.xz"}
+    export MESAGL_URL=${MESAGL_URL:-"https://archive.mesa3d.org/older-versions/17.x/"}
     export MESAGL_BUILD_DIR=${MESAGL_BUILD_DIR:-"mesa-$MESAGL_VERSION"}
-    export MESAGL_MD5_CHECKSUM="19832be1bc5784fc7bbad4d138537619"
-    export MESAGL_SHA256_CHECKSUM="c715c3a3d6fe26a69c096f573ec416e038a548f0405e3befedd5136517527a84"
+    export MESAGL_MD5_CHECKSUM="b8042f9970ea70a36da1ee1fae27c448"
+    export MESAGL_SHA256_CHECKSUM="c5beb5fc05f0e0c294fefe1a393ee118cb67e27a4dca417d77c297f7d4b6e479"
 }
 
 function bv_mesagl_print
 {
     printf "%s%s\n" "MESAGL_FILE=" "${MESAGL_FILE}"
     printf "%s%s\n" "MESAGL_VERSION=" "${MESAGL_VERSION}"
-    printf "%s%s\n" "MESAGL_TARGET=" "${MESAGL_TARGET}"
     printf "%s%s\n" "MESAGL_BUILD_DIR=" "${MESAGL_BUILD_DIR}"
 }
 
@@ -12414,35 +12563,39 @@ function apply_mesagl_patch
 {
     patch -p0 << \EOF
 diff -c configure.ac.orig configure.ac
-*** configure.ac.orig	Thu Oct 10 15:44:18 2019
---- configure.ac	Thu Oct 10 15:44:26 2019
+*** configure.ac.orig   Mon Jul 13 09:47:20 2020
+--- configure.ac        Mon Jul 13 09:50:37 2020
 ***************
-*** 2690,2696 ****
+*** 2653,2659 ****
+      dnl ourselves.
       dnl (See https://llvm.org/bugs/show_bug.cgi?id=6823)
-      if test "x$enable_llvm_shared_libs" = xyes; then
-          dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
-!         LLVM_SO_NAME=LLVM-`$LLVM_CONFIG --version`
-          AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
-  
-          if test "x$llvm_have_one_so" = xyes; then
---- 2690,2696 ----
+      dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
+!     LLVM_SO_NAME=LLVM-`$LLVM_CONFIG --version`
+      AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
+
+      if test "x$llvm_have_one_so" = xyes; then
+--- 2653,2659 ----
+      dnl ourselves.
       dnl (See https://llvm.org/bugs/show_bug.cgi?id=6823)
-      if test "x$enable_llvm_shared_libs" = xyes; then
-          dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
-!         LLVM_SO_NAME=LLVM-$LLVM_VERSION
-          AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
-  
-          if test "x$llvm_have_one_so" = xyes; then
+      dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
+!     LLVM_SO_NAME=LLVM-$LLVM_VERSION
+      AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
+
+      if test "x$llvm_have_one_so" = xyes; then
 EOF
     if [[ $? != 0 ]] ; then
         warn "MesaGL patch 1 failed."
         return 1
     fi
 
+    #
+    # Patch so that displaying graphics to the XWin-32 2018 X server
+    # works properly.
+    #
     patch -p0 << \EOF
 diff -c src/gallium/winsys/sw/xlib/xlib_sw_winsys.c.orig src/gallium/winsys/sw/xlib/xlib_sw_winsys.c
-*** src/gallium/winsys/sw/xlib/xlib_sw_winsys.c.orig	Fri Jan 31 12:07:54 2020
---- src/gallium/winsys/sw/xlib/xlib_sw_winsys.c	Fri Jan 31 12:09:24 2020
+*** src/gallium/winsys/sw/xlib/xlib_sw_winsys.c.orig	Thu Mar  4 13:12:20 2021
+--- src/gallium/winsys/sw/xlib/xlib_sw_winsys.c	Thu Mar  4 13:14:11 2021
 ***************
 *** 396,401 ****
 --- 396,402 ----
@@ -12547,6 +12700,7 @@ function build_mesagl
         --enable-llvm \
         --with-gallium-drivers=${MESAGL_GALLIUM_DRIVERS} \
         --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
+        --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
@@ -12568,6 +12722,7 @@ function build_mesagl
         --enable-llvm \
         --with-gallium-drivers=${MESAGL_GALLIUM_DRIVERS} \
         --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
+        --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
 
     if [[ $? != 0 ]] ; then
@@ -12660,6 +12815,9 @@ function bv_mfem_depends_on
     if [[ "$DO_FMS" == "yes" ]] ; then
         depends_on="$depends_on fms"
     fi
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        depends_on="$depends_on hdf5"
+    fi
 
     echo $depends_on
 }
@@ -12742,6 +12900,42 @@ function bv_mfem_dry_run
     fi
 }
 
+function apply_mfem_patch
+{
+    # On IBM PPC systems the system defines "__VSX__" but some of the
+    # VSX functions are not defined with gcc, which VisIt typically
+    # uses. To avoid this we disable all the VSX coding. This is ok
+    # since VSX just optimizes performance, so no functionality is lost.
+    patch -p0 << \EOF
+diff -c ./linalg/simd/vsx128.hpp.orig ./linalg/simd/vsx128.hpp
+*** ./linalg/simd/vsx128.hpp.orig	Tue Mar  9 06:55:45 2021
+--- ./linalg/simd/vsx128.hpp	Tue Mar  9 06:57:37 2021
+***************
+*** 12,18 ****
+  #ifndef MFEM_SIMD_VSX128_HPP
+  #define MFEM_SIMD_VSX128_HPP
+  
+! #ifdef __VSX__
+  
+  #include "../../config/tconfig.hpp"
+  #include <altivec.h>
+--- 12,18 ----
+  #ifndef MFEM_SIMD_VSX128_HPP
+  #define MFEM_SIMD_VSX128_HPP
+  
+! #ifdef __VSX_NOMATCH__
+  
+  #include "../../config/tconfig.hpp"
+  #include <altivec.h>
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MFEM patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 # *************************************************************************** #
 #                            Function 8, build_mfem
 # *************************************************************************** #
@@ -12757,17 +12951,36 @@ function build_mfem
         return 1
     fi
 
+    #
+    # Apply patches.
+    #
     cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
+
+    info "Patching MFEM"
+    apply_mfem_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_mfem == 1 ]] ; then
+            warn "Giving up on MFEM build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    #
+    # Build MFEM.
+    #
     mkdir build
     cd build || error "Can't cd to MFEM build dir."
-
-    # Version 4.0 now requires c++11
-    CXXFLAGS="-std=c++11 ${CXXFLAGS}"
 
     vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} $CFLAGS\""
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS\""
+    # Version 4.0 now requires c++11
+    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS -std=c++11\""
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/mfem/${MFEM_VERSION}/${VISITARCH}"
     if test "x${DO_STATIC_BUILD}" = "xyes" ; then
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
@@ -12780,6 +12993,8 @@ function build_mfem
     fi
     if [[ "$DO_FMS" == "yes" ]] ; then
         vopts="${vopts} -DMFEM_USE_FMS=ON -DFMS_DIR=${VISITDIR}/fms/${FMS_VERSION}/${VISITARCH}"
+    else
+        vopts="${vopts} -DMFEM_USE_FMS=OFF"
     fi
     vopts="${vopts} -DMFEM_USE_ZLIB=ON"
 
@@ -12942,116 +13157,6 @@ function bv_mili_dry_run
 #                          Function 8.2, build_mili                           #
 # *************************************************************************** #
 
-function apply_mili_100_darwin_patch
-{
-    patch -p0 << \EOF
-diff -c a/src/mili_internal.h mili/src/mili_internal.h
-*** a/src/mili_internal.h
---- mili/src/mili_internal.h
-***************
-*** 54,59 ****
---- 54,60 ----
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <dirent.h>
-+ #include <sys/types.h>
-  #include "list.h"
-  #include "misc.h"
-  #include "mili.h"
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply Darwin patch to Mili 1.10.0."
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_mili_100_patch
-{
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        apply_mili_100_darwin_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
-    return 0
-}
-
-function apply_mili_111_patch_1
-{
-    patch -p0 << \EOF
-diff -c a/src/mili.h mili/src/mili.h
-*** a/src/mili.h
---- mili/src/mili.h
-***************
-*** 226,232 ****
-  } ObjDef;
-
-  /* Mili version */
-! const char *mili_version;
-
-  /*
-                  * *                                      * *
---- 226,232 ----
-  } ObjDef;
-
-  /* Mili version */
-! extern const char *mili_version;
-
-  /*
-                  * *                                      * *
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 1 to Mili 1.11.1."
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_mili_111_patch_2
-{
-    patch -p0 << \EOF
-diff -c a/src/mili.c mili/src/mili.c
-*** a/src/mili.c
---- mili/src/mili.c
-***************
-*** 94,99 ****
---- 94,102 ----
-                           && ( f->ti_directory[f->ti_file_count - 1].commit_count == 0\
-                                || f->non_state_ready ) )
-
-+ /* Mili version */
-+ const char *mili_version;
-+
-  static void set_path( char *in_path, char **out_path, int *out_path_len );
-  static void map_old_header( char header[CHAR_HEADER_SIZE] );
-  static Return_value create_family( Mili_family * );
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply patch 2 to Mili 1.11.1."
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_mili_111_patch
-{
-    apply_mili_111_patch_1
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-    apply_mili_111_patch_2
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    return 0
-}
-
 function apply_mili_151_darwin_patch1
 {
     patch -p0 << \EOF
@@ -13195,638 +13300,9 @@ EOF
     return 0
 }
 
-function apply_mili_151_darwin_patch4
-{
-    patch -p0 << \EOF
---- mili/configure	2015-09-11 06:32:00.000000000 -0700
-+++ mili/configure_minus_fortran	2016-06-22 09:34:12.000000000 -0700
-@@ -1,5 +1,5 @@
- #! /bin/sh
--# From configure.ac Revision: 1.26.4.1 .
-+# From configure.ac Revision: 1.26.4.2 .
- # Guess values for system-dependent variables and create Makefiles.
- # Generated by GNU Autoconf 2.63 for Mili V15_01.
- #
-@@ -721,16 +721,13 @@
- EGREP
- GREP
- CPP
-+OBJEXT
-+EXEEXT
- ac_ct_CC
- CPPFLAGS
-+LDFLAGS
- CFLAGS
- CC
--OBJEXT
--EXEEXT
--ac_ct_F77
--LDFLAGS
--FFLAGS
--F77
- HOSTNAME
- HOSTDIR
- HDF_DEBUG_ENABLE
-@@ -830,12 +827,10 @@
-       ac_precious_vars='build_alias
- host_alias
- target_alias
--F77
--FFLAGS
--LDFLAGS
--LIBS
- CC
- CFLAGS
-+LDFLAGS
-+LIBS
- CPPFLAGS
- CPP'
- 
-@@ -1484,13 +1479,11 @@
-   --with-usrbuild=PATH    Use given PATH for BUILD DIRECTORY
- 
- Some influential environment variables:
--  F77         Fortran 77 compiler command
--  FFLAGS      Fortran 77 compiler flags
-+  CC          C compiler command
-+  CFLAGS      C compiler flags
-   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
-               nonstandard directory <lib dir>
-   LIBS        libraries to pass to the linker, e.g. -l<library>
--  CC          C compiler command
--  CFLAGS      C compiler flags
-   CPPFLAGS    C/C++/Objective C preprocessor flags, e.g. -I<include dir> if
-               you have headers in a nonstandard directory <include dir>
-   CPP         C preprocessor
-@@ -2096,20 +2089,20 @@
- # Variable Initialization
- 
- cat >>confdefs.h <<\_ACEOF
--#define PACKAGE_DATE "2015/09/11"
-+#define PACKAGE_DATE "2015/09/18"
- _ACEOF
- 
- 
- cat >>confdefs.h <<\_ACEOF
--#define PACKAGE_TIME "06:00:00"
-+#define PACKAGE_TIME "09:00:00"
- _ACEOF
- 
- 
- cat >>confdefs.h <<\_ACEOF
--#define PACKAGE_DATETIME "2015/09/11 06:00:00"
-+#define PACKAGE_DATETIME "2015/09/18 09:00:00"
- _ACEOF
- 
--PACKAGE_DATETIME="2015/09/11 06:00:00"
-+PACKAGE_DATETIME="2015/09/18 09:00:00"
- 
- 
- #############################################################################
-@@ -2441,22 +2434,24 @@
- # select compiler
- 
- #AC_PROG_FC
--ac_ext=f
--ac_compile='$F77 -c $FFLAGS conftest.$ac_ext >&5'
--ac_link='$F77 -o conftest$ac_exeext $FFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
--ac_compiler_gnu=$ac_cv_f77_compiler_gnu
-+#AC_PROG_F77([ifort xlf gfortran])
-+ac_ext=c
-+ac_cpp='$CPP $CPPFLAGS'
-+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-+ac_compiler_gnu=$ac_cv_c_compiler_gnu
- if test -n "$ac_tool_prefix"; then
--  for ac_prog in ifort xlf gfortran
-+  for ac_prog in icc xlc gcc
-   do
-     # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
- set dummy $ac_tool_prefix$ac_prog; ac_word=$2
- { $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
- $as_echo_n "checking for $ac_word... " >&6; }
--if test "${ac_cv_prog_F77+set}" = set; then
-+if test "${ac_cv_prog_CC+set}" = set; then
-   $as_echo_n "(cached) " >&6
- else
--  if test -n "$F77"; then
--  ac_cv_prog_F77="$F77" # Let the user override the test.
-+  if test -n "$CC"; then
-+  ac_cv_prog_CC="$CC" # Let the user override the test.
- else
- as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
- for as_dir in $PATH
-@@ -2465,7 +2460,7 @@
-   test -z "$as_dir" && as_dir=.
-   for ac_exec_ext in '' $ac_executable_extensions; do
-   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
--    ac_cv_prog_F77="$ac_tool_prefix$ac_prog"
-+    ac_cv_prog_CC="$ac_tool_prefix$ac_prog"
-     $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-     break 2
-   fi
-@@ -2475,32 +2470,32 @@
- 
- fi
- fi
--F77=$ac_cv_prog_F77
--if test -n "$F77"; then
--  { $as_echo "$as_me:$LINENO: result: $F77" >&5
--$as_echo "$F77" >&6; }
-+CC=$ac_cv_prog_CC
-+if test -n "$CC"; then
-+  { $as_echo "$as_me:$LINENO: result: $CC" >&5
-+$as_echo "$CC" >&6; }
- else
-   { $as_echo "$as_me:$LINENO: result: no" >&5
- $as_echo "no" >&6; }
- fi
- 
- 
--    test -n "$F77" && break
-+    test -n "$CC" && break
-   done
- fi
--if test -z "$F77"; then
--  ac_ct_F77=$F77
--  for ac_prog in ifort xlf gfortran
-+if test -z "$CC"; then
-+  ac_ct_CC=$CC
-+  for ac_prog in icc xlc gcc
- do
-   # Extract the first word of "$ac_prog", so it can be a program name with args.
- set dummy $ac_prog; ac_word=$2
- { $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
- $as_echo_n "checking for $ac_word... " >&6; }
--if test "${ac_cv_prog_ac_ct_F77+set}" = set; then
-+if test "${ac_cv_prog_ac_ct_CC+set}" = set; then
-   $as_echo_n "(cached) " >&6
- else
--  if test -n "$ac_ct_F77"; then
--  ac_cv_prog_ac_ct_F77="$ac_ct_F77" # Let the user override the test.
-+  if test -n "$ac_ct_CC"; then
-+  ac_cv_prog_ac_ct_CC="$ac_ct_CC" # Let the user override the test.
- else
- as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
- for as_dir in $PATH
-@@ -2509,7 +2504,7 @@
-   test -z "$as_dir" && as_dir=.
-   for ac_exec_ext in '' $ac_executable_extensions; do
-   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
--    ac_cv_prog_ac_ct_F77="$ac_prog"
-+    ac_cv_prog_ac_ct_CC="$ac_prog"
-     $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
-     break 2
-   fi
-@@ -2519,21 +2514,21 @@
- 
- fi
- fi
--ac_ct_F77=$ac_cv_prog_ac_ct_F77
--if test -n "$ac_ct_F77"; then
--  { $as_echo "$as_me:$LINENO: result: $ac_ct_F77" >&5
--$as_echo "$ac_ct_F77" >&6; }
-+ac_ct_CC=$ac_cv_prog_ac_ct_CC
-+if test -n "$ac_ct_CC"; then
-+  { $as_echo "$as_me:$LINENO: result: $ac_ct_CC" >&5
-+$as_echo "$ac_ct_CC" >&6; }
- else
-   { $as_echo "$as_me:$LINENO: result: no" >&5
- $as_echo "no" >&6; }
- fi
- 
- 
--  test -n "$ac_ct_F77" && break
-+  test -n "$ac_ct_CC" && break
- done
- 
--  if test "x$ac_ct_F77" = x; then
--    F77=""
-+  if test "x$ac_ct_CC" = x; then
-+    CC=""
-   else
-     case $cross_compiling:$ac_tool_warned in
- yes:)
-@@ -2541,13 +2536,21 @@
- $as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
- ac_tool_warned=yes ;;
- esac
--    F77=$ac_ct_F77
-+    CC=$ac_ct_CC
-   fi
- fi
- 
- 
-+test -z "$CC" && { { $as_echo "$as_me:$LINENO: error: in \`$ac_pwd':" >&5
-+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-+{ { $as_echo "$as_me:$LINENO: error: no acceptable C compiler found in \$PATH
-+See \`config.log' for more details." >&5
-+$as_echo "$as_me: error: no acceptable C compiler found in \$PATH
-+See \`config.log' for more details." >&2;}
-+   { (exit 1); exit 1; }; }; }
-+
- # Provide some information about the compiler.
--$as_echo "$as_me:$LINENO: checking for Fortran 77 compiler version" >&5
-+$as_echo "$as_me:$LINENO: checking for C compiler version" >&5
- set X $ac_compile
- ac_compiler=$2
- { (ac_try="$ac_compiler --version >&5"
-@@ -2583,20 +2586,29 @@
-   ac_status=$?
-   $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-   (exit $ac_status); }
--rm -f a.out
- 
- cat >conftest.$ac_ext <<_ACEOF
--      program main
-+/* confdefs.h.  */
-+_ACEOF
-+cat confdefs.h >>conftest.$ac_ext
-+cat >>conftest.$ac_ext <<_ACEOF
-+/* end confdefs.h.  */
- 
--      end
-+int
-+main ()
-+{
-+
-+  ;
-+  return 0;
-+}
- _ACEOF
- ac_clean_files_save=$ac_clean_files
- ac_clean_files="$ac_clean_files a.out a.out.dSYM a.exe b.out"
- # Try to create an executable without -o first, disregard a.out.
- # It will help us diagnose broken compilers, and finding out an intuition
- # of exeext.
--{ $as_echo "$as_me:$LINENO: checking for Fortran 77 compiler default output file name" >&5
--$as_echo_n "checking for Fortran 77 compiler default output file name... " >&6; }
-+{ $as_echo "$as_me:$LINENO: checking for C compiler default output file name" >&5
-+$as_echo_n "checking for C compiler default output file name... " >&6; }
- ac_link_default=`$as_echo "$ac_link" | sed 's/ -o *conftest[^ ]*//'`
- 
- # The possible output files:
-@@ -2667,9 +2679,9 @@
- 
- { { $as_echo "$as_me:$LINENO: error: in \`$ac_pwd':" >&5
- $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
--{ { $as_echo "$as_me:$LINENO: error: Fortran 77 compiler cannot create executables
-+{ { $as_echo "$as_me:$LINENO: error: C compiler cannot create executables
- See \`config.log' for more details." >&5
--$as_echo "$as_me: error: Fortran 77 compiler cannot create executables
-+$as_echo "$as_me: error: C compiler cannot create executables
- See \`config.log' for more details." >&2;}
-    { (exit 77); exit 77; }; }; }
- fi
-@@ -2678,8 +2690,8 @@
- 
- # Check that the compiler produces executables we can run.  If not, either
- # the compiler is broken, or we cross compile.
--{ $as_echo "$as_me:$LINENO: checking whether the Fortran 77 compiler works" >&5
--$as_echo_n "checking whether the Fortran 77 compiler works... " >&6; }
-+{ $as_echo "$as_me:$LINENO: checking whether the C compiler works" >&5
-+$as_echo_n "checking whether the C compiler works... " >&6; }
- # FIXME: These cross compiler hacks should be removed for Autoconf 3.0
- # If not cross compiling, check that we can run a simple program.
- if test "$cross_compiling" != yes; then
-@@ -2701,10 +2713,10 @@
-     else
- 	{ { $as_echo "$as_me:$LINENO: error: in \`$ac_pwd':" >&5
- $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
--{ { $as_echo "$as_me:$LINENO: error: cannot run Fortran 77 compiled programs.
-+{ { $as_echo "$as_me:$LINENO: error: cannot run C compiled programs.
- If you meant to cross compile, use \`--host'.
- See \`config.log' for more details." >&5
--$as_echo "$as_me: error: cannot run Fortran 77 compiled programs.
-+$as_echo "$as_me: error: cannot run C compiled programs.
- If you meant to cross compile, use \`--host'.
- See \`config.log' for more details." >&2;}
-    { (exit 1); exit 1; }; }; }
-@@ -2772,9 +2784,19 @@
-   $as_echo_n "(cached) " >&6
- else
-   cat >conftest.$ac_ext <<_ACEOF
--      program main
-+/* confdefs.h.  */
-+_ACEOF
-+cat confdefs.h >>conftest.$ac_ext
-+cat >>conftest.$ac_ext <<_ACEOF
-+/* end confdefs.h.  */
-+
-+int
-+main ()
-+{
- 
--      end
-+  ;
-+  return 0;
-+}
- _ACEOF
- rm -f conftest.o conftest.obj
- if { (ac_try="$ac_compile"
-@@ -2815,280 +2837,6 @@
- $as_echo "$ac_cv_objext" >&6; }
- OBJEXT=$ac_cv_objext
- ac_objext=$OBJEXT
--# If we don't use `.F' as extension, the preprocessor is not run on the
--# input file.  (Note that this only needs to work for GNU compilers.)
--ac_save_ext=$ac_ext
--ac_ext=F
--{ $as_echo "$as_me:$LINENO: checking whether we are using the GNU Fortran 77 compiler" >&5
--$as_echo_n "checking whether we are using the GNU Fortran 77 compiler... " >&6; }
--if test "${ac_cv_f77_compiler_gnu+set}" = set; then
--  $as_echo_n "(cached) " >&6
--else
--  cat >conftest.$ac_ext <<_ACEOF
--      program main
--#ifndef __GNUC__
--       choke me
--#endif
--
--      end
--_ACEOF
--rm -f conftest.$ac_objext
--if { (ac_try="$ac_compile"
--case "(($ac_try" in
--  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
--  *) ac_try_echo=$ac_try;;
--esac
--eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
--$as_echo "$ac_try_echo") >&5
--  (eval "$ac_compile") 2>conftest.er1
--  ac_status=$?
--  grep -v '^ *+' conftest.er1 >conftest.err
--  rm -f conftest.er1
--  cat conftest.err >&5
--  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
--  (exit $ac_status); } && {
--	 test -z "$ac_f77_werror_flag" ||
--	 test ! -s conftest.err
--       } && test -s conftest.$ac_objext; then
--  ac_compiler_gnu=yes
--else
--  $as_echo "$as_me: failed program was:" >&5
--sed 's/^/| /' conftest.$ac_ext >&5
--
--	ac_compiler_gnu=no
--fi
--
--rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
--ac_cv_f77_compiler_gnu=$ac_compiler_gnu
--
--fi
--{ $as_echo "$as_me:$LINENO: result: $ac_cv_f77_compiler_gnu" >&5
--$as_echo "$ac_cv_f77_compiler_gnu" >&6; }
--ac_ext=$ac_save_ext
--ac_test_FFLAGS=${FFLAGS+set}
--ac_save_FFLAGS=$FFLAGS
--FFLAGS=
--{ $as_echo "$as_me:$LINENO: checking whether $F77 accepts -g" >&5
--$as_echo_n "checking whether $F77 accepts -g... " >&6; }
--if test "${ac_cv_prog_f77_g+set}" = set; then
--  $as_echo_n "(cached) " >&6
--else
--  FFLAGS=-g
--cat >conftest.$ac_ext <<_ACEOF
--      program main
--
--      end
--_ACEOF
--rm -f conftest.$ac_objext
--if { (ac_try="$ac_compile"
--case "(($ac_try" in
--  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
--  *) ac_try_echo=$ac_try;;
--esac
--eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
--$as_echo "$ac_try_echo") >&5
--  (eval "$ac_compile") 2>conftest.er1
--  ac_status=$?
--  grep -v '^ *+' conftest.er1 >conftest.err
--  rm -f conftest.er1
--  cat conftest.err >&5
--  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
--  (exit $ac_status); } && {
--	 test -z "$ac_f77_werror_flag" ||
--	 test ! -s conftest.err
--       } && test -s conftest.$ac_objext; then
--  ac_cv_prog_f77_g=yes
--else
--  $as_echo "$as_me: failed program was:" >&5
--sed 's/^/| /' conftest.$ac_ext >&5
--
--	ac_cv_prog_f77_g=no
--fi
--
--rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
--
--fi
--{ $as_echo "$as_me:$LINENO: result: $ac_cv_prog_f77_g" >&5
--$as_echo "$ac_cv_prog_f77_g" >&6; }
--if test "$ac_test_FFLAGS" = set; then
--  FFLAGS=$ac_save_FFLAGS
--elif test $ac_cv_prog_f77_g = yes; then
--  if test "x$ac_cv_f77_compiler_gnu" = xyes; then
--    FFLAGS="-g -O2"
--  else
--    FFLAGS="-g"
--  fi
--else
--  if test "x$ac_cv_f77_compiler_gnu" = xyes; then
--    FFLAGS="-O2"
--  else
--    FFLAGS=
--  fi
--fi
--
--if test $ac_compiler_gnu = yes; then
--  G77=yes
--else
--  G77=
--fi
--ac_ext=c
--ac_cpp='$CPP $CPPFLAGS'
--ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
--ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
--ac_compiler_gnu=$ac_cv_c_compiler_gnu
--
--ac_ext=c
--ac_cpp='$CPP $CPPFLAGS'
--ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
--ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
--ac_compiler_gnu=$ac_cv_c_compiler_gnu
--if test -n "$ac_tool_prefix"; then
--  for ac_prog in icc xlc gcc
--  do
--    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
--set dummy $ac_tool_prefix$ac_prog; ac_word=$2
--{ $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
--$as_echo_n "checking for $ac_word... " >&6; }
--if test "${ac_cv_prog_CC+set}" = set; then
--  $as_echo_n "(cached) " >&6
--else
--  if test -n "$CC"; then
--  ac_cv_prog_CC="$CC" # Let the user override the test.
--else
--as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
--for as_dir in $PATH
--do
--  IFS=$as_save_IFS
--  test -z "$as_dir" && as_dir=.
--  for ac_exec_ext in '' $ac_executable_extensions; do
--  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
--    ac_cv_prog_CC="$ac_tool_prefix$ac_prog"
--    $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
--    break 2
--  fi
--done
--done
--IFS=$as_save_IFS
--
--fi
--fi
--CC=$ac_cv_prog_CC
--if test -n "$CC"; then
--  { $as_echo "$as_me:$LINENO: result: $CC" >&5
--$as_echo "$CC" >&6; }
--else
--  { $as_echo "$as_me:$LINENO: result: no" >&5
--$as_echo "no" >&6; }
--fi
--
--
--    test -n "$CC" && break
--  done
--fi
--if test -z "$CC"; then
--  ac_ct_CC=$CC
--  for ac_prog in icc xlc gcc
--do
--  # Extract the first word of "$ac_prog", so it can be a program name with args.
--set dummy $ac_prog; ac_word=$2
--{ $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
--$as_echo_n "checking for $ac_word... " >&6; }
--if test "${ac_cv_prog_ac_ct_CC+set}" = set; then
--  $as_echo_n "(cached) " >&6
--else
--  if test -n "$ac_ct_CC"; then
--  ac_cv_prog_ac_ct_CC="$ac_ct_CC" # Let the user override the test.
--else
--as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
--for as_dir in $PATH
--do
--  IFS=$as_save_IFS
--  test -z "$as_dir" && as_dir=.
--  for ac_exec_ext in '' $ac_executable_extensions; do
--  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
--    ac_cv_prog_ac_ct_CC="$ac_prog"
--    $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
--    break 2
--  fi
--done
--done
--IFS=$as_save_IFS
--
--fi
--fi
--ac_ct_CC=$ac_cv_prog_ac_ct_CC
--if test -n "$ac_ct_CC"; then
--  { $as_echo "$as_me:$LINENO: result: $ac_ct_CC" >&5
--$as_echo "$ac_ct_CC" >&6; }
--else
--  { $as_echo "$as_me:$LINENO: result: no" >&5
--$as_echo "no" >&6; }
--fi
--
--
--  test -n "$ac_ct_CC" && break
--done
--
--  if test "x$ac_ct_CC" = x; then
--    CC=""
--  else
--    case $cross_compiling:$ac_tool_warned in
--yes:)
--{ $as_echo "$as_me:$LINENO: WARNING: using cross tools not prefixed with host triplet" >&5
--$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
--ac_tool_warned=yes ;;
--esac
--    CC=$ac_ct_CC
--  fi
--fi
--
--
--test -z "$CC" && { { $as_echo "$as_me:$LINENO: error: in \`$ac_pwd':" >&5
--$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
--{ { $as_echo "$as_me:$LINENO: error: no acceptable C compiler found in \$PATH
--See \`config.log' for more details." >&5
--$as_echo "$as_me: error: no acceptable C compiler found in \$PATH
--See \`config.log' for more details." >&2;}
--   { (exit 1); exit 1; }; }; }
--
--# Provide some information about the compiler.
--$as_echo "$as_me:$LINENO: checking for C compiler version" >&5
--set X $ac_compile
--ac_compiler=$2
--{ (ac_try="$ac_compiler --version >&5"
--case "(($ac_try" in
--  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
--  *) ac_try_echo=$ac_try;;
--esac
--eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
--$as_echo "$ac_try_echo") >&5
--  (eval "$ac_compiler --version >&5") 2>&5
--  ac_status=$?
--  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
--  (exit $ac_status); }
--{ (ac_try="$ac_compiler -v >&5"
--case "(($ac_try" in
--  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
--  *) ac_try_echo=$ac_try;;
--esac
--eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
--$as_echo "$ac_try_echo") >&5
--  (eval "$ac_compiler -v >&5") 2>&5
--  ac_status=$?
--  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
--  (exit $ac_status); }
--{ (ac_try="$ac_compiler -V >&5"
--case "(($ac_try" in
--  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
--  *) ac_try_echo=$ac_try;;
--esac
--eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
--$as_echo "$ac_try_echo") >&5
--  (eval "$ac_compiler -V >&5") 2>&5
--  ac_status=$?
--  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
--  (exit $ac_status); }
--
- { $as_echo "$as_me:$LINENO: checking whether we are using the GNU C compiler" >&5
- $as_echo_n "checking whether we are using the GNU C compiler... " >&6; }
- if test "${ac_cv_c_compiler_gnu+set}" = set; then
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to apply Darwin patch 4 to Mili 15.1"
-        return 1
-    fi
-
-    return 0
-}
-
 function apply_mili_patch
 {
-    if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
-        apply_mili_100_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
-        apply_mili_111_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    elif [[ (${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2) && "$OPSYS" == "Darwin" ]]; then
+    if [[ "$OPSYS" == "Darwin" ]]; then
         apply_mili_151_darwin_patch1
         if [[ $? != 0 ]] ; then
             return 1
@@ -13838,12 +13314,6 @@ function apply_mili_patch
         apply_mili_151_darwin_patch3
         if [[ $? != 0 ]] ; then
             return 1
-        fi
-        if [[ "${MILI_FILE}" == "mili_15_1.tar.gz" ]]; then
-            apply_mili_151_darwin_patch4
-            if [[ $? != 0 ]] ; then
-                return 1
-            fi
         fi
     fi
 
@@ -14505,240 +13975,6 @@ function bv_mpich_build
         fi
     fi
 }
-function bv_mxml_initialize
-{
-    export DO_MXML="no"
-}
-
-function bv_mxml_enable
-{
-    DO_MXML="yes"
-}
-
-function bv_mxml_disable
-{
-    DO_MXML="no"
-}
-
-function bv_mxml_depends_on
-{
-    echo ""
-}
-
-function bv_mxml_info
-{
-    export MXML_FILE=${MXML_FILE:-"mxml-2.6.tar.gz"}
-    export MXML_VERSION=${MXML_VERSION:-"2.6"}
-    export MXML_COMPATIBILITY_VERSION=${MXML_COMPATIBILITY_VERSION:-"2.6"}
-    export MXML_BUILD_DIR=${MXML_BUILD_DIR:-"mxml-2.6"}
-    export MXML_MD5_CHECKSUM="68977789ae64985dddbd1a1a1652642e"
-    export MXML_SHA256_CHECKSUM="b0d347da1a0d5a8c9e82f66087d55cfe499728dacae563740d7e733648c69795"
-}
-
-function bv_mxml_print
-{
-    printf "%s%s\n" "MXML_FILE=" "${MXML_FILE}"
-    printf "%s%s\n" "MXML_VERSION=" "${MXML_VERSION}"
-    printf "%s%s\n" "MXML_COMPATIBILITY_VERSION=" "${MXML_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "MXML_BUILD_DIR=" "${MXML_BUILD_DIR}"
-}
-
-function bv_mxml_host_profile
-{
-    #nothing to be done for now..
-    echo "##" >> $HOSTCONF
-}
-
-function bv_mxml_print_usage
-{
-    #mxml does not have an option, it is only dependent on mxml.
-    printf "%-20s %s [%s]\n" "--mxml" "Build Mxml" "$DO_MXML"
-}
-
-function bv_mxml_ensure
-{
-    if [[ "$DO_MXML" == "yes" ]] ; then
-        ensure_built_or_ready "mxml" $MXML_VERSION $MXML_BUILD_DIR $MXML_FILE
-        if [[ $? != 0 ]] ; then
-            ANY_ERRORS="yes"
-            DO_MXML="no"
-            error "Unable to build MXML.  ${MXML_FILE} not found."
-        fi
-    fi
-}
-
-function bv_mxml_dry_run
-{
-    if [[ "$DO_MXML" == "yes" ]] ; then
-        echo "Dry run option not set for MXML."
-    fi
-}
-
-function apply_mxml_26_darwin_patch
-{
-    info "Patching MXML for darwin build"
-    patch -p0 << \EOF
-diff -c mxml-2.6/Makefile.in mxml-2.6/Makefile.in.new
-*** mxml-2.6/Makefile.in	2016-06-21 14:05:57.000000000 -0600
---- mxml-2.6/Makefile.in.new	2016-06-21 14:07:38.000000000 -0600
-***************
-*** 344,353 ****
---- 344,355 ----
-  			--header doc/docset.header --intro doc/docset.intro \
-  			--css doc/docset.css --title "Mini-XML API Reference" \
-  			mxml.xml || exit 1; \
-+ 	    if test -e /Developer/usr/bin/docsetutil; then \
-  		/Developer/usr/bin/docsetutil package --output org.minixml.xar \
-  			--atom org.minixml.atom \
-  			--download-url http://www.minixml.org/org.minixml.xar \
-  			org.minixml.docset || exit 1; \
-+ 	    fi \
-  	fi
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Unable to patch MXML. Wrong version?"
-        return 1
-    fi
-
-    return 0
-}
-
-function apply_mxml_26_patch
-{
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        apply_mxml_26_darwin_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
-    return 0
-}
-
-function apply_mxml_patch
-{
-    if [[ ${MXML_VERSION} == 2.6 ]] ; then
-        apply_mxml_26_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
-    fi
-
-    return 0
-}
-
-# ***************************************************************************
-#                         Function 8.21, build_mxml
-# Required by ADIOS.
-#
-# Modifications:
-#
-# ***************************************************************************
-
-function build_mxml
-{
-    #
-    # Prepare build dir
-    #
-    prepare_build_dir $MXML_BUILD_DIR $MXML_FILE
-    untarred_mxml=$?
-    # 0, already exists, 1 untarred src, 2 error
-
-    if [[ $untarred_mxml == -1 ]] ; then
-        warn "Unable to prepare MXML Build Directory. Giving Up"
-        return 1
-    fi
-
-    #
-    # Apply patches
-    #
-    apply_mxml_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_mxml == 1 ]] ; then
-            warn "Giving up on MXML build because the patch failed."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
-    fi
-    
-    #
-    # Configure MXML
-    #
-    cd $MXML_BUILD_DIR || error "Can't cd to MXML build dir."
-
-    info "Configuring MXML . . ."
-    ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
-                CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-                --prefix="$VISITDIR/mxml/$MXML_VERSION/$VISITARCH" --disable-threads
-    if [[ $? != 0 ]] ; then
-        warn "mxml configure failed.  Giving up"
-        return 1
-    fi
-
-    #
-    # Build MXML
-    #
-    info "Building MXML . . . (~1 minutes)"
-
-    $MAKE $MAKE_OPT_FLAGS
-    if [[ $? != 0 ]] ; then
-        warn "mxml build failed.  Giving up"
-        return 1
-    fi
-    info "Installing MXML . . ."
-
-    $MAKE install
-    if [[ $? != 0 ]] ; then
-        warn "mxml build (make install) failed.  Giving up"
-        return 1
-    fi
-
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/mxml"
-        chgrp -R ${GROUP} "$VISITDIR/mxml"
-    fi
-    cd "$START_DIR"
-    info "Done with MXML"
-    return 0
-}
-
-function bv_mxml_is_enabled
-{
-    if [[ $DO_MXML == "yes" ]]; then
-        return 1    
-    fi
-    return 0
-}
-
-function bv_mxml_is_installed
-{
-    check_if_installed "mxml" $MXML_VERSION
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_mxml_build
-{
-    if [[ "$DO_MXML" == "yes" ]] ; then
-        check_if_installed "mxml" $MXML_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping build of MXML"
-        else
-            build_mxml
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install MXML.  Bailing out."
-            fi
-            info "Done building MXML"
-        fi
-    fi
-}
-
 function bv_nektarpp_initialize
 {
     export DO_NEKTAR_PLUS_PLUS="no"
@@ -16325,19 +15561,18 @@ function bv_osmesa_depends_on
 
 function bv_osmesa_info
 {
-    export OSMESA_VERSION=${OSMESA_VERSION:-"17.2.8"}
-    export OSMESA_FILE=${OSMESA_FILE:-"mesa-$OSMESA_VERSION.tar.gz"}
-    export OSMESA_URL=${OSMESA_URL:-"ftp://ftp.freedesktop.org/pub/mesa"}
+    export OSMESA_VERSION=${OSMESA_VERSION:-"17.3.9"}
+    export OSMESA_FILE=${OSMESA_FILE:-"mesa-$OSMESA_VERSION.tar.xz"}
+    export OSMESA_URL=${OSMESA_URL:-"https://archive.mesa3d.org/older-versions/17.x/"}
     export OSMESA_BUILD_DIR=${OSMESA_BUILD_DIR:-"mesa-$OSMESA_VERSION"}
-    export OSMESA_MD5_CHECKSUM="19832be1bc5784fc7bbad4d138537619"
-    export OSMESA_SHA256_CHECKSUM="c715c3a3d6fe26a69c096f573ec416e038a548f0405e3befedd5136517527a84"
+    export OSMESA_MD5_CHECKSUM="b8042f9970ea70a36da1ee1fae27c448"
+    export OSMESA_SHA256_CHECKSUM="c5beb5fc05f0e0c294fefe1a393ee118cb67e27a4dca417d77c297f7d4b6e479"
 }
 
 function bv_osmesa_print
 {
     printf "%s%s\n" "OSMESA_FILE=" "${OSMESA_FILE}"
     printf "%s%s\n" "OSMESA_VERSION=" "${OSMESA_VERSION}"
-    printf "%s%s\n" "OSMESA_TARGET=" "${OSMESA_TARGET}"
     printf "%s%s\n" "OSMESA_BUILD_DIR=" "${OSMESA_BUILD_DIR}"
 }
 
@@ -16415,26 +15650,27 @@ function apply_osmesa_patch
 {
     patch -p0 << \EOF
 diff -c configure.ac.orig configure.ac
-*** configure.ac.orig	Thu Oct 10 15:44:18 2019
---- configure.ac	Thu Oct 10 15:44:26 2019
+*** configure.ac.orig   Mon Jul 13 09:47:20 2020
+--- configure.ac        Mon Jul 13 09:50:37 2020
 ***************
-*** 2690,2696 ****
+*** 2653,2659 ****
+      dnl ourselves.
       dnl (See https://llvm.org/bugs/show_bug.cgi?id=6823)
-      if test "x$enable_llvm_shared_libs" = xyes; then
-          dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
-!         LLVM_SO_NAME=LLVM-`$LLVM_CONFIG --version`
-          AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
-  
-          if test "x$llvm_have_one_so" = xyes; then
---- 2690,2696 ----
+      dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
+!     LLVM_SO_NAME=LLVM-`$LLVM_CONFIG --version`
+      AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
+
+      if test "x$llvm_have_one_so" = xyes; then
+--- 2653,2659 ----
+      dnl ourselves.
       dnl (See https://llvm.org/bugs/show_bug.cgi?id=6823)
-      if test "x$enable_llvm_shared_libs" = xyes; then
-          dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
-!         LLVM_SO_NAME=LLVM-$LLVM_VERSION
-          AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
-  
-          if test "x$llvm_have_one_so" = xyes; then
+      dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
+!     LLVM_SO_NAME=LLVM-$LLVM_VERSION
+      AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.$IMP_LIB_EXT"], [llvm_have_one_so=yes])
+
+      if test "x$llvm_have_one_so" = xyes; then
 EOF
+
     if [[ $? != 0 ]] ; then
         warn "OSMesa patch failed."
         return 1
@@ -16505,6 +15741,7 @@ function build_osmesa
         --with-platforms= \
         --with-gallium-drivers=swrast,swr \
         --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC  $OSMESA_DEBUG_BUILD \
+        --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
@@ -16526,6 +15763,7 @@ function build_osmesa
         --with-platforms= \
         --with-gallium-drivers=swrast,swr \
         --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC $OSMESA_DEBUG_BUILD \
+        --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
 
     if [[ $? != 0 ]] ; then
@@ -17539,6 +16777,468 @@ function bv_pyqt_build
         fi
     fi
 }
+function bv_pyside_initialize
+{
+    export DO_PYSIDE="no"
+    export USE_SYSTEM_PYSIDE="no"
+    add_extra_commandline_args "pyside" "alt-pyside-dir" 1 "Use alternative directory for pyside"
+}
+
+function bv_pyside_enable
+{
+    DO_PYSIDE="yes"
+}
+
+function bv_pyside_disable
+{
+    DO_PYSIDE="no"
+}
+
+function bv_pyside_alt_pyside_dir
+{
+    bv_pyside_enable 
+    USE_SYSTEM_PYSIDE="yes"
+    PYSIDE_INSTALL_DIR="$1"
+    info "using alternative pyside directory: $PYSIDE_INSTALL_DIR" 
+}
+
+function bv_pyside_depends_on
+{
+    pdepends=""
+    if [[ "$USE_SYSTEM_PYSIDE" == "no" ]]; then
+        pdepends="cmake python qt"
+        # if CLANG_INSTALL_DIR or LLVM_INSTALL_DIR not set in env, then build it
+        if test -n $CLANG_INSTALL_DIR ; then
+            if test -n $LLVM_INSTALL_DIR ; then
+                pdepends="${pdepends} llvm"
+            fi
+        fi
+    fi
+    echo ${pdepends}
+}
+
+function bv_pyside_initialize_vars
+{
+    info "initialize PySide vars"
+}
+
+function bv_pyside_info
+{
+    export PYSIDE_VERSION=${PYSIDE_VERSION:-"5.14.2"}
+    export PYSIDE_FILE=${PYSIDE_FILE:-"pyside-setup-5.14.2.tar.gz"}
+    export PYSIDE_BUILD_DIR=${PYSIDE_BUILD_DIR:-"pyside-setup-5.14.2"}
+    export PYSIDE_MD5_CHECKSUM="862cfe43648fa64152864dafe2e03849"
+    export PYSIDE_SHA256_CHECKSUM="ff75f817b2de3e3b278d8f9e8269dd473c068e652264fc8e074af599a19b3c3a"
+}
+
+function bv_pyside_print
+{
+    printf "%s%s\n" "PYSIDE_FILE=" "${PYSIDE_FILE}"
+    printf "%s%s\n" "PYSIDE_VERSION=" "${PYSIDE_VERSION}"
+    printf "%s%s\n" "PYSIDE_PLATFORM=" "${PYSIDE_PLATFORM}"
+    printf "%s%s\n" "PYSIDE_BUILD_DIR=" "${PYSIDE_BUILD_DIR}"
+}
+
+function bv_pyside_print_usage
+{
+    printf "%-20s %s [%s]\n" "--pyside" "Build PySide" "$DO_PYSIDE"
+    if [[ "$DO_STATIC_BUILD" == "no" ]]; then
+        printf "%-20s %s [%s]\n" "--alt-pyside-dir" "Use PySide from an alternative directory"
+    fi
+}
+
+function bv_pyside_host_profile
+{
+    # $USE_SYSTEM_PYTHON == no implies we will install pyside within python's site-packages, so
+    # a host-profile entry won't be necessary.
+
+    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH issue can be resolved
+    #if [[ "$DO_PYSIDE" == "yes" && ("$USE_SYSTEM_PYSIDE" == "yes" || "$USE_SYSTEM_PYTHON" == "yes" ) ]] ; then
+    if [[ "$DO_PYSIDE" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## PySide" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "# version is needed by VisIt's Find module." >> $HOSTCONF
+        echo "set(PYSIDE_VERSION $PYSIDE_VERSION)" >> $HOSTCONF
+        if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then
+            echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR $PYSIDE_INSTALL_DIR)" >> $HOSTCONF
+        else
+            echo "VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR \${VISITHOME}/pyside/\${PYSIDE_VERSION}/\${VISITARCH})" >> $HOSTCONF
+        fi
+    fi
+}
+
+function bv_pyside_ensure
+{
+    if [[ "$DO_PYSIDE" = "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" && "$USE_SYSTEM_PYSIDE" == "no" ]] ; then
+        ensure_built_or_ready "pyside"     $PYSIDE_VERSION    $PYSIDE_BUILD_DIR    $PYSIDE_FILE 
+        if [[ $? != 0 ]] ; then
+            ANY_ERRORS="yes"
+            DO_PYSIDE="no"
+            error "Unable to build PySide.  ${PYSIDE_FILE} not found."
+        fi
+    fi
+}
+
+function bv_pyside_dry_run
+{
+    if [[ "$DO_PYSIDE" == "yes" ]] ; then
+        echo "Dry run option not set for pyside."
+    fi
+}
+
+# *************************************************************************** #
+#   Function 4.2, build_pyside
+# *************************************************************************** #
+
+function apply_pyside_5142_patch
+{
+    info "Patching Pyside2 5.14.2"
+    patch -p0 << \EOF
+diff -c sources/pyside2/PySide2/QtQml/CMakeLists.txt.orig sources/pyside2/PySide2/QtQml/CMakeLists.txt
+*** sources/pyside2/PySide2/QtQml/CMakeLists.txt.orig
+--- sources/pyside2/PySide2/QtQml/CMakeLists.txt
+***************
+*** 11,17 ****
+  ${QtQml_GEN_DIR}/qqmlcomponent_wrapper.cpp
+  ${QtQml_GEN_DIR}/qqmlcontext_wrapper.cpp
+  ${QtQml_GEN_DIR}/qqmlerror_wrapper.cpp
+! ${QtQml_GEN_DIR}/qqmldebuggingenabler_wrapper.cpp
+  ${QtQml_GEN_DIR}/qqmlengine_wrapper.cpp
+  ${QtQml_GEN_DIR}/qqmlexpression_wrapper.cpp
+  ${QtQml_GEN_DIR}/qqmlextensioninterface_wrapper.cpp
+--- 11,17 ----
+  ${QtQml_GEN_DIR}/qqmlcomponent_wrapper.cpp
+  ${QtQml_GEN_DIR}/qqmlcontext_wrapper.cpp
+  ${QtQml_GEN_DIR}/qqmlerror_wrapper.cpp
+! #${QtQml_GEN_DIR}/qqmldebuggingenabler_wrapper.cpp
+  ${QtQml_GEN_DIR}/qqmlengine_wrapper.cpp
+  ${QtQml_GEN_DIR}/qqmlexpression_wrapper.cpp
+  ${QtQml_GEN_DIR}/qqmlextensioninterface_wrapper.cpp
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Pyside2 patch1 failed."
+        return 1
+    fi
+
+# wrap find_package(Pythonxxx) calls in if (NOT PYTHON_FOUND)
+# to prevent a cmake error during VisIt's FindPySide call to find_package(Shiboken2)
+
+    patch -p0 << \EOF
+diff -c sources/shiboken2/data/shiboken_helpers.cmake.orig sources/shiboken2/data/shiboken_helpers.cmake
+*** sources/shiboken2/data/shiboken_helpers.cmake.orig  Fri Dec  4 13:46:36 2020
+--- sources/shiboken2/data/shiboken_helpers.cmake       Fri Dec  4 13:48:03 2020
+***************
+*** 314,319 ****
+--- 314,320 ----
+  
+  
+  macro(shiboken_find_required_python)
++   if(NOT PYTHON_FOUND)
+      if(${ARGC} GREATER 0)
+          find_package(PythonInterp ${ARGV0} REQUIRED)
+          find_package(PythonLibs ${ARGV0} REQUIRED)
+***************
+*** 324,329 ****
+--- 325,331 ----
+          find_package(PythonInterp REQUIRED)
+          find_package(PythonLibs REQUIRED)
+      endif()
++   endif()
+      shiboken_validate_python_version()
+  
+      set(SHIBOKEN_PYTHON_INTERPRETER "${PYTHON_EXECUTABLE}")
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Pyside2 patch2 failed."
+        return 1
+    fi
+
+    return 0
+}
+
+function apply_pyside_5142_mesagl_patch
+{
+    info "Patching Pyside2 5.14.2 for mesagl"
+    patch -p0 << \EOF
+diff -c ./sources/pyside2/cmake/Macros/PySideModules.cmake.orig ./sources/pyside2/cmake/Macros/PySideModules.cmake
+*** ./sources/pyside2/cmake/Macros/PySideModules.cmake.orig     2021-03-22 18:05:51.200000000 +0000
+--- ./sources/pyside2/cmake/Macros/PySideModules.cmake  2021-03-22 18:05:02.630000000 +0000
+***************
+*** 91,97 ****
+      list(REMOVE_DUPLICATES total_type_system_files)
+
+      # Contains include directories to pass to shiboken's preprocessor.
+!     set(shiboken_include_dirs ${pyside2_SOURCE_DIR}${PATH_SEP}${QT_INCLUDE_DIR})
+      set(shiboken_framework_include_dirs_option "")
+      if(CMAKE_HOST_APPLE)
+          set(shiboken_framework_include_dirs "${QT_FRAMEWORK_INCLUDE_DIR}")
+--- 91,97 ----
+      list(REMOVE_DUPLICATES total_type_system_files)
+
+      # Contains include directories to pass to shiboken's preprocessor.
+!     set(shiboken_include_dirs ${pyside2_SOURCE_DIR}${PATH_SEP}${QT_INCLUDE_DIR}${PATH_SEP}${VISITDIR}/mesagl/${MESAGL_VERSION}/${VISITARCH}/include)
+      set(shiboken_framework_include_dirs_option "")
+      if(CMAKE_HOST_APPLE)
+          set(shiboken_framework_include_dirs "${QT_FRAMEWORK_INCLUDE_DIR}")
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Pyside2 mesagl patch failed."
+        return 1
+    fi
+
+    ##
+    ## I couldn't get the bash variables to expand in the patch, so I
+    ## did it with sed after the fact. The first sed command contains
+    ## bash magic since VISITDIR contains imbedded slashes. The link
+    ## that explains the magic is at:
+    ## https://stackoverflow.com/questions/27787536/how-to-pass-a-variable-containing-slashes-to-sed/27787551
+    ##
+    sed -i -e "s/\${VISITDIR}/${VISITDIR//\//\\/}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
+    sed -i -e "s/\${MESAGL_VERSION}/${MESAGL_VERSION}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
+    sed -i -e "s/\${VISITARCH}/${VISITARCH}/" ./sources/pyside2/cmake/Macros/PySideModules.cmake
+
+    return 0
+}
+
+function apply_pyside_patch
+{
+    if [[ ${PYSIDE_VERSION} == 5.14.2 ]] ; then
+        apply_pyside_5142_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            if [[ "$OPSYS" == "Linux" ]]; then
+                apply_pyside_5142_mesagl_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        fi
+    fi
+
+    return 0
+}
+
+function build_pyside
+{
+    ##
+    ## Prepare the build dir using src file.
+    ##
+
+    prepare_build_dir $PYSIDE_BUILD_DIR $PYSIDE_FILE
+    untarred_pyside=$?
+    ## 0, already exists, 1  untarred src, 2 error
+
+    if [[ untarred_pyside == -1 ]] ; then
+        warn "Unable to prepare PySide build directory. Giving Up!"
+        return 1
+    fi
+
+    cd $PYSIDE_BUILD_DIR || error "Can't cd to PySide build dir."
+
+    ##
+    ## Apply patches
+    ##
+
+    apply_pyside_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_pyside == 1 ]] ; then
+            warn "Giving up on pyside build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing. I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    cd "$START_DIR"
+    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH issue can be resolved
+    #if [[ "$USE_SYSTEM_PYTHON" == "yes" ]] ; then
+        # we are using system python, do the build that installs pyside as a stand-alone package
+        info "Pyside being built as stand-alone"
+        VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
+
+        pyside_opts=""
+        # for finding qt
+        pyside_opts="${pyside_opts} -DCMAKE_PREFIX_PATH:PATH=${QT_INSTALL_DIR}/lib/cmake/"
+
+        # for finding python
+        pyside_opts="${pyside_opts} -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_COMMAND}"
+
+        # general cmake options
+        pyside_opts="${pyside_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+        pyside_opts="${pyside_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+        pyside_opts="${pyside_opts} -DCMAKE_C_FLAGS:STRING=\"${CFLAGS} ${C_OPT_FLAGS}\""
+        pyside_opts="${pyside_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXXFLAGS} ${CXX_OPT_FLAGS}\""
+        pyside_opts="${pyside_opts} -DCMAKE_SKIP_BUILD_RPATH:BOOL=false"
+        pyside_opts="${pyside_opts} -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=false"
+        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=true"
+        pyside_opts="${pyside_opts} -DCMAKE_BUILD_TYPE:STRING=\"${VISIT_BUILD_MODE}\""
+
+        # pyside options
+        pyside_opts="${pyside_opts} -DBUILD_TESTS:BOOL=FALSE"
+        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_PREFIX:PATH=\"$VISIT_PYSIDE_DIR\""
+        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_RPATH:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
+        pyside_opts="${pyside_opts} -DCMAKE_INSTALL_NAME_DIR:FILEPATH=\"$VISIT_PYSIDE_DIR/lib\""
+     
+
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            pyside_opts="${pyside_opts} -DGL_H=${MESAGL_INCLUDE_DIR}/GL/gl.h"
+        fi
+
+        CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+
+        PYSIDE_SRC_DIR=$PYSIDE_BUILD_DIR
+        PYSIDE_BUILD_DIR="${PYSIDE_SRC_DIR}-build"
+        if [[ ! -d $PYSIDE_BUILD_DIR ]] ; then
+            echo "Making build directory $PYSIDE_BUILD_DIR"
+            mkdir $PYSIDE_BUILD_DIR
+        fi
+
+        info "pyside build dir ${PYSIDE_BUILD_DIR}"
+
+        cd "${PYSIDE_BUILD_DIR}"
+
+        if test -e bv_run_cmake.sh ; then
+            rm -f bv_run_cmake.sh
+        fi
+
+        info "Configuring pyside . . ."
+
+        # Note:
+        # The pyside build process needs to resolve OpenGL libs several
+        # times. If we are using mesa as gl, we need to provide the proper
+        # path to gl via LD_LIBRARY_PATH
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            export LD_LIBRARY_PATH=${MESAGL_LIB_DIR}:${LD_LIBRARY_PATH}
+        fi
+
+        # If we are using our own llvm, then we need to provide the path
+        # to libLLVM.
+        if [[ "$DO_LLVM" == "yes" ]] ; then
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                export DYLD_LIBRARY_PATH="$VISITDIR/llvm/$BV_LLVM_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+            else
+                export LD_LIBRARY_PATH="$VISITDIR/llvm/$BV_LLVM_VERSION/$VISITARCH/lib":$LD_LIBRARY_PATH
+            fi
+        fi
+
+        echo "\"${CMAKE_BIN}\"" ${pyside_opts} ../${PYSIDE_SRC_DIR} > bv_run_cmake.sh
+        cat bv_run_cmake.sh
+        issue_command bash bv_run_cmake.sh || error "pyside configuration failed."
+
+        info "Building pyside . . ."
+        $MAKE $MAKE_OPT_FLAGS ||  error "PySide did not build correctly. Giving up."
+
+        info "Installing pyside . . ."
+        $MAKE install || error "PySide did not install correctly."
+
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+
+        chmod -R ug+w,a+rX "$VISITDIR/pyside"
+        if [[ "$DO_GROUP" == "yes" ]] ; then
+            chgrp -R ${GROUP} "$VISITDIR/pyside"
+        fi
+    #else
+    #    # we aren't using system python, do the build that installs pyside in python's site-packages
+    #    info "Pyside being built as python module"
+    #    cd "$PYSIDE_BUILD_DIR"
+    #    # do a python build/install
+    #    info "Installing pyside ..."
+    #
+    #    pysideenv=""
+    #    #if [[ "$DO_LLVM" == "yes" ]] ; then
+    #    #    pysideenv="env CLANG_INSTALL_DIR=${VISIT_CLANG_DIR} LD_LIBRARY_PATH=${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+    #    #fi
+    #    ${pysideenv} ${PYTHON_COMMAND} ./setup.py install  --ignore-git --parallel=8 \
+    #        --qmake=${QT_BIN_DIR}/qmake \
+    #        --cmake=${CMAKE_INSTALL}/cmake \
+    #        --openssl=$VISIT_DIR/openssl/$OPENSSL_VERSION/$VISITARCH/bin
+    #
+    #    if test $? -ne 0 ; then
+    #        warn "Could not install pyside"
+    #        return 1
+    #    fi
+    #
+    #    # fix the perms
+    #    if [[ "$DO_GROUP" == "yes" ]] ; then
+    #        chmod -R ug+w,a+rX "$VISITDIR/python"
+    #        chgrp -R ${GROUP} "$VISITDIR/python"
+    #    fi
+    #
+    #fi
+
+    cd "$START_DIR"
+    info "Done with PySide"
+
+    return 0
+}
+
+function bv_pyside_is_enabled
+{
+    if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]]; then
+        return 0;
+    fi 
+    if [[ $DO_PYSIDE == "yes" ]]; then
+        return 1    
+    fi
+    return 0
+}
+
+function bv_pyside_is_installed
+{
+    if [[ "$USE_SYSTEM_PYSIDE" == "yes" ]]; then 
+        return 1
+    fi
+
+
+    # KSB 1-14-21 disable in-python builds until the LD_LIBRARY_PATH issue can be resolved
+    #if [[ "$USE_SYSTEM_PYTHON" == "yes" ]] ; then
+        VISIT_PYSIDE_DIR="${VISITDIR}/pyside/${PYSIDE_VERSION}/${VISITARCH}/"
+        check_if_installed "pyside" $PYSIDE_VERSION
+        if [[ $? != 0 ]] ; then
+            return 0
+        fi
+    #else
+    #    # check in python
+    #    if [[ ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/PySide2" ||
+    #          ! -e "${VISIT_PYTHON_DIR}/lib/python${PYTHON_COMPATIBILITY_VERSION}/site-packages/shiboken2"  ]]; then
+    #        info "pyside not installed"
+    #        return 0
+    #    fi
+    #fi
+    return 1
+}
+
+function bv_pyside_build
+{
+    #
+    # Build PySide
+    #
+    cd "$START_DIR"
+    if [[ "$DO_PYSIDE" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" && "$USE_SYSTEM_PYSIDE" == "no" ]] ; then
+        bv_pyside_is_installed #this returns 1 for true, 0 for false
+        if [[ $? != 0 ]] ; then
+            info "Skipping PySide build.  PySide is already installed."
+        else
+            info "Building PySide (~20 minutes)"
+            build_pyside
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install PySide.  Bailing out."
+            fi
+            info "Done building PySide"
+        fi
+    fi
+}
 # *************************************************************************** #
 # Function: check_if_py_module_installed                                      #
 #                                                                             #
@@ -17660,13 +17360,32 @@ function python_set_vars_helper
 function bv_python_system_python
 {
     echo "Using system python"
-    TEST=`which python-config`
-    [ $? != 0 ] && error "System python-config not found, cannot configure python"
 
-    bv_python_enable
+    # this method uses 'which' to find the full path to system python and it's config command
+
+    if [[ $DO_PYTHON2 == "no" ]]; then
+        # prefer python3 
+        TEST=`which python3-config`
+        if [ $? == 0 ]
+        then 
+            PYTHON_COMMAND=`which python3`
+            PYTHON_CONFIG_COMMAND=$TEST
+        else
+            TEST=`which python-config`
+            [ $? != 0 ] && error "Neither system python3-config nor python-config found, cannot configure python"
+            PYTHON_COMMAND=`which python`
+            PYTHON_CONFIG_COMMAND=$TEST
+        fi
+    else
+        # only try python 2
+        TEST=`which python-config`
+        [ $? != 0 ] && error "System python-config found, cannot configure python"
+        PYTHON_COMMAND=`which python`
+        PYTHON_CONFIG_COMMAND=$TEST
+    fi
+
     USE_SYSTEM_PYTHON="yes"
-    PYTHON_COMMAND="python"
-    PYTHON_CONFIG_COMMAND="python-config"
+    bv_python_enable
     PYTHON_FILE=""
     python_set_vars_helper #set vars..
 }
@@ -17695,13 +17414,33 @@ function bv_python_alt_python_dir
 {
     echo "Using alternate python directory"
 
-    [ ! -e "$1/bin/python-config" ] && error "Python not found in $1"
+    if [[ $DO_PYTHON2 == "no" ]]; then
+        # prefer python3
+        if [ -e "$1/bin/python3-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python3"
+            PYTHON_CONFIG_COMMAND="$1/bin/python3-config"
+        elif [ -e "$1/bin/python-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python"
+            PYTHON_CONFIG_COMMAND="$1/bin/python-config"
+        else
+            error "Python (python3-config or python-config) not found in $1"
+        fi
+    else
+        # only try python2
+        if [ -e "$1/bin/python-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python"
+            PYTHON_CONFIG_COMMAND="$1/bin/python-config"
+        else
+            error "Python (python-config) not found in $1"
+        fi
+    fi
 
     bv_python_enable
     USE_SYSTEM_PYTHON="yes"
     PYTHON_ALT_DIR="$1"
-    PYTHON_COMMAND="$PYTHON_ALT_DIR/bin/python"
-    PYTHON_CONFIG_COMMAND="$PYTHON_ALT_DIR/bin/python-config"
     PYTHON_FILE=""
     python_set_vars_helper #set vars..
 }
@@ -17709,8 +17448,12 @@ function bv_python_alt_python_dir
 
 function bv_python_depends_on
 {
-    # we always need openssl b/c of requests.
-    echo "openssl zlib"
+     pydep=""
+     if [[ $USE_SYSTEM_PYTHON == "no" ]] ; then
+        # we always need openssl b/c of requests.
+        pydep="openssl zlib"
+     fi
+     echo $pydep
 }
 
 function bv_python_info
@@ -18037,6 +17780,8 @@ function bv_python_initialize_vars
         # export PYTHON_LIBRARY_DIR="${VISIT_PYTHON_DIR}/bin/python"
         export PYTHON_INCLUDE_DIR="${VISIT_PYTHON_DIR}/include/python${PYTHON_COMPATIBILITY_VERSION}"
         export PYTHON_LIBRARY="${VISIT_PYTHON_DIR}/lib/libpython${PYTHON_COMPATIBILITY_VERSION}.${SO_EXT}"
+    else
+        export PYTHON_COMMAND="${PYTHON_COMMAND}"
     fi
 }
 
@@ -18100,6 +17845,39 @@ function apply_python_patch
                 return 1
             fi
         fi
+    fi
+
+    return 0
+}
+
+function apply_python_seedme_patch
+{
+    info "Patching Python: fix setup.py in seedme."
+    patch -f -p0 << \EOF
+diff -c setup.py.orig setup.py
+*** setup.py.orig    Mon Feb  1 13:39:48 2021
+--- setup.py         Mon Feb  1 13:40:03 2021
+***************
+*** 73,79 ****
+                     'interface as well as methods and api for '         +\
+                     'programmatic usage. It performs extensive sanity ' +\
+                     'checks input data and is kept upto date with '     +\
+!                    'REST api at SeedMe.org.',
+  
+  setup(name='seedme',
+        version="1.2.4",
+--- 73,79 ----
+                     'interface as well as methods and api for '         +\
+                     'programmatic usage. It performs extensive sanity ' +\
+                     'checks input data and is kept upto date with '     +\
+!                    'REST api at SeedMe.org.'
+  
+  setup(name='seedme',
+        version="1.2.4",
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Python patch for setup.py in seedme failed."
+        return 1
     fi
 
     return 0
@@ -18508,7 +18286,23 @@ function build_seedme
         fi
     fi
 
+    #
+    # Apply patches
+    #
     pushd $SEEDME_BUILD_DIR > /dev/null
+    apply_python_seedme_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_python == 1 ]] ; then
+            warn "Giving up on seedme install."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
     info "Installing seedme python module ..."
     ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
@@ -19365,18 +19159,12 @@ function bv_python_is_installed
         PY_OK=0
     fi
 
-    if [[ "$DO_PYTHON2" == "yes" ]]; then
-        # seedme doesn't seem to work with python 3
-        # Error during install:
-        # AttributeError: 'tuple' object has no attribute 'split'
-        # Could be ported, we could ping seedme folks.
-        check_if_py_module_installed "seedme"
-        if [[ $? != 0 ]] ; then
-            if [[ $PY_CHECK_ECHO != 0 ]] ; then
-                info "python module seedme is not installed"
-            fi
-            PY_OK=0
+    check_if_py_module_installed "seedme"
+    if [[ $? != 0 ]] ; then
+        if [[ $PY_CHECK_ECHO != 0 ]] ; then
+            info "python module seedme is not installed"
         fi
+        PY_OK=0
     fi
     
     if [[ "$BUILD_SPHINX" == "yes" ]]; then
@@ -19453,15 +19241,6 @@ function bv_python_build
                 export PYTHON_COMMAND="${PYHOME}/bin/python3"
             fi
 
-            check_if_py_module_installed "PIL"
-            # use Pillow for when python 3
-            info "Building the Python Pillow Imaging Library"
-            build_pillow
-            if [[ $? != 0 ]] ; then
-                error "Pillow build failed. Bailing out."
-            fi
-            info "Done building the Python Pillow Imaging Library"
-
             check_if_py_module_installed "numpy"
             if [[ $? != 0 ]] ; then
                 info "Building the numpy module"
@@ -19471,6 +19250,15 @@ function bv_python_build
                 fi
                 info "Done building the numpy module."
             fi
+
+            check_if_py_module_installed "PIL"
+            # use Pillow for when python 3
+            info "Building the Python Pillow Imaging Library"
+            build_pillow
+            if [[ $? != 0 ]] ; then
+                error "Pillow build failed. Bailing out."
+            fi
+            info "Done building the Python Pillow Imaging Library"
 
             if [[ "$BUILD_MPI4PY" == "yes" ]]; then
 
@@ -19505,16 +19293,13 @@ function bv_python_build
                 info "Done building the requests python module."
             fi
 
-            if [[ "$DO_PYTHON2" == "yes" ]]; then
-
-                check_if_py_module_installed "seedme"
+            check_if_py_module_installed "seedme"
+            if [[ $? != 0 ]] ; then
+                build_seedme
                 if [[ $? != 0 ]] ; then
-                    build_seedme
-                    if [[ $? != 0 ]] ; then
-                        error "seedme python module build failed. Bailing out."
-                    fi
-                    info "Done building the seedme python module."
+                    error "seedme python module build failed. Bailing out."
                 fi
+                info "Done building the seedme python module."
             fi
 
             if [[ "$BUILD_SPHINX" == "yes" ]]; then
@@ -19658,8 +19443,8 @@ function bv_qt_info
     export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
     export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
     export QT_URL=${QT_URL:-"http://download.qt.io/archive/qt/${QT_SHORT_VERSION}/${QT_VERSION}/single/"}
-    #export QT_MD5_CHECKSUM="7e167b9617e7bd64012daaacb85477af"
-    #export QT_SHA256_CHECKSUM="05ffba7b811b854ed558abf2be2ddbd3bb6ddd0b60ea4b5da75d277ac15e740a"
+    export QT_MD5_CHECKSUM="b3d2b6d00e6ca8a8ede6d1c9bdc74daf"
+    export QT_SHA256_CHECKSUM="c6fcd53c744df89e7d3223c02838a33309bd1c291fcb6f9341505fe99f7f19fa"
 }
 
 function bv_qt_print
@@ -19752,10 +19537,15 @@ function qt_license_prompt
 
 function apply_qt_patch
 {
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        if [[ ${QT_VERSION} == 5.14.2 ]] ; then
-            if [[ "$OPSYS" == "Linux" ]]; then
+    if [[ ${QT_VERSION} == 5.14.2 ]] ; then
+        if [[ "$OPSYS" == "Linux" ]]; then
+            if [[ "$DO_MESAGL" == "yes" ]] ; then
                 apply_qt_5142_linux_mesagl_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            else
+                apply_qt_5142_linux_opengl_patch
                 if [[ $? != 0 ]] ; then
                     return 1
                 fi
@@ -19818,9 +19608,10 @@ diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/
 ! 
 EOF
     if [[ $? != 0 ]] ; then
-        warn "qt 5.14.2 linux mesagl patch 2failed."
+        warn "qt 5.14.2 linux mesagl patch 2 failed."
         return 1
     fi
+
     patch -p0 <<EOF
 diff -c qtbase/mkspecs/common/linux.conf.orig qtbase/mkspecs/common/linux.conf
 *** qtbase/mkspecs/common/linux.conf.orig
@@ -19845,6 +19636,64 @@ diff -c qtbase/mkspecs/common/linux.conf.orig qtbase/mkspecs/common/linux.conf
 EOF
     if [[ $? != 0 ]] ; then
         warn "qt 5.14.2 linux mesagl patch 3 failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_qt_5142_linux_opengl_patch
+{
+    info "Patching qt 5.14.2 for Linux and OpenGL"
+    patch -p0 <<EOF
+diff -c qtbase/mkspecs/linux-g++-64/qmake.conf.orig  qtbase/mkspecs/linux-g++-64/qmake.conf
+*** qtbase/mkspecs/linux-g++-64/qmake.conf.orig
+--- qtbase/mkspecs/linux-g++-64/qmake.conf
+***************
+*** 18,24 ****
+  include(../common/g++-unix.conf)
+
+
+! QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+
+  load(qt_config)
+--- 18,24 ----
+  include(../common/g++-unix.conf)
+
+
+! QMAKE_LIBDIR_X11        = /usr/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/lib64
+
+  load(qt_config)
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.14.2 linux opengl patch 1 failed."
+        return 1
+    fi
+
+    patch -p0 <<EOF
+diff -c qtbase/mkspecs/linux-icc-64/qmake.conf.orig qtbase/mkspecs/linux-icc-64/qmake.conf
+*** qtbase/mkspecs/linux-icc-64/qmake.conf.orig
+--- qtbase/mkspecs/linux-icc-64/qmake.conf
+***************
+*** 12,16 ****
+
+  # Change the all LIBDIR variables to use lib64 instead of lib
+
+! QMAKE_LIBDIR_X11        = /usr/X11R6/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/X11R6/lib64
+--- 12,16 ----
+
+  # Change the all LIBDIR variables to use lib64 instead of lib
+
+! QMAKE_LIBDIR_X11        = /usr/lib64
+! QMAKE_LIBDIR_OPENGL     = /usr/lib64
+EOF
+
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.14.2 linux opengl patch 2 failed."
         return 1
     fi
 
@@ -20000,7 +19849,7 @@ function build_qt
     qt_flags="${qt_flags} -qt-libpng"
 
     if [[ "$OPSYS" == "Linux" ]] ; then
-        qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes"
+        qt_flags="${qt_flags} -qt-xcb --xkbcommon=yes -xcb-native-painting"
     fi
 
     if [[ "$VISIT_BUILD_MODE" == "Release" ]] ; then
@@ -20026,36 +19875,26 @@ function build_qt
         return 1
     fi
 
-    if [[ "$DO_MESAGL" == "yes" ]] ; then
-        if [[ ${QT_VERSION} == 5.10.1 ]] ; then
-            if [[ "$OPSYS" == "Linux" ]]; then
-                sed -i 's/-o Makefile/-o Makefile -after "QMAKE_LIBS_OPENGL+=-lLLVM"/' Makefile
+    #
+    # When running Ubuntu 18 under WSL (Windows Subsystem for Linux), for
+    # whatever reason, the libQt5Core.so library has something in it that
+    # misidentifies the system and the file is not recognized. I first
+    # build the library and then strip out the offending information.
+    # I found the fix at https://github.com/microsoft/WSL/issues/3023.
+    #
+    if [[ "$OPSYS" == "Linux" ]] ; then
+        if [[ "$REL" == *"Microsoft" ]] ; then
+            cd qtbase
+            bin/qmake -o Makefile qtbase.pro
+            if [[ "${DO_QT_SILENT}" == "yes" ]] ; then
+                $MAKE -s $MAKE_OPT_FLAGS
+            else
+                $MAKE $MAKE_OPT_FLAGS
             fi
+            strip --remove-section=.note.ABI-tag lib/libQt5Core.so.5
+            cd ..
         fi
     fi
-
-    #
-    # Figure out if configure found the OpenGL libraries
-    #
-    #if [[ "${DO_DBIO_ONLY}" != "yes" && "${DO_ENGINE_ONLY}" != "yes" && "${DO_SERVER_COMPONENTS_ONLY}" != "yes" ]] ; then
-    #    HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'  | cut -c 1-3`
-    #    if [[ "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
-    #        warn "Qt configure did not find OpenGL." \
-    #             "VisIt needs Qt with enabled OpenGL support. Giving up.\n" \
-    #             "Here are some common reasons why Qt will not build with GL support.\n" \
-    #             "\t- The OpenGL development environment is not installed.\n" \
-    #             "\t  (You can check this by searching for /usr/include/GL/GL.h)\n" \
-    #             "\t- libGLU is not available\n"\
-    #             "\t- libGLU is available, but only as a shared library\n"\
-    #             "You can learn more about exactly why Qt failed by doing the following:\n"\
-    #             "\t- cd $QT_BUILD_DIR\n" \
-    #             "\t- ./configure -opengl -verbose\n" \
-    #             "\t  (this will produce the details of the failed OpenGL tests.)\n" \
-    #             "\t  (also note you will need to respond with \"o\" to opt for\n" \
-    #             "\t   the open source license and \"yes\" to accept.)\n"
-    #        return 1
-    #    fi
-    #fi
 
     #
     # Build Qt. Config options above make sure we only build the libs & tools.
@@ -20543,10 +20382,14 @@ function bv_silo_silex
 
 function bv_silo_depends_on
 {
-    local depends_on="zlib"
+    local depends_on=""
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        depends_on="zlib"
+    fi
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        depends_on="hdf5"
+        depends_on="$depends_on hdf5"
     fi
     
     if [[ "$DO_SZIP" == "yes" ]] ; then
@@ -20625,6 +20468,322 @@ function bv_silo_dry_run
     fi
 }
 
+function apply_silo_4102_fpzip_patch
+{
+    info "Patching silo for fpzip DOMAIN and RANGE symbols"
+    patch --verbose -p0 <<EOF
+Index: src/fpzip/codec.h
+===================================================================
+--- src/fpzip/codec.h	(revision 809)
++++ src/fpzip/codec.h	(working copy)
+@@ -16,13 +16,13 @@
+ // identity map for integer arithmetic
+ template <typename T, unsigned width>
+ struct PCmap<T, width, T> {
+-  typedef T DOMAIN;
+-  typedef T RANGE;
++  typedef T FPZIP_Domain_t;
++  typedef T FPZIP_Range_t;
+   static const unsigned bits = width;
+   static const T        mask = ~T(0) >> (bitsizeof(T) - bits);
+-  RANGE forward(DOMAIN d) const { return d & mask; }
+-  DOMAIN inverse(RANGE r) const { return r & mask; }
+-  DOMAIN identity(DOMAIN d) const { return d & mask; }
++  FPZIP_Range_t forward(FPZIP_Domain_t d) const { return d & mask; }
++  FPZIP_Domain_t inverse(FPZIP_Range_t r) const { return r & mask; }
++  FPZIP_Domain_t identity(FPZIP_Domain_t d) const { return d & mask; }
+ };
+ #endif
+ 
+Index: src/fpzip/pcdecoder.inl
+===================================================================
+--- src/fpzip/pcdecoder.inl	(revision 809)
++++ src/fpzip/pcdecoder.inl	(working copy)
+@@ -19,7 +19,7 @@
+ T PCdecoder<T, M, false>::decode(T pred, unsigned context)
+ {
+   // map type T to unsigned integer type
+-  typedef typename M::RANGE U;
++  typedef typename M::FPZIP_Range_t U;
+   U p = map.forward(pred);
+   // entropy decode d = r - p
+   U r = p + rd->decode(rm[context]) - bias;
+@@ -46,7 +46,7 @@
+ template <typename T, class M>
+ T PCdecoder<T, M, true>::decode(T pred, unsigned context)
+ {
+-  typedef typename M::RANGE U;
++  typedef typename M::FPZIP_Range_t U;
+   unsigned s = rd->decode(rm[context]);
+   if (s > bias) {      // underprediction
+     unsigned k = s - bias - 1;
+Index: src/fpzip/pcencoder.inl
+===================================================================
+--- src/fpzip/pcencoder.inl	(revision 809)
++++ src/fpzip/pcencoder.inl	(working copy)
+@@ -18,7 +18,7 @@
+ T PCencoder<T, M, false>::encode(T real, T pred, unsigned context)
+ {
+   // map type T to unsigned integer type
+-  typedef typename M::RANGE U;
++  typedef typename M::FPZIP_Range_t U;
+   U r = map.forward(real);
+   U p = map.forward(pred);
+   // entropy encode d = r - p
+@@ -47,7 +47,7 @@
+ T PCencoder<T, M, true>::encode(T real, T pred, unsigned context)
+ {
+   // map type T to unsigned integer type
+-  typedef typename M::RANGE U;
++  typedef typename M::FPZIP_Range_t U;
+   U r = map.forward(real);
+   U p = map.forward(pred);
+   // compute (-1)^s (2^k + m) = r - p, entropy code (s, k),
+Index: src/fpzip/pcmap.h
+===================================================================
+--- src/fpzip/pcmap.h	(revision 809)
++++ src/fpzip/pcmap.h	(working copy)
+@@ -14,53 +14,53 @@
+ // specialized for integer-to-integer map
+ template <typename T, unsigned width>
+ struct PCmap<T, width, void> {
+-  typedef T DOMAIN;
+-  typedef T RANGE;
+-  static const unsigned bits = width;                    // RANGE bits
+-  static const unsigned shift = bitsizeof(RANGE) - bits; // DOMAIN\RANGE bits
+-  RANGE forward(DOMAIN d) const { return d >> shift; }
+-  DOMAIN inverse(RANGE r) const { return r << shift; }
+-  DOMAIN identity(DOMAIN d) const { return inverse(forward(d)); }
++  typedef T FPZIP_Domain_t;
++  typedef T FPZIP_Range_t;
++  static const unsigned bits = width;                    // FPZIP_Range_t bits
++  static const unsigned shift = bitsizeof(FPZIP_Range_t) - bits; // FPZIP_Domain_t\FPZIP_Range_t bits
++  FPZIP_Range_t forward(FPZIP_Domain_t d) const { return d >> shift; }
++  FPZIP_Domain_t inverse(FPZIP_Range_t r) const { return r << shift; }
++  FPZIP_Domain_t identity(FPZIP_Domain_t d) const { return inverse(forward(d)); }
+ };
+ 
+ // specialized for float type
+ template <unsigned width>
+ struct PCmap<float, width, void> {
+-  typedef float    DOMAIN;
+-  typedef unsigned RANGE;
++  typedef float    FPZIP_Domain_t;
++  typedef unsigned FPZIP_Range_t;
+   union UNION {
+-    UNION(DOMAIN d) : d(d) {}
+-    UNION(RANGE r) : r(r) {}
+-    DOMAIN d;
+-    RANGE r;
++    UNION(FPZIP_Domain_t d) : d(d) {}
++    UNION(FPZIP_Range_t r) : r(r) {}
++    FPZIP_Domain_t d;
++    FPZIP_Range_t r;
+   };
+-  static const unsigned bits = width;                    // RANGE bits
+-  static const unsigned shift = bitsizeof(RANGE) - bits; // DOMAIN\RANGE bits
+-  RANGE fcast(DOMAIN d) const;
+-  DOMAIN icast(RANGE r) const;
+-  RANGE forward(DOMAIN d) const;
+-  DOMAIN inverse(RANGE r) const;
+-  DOMAIN identity(DOMAIN d) const;
++  static const unsigned bits = width;                    // FPZIP_Range_t bits
++  static const unsigned shift = bitsizeof(FPZIP_Range_t) - bits; // FPZIP_Domain_t\FPZIP_Range_t bits
++  FPZIP_Range_t fcast(FPZIP_Domain_t d) const;
++  FPZIP_Domain_t icast(FPZIP_Range_t r) const;
++  FPZIP_Range_t forward(FPZIP_Domain_t d) const;
++  FPZIP_Domain_t inverse(FPZIP_Range_t r) const;
++  FPZIP_Domain_t identity(FPZIP_Domain_t d) const;
+ };
+ 
+ // specialized for double type
+ template <unsigned width>
+ struct PCmap<double, width, void> {
+-  typedef double             DOMAIN;
+-  typedef unsigned long long RANGE;
++  typedef double             FPZIP_Domain_t;
++  typedef unsigned long long FPZIP_Range_t;
+   union UNION {
+-    UNION(DOMAIN d) : d(d) {}
+-    UNION(RANGE r) : r(r) {}
+-    DOMAIN d;
+-    RANGE r;
++    UNION(FPZIP_Domain_t d) : d(d) {}
++    UNION(FPZIP_Range_t r) : r(r) {}
++    FPZIP_Domain_t d;
++    FPZIP_Range_t r;
+   };
+-  static const unsigned bits = width;                    // RANGE bits
+-  static const unsigned shift = bitsizeof(RANGE) - bits; // DOMAIN\RANGE bits
+-  RANGE fcast(DOMAIN d) const;
+-  DOMAIN icast(RANGE r) const;
+-  RANGE forward(DOMAIN d) const;
+-  DOMAIN inverse(RANGE r) const;
+-  DOMAIN identity(DOMAIN d) const;
++  static const unsigned bits = width;                    // FPZIP_Range_t bits
++  static const unsigned shift = bitsizeof(FPZIP_Range_t) - bits; // FPZIP_Domain_t\FPZIP_Range_t bits
++  FPZIP_Range_t fcast(FPZIP_Domain_t d) const;
++  FPZIP_Domain_t icast(FPZIP_Range_t r) const;
++  FPZIP_Range_t forward(FPZIP_Domain_t d) const;
++  FPZIP_Domain_t inverse(FPZIP_Range_t r) const;
++  FPZIP_Domain_t identity(FPZIP_Domain_t d) const;
+ };
+ 
+ #include "pcmap.inl"
+Index: src/fpzip/pcmap.inl
+===================================================================
+--- src/fpzip/pcmap.inl	(revision 809)
++++ src/fpzip/pcmap.inl	(working copy)
+@@ -3,12 +3,12 @@
+ PCmap<float, width, void>::fcast(float d) const
+ {
+ #ifdef WITH_REINTERPRET_CAST
+-  return reinterpret_cast<const RANGE&>(d);
++  return reinterpret_cast<const FPZIP_Range_t&>(d);
+ #elif defined WITH_UNION
+   UNION shared(d);
+   return shared.r;
+ #else
+-  RANGE r;
++  FPZIP_Range_t r;
+   memcpy(&r, &d, sizeof(r));
+   return r;
+ #endif
+@@ -19,12 +19,12 @@
+ PCmap<float, width, void>::icast(unsigned r) const
+ {
+ #ifdef WITH_REINTERPRET_CAST
+-  return reinterpret_cast<const DOMAIN&>(r);
++  return reinterpret_cast<const FPZIP_Domain_t&>(r);
+ #elif defined WITH_UNION
+   UNION shared(r);
+   return shared.d;
+ #else
+-  DOMAIN d;
++  FPZIP_Domain_t d;
+   memcpy(&d, &r, sizeof(d));
+   return d;
+ #endif
+@@ -37,7 +37,7 @@
+ unsigned
+ PCmap<float, width, void>::forward(float d) const
+ {
+-  RANGE r = fcast(d);
++  FPZIP_Range_t r = fcast(d);
+   r = ~r;
+   r >>= shift;
+   r ^= -(r >> (bits - 1)) >> (shift + 1);
+@@ -61,7 +61,7 @@
+ float
+ PCmap<float, width, void>::identity(float d) const
+ {
+-  RANGE r = fcast(d);
++  FPZIP_Range_t r = fcast(d);
+   r >>= shift;
+   r <<= shift;
+   return icast(r);
+@@ -72,12 +72,12 @@
+ PCmap<double, width, void>::fcast(double d) const
+ {
+ #ifdef WITH_REINTERPRET_CAST
+-  return reinterpret_cast<const RANGE&>(d);
++  return reinterpret_cast<const FPZIP_Range_t&>(d);
+ #elif defined WITH_UNION
+   UNION shared(d);
+   return shared.r;
+ #else
+-  RANGE r;
++  FPZIP_Range_t r;
+   memcpy(&r, &d, sizeof(r));
+   return r;
+ #endif
+@@ -88,12 +88,12 @@
+ PCmap<double, width, void>::icast(unsigned long long r) const
+ {
+ #ifdef WITH_REINTERPRET_CAST
+-  return reinterpret_cast<const DOMAIN&>(r);
++  return reinterpret_cast<const FPZIP_Domain_t&>(r);
+ #elif defined WITH_UNION
+   UNION shared(r);
+   return shared.d;
+ #else
+-  DOMAIN d;
++  FPZIP_Domain_t d;
+   memcpy(&d, &r, sizeof(d));
+   return d;
+ #endif
+@@ -106,7 +106,7 @@
+ unsigned long long
+ PCmap<double, width, void>::forward(double d) const
+ {
+-  RANGE r = fcast(d);
++  FPZIP_Range_t r = fcast(d);
+   r = ~r;
+   r >>= shift;
+   r ^= -(r >> (bits - 1)) >> (shift + 1);
+@@ -130,7 +130,7 @@
+ double
+ PCmap<double, width, void>::identity(double d) const
+ {
+-  RANGE r = fcast(d);
++  FPZIP_Range_t r = fcast(d);
+   r >>= shift;
+   r <<= shift;
+   return icast(r);
+Index: src/fpzip/read.cpp
+===================================================================
+--- src/fpzip/read.cpp	(revision 809)
++++ src/fpzip/read.cpp	(working copy)
+@@ -103,7 +103,7 @@
+ {
+   // initialize decompressor
+   typedef PCmap<T, bits> TMAP;
+-  typedef typename TMAP::RANGE U;
++  typedef typename TMAP::FPZIP_Range_t U;
+   typedef PCmap<U, bits, U> UMAP;
+   RCmodel* rm = new RCqsmodel(false, PCdecoder<U, UMAP>::symbols);
+   PCdecoder<U, UMAP>* fd = new PCdecoder<U, UMAP>(rd, &rm);
+Index: src/fpzip/write.cpp
+===================================================================
+--- src/fpzip/write.cpp	(revision 809)
++++ src/fpzip/write.cpp	(working copy)
+@@ -103,7 +103,7 @@
+ {
+   // initialize compressor
+   typedef PCmap<T, bits> TMAP;
+-  typedef typename TMAP::RANGE U;
++  typedef typename TMAP::FPZIP_Range_t U;
+   typedef PCmap<U, bits, U> UMAP;
+   RCmodel* rm = new RCqsmodel(true, PCencoder<U, UMAP>::symbols);
+   PCencoder<U, UMAP>* fe = new PCencoder<U, UMAP>(re, &rm);
+EOF
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+}
+
+function apply_silo_patch
+{
+    info "Patching silo . . ."
+
+    compare_version_strings $SILO_VERSION 4.10.3 -le
+    if [[ $? -eq 0 ]]; then
+        apply_silo_4102_fpzip_patch
+        if [[ $? != 0 ]] ; then
+            if [[ $untarred_silo == 1 ]] ; then
+                warn "Giving up on Silo build because the patch failed."
+                return 1
+            else
+                warn "Patch failed, but continuing.  I believe that this script\n" \
+                     "tried to apply a patch to an existing directory that had\n" \
+                     "already been patched ... that is, the patch is\n" \
+                     "failing harmlessly on a second application."
+            fi
+        fi
+    fi
+    return 0
+}
+
 # *************************************************************************** #
 #                            Function 8, build_silo
 #
@@ -20662,40 +20821,31 @@ function build_silo
     #
     info "Configuring Silo . . ."
     cd $SILO_BUILD_DIR || error "Can't cd to Silo build dir."
+    apply_silo_patch || return 1
     info "Invoking command to configure Silo"
-    SILO_LINK_OPT=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        export HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
-        export HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
+        HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
+        HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
         WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
-        SILO_LINK_OPT="-L$HDF5LIB -lhdf5"
     else
         WITHHDF5ARG="--without-hdf5"
     fi
-    SILO_LINK_OPT="$SILO_LINK_OPT -lz"
     if [[ "$DO_SZIP" == "yes" ]] ; then
-        export SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+        SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         WITHSZIPARG="--with-szlib=$SZIPDIR"
-        SILO_LINK_OPT="$SILO_LINK_OPT -L$SZIPDIR/lib -lsz"
     else
         WITHSZIPARG="--without-szlib"
+    fi
+    if [[ "$DO_ZLIB" == "no" ]]; then
+        WITH_HZIP_AND_FPZIP="--disable-hzip --disable-fpzip"
+    else
+        ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
     fi
     WITHSHAREDARG="--enable-shared"
     if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
         WITHSHAREDARG="--disable-shared"
     fi
-    #if [[ "$DO_SILEX" == "no" || "$DO_QT" != "yes" || "$DO_STATIC_BUILD" == "yes" ]] ; then
-        WITHSILOQTARG='--disable-silex'
-    #else
-    #    export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-    #    if [[ "$OPSYS" == "Darwin" ]] ; then
-    #        WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="m -F${SILOQTDIR}/lib -framework QtGui -framework QtCore"'
-    #    else
-    #        WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="QtGui -lQtCore"'
-    #    fi
-    #fi
-
-    ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"
+    WITHSILOQTARG='--disable-silex'
 
     if [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS="--disable-fortran"
@@ -20713,7 +20863,7 @@ function build_silo
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
         --enable-install-lite-headers --without-readline \
         $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
 
@@ -20723,7 +20873,7 @@ function build_silo
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
         --enable-install-lite-headers --without-readline \
         $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
 
@@ -21263,9 +21413,8 @@ function bv_tbb_host_profile
         #   TBB related projects. I want to keep it set here since I am afraid of breaking other packages
         #   other than ospray
         if [[ "$USE_SYSTEM_TBB" == "no" ]]; then
-            echo "SETUP_APP_VERSION(TBB ${TBB_VERSION})" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(TBB_ROOT \${VISITHOME}/tbb/\${TBB_VERSION}/\${VISITARCH})" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_TBB_DIR \${VISITHOME}/tbb/\${TBB_VERSION}/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(TBB_ROOT \${VISITHOME}/tbb/${TBB_VERSION}/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_TBB_DIR \${VISITHOME}/tbb/${TBB_VERSION}/\${VISITARCH})" >> $HOSTCONF
         else
             echo "VISIT_OPTION_DEFAULT(TBB_ROOT ${TBB_INSTALL_DIR})" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_TBB_DIR ${TBB_INSTALL_DIR})" >> $HOSTCONF
@@ -22331,40 +22480,418 @@ EOF
 
 function apply_vtkdatawriter_patch
 {
-  # patch vtk's vtkDataWriter to fix bug when writing binary vtkBitArray.
+  # patch vtk's vtkDataWriter to fix bug when writing binary vtkBitArray,
+  # and non-AOS data arrays (as used with LibSim).
 
    patch -p0 << \EOF
 *** IO/Legacy/vtkDataWriter.cxx.original 2018-01-19 13:52:19.000000000
 --- IO/Legacy/vtkDataWriter.cxx 2018-01-19 13:52:49.000000000
 ***************
-*** 1070,1082 ****
-            }
-          }
+*** 1015,1034 ****
+    *fp << "\n";
+  }
+  
+  // Returns a pointer to the data ordered in original VTK style ordering
+  // of the data. If this is an SOA array it has to allocate the memory
+  // for that in which case the calling function must delete it.
+! template <class T>
+! T* GetArrayRawPointer(vtkAbstractArray* array, T* ptr, int isAOSArray)
+  {
+    if (isAOSArray)
+    {
+!     return ptr;
+!   }
+!   T* data = new T[array->GetNumberOfComponents()*array->GetNumberOfTuples()];
+!   vtkSOADataArrayTemplate<T>* typedArray =
+!     vtkSOADataArrayTemplate<T>::SafeDownCast(array);
+!   typedArray->ExportToVoidPointer(data);
+    return data;
+  }
+  
+--- 1015,1043 ----
+    *fp << "\n";
+  }
+  
++ //------------------------------------------------------------------------------
++ template <class Value, class Array>
++ Value* GetPointer(vtkAbstractArray* array)
++ {
++   return static_cast<Array*>(array)->GetPointer(0);
++ }
++ //------------------------------------------------------------------------------
+  // Returns a pointer to the data ordered in original VTK style ordering
+  // of the data. If this is an SOA array it has to allocate the memory
+  // for that in which case the calling function must delete it.
+! template <class T, class Array>
+! T* GetArrayRawPointer(vtkAbstractArray* array, int isAOSArray)
+  {
+    if (isAOSArray)
+    {
+!     return GetPointer<T, Array>(array);
+! }
+! 
+!   auto nc = array->GetNumberOfComponents();
+!   auto nt = array->GetNumberOfTuples();
+! 
+!   T* data = new T[nc * nt];
+!   array->ExportToVoidPointer(data);
+    return data;
+  }
+  
+***************
+*** 1072,1082 ****
         }
         else
         {
-          unsigned char *cptr=
+!         unsigned char *cptr=
 !           static_cast<vtkUnsignedCharArray *>(data)->GetPointer(0);
-          fp->write(reinterpret_cast<char *>(cptr),
-                    (sizeof(unsigned char))*((num-1)/8+1));
-
+!         fp->write(reinterpret_cast<char *>(cptr),
+!                   (sizeof(unsigned char))*((num-1)/8+1));
+! 
         }
         *fp << "\n";
       }
---- 1070,1082 ----
-            }
-          }
+--- 1081,1088 ----
         }
         else
         {
-          unsigned char *cptr=
-!           static_cast<vtkBitArray *>(data)->GetPointer(0);
-          fp->write(reinterpret_cast<char *>(cptr),
-                    (sizeof(unsigned char))*((num-1)/8+1));
-
+!         unsigned char* cptr = static_cast<vtkBitArray*>(data)->GetPointer(0);
+!         fp->write(reinterpret_cast<char*>(cptr), (sizeof(unsigned char)) * ((num - 1) / 8 + 1));
         }
         *fp << "\n";
       }
+***************
+*** 1084,1092 ****
+  
+      case VTK_CHAR:
+      {
+!       snprintf (str, sizeof(str), format, "char"); *fp << str;
+!       char *s=GetArrayRawPointer(
+!         data, static_cast<vtkCharArray *>(data)->GetPointer(0), isAOSArray);
+  #if VTK_TYPE_CHAR_IS_SIGNED
+        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
+  #else
+--- 1090,1098 ----
+  
+      case VTK_CHAR:
+      {
+!       snprintf(str, sizeof(str), format, "char");
+!       *fp << str;
+!       char* s = GetArrayRawPointer<char, vtkCharArray>(data, isAOSArray);
+  #if VTK_TYPE_CHAR_IS_SIGNED
+        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
+  #else
+***************
+*** 1101,1109 ****
+  
+      case VTK_SIGNED_CHAR:
+      {
+!       snprintf (str, sizeof(str), format, "signed_char"); *fp << str;
+!       signed char *s=GetArrayRawPointer(
+!         data, static_cast<vtkSignedCharArray *>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1107,1115 ----
+  
+      case VTK_SIGNED_CHAR:
+      {
+!       snprintf(str, sizeof(str), format, "signed_char");
+!       *fp << str;
+!       signed char* s = GetArrayRawPointer<signed char, vtkSignedCharArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hhd ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1114,1122 ****
+  
+      case VTK_UNSIGNED_CHAR:
+      {
+!       snprintf (str, sizeof(str), format, "unsigned_char"); *fp << str;
+!       unsigned char *s=GetArrayRawPointer(
+!         data, static_cast<vtkUnsignedCharArray *>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hhu ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1120,1128 ----
+  
+      case VTK_UNSIGNED_CHAR:
+      {
+!       snprintf(str, sizeof(str), format, "unsigned_char");
+!       *fp << str;
+!       unsigned char* s = GetArrayRawPointer<unsigned char, vtkUnsignedCharArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hhu ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1127,1135 ****
+  
+      case VTK_SHORT:
+      {
+!       snprintf (str, sizeof(str), format, "short"); *fp << str;
+!       short *s=GetArrayRawPointer(
+!         data, static_cast<vtkShortArray *>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hd ", num, numComp);
+        if (!isAOSArray)
+        {
+--- 1133,1141 ----
+  
+      case VTK_SHORT:
+      {
+!       snprintf(str, sizeof(str), format, "short");
+!       *fp << str;
+!       short* s = GetArrayRawPointer<short, vtkShortArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hd ", num, numComp);
+        if (!isAOSArray)
+        {
+***************
+*** 1140,1260 ****
+  
+      case VTK_UNSIGNED_SHORT:
+      {
+!       snprintf (str, sizeof(str), format, "unsigned_short"); *fp << str;
+!       unsigned short *s=GetArrayRawPointer(
+!         data, static_cast<vtkUnsignedShortArray *>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hu ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete [] s;
+        }
+      }
+      break;
+  
+      case VTK_INT:
+      {
+!       snprintf (str, sizeof(str), format, "int"); *fp << str;
+!       int *s=GetArrayRawPointer(
+!         data, static_cast<vtkIntArray *>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%d ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete [] s;
+        }
+      }
+      break;
+  
+      case VTK_UNSIGNED_INT:
+      {
+!       snprintf (str, sizeof(str), format, "unsigned_int"); *fp << str;
+!       unsigned int *s=GetArrayRawPointer(
+!         data, static_cast<vtkUnsignedIntArray *>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%u ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete [] s;
+        }
+      }
+      break;
+  
+      case VTK_LONG:
+      {
+!       snprintf (str, sizeof(str), format, "long"); *fp << str;
+!       long *s=GetArrayRawPointer(
+!         data, static_cast<vtkLongArray *>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%ld ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete [] s;
+        }
+      }
+      break;
+  
+      case VTK_UNSIGNED_LONG:
+      {
+!       snprintf (str, sizeof(str), format, "unsigned_long"); *fp << str;
+!       unsigned long *s=GetArrayRawPointer(
+!         data, static_cast<vtkUnsignedLongArray *>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%lu ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete [] s;
+        }
+      }
+      break;
+  
+      case VTK_LONG_LONG:
+      {
+!       snprintf (str, sizeof(str), format, "vtktypeint64"); *fp << str;
+!       long long *s=GetArrayRawPointer(
+!         data, static_cast<vtkTypeInt64Array *>(data)->GetPointer(0), isAOSArray);
+        strcpy(outputFormat, vtkTypeTraits<long long>::ParseFormat());
+        strcat(outputFormat, " ");
+        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
+        if (!isAOSArray)
+        {
+!         delete [] s;
+        }
+      }
+      break;
+  
+      case VTK_UNSIGNED_LONG_LONG:
+      {
+!       snprintf (str, sizeof(str), format, "vtktypeuint64"); *fp << str;
+!       unsigned long long *s=GetArrayRawPointer(
+!         data, static_cast<vtkTypeUInt64Array *>(data)->GetPointer(0), isAOSArray);
+        strcpy(outputFormat, vtkTypeTraits<unsigned long long>::ParseFormat());
+        strcat(outputFormat, " ");
+        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
+        if (!isAOSArray)
+        {
+!         delete [] s;
+        }
+      }
+      break;
+  
+      case VTK_FLOAT:
+      {
+!       snprintf (str, sizeof(str), format, "float"); *fp << str;
+!       float *s=GetArrayRawPointer(
+!         data, static_cast<vtkFloatArray *>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%g ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete [] s;
+        }
+      }
+      break;
+  
+      case VTK_DOUBLE:
+      {
+!       snprintf (str, sizeof(str), format, "double"); *fp << str;
+!       double *s=GetArrayRawPointer(
+!         data, static_cast<vtkDoubleArray *>(data)->GetPointer(0), isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%.11lg ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete [] s;
+        }
+      }
+      break;
+--- 1146,1268 ----
+  
+      case VTK_UNSIGNED_SHORT:
+      {
+!       snprintf(str, sizeof(str), format, "unsigned_short");
+!       *fp << str;
+!       unsigned short* s =
+!         GetArrayRawPointer<unsigned short, vtkUnsignedShortArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%hu ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete[] s;
+        }
+      }
+      break;
+  
+      case VTK_INT:
+      {
+!       snprintf(str, sizeof(str), format, "int");
+!       *fp << str;
+!       int* s = GetArrayRawPointer<int, vtkIntArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%d ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete[] s;
+        }
+      }
+      break;
+  
+      case VTK_UNSIGNED_INT:
+      {
+!       snprintf(str, sizeof(str), format, "unsigned_int");
+!       *fp << str;
+!       unsigned int* s = GetArrayRawPointer<unsigned int, vtkUnsignedIntArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%u ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete[] s;
+        }
+      }
+      break;
+  
+      case VTK_LONG:
+      {
+!       snprintf(str, sizeof(str), format, "long");
+!       *fp << str;
+!       long* s = GetArrayRawPointer<long, vtkLongArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%ld ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete[] s;
+        }
+      }
+      break;
+  
+      case VTK_UNSIGNED_LONG:
+      {
+!       snprintf(str, sizeof(str), format, "unsigned_long");
+!       *fp << str;
+!       unsigned long* s = GetArrayRawPointer<unsigned long, vtkUnsignedLongArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%lu ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete[] s;
+        }
+      }
+      break;
+  
+      case VTK_LONG_LONG:
+      {
+!       snprintf(str, sizeof(str), format, "vtktypeint64");
+!       *fp << str;
+!       long long* s = GetArrayRawPointer<long long, vtkTypeInt64Array>(data, isAOSArray);
+        strcpy(outputFormat, vtkTypeTraits<long long>::ParseFormat());
+        strcat(outputFormat, " ");
+        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
+        if (!isAOSArray)
+        {
+!         delete[] s;
+        }
+      }
+      break;
+  
+      case VTK_UNSIGNED_LONG_LONG:
+      {
+!       snprintf(str, sizeof(str), format, "vtktypeuint64");
+!       *fp << str;
+!       unsigned long long* s =
+!         GetArrayRawPointer<unsigned long long, vtkTypeUInt64Array>(data, isAOSArray);
+        strcpy(outputFormat, vtkTypeTraits<unsigned long long>::ParseFormat());
+        strcat(outputFormat, " ");
+        vtkWriteDataArray(fp, s, this->FileType, outputFormat, num, numComp);
+        if (!isAOSArray)
+        {
+!         delete[] s;
+        }
+      }
+      break;
+  
+      case VTK_FLOAT:
+      {
+!       snprintf(str, sizeof(str), format, "float");
+!       *fp << str;
+!       float* s = GetArrayRawPointer<float, vtkFloatArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%g ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete[] s;
+        }
+      }
+      break;
+  
+      case VTK_DOUBLE:
+      {
+!       snprintf(str, sizeof(str), format, "double");
+!       *fp << str;
+!       double* s = GetArrayRawPointer<double, vtkDoubleArray>(data, isAOSArray);
+        vtkWriteDataArray(fp, s, this->FileType, "%.11lg ", num, numComp);
+        if (!isAOSArray)
+        {
+!         delete[] s;
+        }
+      }
+      break;
+
 EOF
 
     if [[ $? != 0 ]] ; then
@@ -23057,6 +23584,9 @@ function build_vtk
             vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
             vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
             vopts="${vopts} -DPYTHON_LIBRARY:FILEPATH=${pylib}"
+            if [[ "$DO_PYTHON2" == "no" ]]; then
+              vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
+            fi
             #            vopts="${vopts} -DPYTHON_UTIL_LIBRARY:FILEPATH="
         else
             warn "Forgetting python filters because we are doing a static build."
@@ -23338,14 +23868,21 @@ function build_vtkh
     vopts=""
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/vtkh/${VTKH_VERSION}/${VISITARCH}"
     vopts="${vopts} -DVTKM_DIR=${VISITDIR}/vtkm/${VTKM_VERSION}/${VISITARCH}"
-    vopts="${vopts} -DBUILD_SHARED_LIBS=ON"
     vopts="${vopts} -DENABLE_MPI=OFF"
     vopts="${vopts} -DENABLE_OPENMP=OFF"
     vopts="${vopts} -DCMAKE_BUILD_TYPE=${VISIT_BUILD_MODE}"
-    if [[ -d $CUDA_HOME ]]; then
-        echo "Building with CUDA support."
-        vopts="${vopts} -DENABLE_CUDA=ON"
-    fi
+    # Disable CUDA support for now since it requires using the CUDA compiler
+    # to build all of VisIt, which we don't want to do.
+    #if [[ -d $CUDA_HOME ]]; then
+    #    # Turn off shared libraries with CUDA support, since VTKm
+    #    # requires static libraries with CUDA.
+    #    echo "Building with CUDA support."
+    #    vopts="${vopts} -DENABLE_CUDA=ON"
+    #    vopts="${vopts} -DBUILD_SHARED_LIBS=OFF"
+    #else
+    #    vopts="${vopts} -DBUILD_SHARED_LIBS=ON"
+    #fi
+    vopts="${vopts} -DBUILD_SHARED_LIBS=ON"
 
     #
     # Several platforms have had problems with the VTK cmake configure
@@ -23622,11 +24159,13 @@ function build_vtkm
     vopts="${vopts} -DVTKm_USE_64BIT_IDS:BOOL=OFF"
     vopts="${vopts} -DVTKm_USE_DOUBLE_PRECISION:BOOL=ON"
     vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
-    if [[ -d $CUDA_HOME ]]; then
-        echo "Building with CUDA support."
-        vopts="${vopts} -DVTKm_ENABLE_CUDA:BOOL=ON"
-        vopts="${vopts} -DVTKm_CUDA_Architecture=kepler"
-    fi
+    # Disable CUDA support for now since it requires using the CUDA compiler
+    # to build all of VisIt, which we don't want to do.
+    #if [[ -d $CUDA_HOME ]]; then
+    #    echo "Building with CUDA support."
+    #    vopts="${vopts} -DVTKm_ENABLE_CUDA:BOOL=ON"
+    #    vopts="${vopts} -DVTKm_CUDA_Architecture=kepler"
+    #fi
 
     #
     # Several platforms have had problems with the VTK cmake configure
@@ -24567,14 +25106,14 @@ xmlp_filecontents[32]="<lib name=\"mfem\"/>"
 xmlp_filecontents[33]="<lib name=\"mili\"/>"
 xmlp_filecontents[34]="<lib name=\"moab\"/>"
 xmlp_filecontents[35]="<lib name=\"mpich\"/>"
-xmlp_filecontents[36]="<lib name=\"mxml\"/>"
-xmlp_filecontents[37]="<lib name=\"nektarpp\"/>"
-xmlp_filecontents[38]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[39]="<lib name=\"openexr\"/>"
-xmlp_filecontents[40]="<lib name=\"osmesa\"/>"
-xmlp_filecontents[41]="<lib name=\"ospray\"/>"
-xmlp_filecontents[42]="<lib name=\"p7zip\"/>"
-xmlp_filecontents[43]="<lib name=\"pidx\"/>"
+xmlp_filecontents[36]="<lib name=\"nektarpp\"/>"
+xmlp_filecontents[37]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[38]="<lib name=\"openexr\"/>"
+xmlp_filecontents[39]="<lib name=\"osmesa\"/>"
+xmlp_filecontents[40]="<lib name=\"ospray\"/>"
+xmlp_filecontents[41]="<lib name=\"p7zip\"/>"
+xmlp_filecontents[42]="<lib name=\"pidx\"/>"
+xmlp_filecontents[43]="<lib name=\"pyside\"/>"
 xmlp_filecontents[44]="<lib name=\"silo\"/>"
 xmlp_filecontents[45]="<lib name=\"stripack\"/>"
 xmlp_filecontents[46]="<lib name=\"szip\"/>"
@@ -24615,12 +25154,12 @@ xmlp_filecontents[80]="<lib name=\"llvm\"/>"
 xmlp_filecontents[81]="<lib name=\"mfem\"/>"
 xmlp_filecontents[82]="<lib name=\"mili\"/>"
 xmlp_filecontents[83]="<lib name=\"moab\"/>"
-xmlp_filecontents[84]="<lib name=\"mxml\"/>"
-xmlp_filecontents[85]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[86]="<lib name=\"openexr\"/>"
-xmlp_filecontents[87]="<lib name=\"ospray\"/>"
-xmlp_filecontents[88]="<lib name=\"p7zip\"/>"
-xmlp_filecontents[89]="<lib name=\"pidx\"/>"
+xmlp_filecontents[84]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[85]="<lib name=\"openexr\"/>"
+xmlp_filecontents[86]="<lib name=\"ospray\"/>"
+xmlp_filecontents[87]="<lib name=\"p7zip\"/>"
+xmlp_filecontents[88]="<lib name=\"pidx\"/>"
+xmlp_filecontents[89]="<lib name=\"pyside\"/>"
 xmlp_filecontents[90]="<lib name=\"silo\"/>"
 xmlp_filecontents[91]="<lib name=\"szip\"/>"
 xmlp_filecontents[92]="<lib name=\"tbb\"/>"
@@ -24650,136 +25189,134 @@ xmlp_filecontents[115]="<lib name=\"fms\"/>"
 xmlp_filecontents[116]="<lib name=\"gdal\"/>"
 xmlp_filecontents[117]="<lib name=\"h5part\"/>"
 xmlp_filecontents[118]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[119]="<lib name=\"mxml\"/>"
-xmlp_filecontents[120]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[121]="<lib name=\"nektarpp\"/>"
-xmlp_filecontents[122]="<lib name=\"openexr\"/>"
-xmlp_filecontents[123]="<lib name=\"pidx\"/>"
-xmlp_filecontents[124]="<lib name=\"silo\"/>"
-xmlp_filecontents[125]="<lib name=\"szip\"/>"
-xmlp_filecontents[126]="<lib name=\"uintah\"/>"
-xmlp_filecontents[127]="<lib name=\"xdmf\"/>"
-xmlp_filecontents[128]="<lib name=\"zlib\"/>"
-xmlp_filecontents[129]="</group>"
-xmlp_filecontents[130]="<group name=\"dbio-only\" comment=\"Disables EVERYTHING but I/O.\" enabled=\"no\">"
-xmlp_filecontents[131]="<lib name=\"adios\"/>"
-xmlp_filecontents[132]="<lib name=\"adios2\"/>"
-xmlp_filecontents[133]="<lib name=\"advio\"/>"
-xmlp_filecontents[134]="<lib name=\"boost\"/>"
-xmlp_filecontents[135]="<lib name=\"boxlib\"/>"
-xmlp_filecontents[136]="<lib name=\"cfitsio\"/>"
-xmlp_filecontents[137]="<lib name=\"conduit\"/>"
-xmlp_filecontents[138]="<lib name=\"mfem\"/>"
-xmlp_filecontents[139]="<lib name=\"cgns\"/>"
-xmlp_filecontents[140]="<lib name=\"fms\"/>"
-xmlp_filecontents[141]="<lib name=\"gdal\"/>"
-xmlp_filecontents[142]="<lib name=\"h5part\"/>"
-xmlp_filecontents[143]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[144]="<lib name=\"mxml\"/>"
-xmlp_filecontents[145]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[146]="<lib name=\"nektarpp\"/>"
-xmlp_filecontents[147]="<lib name=\"pidx\"/>"
-xmlp_filecontents[148]="<lib name=\"silo\"/>"
-xmlp_filecontents[149]="<lib name=\"szip\"/>"
-xmlp_filecontents[150]="<lib name=\"uintah\"/>"
-xmlp_filecontents[151]="<lib name=\"xdmf\"/>"
-xmlp_filecontents[152]="<lib name=\"zlib\"/>"
-xmlp_filecontents[153]="<lib name=\"no-qt\"/>"
-xmlp_filecontents[154]="<lib name=\"no-qwt\"/>"
-xmlp_filecontents[155]="<lib name=\"no-python\"/>"
-xmlp_filecontents[156]="</group>"
-xmlp_filecontents[157]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
-xmlp_filecontents[158]="<lib name=\"icet\"/>"
-xmlp_filecontents[159]="<lib name=\"embree\"/>"
-xmlp_filecontents[160]="<lib name=\"ispc\"/>"
-xmlp_filecontents[161]="<lib name=\"tbb\"/>"
-xmlp_filecontents[162]="<lib name=\"ospray\"/>"
-xmlp_filecontents[163]="</group>"
-xmlp_filecontents[164]="<group name=\"advanced\" comment=\"Must be manually downloaded\" enabled=\"no\">"
-xmlp_filecontents[165]="<lib name=\"hdf4\"/>"
-xmlp_filecontents[166]="<lib name=\"mili\"/>"
-xmlp_filecontents[167]="</group>"
-xmlp_filecontents[168]="</license>"
-xmlp_filecontents[169]="<license name=\"gpl\">"
-xmlp_filecontents[170]="<required>"
-xmlp_filecontents[171]="<lib name=\"cmake\"/>"
-xmlp_filecontents[172]="<lib name=\"python\"/>"
-xmlp_filecontents[173]="<lib name=\"vtk\"/>"
-xmlp_filecontents[174]="<lib name=\"qt\"/>"
-xmlp_filecontents[175]="<lib name=\"qwt\"/>"
-xmlp_filecontents[176]="<lib name=\"zlib\"/>"
-xmlp_filecontents[177]="</required>"
-xmlp_filecontents[178]="<optional>"
-xmlp_filecontents[179]="<lib name=\"boost\"/>"
-xmlp_filecontents[180]="<lib name=\"szip\"/>"
-xmlp_filecontents[181]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[182]="<lib name=\"glu\"/>"
-xmlp_filecontents[183]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[184]="<lib name=\"icet\"/>"
-xmlp_filecontents[185]="<lib name=\"llvm\"/>"
-xmlp_filecontents[186]="<lib name=\"mesagl\"/>"
-xmlp_filecontents[187]="<lib name=\"mpich\"/>"
-xmlp_filecontents[188]="<lib name=\"osmesa\"/>"
-xmlp_filecontents[189]="<lib name=\"pyqt\"/>"
-xmlp_filecontents[190]="<lib name=\"uintah\"/>"
-xmlp_filecontents[191]="<lib name=\"damaris\"/>"
-xmlp_filecontents[192]="<lib name=\"xercesc\"/>"
-xmlp_filecontents[193]="<lib name=\"xsd\"/>"
-xmlp_filecontents[194]="</optional>"
-xmlp_filecontents[195]="<group name=\"required\" comment=\"All required libraries\" enabled=\"yes\">"
-xmlp_filecontents[196]="<lib name=\"cmake\"/>"
-xmlp_filecontents[197]="<lib name=\"python\"/>"
-xmlp_filecontents[198]="<lib name=\"vtk\"/>"
-xmlp_filecontents[199]="<lib name=\"qt\"/>"
-xmlp_filecontents[200]="<lib name=\"qwt\"/>"
-xmlp_filecontents[201]="<lib name=\"zlib\"/>"
-xmlp_filecontents[202]="</group>"
-xmlp_filecontents[203]="<group name=\"optional\" comment=\"All optional libraries\" enabled=\"no\">"
-xmlp_filecontents[204]="<lib name=\"boost\"/>"
-xmlp_filecontents[205]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[206]="<lib name=\"openssl\"/>"
-xmlp_filecontents[207]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[208]="<lib name=\"mpich\"/>"
-xmlp_filecontents[209]="<lib name=\"szip\"/>"
-xmlp_filecontents[210]="<lib name=\"uintah\"/>"
-xmlp_filecontents[211]="<lib name=\"damaris\"/>"
-xmlp_filecontents[212]="<lib name=\"xercesc\"/>"
-xmlp_filecontents[213]="<lib name=\"xsd\"/>"
-xmlp_filecontents[214]="</group>"
-xmlp_filecontents[215]="<group name=\"no-thirdparty\" comment=\"Do not build required 3rd party libraries\" enabled=\"no\">"
-xmlp_filecontents[216]="<lib name=\"no-cmake\"/>"
-xmlp_filecontents[217]="<lib name=\"no-python\"/>"
-xmlp_filecontents[218]="<lib name=\"no-qt\" />"
-xmlp_filecontents[219]="<lib name=\"no-qwt\" />"
-xmlp_filecontents[220]="<lib name=\"no-vtk\"/>"
-xmlp_filecontents[221]="<lib name=\"no-zlib\"/>"
-xmlp_filecontents[222]="</group>"
-xmlp_filecontents[223]="<group name=\"dbio-only\" comment=\"Disables EVERYTHING but I/O.\" enabled=\"no\">"
-xmlp_filecontents[224]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[225]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[226]="<lib name=\"szip\"/>"
-xmlp_filecontents[227]="<lib name=\"zlib\"/>"
-xmlp_filecontents[228]="<lib name=\"uintah\"/>"
-xmlp_filecontents[229]="<lib name=\"no-python\"/>"
-xmlp_filecontents[230]="<lib name=\"no-qt\"/>"
-xmlp_filecontents[231]="<lib name=\"no-qwt\"/>"
-xmlp_filecontents[232]="</group>"
-xmlp_filecontents[233]="<group name=\"all-io\" comment=\"Build all available I/O libraries\" enabled=\"no\">"
-xmlp_filecontents[234]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[235]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[236]="<lib name=\"szip\"/>"
-xmlp_filecontents[237]="<lib name=\"zlib\"/>"
-xmlp_filecontents[238]="<lib name=\"uintah\"/>"
-xmlp_filecontents[239]="</group>"
-xmlp_filecontents[240]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
-xmlp_filecontents[241]="<lib name=\"icet\"/>"
-xmlp_filecontents[242]="</group>"
-xmlp_filecontents[243]="</license>"
-xmlp_filecontents[244]="</modules>"
+xmlp_filecontents[119]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[120]="<lib name=\"nektarpp\"/>"
+xmlp_filecontents[121]="<lib name=\"openexr\"/>"
+xmlp_filecontents[122]="<lib name=\"pidx\"/>"
+xmlp_filecontents[123]="<lib name=\"silo\"/>"
+xmlp_filecontents[124]="<lib name=\"szip\"/>"
+xmlp_filecontents[125]="<lib name=\"uintah\"/>"
+xmlp_filecontents[126]="<lib name=\"xdmf\"/>"
+xmlp_filecontents[127]="<lib name=\"zlib\"/>"
+xmlp_filecontents[128]="</group>"
+xmlp_filecontents[129]="<group name=\"dbio-only\" comment=\"Disables EVERYTHING but I/O.\" enabled=\"no\">"
+xmlp_filecontents[130]="<lib name=\"adios\"/>"
+xmlp_filecontents[131]="<lib name=\"adios2\"/>"
+xmlp_filecontents[132]="<lib name=\"advio\"/>"
+xmlp_filecontents[133]="<lib name=\"boost\"/>"
+xmlp_filecontents[134]="<lib name=\"boxlib\"/>"
+xmlp_filecontents[135]="<lib name=\"cfitsio\"/>"
+xmlp_filecontents[136]="<lib name=\"conduit\"/>"
+xmlp_filecontents[137]="<lib name=\"mfem\"/>"
+xmlp_filecontents[138]="<lib name=\"cgns\"/>"
+xmlp_filecontents[139]="<lib name=\"fms\"/>"
+xmlp_filecontents[140]="<lib name=\"gdal\"/>"
+xmlp_filecontents[141]="<lib name=\"h5part\"/>"
+xmlp_filecontents[142]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[143]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[144]="<lib name=\"nektarpp\"/>"
+xmlp_filecontents[145]="<lib name=\"pidx\"/>"
+xmlp_filecontents[146]="<lib name=\"silo\"/>"
+xmlp_filecontents[147]="<lib name=\"szip\"/>"
+xmlp_filecontents[148]="<lib name=\"uintah\"/>"
+xmlp_filecontents[149]="<lib name=\"xdmf\"/>"
+xmlp_filecontents[150]="<lib name=\"zlib\"/>"
+xmlp_filecontents[151]="<lib name=\"no-qt\"/>"
+xmlp_filecontents[152]="<lib name=\"no-qwt\"/>"
+xmlp_filecontents[153]="<lib name=\"no-python\"/>"
+xmlp_filecontents[154]="</group>"
+xmlp_filecontents[155]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
+xmlp_filecontents[156]="<lib name=\"icet\"/>"
+xmlp_filecontents[157]="<lib name=\"embree\"/>"
+xmlp_filecontents[158]="<lib name=\"ispc\"/>"
+xmlp_filecontents[159]="<lib name=\"tbb\"/>"
+xmlp_filecontents[160]="<lib name=\"ospray\"/>"
+xmlp_filecontents[161]="</group>"
+xmlp_filecontents[162]="<group name=\"advanced\" comment=\"Must be manually downloaded\" enabled=\"no\">"
+xmlp_filecontents[163]="<lib name=\"hdf4\"/>"
+xmlp_filecontents[164]="<lib name=\"mili\"/>"
+xmlp_filecontents[165]="</group>"
+xmlp_filecontents[166]="</license>"
+xmlp_filecontents[167]="<license name=\"gpl\">"
+xmlp_filecontents[168]="<required>"
+xmlp_filecontents[169]="<lib name=\"cmake\"/>"
+xmlp_filecontents[170]="<lib name=\"python\"/>"
+xmlp_filecontents[171]="<lib name=\"vtk\"/>"
+xmlp_filecontents[172]="<lib name=\"qt\"/>"
+xmlp_filecontents[173]="<lib name=\"qwt\"/>"
+xmlp_filecontents[174]="<lib name=\"zlib\"/>"
+xmlp_filecontents[175]="</required>"
+xmlp_filecontents[176]="<optional>"
+xmlp_filecontents[177]="<lib name=\"boost\"/>"
+xmlp_filecontents[178]="<lib name=\"szip\"/>"
+xmlp_filecontents[179]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[180]="<lib name=\"glu\"/>"
+xmlp_filecontents[181]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[182]="<lib name=\"icet\"/>"
+xmlp_filecontents[183]="<lib name=\"llvm\"/>"
+xmlp_filecontents[184]="<lib name=\"mesagl\"/>"
+xmlp_filecontents[185]="<lib name=\"mpich\"/>"
+xmlp_filecontents[186]="<lib name=\"osmesa\"/>"
+xmlp_filecontents[187]="<lib name=\"pyqt\"/>"
+xmlp_filecontents[188]="<lib name=\"uintah\"/>"
+xmlp_filecontents[189]="<lib name=\"damaris\"/>"
+xmlp_filecontents[190]="<lib name=\"xercesc\"/>"
+xmlp_filecontents[191]="<lib name=\"xsd\"/>"
+xmlp_filecontents[192]="</optional>"
+xmlp_filecontents[193]="<group name=\"required\" comment=\"All required libraries\" enabled=\"yes\">"
+xmlp_filecontents[194]="<lib name=\"cmake\"/>"
+xmlp_filecontents[195]="<lib name=\"python\"/>"
+xmlp_filecontents[196]="<lib name=\"vtk\"/>"
+xmlp_filecontents[197]="<lib name=\"qt\"/>"
+xmlp_filecontents[198]="<lib name=\"qwt\"/>"
+xmlp_filecontents[199]="<lib name=\"zlib\"/>"
+xmlp_filecontents[200]="</group>"
+xmlp_filecontents[201]="<group name=\"optional\" comment=\"All optional libraries\" enabled=\"no\">"
+xmlp_filecontents[202]="<lib name=\"boost\"/>"
+xmlp_filecontents[203]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[204]="<lib name=\"openssl\"/>"
+xmlp_filecontents[205]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[206]="<lib name=\"mpich\"/>"
+xmlp_filecontents[207]="<lib name=\"szip\"/>"
+xmlp_filecontents[208]="<lib name=\"uintah\"/>"
+xmlp_filecontents[209]="<lib name=\"damaris\"/>"
+xmlp_filecontents[210]="<lib name=\"xercesc\"/>"
+xmlp_filecontents[211]="<lib name=\"xsd\"/>"
+xmlp_filecontents[212]="</group>"
+xmlp_filecontents[213]="<group name=\"no-thirdparty\" comment=\"Do not build required 3rd party libraries\" enabled=\"no\">"
+xmlp_filecontents[214]="<lib name=\"no-cmake\"/>"
+xmlp_filecontents[215]="<lib name=\"no-python\"/>"
+xmlp_filecontents[216]="<lib name=\"no-qt\" />"
+xmlp_filecontents[217]="<lib name=\"no-qwt\" />"
+xmlp_filecontents[218]="<lib name=\"no-vtk\"/>"
+xmlp_filecontents[219]="<lib name=\"no-zlib\"/>"
+xmlp_filecontents[220]="</group>"
+xmlp_filecontents[221]="<group name=\"dbio-only\" comment=\"Disables EVERYTHING but I/O.\" enabled=\"no\">"
+xmlp_filecontents[222]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[223]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[224]="<lib name=\"szip\"/>"
+xmlp_filecontents[225]="<lib name=\"zlib\"/>"
+xmlp_filecontents[226]="<lib name=\"uintah\"/>"
+xmlp_filecontents[227]="<lib name=\"no-python\"/>"
+xmlp_filecontents[228]="<lib name=\"no-qt\"/>"
+xmlp_filecontents[229]="<lib name=\"no-qwt\"/>"
+xmlp_filecontents[230]="</group>"
+xmlp_filecontents[231]="<group name=\"all-io\" comment=\"Build all available I/O libraries\" enabled=\"no\">"
+xmlp_filecontents[232]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[233]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[234]="<lib name=\"szip\"/>"
+xmlp_filecontents[235]="<lib name=\"zlib\"/>"
+xmlp_filecontents[236]="<lib name=\"uintah\"/>"
+xmlp_filecontents[237]="</group>"
+xmlp_filecontents[238]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
+xmlp_filecontents[239]="<lib name=\"icet\"/>"
+xmlp_filecontents[240]="</group>"
+xmlp_filecontents[241]="</license>"
+xmlp_filecontents[242]="</modules>"
 xmlp_licenses[0]="bsd|mit|lgpl"
-xmlp_licenses_range[0]="1 170"
+xmlp_licenses_range[0]="1 166"
 xmlp_licenses[1]="gpl"
-xmlp_licenses_range[1]="171 245"
+xmlp_licenses_range[1]="167 241"
 defaultLicenses=$(xmlp_get_license "$@")
 for license in `echo $defaultLicenses`
 do
@@ -24808,12 +25345,12 @@ do
 done
 check_default_args () 
 { 
+    if [[ $(quick_check_for_help $@) -eq 0 ]]; then
+        usage;
+        exit 2;
+    fi;
     for arg in "$@";
     do
-        if [[ "$arg" == "-h" || "$arg" == "--help" ]]; then
-            usage;
-            exit 2;
-        fi;
         if [[ "$arg" == "--write-unified-file" ]]; then
             next_arg="write-unified-file";
         else
