@@ -612,7 +612,7 @@
     </message>
     <message>
         <source>Index Select</source>
-        <translation>Choix d'Indice</translation>
+        <translation>Choix d&apos;Indice</translation>
     </message>
     <message>
         <source>Inverse Ghost Zone</source>
@@ -644,7 +644,7 @@
     </message>
     <message>
         <source>Onion Peel</source>
-        <translation type="guess">Pelure d'oignon</translation>
+        <translation type="guess">Pelure d&apos;oignon</translation>
     </message>
     <message>
         <source>Probability Density Function</source>
@@ -1786,7 +1786,7 @@ La valeur précédente a été rétablie.</translation>
     </message>
     <message>
         <source>Cross-mesh field evaluations (CMFEs) take a field from a donor mesh and place that field on a target mesh.  To begin select the type of evaluation to setup:</source>
-        <translation type="guess">Les évaluations de champ entre maillages (CMFE) prennent un champ d'un maillage donneur et placent ce champ sur un maillage cible. Sélectionner le type d'évaluation à configurer :</translation>
+        <translation type="guess">Les évaluations de champ entre maillages (CMFE) prennent un champ d&apos;un maillage donneur et placent ce champ sur un maillage cible. Sélectionner le type d&apos;évaluation à configurer :</translation>
     </message>
     <message>
         <source>Between different time slices on the same mesh</source>
@@ -2268,7 +2268,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Frame stride</source>
-        <translation type="guess">Pas entre les images</translation>
+        <translation type="new">Ecrire une image sur (1=toutes) :</translation>
     </message>
     <message>
         <source>File location is not writable.</source>
@@ -3068,7 +3068,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Create Cue For Current Location</source>
-        <translation type="new">Créer un repère pour l'emplacement actuel</translation>
+        <translation type="new">Créer un repère pour l&apos;emplacement actuel</translation>
     </message>
     <message>
         <source>Add Ball</source>
@@ -3980,7 +3980,7 @@ de l&apos;écriture sur le système de fichiers parallèle à grande échelle.
     </message>
     <message>
         <source>Write group size</source>
-        <translation type="guess">Écrire la taille du groupe</translation>
+        <translation type="new">Taille du groupe d&apos;écriture</translation>
     </message>
     <message>
         <source>The time state format was invalid. Resetting to the last good value &quot;%1&quot;.</source>
@@ -5264,7 +5264,7 @@ et les expressions générées automatiquement</translation>
     </message>
     <message>
         <source>Material Reconstruction Options</source>
-        <translation>Options de reconstruction matérielles</translation>
+        <translation type="new">Options de reconstruction matériaux</translation>
     </message>
     <message>
         <source>Pick</source>
@@ -5680,11 +5680,11 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Create refline labels</source>
-        <translation>Créer des étiquettes de réf  </translation>
+        <translation type="new">Créer des étiquettes de ligne de référence</translation>
     </message>
     <message>
         <source>The value of windowId was invalid. Resetting to the last good value of %1.</source>
-        <translation>Les valeurs de windowsid ne sont pas bonnes, remise des dernières bonnes valeurs de %1.</translation>
+        <translation type="new">La valeur de windowId n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The value of numSamples was invalid. Resetting to the last good value of %1.</source>
@@ -6088,7 +6088,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>Timeout (minutes)</source>
-        <translation>Délai d'attente maximal (minutes)</translation>
+        <translation>Délai d&apos;attente maximal (minutes)</translation>
     </message>
     <message>
         <source>(default)</source>
@@ -7393,7 +7393,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Clamp to Square</source>
-        <translation type="guess">Serrer à l'équerre</translation>
+        <translation type="guess">Serrer à l&apos;équerre</translation>
     </message>
     <message>
         <source>Fill viewport on zoom</source>
@@ -10285,11 +10285,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Simplify heavily mixed zones</source>
-        <translation>Simplifier les zones mélangées</translation>
+        <translation type="new">Simplifier les zones fortement mélangées</translation>
     </message>
     <message>
         <source>Maximum materials per zone</source>
-        <translation>Maximum matériau par zone</translation>
+        <translation type="new">Nombre maximum de matériaux par zone</translation>
     </message>
     <message>
         <source>Volume fraction for isovolume</source>
@@ -10297,19 +10297,19 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.</source>
-        <translation>Remarque : Ces paramètress&apos;appliquent uniquement aux nouvelles courbes. Pour les appliquer à des courbes actuelles, réouvrir le fichier.</translation>
+        <translation type="guess">Remarque : Ces paramètres s&apos;appliquent uniquement aux nouveaux tracés. Pour les appliquer aux tracés en cours, réouvrir le fichier.</translation>
     </message>
     <message>
         <source>Note:  These settings only apply to new plots.  To apply them to current plots, re-open the file.  VisIt will NOT issue this message any further times for this session, but keep in mind that you must re-open each time you change the material attributes.</source>
-        <translation>Remarque : Ces paramètres s&apos;appliquent uniquement aux nouveaux graphiques. Pour les appliquer à des graphiques actuels, réouvrir le fichier. Visite ne devrait pas émettre ce message de nouveau dans cette session, mais gardez à l&apos;esprit que vous devez le réouvrir chaque fois que vous changez les attributs matériels.</translation>
+        <translation type="new">Remarque : Ces paramètres s&apos;appliquent uniquement aux nouveaux graphiques. Pour les appliquer aux graphiques actuels, réouvrir le fichier. VisIt ne devrait PAS émettre ce message de nouveau dans cette session, mais gardez à l&apos;esprit que vous devez réouvrir chaque fois que vous changez les attributs matériau.</translation>
     </message>
     <message>
         <source>Max mats per zone must be at least 1.Resetting to the last good value of %1.</source>
-        <translation>Max tapis par zone doit être au moins 1.Remis à la dernière bonne valeur de %1.</translation>
+        <translation type="new">Le nombre max de matériaux par zone doit être au moins 1. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The value of isoVolumeFraction was invalid. Resetting to the last good value of %1.</source>
-        <translation>La valeur de fraction du volume-iso était invalide. Réinitialisation de la dernière bonne valeur de %1.</translation>
+        <translation type="new">La valeur de fraction du volume-iso était invalide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>Equi-T (obsolete)</source>
@@ -10317,7 +10317,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Equi-Z (default, supports iteration)</source>
-        <translation>Equi-Z (Support iteration par défaut)</translation>
+        <translation type="new">Equi-Z (par défaut, accepte itération)</translation>
     </message>
     <message>
         <source>PLIC (accurate/discontinuous)</source>
@@ -10325,11 +10325,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Discrete (accurate/10X memory footprint/rect. only)</source>
-        <translation>Discret (exacte / 10X pied de page mémoire / rect. seul)</translation>
+        <translation type="new">Discret (exacte / 10X empreinte mémoire / rect. seul)</translation>
     </message>
     <message>
         <source>Enable interface smoothing (Equi-* only)</source>
-        <translation>Activer l&apos;interface lissage (équi-* uniquement)</translation>
+        <translation type="new">Activer le lissage d&apos;interface (Equi-* uniquement)</translation>
     </message>
     <message>
         <source>Force full connectivity (Equi-T only)</source>
@@ -10337,7 +10337,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Enable iteration (Equi-Z, Isovolume only)</source>
-        <translation>Activer l&apos;itération (équi-Z,volume-iso uniquement)</translation>
+        <translation type="new">Activer l&apos;itération (Equi-Z et volume-iso seulement)</translation>
     </message>
     <message>
         <source>Number of iterations</source>
@@ -10353,22 +10353,22 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>The value of numIterations was invalid. Resetting to the last good value of %1.</source>
-        <translation>Les valeurs de numitérations ne sont pas bonnes, remise des dernières bonnes valeurs de %1.</translation>
+        <translation type="new">La valeur de numIterations n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The value of iterationDamping was invalid. Resetting to the last good value of %1.</source>
-        <translation>Les valeurs d&apos;itération d&apos;amortissement ne sont pas bonnes, remise des dernières bonnes valeurs de %1.</translation>
+        <translation type="new">La valeur de iterationDamping (itération &apos;amortissement) n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
     <message>
         <source>The value of annealingTime was invalid. Resetting to the last good value of %1.</source>
-        <translation>Les valeurs du temps de recuit ne sont pas bonnes, remise des dernières bonnes valeurs de %1.</translation>
+        <translation type="new">La valeur de annealingTime (temps de recuit) n&apos;était pas valide. Réinitialisation à la dernière bonne valeur de %1.</translation>
     </message>
 </context>
 <context>
     <name>QvisMergeWindow</name>
     <message>
         <source>Merge across all processors?</source>
-        <translation>Fusionner avec tous les processeurs ?</translation>
+        <translation type="new">Fusionner à travers tous les processeurs ?</translation>
     </message>
     <message>
         <source>Maximum distance between points that should be merged</source>
@@ -10387,7 +10387,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Discretize boundary only</source>
-        <translation>Discrétiser les limites uniquement</translation>
+        <translation type="new">Discrétiser la frontière uniquement</translation>
     </message>
     <message>
         <source>Discretization mode</source>
@@ -10407,7 +10407,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Flat enough (recip. curvature)</source>
-        <translation>Assez plat (recip. courbure)</translation>
+        <translation type="new">Suffisamment plat (recip. courbure)</translation>
     </message>
     <message>
         <source>Adaptive not available. Missing boost interval template library. Overriding to Uniform.</source>
@@ -11912,7 +11912,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Float format</source>
-        <translation type="guess">Format de réel</translation>
+        <translation type="guess">Format de nombre réel</translation>
     </message>
     <message>
         <source>Concise output</source>
@@ -11936,7 +11936,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Choose save filename</source>
-        <translation>Choisir le nom du fichier</translation>
+        <translation type="new">Choisir le nom du fichier pour sauver</translation>
     </message>
     <message>
         <source>Mesh name</source>
@@ -11964,7 +11964,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>For zones</source>
-        <translation>Pour les zones</translation>
+        <translation type="new">Pour les zones/cellules</translation>
     </message>
     <message>
         <source>Do time curve with next pick</source>
@@ -11972,11 +11972,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Time curve use single Y axis</source>
-        <translation>Utiliser un unique axe des ordonnées pour la courbe temporelle</translation>
+        <translation type="new">Utiliser un unique axe des ordonnées (Y) pour la courbe temporelle</translation>
     </message>
     <message>
         <source>Time curve use multiple Y axes</source>
-        <translation>Utiliser plusieurs axes des ordonnées pour la courbe temporelle</translation>
+        <translation type="new">Utiliser plusieurs axes des ordonnées (Y) pour la courbe temporelle</translation>
     </message>
     <message>
         <source>Output display</source>
@@ -12321,7 +12321,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>This is an ordered list of plugins which take precedence when opening files.  When they accept the given file name pattern, these are tried frst.  And when all attempts to guess based on file name fail, these are tried before giving up.</source>
-        <translation type="guess">C'est 'une liste ordonnée de plugins qui sont prioritaires lors de l'ouverture de fichiers. Lorsqu'ils acceptent le modèle de nom de fichier donné, ils sont essayés en premier. Et lorsque toutes les tentatives de deviner basées sur le nom de fichier échouent, elles sont essayées avant d'abandonner.</translation>
+        <translation type="guess">C&apos;est une liste ordonnée de plugins qui sont prioritaires lors de l&apos;ouverture de fichiers. Lorsqu&apos;ils acceptent le modèle de nom de fichier donné, ils sont essayés en premier. Et lorsque toutes les tentatives de deviner basées sur le nom de fichier échouent, elles sont essayées avant d&apos;abandonner.</translation>
     </message>
 </context>
 <context>
@@ -14128,7 +14128,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Wireframe</source>
-        <translation type="guess">Filaire</translation>
+        <translation type="new">Fils</translation>
     </message>
     <message>
         <source>Points</source>
@@ -14862,7 +14862,7 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Interlace</source>
-        <translation type="guess">Entrelacer,</translation>
+        <translation type="guess">Entrelacer</translation>
     </message>
     <message>
         <source>Crystal Eyes</source>
@@ -14878,7 +14878,7 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>Strength</source>
-        <translation type="unfinished">Puissance</translation>
+        <translation type="new">Intensite</translation>
     </message>
     <message>
         <source>Sharpness</source>
@@ -15097,7 +15097,7 @@ traités en arrière-plan à l&apos;aide de threads de composition
     </message>
     <message>
         <source>Depth Peeling</source>
-        <translation type="guess">Profondeur d'épluchage</translation>
+        <translation type="guess">Profondeur d&apos;épluchage</translation>
     </message>
     <message>
         <source>Enable depth peeling for order independent rendering of
@@ -15496,7 +15496,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Choose movie start/end time and frames per second.</source>
-        <translation type="guess">Choisir le temps de début/fin du film et le nombre d&apos;images par seconde</translation>
+        <translation type="new">Choisir le temps de début/fin du film et le nombre d&apos;images par seconde.</translation>
     </message>
     <message>
         <source>Choose filename</source>
@@ -15520,7 +15520,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Choose when and how you would like VisIt to create your movies.</source>
-        <translation type="guess">Choisissez quand et comment vous souhaitez que VisIt crée vos films</translation>
+        <translation type="guess">Choisissez quand et comment vous souhaitez que VisIt crée vos films.</translation>
     </message>
     <message>
         <source>Save movie wizard</source>
@@ -15856,7 +15856,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Frame stride</source>
-        <translation type="unfinished"></translation>
+        <translation type="new">Ecrire une image sur (1=toutes) :</translation>
     </message>
     <message>
         <source>Use screen capture</source>
