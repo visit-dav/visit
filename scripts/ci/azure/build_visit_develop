@@ -21360,162 +21360,6 @@ function bv_tbb_build
     fi
 }
 
-function bv_tcmalloc_initialize
-{
-    export DO_TCMALLOC="no"
-}
-
-function bv_tcmalloc_enable
-{
-    DO_TCMALLOC="yes"
-}
-
-function bv_tcmalloc_disable
-{
-    DO_TCMALLOC="no"
-}
-
-function bv_tcmalloc_depends_on
-{
-    echo ""
-}
-
-function bv_tcmalloc_info
-{
-    export TCMALLOC_FILE=${TCMALLOC_FILE:-"google-perftools-0.97.tar.gz"}
-    export TCMALLOC_VERSION=${TCMALLOC_VERSION:-"0.97"}
-    export TCMALLOC_COMPATIBILITY_VERSION=${TCMALLOC_COMPATIBILITY_VERSION:-"0.97"}
-    export TCMALLOC_BUILD_DIR=${TCMALLOC_BUILD_DIR:-"google-perftools-0.97"}
-    export TCMALLOC_MD5_CHECKSUM="5168bdca5557bc5630a866f132f8f7c1"
-    export TCMALLOC_SHA256_CHECKSUM="c879267296d91ccadf3aacb9340ca5801b41fbd37aad097b2b6081bf27bb505c"
-}
-
-function bv_tcmalloc_print
-{
-    printf "%s%s\n" "TCMALLOC_FILE=" "${TCMALLOC_FILE}"
-    printf "%s%s\n" "TCMALLOC_VERSION=" "${TCMALLOC_VERSION}"
-    printf "%s%s\n" "TCMALLOC_COMPATIBILITY_VERSION=" "${TCMALLOC_COMPATIBILITY_VERSION}"
-    printf "%s%s\n" "TCMALLOC_BUILD_DIR=" "${TCMALLOC_BUILD_DIR}"
-}
-
-function bv_tcmalloc_print_usage
-{
-    printf "%-20s %s [%s]\n" "--tcmalloc" "Build tcmalloc from Google's perftools" "$DO_TCMALLOC"  
-}
-
-function bv_tcmalloc_host_profile
-{
-    if [[ "$DO_TCMALLOC" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## Tcmalloc" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo \
-            "VISIT_OPTION_DEFAULT(VISIT_TCMALLOC_DIR \${VISITHOME}/google-perftools/$TCMALLOC_VERSION/\${VISITARCH})" \
-            >> $HOSTCONF
-    fi
-}
-
-function bv_tcmalloc_ensure
-{
-    if [[ "$DO_TCMALLOC" == "yes" ]] ; then
-        ensure_built_or_ready "google-perftools" $TCMALLOC_VERSION $TCMALLOC_BUILD_DIR $TCMALLOC_FILE
-        if [[ $? != 0 ]] ; then
-            ANY_ERRORS="yes"
-            DO_TCMALLOC="no"
-            error "Unable to build google perftools."
-        fi
-    fi
-}
-
-function bv_tcmalloc_dry_run
-{
-    if [[ "$DO_TCMALLOC" == "yes" ]] ; then
-        echo "Dry run option not set for tcmalloc."
-    fi
-}
-# *************************************************************************** #
-#                         Function 8.12, build_tcmalloc                       #
-# *************************************************************************** #
-
-function build_tcmalloc
-{
-    #
-    # Prepare build dir
-    #
-    prepare_build_dir $TCMALLOC_BUILD_DIR $TCMALLOC_FILE
-    untarred_tcmalloc=$?
-    if [[ $untarred_tcmalloc == -1 ]] ; then
-        warn "Unable to prepare google-perftools Build Directory. Giving Up"
-        return 1
-    fi
-
-
-    info "Configuring google-perftools . . ."
-    cd $TCMALLOC_BUILD_DIR || error "Can't cd to tcmalloc build dir."
-
-    #
-    # Build TCMALLOC
-    #
-    info "Building google-perftools . . . (~1 minutes)"
-    if [[ "$DO_STATIC_BUILD" == "no" ]]; then 
-        ./configure
-    else
-        ./configure --enable-static --disable-shared
-    fi
-    make
-
-    info "Installing google-perftools . . ."
-    mkdir $VISITDIR/google-perftools
-    mkdir $VISITDIR/google-perftools/${TCMALLOC_VERSION}
-    mkdir $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH
-    mkdir $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH/lib
-    cp .libs/libtcmalloc.* $VISITDIR/google-perftools/${TCMALLOC_VERSION}/$VISITARCH/lib
-
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/google-perftools"
-        chgrp -R ${GROUP} "$VISITDIR/google-perftools"
-    fi
-
-    cd "$START_DIR"
-    echo "Done with google-perftools"
-    return 0
-}
-
-function bv_tcmalloc_is_enabled
-{
-    if [[ $DO_TCMALLOC == "yes" ]]; then
-        return 1    
-    fi
-    return 0
-}
-
-function bv_tcmalloc_is_installed
-{
-    check_if_installed "google-perftools"
-    if [[ $? == 0 ]] ; then
-        return 1
-    fi
-    return 0
-}
-
-function bv_tcmalloc_build
-{
-    cd "$START_DIR"
-    if [[ "$DO_TCMALLOC" == "yes" ]] ; then
-        check_if_installed "google-perftools"
-        if [[ $? == 0 ]] ; then
-            info "Skipping google-perftools build.  google-perftools is already installed."
-        else
-            info "Building google-perftools (~2 minutes)"
-            build_tcmalloc
-            if [[ $? != 0 ]] ; then
-                error "Unable to build or install google-perftools.  Bailing out."
-            fi
-            info "Done building google-perftools"
-        fi
-    fi
-}
 function bv_uintah_initialize
 {
     export FORCE_UINTAH="no"
@@ -24735,205 +24579,203 @@ xmlp_filecontents[44]="<lib name=\"silo\"/>"
 xmlp_filecontents[45]="<lib name=\"stripack\"/>"
 xmlp_filecontents[46]="<lib name=\"szip\"/>"
 xmlp_filecontents[47]="<lib name=\"tbb\"/>"
-xmlp_filecontents[48]="<lib name=\"tcmalloc\"/>"
-xmlp_filecontents[49]="<lib name=\"uintah\"/>"
-xmlp_filecontents[50]="<lib name=\"vtkm\"/>"
-xmlp_filecontents[51]="<lib name=\"vtkh\"/>"
-xmlp_filecontents[52]="<lib name=\"xdmf\"/>"
-xmlp_filecontents[53]="</optional>"
-xmlp_filecontents[54]="<group name=\"required\" comment=\"All required libraries\" enabled=\"yes\">"
-xmlp_filecontents[55]="<lib name=\"cmake\"/>"
-xmlp_filecontents[56]="<lib name=\"openssl\"/>"
-xmlp_filecontents[57]="<lib name=\"python\"/>"
-xmlp_filecontents[58]="<lib name=\"vtk\"/>"
-xmlp_filecontents[59]="<lib name=\"qt\"/>"
-xmlp_filecontents[60]="<lib name=\"qwt\"/>"
-xmlp_filecontents[61]="<lib name=\"zlib\"/>"
-xmlp_filecontents[62]="</group>"
-xmlp_filecontents[63]="<group name=\"optional\" comment=\"All optional libraries\" enabled=\"no\">"
-xmlp_filecontents[64]="<lib name=\"adios\"/>"
-xmlp_filecontents[65]="<lib name=\"adios2\"/>"
-xmlp_filecontents[66]="<lib name=\"advio\"/>"
-xmlp_filecontents[67]="<lib name=\"boost\"/>"
-xmlp_filecontents[68]="<lib name=\"boxlib\"/>"
-xmlp_filecontents[69]="<lib name=\"cfitsio\"/>"
-xmlp_filecontents[70]="<lib name=\"cgns\"/>"
-xmlp_filecontents[71]="<lib name=\"conduit\"/>"
-xmlp_filecontents[72]="<lib name=\"embree\"/>"
-xmlp_filecontents[73]="<lib name=\"fms\"/>"
-xmlp_filecontents[74]="<lib name=\"gdal\"/>"
-xmlp_filecontents[75]="<lib name=\"glu\"/>"
-xmlp_filecontents[76]="<lib name=\"h5part\"/>"
-xmlp_filecontents[77]="<lib name=\"hdf4\"/>"
-xmlp_filecontents[78]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[79]="<lib name=\"icet\"/>"
-xmlp_filecontents[80]="<lib name=\"ispc\"/>"
-xmlp_filecontents[81]="<lib name=\"llvm\"/>"
-xmlp_filecontents[82]="<lib name=\"mfem\"/>"
-xmlp_filecontents[83]="<lib name=\"mili\"/>"
-xmlp_filecontents[84]="<lib name=\"moab\"/>"
-xmlp_filecontents[85]="<lib name=\"mxml\"/>"
-xmlp_filecontents[86]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[87]="<lib name=\"openexr\"/>"
-xmlp_filecontents[88]="<lib name=\"ospray\"/>"
-xmlp_filecontents[89]="<lib name=\"p7zip\"/>"
-xmlp_filecontents[90]="<lib name=\"pidx\"/>"
-xmlp_filecontents[91]="<lib name=\"silo\"/>"
-xmlp_filecontents[92]="<lib name=\"szip\"/>"
-xmlp_filecontents[93]="<lib name=\"tbb\"/>"
-xmlp_filecontents[94]="<lib name=\"vtkm\"/>"
-xmlp_filecontents[95]="<lib name=\"vtkh\"/>"
-xmlp_filecontents[96]="<lib name=\"xdmf\"/>"
-xmlp_filecontents[97]="</group>"
-xmlp_filecontents[98]="<group name=\"no-thirdparty\" comment=\"Do not build required 3rd party libraries\" enabled=\"no\">"
-xmlp_filecontents[99]="<lib name=\"no-cmake\"/>"
-xmlp_filecontents[100]="<lib name=\"no-openssl\"/>"
-xmlp_filecontents[101]="<lib name=\"no-python\"/>"
-xmlp_filecontents[102]="<lib name=\"no-qt\" />"
-xmlp_filecontents[103]="<lib name=\"no-qwt\" />"
-xmlp_filecontents[104]="<lib name=\"no-vtk\"/>"
-xmlp_filecontents[105]="<lib name=\"no-zlib\"/>"
-xmlp_filecontents[106]="</group>"
-xmlp_filecontents[107]="<group name=\"all-io\" comment=\"Build all available I/O libraries\" enabled=\"no\">"
-xmlp_filecontents[108]="<lib name=\"adios\"/>"
-xmlp_filecontents[109]="<lib name=\"adios2\"/>"
-xmlp_filecontents[110]="<lib name=\"boost\"/>"
-xmlp_filecontents[111]="<lib name=\"boxlib\"/>"
-xmlp_filecontents[112]="<lib name=\"cfitsio\"/>"
-xmlp_filecontents[113]="<lib name=\"conduit\"/>"
-xmlp_filecontents[114]="<lib name=\"mfem\"/>"
-xmlp_filecontents[115]="<lib name=\"cgns\"/>"
-xmlp_filecontents[116]="<lib name=\"fms\"/>"
-xmlp_filecontents[117]="<lib name=\"gdal\"/>"
-xmlp_filecontents[118]="<lib name=\"h5part\"/>"
-xmlp_filecontents[119]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[120]="<lib name=\"mxml\"/>"
-xmlp_filecontents[121]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[122]="<lib name=\"nektarpp\"/>"
-xmlp_filecontents[123]="<lib name=\"openexr\"/>"
-xmlp_filecontents[124]="<lib name=\"pidx\"/>"
-xmlp_filecontents[125]="<lib name=\"silo\"/>"
-xmlp_filecontents[126]="<lib name=\"szip\"/>"
-xmlp_filecontents[127]="<lib name=\"uintah\"/>"
-xmlp_filecontents[128]="<lib name=\"xdmf\"/>"
-xmlp_filecontents[129]="<lib name=\"zlib\"/>"
-xmlp_filecontents[130]="</group>"
-xmlp_filecontents[131]="<group name=\"dbio-only\" comment=\"Disables EVERYTHING but I/O.\" enabled=\"no\">"
-xmlp_filecontents[132]="<lib name=\"adios\"/>"
-xmlp_filecontents[133]="<lib name=\"adios2\"/>"
-xmlp_filecontents[134]="<lib name=\"advio\"/>"
-xmlp_filecontents[135]="<lib name=\"boost\"/>"
-xmlp_filecontents[136]="<lib name=\"boxlib\"/>"
-xmlp_filecontents[137]="<lib name=\"cfitsio\"/>"
-xmlp_filecontents[138]="<lib name=\"conduit\"/>"
-xmlp_filecontents[139]="<lib name=\"mfem\"/>"
-xmlp_filecontents[140]="<lib name=\"cgns\"/>"
-xmlp_filecontents[141]="<lib name=\"fms\"/>"
-xmlp_filecontents[142]="<lib name=\"gdal\"/>"
-xmlp_filecontents[143]="<lib name=\"h5part\"/>"
-xmlp_filecontents[144]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[145]="<lib name=\"mxml\"/>"
-xmlp_filecontents[146]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[147]="<lib name=\"nektarpp\"/>"
-xmlp_filecontents[148]="<lib name=\"pidx\"/>"
-xmlp_filecontents[149]="<lib name=\"silo\"/>"
-xmlp_filecontents[150]="<lib name=\"szip\"/>"
-xmlp_filecontents[151]="<lib name=\"uintah\"/>"
-xmlp_filecontents[152]="<lib name=\"xdmf\"/>"
-xmlp_filecontents[153]="<lib name=\"zlib\"/>"
-xmlp_filecontents[154]="<lib name=\"no-qt\"/>"
-xmlp_filecontents[155]="<lib name=\"no-qwt\"/>"
-xmlp_filecontents[156]="<lib name=\"no-python\"/>"
-xmlp_filecontents[157]="</group>"
-xmlp_filecontents[158]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
-xmlp_filecontents[159]="<lib name=\"icet\"/>"
-xmlp_filecontents[160]="<lib name=\"embree\"/>"
-xmlp_filecontents[161]="<lib name=\"ispc\"/>"
-xmlp_filecontents[162]="<lib name=\"tbb\"/>"
-xmlp_filecontents[163]="<lib name=\"ospray\"/>"
-xmlp_filecontents[164]="</group>"
-xmlp_filecontents[165]="<group name=\"advanced\" comment=\"Must be manually downloaded\" enabled=\"no\">"
-xmlp_filecontents[166]="<lib name=\"hdf4\"/>"
-xmlp_filecontents[167]="<lib name=\"mili\"/>"
-xmlp_filecontents[168]="<lib name=\"tcmalloc\"/>"
-xmlp_filecontents[169]="</group>"
-xmlp_filecontents[170]="</license>"
-xmlp_filecontents[171]="<license name=\"gpl\">"
-xmlp_filecontents[172]="<required>"
-xmlp_filecontents[173]="<lib name=\"cmake\"/>"
-xmlp_filecontents[174]="<lib name=\"python\"/>"
-xmlp_filecontents[175]="<lib name=\"vtk\"/>"
-xmlp_filecontents[176]="<lib name=\"qt\"/>"
-xmlp_filecontents[177]="<lib name=\"qwt\"/>"
-xmlp_filecontents[178]="<lib name=\"zlib\"/>"
-xmlp_filecontents[179]="</required>"
-xmlp_filecontents[180]="<optional>"
-xmlp_filecontents[181]="<lib name=\"boost\"/>"
-xmlp_filecontents[182]="<lib name=\"szip\"/>"
-xmlp_filecontents[183]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[184]="<lib name=\"glu\"/>"
-xmlp_filecontents[185]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[186]="<lib name=\"icet\"/>"
-xmlp_filecontents[187]="<lib name=\"llvm\"/>"
-xmlp_filecontents[188]="<lib name=\"mesagl\"/>"
-xmlp_filecontents[189]="<lib name=\"mpich\"/>"
-xmlp_filecontents[190]="<lib name=\"osmesa\"/>"
-xmlp_filecontents[191]="<lib name=\"pyqt\"/>"
-xmlp_filecontents[192]="<lib name=\"uintah\"/>"
-xmlp_filecontents[193]="<lib name=\"damaris\"/>"
-xmlp_filecontents[194]="<lib name=\"xercesc\"/>"
-xmlp_filecontents[195]="<lib name=\"xsd\"/>"
-xmlp_filecontents[196]="</optional>"
-xmlp_filecontents[197]="<group name=\"required\" comment=\"All required libraries\" enabled=\"yes\">"
-xmlp_filecontents[198]="<lib name=\"cmake\"/>"
-xmlp_filecontents[199]="<lib name=\"python\"/>"
-xmlp_filecontents[200]="<lib name=\"vtk\"/>"
-xmlp_filecontents[201]="<lib name=\"qt\"/>"
-xmlp_filecontents[202]="<lib name=\"qwt\"/>"
-xmlp_filecontents[203]="<lib name=\"zlib\"/>"
-xmlp_filecontents[204]="</group>"
-xmlp_filecontents[205]="<group name=\"optional\" comment=\"All optional libraries\" enabled=\"no\">"
-xmlp_filecontents[206]="<lib name=\"boost\"/>"
-xmlp_filecontents[207]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[208]="<lib name=\"openssl\"/>"
-xmlp_filecontents[209]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[210]="<lib name=\"mpich\"/>"
-xmlp_filecontents[211]="<lib name=\"szip\"/>"
-xmlp_filecontents[212]="<lib name=\"uintah\"/>"
-xmlp_filecontents[213]="<lib name=\"damaris\"/>"
-xmlp_filecontents[214]="<lib name=\"xercesc\"/>"
-xmlp_filecontents[215]="<lib name=\"xsd\"/>"
-xmlp_filecontents[216]="</group>"
-xmlp_filecontents[217]="<group name=\"no-thirdparty\" comment=\"Do not build required 3rd party libraries\" enabled=\"no\">"
-xmlp_filecontents[218]="<lib name=\"no-cmake\"/>"
-xmlp_filecontents[219]="<lib name=\"no-python\"/>"
-xmlp_filecontents[220]="<lib name=\"no-qt\" />"
-xmlp_filecontents[221]="<lib name=\"no-qwt\" />"
-xmlp_filecontents[222]="<lib name=\"no-vtk\"/>"
-xmlp_filecontents[223]="<lib name=\"no-zlib\"/>"
-xmlp_filecontents[224]="</group>"
-xmlp_filecontents[225]="<group name=\"dbio-only\" comment=\"Disables EVERYTHING but I/O.\" enabled=\"no\">"
-xmlp_filecontents[226]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[227]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[228]="<lib name=\"szip\"/>"
-xmlp_filecontents[229]="<lib name=\"zlib\"/>"
-xmlp_filecontents[230]="<lib name=\"uintah\"/>"
-xmlp_filecontents[231]="<lib name=\"no-python\"/>"
-xmlp_filecontents[232]="<lib name=\"no-qt\"/>"
-xmlp_filecontents[233]="<lib name=\"no-qwt\"/>"
-xmlp_filecontents[234]="</group>"
-xmlp_filecontents[235]="<group name=\"all-io\" comment=\"Build all available I/O libraries\" enabled=\"no\">"
-xmlp_filecontents[236]="<lib name=\"hdf5\"/>"
-xmlp_filecontents[237]="<lib name=\"netcdf\"/>"
-xmlp_filecontents[238]="<lib name=\"szip\"/>"
-xmlp_filecontents[239]="<lib name=\"zlib\"/>"
-xmlp_filecontents[240]="<lib name=\"uintah\"/>"
-xmlp_filecontents[241]="</group>"
-xmlp_filecontents[242]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
-xmlp_filecontents[243]="<lib name=\"icet\"/>"
-xmlp_filecontents[244]="</group>"
-xmlp_filecontents[245]="</license>"
-xmlp_filecontents[246]="</modules>"
+xmlp_filecontents[48]="<lib name=\"uintah\"/>"
+xmlp_filecontents[49]="<lib name=\"vtkm\"/>"
+xmlp_filecontents[50]="<lib name=\"vtkh\"/>"
+xmlp_filecontents[51]="<lib name=\"xdmf\"/>"
+xmlp_filecontents[52]="</optional>"
+xmlp_filecontents[53]="<group name=\"required\" comment=\"All required libraries\" enabled=\"yes\">"
+xmlp_filecontents[54]="<lib name=\"cmake\"/>"
+xmlp_filecontents[55]="<lib name=\"openssl\"/>"
+xmlp_filecontents[56]="<lib name=\"python\"/>"
+xmlp_filecontents[57]="<lib name=\"vtk\"/>"
+xmlp_filecontents[58]="<lib name=\"qt\"/>"
+xmlp_filecontents[59]="<lib name=\"qwt\"/>"
+xmlp_filecontents[60]="<lib name=\"zlib\"/>"
+xmlp_filecontents[61]="</group>"
+xmlp_filecontents[62]="<group name=\"optional\" comment=\"All optional libraries\" enabled=\"no\">"
+xmlp_filecontents[63]="<lib name=\"adios\"/>"
+xmlp_filecontents[64]="<lib name=\"adios2\"/>"
+xmlp_filecontents[65]="<lib name=\"advio\"/>"
+xmlp_filecontents[66]="<lib name=\"boost\"/>"
+xmlp_filecontents[67]="<lib name=\"boxlib\"/>"
+xmlp_filecontents[68]="<lib name=\"cfitsio\"/>"
+xmlp_filecontents[69]="<lib name=\"cgns\"/>"
+xmlp_filecontents[70]="<lib name=\"conduit\"/>"
+xmlp_filecontents[71]="<lib name=\"embree\"/>"
+xmlp_filecontents[72]="<lib name=\"fms\"/>"
+xmlp_filecontents[73]="<lib name=\"gdal\"/>"
+xmlp_filecontents[74]="<lib name=\"glu\"/>"
+xmlp_filecontents[75]="<lib name=\"h5part\"/>"
+xmlp_filecontents[76]="<lib name=\"hdf4\"/>"
+xmlp_filecontents[77]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[78]="<lib name=\"icet\"/>"
+xmlp_filecontents[79]="<lib name=\"ispc\"/>"
+xmlp_filecontents[80]="<lib name=\"llvm\"/>"
+xmlp_filecontents[81]="<lib name=\"mfem\"/>"
+xmlp_filecontents[82]="<lib name=\"mili\"/>"
+xmlp_filecontents[83]="<lib name=\"moab\"/>"
+xmlp_filecontents[84]="<lib name=\"mxml\"/>"
+xmlp_filecontents[85]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[86]="<lib name=\"openexr\"/>"
+xmlp_filecontents[87]="<lib name=\"ospray\"/>"
+xmlp_filecontents[88]="<lib name=\"p7zip\"/>"
+xmlp_filecontents[89]="<lib name=\"pidx\"/>"
+xmlp_filecontents[90]="<lib name=\"silo\"/>"
+xmlp_filecontents[91]="<lib name=\"szip\"/>"
+xmlp_filecontents[92]="<lib name=\"tbb\"/>"
+xmlp_filecontents[93]="<lib name=\"vtkm\"/>"
+xmlp_filecontents[94]="<lib name=\"vtkh\"/>"
+xmlp_filecontents[95]="<lib name=\"xdmf\"/>"
+xmlp_filecontents[96]="</group>"
+xmlp_filecontents[97]="<group name=\"no-thirdparty\" comment=\"Do not build required 3rd party libraries\" enabled=\"no\">"
+xmlp_filecontents[98]="<lib name=\"no-cmake\"/>"
+xmlp_filecontents[99]="<lib name=\"no-openssl\"/>"
+xmlp_filecontents[100]="<lib name=\"no-python\"/>"
+xmlp_filecontents[101]="<lib name=\"no-qt\" />"
+xmlp_filecontents[102]="<lib name=\"no-qwt\" />"
+xmlp_filecontents[103]="<lib name=\"no-vtk\"/>"
+xmlp_filecontents[104]="<lib name=\"no-zlib\"/>"
+xmlp_filecontents[105]="</group>"
+xmlp_filecontents[106]="<group name=\"all-io\" comment=\"Build all available I/O libraries\" enabled=\"no\">"
+xmlp_filecontents[107]="<lib name=\"adios\"/>"
+xmlp_filecontents[108]="<lib name=\"adios2\"/>"
+xmlp_filecontents[109]="<lib name=\"boost\"/>"
+xmlp_filecontents[110]="<lib name=\"boxlib\"/>"
+xmlp_filecontents[111]="<lib name=\"cfitsio\"/>"
+xmlp_filecontents[112]="<lib name=\"conduit\"/>"
+xmlp_filecontents[113]="<lib name=\"mfem\"/>"
+xmlp_filecontents[114]="<lib name=\"cgns\"/>"
+xmlp_filecontents[115]="<lib name=\"fms\"/>"
+xmlp_filecontents[116]="<lib name=\"gdal\"/>"
+xmlp_filecontents[117]="<lib name=\"h5part\"/>"
+xmlp_filecontents[118]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[119]="<lib name=\"mxml\"/>"
+xmlp_filecontents[120]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[121]="<lib name=\"nektarpp\"/>"
+xmlp_filecontents[122]="<lib name=\"openexr\"/>"
+xmlp_filecontents[123]="<lib name=\"pidx\"/>"
+xmlp_filecontents[124]="<lib name=\"silo\"/>"
+xmlp_filecontents[125]="<lib name=\"szip\"/>"
+xmlp_filecontents[126]="<lib name=\"uintah\"/>"
+xmlp_filecontents[127]="<lib name=\"xdmf\"/>"
+xmlp_filecontents[128]="<lib name=\"zlib\"/>"
+xmlp_filecontents[129]="</group>"
+xmlp_filecontents[130]="<group name=\"dbio-only\" comment=\"Disables EVERYTHING but I/O.\" enabled=\"no\">"
+xmlp_filecontents[131]="<lib name=\"adios\"/>"
+xmlp_filecontents[132]="<lib name=\"adios2\"/>"
+xmlp_filecontents[133]="<lib name=\"advio\"/>"
+xmlp_filecontents[134]="<lib name=\"boost\"/>"
+xmlp_filecontents[135]="<lib name=\"boxlib\"/>"
+xmlp_filecontents[136]="<lib name=\"cfitsio\"/>"
+xmlp_filecontents[137]="<lib name=\"conduit\"/>"
+xmlp_filecontents[138]="<lib name=\"mfem\"/>"
+xmlp_filecontents[139]="<lib name=\"cgns\"/>"
+xmlp_filecontents[140]="<lib name=\"fms\"/>"
+xmlp_filecontents[141]="<lib name=\"gdal\"/>"
+xmlp_filecontents[142]="<lib name=\"h5part\"/>"
+xmlp_filecontents[143]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[144]="<lib name=\"mxml\"/>"
+xmlp_filecontents[145]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[146]="<lib name=\"nektarpp\"/>"
+xmlp_filecontents[147]="<lib name=\"pidx\"/>"
+xmlp_filecontents[148]="<lib name=\"silo\"/>"
+xmlp_filecontents[149]="<lib name=\"szip\"/>"
+xmlp_filecontents[150]="<lib name=\"uintah\"/>"
+xmlp_filecontents[151]="<lib name=\"xdmf\"/>"
+xmlp_filecontents[152]="<lib name=\"zlib\"/>"
+xmlp_filecontents[153]="<lib name=\"no-qt\"/>"
+xmlp_filecontents[154]="<lib name=\"no-qwt\"/>"
+xmlp_filecontents[155]="<lib name=\"no-python\"/>"
+xmlp_filecontents[156]="</group>"
+xmlp_filecontents[157]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
+xmlp_filecontents[158]="<lib name=\"icet\"/>"
+xmlp_filecontents[159]="<lib name=\"embree\"/>"
+xmlp_filecontents[160]="<lib name=\"ispc\"/>"
+xmlp_filecontents[161]="<lib name=\"tbb\"/>"
+xmlp_filecontents[162]="<lib name=\"ospray\"/>"
+xmlp_filecontents[163]="</group>"
+xmlp_filecontents[164]="<group name=\"advanced\" comment=\"Must be manually downloaded\" enabled=\"no\">"
+xmlp_filecontents[165]="<lib name=\"hdf4\"/>"
+xmlp_filecontents[166]="<lib name=\"mili\"/>"
+xmlp_filecontents[167]="</group>"
+xmlp_filecontents[168]="</license>"
+xmlp_filecontents[169]="<license name=\"gpl\">"
+xmlp_filecontents[170]="<required>"
+xmlp_filecontents[171]="<lib name=\"cmake\"/>"
+xmlp_filecontents[172]="<lib name=\"python\"/>"
+xmlp_filecontents[173]="<lib name=\"vtk\"/>"
+xmlp_filecontents[174]="<lib name=\"qt\"/>"
+xmlp_filecontents[175]="<lib name=\"qwt\"/>"
+xmlp_filecontents[176]="<lib name=\"zlib\"/>"
+xmlp_filecontents[177]="</required>"
+xmlp_filecontents[178]="<optional>"
+xmlp_filecontents[179]="<lib name=\"boost\"/>"
+xmlp_filecontents[180]="<lib name=\"szip\"/>"
+xmlp_filecontents[181]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[182]="<lib name=\"glu\"/>"
+xmlp_filecontents[183]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[184]="<lib name=\"icet\"/>"
+xmlp_filecontents[185]="<lib name=\"llvm\"/>"
+xmlp_filecontents[186]="<lib name=\"mesagl\"/>"
+xmlp_filecontents[187]="<lib name=\"mpich\"/>"
+xmlp_filecontents[188]="<lib name=\"osmesa\"/>"
+xmlp_filecontents[189]="<lib name=\"pyqt\"/>"
+xmlp_filecontents[190]="<lib name=\"uintah\"/>"
+xmlp_filecontents[191]="<lib name=\"damaris\"/>"
+xmlp_filecontents[192]="<lib name=\"xercesc\"/>"
+xmlp_filecontents[193]="<lib name=\"xsd\"/>"
+xmlp_filecontents[194]="</optional>"
+xmlp_filecontents[195]="<group name=\"required\" comment=\"All required libraries\" enabled=\"yes\">"
+xmlp_filecontents[196]="<lib name=\"cmake\"/>"
+xmlp_filecontents[197]="<lib name=\"python\"/>"
+xmlp_filecontents[198]="<lib name=\"vtk\"/>"
+xmlp_filecontents[199]="<lib name=\"qt\"/>"
+xmlp_filecontents[200]="<lib name=\"qwt\"/>"
+xmlp_filecontents[201]="<lib name=\"zlib\"/>"
+xmlp_filecontents[202]="</group>"
+xmlp_filecontents[203]="<group name=\"optional\" comment=\"All optional libraries\" enabled=\"no\">"
+xmlp_filecontents[204]="<lib name=\"boost\"/>"
+xmlp_filecontents[205]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[206]="<lib name=\"openssl\"/>"
+xmlp_filecontents[207]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[208]="<lib name=\"mpich\"/>"
+xmlp_filecontents[209]="<lib name=\"szip\"/>"
+xmlp_filecontents[210]="<lib name=\"uintah\"/>"
+xmlp_filecontents[211]="<lib name=\"damaris\"/>"
+xmlp_filecontents[212]="<lib name=\"xercesc\"/>"
+xmlp_filecontents[213]="<lib name=\"xsd\"/>"
+xmlp_filecontents[214]="</group>"
+xmlp_filecontents[215]="<group name=\"no-thirdparty\" comment=\"Do not build required 3rd party libraries\" enabled=\"no\">"
+xmlp_filecontents[216]="<lib name=\"no-cmake\"/>"
+xmlp_filecontents[217]="<lib name=\"no-python\"/>"
+xmlp_filecontents[218]="<lib name=\"no-qt\" />"
+xmlp_filecontents[219]="<lib name=\"no-qwt\" />"
+xmlp_filecontents[220]="<lib name=\"no-vtk\"/>"
+xmlp_filecontents[221]="<lib name=\"no-zlib\"/>"
+xmlp_filecontents[222]="</group>"
+xmlp_filecontents[223]="<group name=\"dbio-only\" comment=\"Disables EVERYTHING but I/O.\" enabled=\"no\">"
+xmlp_filecontents[224]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[225]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[226]="<lib name=\"szip\"/>"
+xmlp_filecontents[227]="<lib name=\"zlib\"/>"
+xmlp_filecontents[228]="<lib name=\"uintah\"/>"
+xmlp_filecontents[229]="<lib name=\"no-python\"/>"
+xmlp_filecontents[230]="<lib name=\"no-qt\"/>"
+xmlp_filecontents[231]="<lib name=\"no-qwt\"/>"
+xmlp_filecontents[232]="</group>"
+xmlp_filecontents[233]="<group name=\"all-io\" comment=\"Build all available I/O libraries\" enabled=\"no\">"
+xmlp_filecontents[234]="<lib name=\"hdf5\"/>"
+xmlp_filecontents[235]="<lib name=\"netcdf\"/>"
+xmlp_filecontents[236]="<lib name=\"szip\"/>"
+xmlp_filecontents[237]="<lib name=\"zlib\"/>"
+xmlp_filecontents[238]="<lib name=\"uintah\"/>"
+xmlp_filecontents[239]="</group>"
+xmlp_filecontents[240]="<group name=\"nonio\" comment=\"Build non I/O libraries\" enabled=\"no\">"
+xmlp_filecontents[241]="<lib name=\"icet\"/>"
+xmlp_filecontents[242]="</group>"
+xmlp_filecontents[243]="</license>"
+xmlp_filecontents[244]="</modules>"
 xmlp_licenses[0]="bsd|mit|lgpl"
 xmlp_licenses_range[0]="1 170"
 xmlp_licenses[1]="gpl"

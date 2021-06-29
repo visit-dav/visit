@@ -49,7 +49,6 @@
             <lib name="stripack"/>
             <lib name="szip"/>
             <lib name="tbb"/>
-            <lib name="tcmalloc"/>
             <lib name="uintah"/>
             <lib name="vtkm"/>
             <lib name="vtkh"/>
@@ -185,7 +184,6 @@
             <lib name="hdf4"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="mili"/>
-            <lib name="tcmalloc"/>
         </group>
     </license>
 
