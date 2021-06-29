@@ -2,8 +2,8 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#ifndef GUI_WINDOW_H
-#define GUI_WINDOW_H
+#ifndef GUI_WINDOW2_H
+#define GUI_WINDOW2_H
 
 #include <QMainWindow>
 
@@ -21,7 +21,7 @@ private slots:
 
 private:
     void DrawCylinder(vtkRenderWindow *renderWindow);
-    void CreateWindow();
+    void CreateMainWindow();
 };
 
 #endif

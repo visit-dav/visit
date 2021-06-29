@@ -30,7 +30,7 @@
 
 GUIWindow2::GUIWindow2() : QMainWindow()
 {
-    CreateWindow();
+    CreateMainWindow();
 }
 
 GUIWindow2::~GUIWindow2()
@@ -98,7 +98,7 @@ GUIWindow2::DrawCylinder(vtkRenderWindow *renderWindow)
 }
 
 void
-GUIWindow2::CreateWindow()
+GUIWindow2::CreateMainWindow()
 {
     QWidget *central = new QWidget(this);
     this->setCentralWidget(central);
