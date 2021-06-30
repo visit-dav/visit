@@ -140,33 +140,30 @@ def VTK_check_binary(filename):
 # v = View3D
 # a = AnnotationAttributes
 # count = current test number (used for test names)
-# testNum = 1 or 2 (for test1 or test2 which tests write groups)
+# usingWriteGroups = True or False
 
-def export_and_plot(e, v, a, count, testNum):
+def export_and_plot(e, v, a, count, usingWriteGroups):
 
-    # testNum ==1 no write groups
-    # testNum ==2 using write groups
     # formats fields:
     # {DBName: (no-write-group exported name to read, write-group exported name to read, plot type, var name)}
 
-    formats = {
-"PLY":          ("export_PLY.ply",          "*.ply",         "Subset",      "PLY_mesh"),
-"RAW":          ("export_RAW.raw",          "*.raw",         "Subset",      "mesh"),
-"STL":          ("export_STL.stl",          "*.stl",         "Subset",      "STL_mesh"),
-"Silo":         ("export_Silo.silo",        "wg_Silo.silo",  "Pseudocolor", "u"),
-"Tecplot":      ("export_Tecplot.tec",      "*.tec",         "Pseudocolor", "u"),
-"VTK":          ("export_VTK.visit",        "wg_VTK.visit",  "Pseudocolor", "u"),
-"WavefrontOBJ": ("export_WavefrontOBJ.obj", "*.obj",         "Subset",      "OBJMesh"),
-"XYZ":          ("export_XYZ.xyz",          "*.xyz",         "Subset",      "mesh"),
-"Xmdv":         ("export_Xmdv.visit",       "wg_Xmdv.visit", "Pseudocolor", "u")
-}
+    formats = { "PLY":          ("export_PLY.ply",          "*.ply",         "Subset",      "PLY_mesh"),
+                "RAW":          ("export_RAW.raw",          "*.raw",         "Subset",      "mesh"),
+                "STL":          ("export_STL.stl",          "*.stl",         "Subset",      "STL_mesh"),
+                "Silo":         ("export_Silo.silo",        "wg_Silo.silo",  "Pseudocolor", "u"),
+                "Tecplot":      ("export_Tecplot.tec",      "*.tec",         "Pseudocolor", "u"),
+                "VTK":          ("export_VTK.visit",        "wg_VTK.visit",  "Pseudocolor", "u"),
+                "WavefrontOBJ": ("export_WavefrontOBJ.obj", "*.obj",         "Subset",      "OBJMesh"),
+                "XYZ":          ("export_XYZ.xyz",          "*.xyz",         "Subset",      "mesh"),
+                "Xmdv":         ("export_Xmdv.visit",       "wg_Xmdv.visit", "Pseudocolor", "u")
+              }
 
     keys = sorted(formats.keys())
-    test_name_base="export_db_%d"%testNum
+    test_name_base="export_db_%d"%(2 if usingWriteGroups else 1)
    
     # do all the exports
     for f in keys:
-        export_name="%s_%s"%("export" if testNum==1 else "wg", f)
+        export_name="%s_%s"%("wg" if usingWriteGroups else "export", f)
         e.db_type = f
         e.db_type_fullname = f + "_1.0"
         e.filename = export_name
@@ -174,13 +171,13 @@ def export_and_plot(e, v, a, count, testNum):
         time.sleep(1)
 
     # now attempt to read the exported files
-    if testNum == 2:
+    if usingWriteGroups:
         files = sorted(fnmatch.filter(os.listdir(e.dirname), "wg_*"))
     for f in keys:
         # Add the exported data in window 2.
         AddWindow()
 
-        pattern = formats[f][0] if testNum ==1 else formats[f][1]
+        pattern = formats[f][1] if usingWriteGroups else formats[f][0]
         filelist=""
         opendbs = []
 
@@ -199,11 +196,11 @@ def export_and_plot(e, v, a, count, testNum):
                 md = GetMetaData(pattern)
                 AddPlot(formats[f][2], formats[f][3])
                 DrawPlots()
-                if testNum == 2:
+                if usingWriteGroups:
                     opendbs = opendbs + [pattern]
                     filelist = filelist + pattern + "\n"
             else:
-                if testNum == 1:
+                if not usingWriteGroups:
                     files = os.listdir(e.dirname)
                     files.sort()
                     s = ""
@@ -221,13 +218,13 @@ def export_and_plot(e, v, a, count, testNum):
         SetView3D(v)
         SetAnnotationAttributes(a)
         Test("%s_%02d"%(test_name_base, count))
-        if testNum == 2:
+        if usingWriteGroups:
             TestText("%s_%02dfn"%(test_name_base, count),filelist)
         count=count+1
 
         # Clean up window 2
         DeleteAllPlots()
-        #if testNum == 1:
+        #if not UsingWriteGroups:
         #    CloseDatabase(pattern)
         #else:
         #    for db in opendbs:
@@ -306,7 +303,7 @@ def test1():
     # Test exporting some surfaces in other formats and plotting the results.
 
     count = 3
-    count = export_and_plot(e, v, a, count, 1)
+    count = export_and_plot(e, v, a, count, False)
 
     # change directory and retry the export_and_plot
     edir = pjoin(TestEnv.params["run_dir"], "exports")
@@ -314,7 +311,7 @@ def test1():
         os.mkdir(edir)
     e.dirname=edir
 
-    export_and_plot(e, v, a, count, 1)
+    export_and_plot(e, v, a, count, False)
 
     # Clean up window 1
     DeleteAllPlots()
@@ -362,7 +359,7 @@ def test2(writeGroupSize):
     e.writeUsingGroups = 1
     e.groupSize = writeGroupSize
     count = 1
-    count = export_and_plot(e, v, a, count, 2)
+    count = export_and_plot(e, v, a, count, True)
 
     # change directory and retry the export_and_plot
     edir = pjoin(TestEnv.params["run_dir"], "exports_2")
@@ -370,7 +367,7 @@ def test2(writeGroupSize):
         os.mkdir(edir)
     e.dirname=edir
 
-    export_and_plot(e, v, a, count, 2)
+    export_and_plot(e, v, a, count, True)
 
     # Clean up window 1
     DeleteAllPlots()
