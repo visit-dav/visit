@@ -600,7 +600,7 @@ QvisAnnotationWindow::CreateGeneralTab2D(QWidget *parentWidget)
     connect(axesTicksComboBox2D, SIGNAL(activated(int)),
             this, SLOT(axesTicksChanged2D(int)));
     lLayout->addWidget(axesTicksComboBox2D, row, 1);
-    l = new QLabel("Show tick marks", top);
+    l = new QLabel(tr("Show tick marks"), top);
     l->setBuddy(axesTicksComboBox2D);
     lLayout->addWidget(l, row, 0);
     ++row;
