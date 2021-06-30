@@ -224,7 +224,7 @@ def export_and_plot(e, v, a, count, usingWriteGroups):
 
         # Clean up window 2
         DeleteAllPlots()
-        #if not UsingWriteGroups:
+        #if not usingWriteGroups:
         #    CloseDatabase(pattern)
         #else:
         #    for db in opendbs:
