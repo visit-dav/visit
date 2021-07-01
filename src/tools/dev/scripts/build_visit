@@ -36,21 +36,21 @@
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
 #6. bv_<module>_build builds the module
 
-export VISIT_VERSION=${VISIT_VERSION:-"3.2.0"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.2.1"}
 
 ####
 # Trunk:
 ####
-export TRUNK_BUILD="yes"
-export RC_BUILD="no"
-export TAGGED_BUILD="no"
+#export TRUNK_BUILD="yes"
+#export RC_BUILD="no"
+#export TAGGED_BUILD="no"
 
 ###
 # RC Branch:
 ###
-#export TRUNK_BUILD="no"
-#export RC_BUILD="yes"
-#export TAGGED_BUILD="no"
+export TRUNK_BUILD="no"
+export RC_BUILD="yes"
+export TAGGED_BUILD="no"
 
 
 ###
