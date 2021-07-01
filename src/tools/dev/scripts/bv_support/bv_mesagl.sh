@@ -177,8 +177,7 @@ EOF
     fi
 
     #
-    # Patch so that displaying graphics to the XWin-32 2018 X server
-    # works properly.
+    # Patch so that building with gcc-10 will work.
     #
     patch -p0 << \EOF
 diff -u src/gallium/drivers/swr/rasterizer/common/os.h.orig src/gallium/drivers/swr/rasterizer/common/os.h
