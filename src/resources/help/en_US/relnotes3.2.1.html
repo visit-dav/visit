@@ -40,6 +40,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with the Legend annotation object window where the <i>Values</i> column in the <i>Values/Labels</i> table in the <i>Tick marks</i> tab wasn't being prefilled.</li>
   <li>Fixed a bug for Windows where importing VisIt into python failed due to inability to retrieve necessary enviroment variable information.</li>
   <li>Fixed a bug that resulted in the rubber band zoom box being rendered incorrectly on Mac retina displays.</li>
+  <li>Fixed a bug in build_visit that caused it to improperly set the architecture directory name when using gcc 10.2. For example, on a linux system with an x86_64 processor, it previously set it to <i>linux-x86_64_gcc</i> instead of the correct <i>linux-x86_64_gcc-10.2</i>.</li>
 </ul>
 
 <a name="Enhancements"></a>
