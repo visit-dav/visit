@@ -176,6 +176,38 @@ EOF
         return 1
     fi
 
+    #
+    # Patch so that displaying graphics to the XWin-32 2018 X server
+    # works properly.
+    #
+    patch -p0 << \EOF
+diff -u src/gallium/drivers/swr/rasterizer/common/os.h.orig src/gallium/drivers/swr/rasterizer/common/os.h
+--- src/gallium/drivers/swr/rasterizer/common/os.h.orig 2021-06-28 08:51:12.252643000 -0700
++++ src/gallium/drivers/swr/rasterizer/common/os.h      2021-06-28 08:55:32.676722000 -0700
+@@ -166,14 +166,15 @@
+ #endif
+ 
+ #if !defined( __clang__) && !defined(__INTEL_COMPILER)
+-// Intrinsic not defined in gcc
++// Intrinsic not defined in gcc < 10
++#if (__GNUC__) && (GCC_VERSION < 100000)
+ static INLINE
+ void _mm256_storeu2_m128i(__m128i *hi, __m128i *lo, __m256i a)
+ {
+     _mm_storeu_si128((__m128i*)lo, _mm256_castsi256_si128(a));
+     _mm_storeu_si128((__m128i*)hi, _mm256_extractf128_si256(a, 0x1));
+ }
+-
++#endif
+ // gcc prior to 4.9 doesn't have _mm*_undefined_*
+ #if (__GNUC__) && (GCC_VERSION < 409000)
+ #define _mm_undefined_si128 _mm_setzero_si128
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 3 failed."
+        return 1
+    fi
+
     return 0;
 }
 
@@ -226,9 +258,22 @@ function build_mesagl
     fi
 
     info "Configuring MesaGL . . ."
+
+    # add -fcommon if gcc >=10 to work around changes in compiler behavior
+    # see: https://wiki.gentoo.org/wiki/Project:Toolchain/Gcc_10_porting_notes/fno_common
+    # otherwise we would need to patch mesa to fix build problems
+
+    mesa_c_opt_flags=""
+    if [[ "$CXX_COMPILER" == "g++" ]] ; then
+        VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-1)
+        if [[ ${VERSION} -ge 10 ]] ; then
+            mesa_c_opt_flags="-fcommon"
+        fi
+    fi
+
     echo CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
-        CFLAGS="${CFLAGS} ${C_OPT_FLAGS}" \
+        CFLAGS="${CFLAGS} ${C_OPT_FLAGS} ${mesa_c_opt_flags}" \
         CC=${C_COMPILER} \
         ./autogen.sh \
         --prefix=${VISITDIR}/mesagl/${MESAGL_VERSION}/${VISITARCH} \
@@ -250,7 +295,7 @@ function build_mesagl
         --with-llvm-prefix=${VISIT_LLVM_DIR}
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
-        CFLAGS="${CFLAGS} ${C_OPT_FLAGS}" \
+        CFLAGS="${CFLAGS} ${C_OPT_FLAGS} ${mesa_c_opt_flags}" \
         CC=${C_COMPILER} \
         ./autogen.sh \
         --prefix=${VISITDIR}/mesagl/${MESAGL_VERSION}/${VISITARCH} \
