@@ -441,6 +441,10 @@ bool avtSiloWriter::ShouldCreateFile()
 //    I modified the writer to handle the case where the meshes in a
 //    multimesh or multivar were not all of the same type.
 //
+//    Kathleen Biagas, Wed June 24, 2021
+//    Use FileFunctions to parse stemname into 'dir' and 'stem', to ensure
+//    things work on Windows.
+//
 // ****************************************************************************
 
 void
@@ -450,12 +454,12 @@ avtSiloWriter::OpenFile(const string &stemname, int nb)
     nblocks = nb;
     dir ="";
     // find dir if provided
-    size_t idx = stem.rfind("/");
-    if ( idx != string::npos )
+    stem = FileFunctions::Basename(stemname);
+    dir  = FileFunctions::Dirname(stemname);
+    if (!dir.empty())
     {
-        int stem_len = stem.size() - (idx+1) ;
-        dir  = stem.substr(0,idx+1);
-        stem = stem.substr(idx+1,stem_len);
+        // elsewhere that 'dir' is used expects a trailing slash, so add it
+        dir += VISIT_SLASH_STRING;
     }
 
     // Get the number of datasets on this processor and allocate the
