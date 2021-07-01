@@ -41,6 +41,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug for Windows where importing VisIt into python failed due to inability to retrieve necessary enviroment variable information.</li>
   <li>Fixed a bug that resulted in the rubber band zoom box being rendered incorrectly on Mac retina displays.</li>
   <li>Fixed a bug in build_visit that caused it to improperly set the architecture directory name when using gcc 10.2. For example, on a linux system with an x86_64 processor, it previously set it to <i>linux-x86_64_gcc</i> instead of the correct <i>linux-x86_64_gcc-10.2</i>.</li>
+  <li>Fixed a bug for Windows where exporting a multi-block Silo file into a non-default directory would make the file unreadable by VisIt.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -55,6 +56,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>When viewing test results in a web browser, the text tests will now correctly display leading spaces.</li>
   <li>The build_visit python module was changed so that when  --system-python or --alt-python3-dir is specified, python3 is searched for first.</li>
+  <li>Removed tcmalloc from VisIt.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

@@ -118,7 +118,6 @@ endif()
 # Add link directories
 link_directories(
   ${LIBRARY_OUTPUT_DIRECTORY}
-  ${TCMALLOC_LIBRARY_DIR}
   ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 )
 
@@ -171,7 +170,6 @@ target_link_libraries(engine_ser_exe
     vtkpng
     ${VTK_FREETYPE_LIBRARIES}
     ${ALL_THIRDPARTY_IO_LIB}
-    ${TCMALLOC_LIB}
     ${CMAKE_THREAD_LIBS}
     ${ZLIB_LIBRARY}
 )
@@ -276,7 +274,6 @@ if(VISIT_PARALLEL)
         ${VTK_FREETYPE_LIBRARIES}
         ${ALL_THIRDPARTY_IO_LIB}
         ${ICET_STATIC_LIB}
-        ${TCMALLOC_LIB}
         ${CMAKE_THREAD_LIBS}
         ${ZLIB_LIBRARY}
     )
