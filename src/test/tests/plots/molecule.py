@@ -31,7 +31,7 @@ def SetWhiteBackground():
     annot.backgroundColor = (255, 255, 255, 255)
     SetAnnotationAttributes(annot)
 
-def SaveTestImage(name):
+def Test500x500(name):
     # Save these images somewhat larger than a regular test case image
     # to better see the molecules 
     backup = GetSaveWindowAttributes()
@@ -71,7 +71,7 @@ def MoleculeOnly():
     v3d.imageZoom = 1.77156
     SetView3D(v3d)
 
-    SaveTestImage("molecule_01")
+    Test500x500("molecule_01")
 
     # color by residue, cylinder bonds, radius proportional to covalent radius
     ChangeActivePlotsVar("restype")
@@ -79,7 +79,7 @@ def MoleculeOnly():
     mol.radiusScaleFactor = 0.5
     SetPlotOptions(mol)
     DrawPlots()
-    SaveTestImage("molecule_02")
+    Test500x500("molecule_02")
 
     # color by scalar (x-coord), no bonds
     DefineScalarExpression("x", "coord(mesh)[0]")
@@ -87,7 +87,7 @@ def MoleculeOnly():
     mol.drawAtomsAs = mol.NoAtoms
     SetPlotOptions(mol)
     DrawPlots()
-    SaveTestImage("molecule_03")
+    Test500x500("molecule_03")
 
     # Create a blue-purple color table
     ccpl = ColorControlPointList()
@@ -120,7 +120,7 @@ def MoleculeOnly():
     renAtts = RenderingAttributes()
     renAtts.specularFlag = 0
     SetRenderingAttributes(renAtts)
-    SaveTestImage("molecule_04")
+    Test500x500("molecule_04")
 
     DeleteAllPlots()
 
@@ -132,19 +132,19 @@ def MoleculeOnly():
     mol.drawAtomsAs = mol.ImposterAtoms
     SetPlotOptions(mol)
     DrawPlots()
-    SaveTestImage("molecule_05")
+    Test500x500("molecule_05")
     # now change scaleRadiusBy
     mol.scaleRadiusBy = mol.Covalent
     mol.radiusScaleFactor=4
     SetPlotOptions(mol)
     DrawPlots()
-    SaveTestImage("molecule_06")
+    Test500x500("molecule_06")
 
     # changing radiusScaleFactor while using Imposter atoms used to crash the viewer
     mol.radiusScaleFactor=0.002
     SetPlotOptions(mol)
     DrawPlots()
-    SaveTestImage("molecule_07")
+    Test500x500("molecule_07")
 
     DeleteAllPlots()
     CloseDatabase(data_path("ProteinDataBank_test_data/crotamine.pdb"))
@@ -168,7 +168,7 @@ def ReplicateAddBonds():
     v3D.imagePan=(0.0217552, 0.0165363)
     SetView3D(v3D)
 
-    SaveTestImage("mol_rep_bonds_01")
+    Test500x500("mol_rep_bonds_01")
   
     # Add replicate operator 
     SetActivePlots((0,1)) 
@@ -180,14 +180,14 @@ def ReplicateAddBonds():
     repl.replicateUnitCellAtoms = 1
     SetOperatorOptions(repl, 0, 1)
     DrawPlots()  
-    SaveTestImage("mol_rep_bonds_02")
+    Test500x500("mol_rep_bonds_02")
 
     # create a replication along y
     repl.yReplications=2
     SetOperatorOptions(repl, 1, 1)
     DrawPlots()  
 
-    SaveTestImage("mol_rep_bonds_03")
+    Test500x500("mol_rep_bonds_03")
 
     # Create bonds 
     SetActivePlots(1) 
@@ -200,7 +200,7 @@ def ReplicateAddBonds():
     SetOperatorOptions(cb)
     DrawPlots()  
 
-    SaveTestImage("mol_rep_bonds_04")
+    Test500x500("mol_rep_bonds_04")
 
     # have the CreateBonds operator create periodic bonds
     cb.addPeriodicBonds = 1
@@ -208,7 +208,7 @@ def ReplicateAddBonds():
     SetOperatorOptions(cb)
     DrawPlots()  
 
-    SaveTestImage("mol_rep_bonds_05")
+    Test500x500("mol_rep_bonds_05")
 
     # Change bond style to lines
     mol.drawBondsAs = mol.LineBonds
@@ -216,7 +216,7 @@ def ReplicateAddBonds():
     SetPlotOptions(mol)
     DrawPlots()  
 
-    SaveTestImage("mol_rep_bonds_06")
+    Test500x500("mol_rep_bonds_06")
 
     # Change atom radius
     mol.drawBondsAs = mol.CylinderBonds
@@ -225,7 +225,7 @@ def ReplicateAddBonds():
     SetPlotOptions(mol)
     DrawPlots()  
 
-    SaveTestImage("mol_rep_bonds_07")
+    Test500x500("mol_rep_bonds_07")
 
     DeleteAllPlots()
     CloseDatabase(data_path("vasp_test_data", "GaO40W12", "OUTCAR"))
