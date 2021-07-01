@@ -1287,6 +1287,10 @@ DBOptionsAttributes::GetDouble(const std::string &name) const
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2005
 //
+//  Modifications:
+//    Kathleen Biagas, Thu May 27, 2021
+//    Allow enum type when name already exists.
+//
 // ****************************************************************************
 
 void
@@ -1300,7 +1304,12 @@ DBOptionsAttributes::SetInt(const std::string &name, int defaultValue)
         optInts.push_back(defaultValue);
     }
     else
-        optInts[bIndex] = defaultValue;
+    {
+        if (GetType(name) == Enum)
+            optEnums[bIndex] = defaultValue;
+         else
+            optInts[bIndex] = defaultValue;
+    }
 }
 
 // ****************************************************************************
@@ -1316,6 +1325,9 @@ DBOptionsAttributes::SetInt(const std::string &name, int defaultValue)
 //    Mark C. Miller, Tue Apr 29 17:39:39 PDT 2008
 //    Made it a const method
 //
+//    Kathleen Biagas, Thu May 27, 2021
+//    Allow enum type. 
+//
 // ****************************************************************************
 
 int
@@ -1324,7 +1336,11 @@ DBOptionsAttributes::GetInt(const std::string &name) const
     int bIndex = FindIndex(name);
     if (bIndex < 0)
         EXCEPTION0(BadDeclareFormatString);
-    return optInts[bIndex];
+
+    if (GetType(name) == Enum)
+        return optEnums[bIndex]; 
+
+    return optInts[bIndex]; 
 }
 
 // ****************************************************************************
@@ -1335,6 +1351,10 @@ DBOptionsAttributes::GetInt(const std::string &name) const
 //
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2005
+//
+//  Modifications:
+//    Kathleen Biagas, Thu May 27, 2021
+//    Allow enum type when name already exists.
 //
 // ****************************************************************************
 
@@ -1349,7 +1369,24 @@ DBOptionsAttributes::SetString(const std::string &name, const std::string &defau
         optStrings.push_back(defaultValue);
     }
     else
-        optStrings[bIndex] = defaultValue;
+    {
+        if (GetType(name) == Enum)
+        {
+            stringVector es = GetEnumStrings(name);
+            for (size_t i = 0; i < es.size(); ++i)
+            {
+                if(es[i] == defaultValue)
+                {
+                    optEnums[bIndex] = i;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            optStrings[bIndex] = defaultValue;
+        }
+    }
 }
 
 // ****************************************************************************
@@ -1365,6 +1402,9 @@ DBOptionsAttributes::SetString(const std::string &name, const std::string &defau
 //    Mark C. Miller, Tue Apr 29 17:39:39 PDT 2008
 //    Made it a const method
 //
+//    Kathleen Biagas, Thu May 27, 2021
+//    Allow enum type. 
+//
 // ****************************************************************************
 
 const std::string &
@@ -1373,7 +1413,14 @@ DBOptionsAttributes::GetString(const std::string &name) const
     int bIndex = FindIndex(name);
     if (bIndex < 0)
         EXCEPTION0(BadDeclareFormatString);
-    return optStrings[bIndex];
+
+    if (GetType(name) == Enum)
+    {
+        stringVector es = GetEnumStrings(name);
+        return es[optEnums[bIndex]]; 
+    }
+
+    return optStrings[bIndex]; 
 }
 
 // ****************************************************************************
@@ -1484,6 +1531,16 @@ DBOptionsAttributes::GetType(int index) const
         EXCEPTION0(BadDeclareFormatString);
 
     return (DBOptionsAttributes::OptionType) types[index];
+}
+
+DBOptionsAttributes::OptionType
+DBOptionsAttributes::GetType(const std::string &name) const
+{
+    for (size_t i = 0 ; i < names.size() ; i++)
+        if (names[i] == name)
+            return (DBOptionsAttributes::OptionType) types[i];
+
+    EXCEPTION0(BadDeclareFormatString);
 }
 
 // ****************************************************************************

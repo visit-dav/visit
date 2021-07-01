@@ -149,6 +149,7 @@ public:
     void SetEnumStrings(const std::string &name, const std::vector<std::string> &values);
     int GetNumberOfOptions(void) const;
     DBOptionsAttributes::OptionType GetType(int) const;
+    DBOptionsAttributes::OptionType GetType(const std::string &) const;
     std::vector<std::string> GetEnumStrings(const std::string &name) const;
     std::string GetName(int) const;
     void SetObsolete(const std::string &name);
