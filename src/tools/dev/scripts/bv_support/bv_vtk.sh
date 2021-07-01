@@ -1378,7 +1378,40 @@ EOF
     return 0;
 }
 
+function apply_vtk_compilerversioncheck_patch
+{
+    # Need to fix the REGEX so that version strings with 2digit major are matched correctly.
+    patch -p0 << \EOF
+diff -c CMake/VTKGenerateExportHeader.cmake.orig VTKGenerateExportHeader.cmake
+*** CMake/VTKGenerateExportHeader.cmake.orig	Wed Jun 30 18:30:42 2021
+--- CMake/VTKGenerateExportHeader.cmake	Wed Jun 30 18:31:06 2021
+***************
+*** 174,180 ****
+      execute_process(COMMAND ${CMAKE_C_COMPILER} --version
+        OUTPUT_VARIABLE _gcc_version_info
+        ERROR_VARIABLE _gcc_version_info)
+!     string(REGEX MATCH "[3-9]\\.[0-9]\\.[0-9]*"
+        _gcc_version "${_gcc_version_info}")
+      # gcc on mac just reports: "gcc (GCC) 3.3 20030304 ..." without the
+      # patch level, handle this here:
+--- 174,180 ----
+      execute_process(COMMAND ${CMAKE_C_COMPILER} --version
+        OUTPUT_VARIABLE _gcc_version_info
+        ERROR_VARIABLE _gcc_version_info)
+!     string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]*"
+        _gcc_version "${_gcc_version_info}")
+      # gcc on mac just reports: "gcc (GCC) 3.3 20030304 ..." without the
+      # patch level, handle this here:
 
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for compiler version check failed."
+      return 1
+    fi
+
+    return 0;
+}
 
 
 function apply_vtk_patch
@@ -1422,6 +1455,11 @@ function apply_vtk_patch
     fi
 
     apply_vtk_python3_python_args_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtk_compilerversioncheck_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
