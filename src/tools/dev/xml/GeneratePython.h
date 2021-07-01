@@ -3066,7 +3066,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         if(HasCode(mName, 1))
             PrintCode(c, mName, 1);
 
-        c << "    if (obj != NULL)" << Endl;
+        c << "    if (obj != NULL && obj != &NULL_PY_OBJ)" << Endl;
         c << "        Py_DECREF(obj);" << Endl;
         c << Endl;
         c << "    if (obj == &NULL_PY_OBJ)" << Endl;
