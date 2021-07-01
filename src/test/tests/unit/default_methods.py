@@ -16,5 +16,6 @@ print(GetLastError())
 print(Version())
 print(LocalNameSpace())
 print(LongFileName("myfile.txt"))
+print(apropos("subset"))
 
 Exit()

@@ -8,8 +8,8 @@
 
 #ifndef NAVIGATE_3D_H
 #define NAVIGATE_3D_H
-#include <viswindow_exports.h>
 
+#include <viswindow_exports.h>
 
 #include <VisitInteractor.h>
 
@@ -63,7 +63,7 @@ class VISWINDOW_API Navigate3D : public VisitInteractor
 {
   public:
                         Navigate3D(VisWindowInteractorProxy &);
- 
+
     virtual void        OnTimer(void);
 
     virtual void        StartLeftButtonAction();
@@ -74,11 +74,11 @@ class VISWINDOW_API Navigate3D : public VisitInteractor
     virtual void        OnMouseWheelBackward();
 
   protected:
-    bool                ctrlOrShiftPressed;
-    bool                shouldSpin;
-
     void                EnableSpinMode(void);
     void                DisableSpinMode(void);
+
+    bool                ctrlOrShiftPressed{false};
+    bool                shouldSpin        {false};
 };
 
 #endif

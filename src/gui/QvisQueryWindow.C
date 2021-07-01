@@ -212,8 +212,8 @@ QvisQueryWindow::CreateWindowContents()
     CreatePythonQueryWidget();
     CreateResultsWidget();
 
-    queryTabs->addTab(stdQueryWidget, "Standard queries");
-    queryTabs->addTab(pyQueryWidget, "Python query editor");
+    queryTabs->addTab(stdQueryWidget, tr("Standard queries"));
+    queryTabs->addTab(pyQueryWidget, tr("Python query editor"));
 
     splitter->addWidget(queryTabs);
     splitter->addWidget(resultsWidget);

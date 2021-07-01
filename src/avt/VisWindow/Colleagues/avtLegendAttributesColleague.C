@@ -59,6 +59,9 @@ SetBool(AnnotationObject &annot, int bit, bool val)
 //    passing arrays of 2 values which lead to "invalid read" reported by
 //    the address sanitizer. changed to use arrays with 3 values.
 //
+//    Kathleen Biagas, Tue June 22, 2021
+//    Ensure suppliedLabels is created.
+//
 // ****************************************************************************
 
 avtLegendAttributesColleague::avtLegendAttributesColleague(
@@ -110,6 +113,11 @@ avtLegendAttributesColleague::avtLegendAttributesColleague(
 
     // Set the default custom title
     atts.GetOptions().GetEntry("customTitle")->SetValue("");
+
+    // Provide an empty 'suppliedLabels' entry to satisfy python print
+    // interface, where we want this entry available, even if unset or empty.
+    stringVector suppliedLabels;
+    atts.GetOptions().GetEntry("suppliedLabels")->SetValue(suppliedLabels);
 }
 
 // ****************************************************************************

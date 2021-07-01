@@ -26,11 +26,12 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 
+#include <array>
 #include <iostream>
 
 GUIWindow::GUIWindow() : QMainWindow()
 {
-    CreateWindow();
+    CreateMainWindow();
 }
 
 GUIWindow::~GUIWindow()
@@ -98,7 +99,7 @@ GUIWindow::DrawCylinder(vtkRenderWindow *renderWindow)
 }
 
 void
-GUIWindow::CreateWindow()
+GUIWindow::CreateMainWindow()
 {
     QWidget *central = new QWidget(this);
     this->setCentralWidget(central);

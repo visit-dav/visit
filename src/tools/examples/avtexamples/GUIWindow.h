@@ -21,7 +21,7 @@ private slots:
 
 private:
     void DrawCylinder(vtkRenderWindow *renderWindow);
-    void CreateWindow();
+    void CreateMainWindow();
 };
 
 #endif

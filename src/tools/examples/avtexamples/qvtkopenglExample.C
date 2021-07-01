@@ -10,6 +10,10 @@
 
 #include <iostream>
 
+#include <vtkAutoInit.h>
+VTK_MODULE_INIT(vtkInteractionStyle)
+VTK_MODULE_INIT(vtkRenderingOpenGL2)
+
 int
 main(int argc, char **argv)
 {

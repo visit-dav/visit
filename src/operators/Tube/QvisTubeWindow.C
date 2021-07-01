@@ -111,8 +111,8 @@ QvisTubeWindow::CreateWindowContents()
     radiusLayout->addWidget(radius, 2,1);
 
     radiusType = new QComboBox(radiusGroup);
-    radiusType->addItem("Fraction of Bounding Box");
-    radiusType->addItem("Absolute");
+    radiusType->addItem(tr("Fraction of Bounding Box"));
+    radiusType->addItem(tr("Absolute"));
     connect(radiusType, SIGNAL(activated(int)),
             this, SLOT(radiusTypeChanged(int)));
     radiusLayout->addWidget(radiusType, 2,2);

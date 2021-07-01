@@ -531,9 +531,7 @@ function initialize_build_visit()
         export VISITARCHTMP=${ARCH}_${C_COMPILER}
         if [[ "$CXX_COMPILER" == "g++" ]] ; then
             VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-2)
-            if [[ ${#VERSION} == 3 ]] ; then
-                VISITARCHTMP=${VISITARCHTMP}-${VERSION}
-            fi
+            VISITARCHTMP=${VISITARCHTMP}-${VERSION}
         fi
     else
         # use environment variable value
@@ -1422,9 +1420,7 @@ function run_build_visit()
         export VISITARCH=${ARCH}_${C_COMPILER_BASENAME}
         if [[ "$CXX_COMPILER_BASENAME" == "g++" ]] ; then
             VERSION=$(${CXX_COMPILER} -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-2)
-            if [[ ${#VERSION} == 3 ]] ; then
-                VISITARCH=${VISITARCH}-${VERSION}
-            fi
+            VISITARCH=${VISITARCH}-${VERSION}
         elif [[ "$CXX_COMPILER_BASENAME" == "icpc" ]] ; then
             VERSION=$(${CXX_COMPILER} --version | cut -d' ' -f3 | head -n1)
             VISITARCH=${VISITARCH}-${VERSION}

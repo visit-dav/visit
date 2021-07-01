@@ -10,6 +10,9 @@
 
 #include <iostream>
 
+#include <vtkAutoInit.h>
+VTK_MODULE_INIT(vtkInteractionStyle)
+
 int
 main(int argc, char **argv)
 {

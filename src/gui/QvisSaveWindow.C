@@ -400,9 +400,9 @@ QvisSaveWindow::CreateWindowContents()
 
     aspectRatioLabel = new QLabel(tr("Aspect ratio"),central);
     aspectRatioComboBox = new QComboBox(central);
-    aspectRatioComboBox->addItem("screen ratio");
-    aspectRatioComboBox->addItem("1:1 aspect ratio");
-    aspectRatioComboBox->addItem("no constraint");
+    aspectRatioComboBox->addItem(tr("screen ratio"));
+    aspectRatioComboBox->addItem(tr("1:1 aspect ratio"));
+    aspectRatioComboBox->addItem(tr("no constraint"));
     connect(aspectRatioComboBox, SIGNAL(activated(int)),
            this, SLOT(aspectRatioChanged(int)));
     resolutionLayout->addWidget(aspectRatioLabel, 0, 0);

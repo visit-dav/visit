@@ -305,16 +305,16 @@ QvisPluginWindow::CreateWindowContents()
             this, SLOT(dbAddToPreferedButtonClicked()));
     db_rlayout->addWidget(dbAddToPreferedButton);
 
-    QGroupBox *preferredGroup = new QGroupBox("Preferred Database Plugins",
+    QGroupBox *preferredGroup = new QGroupBox(tr("Preferred Database Plugins"),
                                               pageDatabases);
     db_rlayout->addWidget(preferredGroup);
     QGridLayout *preferredLayout = new QGridLayout(preferredGroup);
 
-    QLabel *preferredHintLabel = new QLabel(
+    QLabel *preferredHintLabel = new QLabel(tr(
         "This is an ordered list of plugins which take precedence when "
         "opening files.  When they accept the given file name pattern, these "
         "are tried frst.  And when all attempts to guess based on file "
-        "name fail, these are tried before giving up.", preferredGroup);
+        "name fail, these are tried before giving up."), preferredGroup);
     preferredHintLabel->setWordWrap(true);
     preferredLayout->addWidget(preferredHintLabel, 0,0, 1,3);
 
