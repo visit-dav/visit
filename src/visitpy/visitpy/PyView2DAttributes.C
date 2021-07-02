@@ -122,54 +122,35 @@ View2DAttributes_SetWindowCoords(PyObject *self, PyObject *args)
 {
     View2DAttributesObject *obj = (View2DAttributesObject *)self;
 
-    PyObject *packaged_args = 0;
-    double *vals = obj->data->GetWindowCoords();
-
-    if (!PySequence_Check(args) || PyUnicode_Check(args))
-        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
-
-    // break open args seq. if we think it matches this API's needs
-    if (PySequence_Size(args) == 1)
+    double *dvals = obj->data->GetWindowCoords();
+    if(!PyArg_ParseTuple(args, "dddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3]))
     {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
-            PySequence_Size(packaged_args) == 4)
-            args = packaged_args;
-    }
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
 
-    if (PySequence_Size(args) != 4)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "Expecting 4 numeric args");
-    }
-
-    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
-    {
-        PyObject *item = PySequence_GetItem(args, i);
-
-        if (!PyNumber_Check(item))
+        if(PyTuple_Check(tuple))
         {
-            Py_DECREF(item);
-            Py_XDECREF(packaged_args);
-            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
-        }
+            if(PyTuple_Size(tuple) != 4)
+                return NULL;
 
-        double val = PyFloat_AsDouble(item);
-        double cval = double(val);
-
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
-        {
-            Py_XDECREF(packaged_args);
-            Py_DECREF(item);
             PyErr_Clear();
-            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
         }
-        Py_DECREF(item);
-
-        vals[i] = cval;
+        else
+            return NULL;
     }
-
-    Py_XDECREF(packaged_args);
 
     // Mark the windowCoords in the object as modified.
     obj->data->SelectWindowCoords();
@@ -195,54 +176,35 @@ View2DAttributes_SetViewportCoords(PyObject *self, PyObject *args)
 {
     View2DAttributesObject *obj = (View2DAttributesObject *)self;
 
-    PyObject *packaged_args = 0;
-    double *vals = obj->data->GetViewportCoords();
-
-    if (!PySequence_Check(args) || PyUnicode_Check(args))
-        return PyErr_Format(PyExc_TypeError, "Expecting a sequence of numeric args");
-
-    // break open args seq. if we think it matches this API's needs
-    if (PySequence_Size(args) == 1)
+    double *dvals = obj->data->GetViewportCoords();
+    if(!PyArg_ParseTuple(args, "dddd", &dvals[0], &dvals[1], &dvals[2], &dvals[3]))
     {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PySequence_Check(packaged_args) && !PyUnicode_Check(packaged_args) &&
-            PySequence_Size(packaged_args) == 4)
-            args = packaged_args;
-    }
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
 
-    if (PySequence_Size(args) != 4)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "Expecting 4 numeric args");
-    }
-
-    for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
-    {
-        PyObject *item = PySequence_GetItem(args, i);
-
-        if (!PyNumber_Check(item))
+        if(PyTuple_Check(tuple))
         {
-            Py_DECREF(item);
-            Py_XDECREF(packaged_args);
-            return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
-        }
+            if(PyTuple_Size(tuple) != 4)
+                return NULL;
 
-        double val = PyFloat_AsDouble(item);
-        double cval = double(val);
-
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
-        {
-            Py_XDECREF(packaged_args);
-            Py_DECREF(item);
             PyErr_Clear();
-            return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
         }
-        Py_DECREF(item);
-
-        vals[i] = cval;
+        else
+            return NULL;
     }
-
-    Py_XDECREF(packaged_args);
 
     // Mark the viewportCoords in the object as modified.
     obj->data->SelectViewportCoords();
@@ -268,55 +230,21 @@ View2DAttributes_SetFullFrameActivationMode(PyObject *self, PyObject *args)
 {
     View2DAttributesObject *obj = (View2DAttributesObject *)self;
 
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    int cval = int(val);
-
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
-    }
-
-    if (cval < 0 || cval >= 3)
-    {
-        std::stringstream ss;
-        ss << "An invalid fullFrameActivationMode value was given." << std::endl;
-        ss << "Valid values are in the range [0,2]." << std::endl;
-        ss << "You can also use the following symbolic names:";
-        ss << " On";
-        ss << ", Off";
-        ss << ", Auto";
-        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
-    }
-
-    Py_XDECREF(packaged_args);
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
 
     // Set the fullFrameActivationMode in the object.
-    obj->data->SetFullFrameActivationMode(View2DAttributes::TriStateMode(cval));
+    if(ival >= 0 && ival < 3)
+        obj->data->SetFullFrameActivationMode(View2DAttributes::TriStateMode(ival));
+    else
+    {
+        fprintf(stderr, "An invalid fullFrameActivationMode value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "On, Off, Auto.");
+        return NULL;
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -335,43 +263,12 @@ View2DAttributes_SetFullFrameAutoThreshold(PyObject *self, PyObject *args)
 {
     View2DAttributesObject *obj = (View2DAttributesObject *)self;
 
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    double val = PyFloat_AsDouble(args);
-    double cval = double(val);
-
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
-    }
-
-    Py_XDECREF(packaged_args);
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
 
     // Set the fullFrameAutoThreshold in the object.
-    obj->data->SetFullFrameAutoThreshold(cval);
+    obj->data->SetFullFrameAutoThreshold(dval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -390,20 +287,20 @@ View2DAttributes_SetXScale(PyObject *self, PyObject *args)
 {
     View2DAttributesObject *obj = (View2DAttributesObject *)self;
 
-    int ival = -2;
-    ival = (int) PyLong_AsLong(args);
-    if (ival == -1)
-        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer args");
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
 
     // Set the xScale in the object.
     if(ival >= 0 && ival <= 1)
         obj->data->SetXScale(ival);
     else
     {
-        return PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
+        fprintf(stderr, "An invalid  value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "\"LINEAR\", \"LOG\"\n");
+        return NULL;
     }
 
     Py_INCREF(Py_None);
@@ -423,20 +320,20 @@ View2DAttributes_SetYScale(PyObject *self, PyObject *args)
 {
     View2DAttributesObject *obj = (View2DAttributesObject *)self;
 
-    int ival = -2;
-    ival = (int) PyLong_AsLong(args);
-    if (ival == -1)
-        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer args");
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
 
     // Set the yScale in the object.
     if(ival >= 0 && ival <= 1)
         obj->data->SetYScale(ival);
     else
     {
-        return PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
+        fprintf(stderr, "An invalid  value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "\"LINEAR\", \"LOG\"\n");
+        return NULL;
     }
 
     Py_INCREF(Py_None);
@@ -456,43 +353,12 @@ View2DAttributes_SetWindowValid(PyObject *self, PyObject *args)
 {
     View2DAttributesObject *obj = (View2DAttributesObject *)self;
 
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    bool cval = bool(val);
-
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
-    }
-
-    Py_XDECREF(packaged_args);
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
 
     // Set the windowValid in the object.
-    obj->data->SetWindowValid(cval);
+    obj->data->SetWindowValid(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -513,8 +379,11 @@ View2DAttributes_Add(PyObject *v, PyObject *w)
     bool arg1isObject = PyView2DAttributes_Check(v);
     bool arg2isObject = PyView2DAttributes_Check(w);
     if(!arg1isObject || !arg2isObject)
-        return PyErr_Format(PyExc_TypeError, "Both arguments to + operator must "
-                            "be View2DAttributes!");
+    {
+        cerr << "View2DAttributes_Add: One or more arguments are not View2DAttributes!" << endl;
+        return NULL;
+    }
+
 
     PyObject *retval = NewView2DAttributes(0);
     View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
@@ -571,8 +440,10 @@ View2DAttributes_Mul(PyObject *v, PyObject *w)
 
     if(arg1isObject && arg2isObject)
     {
-        return PyErr_Format(PyExc_TypeError, "One argument must be a View2DAttributes "
-                            "object and the other must be a number");
+        PyErr_SetString(PyExc_TypeError,
+                    "View2DAttributes_mult: Both  arguments are View2DAttributes!"
+                    " Expected one View2DAttributes object and one numeric argument.");
+        return NULL;
     }
     else
     {
@@ -599,8 +470,10 @@ View2DAttributes_Mul(PyObject *v, PyObject *w)
             val = PyLong_AsDouble(num);
         else
         {
-            return PyErr_Format(PyExc_TypeError, "Expected numeric argument for * (MUL) "
-                   "operator with View2DAttributes is not a number!");
+            PyErr_SetString(PyExc_TypeError,
+                        "View2DAttributes_mult: Expected numeric argument is not a number!"
+                        " Expected one View2DAttributes object and one numeric argument.");
+            return NULL;
         }
 
 
@@ -701,35 +574,34 @@ PyView2DAttributes_getattr(PyObject *self, char *name)
 int
 PyView2DAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    PyObject NULL_PY_OBJ;
-    PyObject *obj = &NULL_PY_OBJ;
+    // Create a tuple to contain the arguments since all of the Set
+    // functions expect a tuple.
+    PyObject *tuple = PyTuple_New(1);
+    PyTuple_SET_ITEM(tuple, 0, args);
+    Py_INCREF(args);
+    PyObject *obj = NULL;
 
     if(strcmp(name, "windowCoords") == 0)
-        obj = View2DAttributes_SetWindowCoords(self, args);
+        obj = View2DAttributes_SetWindowCoords(self, tuple);
     else if(strcmp(name, "viewportCoords") == 0)
-        obj = View2DAttributes_SetViewportCoords(self, args);
+        obj = View2DAttributes_SetViewportCoords(self, tuple);
     else if(strcmp(name, "fullFrameActivationMode") == 0)
-        obj = View2DAttributes_SetFullFrameActivationMode(self, args);
+        obj = View2DAttributes_SetFullFrameActivationMode(self, tuple);
     else if(strcmp(name, "fullFrameAutoThreshold") == 0)
-        obj = View2DAttributes_SetFullFrameAutoThreshold(self, args);
+        obj = View2DAttributes_SetFullFrameAutoThreshold(self, tuple);
     else if(strcmp(name, "xScale") == 0)
-        obj = View2DAttributes_SetXScale(self, args);
+        obj = View2DAttributes_SetXScale(self, tuple);
     else if(strcmp(name, "yScale") == 0)
-        obj = View2DAttributes_SetYScale(self, args);
+        obj = View2DAttributes_SetYScale(self, tuple);
     else if(strcmp(name, "windowValid") == 0)
-        obj = View2DAttributes_SetWindowValid(self, args);
+        obj = View2DAttributes_SetWindowValid(self, tuple);
 
-    if (obj != NULL && obj != &NULL_PY_OBJ)
+    if(obj != NULL)
         Py_DECREF(obj);
 
-    if (obj == &NULL_PY_OBJ)
-    {
-        obj = NULL;
-        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
-    }
-    else if (obj == NULL && !PyErr_Occurred())
-        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
-
+    Py_DECREF(tuple);
+    if( obj == NULL)
+        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
     return (obj != NULL) ? 0 : -1;
 }
 
@@ -955,15 +827,12 @@ VISIT_PY_TYPE_OBJ(View2DAttributesType,          \
                   &View2DAttributes_as_number);
 
 
-//
-// Helper function for comparing.
-//
 static PyObject *
 View2DAttributes_richcompare(PyObject *self, PyObject *other, int op)
 {
     // only compare against the same type 
-    if ( Py_TYPE(self) != &View2DAttributesType
-         || Py_TYPE(other) != &View2DAttributesType)
+    if ( Py_TYPE(self) == Py_TYPE(other) 
+         && Py_TYPE(self) == &View2DAttributesType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;

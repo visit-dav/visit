@@ -381,6 +381,7 @@ def TestAssignmentToString():
             TestFOA('ca.SetDesignator(%s)'%repr(works[i]), LINE()) 
 
 def TestDirOutput(obj, minlen = 5, names = None):
+    TestSection('behavior of dir()')
     try:
         x = [f for f in dir(obj) if not (f.startswith('__') and f.endswith('__'))]
         if minlen and len(x) < minlen:
@@ -407,6 +408,7 @@ class my_redirect_stdout(list):
 # So, we use the class def above
 # from contextlib import redirect_stdout
 def TestHelpOutput(thing, minlen = 200, words = None):
+    TestSection('behavior of help()')
     try:
         with my_redirect_stdout() as output:
             help(thing)
@@ -419,17 +421,31 @@ def TestHelpOutput(thing, minlen = 200, words = None):
         TestFOA('help(%s)'%repr(thing), LINE()) 
     
 # Scalar assignments
+TestAssignmentToUChar()
 TestAssignmentToBool()
 TestAssignmentToInt()
 TestAssignmentToFloat()
 TestAssignmentToDouble()
 TestAssignmentToString()
-# Enum scalars (which get range checked)
+
+TestAssignmentToGlyphType()
+TestAssignmentToEnum()
+
 TestAssignmentToTuple()
 
 # Array assignments
+TestAssignmentToUCharArray()
+TestAssignmentToBoolArray()
+TestAssignmentToIntArray()
+TestAssignmentToFloatArray()
+TestAssignmentToDoubleArray()
 
 # Vector assignments
+TestAssignmentToUCharVector()
+TestAssignmentToBoolVector()
+TestAssignmentToIntVector()
+TestAssignmentToFloatVector()
+TestAssignmentToDoubleVector()
 
 # Test that dir(x) appears to work
 #TestDirOutput(SILRestriction(), None, ['NumSets', 'TurnOnAll', 'Wholes', 'TopSets'])

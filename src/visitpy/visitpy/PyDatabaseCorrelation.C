@@ -151,6 +151,157 @@ PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *pref
 }
 
 
+// std::string
+// PyDatabaseCorrelation_ToString(const DatabaseCorrelation *atts, const char *prefix)
+// {
+//     std::string str;
+//     char tmpStr[1000];
+//
+//     snprintf(tmpStr, 1000, "%sname = \"%s\"\n", prefix, atts->GetName().c_str());
+//     str += tmpStr;
+//     snprintf(tmpStr, 1000, "%snumStates = %d\n", prefix, atts->GetNumStates());
+//     str += tmpStr;
+//     const char *method_names = "IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation";
+//     switch (atts->GetMethod())
+//     {
+//       case DatabaseCorrelation::IndexForIndexCorrelation:
+//           snprintf(tmpStr, 1000, "%smethod = %sIndexForIndexCorrelation  # %s\n", prefix, prefix, method_names);
+//           str += tmpStr;
+//           break;
+//       case DatabaseCorrelation::StretchedIndexCorrelation:
+//           snprintf(tmpStr, 1000, "%smethod = %sStretchedIndexCorrelation  # %s\n", prefix, prefix, method_names);
+//           str += tmpStr;
+//           break;
+//       case DatabaseCorrelation::TimeCorrelation:
+//           snprintf(tmpStr, 1000, "%smethod = %sTimeCorrelation  # %s\n", prefix, prefix, method_names);
+//           str += tmpStr;
+//           break;
+//       case DatabaseCorrelation::CycleCorrelation:
+//           snprintf(tmpStr, 1000, "%smethod = %sCycleCorrelation  # %s\n", prefix, prefix, method_names);
+//           str += tmpStr;
+//           break;
+//       case DatabaseCorrelation::UserDefinedCorrelation:
+//           snprintf(tmpStr, 1000, "%smethod = %sUserDefinedCorrelation  # %s\n", prefix, prefix, method_names);
+//           str += tmpStr;
+//           break;
+//       default:
+//           break;
+//     }
+//
+//     {   const stringVector &databaseNames = atts->GetDatabaseNames();
+//         snprintf(tmpStr, 1000, "%sdatabaseNames = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < databaseNames.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "\"%s\"", databaseNames[i].c_str());
+//             str += tmpStr;
+//             if(i < databaseNames.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const intVector &databaseNStates = atts->GetDatabaseNStates();
+//         snprintf(tmpStr, 1000, "%sdatabaseNStates = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < databaseNStates.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%d", databaseNStates[i]);
+//             str += tmpStr;
+//             if(i < databaseNStates.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const doubleVector &databaseTimes = atts->GetDatabaseTimes();
+//         snprintf(tmpStr, 1000, "%sdatabaseTimes = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < databaseTimes.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%g", databaseTimes[i]);
+//             str += tmpStr;
+//             if(i < databaseTimes.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const intVector &databaseCycles = atts->GetDatabaseCycles();
+//         snprintf(tmpStr, 1000, "%sdatabaseCycles = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < databaseCycles.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%d", databaseCycles[i]);
+//             str += tmpStr;
+//             if(i < databaseCycles.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const intVector &indices = atts->GetIndices();
+//         snprintf(tmpStr, 1000, "%sindices = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < indices.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%d", indices[i]);
+//             str += tmpStr;
+//             if(i < indices.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const doubleVector &condensedTimes = atts->GetCondensedTimes();
+//         snprintf(tmpStr, 1000, "%scondensedTimes = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < condensedTimes.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%g", condensedTimes[i]);
+//             str += tmpStr;
+//             if(i < condensedTimes.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     {   const intVector &condensedCycles = atts->GetCondensedCycles();
+//         snprintf(tmpStr, 1000, "%scondensedCycles = (", prefix);
+//         str += tmpStr;
+//         for(size_t i = 0; i < condensedCycles.size(); ++i)
+//         {
+//             snprintf(tmpStr, 1000, "%d", condensedCycles[i]);
+//             str += tmpStr;
+//             if(i < condensedCycles.size() - 1)
+//             {
+//                 snprintf(tmpStr, 1000, ", ");
+//                 str += tmpStr;
+//             }
+//         }
+//         snprintf(tmpStr, 1000, ")\n");
+//         str += tmpStr;
+//     }
+//     return str;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // REMOVED  DatabaseCorrelation_Notify
