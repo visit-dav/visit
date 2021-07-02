@@ -556,7 +556,7 @@ PyDatabaseCorrelation_getattr(PyObject *self, char *name)
 int
 PyDatabaseCorrelation_setattr(PyObject *self, char *name, PyObject *args)
 {
-    return PyErr_Format(PyExc_NotImplementedError, "DatabaseCorrelation.setattr");
+    return -1;
 }
 
 static int
