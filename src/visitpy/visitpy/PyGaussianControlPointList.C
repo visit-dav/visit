@@ -209,7 +209,7 @@ PyGaussianControlPointList_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *obj = &NULL_PY_OBJ;
 
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

@@ -453,7 +453,7 @@ PyAxisAlignedSlice4DAttributes_setattr(PyObject *self, char *name, PyObject *arg
     else if(strcmp(name, "L") == 0)
         obj = AxisAlignedSlice4DAttributes_SetL(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

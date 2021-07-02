@@ -386,7 +386,7 @@ PyCoordSwapAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "newCoord3") == 0)
         obj = CoordSwapAttributes_SetNewCoord3(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

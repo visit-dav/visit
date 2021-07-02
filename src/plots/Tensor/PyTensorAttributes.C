@@ -1389,7 +1389,7 @@ PyTensorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "animationStep") == 0)
         obj = TensorAttributes_SetAnimationStep(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

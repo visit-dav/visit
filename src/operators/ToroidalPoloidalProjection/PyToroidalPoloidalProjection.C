@@ -468,7 +468,7 @@ PyToroidalPoloidalProjection_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "project2D") == 0)
         obj = ToroidalPoloidalProjection_SetProject2D(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

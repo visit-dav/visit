@@ -290,7 +290,7 @@ PyAxisAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "grid") == 0)
         obj = AxisAttributes_SetGrid(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

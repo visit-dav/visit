@@ -1539,7 +1539,7 @@ PySaveWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "opts") == 0)
         obj = SaveWindowAttributes_SetOpts(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

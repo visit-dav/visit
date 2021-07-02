@@ -271,7 +271,7 @@ PyExtractPointFunction2DAttributes_setattr(PyObject *self, char *name, PyObject 
     else if(strcmp(name, "J") == 0)
         obj = ExtractPointFunction2DAttributes_SetJ(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

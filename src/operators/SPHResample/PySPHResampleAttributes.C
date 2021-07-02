@@ -835,7 +835,7 @@ PySPHResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "RK") == 0)
         obj = SPHResampleAttributes_SetRK(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

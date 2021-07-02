@@ -188,7 +188,7 @@ PyAMRStitchCellAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if(strcmp(name, "CreateCellsOfType") == 0)
         obj = AMRStitchCellAttributes_SetCreateCellsOfType(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

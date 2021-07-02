@@ -2071,7 +2071,7 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         {
             int ival = -1;
             PyErr_WarnEx(NULL, "'colorByMag' is obsolete. Use 'colorByMagnitude'.", 3);
-            PyArg_ParseTuple(args, "i", &ival);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
                 if (ival == 0)
@@ -2086,7 +2086,7 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         {
             int ival = -1;
             PyErr_WarnEx(NULL, "'highQuality' is obsolete. Use 'geometryQuality'.", 3);
-            PyArg_ParseTuple(args, "i", &ival);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
                 if (ival == 0)
@@ -2104,7 +2104,7 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

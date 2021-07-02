@@ -1318,7 +1318,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
         if(strcmp(name, "backgroundFlag") == 0)
         {
             int ival = -1;
-            PyErr_WarnEx(NULL, "'backgroundFlag' is obsolete. Use 'opaqueColor'.", 2);
+            PyErr_WarnEx(NULL, "'backgroundFlag' is obsolete. Use 'opaqueColor'.", 3);
             ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
@@ -1333,7 +1333,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
         else if(strcmp(name, "foregroundFlag") == 0)
         {
             int ival = -1;
-            PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Use 'meshColor'.", 2);
+            PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Use 'meshColor'.", 3);
             ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
@@ -1347,7 +1347,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
         }
         else if(strcmp(name, "lineStyle") == 0)
         {
-            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 2);
+            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }

@@ -1487,7 +1487,7 @@ PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "histogramVariable") == 0)
         obj = SelectionProperties_SetHistogramVariable(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

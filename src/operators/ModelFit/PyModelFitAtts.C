@@ -1091,7 +1091,7 @@ PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "modelNums") == 0)
         obj = ModelFitAtts_SetModelNums(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

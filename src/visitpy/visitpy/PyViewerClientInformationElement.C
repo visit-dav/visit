@@ -430,7 +430,7 @@ PyViewerClientInformationElement_setattr(PyObject *self, char *name, PyObject *a
     else if(strcmp(name, "windowId") == 0)
         obj = ViewerClientInformationElement_SetWindowId(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

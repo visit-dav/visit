@@ -3147,8 +3147,9 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
         PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Will try to accomodate.", 3);
 
         // from the tuple get the foreground value
-        int ival;
-        if(!PyArg_ParseTuple(args, "i", &ival))
+        int ival = -1;
+        ival = (int) PyLong_AsLong(args);
+        if (ival == -1 && PyErr_Occurred())
               new_args = Py_BuildValue("(i)", 0);
 
         // foreground is false so single color and color type is 1
@@ -3203,7 +3204,7 @@ PyScatterAttributes_setattr(PyObject *self, char *name, PyObject *args)
             Py_DECREF(new_args);
         }
     }
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

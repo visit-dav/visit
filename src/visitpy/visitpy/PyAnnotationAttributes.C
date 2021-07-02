@@ -1567,7 +1567,7 @@ PyAnnotationAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "axesArray") == 0)
         obj = AnnotationAttributes_SetAxesArray(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

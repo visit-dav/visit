@@ -347,7 +347,7 @@ PyTriangulateRegularPointsAttributes_setattr(PyObject *self, char *name, PyObjec
     else if(strcmp(name, "yGridSpacing") == 0)
         obj = TriangulateRegularPointsAttributes_SetYGridSpacing(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

@@ -726,7 +726,7 @@ PyavtSimulationCommandSpecification_setattr(PyObject *self, char *name, PyObject
     else if(strcmp(name, "value") == 0)
         obj = avtSimulationCommandSpecification_SetValue(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

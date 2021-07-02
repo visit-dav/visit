@@ -471,7 +471,7 @@ PySaveSubWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "omitWindow") == 0)
         obj = SaveSubWindowAttributes_SetOmitWindow(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

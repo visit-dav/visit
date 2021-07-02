@@ -308,7 +308,7 @@ PyCartographicProjectionAttributes_setattr(PyObject *self, char *name, PyObject 
     else if(strcmp(name, "centralMeridian") == 0)
         obj = CartographicProjectionAttributes_SetCentralMeridian(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

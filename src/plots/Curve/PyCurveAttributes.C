@@ -2211,8 +2211,8 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         if(strcmp(name, "cycleColors") == 0)
         {
             int ival = -1;
-            PyErr_WarnEx(NULL, "'cycleColors' is obsolute. Use 'curveColor' set to 'Cycle'", 3);
-            PyArg_ParseTuple(args, "i", &ival);
+            PyErr_WarnEx(NULL, "'cycleColors' is obsolete. Use 'curveColor' set to 'Cycle'", 3);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
                 if (ival == 0)
@@ -2226,8 +2226,8 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         if(strcmp(name, "renderMode") == 0)
         {
             int ival = -1;
-            PyErr_WarnEx(NULL, "'renderMode' is obsolute. Use 'showLines' or 'showPoints'", 3);
-            PyArg_ParseTuple(args, "i", &ival);
+            PyErr_WarnEx(NULL, "'renderMode' is obsolete. Use 'showLines' or 'showPoints'", 3);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
                 if (ival == 0)
@@ -2246,12 +2246,12 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         }
         if(strcmp(name, "lineStyle") == 0)
         {
-            PyErr_WarnEx(NULL, "'lineStyle' is obsolute. It is being ignored.", 3);
+            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
     }
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

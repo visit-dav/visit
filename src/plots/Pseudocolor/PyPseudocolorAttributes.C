@@ -3933,7 +3933,7 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         {
             PyErr_WarnEx(NULL, "'useColorTableOpacity' is obsolete. Use 'opacityType'", 3);
             int ival = -1;
-            PyArg_ParseTuple(args, "i", &ival);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
                 if(ival == 0)
@@ -3951,7 +3951,7 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

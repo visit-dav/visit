@@ -32,7 +32,7 @@ Postfix:
         // from the tuple get the foreground value
         int ival = -1;
         ival = (int) PyLong_AsLong(args);
-        if (ival == -1 && PyError_Occured())
+        if (ival == -1 && PyErr_Occurred())
               new_args = Py_BuildValue("(i)", 0);
 
         // foreground is false so single color and color type is 1

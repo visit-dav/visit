@@ -536,7 +536,7 @@ PyFontAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "italic") == 0)
         obj = FontAttributes_SetItalic(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

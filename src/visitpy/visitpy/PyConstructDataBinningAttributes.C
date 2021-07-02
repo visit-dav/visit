@@ -1234,7 +1234,7 @@ PyConstructDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *a
         obj = ConstructDataBinningAttributes_SetVarForReductionOperator(self, args);
     else if(strcmp(name, "numSamples") == 0)
         obj = ConstructDataBinningAttributes_SetNumBins(self, args);
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

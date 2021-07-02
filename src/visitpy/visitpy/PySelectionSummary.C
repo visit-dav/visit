@@ -609,7 +609,7 @@ PySelectionSummary_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "histogramMaxBin") == 0)
         obj = SelectionSummary_SetHistogramMaxBin(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

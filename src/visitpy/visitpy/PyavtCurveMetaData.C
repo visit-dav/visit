@@ -601,7 +601,7 @@ PyavtCurveMetaData_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "from1DScalarName") == 0)
         obj = avtCurveMetaData_SetFrom1DScalarName(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

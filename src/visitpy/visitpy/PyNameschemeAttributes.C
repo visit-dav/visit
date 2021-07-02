@@ -692,7 +692,7 @@ PyNameschemeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "explicitNames") == 0)
         obj = NameschemeAttributes_SetExplicitNames(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

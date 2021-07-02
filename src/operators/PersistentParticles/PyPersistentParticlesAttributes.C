@@ -822,7 +822,7 @@ PyPersistentParticlesAttributes_setattr(PyObject *self, char *name, PyObject *ar
     else if(strcmp(name, "indexVariable") == 0)
         obj = PersistentParticlesAttributes_SetIndexVariable(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

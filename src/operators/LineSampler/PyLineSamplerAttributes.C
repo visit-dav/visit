@@ -3950,7 +3950,7 @@ PyLineSamplerAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "channelListToroidalAngle") == 0)
         obj = LineSamplerAttributes_SetChannelListToroidalAngle(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

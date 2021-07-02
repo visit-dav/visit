@@ -1113,7 +1113,7 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
         {
             PyErr_WarnEx(NULL, "'textHeight1' is obsolete. Trying to accomodate.", 3);
             double val = -1.0;
-            PyArg_ParseTuple(args, "d", &val);
+            val = PyFloat_AsDouble(args);
             if (val != -1.0)
             {
                 // Increase the value, new labels are smaller, we want
@@ -1127,7 +1127,7 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
         {
             PyErr_WarnEx(NULL, "'textHeight2' is obsolete. Trying to accomodate.", 3);
             double val = -1.0;
-            PyArg_ParseTuple(args, "d", &val);
+            val = PyFloat_AsDouble(args);
             if (val != -1.0)
             {
                 // Increase the value, new labels are smaller, we want
@@ -1141,7 +1141,7 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
         {
             PyErr_WarnEx(NULL, "'specifyTextColor1' is obsolete. Trying to accomodate.", 3);
             int ival = -1;
-            PyArg_ParseTuple(args, "i", &ival);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
                 font1.SetUseForegroundColor(ival == 0 ? 1: 0);
             Py_INCREF(Py_None);
@@ -1151,7 +1151,7 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
         {
             PyErr_WarnEx(NULL, "'specifyTextColor2' is obsolete. Trying to accomodate.", 3);
             int ival = -1;
-            PyArg_ParseTuple(args, "i", &ival);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
                 font2.SetUseForegroundColor(ival == 0 ? 1: 0);
             Py_INCREF(Py_None);
@@ -1187,7 +1187,7 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
             LabelObj->data->SetTextFont2(font2);
         }
     }
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

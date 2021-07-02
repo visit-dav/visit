@@ -155,7 +155,7 @@ PyConnectedComponentsAttributes_setattr(PyObject *self, char *name, PyObject *ar
     if(strcmp(name, "EnableGhostNeighborsOptimization") == 0)
         obj = ConnectedComponentsAttributes_SetEnableGhostNeighborsOptimization(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

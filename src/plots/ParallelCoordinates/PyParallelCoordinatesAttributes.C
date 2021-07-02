@@ -1242,7 +1242,7 @@ PyParallelCoordinatesAttributes_setattr(PyObject *self, char *name, PyObject *ar
     else if(strcmp(name, "drawFocusAs") == 0)
         obj = ParallelCoordinatesAttributes_SetDrawFocusAs(self, args);
 
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)
