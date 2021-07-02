@@ -207,26 +207,73 @@ MetricThresholdAttributes_SetPreset(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 21)
+    {
+        std::stringstream ss;
+        ss << "An invalid preset value was given." << std::endl;
+        ss << "Valid values are in the range [0,20]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " None";
+        ss << ", Aspect_Ratio";
+        ss << ", Aspect_Gamma";
+        ss << ", Skew";
+        ss << ", Taper";
+        ss << ", Volume";
+        ss << ", Stretch";
+        ss << ", Diagonal";
+        ss << ", Dimension";
+        ss << ", Oddy";
+        ss << ", Condition";
+        ss << ", Jacobian";
+        ss << ", Scaled_Jacobian";
+        ss << ", Shear";
+        ss << ", Shape";
+        ss << ", Relative_Size";
+        ss << ", Shape_and_Size";
+        ss << ", Area";
+        ss << ", Warpage";
+        ss << ", Smallest_Angle";
+        ss << ", Largest_Angle";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the preset in the object.
-    if(ival >= 0 && ival < 21)
-        obj->data->SetPreset(MetricThresholdAttributes::Preset(ival));
-    else
-    {
-        fprintf(stderr, "An invalid preset value was given. "
-                        "Valid values are in the range of [0,20]. "
-                        "You can also use the following names: "
-                        "None, Aspect_Ratio, Aspect_Gamma, Skew, Taper, "
-                        "Volume, Stretch, Diagonal, Dimension, "
-                        "Oddy, Condition, Jacobian, Scaled_Jacobian, "
-                        "Shear, Shape, Relative_Size, Shape_and_Size, "
-                        "Area, Warpage, Smallest_Angle, Largest_Angle"
-                        ".");
-        return NULL;
-    }
+    obj->data->SetPreset(MetricThresholdAttributes::Preset(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -245,12 +292,43 @@ MetricThresholdAttributes_SetHexahedron(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the Hexahedron in the object.
-    obj->data->SetHexahedron(ival != 0);
+    obj->data->SetHexahedron(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -269,12 +347,43 @@ MetricThresholdAttributes_SetHex_lower(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hex_lower in the object.
-    obj->data->SetHex_lower(dval);
+    obj->data->SetHex_lower(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -293,12 +402,43 @@ MetricThresholdAttributes_SetHex_upper(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hex_upper in the object.
-    obj->data->SetHex_upper(dval);
+    obj->data->SetHex_upper(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -317,12 +457,43 @@ MetricThresholdAttributes_SetTetrahedron(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the Tetrahedron in the object.
-    obj->data->SetTetrahedron(ival != 0);
+    obj->data->SetTetrahedron(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -341,12 +512,43 @@ MetricThresholdAttributes_SetTet_lower(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tet_lower in the object.
-    obj->data->SetTet_lower(dval);
+    obj->data->SetTet_lower(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -365,12 +567,43 @@ MetricThresholdAttributes_SetTet_upper(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tet_upper in the object.
-    obj->data->SetTet_upper(dval);
+    obj->data->SetTet_upper(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -389,12 +622,43 @@ MetricThresholdAttributes_SetWedge(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the Wedge in the object.
-    obj->data->SetWedge(ival != 0);
+    obj->data->SetWedge(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -413,12 +677,43 @@ MetricThresholdAttributes_SetWed_lower(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the wed_lower in the object.
-    obj->data->SetWed_lower(dval);
+    obj->data->SetWed_lower(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -437,12 +732,43 @@ MetricThresholdAttributes_SetWed_upper(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the wed_upper in the object.
-    obj->data->SetWed_upper(dval);
+    obj->data->SetWed_upper(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -461,12 +787,43 @@ MetricThresholdAttributes_SetPyramid(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the Pyramid in the object.
-    obj->data->SetPyramid(ival != 0);
+    obj->data->SetPyramid(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -485,12 +842,43 @@ MetricThresholdAttributes_SetPyr_lower(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pyr_lower in the object.
-    obj->data->SetPyr_lower(dval);
+    obj->data->SetPyr_lower(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -509,12 +897,43 @@ MetricThresholdAttributes_SetPyr_upper(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the pyr_upper in the object.
-    obj->data->SetPyr_upper(dval);
+    obj->data->SetPyr_upper(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -533,12 +952,43 @@ MetricThresholdAttributes_SetTriangle(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the Triangle in the object.
-    obj->data->SetTriangle(ival != 0);
+    obj->data->SetTriangle(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -557,12 +1007,43 @@ MetricThresholdAttributes_SetTri_lower(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tri_lower in the object.
-    obj->data->SetTri_lower(dval);
+    obj->data->SetTri_lower(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -581,12 +1062,43 @@ MetricThresholdAttributes_SetTri_upper(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tri_upper in the object.
-    obj->data->SetTri_upper(dval);
+    obj->data->SetTri_upper(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -605,12 +1117,43 @@ MetricThresholdAttributes_SetQuad(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the Quad in the object.
-    obj->data->SetQuad(ival != 0);
+    obj->data->SetQuad(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -629,12 +1172,43 @@ MetricThresholdAttributes_SetQuad_lower(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the quad_lower in the object.
-    obj->data->SetQuad_lower(dval);
+    obj->data->SetQuad_lower(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -653,12 +1227,43 @@ MetricThresholdAttributes_SetQuad_upper(PyObject *self, PyObject *args)
 {
     MetricThresholdAttributesObject *obj = (MetricThresholdAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the quad_upper in the object.
-    obj->data->SetQuad_upper(dval);
+    obj->data->SetQuad_upper(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -825,58 +1430,59 @@ PyMetricThresholdAttributes_getattr(PyObject *self, char *name)
 int
 PyMetricThresholdAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "preset") == 0)
-        obj = MetricThresholdAttributes_SetPreset(self, tuple);
+        obj = MetricThresholdAttributes_SetPreset(self, args);
     else if(strcmp(name, "Hexahedron") == 0)
-        obj = MetricThresholdAttributes_SetHexahedron(self, tuple);
+        obj = MetricThresholdAttributes_SetHexahedron(self, args);
     else if(strcmp(name, "hex_lower") == 0)
-        obj = MetricThresholdAttributes_SetHex_lower(self, tuple);
+        obj = MetricThresholdAttributes_SetHex_lower(self, args);
     else if(strcmp(name, "hex_upper") == 0)
-        obj = MetricThresholdAttributes_SetHex_upper(self, tuple);
+        obj = MetricThresholdAttributes_SetHex_upper(self, args);
     else if(strcmp(name, "Tetrahedron") == 0)
-        obj = MetricThresholdAttributes_SetTetrahedron(self, tuple);
+        obj = MetricThresholdAttributes_SetTetrahedron(self, args);
     else if(strcmp(name, "tet_lower") == 0)
-        obj = MetricThresholdAttributes_SetTet_lower(self, tuple);
+        obj = MetricThresholdAttributes_SetTet_lower(self, args);
     else if(strcmp(name, "tet_upper") == 0)
-        obj = MetricThresholdAttributes_SetTet_upper(self, tuple);
+        obj = MetricThresholdAttributes_SetTet_upper(self, args);
     else if(strcmp(name, "Wedge") == 0)
-        obj = MetricThresholdAttributes_SetWedge(self, tuple);
+        obj = MetricThresholdAttributes_SetWedge(self, args);
     else if(strcmp(name, "wed_lower") == 0)
-        obj = MetricThresholdAttributes_SetWed_lower(self, tuple);
+        obj = MetricThresholdAttributes_SetWed_lower(self, args);
     else if(strcmp(name, "wed_upper") == 0)
-        obj = MetricThresholdAttributes_SetWed_upper(self, tuple);
+        obj = MetricThresholdAttributes_SetWed_upper(self, args);
     else if(strcmp(name, "Pyramid") == 0)
-        obj = MetricThresholdAttributes_SetPyramid(self, tuple);
+        obj = MetricThresholdAttributes_SetPyramid(self, args);
     else if(strcmp(name, "pyr_lower") == 0)
-        obj = MetricThresholdAttributes_SetPyr_lower(self, tuple);
+        obj = MetricThresholdAttributes_SetPyr_lower(self, args);
     else if(strcmp(name, "pyr_upper") == 0)
-        obj = MetricThresholdAttributes_SetPyr_upper(self, tuple);
+        obj = MetricThresholdAttributes_SetPyr_upper(self, args);
     else if(strcmp(name, "Triangle") == 0)
-        obj = MetricThresholdAttributes_SetTriangle(self, tuple);
+        obj = MetricThresholdAttributes_SetTriangle(self, args);
     else if(strcmp(name, "tri_lower") == 0)
-        obj = MetricThresholdAttributes_SetTri_lower(self, tuple);
+        obj = MetricThresholdAttributes_SetTri_lower(self, args);
     else if(strcmp(name, "tri_upper") == 0)
-        obj = MetricThresholdAttributes_SetTri_upper(self, tuple);
+        obj = MetricThresholdAttributes_SetTri_upper(self, args);
     else if(strcmp(name, "Quad") == 0)
-        obj = MetricThresholdAttributes_SetQuad(self, tuple);
+        obj = MetricThresholdAttributes_SetQuad(self, args);
     else if(strcmp(name, "quad_lower") == 0)
-        obj = MetricThresholdAttributes_SetQuad_lower(self, tuple);
+        obj = MetricThresholdAttributes_SetQuad_lower(self, args);
     else if(strcmp(name, "quad_upper") == 0)
-        obj = MetricThresholdAttributes_SetQuad_upper(self, tuple);
+        obj = MetricThresholdAttributes_SetQuad_upper(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
