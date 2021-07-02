@@ -30,8 +30,9 @@ Postfix:
         PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Will try to accomodate.", 3);
 
         // from the tuple get the foreground value
-        int ival;
-        if(!PyArg_ParseTuple(args, "i", &ival))
+        int ival = -1;
+        ival = (int) PyLong_AsLong(args);
+        if (ival == -1 && PyError_Occured())
               new_args = Py_BuildValue("(i)", 0);
 
         // foreground is false so single color and color type is 1

@@ -52,7 +52,7 @@ Postfix:
         {
             PyErr_WarnEx(NULL, "'useColorTableOpacity' is obsolete. Use 'opacityType'", 3);
             int ival = -1;
-            PyArg_ParseTuple(args, "i", &ival);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
                 if(ival == 0)

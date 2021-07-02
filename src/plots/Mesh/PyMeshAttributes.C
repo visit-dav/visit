@@ -1319,7 +1319,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
         {
             int ival = -1;
             PyErr_WarnEx(NULL, "'backgroundFlag' is obsolete. Use 'opaqueColor'.", 2);
-            PyArg_ParseTuple(args, "i", &ival);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
                 if (ival == 0)
@@ -1334,7 +1334,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
         {
             int ival = -1;
             PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Use 'meshColor'.", 2);
-            PyArg_ParseTuple(args, "i", &ival);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
                 if (ival == 0)
@@ -1352,7 +1352,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
-    if (obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
     if (obj == &NULL_PY_OBJ)

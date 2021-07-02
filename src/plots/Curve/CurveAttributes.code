@@ -66,7 +66,7 @@ Postfix:
         {
             int ival = -1;
             PyErr_WarnEx(NULL, "'cycleColors' is obsolete. Use 'curveColor' set to 'Cycle'", 3);
-            PyArg_ParseTuple(args, "i", &ival);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
                 if (ival == 0)
@@ -81,7 +81,7 @@ Postfix:
         {
             int ival = -1;
             PyErr_WarnEx(NULL, "'renderMode' is obsolete. Use 'showLines' or 'showPoints'", 3);
-            PyArg_ParseTuple(args, "i", &ival);
+            ival = (int) PyLong_AsLong(args);
             if (ival != -1)
             {
                 if (ival == 0)
