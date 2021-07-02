@@ -34,7 +34,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Updated the ORNL host file list to include only current machines.</li>
   <li>After a successful Export database, the informational message now contains the host and path to the export.</li>
-  <li>Attribute assignment (e.g. <code>cylinderAtts.point1=...</code> or <code>cylinderAtts.SetPoint1(...)</code>) operations were modified catch an disallow non-sensical usage instead of silently falling back to default values and provide better error checking. It is possible these changes may cause code that worked fine to now terminate with a Python exception. In such cases, the resulting error message should explain the cause of the failure and the changes required to fix it should be obvious and minimal.</li>
+  <li>Attribute assignment (e.g. <code>cylinderAtts.point1=...</code> or <code>cylinderAtts.SetPoint1(...)</code>) operations were modified to catch and disallow non-sensical usage instead of silently falling back to default values and provide better error checking and messaging. It is possible these changes may cause code that worked fine to now terminate with a Python exception. In such cases, the resulting error message should explain the cause of the failure and the changes required to fix it should be obvious and minimal.</li>
 </ul>
 
 <a name="Advanced_features"></a>
