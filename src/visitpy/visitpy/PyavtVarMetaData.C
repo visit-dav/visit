@@ -115,9 +115,11 @@ avtVarMetaData_SetCentering(PyObject *self, PyObject *args)
 {
     avtVarMetaDataObject *obj = (avtVarMetaDataObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    int ival = -2;
+    if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     obj->data->centering = (avtCentering)ival;
 

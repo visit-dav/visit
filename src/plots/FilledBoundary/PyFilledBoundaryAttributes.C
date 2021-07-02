@@ -1241,9 +1241,11 @@ FilledBoundaryAttributes_SetPointType(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    int ival = -2;
+    if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    else if (PyNumber_Check(args) && (ival = (int) PyLong_AsLong(args)) == -1)
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     if(ival >= 0 && ival < 8)
     {
@@ -1251,12 +1253,11 @@ FilledBoundaryAttributes_SetPointType(PyObject *self, PyObject *args)
     }
     else
     {
-        fprintf(stderr, "An invalid pointType value was given. "
+        return PyErr_Format(PyExc_IndexError, "An invalid pointType value was given. "
                         "Valid values are in the range of [0,7]. "
                         "You can also use the following names: "
                         "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
                         "SphereGeometry, Point, Sphere.");
-        return NULL;
     }
 
     Py_INCREF(Py_None);

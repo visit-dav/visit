@@ -331,16 +331,18 @@ ViewCurveAttributes_SetDomainScale(PyObject *self, PyObject *args)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    int ival = -2;
+    if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     // Set the domainScale in the object.
     if(ival >= 0 && ival <= 1)
         obj->data->SetDomainScale(ival);
     else
     {
-        fprintf(stderr, "An invalid  value was given. "
+        PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "\"LINEAR\", \"LOG\"\n");
@@ -364,16 +366,18 @@ ViewCurveAttributes_SetRangeScale(PyObject *self, PyObject *args)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    int ival = -2;
+    if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     // Set the rangeScale in the object.
     if(ival >= 0 && ival <= 1)
         obj->data->SetRangeScale(ival);
     else
     {
-        fprintf(stderr, "An invalid  value was given. "
+        PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "\"LINEAR\", \"LOG\"\n");

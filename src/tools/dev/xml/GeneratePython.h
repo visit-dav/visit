@@ -351,7 +351,7 @@ class PythonGeneratorField : public virtual Field
 //    * pyFunc is the Python function call to obtain the pyType value.
 //    * ckVal (usually just 'val') a value to check cval for conversion error 
 //
-#define WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(cType, pyType, pyFunc, ckVal) \
+#define WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(cType, pyType, pyFunc) \
         c << "    PyObject *packaged_args = 0;" << Endl; \
         c << Endl; \
         c << "    // Handle args packaged into a tuple of size one" << Endl; \
@@ -378,7 +378,7 @@ class PythonGeneratorField : public virtual Field
         c << "    " #pyType " val = " #pyFunc "(args);" << Endl; \
         c << "    " #cType " cval = " #cType "(val);" << Endl; \
         c << Endl; \
-        c << "    if ((val == -1 && PyErr_Occurred()) || cval != " #ckVal ")" << Endl; \
+        c << "    if (val == -1 && PyErr_Occurred())" << Endl; \
         c << "    {" << Endl; \
         c << "        Py_XDECREF(packaged_args);" << Endl; \
         c << "        PyErr_Clear();" << Endl; \
@@ -476,7 +476,7 @@ class PythonGeneratorField : public virtual Field
         c << "        " #pyType " val = " #pyFunc "(item);" << Endl; \
         c << "        " #cType " cval = " #cType "(val);" << Endl; \
         c << Endl; \
-        c << "        if ((val == -1 && PyErr_Occurred()) || cval != val)" << Endl; \
+        c << "        if (val == -1 && PyErr_Occurred())" << Endl; \
         c << "        {" << Endl; \
         c << "            Py_XDECREF(packaged_args);" << Endl; \
         c << "            Py_DECREF(item);" << Endl; \
@@ -533,7 +533,7 @@ class PythonGeneratorField : public virtual Field
         c << "            " #pyType " val = " #pyFunc "(item);" << Endl; \
         c << "            " #cType " cval = " #cType "(val);" << Endl; \
         c << Endl; \
-        c << "            if ((val == -1 && PyErr_Occurred()) || cval != val)" << Endl; \
+        c << "            if (val == -1 && PyErr_Occurred())" << Endl; \
         c << "            {" << Endl; \
         c << "                Py_DECREF(item);" << Endl; \
         c << "                PyErr_Clear();" << Endl; \
@@ -2271,9 +2271,11 @@ class AttsGeneratorMapNode : public virtual MapNode , public virtual PythonGener
     } \
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className) \
     { \
-        c << "    int ival;" << Endl; \
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl; \
-        c << "        return NULL;" << Endl; \
+        c << "    int ival = -2;" << Endl; \
+        c << "    if (PySequence_Check(args) && !PyArg_ParseTuple(args, \"i\", &ival))" << Endl; \
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl; \
+        c << "    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)" << Endl; \
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl; \
         c << Endl; \
         QString T(type); T.replace("Field", "");\
         if(accessType == AccessPublic) \
@@ -2464,20 +2466,21 @@ class AttsGeneratorScaleMode : public virtual PythonGeneratorField, public virtu
         : Field("scalemode",n,l), PythonGeneratorField("scalemode",n,l), ScaleMode(n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "    int ival = -2;" << Endl;
+        c << "    if (PySequence_Check(args) && !PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl;
+        c << "    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
         c << "    if(ival >= 0 && ival <= 1)" << Endl;
         c << "        obj->data->" << MethodNameSet() << "(ival);" << Endl;
         c << "    else" << Endl;
         c << "    {" << Endl;
-        c << "        fprintf(stderr, \"An invalid  value was given. \"" << Endl;
+        c << "        return PyErr_Format(PyExc_IndexError, \"An invalid  value was given. \"" << Endl;
         c << "                        \"Valid values are in the range of [0,1]. \"" << Endl;
         c << "                        \"You can also use the following names: \"" << Endl;
         c << "                        \"\\\"LINEAR\\\", \\\"LOG\\\"\\n\");" << Endl;
-        c << "        return NULL;" << Endl;
         c << "    }" << Endl;
     }
 
@@ -2523,9 +2526,11 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
     }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "    int ival = -2;" << Endl;
+        c << "    if (PySequence_Check(args) && !PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl;
+        c << "    else if (PyNumber_Check(args) && (ival = (int) PyLong_AsLong(args)) == -1)" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl;
         c << Endl;
         c << "    if(ival >= 0 && ival < " << GetNValues() << ")" << Endl;
         c << "    {" << Endl;
@@ -2537,7 +2542,7 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
         c << "    }" << Endl;
         c << "    else" << Endl;
         c << "    {" << Endl;
-        c << "        fprintf(stderr, \"An invalid " << name
+        c << "        return PyErr_Format(PyExc_IndexError, \"An invalid " << name
           << " value was given. \"" << Endl;
         c << "                        \"Valid values are in the range of [0,"
           << GetNValues()-1 << "]. \"" << Endl;
@@ -2555,7 +2560,6 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
                 c << "\"\n                        \"";
         }
         c << ".\");" << Endl;
-        c << "        return NULL;" << Endl;
         c << "    }"<< Endl;
     }
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)

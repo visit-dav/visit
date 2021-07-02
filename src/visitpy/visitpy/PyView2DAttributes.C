@@ -390,20 +390,20 @@ View2DAttributes_SetXScale(PyObject *self, PyObject *args)
 {
     View2DAttributesObject *obj = (View2DAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    int ival = -2;
+    ival = (int) PyLong_AsLong(args);
+    if (ival == -1)
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer args");
 
     // Set the xScale in the object.
     if(ival >= 0 && ival <= 1)
         obj->data->SetXScale(ival);
     else
     {
-        fprintf(stderr, "An invalid  value was given. "
+        return PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "\"LINEAR\", \"LOG\"\n");
-        return NULL;
     }
 
     Py_INCREF(Py_None);
@@ -423,20 +423,20 @@ View2DAttributes_SetYScale(PyObject *self, PyObject *args)
 {
     View2DAttributesObject *obj = (View2DAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    int ival = -2;
+    ival = (int) PyLong_AsLong(args);
+    if (ival == -1)
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer args");
 
     // Set the yScale in the object.
     if(ival >= 0 && ival <= 1)
         obj->data->SetYScale(ival);
     else
     {
-        fprintf(stderr, "An invalid  value was given. "
+        return PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "\"LINEAR\", \"LOG\"\n");
-        return NULL;
     }
 
     Py_INCREF(Py_None);
