@@ -296,7 +296,7 @@ avtScalarMetaData_SetTreatAsASCII(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -493,7 +493,7 @@ avtScalarMetaData_SetEnumRanges(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1 && PyErr_Occurred()) || cval != val)
+            if (val == -1 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -567,7 +567,7 @@ avtScalarMetaData_SetEnumAlwaysExclude(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -640,7 +640,7 @@ avtScalarMetaData_SetEnumAlwaysInclude(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -775,7 +775,7 @@ avtScalarMetaData_SetEnumGraphEdges(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1 && PyErr_Occurred()) || cval != val)
+            if (val == -1 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -913,7 +913,7 @@ avtScalarMetaData_SetEnumGraphEdgeNameIndexs(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1 && PyErr_Occurred()) || cval != val)
+            if (val == -1 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -978,7 +978,7 @@ avtScalarMetaData_SetEnumNChooseRN(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1033,7 +1033,7 @@ avtScalarMetaData_SetEnumNChooseRMaxR(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1166,7 +1166,7 @@ avtScalarMetaData_SetMissingData(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);

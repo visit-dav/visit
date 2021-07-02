@@ -234,7 +234,7 @@ MeshAttributes_SetLegendFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -289,7 +289,7 @@ MeshAttributes_SetLineWidth(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -622,7 +622,7 @@ MeshAttributes_SetPointSize(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -821,7 +821,7 @@ MeshAttributes_SetPointSizeVarEnabled(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -961,7 +961,7 @@ MeshAttributes_SetShowInternal(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1016,7 +1016,7 @@ MeshAttributes_SetPointSizePixels(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1071,7 +1071,7 @@ MeshAttributes_SetOpacity(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

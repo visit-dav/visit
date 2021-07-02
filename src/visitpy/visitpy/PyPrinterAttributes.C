@@ -309,7 +309,7 @@ PrinterAttributes_SetNumCopies(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -364,7 +364,7 @@ PrinterAttributes_SetPortrait(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -419,7 +419,7 @@ PrinterAttributes_SetPrintColor(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -474,7 +474,7 @@ PrinterAttributes_SetOutputToFile(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -578,7 +578,7 @@ PrinterAttributes_SetPageSize(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

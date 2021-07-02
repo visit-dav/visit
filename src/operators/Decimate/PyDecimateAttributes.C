@@ -86,7 +86,7 @@ DecimateAttributes_SetTarget(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

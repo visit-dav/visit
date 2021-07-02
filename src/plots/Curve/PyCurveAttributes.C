@@ -279,7 +279,7 @@ CurveAttributes_SetShowLines(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -334,7 +334,7 @@ CurveAttributes_SetLineWidth(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -389,7 +389,7 @@ CurveAttributes_SetShowPoints(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -515,7 +515,7 @@ CurveAttributes_SetPointSize(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -636,7 +636,7 @@ CurveAttributes_SetPointStride(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -691,7 +691,7 @@ CurveAttributes_SetSymbolDensity(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -889,7 +889,7 @@ CurveAttributes_SetShowLegend(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -944,7 +944,7 @@ CurveAttributes_SetShowLabels(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1048,7 +1048,7 @@ CurveAttributes_SetDoBallTimeCue(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1180,7 +1180,7 @@ CurveAttributes_SetTimeCueBallSize(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1235,7 +1235,7 @@ CurveAttributes_SetDoLineTimeCue(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1367,7 +1367,7 @@ CurveAttributes_SetLineTimeCueWidth(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1422,7 +1422,7 @@ CurveAttributes_SetDoCropTimeCue(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1477,7 +1477,7 @@ CurveAttributes_SetTimeForTimeCue(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1754,7 +1754,7 @@ CurveAttributes_SetPolarToCartesian(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

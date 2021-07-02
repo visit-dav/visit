@@ -279,7 +279,7 @@ ContourAttributes_SetChangedColors(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             uchar cval = uchar(val);
 
-            if ((val == -1 && PyErr_Occurred()) || cval != val)
+            if (val == -1 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -460,7 +460,7 @@ ContourAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -515,7 +515,7 @@ ContourAttributes_SetLegendFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -570,7 +570,7 @@ ContourAttributes_SetLineWidth(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -912,7 +912,7 @@ ContourAttributes_SetContourNLevels(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -971,7 +971,7 @@ ContourAttributes_SetContourValue(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1 && PyErr_Occurred()) || cval != val)
+            if (val == -1 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -1040,7 +1040,7 @@ ContourAttributes_SetContourPercent(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1 && PyErr_Occurred()) || cval != val)
+            if (val == -1 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -1172,7 +1172,7 @@ ContourAttributes_SetMinFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1227,7 +1227,7 @@ ContourAttributes_SetMaxFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1282,7 +1282,7 @@ ContourAttributes_SetMin(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1337,7 +1337,7 @@ ContourAttributes_SetMax(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1458,7 +1458,7 @@ ContourAttributes_SetWireframe(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

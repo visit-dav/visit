@@ -569,7 +569,7 @@ class AttsGeneratorInt : public virtual Int , public virtual PythonGeneratorFiel
         : Field("int",n,l), Int(n,l), PythonGeneratorField("int",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(int, long, PyLong_AsLong, val)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(int, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -712,7 +712,7 @@ class AttsGeneratorBool : public virtual Bool , public virtual PythonGeneratorFi
         : Field("bool",n,l), Bool(n,l), PythonGeneratorField("bool",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(bool, long, PyLong_AsLong, bool(val))
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(bool, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -751,7 +751,7 @@ class AttsGeneratorFloat : public virtual Float , public virtual PythonGenerator
         : Field("float",n,l), Float(n,l), PythonGeneratorField("float",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(float, double, PyFloat_AsDouble, cval)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(float, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -893,7 +893,7 @@ class AttsGeneratorDouble : public virtual Double , public virtual PythonGenerat
         : Field("double",n,l), Double(n,l), PythonGeneratorField("double",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(double, double, PyFloat_AsDouble, val)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(double, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1038,7 +1038,7 @@ class AttsGeneratorUChar : public virtual UChar , public virtual PythonGenerator
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    typedef unsigned char uchar;" << Endl; // necessary alias for unsigned char
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(uchar, long, PyLong_AsLong, val)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(uchar, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1469,7 +1469,7 @@ class AttsGeneratorLineWidth : public virtual LineWidth , public virtual PythonG
         : Field("linewidth",n,l), LineWidth(n,l), PythonGeneratorField("linewidth",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(int, long, PyLong_AsLong, val)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(int, long, PyLong_AsLong)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
@@ -1505,7 +1505,7 @@ class AttsGeneratorOpacity : public virtual Opacity , public virtual PythonGener
         : Field("opacity",n,l), Opacity(n,l), PythonGeneratorField("opacity",n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(double, double, PyFloat_AsDouble, val)
+        WRITE_SET_METHOD_BODY_FOR_SCALAR_NUMBER(double, double, PyFloat_AsDouble)
     }
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)

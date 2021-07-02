@@ -104,7 +104,7 @@ SmoothOperatorAttributes_SetNumIterations(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -159,7 +159,7 @@ SmoothOperatorAttributes_SetRelaxationFactor(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -214,7 +214,7 @@ SmoothOperatorAttributes_SetConvergence(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -269,7 +269,7 @@ SmoothOperatorAttributes_SetMaintainFeatures(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -324,7 +324,7 @@ SmoothOperatorAttributes_SetFeatureAngle(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -379,7 +379,7 @@ SmoothOperatorAttributes_SetEdgeAngle(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -434,7 +434,7 @@ SmoothOperatorAttributes_SetSmoothBoundaries(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

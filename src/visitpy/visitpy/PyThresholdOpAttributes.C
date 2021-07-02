@@ -175,7 +175,7 @@ ThresholdOpAttributes_SetOutputMeshType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -230,7 +230,7 @@ ThresholdOpAttributes_SetBoundsInputType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -358,7 +358,7 @@ ThresholdOpAttributes_SetZonePortions(PyObject *self, PyObject *args)
             long val = PyLong_AsLong(item);
             int cval = int(val);
 
-            if ((val == -1 && PyErr_Occurred()) || cval != val)
+            if (val == -1 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -427,7 +427,7 @@ ThresholdOpAttributes_SetLowerBounds(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1 && PyErr_Occurred()) || cval != val)
+            if (val == -1 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -496,7 +496,7 @@ ThresholdOpAttributes_SetUpperBounds(PyObject *self, PyObject *args)
             double val = PyFloat_AsDouble(item);
             double cval = double(val);
 
-            if ((val == -1 && PyErr_Occurred()) || cval != val)
+            if (val == -1 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -610,7 +610,7 @@ ThresholdOpAttributes_SetDefaultVarIsScalar(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

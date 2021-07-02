@@ -413,7 +413,7 @@ ClipAttributes_SetPlane1Status(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -468,7 +468,7 @@ ClipAttributes_SetPlane2Status(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -523,7 +523,7 @@ ClipAttributes_SetPlane3Status(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -587,7 +587,7 @@ ClipAttributes_SetPlane1Origin(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -660,7 +660,7 @@ ClipAttributes_SetPlane2Origin(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -733,7 +733,7 @@ ClipAttributes_SetPlane3Origin(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -806,7 +806,7 @@ ClipAttributes_SetPlane1Normal(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -879,7 +879,7 @@ ClipAttributes_SetPlane2Normal(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -952,7 +952,7 @@ ClipAttributes_SetPlane3Normal(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -1016,7 +1016,7 @@ ClipAttributes_SetPlaneInverse(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1148,7 +1148,7 @@ ClipAttributes_SetCenter(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -1212,7 +1212,7 @@ ClipAttributes_SetRadius(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1267,7 +1267,7 @@ ClipAttributes_SetSphereInverse(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1322,7 +1322,7 @@ ClipAttributes_SetCrinkleClip(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

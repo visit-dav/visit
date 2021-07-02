@@ -112,7 +112,7 @@ ColorControlPoint_SetColors(PyObject *self, PyObject *args)
         long val = PyLong_AsLong(item);
         uchar cval = uchar(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -176,7 +176,7 @@ ColorControlPoint_SetPosition(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != cval)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

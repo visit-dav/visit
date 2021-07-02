@@ -147,7 +147,7 @@ ViewCurveAttributes_SetDomainCoords(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -220,7 +220,7 @@ ViewCurveAttributes_SetRangeCoords(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -293,7 +293,7 @@ ViewCurveAttributes_SetViewportCoords(PyObject *self, PyObject *args)
         double val = PyFloat_AsDouble(item);
         double cval = double(val);
 
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             Py_XDECREF(packaged_args);
             Py_DECREF(item);
@@ -342,11 +342,10 @@ ViewCurveAttributes_SetDomainScale(PyObject *self, PyObject *args)
         obj->data->SetDomainScale(ival);
     else
     {
-        PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
+        return PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "\"LINEAR\", \"LOG\"\n");
-        return NULL;
     }
 
     Py_INCREF(Py_None);
@@ -377,11 +376,10 @@ ViewCurveAttributes_SetRangeScale(PyObject *self, PyObject *args)
         obj->data->SetRangeScale(ival);
     else
     {
-        PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
+        return PyErr_Format(PyExc_IndexError, "An invalid  value was given. "
                         "Valid values are in the range of [0,1]. "
                         "You can also use the following names: "
                         "\"LINEAR\", \"LOG\"\n");
-        return NULL;
     }
 
     Py_INCREF(Py_None);

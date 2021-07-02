@@ -389,7 +389,7 @@ VolumeAttributes_SetOsprayShadowsEnabledFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -444,7 +444,7 @@ VolumeAttributes_SetOsprayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -499,7 +499,7 @@ VolumeAttributes_SetOsprayPreIntegrationFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -554,7 +554,7 @@ VolumeAttributes_SetOspraySingleShadeFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -609,7 +609,7 @@ VolumeAttributes_SetOsprayOneSidedLightingFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -664,7 +664,7 @@ VolumeAttributes_SetOsprayAoTransparencyEnabledFlag(PyObject *self, PyObject *ar
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -719,7 +719,7 @@ VolumeAttributes_SetOspraySpp(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -774,7 +774,7 @@ VolumeAttributes_SetOsprayAoSamples(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -829,7 +829,7 @@ VolumeAttributes_SetOsprayAoDistance(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -884,7 +884,7 @@ VolumeAttributes_SetOsprayMinContribution(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -939,7 +939,7 @@ VolumeAttributes_SetLegendFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -994,7 +994,7 @@ VolumeAttributes_SetLightingFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1082,7 +1082,7 @@ VolumeAttributes_SetOpacityAttenuation(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != cval)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1237,7 +1237,7 @@ VolumeAttributes_SetResampleFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1292,7 +1292,7 @@ VolumeAttributes_SetResampleTarget(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1434,7 +1434,40 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
 
     unsigned char *cvals = obj->data->GetFreeformOpacity();
     int opacity, index;
-    if(PyArg_ParseTuple(args, "ii", &index, &opacity))
+    if (PyTuple_Check(args) || PyList_Check(args))
+    {
+        if (PySequence_Size(args) == 2 && PyArg_ParseTuple(args, "ii", &index, &opacity))
+        {
+            if(index >= 0 && index < 256)
+            {
+                if(opacity < 0) opacity = 0;
+                if(opacity > 255) opacity = 255;
+                cvals[index] = (unsigned char)(opacity);
+            }
+        }
+        else if (PySequence_Size(args) != 256)
+            return PyErr_Format(PyExc_TypeError, "when setting whole opacity array, must pass 256 values");
+
+        PyErr_Clear();
+        for (int i = 0; i < PySequence_Size(args); ++i)
+        {
+            int c;
+            PyObject *item = PySequence_GetItem(args, i);
+            if(PyInt_Check(item))
+                c = int(PyInt_AS_LONG(item));
+            else if(PyFloat_Check(item))
+                c = int(PyFloat_AS_DOUBLE(item));
+            else if(PyLong_Check(item))
+                c = int(PyLong_AsDouble(item));
+            else
+                c = 0;
+            Py_DECREF(item);
+            if(c < 0) c = 0;
+            if(c > 255) c = 255;
+            cvals[i] = (unsigned char)(c);
+       }
+    }
+    else if (PyArg_ParseTuple(args, "ii", &index, &opacity))
     {
         if(index >= 0 && index < 256)
         {
@@ -1445,37 +1478,7 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
     }
     else
     {
-        PyObject     *tuple;
-        if(!PyArg_ParseTuple(args, "O", &tuple))
-        {
-            return NULL;
-        }
-        if(PyTuple_Check(tuple) || PyList_Check(tuple))
-        {
-            if(PySequence_Size(tuple) != 256)
-                return NULL;
-
-            PyErr_Clear();
-            for(int i = 0; i < PySequence_Size(tuple); ++i)
-            {
-                int c;
-                PyObject *item = PySequence_GetItem(tuple, i);
-                if(PyInt_Check(item))
-                    c = int(PyInt_AS_LONG(item));
-                else if(PyFloat_Check(item))
-                    c = int(PyFloat_AS_DOUBLE(item));
-                else if(PyLong_Check(item))
-                    c = int(PyLong_AsDouble(item));
-                else
-                    c = 0;
-                Py_DECREF(item);
-                if(c < 0) c = 0;
-                if(c > 255) c = 255;
-                cvals[i] = (unsigned char)(c);
-           }
-        }
-        else
-            return NULL;
+        return NULL;
     }
 
     // Mark the freeformOpacity in the object as modified.
@@ -1528,7 +1531,7 @@ VolumeAttributes_SetUseColorVarMin(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1583,7 +1586,7 @@ VolumeAttributes_SetColorVarMin(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != cval)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1638,7 +1641,7 @@ VolumeAttributes_SetUseColorVarMax(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1693,7 +1696,7 @@ VolumeAttributes_SetColorVarMax(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != cval)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1748,7 +1751,7 @@ VolumeAttributes_SetUseOpacityVarMin(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1803,7 +1806,7 @@ VolumeAttributes_SetOpacityVarMin(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != cval)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1858,7 +1861,7 @@ VolumeAttributes_SetUseOpacityVarMax(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1913,7 +1916,7 @@ VolumeAttributes_SetOpacityVarMax(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != cval)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1968,7 +1971,7 @@ VolumeAttributes_SetSmoothData(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2023,7 +2026,7 @@ VolumeAttributes_SetSamplesPerRay(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2280,7 +2283,7 @@ VolumeAttributes_SetSkewFactor(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2468,7 +2471,7 @@ VolumeAttributes_SetRendererSamples(PyObject *self, PyObject *args)
     double val = PyFloat_AsDouble(args);
     float cval = float(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != cval)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2595,7 +2598,7 @@ VolumeAttributes_SetLowGradientLightingClampFlag(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     bool cval = bool(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != bool(val))
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2650,7 +2653,7 @@ VolumeAttributes_SetLowGradientLightingClampValue(PyObject *self, PyObject *args
     double val = PyFloat_AsDouble(args);
     double cval = double(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if (val == -1 && PyErr_Occurred())
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2690,7 +2693,7 @@ VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
         if(PyTuple_Check(tuple))
         {
             if(PyTuple_Size(tuple) != 4)
-                return NULL;
+                return PyErr_Format(PyExc_TypeError, "Expecting 4 double args or tuple thereof.");
 
             PyErr_Clear();
             for(int i = 0; i < PyTuple_Size(tuple); ++i)
