@@ -18,6 +18,12 @@
 class QWidget;
 struct vtkDashedXorGridMapper2DPrivate;
 
+// ***************************************************************************
+//  Modifications:
+//    Alister Maguire, Thu Jun 24 10:57:30 PDT 2021
+//    Changed the name of class variable "d" to "privateInstance".
+//
+// ***************************************************************************
 class QTVISWINDOW_API vtkDashedXorGridMapper2D : public vtkPolyDataMapper2D
 {
 public:
@@ -53,7 +59,7 @@ protected:
   int pixelDrawn, pixelSpaced;
   bool horizontalBias;
 
-  vtkDashedXorGridMapper2DPrivate *d;
+  vtkDashedXorGridMapper2DPrivate *privateInstance;
 
   vtkDashedXorGridMapper2D();
   ~vtkDashedXorGridMapper2D();

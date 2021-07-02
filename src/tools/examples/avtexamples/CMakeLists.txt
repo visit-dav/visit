@@ -4,7 +4,15 @@
 
 #****************************************************************************
 # Modifications:
+#   Eric Brugger, Mon Jun 21 14:21:35 PDT 2021
+#   Added qvtkopenglExample and qtvtkExample.
 #
+#   Kathleen Biagas, Mon Jun 28, 2021
+#   Removed VTK_EXTRA_LIBS, it was never set.
+#   Resolve runtime warnings and errors on Windows:
+#      Add vtkInteractionStyle to qtvtkExample and qvtkopenglExample link.
+#      Add vtkRenderingOpenGL2 to qvtkopenglExample link.
+#  
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -44,6 +52,7 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/main
+${VISIT_SOURCE_DIR}/vtkqt
 ${VTK_INCLUDE_DIRS}
 )
 
@@ -67,7 +76,6 @@ lightweight_visit_vtk
 visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
-${VTK_EXTRA_LIBS}
 ${OPENGL_LIBRARIES}
 ${CMAKE_THREAD_LIBS}
 ${ZLIB_LIBRARY}
@@ -98,7 +106,6 @@ lightweight_visit_vtk
 visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
-${VTK_EXTRA_LIBS}
 ${OPENGL_LIBRARIES}
 ${CMAKE_THREAD_LIBS}
 ${ZLIB_LIBRARY}
@@ -126,7 +133,6 @@ lightweight_visit_vtk
 visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
-${VTK_EXTRA_LIBS}
 ${OPENGL_LIBRARIES}
 ${CMAKE_THREAD_LIBS}
 ${ZLIB_LIBRARY}
@@ -157,7 +163,6 @@ lightweight_visit_vtk
 visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
-${VTK_EXTRA_LIBS}
 ${OPENGL_LIBRARIES}
 ${CMAKE_THREAD_LIBS}
 ${ZLIB_LIBRARY}
@@ -189,8 +194,62 @@ lightweight_visit_vtk
 visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB}
-${VTK_EXTRA_LIBS}
 ${OPENGL_LIBRARIES}
 ${CMAKE_THREAD_LIBS}
+${ZLIB_LIBRARY}
+)
+
+SET(QVTKOPENGLEXAMPLE_SOURCES
+qvtkopenglExample.C
+GUIWindow.C
+)
+
+SET(QVTKOPENGLEXAMPLE_MOC_SOURCES
+GUIWindow.h
+)
+QT_WRAP_CPP(qvtkopenglExample QVTKOPENGLEXAMPLE_SOURCES ${QVTKOPENGLEXAMPLE_MOC_SOURCES})
+
+ADD_EXECUTABLE(qvtkopenglExample ${QVTKOPENGLEXAMPLE_SOURCES})
+VISIT_INSTALL_TARGETS(qvtkopenglExample)
+VISIT_EXAMPLES_ADD_FOLDER(qvtkopenglExample qvtkopenglExample)
+
+TARGET_LINK_LIBRARIES(qvtkopenglExample
+vtkqt
+${QT_QTGUI_LIBRARY}
+${QT_QTOPENGL_LIBRARY}
+${QT_QTNETWORK_LIBRARY}
+${QT_QTCORE_LIBRARY}
+vtkCommonColor
+vtkFiltersSources
+vtkInteractionStyle
+vtkRenderingOpenGL2
+${OPENGL_LIBRARIES}
+${ZLIB_LIBRARY}
+)
+
+SET(QTVTKEXAMPLE_SOURCES
+qtvtkExample.C
+GUIWindow2.C
+)
+
+SET(QTVTKEXAMPLE_MOC_SOURCES
+GUIWindow2.h
+)
+QT_WRAP_CPP(qtvtkExample QTVTKEXAMPLE_SOURCES ${QTVTKEXAMPLE_MOC_SOURCES})
+
+ADD_EXECUTABLE(qtvtkExample ${QTVTKEXAMPLE_SOURCES})
+VISIT_INSTALL_TARGETS(qtvtkExample)
+VISIT_EXAMPLES_ADD_FOLDER(qtvtkExample qtvtkExample)
+
+TARGET_LINK_LIBRARIES(qtvtkExample
+vtkqt
+${QT_QTGUI_LIBRARY}
+${QT_QTOPENGL_LIBRARY}
+${QT_QTNETWORK_LIBRARY}
+${QT_QTCORE_LIBRARY}
+vtkCommonColor
+vtkFiltersSources
+vtkInteractionStyle
+${OPENGL_LIBRARIES}
 ${ZLIB_LIBRARY}
 )
