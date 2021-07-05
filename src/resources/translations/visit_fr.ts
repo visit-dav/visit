@@ -72,7 +72,8 @@
     <message>
         <source>VisIt was unable to change the active variable because: %1
 </source>
-        <translation type="vanished">Impossible de modifier la variable active : %1</translation>
+        <translation type="vanished">Impossible de modifier la variable active : %1
+</translation>
     </message>
 </context>
 <context>
@@ -1018,7 +1019,7 @@ Le serveur de méta données a retourné le message suivant :
     <message>
         <source>The value(s) for &apos;%1&apos; were invalid. Resetting to the last good value(s) of %2.</source>
         <comment>ResettingError</comment>
-        <translation>Les valeurs de &apos;%1&apos; ne sont pas bonnes, remise des dernières bonnes valeurs de %2.</translation>
+        <translation type="alterlegacy">Les valeurs de &apos;%1&apos; ne sont pas valables, remise des dernières bonnes valeurs de %2.</translation>
     </message>
     <message>
         <source>Use selection [%1]</source>
@@ -1033,7 +1034,7 @@ Le serveur de méta données a retourné le message suivant :
         <source>VisIt has encountered the following error: %1.
 VisIt will attempt to continue processing, but it may behave unreliably.  Please save this error message and give it to a VisIt developer.  In addition, you may want to save your session and re-start.  Of course, this session may still cause VisIt to malfunction.</source>
         <translation>Visit a rencontré l&apos;erreur suivante : %1.
-Visit va tenter de continuer le process, mais il peut être défaillant. SVP sauvegarder ce message et faites le parvenir à ses développeurs. De plus il vaut mieux sauver la session et redémarrer. Bien sûr cette session risque d&apos;affecter son bon fonctionnement. </translation>
+Visit va tenter de continuer le process, mais il peut être défaillant. SVP sauvegarder ce message et faites le parvenir à ses développeurs. De plus il vaut mieux sauver la session et redémarrer. Bien sûr cette session risque d&apos;affecter son bon fonctionnement.</translation>
     </message>
     <message>
         <source> on </source>
@@ -1137,8 +1138,7 @@ Visit va tenter de continuer le process, mais il peut être défaillant. SVP sau
     <name>QvisAnnotationObjectInterface</name>
     <message>
         <source>The %1 value was invalid. Resetting to the last good value.</source>
-        <translation>Valeur incorrecte : %1
-La valeur précédente a été rétablie.</translation>
+        <translation type="alterlegacy">La valeur %1 est invalide. La valeur précédente a été rétablie.</translation>
     </message>
 </context>
 <context>
@@ -3763,13 +3763,17 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <source>Really close the compute engine on host &quot;%1&quot;?
 
 </source>
-        <translation>Vraiment fermer le moteur sur l&apos;hôte &quot;%1&quot; ?</translation>
+        <translation>Vraiment fermer le moteur sur l&apos;hôte &quot;%1&quot; ?
+
+</translation>
     </message>
     <message>
         <source>Really disconnect from the simulation &quot;%1&quot; on host &quot;%2&quot;?
 
 </source>
-        <translation>Vraiment déconnecter de la simulation &quot;%1&quot; sur l&apos;hôte&quot;%2&quot; ?</translation>
+        <translation>Vraiment déconnecter de la simulation &quot;%1&quot; sur l&apos;hôte&quot;%2&quot; ?
+
+</translation>
     </message>
     <message>
         <source>Disconnect</source>
@@ -3988,7 +3992,7 @@ to write to the file system simultaneously. Certain database plug-ins can
 coordinate their aggregation and file writing to be more efficient when 
 writing to the parallel file system at large scale.
 </source>
-<translation type="guess">L&apos;accès en écriture à grande échelle aux systèmes de fichiers parallèles est parfois réalisé
+        <translation type="guess">L&apos;accès en écriture à grande échelle aux systèmes de fichiers parallèles est parfois réalisé
 plus efficacement en utilisant des groupes de processeurs au lieu de permettre à tous les processeurs
 d&apos;écrire simultanément sur le système de fichiers. Certains plug-ins de base de données peuvent
 coordonner leur agrégation et l&apos;écriture de fichiers pour être plus efficaces lors
@@ -4610,8 +4614,6 @@ et les expressions générées automatiquement</translation>
         <source>Streamline
     Compute trajectories in an (instantaneous) snapshot of the vector field.
     Uses and loads vector data from only the current time slice.</source>
-        <translatorcomment>
-</translatorcomment>
         <translation type="vanished">Ligne de courant
     Calculer les trajectoires (immédiatement) dans un instantané du champ de vecteur.
     Utiliser et charger les données du vecteur, seulement de l&apos;actuel tranche de temps.</translation>
@@ -4620,7 +4622,7 @@ et les expressions générées automatiquement</translation>
         <source>Pathline    
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices.</source>
-        <translation type="vanished">Ligne de fluide
+        <translation type="vanished">Trajectoire
     Calculer les trajectoires dans un instantané du champ de vecteur.
     Utiliser et charger les données du vecteur, seulement de l&apos;actuel tranche de temps.</translation>
     </message>
@@ -5400,6 +5402,7 @@ et les expressions générées automatiquement</translation>
 
 Answering No will just detach the GUI and leave the viewer and its remaining clients running.</source>
         <translation>Il y a plus d&apos;un client Visit connected à la vue. Voulez vous tout quitter ?
+
 En répondant non ça détache l&apos;interface et laisse la vue et ses clients restants en fonctionnement.</translation>
     </message>
     <message>
@@ -5478,7 +5481,9 @@ En répondant non ça détache l&apos;interface et laisse la vue et ses clients 
         <source>VisIt has been updated. Would you like VisIt to save 
 its session, quit, and restart the session using the new 
 version of VisIt?</source>
-        <translation type="vanished">Visit a été mis-à-jour. Voulez vous qu&apos;il sauve sa session, quitte et repart de la session de la nouvelle version ?</translation>
+<translation type="vanished">Visit a été mis-à-jour. Voulez vous que VisIt sauve
+sa session, quitte et redémarre la session avec sa nouvelle
+version ?</translation>
     </message>
     <message>
         <source>VisIt could not automatically relaunch itself. Please exit and restart VisIt.</source>
@@ -5713,7 +5718,7 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>The value of numSamples was invalid. Resetting to the last good value of %1.</source>
-        <translation>Les valeurs de Examples num ne sont pas bonnes, remise des dernières bonnes valeurs de %1.</translation>
+        <translation type="alterlegacy">La valeur du nombre d'échantillons (numSamples) est invalide. On reprend la dernière valeur valable de %1.</translation>
     </message>
 </context>
 <context>
@@ -5840,11 +5845,11 @@ par l&apos;opérateur d&apos;alignement (&quot;LineOut&quot;)</translation>
     </message>
     <message>
         <source>VisIt UltraWrapper</source>
-        <translation type="unfinished">Visit UltraWrapper</translation>
+        <translation type="unfinished">Visit Ultra Enveloppement</translation>
     </message>
     <message>
         <source>Ultra wrapper</source>
-        <translation type="unfinished">Ultra wrapper</translation>
+        <translation type="unfinished">Ultra enveloppement</translation>
     </message>
     <message>
         <source>VisIt Manuals</source>
@@ -6407,7 +6412,7 @@ url: %1
 
 %2.</source>
 <translation type="guess">Une erreur s&apos;est produite lors de la tentative de téléchargement des hôtes.
-Veuillez contacter les développeurs VisIt.
+Veuillez contacter les développeurs de VisIt.
 
 url: %1
 
@@ -6421,7 +6426,7 @@ url: %1.
 
 http error %2: %3.</source>
 <translation type="guess">Une erreur s&apos;est produite lors de la tentative de téléchargement des hôtes.
-Veuillez contacter les développeurs VisIt.
+Veuillez contacter les développeurs de VisIt.
 
 url: %1.
 
@@ -7594,7 +7599,8 @@ http error %2: %3.</translation>
     <message>
         <source>Cannot set state index to less than zero
 </source>
-        <translation>Impossible de définir un état inférieur à 0</translation>
+        <translation>Impossible de définir un état inférieur à 0
+</translation>
     </message>
     <message>
         <source>Add view keyframe</source>
@@ -8911,8 +8917,8 @@ http error %2: %3.</translation>
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices</source>
         <translation type="guess">Trajectoire
-	Calculer des trajectoires dans le champ vectoriel variant dans le temps.
-	Utilise et charge les données vectorielles de toutes les tranches de temps pertinentes</translation>
+    Calculer des trajectoires dans le champ vectoriel variant dans le temps.
+    Utilise et charge les données vectorielles de toutes les tranches de temps pertinentes</translation>
     </message>
     <message>
         <source>Pathlines Options</source>
@@ -11178,7 +11184,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>The values for the index were invalid. Resetting to the last good value.</source>
-        <translation>Les valeurs de l&apos;indice ne sont pas bonnes, remise des dernières bonnes valeurs de.</translation>
+        <translation type="alterlegacy">Les valeurs de l&apos;indice ne sont pas licites. On reprend la dernière valeur valable.</translation>
     </message>
     <message>
         <source>Honor actual mesh</source>
@@ -11202,6 +11208,7 @@ Do you want to apply the %2 operator?
 </source>
         <translation>Aucun opérateur % 1 n&apos;a été trouvé pour les graphiques sélectionnés.
 Voulez-vous appliquer l&apos;opérateur% 2 ?
+
 </translation>
     </message>
 </context>
@@ -14319,7 +14326,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Window #</source>
-        <translation type="new">Fenêtre number </translation>
+        <translation type="new">Fenêtre numéro </translation>
     </message>
     <message>
         <source>The value of windowId was invalid. Resetting to the last good value of %1.</source>
@@ -15027,11 +15034,11 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>As shadows only work with VisIt&apos;s software rendering mode, software rendering is now being enabled.  If you turn off shadows at a later time, you must manually disable software rendering.  You do this by setting &quot;Use scalable rendering&quot; to &quot;Auto&quot;.</source>
-        <translation type="guess">Comme les ombrages ne fonctionnent qu&apos;avec le mode de rendu logiciel de VisIt, le rendu logiciel est désormais activé. Si vous désactivez les ombrages ultérieurement, vous devrez désactiver manuellement le rendu logiciel. Pour ce faire, définissez &quot;Utiliser le rendu scalable&quot; sur le mode &quot;Auto&quot;</translation>
+        <translation type="guess">Comme les ombrages ne fonctionnent qu&apos;avec le mode de rendu logiciel de VisIt, le rendu logiciel est désormais activé. Si vous désactivez les ombrages ultérieurement, vous devrez désactiver manuellement le rendu logiciel. Pour ce faire, définissez &quot;Utiliser le rendu scalable&quot; sur le mode &quot;Auto&quot;.</translation>
     </message>
     <message>
         <source>As depth cueing only work with VisIt&apos;s software rendering mode, software rendering is now being enabled.  If you turn off depth cueing at a later time, you must manually disable software rendering.  You do this by setting &quot;Use scalable rendering&quot; to &quot;Auto&quot;.</source>
-        <translation type="guess">Comme le repérage de profondeur ne fonctionne qu&apos;avec le mode de rendu logiciel de VisIt, le rendu logiciel est maintenant activé. Si vous désactivez le repérage de profondeur ultérieurement, vous devez désactiver manuellement le rendu logiciel. Pour ce faire, définissez &quot;Utiliser le rendu scalable&quot; sur &quot;Auto&quot;</translation>
+        <translation type="guess">Comme le repérage de profondeur ne fonctionne qu&apos;avec le mode de rendu logiciel de VisIt, le rendu logiciel est maintenant activé. Si vous désactivez le repérage de profondeur ultérieurement, vous devez désactiver manuellement le rendu logiciel. Pour ce faire, définissez &quot;Utiliser le rendu scalable&quot; sur &quot;Auto&quot;.</translation>
     </message>
     <message>
         <source> (Requires restart)</source>
@@ -15061,7 +15068,7 @@ peeling all geometry sorting is eliminated
 <translation type="guess">Activer la composition ordonnée. Pour la décomposition de domaine structurée par blocs,
 la composition ordonnée élimine le besoin
 d&apos;un tri de géométrie d&apos;ordre global de caméra parallèle lors
-du rendu de la géométrie translucide. Lorsqu&apos;il est combiné avec le pelage en profondeur,
+du rendu de la géométrie translucide. Lorsqu&apos;il est combiné avec l&apos;épluchage en profondeur,
 tout tri de géométrie est éliminé
 </translation>
     </message>
@@ -15131,8 +15138,8 @@ order sort is used. If you have a GPU this is usualy a win
 with OSMesa it will depend on the version and build options
 with VisIt&apos;s current Mesa 7.10 it is *very* slow.
 </source>
-<translation type="guess">Activez le peeling en profondeur pour un rendu indépendant de l&apos;ordre de
-la géométrie transparente. Lorsque vous n&apos;utilisez pas le peeling en profondeur,
+<translation type="guess">Activez l&apos;épluchage en profondeur pour un rendu indépendant de l&apos;ordre de
+la géométrie transparente. Lorsque vous n&apos;utilisez pas l&apos;épluchage en profondeur,
 un tri par ordre de caméra est utilisé. Si vous avez un GPU, c&apos;est généralement gagnant
 avec OSMesa, cela dépendra de la version et des options de construction
 avec le Mesa 7.10 actuel de VisIt, c&apos;est *très* lent.
@@ -15150,10 +15157,10 @@ accuracy for speed. When set to zero the maximum number of peels
 will be made which, when enough peels are requested, ensures a
 correct result.</source>
 <translation type="guess">Lorsque supérieur à zéro, les terminaisons anticipées sont activées et
-l&apos;algorithme arrête d&apos;effectuer des pelages lorsque moins de cette
-fraction de pixels a changé au cours du dernier pelage. Ainsi, on sacrifie
-la précision pour la vitesse. Lorsqu&apos;il est mis à zéro, le nombre maximum de peelings
-sera effectué, ce qui, lorsque suffisamment de peelings sont demandés, garantit un
+l&apos;algorithme arrête d&apos;effectuer des épluchures lorsque moins de cette
+fraction de pixels a changé au cours du dernier épluchage. Ainsi, on sacrifie
+la précision pour la vitesse. Lorsqu&apos;il est mis à zéro, le nombre maximum de pelures
+sera effectué, ce qui, lorsque suffisamment de pelures sont demandés, garantit un
 résultat correct.</translation>
     </message>
     <message>
@@ -15164,9 +15171,9 @@ résultat correct.</translation>
         <source>Sets the maximum number of peels to use. Each peel renders the
 next nearest surface for a given fragment. You may need to
 increase the number of peels for very complex scenes.</source>
-<translation type="guess">Définit le nombre maximum de peelings à utiliser. Chaque peeling fait le rendu de la
+<translation type="guess">Définit le nombre maximum de pelures à utiliser. Chaque pelure fait le rendu de la
 surface la plus proche suivante pour un fragment donné. Vous aurez peut-être besoin
-d&apos;augmenter le nombre de peelings pour les scènes très complexes.</translation>
+d&apos;augmenter le nombre de pelures pour les scènes très complexes.</translation>
     </message>
     <message>
         <source>OSPRay rendering</source>
@@ -17101,13 +17108,17 @@ coordonnées parallèles.</translation>
         <source>Really close the compute engine on host &quot;%1&quot;?
 
 </source>
-        <translation type="correct">Vraiment fermer le moteur sur l&apos;hôte &quot;%1&quot; ?</translation>
+        <translation type="correct">Vraiment fermer le moteur sur l&apos;hôte &quot;%1&quot; ?
+
+</translation>
     </message>
     <message>
         <source>Really disconnect from the simulation &quot;%1&quot; on host &quot;%2&quot;?
 
 </source>
-        <translation type="correct">Vraiment déconnecter de la simulation &quot;%1&quot; sur l&apos;hôte&quot;%2&quot; ?</translation>
+        <translation type="correct">Vraiment déconnecter de la simulation &quot;%1&quot; sur l&apos;hôte&quot;%2&quot; ?
+
+</translation>
     </message>
     <message>
         <source>Simulation</source>
@@ -17165,13 +17176,17 @@ coordonnées parallèles.</translation>
         <source>Really %1 the simulation on host &quot;%2&quot;?
 
 </source>
-        <translation type="guess">Vraiment %1 la simulation sur l&apos;hôte &quot;%2&quot; ?</translation>
+        <translation type="guess">Vraiment %1 la simulation sur l&apos;hôte &quot;%2&quot; ?
+
+</translation>
     </message>
     <message>
         <source>Really %1 the simulation &quot;%2&quot; on host &quot;%3&quot;?
 
 </source>
-        <translation type="guess">Vraiment %1 la simulation &quot;%2&quot; sur l&apos;hôte &quot;%3&quot; ?</translation>
+        <translation type="guess">Vraiment %1 la simulation &quot;%2&quot; sur l&apos;hôte &quot;%3&quot; ?
+
+</translation>
     </message>
 </context>
 <context>
@@ -20188,7 +20203,8 @@ pas des cycles ou des temps</translation>
     <message>
         <source>* Note that the vertical ordering of this file&apos;s contents is opposite from what you would see in the Spreadsheet window.
 </source>
-        <translation type="guess">* Notez que l&apos;ordre vertical du contenu de ce fichier est le contraire de ce que vous verriez dans la fenêtre du tableur.</translation>
+        <translation type="guess">* Notez que l&apos;ordre vertical du contenu de ce fichier est le contraire de ce que vous verriez dans la fenêtre du tableur.
+</translation>
     </message>
 </context>
 <context>
