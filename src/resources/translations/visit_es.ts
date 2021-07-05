@@ -12318,7 +12318,7 @@ la opción &quot;Aplicar a todas las ventanas&quot;.</translation>
     <message>
         <location filename="../../operators/OnionPeel/QvisOnionPeelWindow.C" line="171"/>
         <source>Seed # or i j [k]</source>
-        <translation type="unfinished">Seed # or i j [k]</translation>
+        <translation type="unfinished">Número de semilla or i j [k]</translation>
     </message>
     <message>
         <location filename="../../operators/OnionPeel/QvisOnionPeelWindow.C" line="182"/>
@@ -15945,7 +15945,7 @@ en segundo plano mediante la composición de subprocesos.</translation>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="237"/>
         <source>Depth Peeling</source>
-        <translation type="unfinished">Peeling de profundidad</translation>
+        <translation type="unfinished">Peladura de profundidad</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="240"/>
@@ -15957,7 +15957,7 @@ with VisIt&apos;s current Mesa 7.10 it is *very* slow.
 </source>
         <translation type="unfinished">Habilite el pelado en profundidad para obtener una
 representación de geometría transparente independiente del orden. Cuando no se utiliza
-el peeling en profundidad, se utiliza una clasificación por orden de cámara. Si tiene una GPU,
+el peladura en profundidad, se utiliza una clasificación por orden de cámara. Si tiene una GPU,
 esto suele ser una victoria con OSMesa, dependerá de la versión y las opciones de compilación
 con la actual Mesa 7.10 de VisIt, es *muy* lento.
 </translation>
@@ -15979,7 +15979,7 @@ correct result.</source>
 el algoritmo dejará de pelar cuando menos de esta fracción de
 píxeles cambió en el último pelado. Por tanto, se sacrifica
 la precisión por la velocidad. Cuando se pone a cero se realizará
-el número máximo de peelings que, cuando se soliciten suficientes peelings,
+el número máximo de peladuras que, cuando se soliciten suficientes peladuras,
 asegura un resultado correcto.</translation>
     </message>
     <message>
@@ -15994,7 +15994,7 @@ next nearest surface for a given fragment. You may need to
 increase the number of peels for very complex scenes.</source>
         <translation type="unfinished">Establece el número máximo de cáscaras a utilizar. Cada cáscara produce
 la siguiente superficie más cercana para un fragmento dado. Es posible que deba
-aumentar el número de peelings para escenas muy complejas.
+aumentar el número de peladuras para escenas muy complejas.
 </translation>
     </message>
     <message>
