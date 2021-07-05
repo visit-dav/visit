@@ -4096,6 +4096,7 @@ El intervalo de tiempo que quiero cambiará a medida que cambie el control desli
 
 </source>
         <translation type="unfinished">Realmente cierre el motor de cálculo en el host &quot;%1&quot;?
+
 </translation>
     </message>
     <message>
@@ -4332,7 +4333,7 @@ to write to the file system simultaneously. Certain database plug-ins can
 coordinate their aggregation and file writing to be more efficient when 
 writing to the parallel file system at large scale.
 </source>
-<translation type="unfinished">El acceso de escritura a gran escala a sistemas de archivos paralelos
+        <translation type="unfinished">El acceso de escritura a gran escala a sistemas de archivos paralelos
 a veces se logra de manera más eficiente utilizando grupos de procesadores en lugar de permitir
 que todos los procesadores escriban en el sistema de archivos simultáneamente. Ciertos complementos de bases de
 datos pueden coordinar su agregación y escritura de archivos para que sean más eficientes
@@ -4471,7 +4472,7 @@ al escribir en el sistema de archivos paralelo a gran escala.
         <location filename="../../gui/QvisExpressionsWindow.C" line="584"/>
         <source>Display expressions from database
 and auto-generated expressions</source>
-<translation type="unfinished">Mostrar expresiones de la base de datos
+        <translation type="unfinished">Mostrar expresiones de la base de datos
 y expresiones generadas automáticamente</translation>
     </message>
     <message>
@@ -5731,7 +5732,7 @@ Answering No will just detach the GUI and leave the viewer and its remaining cli
         <source>Use 1st unused window or create
 new one. All  subsequent lineouts
 will use this same window.</source>
-<translation type="unfinished">Utilice la primera ventana no utilizada o cree
+        <translation type="unfinished">Utilice la primera ventana no utilizada o cree
 una nueva. Todos los lineouts posteriores
 usarán esta misma ventana.</translation>
     </message>
@@ -6005,7 +6006,8 @@ puede anular estos elementos.</translation>
         <location filename="../../gui/QvisHistogram.C" line="283"/>
         <source>%1% of values are %2
 %3% of values are %4</source>
-        <translation type="unfinished"> %1% de los valores son %2 %3% de los valores son %4</translation>
+        <translation type="unfinished">%1% de los valores son %2
+%3% de los valores son %4</translation>
     </message>
 </context>
 <context>
@@ -6351,7 +6353,12 @@ Please contact VisIt developers.
 url: %1
 
 %2.</source>
-        <translation type="unfinished">Hubo un error al intentar descargar los hosts.  %2.</translation>
+        <translation type="unfinished">Hubo un error al intentar descargar los hosts.
+Póngase en contacto con los desarrolladores de VisIt.
+
+url: %1.
+
+%2.</translation>
     </message>
     <message>
         <location filename="../../gui/QvisHostProfileWindow.C" line="630"/>
@@ -6361,7 +6368,12 @@ Please contact VisIt developers.
 url: %1.
 
 http error %2: %3.</source>
-        <translation type="unfinished">Hubo un error al intentar descargar los hosts. Error http %2: %3.</translation>
+        <translation type="unfinished">Hubo un error al intentar descargar los hosts.
+Póngase en contacto con los desarrolladores de VisIt.
+
+url: %1.
+
+Error http %2: %3.</translation>
     </message>
     <message>
         <location filename="../../gui/QvisHostProfileWindow.C" line="737"/>
@@ -7410,26 +7422,30 @@ http error %2: %3.</source>
     <message>
         <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="854"/>
         <source>Streamlines vs Pathlines</source>
-        <translation type="unfinished">Streamlines vs Pathlines</translation>
+        <translation type="unfinished">Líneas de corriente vs Trayectorias</translation>
     </message>
     <message>
         <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="862"/>
         <source>Streamline
     Compute trajectories in an (instantaneous) snapshot of the vector field.
     Uses and loads vector data from only the current time slice.</source>
-        <translation type="unfinished">Optimización Utiliza y carga datos vectoriales únicamente del intervalo de tiempo actual.</translation>
+        <translation type="unfinished">Líneas de corriente
+    Calcule trayectorias en una instantánea (instantánea) del campo vectorial.
+    Utiliza y carga datos vectoriales solo del intervalo de tiempo actual.</translation>
     </message>
     <message>
         <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="863"/>
         <source>Pathline    
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices</source>
-        <translation type="unfinished">Pathline Utiliza y carga datos vectoriales de todos los intervalos de tiempo relevantes</translation>
+        <translation type="unfinished">Trayectorias
+    Calcule trayectorias en el campo vectorial variable en el tiempo.
+    Utiliza y carga datos vectoriales de todos los intervalos de tiempo relevantess</translation>
     </message>
     <message>
         <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="873"/>
         <source>Pathline Options</source>
-        <translation type="unfinished">Opciones de línea de ruta</translation>
+        <translation type="unfinished">Opciones de trayectorias</translation>
     </message>
     <message>
         <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="880"/>
@@ -8386,26 +8402,30 @@ http error %2: %3.</source>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="611"/>
         <source>Streamlines vs Pathlines</source>
-        <translation type="unfinished">Streamlines vs Pathlines</translation>
+        <translation type="unfinished">Líneas de corriente vs Trayectorias</translation>
     </message>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="619"/>
         <source>Streamline
     Compute trajectories in an (instantaneous) snapshot of the vector field.
     Uses and loads vector data from only the current time slice.</source>
-        <translation type="unfinished">Optimización Utiliza y carga datos vectoriales únicamente del intervalo de tiempo actual.</translation>
+        <translation type="unfinished">Líneas de corriente
+    Calcule trayectorias en una instantánea (instantánea) del campo vectorial.
+    Utiliza y carga datos vectoriales solo del intervalo de tiempo actual.</translation>
     </message>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="620"/>
         <source>Pathline    
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices.</source>
-        <translation type="unfinished">Pathline Utiliza y carga datos vectoriales de todos los intervalos de tiempo relevantes.</translation>
+        <translation type="unfinished">Trayectorias
+    Calcule trayectorias en el campo vectorial variable en el tiempo.
+    Utiliza y carga datos vectoriales de todos los intervalos de tiempo relevantess</translation>
     </message>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="630"/>
         <source>Pathline Options</source>
-        <translation type="unfinished">Opciones de línea de ruta</translation>
+        <translation type="unfinished">Opciones de trayectorias</translation>
     </message>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="637"/>
@@ -8592,7 +8612,7 @@ http error %2: %3.</source>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="1734"/>
         <source>Pathlines Period</source>
-        <translation type="unfinished">Periodo de Pathlines</translation>
+        <translation type="unfinished">Periodo de Trayectorias</translation>
     </message>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="1749"/>
@@ -9541,26 +9561,30 @@ http error %2: %3.</source>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="596"/>
         <source>Streamlines vs Pathlines</source>
-        <translation type="unfinished">Streamlines vs Pathlines</translation>
+        <translation type="unfinished">Líneas de corriente vs Trayectorias</translation>
     </message>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="604"/>
         <source>Streamline
     Compute trajectories in an (instantaneous) snapshot of the vector field.
     Uses and loads vector data from only the current time slice.</source>
-        <translation type="unfinished">Optimización Utiliza y carga datos vectoriales únicamente del intervalo de tiempo actual.</translation>
+    <translation type="unfinished">Líneas de corriente
+    Calcule trayectorias en una instantánea (instantánea) del campo vectorial.
+    Utiliza y carga datos vectoriales solo del intervalo de tiempo actual.</translation>
     </message>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="605"/>
         <source>Pathline    
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices</source>
-        <translation type="unfinished">Pathline Utiliza y carga datos vectoriales de todos los intervalos de tiempo relevantes</translation>
+        <translation type="unfinished">Trayectorias
+    Calcule trayectorias en el campo vectorial variable en el tiempo.
+    Utiliza y carga datos vectoriales de todos los intervalos de tiempo relevantess</translation>
     </message>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="615"/>
         <source>Pathlines Options</source>
-        <translation type="unfinished">Opciones de Pathlines</translation>
+        <translation type="unfinished">Opciones de Trayectorias</translation>
     </message>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="622"/>
@@ -9727,7 +9751,7 @@ http error %2: %3.</source>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="1713"/>
         <source>Pathlines Period</source>
-        <translation type="unfinished">Periodo de Pathlines</translation>
+        <translation type="unfinished">Periodo de Trayectorias</translation>
     </message>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="1728"/>
@@ -10081,7 +10105,12 @@ to A for the first, and B for the second. These
 settings will allow the attributes to be
 propagated to plots in other windows when
 using the &quot;Apply to all windows&quot; option.</source>
-        <translation type="unfinished">Establezca la instancia al aplicar a múltiples usando la opción &quot;Aplicar a todas las ventanas&quot;.</translation>
+<translation type="unfinished">Establezca la instancia al aplicar a múltiples
+parcelas en una sola ventana. Es decir. si desea comparar
+diferentes muestreos, establezca la instancia en A para el primero y B para el segundo.
+Esta configuración permitirá que los atributos se propaguen
+a los gráficos en otras ventanas cuando se utiliza
+la opción &quot;Aplicar a todas las ventanas&quot;.</translation>
     </message>
     <message>
         <location filename="../../operators/LineSampler/QvisLineSamplerWindow.C" line="198"/>
@@ -12325,7 +12354,10 @@ using the &quot;Apply to all windows&quot; option.</source>
 Do you want to apply the %2 operator?
 
 </source>
-        <translation type="unfinished">No se encontró ningún operador %1 para las tramas seleccionadas.</translation>
+        <translation type="unfinished">No se encontró ningún operador% 1 para las parcelas seleccionadas.
+¿Quiere aplicar el operador% 2?
+
+</translation>
     </message>
     <message>
         <location filename="../../gui/QvisOperatorWindow.C" line="228"/>
@@ -14021,14 +14053,14 @@ Do you want to apply the %2 operator?
     <message>
         <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="839"/>
         <source>Streamlines vs Pathlines</source>
-        <translation type="unfinished">Líneas de corriente vs trayectorias</translation>
+        <translation type="unfinished">Líneas de corriente vs Trayectorias</translation>
     </message>
     <message>
         <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="847"/>
         <source>Streamline
     Compute trajectories in an (instantaneous) snapshot of the vector field.
     Uses and loads vector data from only the current time slice.</source>
-    <translation type="unfinished">Líneas de corriente
+        <translation type="unfinished">Líneas de corriente
     Calcule trayectorias en una instantánea (instantánea) del campo vectorial.
     Utiliza y carga datos vectoriales solo del intervalo de tiempo actual.</translation>
     </message>
@@ -14044,7 +14076,7 @@ Do you want to apply the %2 operator?
     <message>
         <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="858"/>
         <source>Pathline Options</source>
-        <translation type="unfinished">Opciones de trayectorias</translation>
+        <translation type="unfinished">Opciones de Trayectorias</translation>
     </message>
     <message>
         <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="865"/>
@@ -14231,7 +14263,7 @@ Do you want to apply the %2 operator?
     <message>
         <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="1854"/>
         <source>Pathlines Period</source>
-        <translation type="unfinished">Periodo de Pathlines</translation>
+        <translation type="unfinished">Periodo de Trayectorias</translation>
     </message>
     <message>
         <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="2213"/>
@@ -15134,7 +15166,9 @@ Do you want to apply the %2 operator?
         <source>Use 1st unused window or create new
 one. All subsequent queries will use this
 same window.</source>
-        <translation type="unfinished">Utilice la primera ventana no utilizada o cree una nueva ventana misma.</translation>
+        <translation type="unfinished">Utilice la primera ventana no utilizada o cree
+una nueva. Todas las consultas posteriores utilizarán
+esta misma ventana.</translation>
     </message>
     <message>
         <location filename="../../gui/QvisQueryOverTimeWindow.C" line="151"/>
@@ -15817,7 +15851,8 @@ same window.</source>
         <location filename="../../gui/QvisRenderingWindow.C" line="155"/>
         <source>When changing antialiasing, a VisIt restart is required
 before the changes can take effect.</source>
-        <translation type="unfinished">Al cambiar el antialiasing, es necesario reiniciar VisIt antes de que los cambios surtan efecto.</translation>
+        <translation type="unfinished">Al cambiar el antialiasing, es necesario reiniciar VisIt
+antes de que los cambios surtan efecto.</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="162"/>
@@ -15837,7 +15872,12 @@ for a global parallel camera order geometry sort when
 rendering translucent geometry. When combined with depth
 peeling all geometry sorting is eliminated
 </source>
-        <translation type="unfinished">Enable ordered compositing. For block stuctured domain                                     </translation>
+        <translation type="unfinished">Habilite la composición ordenada. Para la descomposición de dominios estructurados
+en bloques, la composición ordenada elimina la necesidad
+de una ordenación geométrica de orden de cámara paralela global
+al renderizar geometría translúcida. Cuando se combina con el pelado en profundidad,
+se elimina toda la clasificación de geometría.
+</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="180"/>
@@ -15849,7 +15889,9 @@ peeling all geometry sorting is eliminated
         <source>Sets the number of threads that process communication streams
 during depth compositing.
 </source>
-        <translation type="unfinished">Establece el número de subprocesos que procesan los flujos de comunicación.</translation>
+        <translation type="unfinished">Establece el número de subprocesos que procesan los flujos de comunicación
+durante la composición en profundidad.
+</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="193"/>
@@ -15863,7 +15905,11 @@ during depth compositing. Images are split into blocks
 of this size and streamed out. Incomning streams are
 processed in the background using compositing threads
 </source>
-        <translation type="unfinished">Establece el tamaño de bloque utilizado para la comunicación de transmisión.</translation>
+        <translation type="unfinished">Establece el tamaño de bloque que se utiliza para la transmisión de comunicación
+durante la composición en profundidad. Las imágenes se dividen en bloques
+de este tamaño y se transmiten. Los flujos entrantes se procesan
+en segundo plano mediante la composición de subprocesos.
+</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="208"/>
@@ -15875,7 +15921,9 @@ processed in the background using compositing threads
         <source>Sets the number of threads that process communication streams
 during alpha compositing.
 </source>
-        <translation type="unfinished">Establece el número de subprocesos que procesan los flujos de comunicación.</translation>
+        <translation type="unfinished">Establece el número de subprocesos que procesan los flujos de comunicación
+durante la composición alfa.
+</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="221"/>
@@ -15889,7 +15937,10 @@ during alpha compositing. Images are split into blocks
 of this size and streamed out. Incomning streams are
 processed in the background using compositing threads
 </source>
-        <translation type="unfinished">Establece el tamaño de bloque utilizado para la comunicación de transmisión.</translation>
+        <translation type="unfinished">Establece el tamaño de bloque que se usa para la transmisión de comunicación
+durante la composición alfa. Las imágenes se dividen en bloques
+de este tamaño y se transmiten. Los flujos entrantes se procesan
+en segundo plano mediante la composición de subprocesos.</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="237"/>
@@ -15904,7 +15955,12 @@ order sort is used. If you have a GPU this is usualy a win
 with OSMesa it will depend on the version and build options
 with VisIt&apos;s current Mesa 7.10 it is *very* slow.
 </source>
-        <translation type="unfinished">Habilite el pelado en profundidad para obtener una representación independiente del pedido de</translation>
+        <translation type="unfinished">Habilite el pelado en profundidad para obtener una
+representación de geometría transparente independiente del orden. Cuando no se utiliza
+el peeling en profundidad, se utiliza una clasificación por orden de cámara. Si tiene una GPU,
+esto suele ser una victoria con OSMesa, dependerá de la versión y las opciones de compilación
+con la actual Mesa 7.10 de VisIt, es *muy* lento.
+</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="250"/>
@@ -15919,7 +15975,12 @@ fraction of pixels changed in the last peel. Thus one sacrifices
 accuracy for speed. When set to zero the maximum number of peels
 will be made which, when enough peels are requested, ensures a
 correct result.</source>
-        <translation type="unfinished">Cuando se habilita una terminación anticipada mayor que cero y el resultado es correcto.</translation>
+        <translation type="unfinished">Cuando se habilitan más de cero terminaciones anticipadas y
+el algoritmo dejará de pelar cuando menos de esta fracción de
+píxeles cambió en el último pelado. Por tanto, se sacrifica
+la precisión por la velocidad. Cuando se pone a cero se realizará
+el número máximo de peelings que, cuando se soliciten suficientes peelings,
+asegura un resultado correcto.</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="269"/>
@@ -15931,7 +15992,10 @@ correct result.</source>
         <source>Sets the maximum number of peels to use. Each peel renders the
 next nearest surface for a given fragment. You may need to
 increase the number of peels for very complex scenes.</source>
-        <translation type="unfinished">Establece el número máximo de cáscaras a utilizar. Cada peeling genera un aumento en el número de peelings para escenas muy complejas.</translation>
+        <translation type="unfinished">Establece el número máximo de cáscaras a utilizar. Cada cáscara produce
+la siguiente superficie más cercana para un fragmento dado. Es posible que deba
+aumentar el número de peelings para escenas muy complejas.
+</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="296"/>
@@ -16249,7 +16313,8 @@ increase the number of peels for very complex scenes.</source>
         <location filename="../../operators/Replicate/QvisReplicateWindow.C" line="149"/>
         <source>For molecular data, periodically replicate
 atoms at unit cell boundaries.</source>
-        <translation type="unfinished">Para datos moleculares, repita periódicamente los átomos en los límites de las celdas unitarias.</translation>
+        <translation type="unfinished">Para datos moleculares, repita periódicamente
+los átomos en los límites de las celdas unitarias.</translation>
     </message>
     <message>
         <location filename="../../operators/Replicate/QvisReplicateWindow.C" line="154"/>
@@ -18689,28 +18754,36 @@ coordenadas paralelas.</translation>
         <source>Really close the compute engine on host &quot;%1&quot;?
 
 </source>
-        <translation type="unfinished">¿Cerrar realmente el motor de cálculo en el host &quot;%1&quot;?</translation>
+        <translation type="unfinished">¿Cerrar realmente el motor de cálculo en el host &quot;%1&quot;?
+
+</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSimulationWindow.C" line="2346"/>
         <source>Really disconnect from the simulation &quot;%1&quot; on host &quot;%2&quot;?
 
 </source>
-        <translation type="unfinished">¿Realmente se desconecta de la simulación &quot;%1&quot; en el host &quot;%2&quot;?</translation>
+        <translation type="unfinished">¿Realmente se desconecta de la simulación &quot;%1&quot; en el host &quot;%2&quot;?
+
+</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSimulationWindow.C" line="2467"/>
         <source>Really %1 the simulation on host &quot;%2&quot;?
 
 </source>
-        <translation type="unfinished">¿Realmente %1 la simulación en el host &quot;%2&quot;?</translation>
+        <translation type="unfinished">¿Realmente %1 la simulación en el host &quot;%2&quot;?
+
+</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSimulationWindow.C" line="2473"/>
         <source>Really %1 the simulation &quot;%2&quot; on host &quot;%3&quot;?
 
 </source>
-        <translation type="unfinished">¿Realmente %1 la simulación &quot;%2&quot; en el host &quot;%3&quot;?</translation>
+        <translation type="unfinished">¿Realmente %1 la simulación &quot;%2&quot; en el host &quot;%3&quot;?
+
+</translation>
     </message>
 </context>
 <context>
@@ -20185,7 +20258,8 @@ coordenadas paralelas.</translation>
         <location filename="../../gui/QvisTimeQueryOptionsWidget.C" line="116"/>
         <source>Start and end are time steps,
 not cycles or times.</source>
-        <translation type="unfinished">El inicio y el final son pasos de tiempo, no pasos ni tiempos.</translation>
+        <translation type="unfinished">El inicio y el final son pasos de tiempo,
+no pasos ni tiempos.</translation>
     </message>
     <message>
         <location filename="../../gui/QvisTimeQueryOptionsWidget.C" line="129"/>
@@ -22501,7 +22575,8 @@ not cycles or times.</source>
         <location filename="../../plots/Spreadsheet/SpreadsheetViewer.C" line="2677"/>
         <source>* Note that the vertical ordering of this file&apos;s contents is opposite from what you would see in the Spreadsheet window.
 </source>
-        <translation type="unfinished">* Tenga en cuenta que el orden vertical del contenido de este archivo es opuesto al que vería en la ventana Hoja de cálculo.</translation>
+        <translation type="unfinished">* Tenga en cuenta que el orden vertical del contenido de este archivo es opuesto al que vería en la ventana Hoja de cálculo.
+</translation>
     </message>
     <message>
         <location filename="../../plots/Spreadsheet/SpreadsheetViewer.C" line="2685"/>
