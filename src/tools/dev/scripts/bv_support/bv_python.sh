@@ -705,6 +705,32 @@ function apply_python_patch
     return 0
 }
 
+function apply_python_pillow_patch
+{
+    info "Patching Python: fix setup.py in Pillow."
+    patch -f -p1 << \EOF
+    diff --git a/setup.py b/setup.py
+    index 3e1a812..3520895 100755
+    --- a/setup.py
+    +++ b/setup.py
+    @@ -896,7 +896,7 @@ try:
+             packages=["PIL"],
+             package_dir={"": "src"},
+             keywords=["Imaging"],
+    -        zip_safe=not (debug_build() or PLATFORM_MINGW),
+    +        zip_safe=False,
+         )
+     except RequiredDependencyException as err:
+         msg = """
+EOF
+     if [[ $? != 0 ]] ; then
+         warn "Python patch for setup.py in Pillow failed."
+         return 1
+     fi
+
+     return 0
+ }
+
 
 # *************************************************************************** #
 #                         Function 7, build_python                            #
@@ -861,6 +887,22 @@ function build_pillow
     fi
 
     pushd $PILLOW_BUILD_DIR > /dev/null
+
+    #
+    # Apply patches
+    #
+    apply_python_pillow_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_python == 1 ]] ; then
+            warn "Giving up on pillow install."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
 
     info "Building Pillow ...\n" \
     set -x
