@@ -228,6 +228,8 @@ ELSE()
     SET(PYTHON_FOUND FALSE)
 ENDIF()
 
+message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
+
 # PYTHON_ADD_MODULE(<name> src1 src2 ... srcN) is used to build modules for python.
 # PYTHON_WRITE_MODULES_HEADER(<filename>) writes a header file you can include
 # in your sources to initialize the static python modules
@@ -363,125 +365,120 @@ IF(VISIT_PYTHON_SKIP_INSTALL)
 ENDIF(VISIT_PYTHON_SKIP_INSTALL)
 
 IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
-    IF(Python_FRAMEWORKS)
-        MESSAGE("We need to install the Python framework.")
-    ELSE(Python_FRAMEWORKS)
-        MESSAGE(STATUS "We're gonna install Python")
+    MESSAGE(STATUS "We will install Python along with VisIt")
+    # Install libpython
+    # split the list so that dll's are found correctly on Windows
+    foreach(pylib ${PYTHON_LIBRARIES})
+        THIRD_PARTY_INSTALL_LIBRARY(${pylib})
+    endforeach()
 
-        # Install libpython
-        # split the list so that dll's are found correctly on Windows
-        foreach(pylib ${PYTHON_LIBRARIES})
-            THIRD_PARTY_INSTALL_LIBRARY(${pylib})
-        endforeach()
+    # Only install Python support files if we are not using the system Python
+    IF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
+        # Install the python executable
+        STRING(SUBSTRING ${PYTHON_VERSION} 0 1 PYX)
+        STRING(SUBSTRING ${PYTHON_VERSION} 0 3 PYX_X)
+        THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python ${PYTHON_DIR}/bin/python${PYX} ${PYTHON_DIR}/bin/python${PYX_X})
 
-        # Only install Python support files if we are not using the system Python
-        IF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
-            # Install the python executable
-            STRING(SUBSTRING ${PYTHON_VERSION} 0 1 PYX)
-            STRING(SUBSTRING ${PYTHON_VERSION} 0 3 PYX_X)
-            THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python ${PYTHON_DIR}/bin/python${PYX} ${PYTHON_DIR}/bin/python${PYX_X})
+        # Install the python modules
+        # Exclude lib-tk files for now because the permissions are bad on davinci. BJW 12/17/2009
+        # Exclude visit module files.
+        IF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
+            INSTALL(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
+                FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                 GROUP_READ GROUP_WRITE
+                                 WORLD_READ
+                DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                      WORLD_READ WORLD_EXECUTE
+                PATTERN "lib-tk" EXCLUDE
+                PATTERN "visit.*" EXCLUDE
+                PATTERN "visitmodule.*" EXCLUDE
+                PATTERN "visit_writer.*" EXCLUDE
+                PATTERN "PySide" EXCLUDE
+                PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE
+            )
+        ENDIF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
 
-            # Install the python modules
-            # Exclude lib-tk files for now because the permissions are bad on davinci. BJW 12/17/2009
-            # Exclude visit module files.
-            IF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
-                INSTALL(DIRECTORY ${PYTHON_DIR}/lib/python${PYTHON_VERSION}
-                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/lib
-                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                                     GROUP_READ GROUP_WRITE
-                                     WORLD_READ
-                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                          WORLD_READ WORLD_EXECUTE
-                    PATTERN "lib-tk" EXCLUDE
-                    PATTERN "visit.*" EXCLUDE
-                    PATTERN "visitmodule.*" EXCLUDE
-                    PATTERN "visit_writer.*" EXCLUDE
-                    PATTERN "PySide" EXCLUDE
-                    PATTERN "Python-2.6-py2.6.egg-info" EXCLUDE
-                )
-            ENDIF(EXISTS ${PYTHON_DIR}/lib/python${PYTHON_VERSION})
-
-            # Install the Python headers
-            IF (NOT WIN32)
-                IF(VISIT_HEADERS_SKIP_INSTALL)
-                    MESSAGE(STATUS "Skipping python headers installation")
-                ELSE(VISIT_HEADERS_SKIP_INSTALL)
-                    INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
-                        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python/include
-                        FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                                         GROUP_READ GROUP_WRITE
-                                         WORLD_READ
-                        DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                              GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                              WORLD_READ             WORLD_EXECUTE
-                        PATTERN ".svn" EXCLUDE
-                        )
-                ENDIF(VISIT_HEADERS_SKIP_INSTALL)
-                #
-                # CDH:
-                # We also need to install the headers into lib/python dir
-                # if we want to be able to install python modules into a visit
-                # install.
-                #
+        # Install the Python headers
+        IF (NOT WIN32)
+            IF(VISIT_HEADERS_SKIP_INSTALL)
+                MESSAGE(STATUS "Skipping python headers installation")
+            ELSE(VISIT_HEADERS_SKIP_INSTALL)
                 INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
-                  DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/include
-                  FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                                   GROUP_READ GROUP_WRITE
-                                   WORLD_READ
-                  DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                        GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                        WORLD_READ             WORLD_EXECUTE
-                  PATTERN ".svn" EXCLUDE
-                )
-            ELSE (NOT WIN32)
-                # CDH
-                # The WIN32 & NOT WIN32 cases seem almost the same here?
-                # The only diff I can see is the "*.h" glob is used?
-                #
-                IF(VISIT_HEADERS_SKIP_INSTALL)
-                    MESSAGE(STATUS "Skipping python headers installation")
-                ELSE(VISIT_HEADERS_SKIP_INSTALL)
-                INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}/
-                    DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python
+                    DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python/include
                     FILE_PERMISSIONS OWNER_READ OWNER_WRITE
                                      GROUP_READ GROUP_WRITE
                                      WORLD_READ
                     DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                                           GROUP_READ GROUP_WRITE GROUP_EXECUTE
                                           WORLD_READ             WORLD_EXECUTE
-                    FILES_MATCHING PATTERN "*.h"
                     PATTERN ".svn" EXCLUDE
-                )
-                ENDIF(VISIT_HEADERS_SKIP_INSTALL)
-                #
-                # CDH:
-                # We also need to install the headers into lib/python dir
-                # if we want to be able to install python modules into a visit
-                # install.
-                #
-                INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}/
-                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/include
-                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                                     GROUP_READ GROUP_WRITE
-                                     WORLD_READ
-                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                          WORLD_READ             WORLD_EXECUTE
-                    FILES_MATCHING PATTERN "*.h"
-                    PATTERN ".svn" EXCLUDE
-                )
-                INSTALL(DIRECTORY ${VISIT_PYTHON_DIR}/lib
-                    DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python
-                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE
-                                     GROUP_READ GROUP_WRITE
-                                     WORLD_READ
-                    DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                                          GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                                          WORLD_READ             WORLD_EXECUTE
-                    PATTERN ".svn"   EXCLUDE
-                )
-            ENDIF (NOT WIN32)
-        ENDIF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
-    ENDIF(Python_FRAMEWORKS)
+                    )
+            ENDIF(VISIT_HEADERS_SKIP_INSTALL)
+            #
+            # CDH:
+            # We also need to install the headers into lib/python dir
+            # if we want to be able to install python modules into a visit
+            # install.
+            #
+            INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}
+              DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/include
+              FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                               GROUP_READ GROUP_WRITE
+                               WORLD_READ
+              DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                    GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                    WORLD_READ             WORLD_EXECUTE
+              PATTERN ".svn" EXCLUDE
+            )
+        ELSE (NOT WIN32)
+            # CDH
+            # The WIN32 & NOT WIN32 cases seem almost the same here?
+            # The only diff I can see is the "*.h" glob is used?
+            #
+            IF(VISIT_HEADERS_SKIP_INSTALL)
+                MESSAGE(STATUS "Skipping python headers installation")
+            ELSE(VISIT_HEADERS_SKIP_INSTALL)
+            INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}/
+                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python
+                FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                 GROUP_READ GROUP_WRITE
+                                 WORLD_READ
+                DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                      WORLD_READ             WORLD_EXECUTE
+                FILES_MATCHING PATTERN "*.h"
+                PATTERN ".svn" EXCLUDE
+            )
+            ENDIF(VISIT_HEADERS_SKIP_INSTALL)
+            #
+            # CDH:
+            # We also need to install the headers into lib/python dir
+            # if we want to be able to install python modules into a visit
+            # install.
+            #
+            INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}/
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/include
+                FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                 GROUP_READ GROUP_WRITE
+                                 WORLD_READ
+                DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                      WORLD_READ             WORLD_EXECUTE
+                FILES_MATCHING PATTERN "*.h"
+                PATTERN ".svn" EXCLUDE
+            )
+            INSTALL(DIRECTORY ${VISIT_PYTHON_DIR}/lib
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python
+                FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                 GROUP_READ GROUP_WRITE
+                                 WORLD_READ
+                DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                      GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                      WORLD_READ             WORLD_EXECUTE
+                PATTERN ".svn"   EXCLUDE
+            )
+        ENDIF (NOT WIN32)
+    ENDIF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
 ENDIF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
