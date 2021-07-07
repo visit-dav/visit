@@ -1710,15 +1710,15 @@ avtCGNSFileReader::GetQuadGhostZones(int base, int zone,
 
         if (first[i] < 0 || first[i] >= cdims[i])
         {
-            debug1 << "bad Index on first[" << i << "] dims is: "
-                   << zsize[i] << endl;
+            debug1 << "bad rind value: rind[" << i*2 << "]=" << rind[i*2]
+                   << endl;
             badIndex = true;
         }
 
         if (last[i] < 0 || last[i] >= cdims[i])
         {
-            debug1 << "bad Index on last[" << i << "] dims is: "
-                   << zsize[i] << endl;
+            debug1 << "bad rind value: rind[" << i*2+1 << "]=" << rind[i*2+1]
+                   << endl;
             badIndex = true;
         }
 
