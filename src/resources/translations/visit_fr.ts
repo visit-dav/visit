@@ -13,6 +13,17 @@
     </message>
 </context>
 <context>
+    <name>AddOperatorActionUI</name>
+    <message>
+        <source>Add operator</source>
+        <translation type="unfinished">Ajouter un filtre</translation>
+    </message>
+    <message>
+        <source>Add %1 operator</source>
+        <translation type="unfinished">Ajouter le filtre &quot;%1&quot;</translation>
+    </message>
+</context>
+<context>
     <name>AddPlotAction</name>
     <message>
         <source>Add plot</source>
@@ -21,6 +32,17 @@
     <message>
         <source>Add %1 plot</source>
         <translation type="vanished">Ajouter un tracé &quot;%1&quot;</translation>
+    </message>
+</context>
+<context>
+    <name>AddPlotActionUI</name>
+    <message>
+        <source>Add plot</source>
+        <translation type="unfinished">Ajouter un tracé</translation>
+    </message>
+    <message>
+        <source>Add %1 plot</source>
+        <translation type="unfinished">Ajouter un tracé &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -35,6 +57,17 @@
     </message>
 </context>
 <context>
+    <name>AddWindowActionUI</name>
+    <message>
+        <source>Create a new viewer window</source>
+        <translation type="unfinished">Créer une nouvelle fenêtre</translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Nouvelle</translation>
+    </message>
+</context>
+<context>
     <name>AnimationPlayAction</name>
     <message>
         <source>Play</source>
@@ -43,6 +76,17 @@
     <message>
         <source>Play animation</source>
         <translation type="vanished">Lancer l&apos;animation</translation>
+    </message>
+</context>
+<context>
+    <name>AnimationPlayActionUI</name>
+    <message>
+        <source>Play</source>
+        <translation type="unfinished">Lancer</translation>
+    </message>
+    <message>
+        <source>Play animation</source>
+        <translation type="unfinished">Lancer l&apos;animation</translation>
     </message>
 </context>
 <context>
@@ -57,6 +101,17 @@
     </message>
 </context>
 <context>
+    <name>AnimationReversePlayActionUI</name>
+    <message>
+        <source>Reverse play</source>
+        <translation type="unfinished">Lancer à l&apos;envers</translation>
+    </message>
+    <message>
+        <source>Play animation in reverse</source>
+        <translation type="unfinished">Lancer l&apos;animation à l&apos;envers</translation>
+    </message>
+</context>
+<context>
     <name>AnimationStopAction</name>
     <message>
         <source>Stop</source>
@@ -65,6 +120,17 @@
     <message>
         <source>Stop animation</source>
         <translation type="vanished">Arrêter l&apos;animation</translation>
+    </message>
+</context>
+<context>
+    <name>AnimationStopActionUI</name>
+    <message>
+        <source>Stop</source>
+        <translation type="unfinished">Stop</translation>
+    </message>
+    <message>
+        <source>Stop animation</source>
+        <translation type="unfinished">Arrêter l&apos;animation</translation>
     </message>
 </context>
 <context>
@@ -100,10 +166,28 @@
     </message>
 </context>
 <context>
+    <name>ChooseCenterOfRotationActionUI</name>
+    <message>
+        <source>Choose center</source>
+        <translation type="unfinished">Choisir un centre de rotation</translation>
+    </message>
+    <message>
+        <source>Choose center of rotation</source>
+        <translation type="unfinished">Choisir un centre de rotation</translation>
+    </message>
+</context>
+<context>
     <name>ClearAllWindowsAction</name>
     <message>
         <source>Clear all windows</source>
         <translation type="vanished">Effacer toutes les fenêtres</translation>
+    </message>
+</context>
+<context>
+    <name>ClearAllWindowsActionUI</name>
+    <message>
+        <source>Clear all windows</source>
+        <translation type="unfinished">Effacer toutes les fenêtres</translation>
     </message>
 </context>
 <context>
@@ -114,6 +198,13 @@
     </message>
 </context>
 <context>
+    <name>ClearPickPointsActionUI</name>
+    <message>
+        <source>Clear pick points</source>
+        <translation type="unfinished">Effacer les points de pioche</translation>
+    </message>
+</context>
+<context>
     <name>ClearReferenceLinesAction</name>
     <message>
         <source>Clear reference lines</source>
@@ -121,10 +212,24 @@
     </message>
 </context>
 <context>
+    <name>ClearReferenceLinesActionUI</name>
+    <message>
+        <source>Clear reference lines</source>
+        <translation type="unfinished">Effacer les lignes de référence</translation>
+    </message>
+</context>
+<context>
     <name>ClearWindowAction</name>
     <message>
         <source>Clear all plots from this window</source>
         <translation type="vanished">Effacer tous les tracés de cette fenêtre</translation>
+    </message>
+</context>
+<context>
+    <name>ClearWindowActionUI</name>
+    <message>
+        <source>Clear all plots from this window</source>
+        <translation type="unfinished">Effacer tous les tracés de cette fenêtre</translation>
     </message>
 </context>
 <context>
@@ -139,10 +244,28 @@
     </message>
 </context>
 <context>
+    <name>CloneWindowActionUI</name>
+    <message>
+        <source>Clone this window</source>
+        <translation type="unfinished">Dupliquer cette fenêtre</translation>
+    </message>
+    <message>
+        <source>Clone</source>
+        <translation type="unfinished">Cloner</translation>
+    </message>
+</context>
+<context>
     <name>CopyPlotAction</name>
     <message>
         <source>Copy active plots</source>
         <translation type="vanished">Dupliquer les tracés actifs</translation>
+    </message>
+</context>
+<context>
+    <name>CopyPlotActionUI</name>
+    <message>
+        <source>Copy active plots</source>
+        <translation type="unfinished">Dupliquer les tracés actifs</translation>
     </message>
 </context>
 <context>
@@ -208,6 +331,13 @@
     </message>
 </context>
 <context>
+    <name>DeleteActivePlotsActionUI</name>
+    <message>
+        <source>Delete active plots</source>
+        <translation type="unfinished">Supprimer les tracés actifs</translation>
+    </message>
+</context>
+<context>
     <name>DeleteWindowAction</name>
     <message>
         <source>Delete</source>
@@ -219,10 +349,28 @@
     </message>
 </context>
 <context>
+    <name>DeleteWindowActionUI</name>
+    <message>
+        <source>Delete this window</source>
+        <translation type="unfinished">Supprimer cette fenêtre</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">Supprimer</translation>
+    </message>
+</context>
+<context>
     <name>DrawPlotsAction</name>
     <message>
         <source>Draw plots</source>
         <translation type="vanished">Tracer</translation>
+    </message>
+</context>
+<context>
+    <name>DrawPlotsActionUI</name>
+    <message>
+        <source>Draw plots</source>
+        <translation type="unfinished">Tracer</translation>
     </message>
 </context>
 <context>
@@ -281,6 +429,61 @@
     </message>
 </context>
 <context>
+    <name>EnableToolActionUI</name>
+    <message>
+        <source>Tools</source>
+        <translation type="unfinished">Outils</translation>
+    </message>
+    <message>
+        <source>Box</source>
+        <translation type="unfinished">Boîte</translation>
+    </message>
+    <message>
+        <source>Box tool</source>
+        <translation type="unfinished">Outil Boîte</translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished">Ligne</translation>
+    </message>
+    <message>
+        <source>Line tool</source>
+        <translation type="unfinished">Outil ligne</translation>
+    </message>
+    <message>
+        <source>Plane</source>
+        <translation type="unfinished">Plan</translation>
+    </message>
+    <message>
+        <source>Plane tool</source>
+        <translation type="unfinished">Outil plan</translation>
+    </message>
+    <message>
+        <source>Sphere</source>
+        <translation type="unfinished">Sphère</translation>
+    </message>
+    <message>
+        <source>Sphere tool</source>
+        <translation type="unfinished">Outil sphère</translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished">Point</translation>
+    </message>
+    <message>
+        <source>Point tool</source>
+        <translation type="unfinished">Outil point</translation>
+    </message>
+    <message>
+        <source>Axis Restriction</source>
+        <translation type="unfinished">Restriction des axes</translation>
+    </message>
+    <message>
+        <source>Axis Restriction tool</source>
+        <translation type="unfinished">Outil de restriction des axes</translation>
+    </message>
+</context>
+<context>
     <name>EnableToolbarAction</name>
     <message>
         <source>Toolbars</source>
@@ -292,10 +495,28 @@
     </message>
 </context>
 <context>
+    <name>EnableToolbarActionUI</name>
+    <message>
+        <source>Toolbars</source>
+        <translation type="unfinished">Barres d&apos;outils</translation>
+    </message>
+    <message>
+        <source>Enable toolbars</source>
+        <translation type="unfinished">Activer les barres d&apos;outils</translation>
+    </message>
+</context>
+<context>
     <name>HideActivePlotsAction</name>
     <message>
         <source>Hide active plots</source>
         <translation type="vanished">Cacher les tracés actifs</translation>
+    </message>
+</context>
+<context>
+    <name>HideActivePlotsActionUI</name>
+    <message>
+        <source>Hide active plots</source>
+        <translation type="unfinished">Cacher les tracés actifs</translation>
     </message>
 </context>
 <context>
@@ -306,10 +527,24 @@
     </message>
 </context>
 <context>
+    <name>HideToolbarsActionUI</name>
+    <message>
+        <source>Hide toolbars</source>
+        <translation type="unfinished">Cacher les barres d&apos;outils</translation>
+    </message>
+</context>
+<context>
     <name>HideToolbarsForAllWindowsAction</name>
     <message>
         <source>Hide toolbars (all windows)</source>
         <translation type="vanished">Cacher les barres d&apos;outils (toutes les fenêtres)</translation>
+    </message>
+</context>
+<context>
+    <name>HideToolbarsForAllWindowsActionUI</name>
+    <message>
+        <source>Hide toolbars (all windows)</source>
+        <translation type="unfinished">Cacher les barres d&apos;outils (toutes les fenêtres)</translation>
     </message>
 </context>
 <context>
@@ -321,6 +556,17 @@
     <message>
         <source>Swap background and foreground colors</source>
         <translation type="vanished">Inverser les couleurs du fond et du texte</translation>
+    </message>
+</context>
+<context>
+    <name>InvertBackgroundActionUI</name>
+    <message>
+        <source>Invert background</source>
+        <translation type="unfinished">Inverser</translation>
+    </message>
+    <message>
+        <source>Swap background and foreground colors</source>
+        <translation type="unfinished">Inverser les couleurs du fond et du texte</translation>
     </message>
 </context>
 <context>
@@ -19904,10 +20150,31 @@ pas des cycles ou des temps</translation>
     </message>
 </context>
 <context>
+    <name>RecenterViewActionUI</name>
+    <message>
+        <source>Recenter view</source>
+        <translation type="unfinished">Recentrer la vue</translation>
+    </message>
+</context>
+<context>
+    <name>RedoViewActionUI</name>
+    <message>
+        <source>Redo view</source>
+        <translation type="unfinished">Refaire la vue</translation>
+    </message>
+</context>
+<context>
     <name>RemoveAllOperatorsAction</name>
     <message>
         <source>Remove all operators</source>
         <translation type="vanished">Effacer tous les opérateurs</translation>
+    </message>
+</context>
+<context>
+    <name>RemoveAllOperatorsActionUI</name>
+    <message>
+        <source>Remove all operators</source>
+        <translation type="unfinished">Effacer tous les opérateurs</translation>
     </message>
 </context>
 <context>
@@ -19918,10 +20185,50 @@ pas des cycles ou des temps</translation>
     </message>
 </context>
 <context>
+    <name>RemoveLastOperatorActionUI</name>
+    <message>
+        <source>Remove last operator</source>
+        <translation type="unfinished">Effacer le dernier filtre</translation>
+    </message>
+</context>
+<context>
+    <name>RemovePicksActionUI</name>
+    <message>
+        <source>Remove picks</source>
+        <translation type="unfinished">Supprimer les pioches</translation>
+    </message>
+</context>
+<context>
+    <name>ResetViewActionUI</name>
+    <message>
+        <source>Reset view</source>
+        <translation type="unfinished">Réinitialiser la vue</translation>
+    </message>
+</context>
+<context>
+    <name>SaveViewActionUI</name>
+    <message>
+        <source>Clear saved views</source>
+        <translation type="unfinished">Effacer les vues sauvegardées</translation>
+    </message>
+    <message>
+        <source>Save view</source>
+        <translation type="unfinished">Sauvegarder la vue</translation>
+    </message>
+    <message>
+        <source>Save current view</source>
+        <translation type="unfinished">Sauvegarder la vue courante</translation>
+    </message>
+    <message>
+        <source>Use saved view %1</source>
+        <translation type="unfinished">Utiliser la vue %1</translation>
+    </message>
+</context>
+<context>
     <name>ScatterPlotRoleNames</name>
     <message>
         <source>X coordinate</source>
-        <translation type="guess">Coordonnée en X</translation>
+        <translation>Coordonnée en X</translation>
     </message>
     <message>
         <source>Y coordinate</source>
@@ -19938,6 +20245,187 @@ pas des cycles ou des temps</translation>
     <message>
         <source>None</source>
         <translation type="guess">Aucun</translation>
+    </message>
+</context>
+<context>
+    <name>SetActiveWindowActionUI</name>
+    <message>
+        <source>Make active</source>
+        <translation type="unfinished">Rendre active</translation>
+    </message>
+    <message>
+        <source>Make this window active</source>
+        <translation type="unfinished">Rendre cette fenêtre active</translation>
+    </message>
+</context>
+<context>
+    <name>SetPlotFollowsTimeActionUI</name>
+    <message>
+        <source>Plot follows time slider</source>
+        <translation type="unfinished">Tracé suit le curseur de temps</translation>
+    </message>
+</context>
+<context>
+    <name>SetToolUpdateModeActionUI</name>
+    <message>
+        <source>Tool Updates</source>
+        <translation type="unfinished">Mises à jour Outil</translation>
+    </message>
+    <message>
+        <source>Set tool update frequency</source>
+        <translation type="unfinished">Régler la fréquence de mise à jour outil</translation>
+    </message>
+    <message>
+        <source>Continuously</source>
+        <translation type="unfinished">En continu</translation>
+    </message>
+    <message>
+        <source>On Mouse Release</source>
+        <translation type="unfinished">Au relâché de la souris</translation>
+    </message>
+    <message>
+        <source>On Tool Close</source>
+        <translation type="unfinished">A la fermeture de l&apos;outil</translation>
+    </message>
+</context>
+<context>
+    <name>SetToolbarIconSizeActionUI</name>
+    <message>
+        <source>Use large icons (all windows)</source>
+        <translation type="unfinished">Utiliser des grandes icônes (toutes les fenêtres)</translation>
+    </message>
+</context>
+<context>
+    <name>SetWindowLayoutActionUI</name>
+    <message>
+        <source>Layout</source>
+        <translation type="unfinished">Disposition</translation>
+    </message>
+    <message>
+        <source>Set window layout</source>
+        <translation type="unfinished">Définir la disposition des fenêtres</translation>
+    </message>
+    <message>
+        <source>1x1</source>
+        <translation type="unfinished">1x1</translation>
+    </message>
+    <message>
+        <source>1 x 1 window layout</source>
+        <translation type="unfinished">disposition 1 x 1 </translation>
+    </message>
+    <message>
+        <source>1x2</source>
+        <translation type="unfinished">1x2</translation>
+    </message>
+    <message>
+        <source>1 x 2 window layout</source>
+        <translation type="unfinished">disposition 1 x 2</translation>
+    </message>
+    <message>
+        <source>2x2</source>
+        <translation type="unfinished">2x2</translation>
+    </message>
+    <message>
+        <source>2 x 2 window layout</source>
+        <translation type="unfinished">disposition 2 x 2</translation>
+    </message>
+    <message>
+        <source>2x3</source>
+        <translation type="unfinished">2x3</translation>
+    </message>
+    <message>
+        <source>2 x 3 window layout</source>
+        <translation type="unfinished">disposition 2 x 3</translation>
+    </message>
+    <message>
+        <source>2x4</source>
+        <translation type="unfinished">2x4</translation>
+    </message>
+    <message>
+        <source>2 x 4 window layout</source>
+        <translation type="unfinished">disposition 2 x 4</translation>
+    </message>
+    <message>
+        <source>3x3</source>
+        <translation type="unfinished">3x3</translation>
+    </message>
+    <message>
+        <source>3 x 3 window layout</source>
+        <translation type="unfinished">disposition 3 x 3</translation>
+    </message>
+</context>
+<context>
+    <name>SetWindowModeActionUI</name>
+    <message>
+        <source>Mode</source>
+        <translation type="unfinished">Mode</translation>
+    </message>
+    <message>
+        <source>Set window mode</source>
+        <translation type="unfinished">Définir le mode de fenêtre</translation>
+    </message>
+    <message>
+        <source>Navigate</source>
+        <translation type="unfinished">Naviguer</translation>
+    </message>
+    <message>
+        <source>Navigate mode</source>
+        <translation type="unfinished">Mode navigation</translation>
+    </message>
+    <message>
+        <source>Zoom</source>
+        <translation type="unfinished">Zoomer</translation>
+    </message>
+    <message>
+        <source>Zoom mode</source>
+        <translation type="unfinished">Mode zoom</translation>
+    </message>
+    <message>
+        <source>Zone Pick</source>
+        <translation type="unfinished">Piocher zone/cellule</translation>
+    </message>
+    <message>
+        <source>Zone Pick mode</source>
+        <translation type="unfinished">Mode de pioche de zone/cellule</translation>
+    </message>
+    <message>
+        <source>Node Pick</source>
+        <translation type="unfinished">Piocher Nœud</translation>
+    </message>
+    <message>
+        <source>Node Pick mode</source>
+        <translation type="unfinished">Mode de pioche de nœud</translation>
+    </message>
+    <message>
+        <source>Spreadsheet Pick</source>
+        <translation type="unfinished">Pioche pour tableur</translation>
+    </message>
+    <message>
+        <source>Spreadsheet Pick mode</source>
+        <translation type="unfinished">Mode de pioche pour tableur</translation>
+    </message>
+    <message>
+        <source>Add DDT Pick</source>
+        <translation type="unfinished">Ajouter pioche DDT</translation>
+    </message>
+    <message>
+        <source>DDT Pick mode</source>
+        <translation type="unfinished">Mode de pioche DDT</translation>
+    </message>
+    <message>
+        <source>Lineout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lineout mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ShowToolbarsActionUI</name>
+    <message>
+        <source>Show toolbars</source>
+        <translation type="unfinished">Montrer les barres d&apos;outil</translation>
     </message>
 </context>
 <context>
@@ -20208,6 +20696,103 @@ pas des cycles ou des temps</translation>
     </message>
 </context>
 <context>
+    <name>TimeSliderForwardStepActionUI</name>
+    <message>
+        <source>Forward step</source>
+        <translation type="unfinished">Pas en avant</translation>
+    </message>
+    <message>
+        <source>Step forward one frame</source>
+        <translation type="unfinished">Avancer d&apos;une image</translation>
+    </message>
+</context>
+<context>
+    <name>TimeSliderReverseStepActionUI</name>
+    <message>
+        <source>Reverse step</source>
+        <translation type="unfinished">Pas en arrière</translation>
+    </message>
+    <message>
+        <source>Step back one frame</source>
+        <translation type="unfinished">Reculer d&apos;une image</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleAllowPopupActionUI</name>
+    <message>
+        <source>Allow Popup</source>
+        <translation type="unfinished">Autoriser la fenêtre contextuelle (popup)</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleFullFrameActionUI</name>
+    <message>
+        <source>Full frame</source>
+        <translation type="unfinished">Plein écran</translation>
+    </message>
+    <message>
+        <source>Toggle full frame</source>
+        <translation type="unfinished">Basculer en plein écran</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleLockTimeActionUI</name>
+    <message>
+        <source>Lock time</source>
+        <translation type="unfinished">Verrouiller le temps</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleLockToolActionUI</name>
+    <message>
+        <source>Lock tools</source>
+        <translation type="unfinished">Verrouiller les outils</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleLockViewActionUI</name>
+    <message>
+        <source>Lock view</source>
+        <translation type="unfinished">Verrouiller la vue</translation>
+    </message>
+</context>
+<context>
+    <name>TogglePerspectiveViewActionUI</name>
+    <message>
+        <source>Perspective</source>
+        <translation type="unfinished">Perspective</translation>
+    </message>
+    <message>
+        <source>Toggle perspective view</source>
+        <translation type="unfinished">Basculer la vue en perspective</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleSpinModeActionUI</name>
+    <message>
+        <source>Spin</source>
+        <translation type="unfinished">Faire tourner (spin)</translation>
+    </message>
+    <message>
+        <source>Toggle spin mode</source>
+        <translation type="unfinished">Basculer le mode spin</translation>
+    </message>
+</context>
+<context>
+    <name>TurnOffAllLocksActionUI</name>
+    <message>
+        <source>Unlock everything</source>
+        <translation type="unfinished">Tout délier</translation>
+    </message>
+</context>
+<context>
+    <name>UndoViewActionUI</name>
+    <message>
+        <source>Undo view</source>
+        <translation type="unfinished">Défaire (annuler) la vue</translation>
+    </message>
+</context>
+<context>
     <name>ViewerConnectionProgressDialog</name>
     <message>
         <source>Cancel</source>
@@ -20220,6 +20805,41 @@ pas des cycles ou des temps</translation>
     <message>
         <source>VisIt is waiting for a %1 to launch on %2.</source>
         <translation type="vanished">En attente d&apos;un %1 lancé sur %2.</translation>
+    </message>
+</context>
+<context>
+    <name>ViewerHostProfileSelectorWithWin</name>
+    <message>
+        <source>Num procs</source>
+        <translation type="unfinished">Nombre de processeurs</translation>
+    </message>
+    <message>
+        <source>Num nodes</source>
+        <translation type="unfinished">Nombre de nœuds</translation>
+    </message>
+    <message>
+        <source>Bank</source>
+        <translation type="unfinished">Banc</translation>
+    </message>
+    <message>
+        <source>Time limit</source>
+        <translation type="unfinished">Temps limite</translation>
+    </message>
+    <message>
+        <source>Machine file</source>
+        <translation type="unfinished">Fichier machine</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="unfinished">OK</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Annuler</translation>
+    </message>
+    <message>
+        <source>Select options for &apos;%1&apos;</source>
+        <translation type="unfinished">Choisir les options pour &apos;%1&apos;</translation>
     </message>
 </context>
 <context>
