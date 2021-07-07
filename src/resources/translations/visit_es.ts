@@ -24,7 +24,7 @@
     <message>
         <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="404"/>
         <source>Add %1 plot</source>
-        <translation type="unfinished">Agregar %1 parcela</translation>
+        <translation type="unfinished">Agregar %1 trama</translation>
     </message>
 </context>
 <context>
@@ -121,7 +121,7 @@
     <message>
         <location filename="../../viewer/main/ui/WindowActionsUI.C" line="198"/>
         <source>Clear all plots from this window</source>
-        <translation type="unfinished">Borrar todas las parcelas de esta ventana</translation>
+        <translation type="unfinished">Borrar todas las tramas de esta ventana</translation>
     </message>
 </context>
 <context>
@@ -142,7 +142,7 @@
     <message>
         <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="1053"/>
         <source>Copy active plots</source>
-        <translation type="unfinished">Copiar parcelas activas</translation>
+        <translation type="unfinished">Copiar tramas activas</translation>
     </message>
 </context>
 <context>
@@ -150,7 +150,7 @@
     <message>
         <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="1008"/>
         <source>Delete active plots</source>
-        <translation type="unfinished">Eliminar parcelas activas</translation>
+        <translation type="unfinished">Eliminar tramas activas</translation>
     </message>
 </context>
 <context>
@@ -171,7 +171,7 @@
     <message>
         <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="918"/>
         <source>Draw plots</source>
-        <translation type="unfinished">Dibujar parcelas</translation>
+        <translation type="unfinished">Dibujar tramas</translation>
     </message>
 </context>
 <context>
@@ -260,7 +260,7 @@
     <message>
         <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="962"/>
         <source>Hide active plots</source>
-        <translation type="unfinished">Ocultar parcelas activas</translation>
+        <translation type="unfinished">Ocultar tramas activas</translation>
     </message>
 </context>
 <context>
@@ -10397,7 +10397,7 @@ settings will allow the attributes to be
 propagated to plots in other windows when
 using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished">Establezca la instancia al aplicar a múltiples
-parcelas en una sola ventana. Es decir. si desea comparar
+tramas en una sola ventana. Es decir. si desea comparar
 diferentes muestreos, establezca la instancia en A para el primero y B para el segundo.
 Esta configuración permitirá que los atributos se propaguen
 a los gráficos en otras ventanas cuando se utiliza
@@ -12645,7 +12645,7 @@ la opción &quot;Aplicar a todas las ventanas&quot;.</translation>
 Do you want to apply the %2 operator?
 
 </source>
-        <translation type="unfinished">No se encontró ningún operador %1 para las parcelas seleccionadas.
+        <translation type="unfinished">No se encontró ningún operador %1 para las tramas seleccionadas.
 ¿Quiere aplicar el operador %2?
 
 </translation>
