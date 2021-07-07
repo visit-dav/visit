@@ -382,13 +382,18 @@ function build_cgns
         LDFLAGS_ENV="-L$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
         H5ARGS="--with-hdf5=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
         if [[ "$DO_SZIP" == "yes" ]] ; then
+            LIBS_ENV="$LIBS_ENV -lsz"
             LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib"
             H5ARGS="$H5ARGS --with-szip=$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
-            LIBS_ENV="$LIBS_ENV -lsz"
         fi
         LIBS_ENV="$LIBS_ENV -lz"
         LDFLAGS_ENV="$LDFLAGS_ENV -L$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
         H5ARGS="$H5ARGS --with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
+    fi
+    if [[ "$OPSYS" == "Darwin" ]] ; then
+        LDFLAGS_DARWIN="LDFLAGS=\"$LDFLAGS_ENV\" LIBS=\"$LIBS_ENV\""
+    else
+        LDFLAGS_DARWIN=""
     fi
 
     # Disable fortran
@@ -396,12 +401,12 @@ function build_cgns
 
     info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-        LDFLAGS=\"$LDFLAGS_ENV\" LIBS=\"$LIBS_ENV\" \
+        $LDFLAGS_DARWIN \
         ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
 
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-        LDFLAGS="$LDFLAGS_ENV" LIBS="$LIBS_ENV" \
+        $LDFLAGS_DARWIN \
         ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
 
     if [[ $? != 0 ]] ; then
