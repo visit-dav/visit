@@ -1666,7 +1666,7 @@ VisIt intentará continuar procesando, pero puede comportarse de manera poco con
         <location filename="../../operators/AxisAlignedSlice4D/QvisAxisAlignedSlice4DWindow.C" line="95"/>
         <location filename="../../operators/AxisAlignedSlice4D/QvisAxisAlignedSlice4DWindow.C" line="216"/>
         <source>K</source>
-        <translation type="unfinished">A</translation>
+        <translation type="unfinished">K</translation>
     </message>
     <message>
         <location filename="../../operators/AxisAlignedSlice4D/QvisAxisAlignedSlice4DWindow.C" line="102"/>
@@ -11191,12 +11191,12 @@ la opción &quot;Aplicar a todas las ventanas&quot;.</translation>
     </message>
     <message>
         <source>&amp;Exit</source>
-        <translation type="obsolete">Salida</translation>
+        <translation type="obsolete">Salir</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="523"/>
         <source>E&amp;xit</source>
-        <translation type="unfinished">Salida</translation>
+        <translation type="unfinished">Salir</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="531"/>
@@ -23431,6 +23431,917 @@ no pasos ni tiempos.</translation>
         <location filename="../../viewer/main/ui/VisItPasswordWindow.C" line="75"/>
         <source>Enter password</source>
         <translation type="unfinished">Introducir la contraseña</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEdit</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="46"/>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="228"/>
+        <source>XMLEdit: %1</source>
+        <translation type="unfinished">XMLEdit: %1</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="48"/>
+        <source>&amp;File</source>
+        <translation type="unfinished">Archivo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="49"/>
+        <source>&amp;New</source>
+        <translation type="unfinished">&amp;Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="50"/>
+        <source>&amp;Open</source>
+        <translation type="unfinished">Abiert&amp;o</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="51"/>
+        <source>&amp;Save</source>
+        <translation type="unfinished">Guardar</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="52"/>
+        <source>Save &amp;as</source>
+        <translation type="unfinished">Guardar como</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="54"/>
+        <source>&amp;Generate code</source>
+        <translation type="unfinished">&amp;Generar codigo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="56"/>
+        <source>E&amp;xit</source>
+        <translation type="unfinished">Salir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="62"/>
+        <source>Plugin</source>
+        <translation type="unfinished">Enchufar (plugin)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="65"/>
+        <source>CMake</source>
+        <translation type="unfinished">CMake</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="68"/>
+        <source>Attribute</source>
+        <translation type="unfinished">Atributo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="71"/>
+        <source>Enums</source>
+        <translation type="unfinished">Enumeraciones</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="74"/>
+        <source>Fields</source>
+        <translation type="unfinished">Campos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="77"/>
+        <source>Functions</source>
+        <translation type="unfinished">Funciones</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="80"/>
+        <source>Constants</source>
+        <translation type="unfinished">Constantes</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="83"/>
+        <source>Includes</source>
+        <translation type="unfinished">Incluye</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="86"/>
+        <source>Code</source>
+        <translation type="unfinished">Código</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="100"/>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="174"/>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="319"/>
+        <source>untitled.xml</source>
+        <translation type="unfinished">untitled.xml</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="122"/>
+        <source>Open file...</source>
+        <translation type="unfinished">Abrir documento...</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="124"/>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="152"/>
+        <source>XML files (*.xml)</source>
+        <translation type="unfinished">Archivos XML (* .xml)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="150"/>
+        <source>Save file...</source>
+        <translation type="unfinished">Guardar el archivo...</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="253"/>
+        <source>XMLEdit: </source>
+        <translation type="unfinished">XMLEdit: </translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="347"/>
+        <source>Select items to generate</source>
+        <translation type="unfinished">Seleccionar elementos para generar</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="352"/>
+        <source>Generate code for %1</source>
+        <translation type="unfinished">Generar código para% 1</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditAttribute</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditAttribute.C" line="77"/>
+        <source>Base Class</source>
+        <translation type="unfinished">Clase base</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditCode</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="46"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="49"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="58"/>
+        <source>Target</source>
+        <translation type="unfinished">Objetivo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="63"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="68"/>
+        <source>Prefix</source>
+        <translation type="unfinished">Prefijo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="79"/>
+        <source>Postfix</source>
+        <translation type="unfinished">Sufijo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="415"/>
+        <source>unnamed%1</source>
+        <translation type="unfinished"> %1 sin nombre</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditCodeGeneratorWindow</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeGeneratorWindow.C" line="59"/>
+        <source>Dismiss</source>
+        <translation type="unfinished">Despedir</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditCodeSelectionDialog</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="46"/>
+        <source>Attributes</source>
+        <translation type="unfinished">Atributos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="50"/>
+        <source>C++</source>
+        <translation type="unfinished">C ++</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="52"/>
+        <source>Java</source>
+        <translation type="unfinished">Java</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="54"/>
+        <source>Python</source>
+        <translation type="unfinished">Python</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="62"/>
+        <source>Plugin</source>
+        <translation type="unfinished">Enchufar</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="66"/>
+        <source>Window</source>
+        <translation type="unfinished">Ventana</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="68"/>
+        <source>CMake</source>
+        <translation type="unfinished">CMake</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="70"/>
+        <source>Plugin information</source>
+        <translation type="unfinished">Información del complemento</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="72"/>
+        <source>AVT code skeleton</source>
+        <translation type="unfinished">Esqueleto de código AVT</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="82"/>
+        <source>Ok</source>
+        <translation type="unfinished">OK</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="83"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancelar</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditConstants</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="47"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="50"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="60"/>
+        <source>Target</source>
+        <translation type="unfinished">Objetivo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="65"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="70"/>
+        <source>Class member</source>
+        <translation type="unfinished">Miembro de la clase</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="74"/>
+        <source>Declaration</source>
+        <translation type="unfinished">Declaración</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="79"/>
+        <source>Definition</source>
+        <translation type="unfinished">Definición</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="445"/>
+        <source>unnamed%1</source>
+        <translation type="unfinished"> %1 sin nombre</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditEnums</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditEnums.C" line="42"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditEnums.C" line="45"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditEnums.C" line="56"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditEnums.C" line="60"/>
+        <source>Values</source>
+        <translation type="unfinished">Valores</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditEnums.C" line="349"/>
+        <source>unnamed%1</source>
+        <translation type="unfinished"> %1 sin nombre</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditFields</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="98"/>
+        <source>Up</source>
+        <translation type="unfinished">Arriba</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="101"/>
+        <source>Down</source>
+        <translation type="unfinished">Abajo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="104"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="107"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="123"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="128"/>
+        <source>Label</source>
+        <translation type="unfinished">Etiqueta</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="135"/>
+        <source>Type</source>
+        <translation type="unfinished">Tipo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="139"/>
+        <source>Length</source>
+        <translation type="unfinished">Largo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="146"/>
+        <source>Subtype</source>
+        <translation type="unfinished">Subtipo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="151"/>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="367"/>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="616"/>
+        <source>(none)</source>
+        <translation type="unfinished">(ninguno)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="152"/>
+        <source>Enabler</source>
+        <translation type="unfinished">Habilitador</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="157"/>
+        <source>Values</source>
+        <translation type="unfinished">Valores</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="161"/>
+        <source>Internal use only</source>
+        <translation type="unfinished">Solo para uso interno</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="165"/>
+        <source>Persistent</source>
+        <translation type="unfinished">Persistente</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="171"/>
+        <source>Accepted variable types</source>
+        <translation type="unfinished">Tipos de variables aceptados</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="181"/>
+        <source>Meshes</source>
+        <translation type="unfinished">Mallas</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="184"/>
+        <source>Scalars</source>
+        <translation type="unfinished">Escalares</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="187"/>
+        <source>Materials</source>
+        <translation type="unfinished">Materiales</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="190"/>
+        <source>Labels</source>
+        <translation type="unfinished">Etiquetas</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="194"/>
+        <source>Vectors</source>
+        <translation type="unfinished">Vectores</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="197"/>
+        <source>Subsets</source>
+        <translation type="unfinished">Subconjuntos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="200"/>
+        <source>Species</source>
+        <translation type="unfinished">Especies</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="203"/>
+        <source>Arrays</source>
+        <translation type="unfinished">Matrices</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="207"/>
+        <source>Curves</source>
+        <translation type="unfinished">Curvas</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="210"/>
+        <source>Tensors</source>
+        <translation type="unfinished">Tensores</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="213"/>
+        <source>Symmetric Tensors</source>
+        <translation type="unfinished">Tensores simétricos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="221"/>
+        <source>Ignore field for attribute
+equality calculations</source>
+        <translation type="unfinished">Ignorar campo para cálculos de igualdad de atributos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="225"/>
+        <source>Access</source>
+        <translation type="unfinished">Acceso</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="228"/>
+        <source>private</source>
+        <translation type="unfinished">privado</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="229"/>
+        <source>protected</source>
+        <translation type="unfinished">protegido</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="230"/>
+        <source>public</source>
+        <translation type="unfinished">público</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="246"/>
+        <source>Special initialization code</source>
+        <translation type="unfinished">Código de inicialización especial</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="250"/>
+        <source>Initialization Values / Code</source>
+        <translation type="unfinished">Valores / código de inicialización</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditFunctions</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="52"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="55"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="63"/>
+        <source>Target</source>
+        <translation type="unfinished">Objetivo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="68"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="75"/>
+        <source>New function</source>
+        <translation type="unfinished">Nueva función</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="76"/>
+        <source>Replaces builtin</source>
+        <translation type="unfinished">Replaces builtin</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="86"/>
+        <source>Class member</source>
+        <translation type="unfinished">Miembro de la clase</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="90"/>
+        <source>Access</source>
+        <translation type="unfinished">Acceso</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="92"/>
+        <source>private</source>
+        <translation type="unfinished">privado</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="93"/>
+        <source>protected</source>
+        <translation type="unfinished">protegido</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="94"/>
+        <source>public</source>
+        <translation type="unfinished">público</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="99"/>
+        <source>Declaration</source>
+        <translation type="unfinished">Declaración</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="529"/>
+        <source>unnamed%1</source>
+        <translation type="unfinished"> %1 sin nombre</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditIncludes</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="47"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="50"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="63"/>
+        <source>Source (.C) file</source>
+        <translation type="unfinished">Archivo fuente (.C)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="64"/>
+        <source>Header (.h) file</source>
+        <translation type="unfinished">Archivo de encabezado (.h)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="74"/>
+        <source>Use quotes &quot;&quot;</source>
+        <translation type="unfinished">Utilice comillas ""</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="75"/>
+        <source>Use angle brackets &lt;&gt;</source>
+        <translation type="unfinished">Utilice corchetes angulares &lt;&gt;</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="84"/>
+        <source>Target</source>
+        <translation type="unfinished">Objetivo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="89"/>
+        <source>Include file</source>
+        <translation type="unfinished">Incluir archivo</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditMakefile</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="59"/>
+        <source>CXXFLAGS</source>
+        <translation type="unfinished">CXXFLAGS</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="64"/>
+        <source>LDFLAGS</source>
+        <translation type="unfinished">LDFLAGS</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="69"/>
+        <source>LIBS</source>
+        <translation type="unfinished">LIBS</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="74"/>
+        <source>DEFINES</source>
+        <translation type="unfinished">DEFINE</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="79"/>
+        <source>GUI Files</source>
+        <translation type="unfinished">Archivos GUI</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="85"/>
+        <source>GUI Libs</source>
+        <translation type="unfinished">Libs GUI</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="91"/>
+        <source>GUI Widget Files</source>
+        <translation type="unfinished">Archivos de widget de GUI</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="97"/>
+        <source>Scripting Files</source>
+        <translation type="unfinished">Archivos de secuencias de comandos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="103"/>
+        <source>Viewer Files</source>
+        <translation type="unfinished">Archivos del visor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="109"/>
+        <source>Viewer Libs</source>
+        <translation type="unfinished">Bibliotecas del visor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="115"/>
+        <source>Viewer Widget Files</source>
+        <translation type="unfinished">Archivos del widget del visor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="121"/>
+        <source>MDServer Files</source>
+        <translation type="unfinished">Archivos MDServer</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="127"/>
+        <source>MDServer Libs</source>
+        <translation type="unfinished">MDServer Libs</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="133"/>
+        <source>Engine Files</source>
+        <translation type="unfinished">Archivos del motor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="139"/>
+        <source>Engine Libs (ser)</source>
+        <translation type="unfinished">Libs del motor (ser)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="145"/>
+        <source>Engine Libs (par)</source>
+        <translation type="unfinished">Libs del motor (par)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="151"/>
+        <source>Plugin has code specific to the Engine</source>
+        <translation type="unfinished">El complemento (&quot;Plugin&quot;) tiene código específico para el motor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="156"/>
+        <source>Plugin has code specific to the MDServer (Database Plugins only)</source>
+        <translation type="unfinished">El complemento (&quot;Plugin&quot;) tiene código específico para MDServer (solo complementos de base de datos)</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditPlugin</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="81"/>
+        <source>Plugin</source>
+        <translation type="unfinished">Enchufar</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="82"/>
+        <source>Attribute only</source>
+        <translation type="unfinished">Solo atributo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="96"/>
+        <source>General Plugin attributes</source>
+        <translation type="unfinished">Atributos generales del complemento</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="107"/>
+        <source>Plot</source>
+        <translation type="unfinished">Gráfico</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="108"/>
+        <source>Operator</source>
+        <translation type="unfinished">Operador</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="109"/>
+        <source>Database</source>
+        <translation type="unfinished">Base de datos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="110"/>
+        <source>Plugin type</source>
+        <translation type="unfinished">Tipo de complemento</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="113"/>
+        <source>Plugin is enabled by default</source>
+        <translation type="unfinished">El complemento está habilitado de forma predeterminada</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="119"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="123"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="167"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="219"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="250"/>
+        <source>Label</source>
+        <translation type="unfinished">Etiqueta</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="127"/>
+        <source>Version</source>
+        <translation type="unfinished">Versión</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="131"/>
+        <source>Has icon</source>
+        <translation type="unfinished">Tiene icono</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="144"/>
+        <source>Plot Plugin attributes</source>
+        <translation type="unfinished">Trazar atributos del complemento</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="154"/>
+        <source>Variable types accepted by the plot</source>
+        <translation type="unfinished">Tipos de variables aceptados por la trama</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="158"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="210"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="241"/>
+        <source>Mesh</source>
+        <translation type="unfinished">Malla</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="159"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="211"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="242"/>
+        <source>Scalar</source>
+        <translation type="unfinished">Escalar</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="160"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="212"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="243"/>
+        <source>Vector</source>
+        <translation type="unfinished">Vector</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="161"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="213"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="244"/>
+        <source>Material</source>
+        <translation type="unfinished">Material</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="162"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="214"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="245"/>
+        <source>Subset</source>
+        <translation type="unfinished">Subconjunto</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="163"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="215"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="246"/>
+        <source>Species</source>
+        <translation type="unfinished">Especies</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="164"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="216"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="247"/>
+        <source>Curve</source>
+        <translation type="unfinished">Curva</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="165"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="217"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="248"/>
+        <source>Tensor</source>
+        <translation type="unfinished">Tensor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="166"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="218"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="249"/>
+        <source>Symmetric Tensor</source>
+        <translation type="unfinished">Tensor simétrico</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="168"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="220"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="251"/>
+        <source>Array</source>
+        <translation type="unfinished">Matriz/Colección</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="191"/>
+        <source>Operator Plugin attributes</source>
+        <translation type="unfinished">Atributos del complemento de operador</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="200"/>
+        <source>Operator creates new variable via expressions</source>
+        <translation type="unfinished">El operador crea una nueva variable a través de expresiones</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="205"/>
+        <source>Variable type inputted by the operator</source>
+        <translation type="unfinished">Tipo de variable introducido por el operador</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="237"/>
+        <source>Variable type created by the operator</source>
+        <translation type="unfinished">Tipo de variable creado por el operador</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="274"/>
+        <source>Database Plugin attributes</source>
+        <translation type="unfinished">Atributos del complemento de base de datos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="285"/>
+        <source>STSD - Generic single time single domain</source>
+        <translation type="unfinished">STSD: dominio único genérico de tiempo único</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="286"/>
+        <source>MTSD - Generic multi  time single domain</source>
+        <translation type="unfinished">MTSD: dominio único genérico de múltiples tiempos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="287"/>
+        <source>STMD - Generic single time multi  domain</source>
+        <translation type="unfinished">STMD: multidominio genérico de una sola vez</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="288"/>
+        <source>MTMD - Generic multi  time multi  domain</source>
+        <translation type="unfinished">MTMD: multidominio multitemporal genérico</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="289"/>
+        <source>Custom - Fully customized database type</source>
+        <translation type="unfinished">Personalizado: tipo de base de datos totalmente personalizado</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="294"/>
+        <source>Default file name patterns</source>
+        <translation type="unfinished">Patrones de nombre de archivo predeterminados</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="299"/>
+        <source>File name patterns are strict by default</source>
+        <translation type="unfinished">Los patrones de nombre de archivo son estrictos de forma predeterminada</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="304"/>
+        <source>File format opens a whole directory (not a single file)</source>
+        <translation type="unfinished">El formato de archivo abre un directorio completo (no un solo archivo)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="309"/>
+        <source>File format can also write data</source>
+        <translation type="unfinished">El formato de archivo también puede escribir datos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="314"/>
+        <source>File format provides options for reading or writing data.</source>
+        <translation type="unfinished">El formato de archivo ofrece opciones para leer o escribir datos.</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="319"/>
+        <source>File format provides license.</source>
+        <translation type="unfinished">El formato de archivo proporciona licencia.</translation>
     </message>
 </context>
 </TS>
