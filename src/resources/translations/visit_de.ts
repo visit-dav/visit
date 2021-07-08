@@ -744,7 +744,7 @@
     <message>
         <location filename="../../operators/ModelFit/ModelFitGUIPluginInfo.C" line="32"/>
         <source>ModelFit</source>
-        <translation type="unfinished">Modellanpassung (&quot;Fitéquot;)</translation>
+        <translation type="unfinished">Modellanpassung (&quot;Fit&quot;)</translation>
     </message>
     <message>
         <location filename="../../operators/MultiresControl/MultiresControlGUIPluginInfo.C" line="32"/>
