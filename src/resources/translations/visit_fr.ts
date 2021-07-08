@@ -60,7 +60,7 @@
     <name>AddWindowActionUI</name>
     <message>
         <source>Create a new viewer window</source>
-        <translation type="unfinished">Créer une nouvelle fenêtre</translation>
+        <translation type="unfinished">Créer une nouvelle fenêtre de visualisation</translation>
     </message>
     <message>
         <source>New</source>
@@ -82,7 +82,7 @@
     <name>AnimationPlayActionUI</name>
     <message>
         <source>Play</source>
-        <translation type="unfinished">Lancer</translation>
+        <translation type="unfinished">PLay/Défiler</translation>
     </message>
     <message>
         <source>Play animation</source>
@@ -169,7 +169,7 @@
     <name>ChooseCenterOfRotationActionUI</name>
     <message>
         <source>Choose center</source>
-        <translation type="unfinished">Choisir un centre de rotation</translation>
+        <translation type="unfinished">Choisir le centre</translation>
     </message>
     <message>
         <source>Choose center of rotation</source>
@@ -562,7 +562,7 @@
     <name>InvertBackgroundActionUI</name>
     <message>
         <source>Invert background</source>
-        <translation type="unfinished">Inverser</translation>
+        <translation type="unfinished">Inverser la couleur de fond</translation>
     </message>
     <message>
         <source>Swap background and foreground colors</source>
@@ -943,7 +943,7 @@
     </message>
     <message>
         <source>SurfCompPrep</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">SurfCompPrep</translation>
     </message>
     <message>
         <source>ThreeSlice</source>
@@ -1115,7 +1115,7 @@
     </message>
     <message>
         <source>LimitCycle</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">LimitCycle</translation>
     </message>
     <message>
         <source>Radial Resample</source>
@@ -1127,7 +1127,7 @@
     </message>
     <message>
         <source>SPH Resample</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Rééchantillonnage SPH</translation>
     </message>
     <message>
         <source>Tessellate</source>
@@ -3888,7 +3888,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
     </message>
     <message>
         <source>Limits Mode</source>
-        <translation type="unfinished">Mode limite</translation>
+        <translation type="unfinished">Mode limites</translation>
     </message>
     <message>
         <source>Elevate by Variable</source>
@@ -8041,7 +8041,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Clamp exponent values</source>
-        <translation type="unfinished">Valeurs des exposants agrafés </translation>
+        <translation type="unfinished">Clamp exponent values</translation>
     </message>
     <message>
         <source>Limit maximum advection time i.e. FTLE</source>
@@ -9068,11 +9068,11 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>Limit cycle search</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Limiter la recherche de cycle</translation>
     </message>
     <message>
         <source>Cycle tolerance</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tolérance de cycle</translation>
     </message>
     <message>
         <source>Maximum iterations</source>
@@ -9340,7 +9340,7 @@ http error %2: %3.</translation>
     </message>
     <message>
         <source>cycle tolerance</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">tolérance au cycle</translation>
     </message>
     <message>
         <source>Correlation distance angular tolerance must be &gt;= 0.0</source>
@@ -10009,11 +10009,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>Sample Y axis as time</source>
-        <translation type="unfinished">Axe Y de l&apos;échantillonde temps</translation>
+        <translation type="unfinished">Echantillonner l'axe Y en temps</translation>
     </message>
     <message>
         <source>Y axis sampling</source>
-        <translation type="unfinished">Ordonnées de l&apos;échantillonnage </translation>
+        <translation type="unfinished">Echantillonnage axe Y (ordonnées)</translation>
     </message>
     <message>
         <source>Y sample distance</source>
@@ -11728,11 +11728,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Context num partitions</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nombre de partitions de contexte</translation>
     </message>
     <message>
         <source>Lines num partitions</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nombre de lignes partitions</translation>
     </message>
 </context>
 <context>
@@ -13390,7 +13390,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Winding pair confidence</source>
-        <translation type="unfinished">Enroulement double ferme</translation>
+        <translation type="unfinished">Winding pair confidence</translation>
     </message>
     <message>
         <source>Rational surface factor</source>
@@ -13722,7 +13722,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>windingPairConfidence</source>
-        <translation type="unfinished">Enroulement double ferme</translation>
+        <translation type="unfinished">windingPairConfidence</translation>
     </message>
     <message>
         <source>rationalSurfaceFactor</source>
@@ -14080,7 +14080,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Cycles</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cycles</translation>
     </message>
     <message>
         <source>Times</source>
@@ -14088,7 +14088,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>Cycles and times</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cycles et temps</translation>
     </message>
     <message>
         <source>Number of significant digits</source>
@@ -14418,7 +14418,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
     </message>
     <message>
         <source>endPoint ratio</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">rapport (ratio) de point final</translation>
     </message>
     <message>
         <source>Use Actual Data</source>
@@ -15042,7 +15042,7 @@ même fenêtre.</translation>
     </message>
     <message>
         <source>3D remapping</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">3D remapping</translation>
     </message>
     <message>
         <source>Start Z</source>
@@ -16805,7 +16805,7 @@ les atomes aux frontières des cellules unitaires</translation>
     </message>
     <message>
         <source>Tickers</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Téléscripteurs</translation>
     </message>
     <message>
         <source>URL</source>
@@ -17523,31 +17523,31 @@ coordonnées parallèles.</translation>
     </message>
     <message>
         <source>upAxis vector</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">upAxis vector</translation>
     </message>
     <message>
         <source>origin point vector</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">vecteur de point d'origine</translation>
     </message>
     <message>
         <source>origin intercept</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">interception d'origine</translation>
     </message>
     <message>
         <source>origin percent</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">pourcentage d'origine</translation>
     </message>
     <message>
         <source>origin zone</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">zone d'origine</translation>
     </message>
     <message>
         <source>origin node</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">nœud d'origine</translation>
     </message>
     <message>
         <source>origin domain</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">domaine d'origine</translation>
     </message>
     <message>
         <source>mesh name</source>
@@ -19348,7 +19348,7 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>AxisArray view</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">AxisArray view</translation>
     </message>
     <message>
         <source>Advanced</source>
@@ -20055,7 +20055,7 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Divide Emis by Absorb</source>
-        <translation type="unfinished">Diviser Emis par Dévier</translation>
+        <translation type="unfinished">Divide Emis by Absorb</translation>
     </message>
     <message>
         <source>bov</source>
@@ -20174,7 +20174,7 @@ pas des cycles ou des temps</translation>
     <name>RemoveAllOperatorsActionUI</name>
     <message>
         <source>Remove all operators</source>
-        <translation type="unfinished">Effacer tous les opérateurs</translation>
+        <translation type="unfinished">Enlever tous les opérateurs</translation>
     </message>
 </context>
 <context>
@@ -20188,7 +20188,7 @@ pas des cycles ou des temps</translation>
     <name>RemoveLastOperatorActionUI</name>
     <message>
         <source>Remove last operator</source>
-        <translation type="unfinished">Effacer le dernier filtre</translation>
+        <translation type="unfinished">Enlever le dernier filtre</translation>
     </message>
 </context>
 <context>
@@ -20414,11 +20414,11 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Lineout</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Alignement</translation>
     </message>
     <message>
         <source>Lineout mode</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Lineout mode</translation>
     </message>
 </context>
 <context>
@@ -20948,6 +20948,132 @@ pas des cycles ou des temps</translation>
         <source>E&amp;xit</source>
         <translation type="obsolete">Quitter</translation>
     </message>
+    <message>
+        <source>XMLEdit: %1</source>
+        <translation type="unfinished">XMLEdit: %1</translation>
+    </message>
+    <message>
+        <source>&amp;New</source>
+        <translation type="unfinished">&amp;Nouveau</translation>
+    </message>
+    <message>
+        <source>&amp;Open</source>
+        <translation type="unfinished">&amp;Ouvrir</translation>
+    </message>
+    <message>
+        <source>&amp;Save</source>
+        <translation type="unfinished">&amp;Sauvegarder</translation>
+    </message>
+    <message>
+        <source>Save &amp;as</source>
+        <translation type="unfinished">Sauvegarder sous</translation>
+    </message>
+    <message>
+        <source>&amp;Generate code</source>
+        <translation type="unfinished">&amp;Générer le code</translation>
+    </message>
+    <message>
+        <source>Plugin</source>
+        <translation type="unfinished">Plugin</translation>
+    </message>
+    <message>
+        <source>CMake</source>
+        <translation type="unfinished">CMake</translation>
+    </message>
+    <message>
+        <source>Attribute</source>
+        <translation type="unfinished">Attribut</translation>
+    </message>
+    <message>
+        <source>Enums</source>
+        <translation type="unfinished">Énumérations</translation>
+    </message>
+    <message>
+        <source>Fields</source>
+        <translation type="unfinished">Champs</translation>
+    </message>
+    <message>
+        <source>Functions</source>
+        <translation type="unfinished">Fonctions</translation>
+    </message>
+    <message>
+        <source>Constants</source>
+        <translation type="unfinished">Constantes</translation>
+    </message>
+    <message>
+        <source>Includes</source>
+        <translation type="unfinished">Includes</translation>
+    </message>
+    <message>
+        <source>Code</source>
+        <translation type="unfinished">Code</translation>
+    </message>
+    <message>
+        <source>untitled.xml</source>
+        <translation type="unfinished">sans titre.xml</translation>
+    </message>
+    <message>
+        <source>Open file...</source>
+        <translation type="unfinished">Ouvrir fichier...</translation>
+    </message>
+    <message>
+        <source>XML files (*.xml)</source>
+        <translation type="unfinished">Fichiers XML (*.xml)</translation>
+    </message>
+    <message>
+        <source>Save file...</source>
+        <translation type="unfinished">Enregistrer le fichier...</translation>
+    </message>
+    <message>
+        <source>XMLEdit: </source>
+        <translation type="unfinished">XMLEdit: </translation>
+    </message>
+    <message>
+        <source>Select items to generate</source>
+        <translation type="unfinished">Sélectionnez les éléments à générer</translation>
+    </message>
+    <message>
+        <source>Generate code for %1</source>
+        <translation type="unfinished">Générer le code pour %1</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditAttribute</name>
+    <message>
+        <source>Base Class</source>
+        <translation type="unfinished">Classe de base</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditCode</name>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Nouveau</translation>
+    </message>
+    <message>
+        <source>Del</source>
+        <translation type="unfinished">Effacer</translation>
+    </message>
+    <message>
+        <source>Target</source>
+        <translation type="unfinished">Cible</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Nom</translation>
+    </message>
+    <message>
+        <source>Prefix</source>
+        <translation type="unfinished">Préfixe</translation>
+    </message>
+    <message>
+        <source>Postfix</source>
+        <translation type="unfinished">Suffixe</translation>
+    </message>
+    <message>
+        <source>unnamed%1</source>
+        <translation type="unfinished">SansNom%1</translation>
+    </message>
 </context>
 <context>
     <name>XMLEditCodeGeneratorWindow</name>
@@ -20957,10 +21083,410 @@ pas des cycles ou des temps</translation>
     </message>
 </context>
 <context>
+    <name>XMLEditCodeSelectionDialog</name>
+    <message>
+        <source>Attributes</source>
+        <translation type="unfinished">Attributs</translation>
+    </message>
+    <message>
+        <source>C++</source>
+        <translation type="unfinished">C++</translation>
+    </message>
+    <message>
+        <source>Java</source>
+        <translation type="unfinished">Java</translation>
+    </message>
+    <message>
+        <source>Python</source>
+        <translation type="unfinished">Python</translation>
+    </message>
+    <message>
+        <source>Plugin</source>
+        <translation type="unfinished">Plugin</translation>
+    </message>
+    <message>
+        <source>Window</source>
+        <translation type="unfinished">Fenêtre</translation>
+    </message>
+    <message>
+        <source>CMake</source>
+        <translation type="unfinished">CMake</translation>
+    </message>
+    <message>
+        <source>Plugin information</source>
+        <translation type="unfinished">Informations sur les plugins</translation>
+    </message>
+    <message>
+        <source>AVT code skeleton</source>
+        <translation type="unfinished">Squelette de code AVT</translation>
+    </message>
+    <message>
+        <source>Ok</source>
+        <translation type="unfinished">Ok</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="unfinished">Annuler</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditConstants</name>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Nouveau</translation>
+    </message>
+    <message>
+        <source>Del</source>
+        <translation type="unfinished">Effacer</translation>
+    </message>
+    <message>
+        <source>Target</source>
+        <translation type="unfinished">Cible</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Nom</translation>
+    </message>
+    <message>
+        <source>Class member</source>
+        <translation type="unfinished">Membre du groupe</translation>
+    </message>
+    <message>
+        <source>Declaration</source>
+        <translation type="unfinished">Déclaration</translation>
+    </message>
+    <message>
+        <source>Definition</source>
+        <translation type="unfinished">Définition</translation>
+    </message>
+    <message>
+        <source>unnamed%1</source>
+        <translation type="unfinished">SansNom%1</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditEnums</name>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Nouveau</translation>
+    </message>
+    <message>
+        <source>Del</source>
+        <translation type="unfinished">Effacer</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Nom</translation>
+    </message>
+    <message>
+        <source>Values</source>
+        <translation type="unfinished">Valeurs</translation>
+    </message>
+    <message>
+        <source>unnamed%1</source>
+        <translation type="unfinished">SansNom%1</translation>
+    </message>
+</context>
+<context>
     <name>XMLEditFields</name>
     <message>
         <source>Label</source>
         <translation type="obsolete">étiquette</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation type="unfinished">Haut</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation type="unfinished">Bas</translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Nouveau</translation>
+    </message>
+    <message>
+        <source>Del</source>
+        <translation type="unfinished">Effacer</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Nom</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished">Type</translation>
+    </message>
+    <message>
+        <source>Length</source>
+        <translation type="unfinished">Longueur</translation>
+    </message>
+    <message>
+        <source>Subtype</source>
+        <translation type="unfinished">Sous-type</translation>
+    </message>
+    <message>
+        <source>(none)</source>
+        <translation type="unfinished">(aucun)</translation>
+    </message>
+    <message>
+        <source>Enabler</source>
+        <translation type="unfinished">Facilitateur</translation>
+    </message>
+    <message>
+        <source>Values</source>
+        <translation type="unfinished">Valeurs</translation>
+    </message>
+    <message>
+        <source>Internal use only</source>
+        <translation type="unfinished">Usage interne uniquement</translation>
+    </message>
+    <message>
+        <source>Persistent</source>
+        <translation type="unfinished">Persistant</translation>
+    </message>
+    <message>
+        <source>Accepted variable types</source>
+        <translation type="unfinished">Types de variables acceptés</translation>
+    </message>
+    <message>
+        <source>Meshes</source>
+        <translation type="unfinished">Maillages</translation>
+    </message>
+    <message>
+        <source>Scalars</source>
+        <translation type="unfinished">Scalaires</translation>
+    </message>
+    <message>
+        <source>Materials</source>
+        <translation type="unfinished">Matériaux</translation>
+    </message>
+    <message>
+        <source>Labels</source>
+        <translation type="unfinished">Étiquettes</translation>
+    </message>
+    <message>
+        <source>Vectors</source>
+        <translation type="unfinished">Vecteurs</translation>
+    </message>
+    <message>
+        <source>Subsets</source>
+        <translation type="unfinished">Sous ensembles</translation>
+    </message>
+    <message>
+        <source>Species</source>
+        <translation type="unfinished">Espèces</translation>
+    </message>
+    <message>
+        <source>Arrays</source>
+        <translation type="unfinished">Tableaux</translation>
+    </message>
+    <message>
+        <source>Curves</source>
+        <translation type="unfinished">Courbes</translation>
+    </message>
+    <message>
+        <source>Tensors</source>
+        <translation type="unfinished">Tenseurs</translation>
+    </message>
+    <message>
+        <source>Symmetric Tensors</source>
+        <translation type="unfinished">Tenseur symmétrique</translation>
+    </message>
+    <message>
+        <source>Ignore field for attribute
+equality calculations</source>
+        <translation type="unfinished">Ignorer le champ pour
+les calculs d'égalité des attributs</translation>
+    </message>
+    <message>
+        <source>Access</source>
+        <translation type="unfinished">Accès</translation>
+    </message>
+    <message>
+        <source>private</source>
+        <translation type="unfinished">privé</translation>
+    </message>
+    <message>
+        <source>protected</source>
+        <translation type="unfinished">protégé</translation>
+    </message>
+    <message>
+        <source>public</source>
+        <translation type="unfinished">Publique</translation>
+    </message>
+    <message>
+        <source>Special initialization code</source>
+        <translation type="unfinished">Code d'initialisation spécial</translation>
+    </message>
+    <message>
+        <source>Initialization Values / Code</source>
+        <translation type="unfinished">Valeurs d'initialisation / Code</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditFunctions</name>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Nouveau</translation>
+    </message>
+    <message>
+        <source>Del</source>
+        <translation type="unfinished">Effacer</translation>
+    </message>
+    <message>
+        <source>Target</source>
+        <translation type="unfinished">Cible</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Nom</translation>
+    </message>
+    <message>
+        <source>New function</source>
+        <translation type="unfinished">Nouvelle fonction</translation>
+    </message>
+    <message>
+        <source>Replaces builtin</source>
+        <translation type="unfinished">Replaces builtin</translation>
+    </message>
+    <message>
+        <source>Class member</source>
+        <translation type="unfinished">Membre du groupe</translation>
+    </message>
+    <message>
+        <source>Access</source>
+        <translation type="unfinished">Accès</translation>
+    </message>
+    <message>
+        <source>private</source>
+        <translation type="unfinished">privé</translation>
+    </message>
+    <message>
+        <source>protected</source>
+        <translation type="unfinished">protégé</translation>
+    </message>
+    <message>
+        <source>public</source>
+        <translation type="unfinished">Publique</translation>
+    </message>
+    <message>
+        <source>Declaration</source>
+        <translation type="unfinished">Déclaration</translation>
+    </message>
+    <message>
+        <source>unnamed%1</source>
+        <translation type="unfinished">SansNom%1</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditIncludes</name>
+    <message>
+        <source>New</source>
+        <translation type="unfinished">Nouveau</translation>
+    </message>
+    <message>
+        <source>Del</source>
+        <translation type="unfinished">Effacer</translation>
+    </message>
+    <message>
+        <source>Source (.C) file</source>
+        <translation type="unfinished">Fichier source (.C)</translation>
+    </message>
+    <message>
+        <source>Header (.h) file</source>
+        <translation type="unfinished">Fichier d'en-tête (.h)</translation>
+    </message>
+    <message>
+        <source>Use quotes &quot;&quot;</source>
+        <translation type="unfinished">Utilisez des guillemets &quot;&quot;</translation>
+    </message>
+    <message>
+        <source>Use angle brackets &lt;&gt;</source>
+        <translation type="unfinished">Utilisez des équerres &lt;&gt;</translation>
+    </message>
+    <message>
+        <source>Target</source>
+        <translation type="unfinished">Cible</translation>
+    </message>
+    <message>
+        <source>Include file</source>
+        <translation type="unfinished">Fichier à include</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditMakefile</name>
+    <message>
+        <source>CXXFLAGS</source>
+        <translation type="unfinished">CXXFLAGS</translation>
+    </message>
+    <message>
+        <source>LDFLAGS</source>
+        <translation type="unfinished">LDFLAG</translation>
+    </message>
+    <message>
+        <source>LIBS</source>
+        <translation type="unfinished">LIBS</translation>
+    </message>
+    <message>
+        <source>DEFINES</source>
+        <translation type="unfinished">DÉFINIT</translation>
+    </message>
+    <message>
+        <source>GUI Files</source>
+        <translation type="unfinished">Fichiers d'interface graphique</translation>
+    </message>
+    <message>
+        <source>GUI Libs</source>
+        <translation type="unfinished">Bibliothèques d'interface graphique</translation>
+    </message>
+    <message>
+        <source>GUI Widget Files</source>
+        <translation type="unfinished">Fichiers de widgets d'interface graphique</translation>
+    </message>
+    <message>
+        <source>Scripting Files</source>
+        <translation type="unfinished">Fichiers de script</translation>
+    </message>
+    <message>
+        <source>Viewer Files</source>
+        <translation type="unfinished">Fichiers de la visionneuse (viewer)</translation>
+    </message>
+    <message>
+        <source>Viewer Libs</source>
+        <translation type="unfinished">Bibliothèques de la visionneuse (viewer)</translation>
+    </message>
+    <message>
+        <source>Viewer Widget Files</source>
+        <translation type="unfinished">Fichiers de widget de visionneuse (viewer)</translation>
+    </message>
+    <message>
+        <source>MDServer Files</source>
+        <translation type="unfinished">Fichiers MDServer</translation>
+    </message>
+    <message>
+        <source>MDServer Libs</source>
+        <translation type="unfinished">Bibliothèques MDServer</translation>
+    </message>
+    <message>
+        <source>Engine Files</source>
+        <translation type="unfinished">Fichiers de moteur</translation>
+    </message>
+    <message>
+        <source>Engine Libs (ser)</source>
+        <translation type="unfinished">Bibliothèques du moteur (ser)</translation>
+    </message>
+    <message>
+        <source>Engine Libs (par)</source>
+        <translation type="unfinished">Bibliothèques du moteur (par)</translation>
+    </message>
+    <message>
+        <source>Plugin has code specific to the Engine</source>
+        <translation type="unfinished">Le plugin a un code spécifique au moteur</translation>
+    </message>
+    <message>
+        <source>Plugin has code specific to the MDServer (Database Plugins only)</source>
+        <translation type="unfinished">Plugin has code specific to the MDServer (Database Plugins only)</translation>
     </message>
 </context>
 <context>
@@ -20975,7 +21501,7 @@ pas des cycles ou des temps</translation>
     </message>
     <message>
         <source>Mesh</source>
-        <translation type="obsolete">Maille</translation>
+        <translation type="obsolete">Maille/Maillage</translation>
     </message>
     <message>
         <source>Vector</source>
@@ -20992,6 +21518,138 @@ pas des cycles ou des temps</translation>
     <message>
         <source>Operator Plugin attributes</source>
         <translation type="vanished">Attributs du plugin de filtre</translation>
+    </message>
+    <message>
+        <source>Plugin</source>
+        <translation type="unfinished">Plugin</translation>
+    </message>
+    <message>
+        <source>Attribute only</source>
+        <translation type="unfinished">Attribut uniquement</translation>
+    </message>
+    <message>
+        <source>General Plugin attributes</source>
+        <translation type="unfinished">Attributs généraux du plugin</translation>
+    </message>
+    <message>
+        <source>Plot</source>
+        <translation type="unfinished">Tracé</translation>
+    </message>
+    <message>
+        <source>Database</source>
+        <translation type="unfinished">Base de données</translation>
+    </message>
+    <message>
+        <source>Plugin type</source>
+        <translation type="unfinished">Type de plug-in</translation>
+    </message>
+    <message>
+        <source>Plugin is enabled by default</source>
+        <translation type="unfinished">Le plugin est activé par défaut</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Nom</translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation type="unfinished">Version</translation>
+    </message>
+    <message>
+        <source>Has icon</source>
+        <translation type="unfinished">A une icône</translation>
+    </message>
+    <message>
+        <source>Plot Plugin attributes</source>
+        <translation type="unfinished">Tracer les attributs du plug-in</translation>
+    </message>
+    <message>
+        <source>Variable types accepted by the plot</source>
+        <translation type="unfinished">Types de variables acceptés par la parcelle</translation>
+    </message>
+    <message>
+        <source>Scalar</source>
+        <translation type="unfinished">Scalaire</translation>
+    </message>
+    <message>
+        <source>Material</source>
+        <translation type="unfinished">Matériau</translation>
+    </message>
+    <message>
+        <source>Subset</source>
+        <translation type="unfinished">Sous ensemble</translation>
+    </message>
+    <message>
+        <source>Species</source>
+        <translation type="unfinished">Espèces</translation>
+    </message>
+    <message>
+        <source>Symmetric Tensor</source>
+        <translation type="unfinished">Tenseur Symétrique</translation>
+    </message>
+    <message>
+        <source>Array</source>
+        <translation type="unfinished">Tableau</translation>
+    </message>
+    <message>
+        <source>Operator creates new variable via expressions</source>
+        <translation type="unfinished">L'opérateur crée une nouvelle variable via des expressions</translation>
+    </message>
+    <message>
+        <source>Variable type inputted by the operator</source>
+        <translation type="unfinished">Type de variable saisi par l'opérateur</translation>
+    </message>
+    <message>
+        <source>Variable type created by the operator</source>
+        <translation type="unfinished">Type de variable créé par l'opérateur</translation>
+    </message>
+    <message>
+        <source>Database Plugin attributes</source>
+        <translation type="unfinished">Attributs du plug-in de base de données</translation>
+    </message>
+    <message>
+        <source>STSD - Generic single time single domain</source>
+        <translation type="unfinished">STSD - Domaine unique générique</translation>
+    </message>
+    <message>
+        <source>MTSD - Generic multi  time single domain</source>
+        <translation type="unfinished">MTSD - Domaine unique générique multi-temps</translation>
+    </message>
+    <message>
+        <source>STMD - Generic single time multi  domain</source>
+        <translation type="unfinished">STMD - Générique multi-domaine temporel unique</translation>
+    </message>
+    <message>
+        <source>MTMD - Generic multi  time multi  domain</source>
+        <translation type="unfinished">MTMD - Multi-domaine générique multi-temps</translation>
+    </message>
+    <message>
+        <source>Custom - Fully customized database type</source>
+        <translation type="unfinished">Personnalisé - Type de base de données entièrement personnalisé</translation>
+    </message>
+    <message>
+        <source>Default file name patterns</source>
+        <translation type="unfinished">Modèles de nom de fichier par défaut</translation>
+    </message>
+    <message>
+        <source>File name patterns are strict by default</source>
+        <translation type="unfinished">Les modèles de nom de fichier sont stricts par défaut</translation>
+    </message>
+    <message>
+        <source>File format opens a whole directory (not a single file)</source>
+        <translation type="unfinished">Le format de fichier ouvre un répertoire entier (pas un seul fichier)</translation>
+    </message>
+    <message>
+        <source>File format can also write data</source>
+        <translation type="unfinished">Le format de fichier peut également écrire des données</translation>
+    </message>
+    <message>
+        <source>File format provides options for reading or writing data.</source>
+        <translation type="unfinished">Le format de fichier offre des options de lecture ou d'écriture de données.</translation>
+    </message>
+    <message>
+        <source>File format provides license.</source>
+        <translation type="unfinished">Le format de fichier fournit une licence.</translation>
     </message>
 </context>
 </TS>
