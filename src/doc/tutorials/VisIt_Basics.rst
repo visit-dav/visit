@@ -133,7 +133,7 @@ Applying an operator
 --------------------
 
 1. Click on the *Operators* button to access various operators. This is located next to the *Add* button.
-2. Select *Slicing->Slice* to add a Slice operator
+2. Select *Slicing->Slice* to add a Slice operator.
 
   * The visualization window will go blank and the Pseudocolor entry in the Plot list will turn green.
   * This allows you to change the slice attributes before applying the Slice operator.
@@ -152,6 +152,10 @@ Applying an operator
 
 6. There are many controls for setting the slice plane ... play with them.
 7. Operators can be removed by clicking on an expansion arrow in the Plot list, then clicking on the red X icon next to an operator.
+
+.. figure:: images/Basics-PlotList2.png
+
+   The Expansion arrow and X icon in the Plot list
 
 VisIt_ interaction modes
 ------------------------
@@ -173,6 +177,13 @@ The interaction mode is controlled by the toolbar, which is located at the
 top of the visualization window. The six interaction modes are all located
 together on the toolbar, towards the bottom.
 
+The following descriptions apply to plots of 2D data. Before proceeding:
+
+1. Select *Pseudocolor->temp* to add a Pseudocolor plot of *temp*.
+2. Select *Operators->Slicing->Slice* to add a Slice operator.
+3. Click *Draw*.
+4. Click on the *Reset view* icon in the tool bar to reset the view. It is represented by a camera that has a green "X" around it (The camera is mostly obscured by the X).
+
 Using navigate mode
 ~~~~~~~~~~~~~~~~~~~
 
@@ -185,6 +196,10 @@ rotate the data set.
 3. The data set will pan with the mouse.
 
   * In 3D, the data set rotates.
+
+4. Middle click and move the mouse up and down. The data set will zoom in and out.
+
+  * In 3D, the data set will also zoom in and out.
 
 Using zoom mode
 ~~~~~~~~~~~~~~~
@@ -210,7 +225,7 @@ Lineout mode is indicated by the Lineout icon, represented by a curve plot
 of red and blue curves, being indented. It allows the user to create a plot
 of a scalar variable as a function of distance along a line.
 
-1. First we will reset the view. Click on the Reset view icon, represented by a camera that has a green "X" around it (The camera is mostly obscured by the X).
+1. First, reset the view again.
 
   * This will reset your view.
 
@@ -221,8 +236,8 @@ of a scalar variable as a function of distance along a line.
   * You should see a single line moving around.
 
 5. Lift up the mouse button.
-6. The window layout changes. You now have two windows. The first window is the same, but the second now contains a "Lineout", which has temp as a function of distance over the line.
-7. On the window that has the curve, find the Delete window icon, represented by a window with a red circle with a line through it.
+6. A new window will appear. The new window contains a "Lineout", which has *temp* as a function of distance over the line.
+7. On the new window, find the Delete window icon, represented by a window with a red circle with a line through it.
 8. Click this button.
 
   * The new window will disappear and you should now have only one window.
