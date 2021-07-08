@@ -559,7 +559,7 @@
     <message>
         <location filename="../../operators/Clip/ClipGUIPluginInfo.C" line="32"/>
         <source>Clip</source>
-        <translation type="unfinished">Clip</translation>
+        <translation type="unfinished">Abschneiden (clip)</translation>
     </message>
     <message>
         <location filename="../../operators/Cone/ConeGUIPluginInfo.C" line="32"/>
@@ -584,12 +584,12 @@
     <message>
         <location filename="../../operators/CoordSwap/CoordSwapGUIPluginInfo.C" line="32"/>
         <source>CoordSwap</source>
-        <translation type="unfinished">CoordSwap</translation>
+        <translation type="unfinished">Koordinatentausch</translation>
     </message>
     <message>
         <location filename="../../operators/CracksClipper/CracksClipperGUIPluginInfo.C" line="32"/>
         <source>CracksClipper</source>
-        <translation type="unfinished">CracksClipper</translation>
+        <translation type="unfinished">Risse Clipper</translation>
     </message>
     <message>
         <location filename="../../operators/CreateBonds/CreateBondsGUIPluginInfo.C" line="32"/>
@@ -604,7 +604,7 @@
     <message>
         <location filename="../../operators/DataBinning/DataBinningGUIPluginInfo.C" line="32"/>
         <source>DataBinning</source>
-        <translation type="unfinished">DataBinning</translation>
+        <translation type="unfinished">Datenbinning</translation>
     </message>
     <message>
         <location filename="../../operators/Decimate/DecimateGUIPluginInfo.C" line="32"/>
@@ -614,7 +614,7 @@
     <message>
         <location filename="../../operators/DeferExpression/DeferExpressionGUIPluginInfo.C" line="32"/>
         <source>DeferExpression</source>
-        <translation type="unfinished">DeferExpression</translation>
+        <translation type="unfinished">Ausdruck/Formel verschieben (defer)</translation>
     </message>
     <message>
         <location filename="../../operators/Delaunay/DelaunayGUIPluginInfo.C" line="32"/>
@@ -629,7 +629,7 @@
     <message>
         <location filename="../../operators/DualMesh/DualMeshGUIPluginInfo.C" line="32"/>
         <source>Dual Mesh</source>
-        <translation type="unfinished">Dual-Mesh</translation>
+        <translation type="unfinished">Dual-Netz</translation>
     </message>
     <message>
         <location filename="../../operators/Edge/EdgeGUIPluginInfo.C" line="32"/>
@@ -674,7 +674,7 @@
     <message>
         <location filename="../../operators/FiveFoldTetSubdivision/FiveFoldTetSubdivisionGUIPluginInfo.C" line="32"/>
         <source>Five Fold Tet Subdvision</source>
-        <translation type="unfinished">Five Fold Tet Subdvision</translation>
+        <translation type="unfinished">Fünffache Tetraeder-Unterteilung</translation>
     </message>
     <message>
         <location filename="../../operators/Flux/FluxGUIPluginInfo.C" line="32"/>
@@ -714,7 +714,7 @@
     <message>
         <location filename="../../operators/LCS/LCSGUIPluginInfo.C" line="32"/>
         <source>LCS</source>
-        <translation type="unfinished">LCS</translation>
+        <translation type="unfinished">LCS (Lagrangesche kohärente Strukturen)</translation>
     </message>
     <message>
         <location filename="../../operators/LimitCycle/LimitCycleGUIPluginInfo.C" line="32"/>
@@ -744,12 +744,12 @@
     <message>
         <location filename="../../operators/ModelFit/ModelFitGUIPluginInfo.C" line="32"/>
         <source>ModelFit</source>
-        <translation type="unfinished">ModelFit</translation>
+        <translation type="unfinished">Modellanpassung (&quot;Fitéquot;)</translation>
     </message>
     <message>
         <location filename="../../operators/MultiresControl/MultiresControlGUIPluginInfo.C" line="32"/>
         <source>MultiresControl</source>
-        <translation type="unfinished">MultiresControl</translation>
+        <translation type="unfinished">Multires-Steuerung</translation>
     </message>
     <message>
         <location filename="../../operators/OnionPeel/OnionPeelGUIPluginInfo.C" line="32"/>
@@ -759,12 +759,12 @@
     <message>
         <location filename="../../operators/PDF/PDFGUIPluginInfo.C" line="32"/>
         <source>Probability Density Function</source>
-        <translation type="unfinished">Wahrscheinlichkeitsdichtefunktion</translation>
+        <translation type="unfinished">Wahrscheinlichkeitsdichtefunktion (PDF)</translation>
     </message>
     <message>
         <location filename="../../operators/PersistentParticles/PersistentParticlesGUIPluginInfo.C" line="32"/>
         <source>PersistentParticles</source>
-        <translation type="unfinished">PersistentParticles</translation>
+        <translation type="unfinished">Persistente Partikel</translation>
     </message>
     <message>
         <location filename="../../operators/Poincare/PoincareGUIPluginInfo.C" line="32"/>
@@ -794,7 +794,7 @@
     <message>
         <location filename="../../operators/RemoveCells/RemoveCellsGUIPluginInfo.C" line="32"/>
         <source>RemoveCells</source>
-        <translation type="unfinished">RemoveCells</translation>
+        <translation type="unfinished">Zellen entfernen</translation>
     </message>
     <message>
         <location filename="../../operators/Replicate/ReplicateGUIPluginInfo.C" line="32"/>
@@ -814,7 +814,7 @@
     <message>
         <location filename="../../operators/Slice/SliceGUIPluginInfo.C" line="32"/>
         <source>Slice</source>
-        <translation type="unfinished">Scheibe/Schnitte</translation>
+        <translation type="unfinished">Scheiben/Schnitten</translation>
     </message>
     <message>
         <location filename="../../operators/Smooth/SmoothGUIPluginInfo.C" line="32"/>
@@ -824,7 +824,7 @@
     <message>
         <location filename="../../operators/SphereSlice/SphereSliceGUIPluginInfo.C" line="32"/>
         <source>Spherical Slice</source>
-        <translation type="unfinished">Kugelscheibe</translation>
+        <translation type="unfinished">Kugelscheiben</translation>
     </message>
     <message>
         <location filename="../../operators/SPHResample/SPHResampleGUIPluginInfo.C" line="32"/>
@@ -839,7 +839,7 @@
     <message>
         <location filename="../../operators/StatisticalTrends/StatisticalTrendsGUIPluginInfo.C" line="32"/>
         <source>StatisticalTrends</source>
-        <translation type="unfinished">StatisticalTrends</translation>
+        <translation type="unfinished">Statistische Trends</translation>
     </message>
     <message>
         <location filename="../../operators/SubdivideQuads/SubdivideQuadsGUIPluginInfo.C" line="32"/>
@@ -874,7 +874,7 @@
     <message>
         <location filename="../../operators/ToroidalPoloidalProjection/ToroidalPoloidalProjectionGUIPluginInfo.C" line="32"/>
         <source>ToroidalPoloidalProjection</source>
-        <translation type="unfinished">ToroidalPoloidalProjection</translation>
+        <translation type="unfinished">ToroidalPoloidalProjektion</translation>
     </message>
     <message>
         <location filename="../../operators/Transform/TransformGUIPluginInfo.C" line="32"/>
@@ -889,7 +889,7 @@
     <message>
         <location filename="../../operators/Tube/TubeGUIPluginInfo.C" line="32"/>
         <source>Tube</source>
-        <translation type="unfinished">Tube</translation>
+        <translation type="unfinished">Tube/Rohr</translation>
     </message>
     <message>
         <location filename="../../operators/ZoneDump/ZoneDumpGUIPluginInfo.C" line="32"/>
@@ -932,7 +932,7 @@
     <message>
         <location filename="../../plots/Mesh/MeshGUIPluginInfo.C" line="32"/>
         <source>Mesh</source>
-        <translation type="unfinished">Gittergewebe</translation>
+        <translation type="unfinished">Netz/Gittergewebe</translation>
     </message>
     <message>
         <location filename="../../plots/Molecule/MoleculeGUIPluginInfo.C" line="32"/>
@@ -987,7 +987,7 @@
     <message>
         <location filename="../../plots/Truecolor/TruecolorGUIPluginInfo.C" line="32"/>
         <source>Truecolor</source>
-        <translation type="unfinished">Wahre Farbe</translation>
+        <translation type="unfinished">Wahre Farbe (Echtfarben)</translation>
     </message>
     <message>
         <location filename="../../plots/Vector/VectorGUIPluginInfo.C" line="32"/>
@@ -1091,17 +1091,17 @@ VisIt versucht, die Verarbeitung fortzusetzen, verhält sich jedoch möglicherwe
     <message>
         <location filename="../../operators/AMRStitchCell/QvisAMRStitchCellWindow.C" line="89"/>
         <source>DualGridAndStitchCells</source>
-        <translation type="unfinished">DualGridAndStitchCells</translation>
+        <translation type="unfinished">Duales Gitter und Stichzellen</translation>
     </message>
     <message>
         <location filename="../../operators/AMRStitchCell/QvisAMRStitchCellWindow.C" line="92"/>
         <source>DualGrid</source>
-        <translation type="unfinished">DualGrid</translation>
+        <translation type="unfinished">Duales Gitter</translation>
     </message>
     <message>
         <location filename="../../operators/AMRStitchCell/QvisAMRStitchCellWindow.C" line="95"/>
         <source>StitchCells</source>
-        <translation type="unfinished">StitchCells</translation>
+        <translation type="unfinished">Stichzellen</translation>
     </message>
 </context>
 <context>
@@ -1144,12 +1144,12 @@ VisIt versucht, die Verarbeitung fortzusetzen, verhält sich jedoch möglicherwe
     <message>
         <location filename="../../gui/QvisAnimationWindow.C" line="154"/>
         <source>slower</source>
-        <translation type="unfinished">Langsamer</translation>
+        <translation type="unfinished">langsamer</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnimationWindow.C" line="156"/>
         <source>faster</source>
-        <translation type="unfinished">Schneller</translation>
+        <translation type="unfinished">schneller</translation>
     </message>
 </context>
 <context>
@@ -1206,7 +1206,7 @@ VisIt versucht, die Verarbeitung fortzusetzen, verhält sich jedoch möglicherwe
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="391"/>
         <source>Smart</source>
-        <translation type="unfinished">Clever</translation>
+        <translation type="unfinished">Intelligent</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="392"/>
@@ -1241,7 +1241,7 @@ VisIt versucht, die Verarbeitung fortzusetzen, verhält sich jedoch möglicherwe
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="500"/>
         <source>2D</source>
-        <translation type="unfinished">2D</translation>
+        <translation>2D</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="502"/>
@@ -1341,7 +1341,7 @@ VisIt versucht, die Verarbeitung fortzusetzen, verhält sich jedoch möglicherwe
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="666"/>
         <source>3D</source>
-        <translation type="unfinished">3D</translation>
+        <translation>3D</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="677"/>
@@ -1367,12 +1367,12 @@ VisIt versucht, die Verarbeitung fortzusetzen, verhält sich jedoch möglicherwe
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="811"/>
         <source>Closest triad</source>
-        <translation type="unfinished">Nächster Dreiklang</translation>
+        <translation type="unfinished">Nächster Dreiklang (triad)</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="812"/>
         <source>Furthest triad</source>
-        <translation type="unfinished">Weitester Dreiklang</translation>
+        <translation type="unfinished">Weitester Dreiklang (triad)</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="813"/>
@@ -1407,7 +1407,7 @@ VisIt versucht, die Verarbeitung fortzusetzen, verhält sich jedoch möglicherwe
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="873"/>
         <source>Triad</source>
-        <translation type="unfinished">Triade</translation>
+        <translation type="unfinished">Dreiklang/Triade</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="884"/>
@@ -1417,7 +1417,7 @@ VisIt versucht, die Verarbeitung fortzusetzen, verhält sich jedoch möglicherwe
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="891"/>
         <source>Select color</source>
-        <translation type="unfinished">Wähle Farbe</translation>
+        <translation type="unfinished">Farbe Wählen</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="895"/>
@@ -1437,7 +1437,7 @@ VisIt versucht, die Verarbeitung fortzusetzen, verhält sich jedoch möglicherwe
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="918"/>
         <source>Times</source>
-        <translation type="unfinished">Mal</translation>
+        <translation type="unfinished">Zeit</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="921"/>
@@ -1886,7 +1886,7 @@ VisIt versucht, die Verarbeitung fortzusetzen, verhält sich jedoch möglicherwe
     <message>
         <location filename="../../plots/Boundary/QvisBoundaryPlotWindow.C" line="261"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Glätten</translation>
+        <translation type="unfinished">Glättung</translation>
     </message>
     <message>
         <location filename="../../plots/Boundary/QvisBoundaryPlotWindow.C" line="268"/>
@@ -2000,22 +2000,22 @@ VisIt versucht, die Verarbeitung fortzusetzen, verhält sich jedoch möglicherwe
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="616"/>
         <source>Cross-mesh field evaluations (CMFEs) take a field from a donor mesh and place that field on a target mesh.  To begin select the type of evaluation to setup:</source>
-        <translation type="unfinished">Cross-mesh field evaluations (CMFEs) take a field from a donor mesh and place that field on a target mesh.  To begin select the type of evaluation to setup:</translation>
+        <translation type="unfinished">Cross-Mesh-Feldauswertungen (CMFEs) nehmen ein Feld von einem Donor-Netz und platzieren dieses Feld auf einem Ziel-Netz. Art der einzurichtenden Auswertung:</translation>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="632"/>
         <source>Between two or more meshes in a single database</source>
-        <translation type="unfinished">Zwischen zwei oder mehr Meshes in einer einzigen Datenbank</translation>
+        <translation type="unfinished">Zwischen zwei oder mehr Netzen in einer einzigen Datenbank</translation>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="636"/>
         <source>Between different time slices on the same mesh</source>
-        <translation type="unfinished">Zwischen verschiedenen Zeitscheiben auf demselben Mesh</translation>
+        <translation type="unfinished">Zwischen verschiedenen Zeitscheiben auf demselben Netz</translation>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="641"/>
         <source>Between meshes in two or more separate databases</source>
-        <translation type="unfinished">Zwischen Meshes in zwei oder mehr separaten Datenbanken</translation>
+        <translation type="unfinished">Zwischen Netzen in zwei oder mehr separaten Datenbanken</translation>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="674"/>
@@ -2378,7 +2378,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../gui/QvisCinemaWizard.C" line="129"/>
         <source>&lt;a href=&quot;http://www.cinemascience.org&quot;&gt;www.cinemascience.org&lt;/a&gt;</source>
-        <translation type="unfinished">&lt;a href=&quot;http://www.cinemascience.org&quot;&gt;www.cinemascience.org&lt;/a&gt;</translation>
+        <translation>&lt;a href=&quot;http://www.cinemascience.org&quot;&gt;www.cinemascience.org&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../../gui/QvisCinemaWizard.C" line="312"/>
@@ -2556,7 +2556,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../operators/Clip/QvisClipWindow.C" line="321"/>
         <source>Clip parameters</source>
-        <translation type="unfinished">Clip-Parameter</translation>
+        <translation type="unfinished">Abschneiden (Clip) Parameters</translation>
     </message>
     <message>
         <location filename="../../operators/Clip/QvisClipWindow.C" line="334"/>
@@ -2596,7 +2596,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
         <location filename="../../operators/Clip/QvisClipWindow.C" line="402"/>
         <location filename="../../operators/Clip/QvisClipWindow.C" line="716"/>
         <source>Center</source>
-        <translation type="unfinished">Center</translation>
+        <translation type="unfinished">Zentrum</translation>
     </message>
     <message>
         <location filename="../../operators/Clip/QvisClipWindow.C" line="410"/>
@@ -2746,7 +2746,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../gui/QvisColorTableWindow.C" line="285"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Glätten</translation>
+        <translation type="unfinished">Glättung</translation>
     </message>
     <message>
         <location filename="../../gui/QvisColorTableWindow.C" line="288"/>
@@ -2776,7 +2776,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../gui/QvisColorTableWindow.C" line="350"/>
         <source>Red</source>
-        <translation type="unfinished">rot</translation>
+        <translation type="unfinished">Rot</translation>
     </message>
     <message>
         <location filename="../../gui/QvisColorTableWindow.C" line="351"/>
@@ -3040,7 +3040,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../plots/Contour/QvisContourPlotWindow.C" line="140"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../plots/Contour/QvisContourPlotWindow.C" line="145"/>
@@ -3223,7 +3223,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../operators/CracksClipper/QvisCracksClipperWindow.C" line="105"/>
         <source>Crack 2 Variable</source>
-        <translation type="unfinished">Riss 2 variabel</translation>
+        <translation type="unfinished">Riss 2 Variable</translation>
     </message>
     <message>
         <location filename="../../operators/CracksClipper/QvisCracksClipperWindow.C" line="113"/>
@@ -3233,7 +3233,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../operators/CracksClipper/QvisCracksClipperWindow.C" line="119"/>
         <source>Crack 3 Variable</source>
-        <translation type="unfinished">Riss 3 variabel</translation>
+        <translation type="unfinished">Riss 3 Variable</translation>
     </message>
     <message>
         <location filename="../../operators/CracksClipper/QvisCracksClipperWindow.C" line="127"/>
@@ -3243,7 +3243,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../operators/CracksClipper/QvisCracksClipperWindow.C" line="135"/>
         <source>Input Mass Variable</source>
-        <translation type="unfinished">Input Mass Variable</translation>
+        <translation type="unfinished">Eingangsmasse Variable</translation>
     </message>
 </context>
 <context>
@@ -3251,7 +3251,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../operators/CreateBonds/QvisCreateBondsWindow.C" line="106"/>
         <source>Bonding parameters</source>
-        <translation type="unfinished">Bindungsparameter</translation>
+        <translation type="unfinished">Bindungsparameters</translation>
     </message>
     <message>
         <location filename="../../operators/CreateBonds/QvisCreateBondsWindow.C" line="110"/>
@@ -3389,7 +3389,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../operators/CreateBonds/QvisCreateBondsWindow.C" line="471"/>
         <source>The value for maxBonds must be between 1 and 100.</source>
-        <translation type="unfinished">The value for maxBonds must be between 1 and 100.</translation>
+        <translation type="unfinished">Der Wert für maxBonds (maximale Anzahl von Bindungen) muss zwischen 1 und 100 liegen.</translation>
     </message>
 </context>
 <context>
@@ -3594,7 +3594,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="541"/>
         <source>Crop</source>
-        <translation type="unfinished">Ernte</translation>
+        <translation type="unfinished">Beschneiden</translation>
     </message>
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="546"/>
@@ -3614,12 +3614,12 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="573"/>
         <source>R_Theta</source>
-        <translation type="unfinished">R_Theta</translation>
+        <translation >R_Theta</translation>
     </message>
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="574"/>
         <source>Theta_R</source>
-        <translation type="unfinished">Theta_R</translation>
+        <translation >Theta_R</translation>
     </message>
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="575"/>
@@ -3649,7 +3649,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../plots/Curve/QvisCurvePlotWindow.C" line="1024"/>
         <source>timeForTimeCue</source>
-        <translation type="unfinished">timeForTimeCue</translation>
+        <translation type="unfinished">Zeit für Zeit Hinweis</translation>
     </message>
 </context>
 <context>
@@ -3779,7 +3779,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
         <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="818"/>
         <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="860"/>
         <source>Number of bins</source>
-        <translation type="unfinished">Anzahl der Behälter</translation>
+        <translation type="unfinished">Anzahl der Behälter (&quot;bins&quot;)</translation>
     </message>
     <message>
         <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="157"/>
@@ -3796,7 +3796,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
         <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="790"/>
         <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="832"/>
         <source>Min</source>
-        <translation type="unfinished">Mindest</translation>
+        <translation type="unfinished">Min</translation>
     </message>
     <message>
         <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="169"/>
@@ -3816,7 +3816,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="285"/>
         <source>Clamp</source>
-        <translation type="unfinished">Klemme</translation>
+        <translation type="unfinished">Einklemmen</translation>
     </message>
     <message>
         <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="288"/>
@@ -3856,12 +3856,12 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="351"/>
         <source>Bins</source>
-        <translation type="unfinished">Behälter</translation>
+        <translation type="unfinished">Behälter (&quot;Bins&quot;)</translation>
     </message>
     <message>
         <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="354"/>
         <source>Mesh</source>
-        <translation type="unfinished">Gittergewebe</translation>
+        <translation type="unfinished">Netz/Gittergewebe</translation>
     </message>
     <message>
         <location filename="../../operators/DataBinning/QvisDataBinningWindow.C" line="776"/>
@@ -3914,7 +3914,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../gui/QvisDatabaseCorrelationListWindow.C" line="162"/>
         <source>Never</source>
-        <translation type="unfinished">noch nie</translation>
+        <translation type="unfinished">Niemals</translation>
     </message>
     <message>
         <location filename="../../gui/QvisDatabaseCorrelationListWindow.C" line="163"/>
@@ -4114,7 +4114,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../operators/DualMesh/QvisDualMeshWindow.C" line="91"/>
         <source>Auto</source>
-        <translation type="unfinished">Auto</translation>
+        <translation type="unfinished">Automatisch</translation>
     </message>
     <message>
         <location filename="../../operators/DualMesh/QvisDualMeshWindow.C" line="94"/>
@@ -4153,12 +4153,12 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../operators/Elevate/QvisElevateWindow.C" line="97"/>
         <source>Never</source>
-        <translation type="unfinished">noch nie</translation>
+        <translation type="unfinished">Niemals</translation>
     </message>
     <message>
         <location filename="../../operators/Elevate/QvisElevateWindow.C" line="100"/>
         <source>Auto</source>
-        <translation type="unfinished">Auto</translation>
+        <translation type="unfinished">Automatisch</translation>
     </message>
     <message>
         <location filename="../../operators/Elevate/QvisElevateWindow.C" line="103"/>
@@ -4183,7 +4183,7 @@ Die gewünschte Zeitscheibe ändert sich, wenn ich den Zeitschieberegler ändere
     <message>
         <location filename="../../operators/Elevate/QvisElevateWindow.C" line="127"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../operators/Elevate/QvisElevateWindow.C" line="134"/>
@@ -4692,7 +4692,7 @@ in das parallele Dateisystem in großem Umfang effizienter zu sein.</translation
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="473"/>
         <source>Mesh</source>
-        <translation type="unfinished">Gittergewebe</translation>
+        <translation type="unfinished">Netz/Gittergewebe</translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="475"/>
@@ -4785,12 +4785,12 @@ und automatisch generierte Ausdrücke anzeigen</translation>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="604"/>
         <source>Vector mesh variable</source>
-        <translation type="unfinished">Vektorgittervariable</translation>
+        <translation type="unfinished">Vektor Netzvariable</translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="605"/>
         <source>Tensor mesh variable</source>
-        <translation type="unfinished">Tensornetzvariable</translation>
+        <translation type="unfinished">Tensor Netzvariable</translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="606"/>
@@ -4800,12 +4800,12 @@ und automatisch generierte Ausdrücke anzeigen</translation>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="607"/>
         <source>Array mesh variable</source>
-        <translation type="unfinished">Array-Mesh-Variable</translation>
+        <translation type="unfinished">Array-Netzvariable</translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="608"/>
         <source>Curve mesh variable</source>
-        <translation type="unfinished">Kurvennetz variabel</translation>
+        <translation type="unfinished">Kurvennetz Variable</translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="614"/>
@@ -4944,7 +4944,7 @@ und automatisch generierte Ausdrücke anzeigen</translation>
     <message>
         <location filename="../../gui/QvisFileInformationWindow.C" line="158"/>
         <source>VisIt could not read the file meta-data.</source>
-        <translation type="unfinished">VisIt could not read the file meta-data.</translation>
+        <translation type="unfinished">VisIt konnte die Metadaten der Datei nicht lesen.</translation>
     </message>
 </context>
 <context>
@@ -5348,7 +5348,7 @@ und automatisch generierte Ausdrücke anzeigen</translation>
     <message>
         <location filename="../../plots/FilledBoundary/QvisFilledBoundaryPlotWindow.C" line="237"/>
         <source>Clean zones only</source>
-        <translation type="unfinished">Nur saubere Zonen</translation>
+        <translation type="unfinished">Nur &quot;saubere&quot; Zonen</translation>
     </message>
     <message>
         <location filename="../../plots/FilledBoundary/QvisFilledBoundaryPlotWindow.C" line="243"/>
@@ -5373,7 +5373,7 @@ und automatisch generierte Ausdrücke anzeigen</translation>
     <message>
         <location filename="../../plots/FilledBoundary/QvisFilledBoundaryPlotWindow.C" line="296"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Glätten</translation>
+        <translation type="unfinished">Glättung</translation>
     </message>
     <message>
         <location filename="../../plots/FilledBoundary/QvisFilledBoundaryPlotWindow.C" line="303"/>
@@ -5665,7 +5665,7 @@ und automatisch generierte Ausdrücke anzeigen</translation>
     <message>
         <location filename="../../gui/QvisGUIApplication.C" line="849"/>
         <source>Mesh Management Options</source>
-        <translation type="unfinished">Mesh-Management-Optionen</translation>
+        <translation type="unfinished">Netz-Management-Optionen</translation>
     </message>
     <message>
         <location filename="../../gui/QvisGUIApplication.C" line="850"/>
@@ -5831,7 +5831,7 @@ Wenn Sie mit Nein antworten, wird nur die GUI getrennt und der Viewer und seine 
     <message>
         <location filename="../../gui/QvisGUIApplication.C" line="3690"/>
         <source>MeshManagement</source>
-        <translation type="unfinished">MeshManagement</translation>
+        <translation type="unfinished">Netz Management</translation>
     </message>
     <message>
         <location filename="../../gui/QvisGUIApplication.C" line="4007"/>
@@ -6031,7 +6031,7 @@ verwenden dasselbe Fenster.</translation>
     <message>
         <location filename="../../gui/QvisGlobalLineoutWindow.C" line="111"/>
         <source>Window #</source>
-        <translation type="unfinished">Fenster #</translation>
+        <translation type="unfinished">Fenster Nummer</translation>
     </message>
     <message>
         <location filename="../../gui/QvisGlobalLineoutWindow.C" line="120"/>
@@ -6198,7 +6198,7 @@ vom Lineout-Operator überschrieben werden</translation>
         <location filename="../../gui/QvisHelpWindow.C" line="400"/>
         <location filename="../../gui/QvisHelpWindow.C" line="528"/>
         <source>Frequently asked questions</source>
-        <translation type="unfinished">Häufig gestellte Fragen</translation>
+        <translation type="unfinished">Häufig gestellte Fragen (FAQ)</translation>
     </message>
     <message>
         <location filename="../../gui/QvisHelpWindow.C" line="406"/>
@@ -6235,7 +6235,7 @@ vom Lineout-Operator überschrieben werden</translation>
     <message>
         <location filename="../../gui/QvisHelpWindow.C" line="531"/>
         <source>VisIt</source>
-        <translation type="unfinished">VisIt</translation>
+        <translation>VisIt</translation>
     </message>
     <message>
         <location filename="../../gui/QvisHelpWindow.C" line="532"/>
@@ -6317,7 +6317,7 @@ vom Lineout-Operator überschrieben werden</translation>
     <message>
         <location filename="../../gui/QvisHistogramLimits.C" line="166"/>
         <source>min</source>
-        <translation type="unfinished">Mindest</translation>
+        <translation type="unfinished">min</translation>
     </message>
     <message>
         <location filename="../../gui/QvisHistogramLimits.C" line="170"/>
@@ -6427,7 +6427,7 @@ vom Lineout-Operator überschrieben werden</translation>
     <message>
         <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="270"/>
         <source>Compute the CDF</source>
-        <translation type="unfinished">Berechnen Sie die CDF</translation>
+        <translation type="unfinished">Berechnen Sie die CDF (Verteilungsfunktion)</translation>
     </message>
     <message>
         <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="278"/>
@@ -6437,7 +6437,7 @@ vom Lineout-Operator überschrieben werden</translation>
     <message>
         <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="288"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../plots/Histogram/QvisHistogramPlotWindow.C" line="300"/>
@@ -6557,12 +6557,12 @@ vom Lineout-Operator überschrieben werden</translation>
     <message>
         <location filename="../../gui/QvisHohlraumFluxQueryWidget.C" line="81"/>
         <source>Theta</source>
-        <translation type="unfinished">Theta</translation>
+        <translation>Theta</translation>
     </message>
     <message>
         <location filename="../../gui/QvisHohlraumFluxQueryWidget.C" line="89"/>
         <source>Phi</source>
-        <translation type="unfinished">Phi</translation>
+        <translation>Phi</translation>
     </message>
 </context>
 <context>
@@ -6780,7 +6780,7 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../gui/QvisHostProfileWindow.C" line="975"/>
         <source>Make Default</source>
-        <translation type="unfinished">Machen Standard</translation>
+        <translation type="unfinished">Als Standard festlegen</translation>
     </message>
     <message>
         <location filename="../../gui/QvisHostProfileWindow.C" line="987"/>
@@ -6906,7 +6906,7 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../gui/QvisHostProfileWindow.C" line="1359"/>
         <source>Auto</source>
-        <translation type="unfinished">Auto</translation>
+        <translation type="unfinished">Automatisch</translation>
     </message>
     <message>
         <location filename="../../gui/QvisHostProfileWindow.C" line="1360"/>
@@ -7627,7 +7627,7 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="756"/>
         <source>Variable at Seed</source>
-        <translation type="unfinished">Variabel bei Samen (Seed)</translation>
+        <translation type="unfinished">Variabel beim Samen (Seed)</translation>
     </message>
     <message>
         <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="769"/>
@@ -7731,7 +7731,7 @@ http-Fehler %2: %3.</translation>
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices</source>
     <translation type="unfinished">Pfadlinien
-    Berechnen Sie Trajektorien im zeitvariablen Vektorfeld.
+    Berechnen Sie Trajektorien im Zeitvariablen Vektorfeld.
     Verwendet und lädt Vektordaten aus allen relevanten Zeitscheiben</translation>
     </message>
     <message>
@@ -7757,12 +7757,12 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="910"/>
         <source>Mesh is static over time (fast, but special purpose)</source>
-        <translation type="unfinished">Mesh ist im Laufe der Zeit statisch (schnell, aber spezieller Zweck)</translation>
+        <translation type="unfinished">Das Netz ist im Laufe der Zeit statisch (schnell, aber spezieller Zweck)</translation>
     </message>
     <message>
         <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="911"/>
         <source>Mesh changes over time (slow, but robust)</source>
-        <translation type="unfinished">Mesh ändert sich im Laufe der Zeit (langsam, aber robust)</translation>
+        <translation type="unfinished">Das Netz ändert sich im Laufe der Zeit (langsam, aber robust)</translation>
     </message>
     <message>
         <location filename="../../operators/IntegralCurve/QvisIntegralCurveWindow.C" line="954"/>
@@ -8109,7 +8109,7 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../gui/QvisInteractorWindow.C" line="166"/>
         <source>Never</source>
-        <translation type="unfinished">noch nie</translation>
+        <translation type="unfinished">Niemals</translation>
     </message>
     <message>
         <location filename="../../gui/QvisInteractorWindow.C" line="169"/>
@@ -8213,7 +8213,7 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../operators/Isosurface/QvisIsosurfaceWindow.C" line="156"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../operators/Isosurface/QvisIsosurfaceWindow.C" line="160"/>
@@ -8552,7 +8552,7 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="417"/>
         <source>Eigen Value</source>
-        <translation type="unfinished">Eigen Value</translation>
+        <translation type="unfinished">Eigenwert</translation>
     </message>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="418"/>
@@ -8582,7 +8582,7 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="437"/>
         <source>Eigen value</source>
-        <translation type="unfinished">Eigen value</translation>
+        <translation type="unfinished">Eigenwert</translation>
     </message>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="441"/>
@@ -8711,7 +8711,7 @@ http-Fehler %2: %3.</translation>
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices.</source>
     <translation type="unfinished">Pfadlinien
-    Berechnen Sie Trajektorien im zeitvariablen Vektorfeld.
+    Berechnen Sie Trajektorien im Zeitvariablen Vektorfeld.
     Verwendet und lädt Vektordaten aus allen relevanten Zeitscheiben</translation>
     </message>
     <message>
@@ -8742,12 +8742,12 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="667"/>
         <source>Mesh is static over time (fast, but special purpose)</source>
-        <translation type="unfinished">Mesh ist im Laufe der Zeit statisch (schnell, aber spezieller Zweck)</translation>
+        <translation type="unfinished">Das Netz ist im Laufe der Zeit statisch (schnell, aber spezieller Zweck)</translation>
     </message>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="668"/>
         <source>Mesh changes over time (slow, but robust)</source>
-        <translation type="unfinished">Mesh ändert sich im Laufe der Zeit (langsam, aber robust)</translation>
+        <translation type="unfinished">Das Netz ändert sich im Laufe der Zeit (langsam, aber robust)</translation>
     </message>
     <message>
         <location filename="../../operators/LCS/QvisLCSWindow.C" line="712"/>
@@ -8983,7 +8983,7 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../plots/Label/QvisLabelPlotWindow.C" line="167"/>
         <source>Auto</source>
-        <translation type="unfinished">Auto</translation>
+        <translation type="unfinished">Automatisch</translation>
     </message>
     <message>
         <location filename="../../plots/Label/QvisLabelPlotWindow.C" line="171"/>
@@ -8993,7 +8993,7 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../plots/Label/QvisLabelPlotWindow.C" line="175"/>
         <source>Never</source>
-        <translation type="unfinished">noch nie</translation>
+        <translation type="unfinished">Niemals</translation>
     </message>
     <message>
         <location filename="../../plots/Label/QvisLabelPlotWindow.C" line="181"/>
@@ -9039,7 +9039,7 @@ http-Fehler %2: %3.</translation>
         <location filename="../../plots/Label/QvisLabelPlotWindow.C" line="235"/>
         <location filename="../../plots/Label/QvisLabelPlotWindow.C" line="245"/>
         <source>Center</source>
-        <translation type="unfinished">Center</translation>
+        <translation type="unfinished">Zentrum</translation>
     </message>
     <message>
         <location filename="../../plots/Label/QvisLabelPlotWindow.C" line="236"/>
@@ -9336,7 +9336,7 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../gui/QvisLegendAttributesInterface.C" line="317"/>
         <source>Times</source>
-        <translation type="unfinished">Mal</translation>
+        <translation type="unfinished">Zeit</translation>
     </message>
     <message>
         <location filename="../../gui/QvisLegendAttributesInterface.C" line="322"/>
@@ -9870,7 +9870,7 @@ http-Fehler %2: %3.</translation>
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices</source>
     <translation type="unfinished">Pfadlinien
-    Berechnen Sie Trajektorien im zeitvariablen Vektorfeld.
+    Berechnen Sie Trajektorien im Zeitvariablen Vektorfeld.
     Verwendet und lädt Vektordaten aus allen relevanten Zeitscheiben</translation>
     </message>
     <message>
@@ -9901,12 +9901,12 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="652"/>
         <source>Mesh is static over time (fast, but special purpose)</source>
-        <translation type="unfinished">Mesh ist im Laufe der Zeit statisch (schnell, aber spezieller Zweck)</translation>
+        <translation type="unfinished">Das Netz ist im Laufe der Zeit statisch (schnell, aber spezieller Zweck)</translation>
     </message>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="653"/>
         <source>Mesh changes over time (slow, but robust)</source>
-        <translation type="unfinished">Mesh ändert sich im Laufe der Zeit (langsam, aber robust)</translation>
+        <translation type="unfinished">Das Netz ändert sich im Laufe der Zeit (langsam, aber robust)</translation>
     </message>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="692"/>
@@ -10232,7 +10232,7 @@ http-Fehler %2: %3.</translation>
     <message>
         <location filename="../../gui/QvisLine3DInterface.C" line="91"/>
         <source>Medium</source>
-        <translation type="unfinished">Mittel</translation>
+        <translation type="unfinished">Durchschnittlich</translation>
     </message>
     <message>
         <location filename="../../gui/QvisLine3DInterface.C" line="92"/>
@@ -11269,7 +11269,7 @@ wenn die Option &quot;Auf alle Fenster anwenden&quot; verwendet wird.</translati
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="570"/>
         <source>&amp;Mesh management . . .</source>
-        <translation type="unfinished">&amp;Mesh management . . .</translation>
+        <translation type="unfinished">Netz (&amp;Mesh) management . . .</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="573"/>
@@ -11832,7 +11832,7 @@ wenn die Option &quot;Auf alle Fenster anwenden&quot; verwendet wird.</translati
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="228"/>
         <source>Auto</source>
-        <translation type="unfinished">Auto</translation>
+        <translation type="unfinished">Automatisch</translation>
     </message>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="232"/>
@@ -11867,7 +11867,7 @@ wenn die Option &quot;Auf alle Fenster anwenden&quot; verwendet wird.</translati
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="303"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Glätten</translation>
+        <translation type="unfinished">Glättung</translation>
     </message>
     <message>
         <location filename="../../plots/Mesh/QvisMeshPlotWindow.C" line="310"/>
@@ -12294,7 +12294,7 @@ wenn die Option &quot;Auf alle Fenster anwenden&quot; verwendet wird.</translati
         <location filename="../../plots/Molecule/QvisMoleculePlotWindow.C" line="125"/>
         <location filename="../../plots/Molecule/QvisMoleculePlotWindow.C" line="192"/>
         <source>Medium</source>
-        <translation type="unfinished">Mittel</translation>
+        <translation type="unfinished">Durchschnittlich</translation>
     </message>
     <message>
         <location filename="../../plots/Molecule/QvisMoleculePlotWindow.C" line="126"/>
@@ -12627,7 +12627,7 @@ wenn die Option &quot;Auf alle Fenster anwenden&quot; verwendet wird.</translati
     <message>
         <location filename="../../operators/OnionPeel/QvisOnionPeelWindow.C" line="205"/>
         <source>Honor original mesh</source>
-        <translation type="unfinished">Ehre originales Mesh</translation>
+        <translation type="unfinished">Ehre originales Netz</translation>
     </message>
     <message>
         <location filename="../../operators/OnionPeel/QvisOnionPeelWindow.C" line="369"/>
@@ -13296,7 +13296,7 @@ Möchten Sie den %2-Operator anwenden?
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="466"/>
         <source>Mesh name</source>
-        <translation type="unfinished">Mesh-Name</translation>
+        <translation type="unfinished">Netz-Name</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="471"/>
@@ -13683,7 +13683,7 @@ Möchten Sie den %2-Operator anwenden?
     <message>
         <location filename="../../gui/QvisPlotManagerWidget.C" line="1513"/>
         <source>Transforms</source>
-        <translation type="unfinished">Transformiert</translation>
+        <translation type="unfinished">Transformationen</translation>
     </message>
 </context>
 <context>
@@ -14359,7 +14359,7 @@ Möchten Sie den %2-Operator anwenden?
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices</source>
     <translation type="unfinished">Pfadlinien
-    Berechnen Sie Trajektorien im zeitvariablen Vektorfeld.
+    Berechnen Sie Trajektorien im Zeitvariablen Vektorfeld.
     Verwendet und lädt Vektordaten aus allen relevanten Zeitscheiben</translation>
     </message>
     <message>
@@ -14390,12 +14390,12 @@ Möchten Sie den %2-Operator anwenden?
     <message>
         <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="895"/>
         <source>Mesh is static over time (fast, but special purpose)</source>
-        <translation type="unfinished">Mesh ist im Laufe der Zeit statisch (schnell, aber spezieller Zweck)</translation>
+        <translation type="unfinished">Das Netz ist im Laufe der Zeit statisch (schnell, aber spezieller Zweck)</translation>
     </message>
     <message>
         <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="896"/>
         <source>Mesh changes over time (slow, but robust)</source>
-        <translation type="unfinished">Mesh ändert sich im Laufe der Zeit (langsam, aber robust)</translation>
+        <translation type="unfinished">Das Netz ändert sich im Laufe der Zeit (langsam, aber robust)</translation>
     </message>
     <message>
         <location filename="../../operators/Poincare/QvisPoincareWindow.C" line="927"/>
@@ -14648,7 +14648,7 @@ Möchten Sie den %2-Operator anwenden?
     <message>
         <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="241"/>
         <source>Make default</source>
-        <translation type="unfinished">Machen Standard</translation>
+        <translation type="unfinished">Als Standard festlegen</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="249"/>
@@ -14663,7 +14663,7 @@ Möchten Sie den %2-Operator anwenden?
     <message>
         <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="263"/>
         <source>Save</source>
-        <translation type="unfinished">speichern</translation>
+        <translation type="unfinished">Speichern</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPostableWindowSimpleObserver.C" line="270"/>
@@ -14799,17 +14799,17 @@ Möchten Sie den %2-Operator anwenden?
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="286"/>
         <source>Enable warning message popups</source>
-        <translation type="unfinished">Enable warning message popups</translation>
+        <translation type="unfinished">Aktivieren Nachricht Popups Warnung</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="295"/>
         <source>Floating point precision:</source>
-        <translation type="unfinished">Gleitkommagenauigkeit:</translation>
+        <translation type="unfinished">Genauigkeit reeller Zahlen:</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="302"/>
         <source>Float</source>
-        <translation type="unfinished">Schweben</translation>
+        <translation type="unfinished">Einfache Präzision</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="305"/>
@@ -14849,7 +14849,7 @@ Möchten Sie den %2-Operator anwenden?
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="365"/>
         <source>Treat all databases as time-varying</source>
-        <translation type="unfinished">Behandeln Sie alle Datenbanken als zeitvariabel</translation>
+        <translation type="unfinished">Behandeln Sie alle Datenbanken als Zeitvariabel</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="371"/>
@@ -14904,12 +14904,12 @@ Möchten Sie den %2-Operator anwenden?
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="482"/>
         <source>Cycles</source>
-        <translation type="unfinished">Fahrräder</translation>
+        <translation type="unfinished">Zyklus</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="485"/>
         <source>Times</source>
-        <translation type="unfinished">Mal</translation>
+        <translation type="unfinished">Zeit</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPreferencesWindow.C" line="488"/>
@@ -15001,7 +15001,7 @@ Möchten Sie den %2-Operator anwenden?
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="258"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="263"/>
@@ -15016,7 +15016,7 @@ Möchten Sie den %2-Operator anwenden?
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="270"/>
         <source>Skew</source>
-        <translation type="unfinished">Schiefe</translation>
+        <translation type="unfinished">Schiefe (&quot;skew&quot;)</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="295"/>
@@ -15286,7 +15286,7 @@ Möchten Sie den %2-Operator anwenden?
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="771"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Glätten</translation>
+        <translation type="unfinished">Glättung</translation>
     </message>
     <message>
         <location filename="../../plots/Pseudocolor/QvisPseudocolorPlotWindow.C" line="781"/>
@@ -15756,7 +15756,7 @@ dasselbe Fenster.</translation>
         <location filename="../../operators/RadialResample/QvisRadialResampleWindow.C" line="122"/>
         <location filename="../../operators/RadialResample/QvisRadialResampleWindow.C" line="365"/>
         <source>Center</source>
-        <translation type="unfinished">Center</translation>
+        <translation type="unfinished">Zentrum</translation>
     </message>
     <message>
         <location filename="../../operators/RadialResample/QvisRadialResampleWindow.C" line="129"/>
@@ -16319,7 +16319,7 @@ möglicherweise die Anzahl der Peelings erhöhen.</translation>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="341"/>
         <source>Red/Blue</source>
-        <translation type="unfinished">Rot blau</translation>
+        <translation type="unfinished">Rot/Blau</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="344"/>
@@ -16334,7 +16334,7 @@ möglicherweise die Anzahl der Peelings erhöhen.</translation>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="351"/>
         <source>Red/Green</source>
-        <translation type="unfinished">Rot grün</translation>
+        <translation type="unfinished">Rot/Grün</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="357"/>
@@ -16362,7 +16362,7 @@ möglicherweise die Anzahl der Peelings erhöhen.</translation>
         <location filename="../../gui/QvisRenderingWindow.C" line="462"/>
         <location filename="../../gui/QvisRenderingWindow.C" line="482"/>
         <source>Auto</source>
-        <translation type="unfinished">Auto</translation>
+        <translation type="unfinished">Automatisch</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="431"/>
@@ -16376,7 +16376,7 @@ möglicherweise die Anzahl der Peelings erhöhen.</translation>
         <location filename="../../gui/QvisRenderingWindow.C" line="469"/>
         <location filename="../../gui/QvisRenderingWindow.C" line="488"/>
         <source>Never</source>
-        <translation type="unfinished">noch nie</translation>
+        <translation type="unfinished">Niemals</translation>
     </message>
     <message>
         <location filename="../../gui/QvisRenderingWindow.C" line="440"/>
@@ -16734,7 +16734,7 @@ Atome an Elementarzellengrenzen.</translation>
     <message>
         <location filename="../../operators/Revolve/QvisRevolveWindow.C" line="94"/>
         <source>Auto</source>
-        <translation type="unfinished">Auto</translation>
+        <translation type="unfinished">Automatisch</translation>
     </message>
     <message>
         <location filename="../../operators/Revolve/QvisRevolveWindow.C" line="97"/>
@@ -17197,7 +17197,7 @@ Atome an Elementarzellengrenzen.</translation>
     <message>
         <location filename="../../gui/QvisSaveMovieWizard.C" line="1410"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSaveMovieWizard.C" line="1415"/>
@@ -17726,7 +17726,7 @@ Atome an Elementarzellengrenzen.</translation>
     <message>
         <location filename="../../gui/QvisSaveWindow.C" line="599"/>
         <source>Save</source>
-        <translation type="unfinished">speichern</translation>
+        <translation type="unfinished">Speichern</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSaveWindow.C" line="604"/>
@@ -17818,7 +17818,7 @@ Atome an Elementarzellengrenzen.</translation>
         <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="438"/>
         <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="556"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="210"/>
@@ -18340,7 +18340,7 @@ Atome an Elementarzellengrenzen.</translation>
         <location filename="../../gui/QvisSeedMeWindow.C" line="1208"/>
         <location filename="../../gui/QvisSeedMeWindow.C" line="1256"/>
         <source>Save To...</source>
-        <translation type="unfinished">Speichern unter...</translation>
+        <translation type="unfinished">Speichern als...</translation>
     </message>
 </context>
 <context>
@@ -18411,7 +18411,7 @@ Atome an Elementarzellengrenzen.</translation>
     <message>
         <location filename="../../gui/QvisSelectionsWindow.C" line="195"/>
         <source>Save</source>
-        <translation type="unfinished">speichern</translation>
+        <translation type="unfinished">Speichern</translation>
     </message>
     <message>
         <location filename="../../gui/QvisSelectionsWindow.C" line="200"/>
@@ -19156,7 +19156,7 @@ Parallelkoordinatendiagramm sein.</translation>
     <message>
         <location filename="../../operators/Slice/QvisSliceWindow.C" line="332"/>
         <source>Mesh</source>
-        <translation type="unfinished">Gittergewebe</translation>
+        <translation type="unfinished">Netz/Gittergewebe</translation>
     </message>
     <message>
         <location filename="../../operators/Slice/QvisSliceWindow.C" line="348"/>
@@ -19222,7 +19222,7 @@ Parallelkoordinatendiagramm sein.</translation>
     <message>
         <location filename="../../operators/Slice/QvisSliceWindow.C" line="866"/>
         <source>mesh name</source>
-        <translation type="unfinished">Mesh-Name</translation>
+        <translation type="unfinished">Netz-Name</translation>
     </message>
     <message>
         <location filename="../../operators/Slice/QvisSliceWindow.C" line="900"/>
@@ -19732,7 +19732,7 @@ Parallelkoordinatendiagramm sein.</translation>
     <message>
         <location filename="../../plots/Subset/QvisSubsetPlotWindow.C" line="279"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Glätten</translation>
+        <translation type="unfinished">Glättung</translation>
     </message>
     <message>
         <location filename="../../plots/Subset/QvisSubsetPlotWindow.C" line="286"/>
@@ -19958,7 +19958,7 @@ Parallelkoordinatendiagramm sein.</translation>
     <message>
         <location filename="../../plots/Surface/QvisSurfacePlotWindow.C" line="137"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../plots/Surface/QvisSurfacePlotWindow.C" line="142"/>
@@ -20146,7 +20146,7 @@ Parallelkoordinatendiagramm sein.</translation>
     <message>
         <location filename="../../plots/Tensor/QvisTensorPlotWindow.C" line="294"/>
         <source>Eigen values</source>
-        <translation type="unfinished">Eigen values</translation>
+        <translation type="unfinished">Eigenwerte</translation>
     </message>
     <message>
         <location filename="../../plots/Tensor/QvisTensorPlotWindow.C" line="297"/>
@@ -20167,7 +20167,7 @@ Parallelkoordinatendiagramm sein.</translation>
         <location filename="../../plots/Tensor/QvisTensorPlotWindow.C" line="362"/>
         <location filename="../../plots/Tensor/QvisTensorPlotWindow.C" line="375"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../plots/Tensor/QvisTensorPlotWindow.C" line="380"/>
@@ -20266,7 +20266,7 @@ Parallelkoordinatendiagramm sein.</translation>
     <message>
         <location filename="../../gui/QvisText2DInterface.C" line="110"/>
         <source>Times</source>
-        <translation type="unfinished">Mal</translation>
+        <translation type="unfinished">Zeit</translation>
     </message>
     <message>
         <location filename="../../gui/QvisText2DInterface.C" line="115"/>
@@ -20716,7 +20716,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../operators/ToroidalPoloidalProjection/QvisToroidalPoloidalProjectionWindow.C" line="108"/>
         <source>Auto</source>
-        <translation type="unfinished">Auto</translation>
+        <translation type="unfinished">Automatisch</translation>
     </message>
     <message>
         <location filename="../../operators/ToroidalPoloidalProjection/QvisToroidalPoloidalProjectionWindow.C" line="115"/>
@@ -20771,7 +20771,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../operators/Transform/QvisTransformWindow.C" line="164"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../operators/Transform/QvisTransformWindow.C" line="176"/>
@@ -21218,7 +21218,7 @@ keine Zyklen oder Zeiten.</translation>
         <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="417"/>
         <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="430"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../plots/Vector/QvisVectorPlotWindow.C" line="435"/>
@@ -21427,7 +21427,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../gui/QvisViewWindow.C" line="306"/>
         <source>Auto</source>
-        <translation type="unfinished">Auto</translation>
+        <translation type="unfinished">Automatisch</translation>
     </message>
     <message>
         <location filename="../../gui/QvisViewWindow.C" line="309"/>
@@ -21482,7 +21482,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../gui/QvisViewWindow.C" line="404"/>
         <source>Near clipping</source>
-        <translation type="unfinished">Beinahe Clipping</translation>
+        <translation type="unfinished">Beinahe Ausschneiden</translation>
     </message>
     <message>
         <location filename="../../gui/QvisViewWindow.C" line="413"/>
@@ -21592,7 +21592,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../gui/QvisViewWindow.C" line="606"/>
         <source>Center</source>
-        <translation type="unfinished">Center</translation>
+        <translation type="unfinished">Zentrum</translation>
     </message>
     <message>
         <location filename="../../gui/QvisViewWindow.C" line="620"/>
@@ -21651,7 +21651,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../gui/QvisViewWindow.C" line="1734"/>
         <source>near clipping</source>
-        <translation type="unfinished">in der Nähe von Clipping</translation>
+        <translation type="unfinished">in der Nähe ausschneiden</translation>
     </message>
     <message>
         <location filename="../../gui/QvisViewWindow.C" line="1748"/>
@@ -21834,7 +21834,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="492"/>
         <source>Smoothing</source>
-        <translation type="unfinished">Glätten</translation>
+        <translation type="unfinished">Glättung</translation>
     </message>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="495"/>
@@ -21865,7 +21865,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="528"/>
         <source>Scale</source>
-        <translation type="unfinished">Rahmen</translation>
+        <translation type="unfinished">Skala/Maßstab</translation>
     </message>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="537"/>
@@ -21987,7 +21987,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="808"/>
         <source>Opacity variable</source>
-        <translation type="unfinished">Deckkraft variabel</translation>
+        <translation type="unfinished">Deckkraft Variable</translation>
     </message>
     <message>
         <location filename="../../plots/Volume/QvisVolumePlotWindow.C" line="821"/>
@@ -22306,7 +22306,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../plots/WellBore/QvisWellBorePlotWindow.C" line="243"/>
         <source>Medium</source>
-        <translation type="unfinished">Mittel</translation>
+        <translation type="unfinished">Durchschnittlich</translation>
     </message>
     <message>
         <location filename="../../plots/WellBore/QvisWellBorePlotWindow.C" line="244"/>
@@ -23219,7 +23219,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../viewer/main/ui/AnimationActionsUI.C" line="42"/>
         <source>Step back one frame</source>
-        <translation type="unfinished">Einen Frame zurücktreten</translation>
+        <translation type="unfinished">Einen Bild zurücktreten</translation>
     </message>
 </context>
 <context>
@@ -23818,7 +23818,7 @@ keine Zyklen oder Zeiten.</translation>
     <message>
         <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="181"/>
         <source>Meshes</source>
-        <translation type="unfinished">Netze</translation>
+        <translation type="unfinished">Netzen</translation>
     </message>
     <message>
         <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="184"/>
@@ -24192,7 +24192,7 @@ ignorieren</translation>
         <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="210"/>
         <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="241"/>
         <source>Mesh</source>
-        <translation type="unfinished">Gittergewebe</translation>
+        <translation type="unfinished">Netz/Gittergewebe</translation>
     </message>
     <message>
         <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="159"/>
