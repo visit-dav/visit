@@ -226,9 +226,6 @@ of red and blue curves, being indented. It allows the user to create a plot
 of a scalar variable as a function of distance along a line.
 
 1. First, reset the view again.
-
-  * This will reset your view.
-
 2. Click on the Lineout icon.
 3. Put the cursor over the data and left click (single click) and HOLD IT DOWN.
 4. Move the mouse a bit.
