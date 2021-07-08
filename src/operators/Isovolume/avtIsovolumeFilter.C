@@ -9,6 +9,7 @@
 #include <avtIsovolumeFilter.h>
 
 #ifdef HAVE_LIBVTKH
+
 #include <vtkh/vtkh.hpp>
 #include <vtkh/DataSet.hpp>
 #include <vtkh/filters/IsoVolume.hpp>
@@ -364,11 +365,13 @@ avtIsovolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
 
     bool doVTKM = VTKmAble(in_dr);
     avtDataRepresentation *out_dr = NULL;
+
     if (doVTKM && doMinClip && doMaxClip)
         out_dr = ExecuteData_VTKM(in_dr, {atts.GetLbound(), atts.GetUbound()}, {doMinClip, doMaxClip});
     else
         out_dr = ExecuteData_VTK(in_dr, {atts.GetLbound(), atts.GetUbound()}, {doMinClip, doMaxClip});
 
+    std::cout<<"out_dr= "<<out_dr<<std::endl;
     return out_dr;
 }
 
@@ -463,6 +466,7 @@ avtIsovolumeFilter::ModifyContract(avtContract_p in_spec)
 
     return spec;
 }
+
 
 // ****************************************************************************
 //  Method: avtIsovolumeFilter::VTKmAble
