@@ -1438,12 +1438,11 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
     {
         if (PySequence_Size(args) == 2 && PyArg_ParseTuple(args, "ii", &index, &opacity))
         {
-            if(index >= 0 && index < 256)
-            {
-                if(opacity < 0) opacity = 0;
-                if(opacity > 255) opacity = 255;
-                cvals[index] = (unsigned char)(opacity);
-            }
+            if (index < 0 || index >= 256)
+                return PyErr_Format(PyExc_IndexError, "first arg (index) must be in range [0...255]");
+            if (opacity < 0 || opacity >= 256)
+                return PyErr_Format(PyExc_ValueError, "second arg (opacity) must be in range [0...255]");
+            cvals[index] = (unsigned char)(opacity);
         }
         else if (PySequence_Size(args) != 256)
             return PyErr_Format(PyExc_TypeError, "when setting whole opacity array, must pass 256 values");
@@ -1459,22 +1458,21 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
                 c = int(PyFloat_AS_DOUBLE(item));
             else if(PyLong_Check(item))
                 c = int(PyLong_AsDouble(item));
-            else
-                c = 0;
+            else // bad form here, we're err'ing out having possibly already changed cvals
+                return PyErr_Format(PyExc_TypeError, "opacity value at index %d not a number.", i);
             Py_DECREF(item);
-            if(c < 0) c = 0;
-            if(c > 255) c = 255;
+            if (c < 0 || c >= 256)
+                return PyErr_Format(PyExc_ValueError, "opacity value at index %d out of range [0...255].", i);
             cvals[i] = (unsigned char)(c);
        }
     }
     else if (PyArg_ParseTuple(args, "ii", &index, &opacity))
     {
-        if(index >= 0 && index < 256)
-        {
-            if(opacity < 0) opacity = 0;
-            if(opacity > 255) opacity = 255;
-            cvals[index] = (unsigned char)(opacity);
-        }
+        if (index < 0 || index >= 256)
+            return PyErr_Format(PyExc_IndexError, "first arg (index) must be in range [0...255]");
+        if (opacity < 0 || opacity >= 256)
+            return PyErr_Format(PyExc_ValueError, "second arg (opacity) must be in range [0...255]");
+        cvals[index] = (unsigned char)(opacity);
     }
     else
     {
