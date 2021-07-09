@@ -12,7 +12,7 @@
 #  Mark C. Miller, Tue Jun  8 15:51:59 PDT 2021
 #
 # ----------------------------------------------------------------------------
-import io, sys
+import copy, io, sys
 
 # Some useful global variables
 X = [2,4,6]
@@ -380,6 +380,276 @@ def TestAssignmentToString():
         except:
             TestFOA('ca.SetDesignator(%s)'%repr(works[i]), LINE()) 
 
+def TestAssignmentToGlyphType():
+    TestSection('Assignment to GlyphType member (of MeshAttributes())')
+
+    ma = MeshAttributes()
+
+    # Test direct assignment with = operator
+    try:
+        ma.pointType = 1
+        TestPOA('ma.pointType=1')
+    except:
+        TestFOA('ma.pointType=1', LINE())
+        pass
+
+    fails =  [    '123',      1+2j,      None,         X,         -1, 123123123123123123123123123123]
+    excpts = [TypeError, TypeError, TypeError, TypeError, ValueError,                      TypeError]
+    for i in range(len(fails)):
+        try:
+            ma.pointType = fails[i]
+            TestFOA('ma.pointType=%s'%repr(fails[i]), LINE())
+        except excpts[i]:
+            TestPOA('ma.pointType=%s'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ma.pointType=%s'%repr(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            ma.SetPointType(fails[i])
+            TestFOA('ma.SetPointType(%s)'%repr(fails[i]), LINE())
+        except excpts[i]:
+            TestPOA('ma.SetPointType(%s)'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ma.SetPointType(%s)'%repr(fails[i]), LINE())
+            pass
+
+    works = [0, 1, 5, True, False, ma.Point]
+    for i in range(len(works)):
+        try:
+            ma.pointType = works[i]
+            TestPOA('ma.pointType=%s'%repr(works[i]))
+        except:
+            TestFOA('ma.pointType=%s'%repr(works[i]), LINE()) 
+
+    for i in range(len(works)):
+        try:
+            ma.SetPointType(works[i])
+            TestPOA('ma.SetPointType(%s)'%repr(works[i]))
+        except:
+            TestFOA('ma.SetPointType(%s)'%repr(works[i]), LINE()) 
+
+def TestAssignmentToEnum():
+    TestSection('Assignment to Enum member (of MeshAttributes())')
+
+    ma = MeshAttributes()
+
+    # Test direct assignment with = operator
+    try:
+        ma.smoothingLevel = 1
+        TestPOA('ma.smoothingLevel=1')
+    except:
+        TestFOA('ma.smoothingLevel=1', LINE())
+        pass
+
+    fails  = [    '123',      1+2j,      None,         X,         -1,  123123123, 123123123123123123123123123123]
+    excpts = [TypeError, TypeError, TypeError, TypeError, ValueError, ValueError,                      TypeError]
+    for i in range(len(fails)):
+        try:
+            ma.smoothingLevel = fails[i]
+            TestFOA('ma.smoothingLevel=%s'%repr(fails[i]), LINE())
+        except excpts[i]:
+            TestPOA('ma.smoothingLevel=%s'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ma.smoothingLevel=%s'%repr(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            ma.SetSmoothingLevel(fails[i])
+            TestFOA('ma.SetSmoothingLevel(%s)'%repr(fails[i]), LINE())
+        except excpts[i]:
+            TestPOA('ma.SetSmoothingLevel(%s)'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('ma.SetSmoothingLevel(%s)'%repr(fails[i]), LINE())
+            pass
+
+    works = [0, 1, 2, True, False, ma.Fast]
+    for i in range(len(works)):
+        try:
+            ma.smoothingLevel = works[i]
+            TestPOA('ma.smoothingLevel=%s'%repr(works[i]))
+        except:
+            TestFOA('ma.smoothingLevel=%s'%repr(works[i]), LINE()) 
+
+    for i in range(len(works)):
+        try:
+            ma.SetSmoothingLevel(works[i])
+            TestPOA('ma.SmoothingLevel(%s)'%repr(works[i]))
+        except:
+            TestFOA('ma.SetSmoothingLevel(%s)'%repr(works[i]), LINE()) 
+
+def TestAssignmentToUCharVector():
+    TestSection('Assignment to ucharVector member (of MultiCurveAttributes())')
+
+    mca = MultiCurveAttributes()
+
+    # Test direct assignment with = operator
+    try:
+        mca.changedColors = 1,2,3
+        TestPOA('mca.changedColors=1,2,3')
+    except:
+        TestFOA('mca.changedColors=1,2,3', LINE())
+        pass
+
+    fails =  [(1,123123123123123123123123123123,3),   (1,1+2j,3),   (1,X,3), (1,'b',3), (1,None,3),     '123']
+    for i in range(len(fails)):
+        try:
+            mca.changedColors = fails[i]
+            TestFOA('mca.changedColors=%s'%repr(fails[i]), LINE())
+        except TypeError:
+            TestPOA('mca.changedColors=%s'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('mca.changedColors=%s'%repr(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            mca.SetChangedColors(fails[i])
+            TestFOA('mca.SetChangedColors(%s)'%repr(fails[i]), LINE())
+        except TypeError:
+            TestPOA('mca.SetChangedColors(%s)'%repr(fails[i]))
+            pass
+        except:
+            TestFOA('mca.SetChangedColors(%s)'%repr(fails[i]), LINE())
+            pass
+
+    works = [(1,2,3), tuple(X), (1,True,3), (1,False,3)]
+    for i in range(len(works)):
+        try:
+            mca.changedColors = works[i]
+            TestPOA('mca.changedColors=%s'%repr(works[i]))
+        except:
+            TestFOA('mca.changedColors=%s'%repr(works[i]), LINE()) 
+
+    for i in range(len(works)):
+        try:
+            mca.SetChangedColors(*works[i])
+            TestPOA('mca.SetChangedColors(%s)'%repr(works[i]))
+        except:
+            TestFOA('mca.SetChangedColors(%s)'%repr(works[i]), LINE()) 
+
+def TestAssignmentToUCharArray():
+    TestSection('Assignment to ucharArray member (of VolumeAttributes())')
+    arr = [17,]*256
+
+    va = VolumeAttributes()
+
+    # Test assigning to individual entry via direct (operator =) assignment
+    try:
+        va.freeformOpacity = 3,17
+        TestPOA('va.freeformOpacity=3,17')
+    except:
+        TestFOA('va.freeformOpacity=3,17', LINE())
+        pass
+
+    # Test assigning to individual entry via Set method 
+    try:
+        va.SetFreeformOpacity(3,17)
+        TestPOA('va.SetFreeformOpacity(3,17)')
+    except:
+        TestFOA('va.SetFreeformOpacity(3,17)', LINE())
+        pass
+
+    # Test assigning to whole array via (operator =) assignment
+    try:
+        va.freeformOpacity = tuple(arr)
+        TestPOA('va.freeformOpacity=tuple(arr)')
+    except:
+        TestFOA('va.freeformOpacity=tuple(arr)', LINE())
+        pass
+
+    # Test assigning to whole array via Set method 
+    try:
+        va.SetFreeformOpacity(*tuple(arr))
+        TestPOA('va.SetFreeformOpacity(*tuple(arr))')
+    except:
+        TestFOA('va.SetFreeformOpacity(*tuple(arr))', LINE())
+        pass
+
+    # Test assigning to individual entry via direct (operator =) assignment
+    # failures for type of second argument (color value)
+    fails =  [ (3,None),  (3,1+2j),     (3,X), (3,'123'), (None,17), (1+2j,17),    (X,17),('123',17),    (-3,17),   (3,1700)]
+    excpts = [TypeError, TypeError, TypeError, TypeError, TypeError, TypeError, TypeError, TypeError, IndexError, ValueError]
+    for i in range(len(fails)):
+        try:
+            va.freeformOpacity = fails[i][0],fails[i][1]
+            TestFOA('va.freeformOpacity=%s,%s'%(repr(fails[i][0]),repr(fails[i][1])), LINE())
+        except excpts[i]:
+            TestPOA('va.freeformOpacity=%s,%s'%(repr(fails[i][0]),repr(fails[i][1])))
+            pass
+        except:
+            TestFOA('va.freeformOpacity=%s,%s'%(repr(fails[i][0]),repr(fails[i][1])), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            va.SetFreeformOpacity(fails[i][0],fails[i][1])
+            TestFOA('va.SetFreeformOpacity(%s,%s)'%(repr(fails[i][0]),repr(fails[i][1])), LINE())
+        except excpts[i]:
+            TestPOA('va.SetFreeformOpacity(%s,%s)'%(repr(fails[i][0]),repr(fails[i][1])))
+            pass
+        except:
+            TestFOA('va.SetFreeformOpacity(%s,%s)'%(repr(fails[i][0]),repr(fails[i][1])), LINE())
+            pass
+
+    # Test assigning to whole member via direct (operator =) assignment
+    try:
+        va.freeformOpacity = (17,)*256
+        TestPOA('va.freeformOpacity=(17,)*256')
+    except:
+        TestFOA('va.freeformOpacity=(17,)*256', LINE())
+        pass
+
+    # Test assigning to whole member via Set method 
+    try:
+        va.SetFreeformOpacity(*(17,)*256)
+        TestPOA('va.SetFreeformOpacity((17,)*256)')
+    except:
+        TestFOA('va.SetFreeformOpacity((17,)*256)', LINE())
+        pass
+
+    # Test assigning to whole member via direct (operator =) assignment
+    # failures for type of first argument (index)
+    arr1 = copy.deepcopy(arr)
+    arr2 = copy.deepcopy(arr)
+    arr3 = copy.deepcopy(arr)
+    arr4 = copy.deepcopy(arr)
+    arr5 = copy.deepcopy(arr)
+    arr1[3] = None
+    arr2[3] = 1+2j
+    arr3[3] = X
+    arr4[3] = (1,2,3)
+    arr5[3] = '123'
+    fails = [tuple(arr1), tuple(arr2), tuple(arr3), tuple(arr4), tuple(arr5)]
+    for i in range(len(fails)):
+        try:
+            va.freeformOpacity = fails[i]
+            TestFOA('va.freeformOpacity=%s'%repr(fails[i][:7]), LINE())
+        except TypeError:
+            TestPOA('va.freeformOpacity=%s'%repr(fails[i][:7]))
+            pass
+        except:
+            TestFOA('va.freeformOpacity=%s'%repr(fails[i][:7]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            va.SetFreeformOpacity(fails[i])
+            TestFOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]), LINE())
+        except TypeError:
+            TestPOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]))
+            pass
+        except:
+            TestFOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]), LINE())
+            pass
+
 def TestDirOutput(obj, minlen = 5, names = None):
     TestSection('behavior of dir()')
     try:
@@ -421,7 +691,7 @@ def TestHelpOutput(thing, minlen = 200, words = None):
         TestFOA('help(%s)'%repr(thing), LINE()) 
     
 # Scalar assignments
-TestAssignmentToUChar()
+# TestAssignmentToUChar() No instances of individual UChar fields
 TestAssignmentToBool()
 TestAssignmentToInt()
 TestAssignmentToFloat()
@@ -433,19 +703,20 @@ TestAssignmentToEnum()
 
 TestAssignmentToTuple()
 
-# Array assignments
-TestAssignmentToUCharArray()
-TestAssignmentToBoolArray()
-TestAssignmentToIntArray()
-TestAssignmentToFloatArray()
-TestAssignmentToDoubleArray()
-
 # Vector assignments
 TestAssignmentToUCharVector()
-TestAssignmentToBoolVector()
-TestAssignmentToIntVector()
-TestAssignmentToFloatVector()
-TestAssignmentToDoubleVector()
+#TestAssignmentToBoolVector()
+#TestAssignmentToIntVector()
+#TestAssignmentToFloatVector()
+#TestAssignmentToDoubleVector()
+
+# Array assignments
+TestAssignmentToUCharArray()
+#TestAssignmentToBoolArray()
+#TestAssignmentToIntArray()
+#TestAssignmentToFloatArray()
+#TestAssignmentToDoubleArray()
+
 
 # Test that dir(x) appears to work
 #TestDirOutput(SILRestriction(), None, ['NumSets', 'TurnOnAll', 'Wholes', 'TopSets'])
