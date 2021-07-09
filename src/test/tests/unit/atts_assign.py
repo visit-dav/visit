@@ -631,23 +631,23 @@ def TestAssignmentToUCharArray():
     for i in range(len(fails)):
         try:
             va.freeformOpacity = fails[i]
-            TestFOA('va.freeformOpacity=%s'%repr(fails[i][:7]), LINE())
+            TestFOA('va.freeformOpacity=%s'%repr(fails[i][:7]).replace(')',', ...'), LINE())
         except TypeError:
-            TestPOA('va.freeformOpacity=%s'%repr(fails[i][:7]))
+            TestPOA('va.freeformOpacity=%s'%repr(fails[i][:7]).replace(')',', ...'))
             pass
         except:
-            TestFOA('va.freeformOpacity=%s'%repr(fails[i][:7]), LINE())
+            TestFOA('va.freeformOpacity=%s'%repr(fails[i][:7]).replace(')',', ...'), LINE())
             pass
 
     for i in range(len(fails)):
         try:
-            va.SetFreeformOpacity(fails[i])
-            TestFOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]), LINE())
+            va.SetFreeformOpacity(*fails[i])
+            TestFOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]).replace(')',', ...'), LINE())
         except TypeError:
-            TestPOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]))
+            TestPOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]).replace(')',', ...'))
             pass
         except:
-            TestFOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]), LINE())
+            TestFOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]).replace(')',', ...'), LINE())
             pass
 
 def TestDirOutput(obj, minlen = 5, names = None):
@@ -691,7 +691,7 @@ def TestHelpOutput(thing, minlen = 200, words = None):
         TestFOA('help(%s)'%repr(thing), LINE()) 
     
 # Scalar assignments
-# TestAssignmentToUChar() No instances of individual UChar fields
+# TestAssignmentToUChar() No instances in any .xml files
 TestAssignmentToBool()
 TestAssignmentToInt()
 TestAssignmentToFloat()
@@ -705,14 +705,14 @@ TestAssignmentToTuple()
 
 # Vector assignments
 TestAssignmentToUCharVector()
-#TestAssignmentToBoolVector()
+#TestAssignmentToBoolVector() No instances in any .xml files
 #TestAssignmentToIntVector()
 #TestAssignmentToFloatVector()
 #TestAssignmentToDoubleVector()
 
 # Array assignments
 TestAssignmentToUCharArray()
-#TestAssignmentToBoolArray()
+#TestAssignmentToBoolArray() No instances in any .xml files
 #TestAssignmentToIntArray()
 #TestAssignmentToFloatArray()
 #TestAssignmentToDoubleArray()
