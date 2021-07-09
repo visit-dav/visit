@@ -2271,11 +2271,13 @@ class AttsGeneratorMapNode : public virtual MapNode , public virtual PythonGener
     } \
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className) \
     { \
-        c << "    int ival = -2;" << Endl; \
+        c << "    int ival = -999;" << Endl; \
         c << "    if (PySequence_Check(args) && !PyArg_ParseTuple(args, \"i\", &ival))" << Endl; \
         c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl; \
-        c << "    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)" << Endl; \
+        c << "    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1 && PyErr_Occurred())" << Endl; \
         c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl; \
+        c << "    if (ival == -999)" << Endl; \
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl;\
         c << Endl; \
         QString T(type); T.replace("Field", "");\
         if(accessType == AccessPublic) \
@@ -2466,10 +2468,12 @@ class AttsGeneratorScaleMode : public virtual PythonGeneratorField, public virtu
         : Field("scalemode",n,l), PythonGeneratorField("scalemode",n,l), ScaleMode(n,l) { }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival = -2;" << Endl;
+        c << "    int ival = -999;" << Endl;
         c << "    if (PySequence_Check(args) && !PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
         c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl;
-        c << "    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)" << Endl;
+        c << "    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1 && PyErr_Occurred())" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl;
+        c << "    if (ival == -999)" << Endl;
         c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl;
         c << Endl;
         c << "    // Set the " << name << " in the object." << Endl;
@@ -2526,10 +2530,12 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
     }
     virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int ival = -2;" << Endl;
+        c << "    int ival = -999;" << Endl;
         c << "    if (PySequence_Check(args) && !PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
         c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl;
-        c << "    else if (PyNumber_Check(args) && (ival = (int) PyLong_AsLong(args)) == -1)" << Endl;
+        c << "    else if (PyNumber_Check(args) && (ival = (int) PyLong_AsLong(args)) == -1 && PyErr_Occurred())" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl;
+        c << "    if (ival == -999)" << Endl;
         c << "        return PyErr_Format(PyExc_TypeError, \"Expecting scalar integer arg\");" << Endl;
         c << Endl;
         c << "    if(ival >= 0 && ival < " << GetNValues() << ")" << Endl;
@@ -2542,7 +2548,7 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
         c << "    }" << Endl;
         c << "    else" << Endl;
         c << "    {" << Endl;
-        c << "        return PyErr_Format(PyExc_IndexError, \"An invalid " << name
+        c << "        return PyErr_Format(PyExc_ValueError, \"An invalid " << name
           << " value was given. \"" << Endl;
         c << "                        \"Valid values are in the range of [0,"
           << GetNValues()-1 << "]. \"" << Endl;
