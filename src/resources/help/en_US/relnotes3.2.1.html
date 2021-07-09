@@ -42,6 +42,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug that resulted in the rubber band zoom box being rendered incorrectly on Mac retina displays.</li>
   <li>Fixed a bug in build_visit that caused it to improperly set the architecture directory name when using gcc 10.2. For example, on a linux system with an x86_64 processor, it previously set it to <i>linux-x86_64_gcc</i> instead of the correct <i>linux-x86_64_gcc-10.2</i>.</li>
   <li>Fixed a bug for Windows where exporting a multi-block Silo file into a non-default directory would make the file unreadable by VisIt.</li>
+  <li>Fixed a bug in build_visit that prevented CGNS from building on Linux systems.</li>
 </ul>
 
 <a name="Enhancements"></a>
