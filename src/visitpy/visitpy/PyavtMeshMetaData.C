@@ -615,10 +615,12 @@ avtMeshMetaData_SetMeshType(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival = -2;
+    int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
-    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)
+    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1 && PyErr_Occurred())
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    if (ival == -999)
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     obj->data->meshType = (avtMeshType)ival;
@@ -640,10 +642,12 @@ avtMeshMetaData_SetMeshCoordType(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival = -2;
+    int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
-    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)
+    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1 && PyErr_Occurred())
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    if (ival == -999)
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     obj->data->meshCoordType = (avtMeshCoordType)ival;
@@ -2343,10 +2347,12 @@ avtMeshMetaData_SetContainsGhostZones(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival = -2;
+    int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
-    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)
+    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1 && PyErr_Occurred())
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    if (ival == -999)
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     obj->data->containsGhostZones = (avtGhostType)ival;
@@ -2588,10 +2594,12 @@ avtMeshMetaData_SetLoadBalanceScheme(PyObject *self, PyObject *args)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)self;
 
-    int ival = -2;
+    int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
-    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)
+    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1 && PyErr_Occurred())
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    if (ival == -999)
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     obj->data->loadBalanceScheme = (LoadBalanceScheme)ival;

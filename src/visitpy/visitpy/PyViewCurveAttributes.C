@@ -331,10 +331,12 @@ ViewCurveAttributes_SetDomainScale(PyObject *self, PyObject *args)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
 
-    int ival = -2;
+    int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
-    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)
+    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1 && PyErr_Occurred())
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    if (ival == -999)
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     // Set the domainScale in the object.
@@ -365,10 +367,12 @@ ViewCurveAttributes_SetRangeScale(PyObject *self, PyObject *args)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)self;
 
-    int ival = -2;
+    int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
-    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1)
+    else if (PyNumber_Check(args) && (ival = PyLong_AsLong(args)) == -1 && PyErr_Occurred())
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    if (ival == -999)
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     // Set the rangeScale in the object.

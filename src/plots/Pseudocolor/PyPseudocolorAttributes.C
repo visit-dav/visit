@@ -1687,10 +1687,12 @@ PseudocolorAttributes_SetPointType(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
 
-    int ival = -2;
+    int ival = -999;
     if (PySequence_Check(args) && !PyArg_ParseTuple(args, "i", &ival))
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
-    else if (PyNumber_Check(args) && (ival = (int) PyLong_AsLong(args)) == -1)
+    else if (PyNumber_Check(args) && (ival = (int) PyLong_AsLong(args)) == -1 && PyErr_Occurred())
+        return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
+    if (ival == -999)
         return PyErr_Format(PyExc_TypeError, "Expecting scalar integer arg");
 
     if(ival >= 0 && ival < 8)
@@ -1699,7 +1701,7 @@ PseudocolorAttributes_SetPointType(PyObject *self, PyObject *args)
     }
     else
     {
-        return PyErr_Format(PyExc_IndexError, "An invalid pointType value was given. "
+        return PyErr_Format(PyExc_ValueError, "An invalid pointType value was given. "
                         "Valid values are in the range of [0,7]. "
                         "You can also use the following names: "
                         "Box, Axis, Icosahedron, Octahedron, Tetrahedron, "
