@@ -9,7 +9,7 @@ FilledBoundary,
 Histogram,
 Label,
 Mesh,
-``Molecule,``
+Molecule,
 ``MultiCurve,``
 ParallelCoordinates,
 Pseudocolor,
@@ -30,6 +30,7 @@ Vector, and Volume. This section explains each plot in detail.
     HistogramPlot
     LabelPlot
     MeshPlot
+    MoleculePlot
     PseudocolorPlot
     ScatterPlot
     SubsetPlot

@@ -22,25 +22,33 @@
 #   Eric Brugger, Wed Feb 10 15:07:41 PST 2021
 #   Update for switch to Python 3.
 #
+#   Kathleen Biagas, Thu Apr 22, 2021
+#   Don't build manuals for VISIT_STATIC, as sphinx won't be built.
+#
+#   Kathleen Biagas, Thu July 1, 2021
+#   Change FATAL_ERROR to WARNING with early return.
+#
 #****************************************************************************
 
-if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS)
+if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
     message(STATUS "Configure manuals targets")
-    set(errmsgtail "Either install sphinx or set VISIT_ENABLE_MANUALS to false.")
+    set(errmsgtail "To remove this warning, either install sphinx or set VISIT_ENABLE_MANUALS to false.")
     if(WIN32)
         # Need a different sphinx build command for windows
         if(NOT EXISTS ${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py)
-            message(FATAL_ERROR "Manuals are enabled but"
+            message(WARNING "Manuals are enabled but"
                    " ${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py"
-                   " does not exist. ${errmsgtail}")
+                   " does not exist so manuals will not be built. ${errmsgtail}")
+            return()
         endif()
         set(sphinx_build_cmd "${VISIT_PYTHON_DIR}/python.exe \ "
               "${VISIT_PYTHON_DIR}/Scripts/sphinx-build-script.py")
     else()
         if(NOT EXISTS ${VISIT_PYTHON_DIR}/bin/sphinx-build)
-            message(FATAL_ERROR "Manuals are enabled but"
+            message(WARNING "Manuals are enabled but"
                     " ${VISIT_PYTHON_DIR}/bin/sphinx-build"
-                    " does not exist. ${errmsgtail}")
+                    " does not exist so manuals will not be built. ${errmsgtail}")
+            return()
         endif()
         set(sphinx_build_cmd ${VISIT_PYTHON_DIR}/bin/sphinx-build)
     endif()

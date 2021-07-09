@@ -13,6 +13,9 @@
 #  Modifications:
 #    Kathleen Biagas, Tue Sep 29 11:29:33 PDT 2020
 #    Turn off IC warnings.
+#
+#    Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+#    Changed Pseudocolor CurrentPlot to ActualData.
 # ----------------------------------------------------------------------------
 
 OpenDatabase(silo_data_path("noise.silo"))
@@ -38,7 +41,7 @@ SetView3D(View3DAtts)
 PseudocolorAtts = PseudocolorAttributes()
 PseudocolorAtts.scaling = PseudocolorAtts.Linear  # Linear, Log, Skew
 PseudocolorAtts.skewFactor = 1
-PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, CurrentPlot
+PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, ActualData
 PseudocolorAtts.minFlag = 0
 PseudocolorAtts.min = 0
 PseudocolorAtts.maxFlag = 0

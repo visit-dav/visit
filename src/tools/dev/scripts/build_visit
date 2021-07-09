@@ -36,7 +36,7 @@
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
 #6. bv_<module>_build builds the module
 
-export VISIT_VERSION=${VISIT_VERSION:-"3.2.0"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.2.1"}
 
 ####
 # Trunk:
@@ -270,6 +270,9 @@ configure_support_files
 
 #import helper functions..
 . $bv_PREFIX/helper_funcs.sh
+
+# Test a key version compare function there
+test_compare_version_strings
 
 #import visit
 . $bv_PREFIX/bv_visit.sh

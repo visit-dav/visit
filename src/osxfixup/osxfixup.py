@@ -11,6 +11,24 @@ import fnmatch
 
 from os.path import join as pjoin
 
+def shexe(cmd,ret_output=False,echo = True,env=None):
+        """ Helper for executing shell commands. """
+        kwargs = {"shell":True}
+        if not env is None:
+            kwargs["env"] = env
+        if echo:
+            print("[exe: %s]" % cmd)
+        if ret_output:
+            kwargs["stdout"] = subprocess.PIPE
+            kwargs["stderr"] = subprocess.STDOUT
+            kwargs["universal_newlines"] = True
+            p = subprocess.Popen(cmd,**kwargs)
+            res = p.communicate()[0]
+            return p.returncode,res
+        else:
+            return subprocess.call(cmd,**kwargs),""
+
+
 def find_matches(sdir,pattern):
     """
     Walk sdir and find all files and dirs the match given pattern.
@@ -53,7 +71,7 @@ def find_libs(sdir):
             #if lib_basename in lib_maps:
             #    print "warning: ", lib_basename,"has multiple mappings old:",
             #    print lib_maps[lib_basename],"new:", lib
-            lib_maps[lib_basename] = full_lib.replace(sdir,"")   
+            lib_maps[lib_basename] = full_lib.replace(sdir,"")
     return lib_names,lib_maps
 
 def find_bundles(sdir):
@@ -83,6 +101,23 @@ def add_qt_conf(bundles):
         qtconf = open(qtconf_fname,"w")
         qtconf.write("[Paths]\nPlugins=\n")
 
+def valid_exe_suffix(path):
+    # screen things we know are not exes by suffix
+    for test_suffix in [".c",
+                        ".h",
+                        ".hpp",
+                        ".cpp",
+                        ".hxx",
+                        ".cxx",
+                        ".py",
+                        ".pyc",
+                        ".inc",
+                        ".a",
+                        ".dylib"]:
+        if path.lower().endswith(test_suffix):
+            return False
+    return True
+
 def find_exes(sdir):
     """
     Walk sdir and find all exes.
@@ -97,15 +132,15 @@ def find_exes(sdir):
               continue
           st = os.stat(fname)
           mode = st.st_mode
-          if mode & exe_flags:
+          # only do `file` check for files that have exe mode and aren't excluded by suffix
+          if mode & exe_flags and valid_exe_suffix(fname):
               # check with otool that this is an exe and not a script
-              chk_cmd = "file {0}"
-              try:
-                  chk = subprocess.check_output(chk_cmd.format(fname), shell=True)
-                  if chk.count("executable") >= 1:
-                      exes.append(fname)
-              except:
-                    print("[warning: failed to obtain file type for '%s']" % fname)
+              rcode, chk_out = shexe("file {0}".format(fname), ret_output=True)
+              if rcode != 0:
+                  print("[warning: failed to obtain file type for '%s']" % fname)
+              elif chk_out.count("executable") >= 1:
+                  # Note: we could also check for chk_out.lower().count("mach-o")
+                  exes.append(fname)
     return exes
 
 def fixup_items(items,lib_maps,prefix_path):
@@ -125,78 +160,101 @@ def fixup_items(items,lib_maps,prefix_path):
         
         id_cmd = "install_name_tool -id @rpath{0} {1}"
         if item_base in list(lib_maps.keys()):
-            id_cmd  = id_cmd.format(lib_maps[item_base], item)
+            id_cmd = id_cmd.format(lib_maps[item_base], item)
         else:
-            id_cmd  =  id_cmd.format(item.replace(prefix_path,""), item) 
-        subprocess.call(id_cmd,shell=True)
+            id_cmd = id_cmd.format(item.replace(prefix_path,""), item)
+        shexe(id_cmd)
 
-        # Remove rpaths containing user home directory 
-        load_cmd = "otool -l {0}"
+        # Remove rpaths containing user home directory
         home = os.path.expanduser("~")
         invalid_paths = []
-        try:
-            lc_rpaths = subprocess.check_output(load_cmd.format(item), shell=True)
+        rcode, lc_rpaths = shexe("otool -l {0}".format(item), ret_output=True)
+        if rcode != 0:
+            print("[info: no invalid LC_RPATHS for '%s']" % item)
+        else:
             lc_rpaths = [ path for path in lc_rpaths.split("\n")[1:] if path.find(" path") != -1]
             for lc_rpath in lc_rpaths:
                 invalid_path = lc_rpath.split()[1]
                 if invalid_path.find(home) != -1:
                     invalid_paths.append(invalid_path)
-        except:
-            print("[info: no invalid LC_RPATHS for '%s']" % item)
 
-        del_rpath_cmd = "install_name_tool -delete_rpath {0} {1} 2>&1"
-        for invalid_path in invalid_paths:
-            subprocess.call(del_rpath_cmd.format(invalid_path, item), shell=True)
+            del_rpath_cmd = "install_name_tool -delete_rpath {0} {1} 2>&1"
+            for invalid_path in invalid_paths:
+                shexe(del_rpath_cmd.format(invalid_path, item))
 
+        ####################################
         # Add rpaths relative to the bundle
-        deps_cmd = "otool -L {0}"
-        try:
-            dependencies = subprocess.check_output(deps_cmd.format(item), shell=True)
-            dependencies = [ d for d in dependencies.split("\n")[1:] if d.strip() != ""]
-        except:
-            print("[warning: failed to obtain dependencies for '%s']" % item)
-            dependencies = []
-        
+        ####################################
         # if we have an exe exe_rpaths[0]
         # if we have a bundle exe_rpaths[1]
         # it doens't hurt to add both for now
         rpath_base_cmd =  "install_name_tool -add_rpath {0} {1} 2>&1"
         rpath_cmds = [rpath_base_cmd.format(rp, item) for rp in exe_rpaths]
         for rp_cmd in rpath_cmds:
-            subprocess.call(rp_cmd,shell=True)
-        
-        for dep in dependencies:
-            index = dep.find(" ")
-            if index >= 0: dep = dep[0:index].strip()
-            dep_base = os.path.basename(dep)
+            shexe(rp_cmd)
 
-            #sometimes dependencies can have extensions, find the appropriate one..
-            if dep_base not in lib_maps:
-                tdep = os.path.splitext(dep_base)
-                while tdep[1] != '':
-                    if tdep[0] in lib_maps:
-                        dep_base = tdep[0]
-                        break
-                    tdep = os.path.splitext(tdep[0])
-            if dep_base in lib_maps:
-                dep_cmd = "install_name_tool -change {0} @rpath{1} {2}"
-                dep_cmd = dep_cmd.format(dep,lib_maps[dep_base],item)
-                subprocess.call(dep_cmd,shell=True)
+        ###############
+        # re-wire deps
+        ###############
+        rcode, dependencies = shexe("otool -L {0}".format(item), ret_output=True)
+        if rcode != 0:
+            print("[warning: failed to obtain dependencies for '%s']" % item)
+        else:
+            dependencies = [ d for d in dependencies.split("\n")[1:] if d.strip() != ""]
+            print("[# of dependencies for {0} = {1}]".format(item,len(dependencies)))
+            for dep in dependencies:
+                index = dep.find(" ")
+                if index >= 0:
+                    dep = dep[0:index].strip()
+                dep_base = os.path.basename(dep)
+                #sometimes dependencies can have extensions, find the appropriate one..
+                if dep_base not in lib_maps:
+                    tdep = os.path.splitext(dep_base)
+                    while tdep[1] != '':
+                        if tdep[0] in lib_maps:
+                            dep_base = tdep[0]
+                            break
+                        tdep = os.path.splitext(tdep[0])
+                if dep_base in lib_maps:
+                    dep_cmd = "install_name_tool -change {0} @rpath{1} {2}"
+                    dep_cmd = dep_cmd.format(dep,lib_maps[dep_base],item)
+                    shexe(dep_cmd)
 
 def main():
     prefix_path = "darwin-x86_64"
     if len(sys.argv) > 1:
         prefix_path = sys.argv[1]
     prefix_path = os.path.abspath(prefix_path)
+    ###############
+    # find libs
+    ###############
     print("[Finding libraries @ %s]" % prefix_path)
     lib_names,lib_maps = find_libs(prefix_path)
     print("[Found %d libraries]" % len(lib_names))
+    if len(lib_names) == 0:
+        print("[Error found 0 libraries, something is wrong!]")
+        sys.exit(-1)
+    ###############
+    # find exes
+    ###############
     print("[Finding executables @ %s]" % prefix_path)
     exe_names = find_exes(prefix_path)
     print("[Found %d executables]" % len(exe_names))
+    if len(exe_names) == 0:
+        print("[Error found 0 executables, something is wrong!]")
+        sys.exit(-1)
+    ###############
+    # find bundles
+    ###############
     print("[Finding bundles @ %s]" % prefix_path)
     bundle_names = find_bundles(prefix_path)
     print("[Found %d bundles]" % len(bundle_names))
+    if len(bundle_names) == 0:
+        print("[Error found 0 bundles, something is wrong!]")
+        sys.exit(-1)
+    #############
+    # exec fixup
+    #############
     print("[Fixing Libraries...]")
     fixup_items(lib_names,lib_maps,prefix_path)
     print("[Fixing Executables...]")

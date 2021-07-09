@@ -96,6 +96,10 @@ exec perl -x $0 ${1+"$@"};
 #     Brad Whitlock, Fri Oct 12 16:52:21 PDT 2012
 #     Removed -withhelp option.
 #
+#     Eric Brugger, Wed May  5 16:25:11 PDT 2021
+#     Modified the code that gets the git version to grab 10 characters
+#     instead of 7, to match what "git rev-parse --short HEAD" produces.
+#
 require "newgetopt.pl";
 
 $USAGE = "USAGE: $0 dist_file [-withtest] [-dbioonly]\n";
@@ -107,7 +111,7 @@ if (! -d "src")
     exit(-1);
 }
 
-system("git log -1 | grep \"^commit\" | cut -d' ' -f2 | head -c 7 > ./src/GIT_VERSION");
+system("git log -1 | grep \"^commit\" | cut -d' ' -f2 | head -c 10 > ./src/GIT_VERSION");
 
 # Parse the argument list.
 &NGetOpt("withtest","dbioonly");

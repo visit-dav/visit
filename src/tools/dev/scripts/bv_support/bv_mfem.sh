@@ -184,13 +184,11 @@ function build_mfem
     mkdir build
     cd build || error "Can't cd to MFEM build dir."
 
-    # Version 4.0 now requires c++11
-    CXXFLAGS="-std=c++11 ${CXXFLAGS}"
-
     vopts="-DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     vopts="${vopts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS} $CFLAGS\""
     vopts="${vopts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS\""
+    # Version 4.0 now requires c++11
+    vopts="${vopts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS} $CXXFLAGS -std=c++11\""
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/mfem/${MFEM_VERSION}/${VISITARCH}"
     if test "x${DO_STATIC_BUILD}" = "xyes" ; then
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"

@@ -3010,7 +3010,7 @@ distinguish it from functions that may utilize the full range of integers.
     | skewFactor                   | 1                          |
     +------------------------------+----------------------------+
     | limitsMode                   |  **OriginalData**,         |
-    |                              |  CurrentPlot               |
+    |                              |  ActualData                |
     +------------------------------+----------------------------+
     | minFlag                      | 0                          |
     +------------------------------+----------------------------+

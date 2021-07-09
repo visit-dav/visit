@@ -2600,6 +2600,9 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //      Alister Maguire, Thu Mar 25 13:55:53 PDT 2021
 //      Added support for stress and strain derivations and the sand mesh.
 //
+//      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
+//      Only add pressure for stress.
+//
 // ****************************************************************************
 
 void
@@ -2727,8 +2730,18 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
                 derivedPath = meshPath + "Derived/" + varPath;
             }
 
+            bool needPressure = false;
+
+            //
+            // Currently, we only add pressure for stress.
+            //
+            if ((*mdItr)->GetShortName() == "stress")
+            {
+                needPressure = true;
+            }
+
             AddStressStrainDerivations(md, (*mdItr)->GetShortName(),
-                varPath, derivedPath, true);
+                varPath, derivedPath, needPressure);
 
             //
             // If we've added one, we've added them all.
@@ -2843,7 +2856,6 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 //  Creation:    Jan 16, 2019
 //
 //  Modifications
-//
 //      Alister Maguire, Fri Jun 28 15:01:24 PDT 2019
 //      Added checks to determine if shared variables have been added
 //      or not.
@@ -2855,6 +2867,9 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 //      Alister Maguire, Tue Jul 21 10:52:18 PDT 2020
 //      No need to add the materials for each mesh. Only add to the
 //      non-sand mesh.
+//
+//      Eric Brugger, Fri May  7 15:54:32 PDT 2021
+//      Don't add any material colors if no material colors were specified.
 //
 // ****************************************************************************
 
@@ -2900,12 +2915,19 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
         stringVector matNames;
         miliMetaData[meshId]->GetMaterialNames(matNames);
-        AddMaterialToMetaData(md,
-                              matName,
-                              meshName,
-                              numMats,
-                              matNames,
-                              matColors);
+        if (matColors.empty())
+            AddMaterialToMetaData(md,
+                                  matName,
+                                  meshName,
+                                  numMats,
+                                  matNames);
+        else
+            AddMaterialToMetaData(md,
+                                  matName,
+                                  meshName,
+                                  numMats,
+                                  matNames,
+                                  matColors);
 
         AddLabelVarToMetaData(md,
                               "OriginalZoneLabels",
@@ -3696,10 +3718,13 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 //  Date:   April 9, 2019
 //
 //  Modifications:
-//
 //      Alister Maguire, Tue Jul  9 13:31:59 PDT 2019
 //      Check that we have the correct file format. JSON tends to hang when
 //      it tries to open non-json files.
+//
+//      Eric Brugger, Fri May  7 15:54:32 PDT 2021
+//      Remove the code that assigns a random color to a material if no
+//      material color is specified.
 //
 // ****************************************************************************
 void
@@ -3821,12 +3846,11 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                 string name = jItr->name.GetString();
                 const rapidjson::Value &mat = jItr->value;
 
-                string matName = "";
-                std::stringstream colorSS;
-                colorSS << "#";
-
                 if (mat.IsObject())
                 {
+                    string matName = "";
+                    string colorString;
+
                     if (mat.HasMember("name"))
                     {
                         matName = mat["name"].GetString();
@@ -3848,6 +3872,9 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                         //
                         if (mColors.IsArray())
                         {
+                            std::stringstream colorSS;
+                            colorSS << "#";
+
                             for (rapidjson::SizeType i = 0;
                                  i < mColors.Size(); ++i)
                             {
@@ -3858,24 +3885,15 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                                     std::max(0, std::min(255, iVal));
                             }
 
-                        }
-                    }
-                    else
-                    {
-                        //
-                        // If this material doesn't have a color,
-                        // assign a random color.
-                        //
-                        for (int i = 0; i < 3; ++i)
-                        {
-                            int randInt = (rand() % static_cast<int> (256));
-                            colorSS << std::hex << randInt;
+                            colorString = string(colorSS.str());
                         }
                     }
 
+                    //
+                    // An empty color string indicates no color.
+                    //
                     MiliMaterialMetaData *miliMaterial =
-                        new MiliMaterialMetaData(matName,
-                                                 string(colorSS.str()));
+                        new MiliMaterialMetaData(matName, colorString);
 
                     miliMetaData[meshId]->AddMaterialMD(matCount++,
                                                         miliMaterial);
@@ -4247,6 +4265,9 @@ avtMiliFileFormat::ScalarExpressionFromVec(const char *vecPath,
 //
 //  Modifications
 //
+//      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
+//      Added missing component (1) for the principal tensor expressions.
+//
 // ****************************************************************************
 
 void
@@ -4298,6 +4319,12 @@ avtMiliFileFormat::AddStressStrainDerivations(avtDatabaseMetaData *md,
     maxShear.SetDefinition("tensor_maximum_shear(<" + varPath + ">)");
     maxShear.SetType(Expression::ScalarMeshVar);
     md->AddExpression(&maxShear);
+
+    Expression pTensor1;
+    pTensor1.SetName(derivedPath + "/prin_" + varName.c_str() + "/1");
+    pTensor1.SetDefinition("principal_tensor(<" + varPath + ">)[0]");
+    pTensor1.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pTensor1);
 
     Expression pTensor2;
     pTensor2.SetName(derivedPath + "/prin_" + varName.c_str() + "/2");

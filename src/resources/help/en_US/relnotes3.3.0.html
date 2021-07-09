@@ -32,8 +32,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_features"></a>
 <p><b><font size="4">General features added in version 3.3</font></b></p>
 <ul>
-  <li>General Feature 1</li>
-  <li>General Feature 2</li>
+  <li>Updated the ORNL host file list to include only current machines.</li>
+  <li>After a successful Export database, the informational message now contains the host and path to the export.</li>
+  <li>A new function was added to the Python CLI named <code>apropos(regex)</code> similar in purpose to <a href="https://en.wikipedia.org/wiki/Apropos_(Unix)">Unix' apropos</a>. It makes finding the names of functions and objects much easier. It will return a list of the names of functions or objects where the regular expression matches either in the method name or in the documentation string for the method or in a stringified instance (objects only). All matching is case insensitive.</li>
+  <li>Default behavior of Python's <code>help(thing)</code> was adjusted slightly to first present what <code>help(thing)</code> would normally produce but then to also follow it up with output from <code>apropos(thing)</code> when that output is non-empty.<li>
+  <li>The French translation was updated thanks to <a href="https://github.com/cessenat">@cessenat</a>. We are still looking for volunteers for translations in other languages. If interested, please <a href="https://visit-dav.github.io/visit-website/support/">contact us</a>.</li>
+  <li>A new (beta) <a href="https://en.wikipedia.org/wiki/Names_given_to_the_Spanish_language">Castilian Spanish</a> translation was created thanks to <a href="https://github.com/cessenat">@cessenat</a> using auto-translation from English. It likely still requires review by someone who is fluent in Spanish and we would welcome any volunteers.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -46,20 +50,22 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="GUI_changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 3.3</font></b></p>
 <ul>
-  <li>GUI Change 1</li>
+  <li>Custom titles for Legend annotation objects can now be set.</li> 
   <li>GUI Change 2</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 3.3</font></b></p>
 <ul>
-  <li>Enhanced the Mili reader to support setting the global integration point for element sets. This can be accomplished by changing the default open options for Mili within the Plugin Manager. Available options are "Inner", "Middle", and "Outer".<li>
+  <li>The Xolotl reader was updated to support phase-space.<li>
+  <li>SW4 reader was renamed as sw4img to fix static builds.<li>
+  <li>Reader Change 3<li>
 </ul>
 
 <a name="Plot_changes"></a>
 <p><b><font size="4">Changes to VisIt's plots in version 3.3</font></b></p>
 <ul>
-  <li>Plot Change 1</li>
+  <li>Pseudocolor Plot Limits now say "Use Actual Data" instead of "Use Current Plot".</li>
   <li>Plot Change 2</li>
 </ul>
 
