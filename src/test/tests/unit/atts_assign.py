@@ -871,6 +871,69 @@ def TestAssignmentToFloatArray():
         except:
             TestFOA('rra.SetCenter(%s)'%repr2(works[i]), LINE()) 
 
+def TestAssignmentToDoubleArray():
+    TestSection('Assignment to doubleArray member, "materialProperties", (of VolumeAttributes())')
+
+    va = VolumeAttributes()
+
+    # Test assigning via (operator =) assignment
+    try:
+        va.materialProperties = 0,1,2,3
+        TestPOA('va.materialProperties=0,1,2,3')
+    except:
+        TestFOA('va.materialProperites=0,1,2,3', LINE())
+        pass
+    try:
+        va.materialProperties = 0,1,2
+        TestFOA('va.materialProperties=0,1,2', LINE())
+    except:
+        TestPOA('va.materialProperties=0,1,2')
+        pass
+    try:
+        va.materialProperties = 0,1,2,3,4
+        TestFOA('va.materialProperties=0,1,2,3,4', LINE())
+    except:
+        TestPOA('va.materialProperties=0,1,2,3,4')
+        pass
+
+    fails = [(0,1), (0,1,2,3,4), (0,None,2,3), (0,1+2j,2,3), (0,X,2,3), (0,'123',2,3)]
+    for i in range(len(fails)):
+        try:
+            va.materialProperties = fails[i]
+            TestFOA('va.materialProperties=%s'%repr2(fails[i]), LINE())
+        except TypeError:
+            TestPOA('va.materialProperties=%s'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('va.materialProperties=%s'%repr2(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            va.SetMaterialProperties(*fails[i])
+            TestFOA('va.SetMaterialProperties(%s)'%repr2(fails[i]), LINE())
+        except TypeError:
+            TestPOA('va.SetMaterialProperties(%s)'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('va.SetMaterialProperties(%s)'%repr2(fails[i]), LINE())
+            pass
+
+    works = [(1,2,3,4), (1.1,2.2,3.3,4.4), (1,True,3,4), (1,False,3,4)]
+    for i in range(len(works)):
+        try:
+            va.materialProperties = works[i]
+            TestPOA('va.materialProperties=%s'%repr2(works[i]))
+        except:
+            TestFOA('va.materialProperties=%s'%repr2(works[i]), LINE())
+
+    for i in range(len(works)):
+        try:
+            va.SetMaterialProperties(*works[i])
+            TestPOA('va.SetMaterialProperties(%s)'%repr2(works[i]))
+        except:
+            TestFOA('va.SetMaterialProperties(%s)'%repr2(works[i]), LINE()) 
+
 def TestDirOutput(obj, minlen = 5, names = None):
     TestSection('behavior of dir()')
     try:
@@ -936,7 +999,7 @@ TestAssignmentToUCharArray()
 #TestAssignmentToBoolArray() No instances in any .xml files
 TestAssignmentToIntArray()
 TestAssignmentToFloatArray()
-#TestAssignmentToDoubleArray()
+TestAssignmentToDoubleArray()
 
 
 # Test that dir(x) appears to work
