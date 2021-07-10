@@ -393,10 +393,12 @@ avtSpeciesMetaData_GetSpecies(PyObject *self, PyObject *args)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetSpecies().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetSpecies(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetSpecies().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.

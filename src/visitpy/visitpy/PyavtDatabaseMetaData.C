@@ -1514,10 +1514,12 @@ avtDatabaseMetaData_GetMeshes(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetMeshes().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetMeshes(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetMeshes().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1613,10 +1615,12 @@ avtDatabaseMetaData_GetSubsets(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetSubsets().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetSubsets(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetSubsets().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1712,10 +1716,12 @@ avtDatabaseMetaData_GetScalars(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetScalars().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetScalars(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetScalars().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1811,10 +1817,12 @@ avtDatabaseMetaData_GetVectors(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetVectors().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetVectors(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetVectors().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -1910,10 +1918,12 @@ avtDatabaseMetaData_GetTensors(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetTensors().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetTensors(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetTensors().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2009,10 +2019,12 @@ avtDatabaseMetaData_GetSymmTensors(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetSymmTensors().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetSymmTensors(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetSymmTensors().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2108,10 +2120,12 @@ avtDatabaseMetaData_GetArrays(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetArrays().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetArrays(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetArrays().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2207,10 +2221,12 @@ avtDatabaseMetaData_GetMaterials(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetMaterials().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetMaterials(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetMaterials().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2306,10 +2322,12 @@ avtDatabaseMetaData_GetSpecies(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetSpecies().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetSpecies(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetSpecies().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2405,10 +2423,12 @@ avtDatabaseMetaData_GetCurves(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetCurves().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetCurves(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetCurves().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2504,10 +2524,12 @@ avtDatabaseMetaData_GetLabels(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetLabels().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetLabels(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetLabels().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -2603,10 +2625,12 @@ avtDatabaseMetaData_GetDefaultPlots(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
     int index = -1;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetDefaultPlots().size())
-        return NULL;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetDefaultPlots(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetDefaultPlots().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
