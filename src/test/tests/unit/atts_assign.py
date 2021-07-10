@@ -110,7 +110,6 @@ def TestAssignmentToTuple():
             TestFOA('ca.point1=%s'%repr2(works[i]), LINE())
             pass
 
-    works = [(1,2,3), (1.1,2.2,3.3), tuple(X)]
     for i in range(len(works)):
         try:
             ca.SetPoint1(*works[i])
@@ -747,9 +746,9 @@ def TestAssignmentToIntArray():
     for i in range(len(works)):
         try:
             ra.reflections = works[i]
-            TestPOA('ra.reflections=%s'%repr2(works[i]).replace('(','').replace(')',''))
+            TestPOA('ra.reflections=%s'%repr2(works[i]))
         except:
-            TestFOA('ra.reflections=%s'%repr2(works[i]).replace('(','').replace(')',''), LINE())
+            TestFOA('ra.reflections=%s'%repr2(works[i]), LINE())
 
     for i in range(len(works)):
         try:
@@ -757,6 +756,69 @@ def TestAssignmentToIntArray():
             TestPOA('ra.SetReflections(%s)'%repr2(works[i]))
         except:
             TestFOA('ra.SetReflections(%s)'%repr2(works[i]), LINE()) 
+
+def TestAssignmentToFloatArray():
+    TestSection('Assignment to floatArray member, "center", (of RadialResampleAttributes())')
+
+    rra = RadialResampleAttributes()
+
+    # Test assigning via (operator =) assignment
+    try:
+        rra.center = 0,1,2
+        TestPOA('rra.center=0,1,2')
+    except:
+        TestFOA('rra.center=0,1,2', LINE())
+        pass
+    try:
+        rra.center = 0,1
+        TestFOA('rra.center=0,1', LINE())
+    except:
+        TestPOA('rra.center=0,1')
+        pass
+    try:
+        rra.center = 0,1,2,3
+        TestFOA('rra.center=0,1,2,3', LINE())
+    except:
+        TestPOA('rra.center=0,1,2,3')
+        pass
+
+    fails = [(0,1), (0,1,2,3), (0,None,2), (0,1+2j,2), (0,X,2), (0,'123',2)]
+    for i in range(len(fails)):
+        try:
+            rra.center = fails[i]
+            TestFOA('rra.center=%s'%repr2(fails[i]), LINE())
+        except TypeError:
+            TestPOA('rra.center=%s'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('rra.center=%s'%repr2(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            rra.SetCenter(*fails[i])
+            TestFOA('rra.SetCenter(%s)'%repr2(fails[i]), LINE())
+        except TypeError:
+            TestPOA('rra.SetCenter(%s)'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('rra.SetCenter(%s)'%repr2(fails[i]), LINE())
+            pass
+
+    works = [(1,2,3), (1.1,2.2,3.3), tuple(X), (1,True,3), (1,False,3)]
+    for i in range(len(works)):
+        try:
+            rra.center = works[i]
+            TestPOA('rra.center=%s'%repr2(works[i]))
+        except:
+            TestFOA('rra.center=%s'%repr2(works[i]), LINE())
+
+    for i in range(len(works)):
+        try:
+            rra.SetCenter(*works[i])
+            TestPOA('rra.SetCenter(%s)'%repr2(works[i]))
+        except:
+            TestFOA('rra.SetCenter(%s)'%repr2(works[i]), LINE()) 
 
 def TestDirOutput(obj, minlen = 5, names = None):
     TestSection('behavior of dir()')
@@ -815,14 +877,14 @@ TestAssignmentToTuple()
 TestAssignmentToUCharVector()
 #TestAssignmentToBoolVector() No instances in any .xml files
 TestAssignmentToIntVector()
-#TestAssignmentToFloatVector()
+#TestAssignmentToFloatVector() No instances in any .xml files
 #TestAssignmentToDoubleVector()
 
 # Array assignments
 TestAssignmentToUCharArray()
 #TestAssignmentToBoolArray() No instances in any .xml files
 TestAssignmentToIntArray()
-#TestAssignmentToFloatArray()
+TestAssignmentToFloatArray()
 #TestAssignmentToDoubleArray()
 
 
