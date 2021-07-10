@@ -1902,7 +1902,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
 
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
-        c << "    int index;" << Endl;
+        c << "    int index = -1;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << Endl;
         c << "        return NULL;" << Endl;
         c << "    if(index < 0 || (size_t)index >= obj->data->Get" << Name << "().size())" << Endl;
@@ -1992,7 +1992,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "PyObject *" << Endl;
         c << className << "_Remove" << Name << "(PyObject *self, PyObject *args)" << Endl;
         c << "{" << Endl;
-        c << "    int index;" << Endl;
+        c << "    int index = -1;" << Endl;
         c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << Endl;
         c << "        return PyErr_Format(PyExc_TypeError, \"Expecting integer index\");" << Endl;
         c << "    " << className << "Object *obj = ("<<className<<"Object *)self;" << Endl;
