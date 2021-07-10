@@ -435,7 +435,7 @@ avtSimulationInformation_GetOtherValues(PyObject *self, PyObject *args)
 avtSimulationInformation_GetGenericCommands(PyObject *self, PyObject *args)
 {
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetGenericCommands().size())
@@ -506,7 +506,7 @@ avtSimulationInformation_Remove_One_GenericCommands(PyObject *self, int index)
 PyObject *
 avtSimulationInformation_RemoveGenericCommands(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
@@ -601,7 +601,7 @@ avtSimulationInformation_GetMode(PyObject *self, PyObject *args)
 avtSimulationInformation_GetCustomCommands(PyObject *self, PyObject *args)
 {
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetCustomCommands().size())
@@ -672,7 +672,7 @@ avtSimulationInformation_Remove_One_CustomCommands(PyObject *self, int index)
 PyObject *
 avtSimulationInformation_RemoveCustomCommands(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)self;

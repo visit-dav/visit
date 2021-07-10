@@ -165,7 +165,7 @@ ColorTableAttributes_GetNames(PyObject *self, PyObject *args)
 ColorTableAttributes_GetColorTables(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetColorTables().size())
@@ -236,7 +236,7 @@ ColorTableAttributes_Remove_One_ColorTables(PyObject *self, int index)
 PyObject *
 ColorTableAttributes_RemoveColorTables(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;

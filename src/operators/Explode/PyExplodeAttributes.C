@@ -1110,7 +1110,7 @@ ExplodeAttributes_GetBoundaryNames(PyObject *self, PyObject *args)
 ExplodeAttributes_GetExplosions(PyObject *self, PyObject *args)
 {
     ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetExplosions().size())
@@ -1181,7 +1181,7 @@ ExplodeAttributes_Remove_One_Explosions(PyObject *self, int index)
 PyObject *
 ExplodeAttributes_RemoveExplosions(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;

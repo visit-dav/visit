@@ -71,7 +71,7 @@ ExpressionList_Notify(PyObject *self, PyObject *args)
 ExpressionList_GetExpressions(PyObject *self, PyObject *args)
 {
     ExpressionListObject *obj = (ExpressionListObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetExpressions().size())
@@ -142,7 +142,7 @@ ExpressionList_Remove_One_Expressions(PyObject *self, int index)
 PyObject *
 ExpressionList_RemoveExpressions(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     ExpressionListObject *obj = (ExpressionListObject *)self;

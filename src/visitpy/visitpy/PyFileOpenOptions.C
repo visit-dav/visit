@@ -273,7 +273,7 @@ FileOpenOptions_GetTypeIDs(PyObject *self, PyObject *args)
 FileOpenOptions_GetOpenOptions(PyObject *self, PyObject *args)
 {
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetOpenOptions().size())
@@ -344,7 +344,7 @@ FileOpenOptions_Remove_One_OpenOptions(PyObject *self, int index)
 PyObject *
 FileOpenOptions_RemoveOpenOptions(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     FileOpenOptionsObject *obj = (FileOpenOptionsObject *)self;

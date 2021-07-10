@@ -102,7 +102,7 @@ ColorControlPointList_Notify(PyObject *self, PyObject *args)
 ColorControlPointList_GetControlPoints(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetControlPoints().size())
@@ -173,7 +173,7 @@ ColorControlPointList_Remove_One_ControlPoints(PyObject *self, int index)
 PyObject *
 ColorControlPointList_RemoveControlPoints(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;

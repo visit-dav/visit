@@ -71,7 +71,7 @@ ColorAttributeList_Notify(PyObject *self, PyObject *args)
 ColorAttributeList_GetColors(PyObject *self, PyObject *args)
 {
     ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetColors().size())
@@ -142,7 +142,7 @@ ColorAttributeList_Remove_One_Colors(PyObject *self, int index)
 PyObject *
 ColorAttributeList_RemoveColors(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     ColorAttributeListObject *obj = (ColorAttributeListObject *)self;

@@ -146,7 +146,7 @@ SelectionSummary_GetName(PyObject *self, PyObject *args)
 SelectionSummary_GetVariables(PyObject *self, PyObject *args)
 {
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetVariables().size())
@@ -217,7 +217,7 @@ SelectionSummary_Remove_One_Variables(PyObject *self, int index)
 PyObject *
 SelectionSummary_RemoveVariables(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     SelectionSummaryObject *obj = (SelectionSummaryObject *)self;

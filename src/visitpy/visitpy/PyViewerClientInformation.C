@@ -87,7 +87,7 @@ ViewerClientInformation_Notify(PyObject *self, PyObject *args)
 ViewerClientInformation_GetVars(PyObject *self, PyObject *args)
 {
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetVars().size())
@@ -158,7 +158,7 @@ ViewerClientInformation_Remove_One_Vars(PyObject *self, int index)
 PyObject *
 ViewerClientInformation_RemoveVars(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)self;

@@ -392,7 +392,7 @@ avtSpeciesMetaData_GetNumMaterials(PyObject *self, PyObject *args)
 avtSpeciesMetaData_GetSpecies(PyObject *self, PyObject *args)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSpecies().size())
@@ -463,7 +463,7 @@ avtSpeciesMetaData_Remove_One_Species(PyObject *self, int index)
 PyObject *
 avtSpeciesMetaData_RemoveSpecies(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)self;

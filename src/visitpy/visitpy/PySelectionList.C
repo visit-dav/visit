@@ -145,7 +145,7 @@ SelectionList_GetAutoApplyUpdates(PyObject *self, PyObject *args)
 SelectionList_GetSelections(PyObject *self, PyObject *args)
 {
     SelectionListObject *obj = (SelectionListObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSelections().size())
@@ -216,7 +216,7 @@ SelectionList_Remove_One_Selections(PyObject *self, int index)
 PyObject *
 SelectionList_RemoveSelections(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     SelectionListObject *obj = (SelectionListObject *)self;
@@ -244,7 +244,7 @@ SelectionList_ClearSelections(PyObject *self, PyObject *args)
 SelectionList_GetSelectionSummary(PyObject *self, PyObject *args)
 {
     SelectionListObject *obj = (SelectionListObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSelectionSummary().size())
@@ -315,7 +315,7 @@ SelectionList_Remove_One_SelectionSummary(PyObject *self, int index)
 PyObject *
 SelectionList_RemoveSelectionSummary(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     SelectionListObject *obj = (SelectionListObject *)self;

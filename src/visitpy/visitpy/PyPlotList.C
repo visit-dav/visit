@@ -71,7 +71,7 @@ PlotList_Notify(PyObject *self, PyObject *args)
 PlotList_GetPlots(PyObject *self, PyObject *args)
 {
     PlotListObject *obj = (PlotListObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetPlots().size())
@@ -142,7 +142,7 @@ PlotList_Remove_One_Plots(PyObject *self, int index)
 PyObject *
 PlotList_RemovePlots(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     PlotListObject *obj = (PlotListObject *)self;

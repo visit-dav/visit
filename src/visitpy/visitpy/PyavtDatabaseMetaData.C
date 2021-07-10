@@ -1513,7 +1513,7 @@ avtDatabaseMetaData_GetExprList(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetMeshes(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetMeshes().size())
@@ -1584,7 +1584,7 @@ avtDatabaseMetaData_Remove_One_Meshes(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveMeshes(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
@@ -1612,7 +1612,7 @@ avtDatabaseMetaData_ClearMeshes(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetSubsets(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSubsets().size())
@@ -1683,7 +1683,7 @@ avtDatabaseMetaData_Remove_One_Subsets(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveSubsets(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
@@ -1711,7 +1711,7 @@ avtDatabaseMetaData_ClearSubsets(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetScalars(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetScalars().size())
@@ -1782,7 +1782,7 @@ avtDatabaseMetaData_Remove_One_Scalars(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveScalars(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
@@ -1810,7 +1810,7 @@ avtDatabaseMetaData_ClearScalars(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetVectors(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetVectors().size())
@@ -1881,7 +1881,7 @@ avtDatabaseMetaData_Remove_One_Vectors(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveVectors(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
@@ -1909,7 +1909,7 @@ avtDatabaseMetaData_ClearVectors(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetTensors(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetTensors().size())
@@ -1980,7 +1980,7 @@ avtDatabaseMetaData_Remove_One_Tensors(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveTensors(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
@@ -2008,7 +2008,7 @@ avtDatabaseMetaData_ClearTensors(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetSymmTensors(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSymmTensors().size())
@@ -2079,7 +2079,7 @@ avtDatabaseMetaData_Remove_One_SymmTensors(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveSymmTensors(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
@@ -2107,7 +2107,7 @@ avtDatabaseMetaData_ClearSymmTensors(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetArrays(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetArrays().size())
@@ -2178,7 +2178,7 @@ avtDatabaseMetaData_Remove_One_Arrays(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveArrays(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
@@ -2206,7 +2206,7 @@ avtDatabaseMetaData_ClearArrays(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetMaterials(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetMaterials().size())
@@ -2277,7 +2277,7 @@ avtDatabaseMetaData_Remove_One_Materials(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveMaterials(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
@@ -2305,7 +2305,7 @@ avtDatabaseMetaData_ClearMaterials(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetSpecies(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetSpecies().size())
@@ -2376,7 +2376,7 @@ avtDatabaseMetaData_Remove_One_Species(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveSpecies(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
@@ -2404,7 +2404,7 @@ avtDatabaseMetaData_ClearSpecies(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetCurves(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetCurves().size())
@@ -2475,7 +2475,7 @@ avtDatabaseMetaData_Remove_One_Curves(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveCurves(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
@@ -2503,7 +2503,7 @@ avtDatabaseMetaData_ClearCurves(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetLabels(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetLabels().size())
@@ -2574,7 +2574,7 @@ avtDatabaseMetaData_Remove_One_Labels(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveLabels(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
@@ -2602,7 +2602,7 @@ avtDatabaseMetaData_ClearLabels(PyObject *self, PyObject *args)
 avtDatabaseMetaData_GetDefaultPlots(PyObject *self, PyObject *args)
 {
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return NULL;
     if(index < 0 || (size_t)index >= obj->data->GetDefaultPlots().size())
@@ -2673,7 +2673,7 @@ avtDatabaseMetaData_Remove_One_DefaultPlots(PyObject *self, int index)
 PyObject *
 avtDatabaseMetaData_RemoveDefaultPlots(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
         return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     avtDatabaseMetaDataObject *obj = (avtDatabaseMetaDataObject *)self;
