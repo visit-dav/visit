@@ -1903,10 +1903,12 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
     virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
     {
         c << "    int index = -1;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &index))" << Endl;
-        c << "        return NULL;" << Endl;
-        c << "    if(index < 0 || (size_t)index >= obj->data->Get" << Name << "().size())" << Endl;
-        c << "        return NULL;" << Endl;
+        c << "    if (args == NULL)" << Endl;
+        c << "        return PyErr_Format(PyExc_NameError, \"Use .Get" << Name << "(int index) to get a single entry\");" << Endl;
+        c << "    if (!PyArg_ParseTuple(args, \"i\", &index))" << Endl;
+        c << "        return PyErr_Format(PyExc_TypeError, \"arg must be a single integer index\");" << Endl;
+        c << "    if (index < 0 || (size_t)index >= obj->data->Get" << Name << "().size())" << Endl;
+        c << "        return PyErr_Format(PyExc_ValueError, \"index out of range\");" << Endl;
         c << Endl;
         c << "    // Since the new object will point to data owned by the this object," << Endl;
         c << "    // we need to increment the reference count." << Endl;
