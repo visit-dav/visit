@@ -590,6 +590,57 @@ def TestAssignmentToIntVector():
         except:
             TestFOA('opa.SetIndex(%s)'%repr2(works[i]), LINE()) 
     
+def TestAssignmentToDoubleVector():
+    TestSection('Assignment to doubleVector member, "values", (of ContourAttributes())')
+
+    ca = ContourAttributes()
+
+    # Test direct assignment with = operator
+    try:
+        ca.contourValue = 1,2,3
+        TestPOA('ca.contourValue=1,2,3')
+    except:
+        TestFOA('ca.contourValue=1,2,3', LINE())
+        pass
+
+    fails = [1+2j, 'b', None, (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3)]
+    for i in range(len(fails)):
+        try:
+            ca.contourValue = fails[i]
+            TestFOA('ca.contourValue=%s'%repr2(fails[i]), LINE())
+        except TypeError:
+            TestPOA('ca.contourValue=%s'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('ca.contourValue=%s'%repr2(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            ca.SetContourValue(*fails[i])
+            TestFOA('ca.SetContourValue(%s)'%repr2(fails[i]), LINE())
+        except TypeError:
+            TestPOA('ca.SetContourValue(%s)'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('ca.SetContourValue(%s)'%repr2(fails[i]), LINE())
+            pass
+
+    works = [(1,2,3), X, tuple(X), (1,True,3), (1,False,3)]
+    for i in range(len(works)):
+        try:
+            ca.contourValue = works[i]
+            TestPOA('ca.contourValue=%s'%repr2(works[i]))
+        except:
+            TestFOA('ca.contourValue=%s'%repr2(works[i]), LINE()) 
+
+    for i in range(len(works)):
+        try:
+            ca.SetContourValue(*works[i])
+            TestPOA('ca.SetContourValue(%s)'%repr2(works[i]))
+        except:
+            TestFOA('ca.SetContourValue(%s)'%repr2(works[i]), LINE()) 
+    
 def TestAssignmentToUCharArray():
     TestSection('Assignment to ucharArray member, "freeformOpacity", (of VolumeAttributes())')
     arr = [17,]*256
@@ -878,7 +929,7 @@ TestAssignmentToUCharVector()
 #TestAssignmentToBoolVector() No instances in any .xml files
 TestAssignmentToIntVector()
 #TestAssignmentToFloatVector() No instances in any .xml files
-#TestAssignmentToDoubleVector()
+TestAssignmentToDoubleVector()
 
 # Array assignments
 TestAssignmentToUCharArray()
