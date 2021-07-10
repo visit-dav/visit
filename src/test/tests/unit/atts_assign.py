@@ -17,8 +17,12 @@ import copy, io, sys
 # Some useful global variables
 X = [2,4,6]
 
+# version of repr that strips parens at end
+def repr2(s):
+    return repr(s).lstrip('(').rstrip(')')
+
 def TestAssignmentToTuple():
-    TestSection('Assignment to tuple member (of CylinderAttributes())')
+    TestSection('Assignment to tuple, "point1", member (of CylinderAttributes())')
 
     ca = CylinderAttributes()
     
@@ -71,23 +75,23 @@ def TestAssignmentToTuple():
     for i in range(len(fails)):
         try:
             ca.point1 = fails[i]
-            TestFOA('ca.point1=%s'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            TestFOA('ca.point1=%s'%repr2(fails[i]), LINE())
         except TypeError:
-            TestPOA('ca.point1=%s'%repr(fails[i]))
+            TestPOA('ca.point1=%s'%repr2(fails[i]))
             pass
         except:
-            TestFOA('ca.point1=%s'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            TestFOA('ca.point1=%s'%repr2(fails[i]), LINE())
             pass
 
     for i in range(len(fails)):
         try:
             ca.SetPoint1(fails[i])
-            TestFOA('ca.SetPoint1(%s)'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            TestFOA('ca.SetPoint1(%s)'%repr2(fails[i]), LINE())
         except TypeError:
-            TestPOA('ca.SetPoint1(%s)'%repr(fails[i]))
+            TestPOA('ca.SetPoint1(%s)'%repr2(fails[i]))
             pass
         except:
-            TestFOA('ca.SetPoint1(%s)'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            TestFOA('ca.SetPoint1(%s)'%repr2(fails[i]), LINE())
             pass
 
     try:
@@ -101,22 +105,22 @@ def TestAssignmentToTuple():
     for i in range(len(works)):
         try:
             ca.point1 = works[i]
-            TestPOA('ca.point1=%s'%repr(works[i]))
+            TestPOA('ca.point1=%s'%repr2(works[i]))
         except:
-            TestFOA('ca.point1=%s'%repr(works[i]), '%s:%s'%(LINE(),i))
+            TestFOA('ca.point1=%s'%repr2(works[i]), LINE())
             pass
 
     works = [(1,2,3), (1.1,2.2,3.3), tuple(X)]
     for i in range(len(works)):
         try:
-            ca.SetPoint1(works[i])
-            TestPOA('ca.SetPoint1(%s)'%repr(works[i]))
+            ca.SetPoint1(*works[i])
+            TestPOA('ca.SetPoint1(%s)'%repr2(works[i]))
         except:
-            TestFOA('ca.SetPoint1(%s)'%repr(works[i]), '%s:%s'%(LINE(),i))
+            TestFOA('ca.SetPoint1(%s)'%repr2(works[i]), LINE())
             pass
 
 def TestAssignmentToBool():
-    TestSection('Assignment to bool member (of CylinderAttributes())')
+    TestSection('Assignment to bool member, "inverse", (of CylinderAttributes())')
 
     ca = CylinderAttributes()
 
@@ -134,23 +138,23 @@ def TestAssignmentToBool():
     for i in range(len(fails)):
         try:
             ca.inverse = fails[i]
-            TestFOA('ca.inverse=%s'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            TestFOA('ca.inverse=%s'%repr(fails[i]), LINE())
         except TypeError:
             TestPOA('ca.inverse=%s'%repr(fails[i]))
             pass
         except:
-            TestFOA('ca.inverse=%s'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            TestFOA('ca.inverse=%s'%repr(fails[i]), LINE())
             pass
 
     for i in range(len(fails)):
         try:
             ca.SetInverse(fails[i])
-            TestFOA('ca.SetInverse(%s)'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            TestFOA('ca.SetInverse(%s)'%repr(fails[i]), LINE())
         except TypeError:
             TestPOA('ca.SetInverse(%s)'%repr(fails[i]))
             pass
         except:
-            TestFOA('ca.SetInverse(%s)'%repr(fails[i]), '%s:%s'%(LINE(),i))
+            TestFOA('ca.SetInverse(%s)'%repr(fails[i]), LINE())
             pass
 
     works = [0, 1, 5, True, False]
@@ -169,7 +173,7 @@ def TestAssignmentToBool():
             TestFOA('ca.SetInverse(%s)'%repr(works[i]), LINE()) 
 
 def TestAssignmentToInt():
-    TestSection('Assignment to int member (of VolumeAttributes())')
+    TestSection('Assignment to int member, "samplesPerRay", (of VolumeAttributes())')
 
     va = VolumeAttributes()
 
@@ -222,7 +226,7 @@ def TestAssignmentToInt():
             TestFOA('va.SetSamplesPerRay(%s)'%repr(works[i]), LINE()) 
 
 def TestAssignmentToFloat():
-    TestSection('Assignment to float member (of VolumeAttributes())')
+    TestSection('Assignment to float member, "opacityAttenuation", (of VolumeAttributes())')
 
     va = VolumeAttributes()
 
@@ -275,7 +279,7 @@ def TestAssignmentToFloat():
             TestFOA('va.SetOpacityAttenuation(%s)'%repr(works[i]), LINE()) 
 
 def TestAssignmentToDouble():
-    TestSection('Assignment to double member (of CylinderAttributes())')
+    TestSection('Assignment to double member, "radius", (of CylinderAttributes())')
 
     ca = CylinderAttributes()
 
@@ -328,7 +332,7 @@ def TestAssignmentToDouble():
             TestFOA('ca.SetRadius(%s)'%repr(works[i]), LINE()) 
 
 def TestAssignmentToString():
-    TestSection('Assignment to string member (of CurveAttributes())')
+    TestSection('Assignment to string member, "designator", (of CurveAttributes())')
 
     ca = CurveAttributes()
 
@@ -381,7 +385,7 @@ def TestAssignmentToString():
             TestFOA('ca.SetDesignator(%s)'%repr(works[i]), LINE()) 
 
 def TestAssignmentToGlyphType():
-    TestSection('Assignment to GlyphType member (of MeshAttributes())')
+    TestSection('Assignment to GlyphType member, "pointType", (of MeshAttributes())')
 
     ma = MeshAttributes()
 
@@ -433,7 +437,7 @@ def TestAssignmentToGlyphType():
             TestFOA('ma.SetPointType(%s)'%repr(works[i]), LINE()) 
 
 def TestAssignmentToEnum():
-    TestSection('Assignment to Enum member (of MeshAttributes())')
+    TestSection('Assignment to Enum member, "smoothingLevel", (of MeshAttributes())')
 
     ma = MeshAttributes()
 
@@ -485,7 +489,7 @@ def TestAssignmentToEnum():
             TestFOA('ma.SetSmoothingLevel(%s)'%repr(works[i]), LINE()) 
 
 def TestAssignmentToUCharVector():
-    TestSection('Assignment to ucharVector member (of MultiCurveAttributes())')
+    TestSection('Assignment to ucharVector member, "changedColors",  (of MultiCurveAttributes())')
 
     mca = MultiCurveAttributes()
 
@@ -497,46 +501,98 @@ def TestAssignmentToUCharVector():
         TestFOA('mca.changedColors=1,2,3', LINE())
         pass
 
-    fails =  [(1,123123123123123123123123123123,3),   (1,1+2j,3),   (1,X,3), (1,'b',3), (1,None,3),     '123']
+    fails = [(1,123123123123123123123123123123,3), (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3), '123']
     for i in range(len(fails)):
         try:
             mca.changedColors = fails[i]
-            TestFOA('mca.changedColors=%s'%repr(fails[i]), LINE())
+            TestFOA('mca.changedColors=%s'%repr2(fails[i]), LINE())
         except TypeError:
-            TestPOA('mca.changedColors=%s'%repr(fails[i]))
+            TestPOA('mca.changedColors=%s'%repr2(fails[i]))
             pass
         except:
-            TestFOA('mca.changedColors=%s'%repr(fails[i]), LINE())
+            TestFOA('mca.changedColors=%s'%repr2(fails[i]), LINE())
             pass
 
     for i in range(len(fails)):
         try:
-            mca.SetChangedColors(fails[i])
-            TestFOA('mca.SetChangedColors(%s)'%repr(fails[i]), LINE())
+            mca.SetChangedColors(*fails[i])
+            TestFOA('mca.SetChangedColors(%s)'%repr2(fails[i]), LINE())
         except TypeError:
-            TestPOA('mca.SetChangedColors(%s)'%repr(fails[i]))
+            TestPOA('mca.SetChangedColors(%s)'%repr2(fails[i]))
             pass
         except:
-            TestFOA('mca.SetChangedColors(%s)'%repr(fails[i]), LINE())
+            TestFOA('mca.SetChangedColors(%s)'%repr2(fails[i]), LINE())
             pass
 
     works = [(1,2,3), tuple(X), (1,True,3), (1,False,3)]
     for i in range(len(works)):
         try:
             mca.changedColors = works[i]
-            TestPOA('mca.changedColors=%s'%repr(works[i]))
+            TestPOA('mca.changedColors=%s'%repr2(works[i]))
         except:
-            TestFOA('mca.changedColors=%s'%repr(works[i]), LINE()) 
+            TestFOA('mca.changedColors=%s'%repr2(works[i]), LINE()) 
 
     for i in range(len(works)):
         try:
             mca.SetChangedColors(*works[i])
-            TestPOA('mca.SetChangedColors(%s)'%repr(works[i]))
+            TestPOA('mca.SetChangedColors(%s)'%repr2(works[i]))
         except:
-            TestFOA('mca.SetChangedColors(%s)'%repr(works[i]), LINE()) 
+            TestFOA('mca.SetChangedColors(%s)'%repr2(works[i]), LINE()) 
 
+def TestAssignmentToIntVector():
+    TestSection('Assignment to intVector member, "index", (of OnionPeelAttributes())')
+
+    opa = OnionPeelAttributes()
+
+    # Test direct assignment with = operator
+    try:
+        opa.index = 1,2,3
+        TestPOA('opa.index=1,2,3')
+    except:
+        TestFOA('opa.index=1,2,3', LINE())
+        pass
+
+    fails = [123123123123123123123123123123, 1+2j, 'b', None, (1,123123123123123123123123123123,3),
+            (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3), '123']
+    for i in range(len(fails)):
+        try:
+            opa.index = fails[i]
+            TestFOA('opa.index=%s'%repr2(fails[i]), LINE())
+        except TypeError:
+            TestPOA('opa.index=%s'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('opa.index=%s'%repr2(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            opa.SetIndex(*fails[i])
+            TestFOA('opa.SetIndex(%s)'%repr2(fails[i]), LINE())
+        except TypeError:
+            TestPOA('opa.SetIndex(%s)'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('opa.SetIndex(%s)'%repr2(fails[i]), LINE())
+            pass
+
+    works = [(1,2,3), X, tuple(X), (1,True,3), (1,False,3)]
+    for i in range(len(works)):
+        try:
+            opa.index = works[i]
+            TestPOA('opa.index=%s'%repr2(works[i]))
+        except:
+            TestFOA('opa.index=%s'%repr2(works[i]), LINE()) 
+
+    for i in range(len(works)):
+        try:
+            opa.SetIndex(*works[i])
+            TestPOA('opa.SetIndex(%s)'%repr2(works[i]))
+        except:
+            TestFOA('opa.SetIndex(%s)'%repr2(works[i]), LINE()) 
+    
 def TestAssignmentToUCharArray():
-    TestSection('Assignment to ucharArray member (of VolumeAttributes())')
+    TestSection('Assignment to ucharArray member, "freeformOpacity", (of VolumeAttributes())')
     arr = [17,]*256
 
     va = VolumeAttributes()
@@ -642,13 +698,65 @@ def TestAssignmentToUCharArray():
     for i in range(len(fails)):
         try:
             va.SetFreeformOpacity(*fails[i])
-            TestFOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]).replace(')',', ...'), LINE())
+            TestFOA('va.SetFreeformOpacity%s'%repr(fails[i][:7]).replace(')',', ...)'), LINE())
         except TypeError:
-            TestPOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]).replace(')',', ...'))
+            TestPOA('va.SetFreeformOpacity%s'%repr(fails[i][:7]).replace(')',', ...)'))
             pass
         except:
-            TestFOA('va.SetFreeformOpacity(%s)'%repr(fails[i][:7]).replace(')',', ...'), LINE())
+            TestFOA('va.SetFreeformOpacity%s'%repr(fails[i][:7]).replace(')',', ...)'), LINE())
             pass
+
+def TestAssignmentToIntArray():
+    TestSection('Assignment to intArray member, "reflections", (of ReflectAttributes())')
+
+    ra = ReflectAttributes()
+
+    # Test assigning via (operator =) assignment
+    try:
+        ra.reflections = 0,1,0,1,0,1,0,1
+        TestPOA('ra.reflections=0,1,0,1,0,1,0,1')
+    except:
+        TestFOA('ra.reflections=0,1,0,1,0,1,0,1', LINE())
+        pass
+
+    fails = [(0,1,None,1,0,1,0,1), (0,1,1+2j,1,0,1,0,1), (0,1,X,1,0,1,0,1),
+             (0,1,'123',1,0,1,0,1), (0,1,0,1,0,1,0,1,1), (0,1,0,1,0,1,0)]
+    for i in range(len(fails)):
+        try:
+            ra.reflections = fails[i]
+            TestFOA('ra.reflections=%s'%repr2(fails[i]), LINE())
+        except TypeError:
+            TestPOA('ra.reflections=%s'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('ra.reflections=%s'%repr2(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            ra.SetReflections(*fails[i])
+            TestFOA('ra.SetReflections(%s)'%repr2(fails[i]), LINE())
+        except TypeError:
+            TestPOA('ra.SetReflections(%s)'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('ra.SetReflections(%s)'%repr2(fails[i]), LINE())
+            pass
+
+    works = [(0,1,0,1,0,1,0,1), (-1,100,-1,100,-1,100,-1,100), (0,True,False,1,0,1,0,1)]
+    for i in range(len(works)):
+        try:
+            ra.reflections = works[i]
+            TestPOA('ra.reflections=%s'%repr2(works[i]).replace('(','').replace(')',''))
+        except:
+            TestFOA('ra.reflections=%s'%repr2(works[i]).replace('(','').replace(')',''), LINE())
+
+    for i in range(len(works)):
+        try:
+            ra.SetReflections(*works[i])
+            TestPOA('ra.SetReflections(%s)'%repr2(works[i]))
+        except:
+            TestFOA('ra.SetReflections(%s)'%repr2(works[i]), LINE()) 
 
 def TestDirOutput(obj, minlen = 5, names = None):
     TestSection('behavior of dir()')
@@ -706,14 +814,14 @@ TestAssignmentToTuple()
 # Vector assignments
 TestAssignmentToUCharVector()
 #TestAssignmentToBoolVector() No instances in any .xml files
-#TestAssignmentToIntVector()
+TestAssignmentToIntVector()
 #TestAssignmentToFloatVector()
 #TestAssignmentToDoubleVector()
 
 # Array assignments
 TestAssignmentToUCharArray()
 #TestAssignmentToBoolArray() No instances in any .xml files
-#TestAssignmentToIntArray()
+TestAssignmentToIntArray()
 #TestAssignmentToFloatArray()
 #TestAssignmentToDoubleArray()
 
