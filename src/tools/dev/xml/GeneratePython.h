@@ -384,6 +384,11 @@ class PythonGeneratorField : public virtual Field
         c << "        PyErr_Clear();" << Endl; \
         c << "        return PyErr_Format(PyExc_TypeError, \"arg not interpretable as C++ " #cType "\");" << Endl; \
         c << "    }" << Endl; \
+        c << "    if (fabs(double(val))>1.5E-7 && fabs((double(" #pyType "(cval))-double(val))/double(val))>1.5E-7)" << Endl; \
+        c << "    {" << Endl; \
+        c << "        Py_XDECREF(packaged_args);" << Endl; \
+        c << "        return PyErr_Format(PyExc_ValueError, \"arg not interpretable as C++ " #cType "\");" << Endl; \
+        c << "    }" << Endl; \
         c << Endl; \
         c << "    Py_XDECREF(packaged_args);" << Endl; \
         c << Endl; \
@@ -483,6 +488,12 @@ class PythonGeneratorField : public virtual Field
         c << "            PyErr_Clear();" << Endl; \
         c << "            return PyErr_Format(PyExc_TypeError, \"arg %d not interpretable as C++ " #cType "\", (int) i);" << Endl; \
         c << "        }" << Endl; \
+        c << "        if (fabs(double(val))>1.5E-7 && fabs((double(" #pyType "(cval))-double(val))/double(val))>1.5E-7)" << Endl; \
+        c << "        {" << Endl; \
+        c << "            Py_XDECREF(packaged_args);" << Endl; \
+        c << "            Py_DECREF(item);" << Endl; \
+        c << "            return PyErr_Format(PyExc_ValueError, \"arg %d not interpretable as C++ " #cType "\", (int) i);" << Endl; \
+        c << "        }" << Endl; \
         c << "        Py_DECREF(item);" << Endl; \
         c << Endl; \
         c << "        vals[i] = cval;" << Endl; \
@@ -538,6 +549,11 @@ class PythonGeneratorField : public virtual Field
         c << "                Py_DECREF(item);" << Endl; \
         c << "                PyErr_Clear();" << Endl; \
         c << "                return PyErr_Format(PyExc_TypeError, \"arg %d not interpretable as C++ " #cType "\", (int) i);" << Endl; \
+        c << "            }" << Endl; \
+        c << "            if (fabs(double(val))>1.5E-7 && fabs((double(" #pyType "(cval))-double(val))/double(val))>1.5E-7)" << Endl; \
+        c << "            {" << Endl; \
+        c << "                Py_DECREF(item);" << Endl; \
+        c << "                return PyErr_Format(PyExc_ValueError, \"arg %d not interpretable as C++ " #cType "\", (int) i);" << Endl; \
         c << "            }" << Endl; \
         c << "            Py_DECREF(item);" << Endl; \
         c << Endl; \
