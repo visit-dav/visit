@@ -630,6 +630,12 @@ LimitCycleAttributes_SetLineStart(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
         Py_DECREF(item);
 
         vals[i] = cval;
@@ -702,6 +708,12 @@ LimitCycleAttributes_SetLineEnd(PyObject *self, PyObject *args)
             Py_DECREF(item);
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
         }
         Py_DECREF(item);
 
@@ -776,6 +788,12 @@ LimitCycleAttributes_SetPlaneOrigin(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
         Py_DECREF(item);
 
         vals[i] = cval;
@@ -848,6 +866,12 @@ LimitCycleAttributes_SetPlaneNormal(PyObject *self, PyObject *args)
             Py_DECREF(item);
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
         }
         Py_DECREF(item);
 
@@ -922,6 +946,12 @@ LimitCycleAttributes_SetPlaneUpAxis(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
         Py_DECREF(item);
 
         vals[i] = cval;
@@ -985,6 +1015,11 @@ LimitCycleAttributes_SetSampleDensity0(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1039,6 +1074,11 @@ LimitCycleAttributes_SetSampleDensity1(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -1289,6 +1329,11 @@ LimitCycleAttributes_SetMaxSteps(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1343,6 +1388,11 @@ LimitCycleAttributes_SetTerminateByDistance(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -1399,6 +1449,11 @@ LimitCycleAttributes_SetTermDistance(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1453,6 +1508,11 @@ LimitCycleAttributes_SetTerminateByTime(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -1509,6 +1569,11 @@ LimitCycleAttributes_SetTermTime(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1563,6 +1628,11 @@ LimitCycleAttributes_SetMaxStepLength(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);
@@ -1619,6 +1689,11 @@ LimitCycleAttributes_SetLimitMaximumTimestep(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1674,6 +1749,11 @@ LimitCycleAttributes_SetMaxTimeStep(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1728,6 +1808,11 @@ LimitCycleAttributes_SetRelTol(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);
@@ -1850,6 +1935,11 @@ LimitCycleAttributes_SetAbsTolAbsolute(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1904,6 +1994,11 @@ LimitCycleAttributes_SetAbsTolBBox(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);
@@ -2030,6 +2125,11 @@ LimitCycleAttributes_SetFieldConstant(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -2094,6 +2194,12 @@ LimitCycleAttributes_SetVelocitySource(PyObject *self, PyObject *args)
             Py_DECREF(item);
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
         }
         Py_DECREF(item);
 
@@ -2296,6 +2402,11 @@ LimitCycleAttributes_SetMaxProcessCount(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -2350,6 +2461,11 @@ LimitCycleAttributes_SetMaxDomainCacheSize(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -2406,6 +2522,11 @@ LimitCycleAttributes_SetWorkGroupSize(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -2460,6 +2581,11 @@ LimitCycleAttributes_SetPathlines(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -2516,6 +2642,11 @@ LimitCycleAttributes_SetPathlinesOverrideStartingTimeFlag(PyObject *self, PyObje
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -2571,6 +2702,11 @@ LimitCycleAttributes_SetPathlinesOverrideStartingTime(PyObject *self, PyObject *
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -2625,6 +2761,11 @@ LimitCycleAttributes_SetPathlinesPeriod(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);
@@ -2747,6 +2888,11 @@ LimitCycleAttributes_SetSampleDistance0(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -2801,6 +2947,11 @@ LimitCycleAttributes_SetSampleDistance1(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);
@@ -2857,6 +3008,11 @@ LimitCycleAttributes_SetSampleDistance2(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -2911,6 +3067,11 @@ LimitCycleAttributes_SetFillInterior(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -2967,6 +3128,11 @@ LimitCycleAttributes_SetRandomSamples(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -3021,6 +3187,11 @@ LimitCycleAttributes_SetRandomSeed(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -3077,6 +3248,11 @@ LimitCycleAttributes_SetNumberOfRandomSamples(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -3131,6 +3307,11 @@ LimitCycleAttributes_SetForceNodeCenteredData(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -3187,6 +3368,11 @@ LimitCycleAttributes_SetCycleTolerance(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -3241,6 +3427,11 @@ LimitCycleAttributes_SetMaxIterations(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -3297,6 +3488,11 @@ LimitCycleAttributes_SetShowPartialResults(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -3351,6 +3547,11 @@ LimitCycleAttributes_SetShowReturnDistances(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -3407,6 +3608,11 @@ LimitCycleAttributes_SetIssueAdvectionWarnings(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -3461,6 +3667,11 @@ LimitCycleAttributes_SetIssueBoundaryWarnings(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -3517,6 +3728,11 @@ LimitCycleAttributes_SetIssueTerminationWarnings(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -3571,6 +3787,11 @@ LimitCycleAttributes_SetIssueStepsizeWarnings(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -3627,6 +3848,11 @@ LimitCycleAttributes_SetIssueStiffnessWarnings(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -3681,6 +3907,11 @@ LimitCycleAttributes_SetIssueCriticalPointsWarnings(PyObject *self, PyObject *ar
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -3737,6 +3968,11 @@ LimitCycleAttributes_SetCriticalPointThreshold(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -3791,6 +4027,11 @@ LimitCycleAttributes_SetCorrelationDistanceAngTol(PyObject *self, PyObject *args
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);
@@ -3847,6 +4088,11 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistAbsolute(PyObject *self, PyObj
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -3901,6 +4147,11 @@ LimitCycleAttributes_SetCorrelationDistanceMinDistBBox(PyObject *self, PyObject 
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);

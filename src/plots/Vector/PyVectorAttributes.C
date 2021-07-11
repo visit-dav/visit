@@ -324,6 +324,11 @@ VectorAttributes_SetUseStride(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -378,6 +383,11 @@ VectorAttributes_SetNVectors(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -434,6 +444,11 @@ VectorAttributes_SetStride(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -488,6 +503,11 @@ VectorAttributes_SetOrigOnly(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -610,6 +630,11 @@ VectorAttributes_SetMinFlag(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -664,6 +689,11 @@ VectorAttributes_SetMin(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);
@@ -720,6 +750,11 @@ VectorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -775,6 +810,11 @@ VectorAttributes_SetMax(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -829,6 +869,11 @@ VectorAttributes_SetColorByMagnitude(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -933,6 +978,11 @@ VectorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -1066,6 +1116,11 @@ VectorAttributes_SetUseLegend(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1120,6 +1175,11 @@ VectorAttributes_SetScale(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);
@@ -1176,6 +1236,11 @@ VectorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1230,6 +1295,11 @@ VectorAttributes_SetAutoScale(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -1352,6 +1422,11 @@ VectorAttributes_SetHeadOn(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1406,6 +1481,11 @@ VectorAttributes_SetHeadSize(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);
@@ -1528,6 +1608,11 @@ VectorAttributes_SetLineWidth(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1582,6 +1667,11 @@ VectorAttributes_SetStemWidth(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);
@@ -1770,6 +1860,11 @@ VectorAttributes_SetAnimationStep(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);

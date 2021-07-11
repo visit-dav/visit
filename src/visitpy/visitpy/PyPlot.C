@@ -297,6 +297,11 @@ Plot_SetPlotType(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -401,6 +406,11 @@ Plot_SetActiveFlag(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -456,6 +466,11 @@ Plot_SetHiddenFlag(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -510,6 +525,11 @@ Plot_SetExpandedFlag(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -668,6 +688,11 @@ Plot_SetOperators(PyObject *self, PyObject *args)
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -802,6 +827,11 @@ Plot_SetActiveOperator(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -856,6 +886,11 @@ Plot_SetId(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -912,6 +947,11 @@ Plot_SetEmbeddedPlotId(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -967,6 +1007,11 @@ Plot_SetBeginFrame(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1021,6 +1066,11 @@ Plot_SetEndFrame(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -1080,6 +1130,11 @@ Plot_SetKeyframes(PyObject *self, PyObject *args)
                 Py_DECREF(item);
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
             }
             Py_DECREF(item);
 
@@ -1150,6 +1205,11 @@ Plot_SetDatabaseKeyframes(PyObject *self, PyObject *args)
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -1215,6 +1275,11 @@ Plot_SetIsFromSimulation(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1269,6 +1334,11 @@ Plot_SetFollowsTime(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -1422,6 +1492,11 @@ Plot_SetAnimatingFlag(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);

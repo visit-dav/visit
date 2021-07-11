@@ -310,6 +310,11 @@ IndexSelectAttributes_SetXAbsMax(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -364,6 +369,11 @@ IndexSelectAttributes_SetXMin(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -420,6 +430,11 @@ IndexSelectAttributes_SetXMax(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -474,6 +489,11 @@ IndexSelectAttributes_SetXIncr(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -530,6 +550,11 @@ IndexSelectAttributes_SetXWrap(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -584,6 +609,11 @@ IndexSelectAttributes_SetYAbsMax(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -640,6 +670,11 @@ IndexSelectAttributes_SetYMin(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -694,6 +729,11 @@ IndexSelectAttributes_SetYMax(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -750,6 +790,11 @@ IndexSelectAttributes_SetYIncr(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -804,6 +849,11 @@ IndexSelectAttributes_SetYWrap(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -860,6 +910,11 @@ IndexSelectAttributes_SetZAbsMax(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -914,6 +969,11 @@ IndexSelectAttributes_SetZMin(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -970,6 +1030,11 @@ IndexSelectAttributes_SetZMax(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1024,6 +1089,11 @@ IndexSelectAttributes_SetZIncr(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -1080,6 +1150,11 @@ IndexSelectAttributes_SetZWrap(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1134,6 +1209,11 @@ IndexSelectAttributes_SetUseWholeCollection(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);

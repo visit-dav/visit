@@ -187,6 +187,11 @@ MeshManagementAttributes_SetDiscretizationTolerance(PyObject *self, PyObject *ar
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -255,6 +260,11 @@ MeshManagementAttributes_SetDiscretizationToleranceX(PyObject *self, PyObject *a
                 Py_DECREF(item);
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
             }
             Py_DECREF(item);
 
@@ -325,6 +335,11 @@ MeshManagementAttributes_SetDiscretizationToleranceY(PyObject *self, PyObject *a
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -393,6 +408,11 @@ MeshManagementAttributes_SetDiscretizationToleranceZ(PyObject *self, PyObject *a
                 Py_DECREF(item);
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
             }
             Py_DECREF(item);
 
@@ -526,6 +546,11 @@ MeshManagementAttributes_SetDiscretizeBoundaryOnly(PyObject *self, PyObject *arg
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -580,6 +605,11 @@ MeshManagementAttributes_SetPassNativeCSG(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);

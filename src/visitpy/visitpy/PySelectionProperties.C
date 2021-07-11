@@ -644,6 +644,11 @@ SelectionProperties_SetVariableMins(PyObject *self, PyObject *args)
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -713,6 +718,11 @@ SelectionProperties_SetVariableMaxs(PyObject *self, PyObject *args)
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -778,6 +788,11 @@ SelectionProperties_SetMinTimeState(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -833,6 +848,11 @@ SelectionProperties_SetMaxTimeState(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -887,6 +907,11 @@ SelectionProperties_SetTimeStateStride(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -1077,6 +1102,11 @@ SelectionProperties_SetHistogramNumBins(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1131,6 +1161,11 @@ SelectionProperties_SetHistogramAutoScaleNumBins(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
     }
 
     Py_XDECREF(packaged_args);
@@ -1187,6 +1222,11 @@ SelectionProperties_SetHistogramStartBin(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1241,6 +1281,11 @@ SelectionProperties_SetHistogramEndBin(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);

@@ -136,6 +136,11 @@ LightAttributes_SetEnabledFlag(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -267,6 +272,12 @@ LightAttributes_SetDirection(PyObject *self, PyObject *args)
             Py_DECREF(item);
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
         }
         Py_DECREF(item);
 
@@ -407,6 +418,11 @@ LightAttributes_SetBrightness(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
     }
 
     Py_XDECREF(packaged_args);

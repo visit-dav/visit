@@ -302,6 +302,11 @@ avtScalarMetaData_SetTreatAsASCII(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -499,6 +504,11 @@ avtScalarMetaData_SetEnumRanges(PyObject *self, PyObject *args)
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -574,6 +584,12 @@ avtScalarMetaData_SetEnumAlwaysExclude(PyObject *self, PyObject *args)
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+        }
         Py_DECREF(item);
 
         vals[i] = cval;
@@ -646,6 +662,12 @@ avtScalarMetaData_SetEnumAlwaysInclude(PyObject *self, PyObject *args)
             Py_DECREF(item);
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
         }
         Py_DECREF(item);
 
@@ -780,6 +802,11 @@ avtScalarMetaData_SetEnumGraphEdges(PyObject *self, PyObject *args)
                 Py_DECREF(item);
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
             }
             Py_DECREF(item);
 
@@ -919,6 +946,11 @@ avtScalarMetaData_SetEnumGraphEdgeNameIndexs(PyObject *self, PyObject *args)
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -984,6 +1016,11 @@ avtScalarMetaData_SetEnumNChooseRN(PyObject *self, PyObject *args)
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
 
     Py_XDECREF(packaged_args);
 
@@ -1038,6 +1075,11 @@ avtScalarMetaData_SetEnumNChooseRMaxR(PyObject *self, PyObject *args)
         Py_XDECREF(packaged_args);
         PyErr_Clear();
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
     }
 
     Py_XDECREF(packaged_args);
@@ -1172,6 +1214,12 @@ avtScalarMetaData_SetMissingData(PyObject *self, PyObject *args)
             Py_DECREF(item);
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+        {
+            Py_XDECREF(packaged_args);
+            Py_DECREF(item);
+            return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
         }
         Py_DECREF(item);
 

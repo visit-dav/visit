@@ -339,6 +339,11 @@ ModelFitAtts_SetNumVars(PyObject *self, PyObject *args)
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -407,6 +412,11 @@ ModelFitAtts_SetTuples(PyObject *self, PyObject *args)
                 Py_DECREF(item);
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
             }
             Py_DECREF(item);
 
@@ -478,6 +488,11 @@ ModelFitAtts_SetStatTuples(PyObject *self, PyObject *args)
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ uchar", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ uchar", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -546,6 +561,11 @@ ModelFitAtts_SetNumTups(PyObject *self, PyObject *args)
                 Py_DECREF(item);
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
             }
             Py_DECREF(item);
 
@@ -616,6 +636,11 @@ ModelFitAtts_SetThold(PyObject *self, PyObject *args)
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ double", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ double", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -684,6 +709,11 @@ ModelFitAtts_SetSelectionType(PyObject *self, PyObject *args)
                 Py_DECREF(item);
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
             }
             Py_DECREF(item);
 
@@ -754,6 +784,11 @@ ModelFitAtts_SetDistanceType(PyObject *self, PyObject *args)
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
             }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
             Py_DECREF(item);
 
             vec[i] = cval;
@@ -822,6 +857,11 @@ ModelFitAtts_SetInputSpace(PyObject *self, PyObject *args)
                 Py_DECREF(item);
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
             }
             Py_DECREF(item);
 
@@ -960,6 +1000,11 @@ ModelFitAtts_SetModelNums(PyObject *self, PyObject *args)
                 Py_DECREF(item);
                 PyErr_Clear();
                 return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
             }
             Py_DECREF(item);
 
