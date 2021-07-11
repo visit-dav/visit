@@ -951,6 +951,73 @@ def TestAssignmentToDoubleArray():
         except:
             TestFOA('va.SetMaterialProperties(%s)'%repr2(works[i]), LINE()) 
 
+def TestColorAttributeStuff():
+    TestSection('ColorAttribute stuff')
+
+    cla = ColorAttributeList()
+    ca = ColorAttribute()
+
+    fails = [(0,1,2), (0,1,2,3,4), (0,None,2,3), (0,1+2j,2,3), (0,X,2,3),
+             (0,'123',2,3), (0,-1,2,3), (0,256,2,3)]
+    excpts = [TypeError, TypeError, TypeError, TypeError, TypeError, TypeError, ValueError, ValueError]
+    for i in range(len(fails)):
+        try:
+            ca.color = fails[i]
+            TestFOA('ca.color=%s'%repr2(fails[i]), LINE())
+        except excpts[i]:
+            TestPOA('ca.color=%s'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('ca.color=%s'%repr2(fails[i]), LINE())
+            pass
+
+    for i in range(len(fails)):
+        try:
+            ca.SetColor(*fails[i])
+            TestFOA('ca.SetColor(%s)'%repr2(fails[i]), LINE())
+        except excpts[i]:
+            TestPOA('ca.SetColor(%s)'%repr2(fails[i]))
+            pass
+        except:
+            TestFOA('ca.SetColor(%s)'%repr2(fails[i]), LINE())
+            pass
+
+    try:
+        ca.color = (5,5,5,5)
+        cla.AddColors(ca)
+        ca.color = (255,0,0,255)
+        cla.AddColors(ca)
+        TestPOA('cla.AddColors')
+    except:
+        TestFOA('cla.AddColors', LINE())
+        pass
+
+    try:
+        cla.colors
+        TestFOA('cla.colors', LINE())
+    except NameError:
+        TestPOA('cla.colors')
+    except:
+        TestFOA('cla.colors', LINE())
+        pass
+
+    try:
+        if cla.GetColors(0).color != (5,5,5,5) or cla.GetColors(1).color != (255,0,0,255):
+           raise ValueError
+        TestPOA('cla.GetColors(0)')
+    except:
+        TestFOA('cla.Getcolors(0)', LINE())
+        pass
+
+    try:
+        cla.GetColors(2)
+        TestFOA('cla.Getcolors(2)', LINE())
+    except ValueError:
+        TestPOA('cla.GetColors(2)')
+    except:
+        TestFOA('cla.Getcolors(2)', LINE())
+        pass
+        
 def TestDirOutput(obj, minlen = 5, names = None):
     TestSection('behavior of dir()')
     try:
@@ -1017,6 +1084,10 @@ TestAssignmentToUCharArray()
 TestAssignmentToIntArray()
 TestAssignmentToFloatArray()
 TestAssignmentToDoubleArray()
+
+# Attribute Assignments
+TestColorAttributeStuff()
+
 
 
 # Test that dir(x) appears to work
