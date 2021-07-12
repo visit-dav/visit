@@ -157,11 +157,13 @@ MeshManagementAttributes_SetDiscretizationTolerance(PyObject *self, PyObject *ar
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -231,11 +233,13 @@ MeshManagementAttributes_SetDiscretizationToleranceX(PyObject *self, PyObject *a
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -305,11 +309,13 @@ MeshManagementAttributes_SetDiscretizationToleranceY(PyObject *self, PyObject *a
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -379,11 +385,13 @@ MeshManagementAttributes_SetDiscretizationToleranceZ(PyObject *self, PyObject *a
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -473,7 +481,7 @@ MeshManagementAttributes_SetDiscretizationMode(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

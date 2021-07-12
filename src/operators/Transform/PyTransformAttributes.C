@@ -581,7 +581,7 @@ TransformAttributes_SetRotateType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1206,7 +1206,7 @@ TransformAttributes_SetTransformType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1273,7 +1273,7 @@ TransformAttributes_SetInputCoordSys(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1340,7 +1340,7 @@ TransformAttributes_SetOutputCoordSys(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2487,7 +2487,7 @@ TransformAttributes_SetVectorTransformMethod(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

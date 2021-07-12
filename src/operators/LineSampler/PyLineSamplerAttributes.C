@@ -463,7 +463,7 @@ LineSamplerAttributes_SetMeshGeometry(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -530,7 +530,7 @@ LineSamplerAttributes_SetArrayConfiguration(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -596,7 +596,7 @@ LineSamplerAttributes_SetBoundary(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -902,7 +902,7 @@ LineSamplerAttributes_SetChannelProjection(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -969,7 +969,7 @@ LineSamplerAttributes_SetChannelLayoutType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1354,7 +1354,7 @@ LineSamplerAttributes_SetArrayAxis(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1840,7 +1840,7 @@ LineSamplerAttributes_SetViewGeometry(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1907,7 +1907,7 @@ LineSamplerAttributes_SetViewDimension(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2214,7 +2214,7 @@ LineSamplerAttributes_SetDisplayTime(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2281,7 +2281,7 @@ LineSamplerAttributes_SetChannelGeometry(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2469,7 +2469,7 @@ LineSamplerAttributes_SetChannelProfile(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2775,7 +2775,7 @@ LineSamplerAttributes_SetChannelIntegration(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2841,7 +2841,7 @@ LineSamplerAttributes_SetToroidalIntegration(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2908,7 +2908,7 @@ LineSamplerAttributes_SetToroidalAngleSampling(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3154,7 +3154,7 @@ LineSamplerAttributes_SetTimeSampling(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3380,11 +3380,13 @@ LineSamplerAttributes_SetChannelList(PyObject *self, PyObject *args)
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -3454,11 +3456,13 @@ LineSamplerAttributes_SetWallList(PyObject *self, PyObject *args)
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }

@@ -294,7 +294,7 @@ DataBinningAttributes_SetNumDimensions(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -361,7 +361,7 @@ DataBinningAttributes_SetDim1BinBasedOn(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -718,7 +718,7 @@ DataBinningAttributes_SetDim2BinBasedOn(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1075,7 +1075,7 @@ DataBinningAttributes_SetDim3BinBasedOn(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1432,7 +1432,7 @@ DataBinningAttributes_SetOutOfBoundsBehavior(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1498,7 +1498,7 @@ DataBinningAttributes_SetReductionOperator(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1680,7 +1680,7 @@ DataBinningAttributes_SetOutputType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

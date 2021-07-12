@@ -183,7 +183,7 @@ ParallelCoordinatesAttributes_SetScalarAxisNames(PyObject *self, PyObject *args)
     {
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
-        if ((val == 0 && PyErr_Occurred()) || cval != val)
+        if (val == 0 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
@@ -207,7 +207,7 @@ ParallelCoordinatesAttributes_SetScalarAxisNames(PyObject *self, PyObject *args)
             char const *val = PyUnicode_AsUTF8(item);
             std::string cval = std::string(val);
 
-            if ((val == 0 && PyErr_Occurred()) || cval != val)
+            if (val == 0 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -252,7 +252,7 @@ ParallelCoordinatesAttributes_SetVisualAxisNames(PyObject *self, PyObject *args)
     {
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
-        if ((val == 0 && PyErr_Occurred()) || cval != val)
+        if (val == 0 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
@@ -276,7 +276,7 @@ ParallelCoordinatesAttributes_SetVisualAxisNames(PyObject *self, PyObject *args)
             char const *val = PyUnicode_AsUTF8(item);
             std::string cval = std::string(val);
 
-            if ((val == 0 && PyErr_Occurred()) || cval != val)
+            if (val == 0 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -321,11 +321,13 @@ ParallelCoordinatesAttributes_SetExtentMinima(PyObject *self, PyObject *args)
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -395,11 +397,13 @@ ParallelCoordinatesAttributes_SetExtentMaxima(PyObject *self, PyObject *args)
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -1123,7 +1127,7 @@ ParallelCoordinatesAttributes_SetDrawFocusAs(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

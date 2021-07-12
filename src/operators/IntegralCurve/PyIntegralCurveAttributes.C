@@ -739,7 +739,7 @@ IntegralCurveAttributes_SetSourceType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1544,11 +1544,13 @@ IntegralCurveAttributes_SetPointList(PyObject *self, PyObject *args)
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -1618,11 +1620,13 @@ IntegralCurveAttributes_SetFieldData(PyObject *self, PyObject *args)
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -1892,7 +1896,7 @@ IntegralCurveAttributes_SetDataValue(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2019,7 +2023,7 @@ IntegralCurveAttributes_SetIntegrationDirection(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2629,7 +2633,7 @@ IntegralCurveAttributes_SetAbsTolSizeType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -2815,7 +2819,7 @@ IntegralCurveAttributes_SetFieldType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3024,7 +3028,7 @@ IntegralCurveAttributes_SetIntegrationType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3094,7 +3098,7 @@ IntegralCurveAttributes_SetParallelizationAlgorithmType(PyObject *self, PyObject
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3582,7 +3586,7 @@ IntegralCurveAttributes_SetPathlinesCMFE(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3648,7 +3652,7 @@ IntegralCurveAttributes_SetDisplayGeometry(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -3715,7 +3719,7 @@ IntegralCurveAttributes_SetCleanupMethod(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -4083,7 +4087,7 @@ IntegralCurveAttributes_SetCropValue(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -5170,7 +5174,7 @@ IntegralCurveAttributes_SetCorrelationDistanceMinDistType(PyObject *self, PyObje
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

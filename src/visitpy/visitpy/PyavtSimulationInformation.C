@@ -309,7 +309,7 @@ avtSimulationInformation_SetOtherNames(PyObject *self, PyObject *args)
     {
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
-        if ((val == 0 && PyErr_Occurred()) || cval != val)
+        if (val == 0 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
@@ -333,7 +333,7 @@ avtSimulationInformation_SetOtherNames(PyObject *self, PyObject *args)
             char const *val = PyUnicode_AsUTF8(item);
             std::string cval = std::string(val);
 
-            if ((val == 0 && PyErr_Occurred()) || cval != val)
+            if (val == 0 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -378,7 +378,7 @@ avtSimulationInformation_SetOtherValues(PyObject *self, PyObject *args)
     {
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
-        if ((val == 0 && PyErr_Occurred()) || cval != val)
+        if (val == 0 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
@@ -402,7 +402,7 @@ avtSimulationInformation_SetOtherValues(PyObject *self, PyObject *args)
             char const *val = PyUnicode_AsUTF8(item);
             std::string cval = std::string(val);
 
-            if ((val == 0 && PyErr_Occurred()) || cval != val)
+            if (val == 0 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -568,7 +568,7 @@ avtSimulationInformation_SetMode(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

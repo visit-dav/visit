@@ -307,7 +307,7 @@ avtSubsetsMetaData_SetColorScheme(PyObject *self, PyObject *args)
     {
         char const *val = PyUnicode_AsUTF8(args);
         std::string cval = std::string(val);
-        if ((val == 0 && PyErr_Occurred()) || cval != val)
+        if (val == 0 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
@@ -331,7 +331,7 @@ avtSubsetsMetaData_SetColorScheme(PyObject *self, PyObject *args)
             char const *val = PyUnicode_AsUTF8(item);
             std::string cval = std::string(val);
 
-            if ((val == 0 && PyErr_Occurred()) || cval != val)
+            if (val == 0 && PyErr_Occurred())
             {
                 Py_DECREF(item);
                 PyErr_Clear();
@@ -376,11 +376,13 @@ avtSubsetsMetaData_SetSetsToChunksMaps(PyObject *self, PyObject *args)
     {
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -450,11 +452,13 @@ avtSubsetsMetaData_SetGraphEdges(PyObject *self, PyObject *args)
     {
         long val = PyLong_AsLong(args);
         int cval = int(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -784,7 +788,7 @@ avtSubsetsMetaData_SetDecompMode(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();

@@ -255,11 +255,13 @@ ContourAttributes_SetChangedColors(PyObject *self, PyObject *args)
     {
         long val = PyLong_AsLong(args);
         uchar cval = uchar(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ uchar");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ uchar");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -349,7 +351,7 @@ ContourAttributes_SetColorType(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -972,11 +974,13 @@ ContourAttributes_SetContourValue(PyObject *self, PyObject *args)
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -1046,11 +1050,13 @@ ContourAttributes_SetContourPercent(PyObject *self, PyObject *args)
     {
         double val = PyFloat_AsDouble(args);
         double cval = double(val);
-        if ((val == -1 && PyErr_Occurred()) || cval != val)
+        if (val == -1 && PyErr_Occurred())
         {
             PyErr_Clear();
             return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ double");
         }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ double");
         vec.resize(1);
         vec[0] = cval;
     }
@@ -1140,7 +1146,7 @@ ContourAttributes_SetContourMethod(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
@@ -1447,7 +1453,7 @@ ContourAttributes_SetScaling(PyObject *self, PyObject *args)
     long val = PyLong_AsLong(args);
     int cval = int(val);
 
-    if ((val == -1 && PyErr_Occurred()) || cval != val)
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
