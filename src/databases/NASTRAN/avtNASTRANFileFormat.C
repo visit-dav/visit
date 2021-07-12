@@ -1084,7 +1084,6 @@ avtNASTRANFileFormat::ParseLine(vtkIdType *verts, char *line, int start,
 {
     char *valstart = line + INDEX_FIELD_WIDTH * start;
     char *valend = valstart + INDEX_FIELD_WIDTH;
-    double nvals = (double) strlen(line) / INDEX_FIELD_WIDTH;
     char val_t;
     int i;
     for (i = 0; (i < count) && (*valstart != '\0') && (*valstart != '\r'); i++) {
