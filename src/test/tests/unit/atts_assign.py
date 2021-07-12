@@ -513,7 +513,7 @@ def TestAssignmentToUCharVector():
         TestFOA('mca.changedColors=1,2,3', LINE())
         pass
 
-    fails = [(1,123123123123123123123123123123,3), (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3), '123']
+    fails = [(1,123123123123123123123123123123,3), (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3), ('123',)]
     for i in range(len(fails)):
         try:
             mca.changedColors = fails[i]
@@ -564,10 +564,10 @@ def TestAssignmentToIntVector():
         TestFOA('opa.index=1,2,3', LINE())
         pass
 
-    fails =  [Max32BitInt1, 1+2j, 'b', None, (1,Max32BitInt1,3),
-              (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3), '123']
-    excpts = [TypeError, TypeError, TypeError, TypeError, ValueError,
-              TypeError, TypeError, TypeError, TypeError, TypeError]
+    fails =  [(Max32BitInt1,), (1+2j,), ('b',), (None,), (1,Max32BitInt1,3),
+              (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3)]
+    excpts = [ValueError, TypeError, TypeError, TypeError, ValueError,
+              TypeError, TypeError, TypeError, TypeError]
     for i in range(len(fails)):
         try:
             opa.index = fails[i]
@@ -618,7 +618,7 @@ def TestAssignmentToDoubleVector():
         TestFOA('ca.contourValue=1,2,3', LINE())
         pass
 
-    fails = [1+2j, 'b', None, (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3)]
+    fails = [(1+2j,), ('b',), (None,), (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3)]
     for i in range(len(fails)):
         try:
             ca.contourValue = fails[i]
