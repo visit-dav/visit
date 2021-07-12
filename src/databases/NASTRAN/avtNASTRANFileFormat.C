@@ -210,8 +210,9 @@ static double GetVal(const char *s)
     // seen characters that could represent part of a number. In such a case,
     // it MUST be the sign of an exponent.
     std::string t(s);
-    for (i = t.size(); t[i]!='-' && t[i]!='+' && t[i]!='\0'; i--);
-    if (i>0 && (t[i]=='-' || t[i]=='+') && t[i-1]!='e' && t[i-1]!='E')
+    // Start scanning from 1 to avoid possible leading +/- char
+    for (i = 1; i < t.size() && t[i]!='-' && t[i]!='+'; i++);
+    if ((t[i]=='-' || t[i]=='+') && t[i-1]!='e' && t[i-1]!='E')
         t.insert(i, "E");
 
     errno = 0;
