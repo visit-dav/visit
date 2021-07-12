@@ -30,7 +30,8 @@ class avtMaterial;
 //  Creation:   Tue Jul 5 17:24:35 PST 2005
 //
 //  Modifications:
-//
+//    Mark C. Miller, Tue Jul  6 10:31:14 PDT 2021
+//    Make ParseLine return value a bool
 // ****************************************************************************
 
 class avtNASTRANFileFormat : public avtSTSDFileFormat
@@ -67,7 +68,7 @@ protected:
     
 private:
     bool ReadLine(ifstream&, char *);
-    void ParseLine(vtkIdType *, char *, int, int);
+    bool ParseLine(vtkIdType *, char *, int, int);
     int CheckBuildable(const vtkIdType *, int);
     int CheckBuildable(const vtkIdType *, int, int);
     int ParseField(char *, int);
