@@ -520,11 +520,13 @@ class PythonGeneratorField : public virtual Field
         c << "    {" << Endl; \
         c << "        " #pyType " val = " #pyFunc "(args);" << Endl; \
         c << "        " #cType " cval = " #cType "(val);" << Endl; \
-        c << "        if ((val == -1 && PyErr_Occurred()) || cval != val)" << Endl; \
+        c << "        if (val == -1 && PyErr_Occurred())" << Endl; \
         c << "        {" << Endl; \
         c << "            PyErr_Clear();" << Endl; \
         c << "            return PyErr_Format(PyExc_TypeError, \"number not interpretable as C++ " #cType "\");" << Endl; \
         c << "        }" << Endl; \
+        c << "        if (fabs(double(val))>1.5E-7 && fabs((double(" #pyType "(cval))-double(val))/double(val))>1.5E-7)" << Endl; \
+        c << "            return PyErr_Format(PyExc_ValueError, \"number not interpretable as C++ " #cType "\");" << Endl; \
         c << "        vec.resize(1);" << Endl; \
         c << "        vec[0] = cval;" << Endl; \
         c << "    }" << Endl; \
@@ -1241,7 +1243,7 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << "    {" << Endl;
         c << "        char const *val = PyUnicode_AsUTF8(args);" << Endl;
         c << "        std::string cval = std::string(val);" << Endl;
-        c << "        if ((val == 0 && PyErr_Occurred()) || cval != val)" << Endl;
+        c << "        if (val == 0 && PyErr_Occurred())" << Endl;
         c << "        {" << Endl;
         c << "            PyErr_Clear();" << Endl;
         c << "            return PyErr_Format(PyExc_TypeError, \"arg not interpretable as C++ string\");" << Endl;
@@ -1265,7 +1267,7 @@ class AttsGeneratorStringVector : public virtual StringVector , public virtual P
         c << "            char const *val = PyUnicode_AsUTF8(item);" << Endl;
         c << "            std::string cval = std::string(val);" << Endl;
         c << Endl;
-        c << "            if ((val == 0 && PyErr_Occurred()) || cval != val)" << Endl;
+        c << "            if (val == 0 && PyErr_Occurred())" << Endl;
         c << "            {" << Endl;
         c << "                Py_DECREF(item);" << Endl;
         c << "                PyErr_Clear();" << Endl;
@@ -2122,7 +2124,7 @@ class PythonGeneratorEnum : public virtual Enum , public virtual PythonGenerator
         c << "    long val = PyLong_AsLong(args);" << Endl;
         c << "    int cval = int(val);" << Endl;
         c << Endl;
-        c << "    if ((val == -1 && PyErr_Occurred()) || cval != val)" << Endl;
+        c << "    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)" << Endl;
         c << "    {" << Endl;
         c << "        Py_XDECREF(packaged_args);" << Endl;
         c << "        PyErr_Clear();" << Endl;
