@@ -47,7 +47,7 @@ A first action in the *CLI*
       AddPlot("Pseudocolor", "temp")
       # You will see the active plots list in the GUI update, since the CLI and GUI communicate.
       DrawPlots()
-      #You should see your plot.
+      # You will see your plot.
 
 3) Click *Execute*.
 
@@ -152,7 +152,7 @@ that case delete all the plots and execute the script again.
     # Find the maximum value of the field 'temp'
     Query("Max")
     val = GetQueryOutputValue()
-    print "Max value of 'temp' = ", val
+    print("Max value of 'temp' = ", val)
 
     # Create a streamline plot that follows
     # the gradient of 'temp'
