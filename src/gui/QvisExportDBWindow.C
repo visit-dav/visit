@@ -261,7 +261,7 @@ QvisExportDBWindow::CreateWindowContents()
         if (sel >=0)
         {
             QualifiedFilename dbName(plotList->GetPlots(sel).GetDatabaseName());
-            if (dbName.host != "localhost");
+            if (dbName.host != "localhost")
             {
                 caption += QString(" on %1").arg(dbName.host.c_str());
             }
