@@ -10,8 +10,8 @@ The standard operators perform data restriction operations like planar
 slicing, spherical slicing, and thresholding, as well as more sophisticated
 operations like peeling off mesh layers. All of VisIt's operators are plugins
 and new operators can be written to extend VisIt in new ways. See the
-`wiki <http://visitusers.org>`_ for more details on creating new operator 
-plugins or send an e-mail inquiry to visit-users@elist.ornl.gov.
+`VisIt web site <https://visit.llnl.gov>`_ for more details on creating new operator 
+plugins.
 
 Managing operators
 ~~~~~~~~~~~~~~~~~~

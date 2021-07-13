@@ -91,8 +91,7 @@ USAGE: visit [options]::
     Other resources for help
     ---------------------------------------------------------------------------
         run-time:            While running VisIt, look under the "Help" menu.
-        on-line:             https://visit.llnl.gov
-        email:               visit-users@ornl.gov
+        on-line:             https://visit-help.llnl.gov
 
 
     ***************************************************************************
