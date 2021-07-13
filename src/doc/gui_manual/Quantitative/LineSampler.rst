@@ -1,0 +1,331 @@
+.. _LineSampler:
+
+LineSampler
+-----------
+
+Similar to the Lineout tool one-dimensional curves, created using data
+from 2D or 3D plots, are popular for analyzing data because they are
+simple to compare. However, unlike the like the Lineout which creates
+a single curve it is a tool, whereas the LineSampler is an operator
+and can create multiple curves.
+
+As an operator the user can define the sampling. That is the user can
+define a series of "arrays" (e.g. planes) that consists of one or more
+"channels" for sampling. For each array the orientation of the plane
+can be defined. Whereas for each channel its orirentation within the
+plane and the sampling type and spacing can be defined. For instance,
+the sampling can be a series of lines through the data, or a series of
+points integrated over time.
+
+Once defined, the operator will produce the appropriate geometry and
+sampling regardless of the window dimension. That is for a 3D window
+the each channel will be drawn showing its 3D position. Similarly for
+a 2D window. For 1D a window the results will be displayed as curve
+plot in much the same way a Lineout data would be drawn.
+
+Unique and critical to using the LineSampler operator is that it
+should be defined in each window for each plot. Further the "Apply to
+all windows" and "Apply operators to all plots" should be checked. As
+such there is some critical setup that must be done.
+
+The genesis of the Line Sampler operator is from plasma physics and
+the synthethic diagnostics performed in fusion simulations so to
+compare against experimental results. As such the nomenclature is
+based on this usage.
+
+
+LineSampler operator
+~~~~~~~~~~~~~~~~~~~~
+
+To use the LineSampler mode first create a translucent Pseudocolor
+plot of the data for reference. Clone the plot and add the LineSampler
+Operator to the plot. Remember to set the Apply to "active window" and
+uncheck "Apply operators to all plots" before adding the LineSampler
+operator.  Next bring up the LineSampler operator attribute window.
+
+Main tab
+""""""""
+
+Select the "Main" tab, :numref:`Figure %s <LineSampleMainTab>` set up
+the attributes accordingly.
+
+
+1. The line sampler needs to know the mesh geometry which can be
+   Cartesian, Cylindrical, Toroidal which determines how the sampling
+   will be done. Most notable is that the differetnce between
+   cylindrical and toroidal coordinates is coordiante ordering r, phi,
+   z vs r, z, phi.
+
+2. The user can set up an array configuration specifying the geometry
+   or manually read in a channel configuration file. The "Geometry"
+   and "List" tabs reflect those respective choices.
+
+3. The boundary of the sampling can be based on the data file or using
+   a manually specified wall file. The wall file reflects the boundary
+   in a 2D slice of the data in the Y=0 or the Phi=0 plane. Any
+   sampling outside of the boundary will be disregarded, that is the
+   sample ray will be clipped.
+
+   Note currently the wall file format is is specific to D3D fusion
+   files. The coordinates are displayed in the text box.
+
+4. When using the LineSampler operator, one will need to check the
+   "Apply operators to all plots" option. So that all of the
+   parameters are propagated to al of the windows. However, the user
+   may want to have a different Instance" of the operator so to
+   compare different sampling configurations. So by setting the
+   "Instance" to 'A' for the first, and 'B' for the second the
+   attributes will be propagated appropriately to the plots in other
+   windows when using the "Apply to all windows" option.
+
+.. _LineSampler_MainTab:
+
+.. figure:: images/LineSamplerMainTab.png
+
+   LineSampler Main Tab
+
+Geometry Tab
+""""""""""""
+
+The Geometry tab is active only if the "Array configuration" is set to
+"Geometry." This tab allows the user to manualy define one or more
+arrays with one or more channels.
+
+1. The number of arrays to be created.  Each array consists of mutlple
+   sample channels all in a 2D plane. Multiple arrays can be defined
+   in multiple planes.
+
+2. Depending on the "Mesh Geometry" the Y distance or toroidal angle
+   (in degrees) between arrays.
+
+
+3. The projection of the channels, Divergent, Parallel, or a Grid. The
+   user can select one of three projections for the channels. For each
+   projection one can define the number of channels and their relative
+   spacing.
+
+
+Divergent tab
+_____________
+
+For an array divergent channels one selects:
+
+a. The number of channels.
+b. The relative angle between each channel.
+
+Parallel tab
+_____________
+
+For an array of parallel channels one selects:
+
+a. The number of channels.
+b. The relative distance between each channel.
+
+Grid tab
+_____________
+
+For a grid of parallel channels one selects:
+
+a. The number of channels per column.
+b. The offset between each channel.
+c. The number of rows.
+d. The offset between rows.
+
+4. Location of the origin for a divergent array. For a parallel and
+   grid array the channels will be centered around the origin.
+
+
+5. The array is assumed to be in the Y=0 or Phi=0 plane as such one
+   needs to select the axis direction from the origin which will be X
+   or Z (cartesian) or R or Z (cylindrical or toroidal).
+
+6. The array plane may be tilted and well as be rotated. Depending on
+   the mesh geometry these are described as a series offsets
+   (cartesian) or angles (cylindrical or toroidal) and tilts which
+   defines a transform to the array plane.
+
+7. The Y offset/ toroidal angle is an offset to each array.
+
+8. Flip toroidal angle - flips the toroidal angle by negating it.
+
+.. _LineSampler_GeometryTab:
+
+.. figure:: images/LineSamplerGeometryTab.png
+
+   LineSampler Geometry Tab
+
+List Tab
+""""""""
+
+The List tab is active only if the "Array configuration" is set to
+"List." This tab allows the user to read a channel configuration file
+which defines one or arrays with one or more channels.
+
+1. The number of arrays to be created. That is each channel
+   configuration file is considered to be one array. Multiple arrays
+   can be defined in multiple planes.
+
+2. Depending on the "Mesh Geometry" the Y distance or toroidal angle
+   between arrays.
+
+3. Read channel configuration file - read a D3D fusion Soft Xray channel
+   configuration file.
+
+   Channel list - single click selects the channel, double click
+   selects the channel for editing.
+
+   Each point consists of the origin and an associated poloidal angle.
+
+4. Add channel- add a new channel to the list
+
+5. Delete channel - delete the selected channel
+
+6. Delete all channels - delete all channels in the list
+
+7. The Y offset / Toroidal angle is an offset to each channel.
+
+8. Flip toroidal angle - flips the toroidal angle by negating it.
+
+.. _LineSampler_ListTab:
+
+.. figure:: images/LineSamplerListTab.png
+
+   LineSampler List Tab
+
+
+Sampling Tab
+""""""""""""
+
+The sampling tab sets up how each channel will be sampled.
+
+Geometry
+
+1. Channel geometry - Currently the sampling geometry is limited to a
+   point or along a line. Future plans are to have cylindrical and
+   cone sampling geometries.
+
+2. Linear sampling distance - Sample along each channel using the
+   distance specified.
+
+3. Sample volume - For each sample multiple it by a volume.
+
+4. Channel radius - The radius of a channel that is describe by a
+   cylinder.
+
+5. Sample profile - The sample profile of a channel that is describe
+   by a cylinder. Either a TopHat or Gaussian profile. If a Gaussian
+   profile is selected the standard deviation may be given.
+
+6. Cone divergence - For a cone the divergence of the channel.
+
+Integration
+
+7. Channel integration - When sampling one can sample along the
+   channel recording each indivdual sample or integrate (sum) all of
+   the sample values togethere.
+
+
+8. Toroidal integration - When sampling toroidally one can sample
+   along the circumference recording each sample or integrate all of
+   the sample values together.
+
+Toroidal angle sampling
+
+9. Sample - When sampling toroidally one can sample relative to the
+start point or on an absolute basis.
+
+10. Toroidal sample angle - The start, stop, and stride for toroidal
+    sampling.
+
+Time sampling
+
+11. When sampling one can sample just the current time step or across
+multiple times steps which becomes the X axis.
+
+12. Time step - The start, stop, and stride for time sampling.
+
+.. _LineSampler_SamplingTab:
+
+.. figure:: images/LineSamplerSamplingTab.png
+
+   LineSampler Sampling Tab
+
+
+View Tab
+""""""""
+
+The 'View' tab sets attributes based on the dimension of the plot.
+
+1. When associating the LineSampler operator with a specific plot, the
+   operator needs to know the plot's view dimension so to display the
+   sample data correcly. Normally one would have three windows, 1D,
+   2D, and 3D. The Line Sampler operator would be active for the three
+   plots in each window and one would individually set this attribute
+   for each.
+
+2. When checked, assures that when the operator attributes are updated
+   that the view dimension is not updated to all plots. Should always
+   be set to true.
+
+When displaying the resulting sampling as a 1D plot various viewing
+prarmeters can be set.
+
+3. Scale each channel's Y value.
+
+4. For each channel offset the Y value, so that possibly overlapping
+   channels are offset.
+
+5. For each array offset the X value, so that possibly overlapping
+   arrays are offset.
+
+6. When sampling over time the set the X axis to be either the Step,
+   Time, or Cycle.
+
+
+7. The view geometry can be restricted to being Points, Lines, or
+   Surfaces in much same way one can do in the Pseudocolor Plot.
+
+
+.. _LineSampler_ViewTab:
+
+.. figure:: images/LineSamplerViewTab.png
+
+   LineSampler View Tab
+
+
+Once all of the attributes are set one can apply and draw the plots,
+:numref:`Figure %s<LineSampler_3DView>`).
+
+Next clone the window and add a slice opertor to the reference
+plot. Set the slice to be through the Y=0/Phi=0 plane and apply. For
+the plot with the LineSampler operator in the View tab set the View
+dimension to "Two." Apply and draw the plots, :numref:`Figure
+%s<LineSampler_2DView>`).
+
+Next clone the window and delete the plot with the slice opertor. For
+the plot with the LineSampler operator in the View tab set the View
+dimension to "One." Apply and draw the plot :numref:`Figure
+%s<LineSampler_1DView>`).
+
+Next set the Apply to "all windows" and check "Apply operators to all
+plots." At this point if one changes any attribute in the LineSampler
+operator all of the plots will be updated. For change the number of
+channels and apply.
+
+.. _LineSampler_3DView:
+
+.. figure:: images/LineSampler3DView.png
+
+   LineSampler 3D view of toroidal data
+
+.. _LineSampler_2DView:
+
+.. figure:: images/LineSampler2DView.png
+
+   LineSampler 2D view of toroidal data
+
+.. _LineSampler_1DView:
+
+.. figure:: images/LineSampler1DView.png
+
+   LineSampler 1D view of toroidal data
