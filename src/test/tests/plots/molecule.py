@@ -237,7 +237,7 @@ def ReplicateAddBonds():
     CloseDatabase(data_path("vasp_test_data", "GaO40W12", "OUTCAR"))
 
 MoleculeOnly()
-#ReplicateAddBonds()
+ReplicateAddBonds()
 Exit()
 
 
