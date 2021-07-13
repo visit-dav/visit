@@ -12,6 +12,12 @@
 #
 #  Modifications:
 #
+#    Kathleen Biagas, Tue Jul 13 09:51:58 PDT 2021
+#    Changed retrieval of renAtts from 'RenderingAttributes' to
+#    'GetRenderingAttributes' when turning off specular highlighting. This
+#    fixes a bug in scalable,parallel,icet mode where molecule_04 test would
+#    fail to plot.
+#
 # ----------------------------------------------------------------------------
 
 def SetGradientBackground():
@@ -117,7 +123,7 @@ def MoleculeOnly():
 
     DrawPlots()
     # turn off specular highlighting
-    renAtts = RenderingAttributes()
+    renAtts = GetRenderingAttributes()
     renAtts.specularFlag = 0
     SetRenderingAttributes(renAtts)
     Test500x500("molecule_04")
@@ -231,7 +237,7 @@ def ReplicateAddBonds():
     CloseDatabase(data_path("vasp_test_data", "GaO40W12", "OUTCAR"))
 
 MoleculeOnly()
-ReplicateAddBonds()
+#ReplicateAddBonds()
 Exit()
 
 
