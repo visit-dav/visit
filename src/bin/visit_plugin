@@ -163,12 +163,6 @@ cat >> $1 <<- EOF
         % cd $pluginName
         % make clean
 
-    If you have problems, please read about more details here...
-    http://visitusers.org/index.php?title=Building_plugins_using_CMake
-    and here...
-    http://visitusers.org/index.php?title=DB_plugins
-    If you still have problems, contact us via https://visit-help.llnl.gov
-
 EOF
 }
 

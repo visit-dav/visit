@@ -9,8 +9,6 @@ allow you to visualize data in different ways. The standard plots perform
 basic visualization operations like contouring, pseudocoloring as well as
 more sophisticated operations like volume rendering. All of VisIt's plots
 are plugins so you can add new plot types by writing your own plot plugins.
-See the wiki at `visitusers.org <http://www.visitusers.org/>`_ for more
-details on creating new plot plugins.
 
 Managing Plots
 ~~~~~~~~~~~~~~

@@ -143,10 +143,6 @@ USAGE: visit [options]::
         but you can customize the process with the -x-args and -display
         parameters, which respect %l and %n format specifiers.
 
-        See the VisIt wiki for more information:
-
-          http://visitusers.org/index.php?title=Parallel_Hardware_Acceleration
-
     ---------------------------------------------------------------------------
         -hw-accel              Tells VisIt that it should use graphics cards.
         -n-gpus-per-node <int> Number of GPUs per node of the cluster (1).

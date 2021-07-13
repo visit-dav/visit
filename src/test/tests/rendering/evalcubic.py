@@ -15,7 +15,7 @@
 
 #
 # Example from:
-# http://visitusers.org/index.php?title=Visit-tutorial-python-fly 
+# Visit-tutorial-python-fly 
 #
 
 def fly():
