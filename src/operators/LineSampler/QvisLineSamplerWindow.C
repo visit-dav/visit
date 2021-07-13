@@ -1066,8 +1066,10 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 boundaryButtonGroup->button((int)atts->GetBoundary())->setChecked(true);
             boundaryButtonGroup->blockSignals(false);
 
-            wallReadFile->setEnabled((int)atts->GetBoundary()==1);
-            wallList->setEnabled((int)atts->GetBoundary()==1);
+            tmpBool = atts->GetBoundary() == LineSamplerAttributes::Wall;
+
+            wallReadFile->setEnabled(tmpBool);
+            wallList->setEnabled(tmpBool);
 
             break;
 
@@ -1140,24 +1142,35 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 arrayAxisButtonGroup->button((int)atts->GetArrayAxis())->setChecked(true);
             arrayAxisButtonGroup->blockSignals(false);
 
+            tmpBool = atts->GetMeshGeometry() ==
+              LineSamplerAttributes::Cartesian;
+            cartesianXLayoutLabel->setVisible(tmpBool &&
+                                              (int)atts->GetArrayAxis() ==
+                                              LineSamplerAttributes::R);
+            cartesianZLayoutLabel->setVisible(tmpBool &&
+                                              (int)atts->GetArrayAxis() ==
+                                              LineSamplerAttributes::Z);
+            cartesianConfLayoutLabel->setVisible(tmpBool);
 
-            cartesianXLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
-                                                (int)atts->GetArrayAxis()==0);
-            cartesianZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
-                                                (int)atts->GetArrayAxis()==1);
-            cartesianConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0);
+            tmpBool = atts->GetMeshGeometry() ==
+              LineSamplerAttributes::Cylindrical;
+            cylindricalRLayoutLabel->setVisible(tmpBool &&
+                                                (int)atts->GetArrayAxis() ==
+                                                LineSamplerAttributes::R);
+            cylindricalZLayoutLabel->setVisible(tmpBool &&
+                                                (int)atts->GetArrayAxis() ==
+                                                LineSamplerAttributes::Z);
+            cylindricalConfLayoutLabel->setVisible(tmpBool);
 
-            cylindricalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
-                                                (int)atts->GetArrayAxis()==0);
-            cylindricalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
-                                                (int)atts->GetArrayAxis()==1);
-            cylindricalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1);
-
-            toroidalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
-                                             (int)atts->GetArrayAxis()==0);
-            toroidalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
-                                             (int)atts->GetArrayAxis()==1);
-            toroidalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 );
+            tmpBool = atts->GetMeshGeometry() ==
+              LineSamplerAttributes::Toroidal;
+            toroidalRLayoutLabel->setVisible(tmpBool &&
+                                             (int)atts->GetArrayAxis() ==
+                                             LineSamplerAttributes::R);
+            toroidalZLayoutLabel->setVisible(tmpBool &&
+                                             (int)atts->GetArrayAxis() ==
+                                             LineSamplerAttributes::R);
+            toroidalConfLayoutLabel->setVisible(tmpBool);
             break;
           case LineSamplerAttributes::ID_poloialAngle:
             poloialAngle->setText(DoubleToQString(atts->GetPoloialAngle()));
@@ -1198,16 +1211,18 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                 viewDimensionButtonGroup->button((int)atts->GetViewDimension())->setChecked(true);
             viewDimensionButtonGroup->blockSignals(false);
 
-            oneDPlotGroup->setEnabled( (int)atts->GetViewDimension() == 0 );
+            tmpBool = atts->GetViewDimension() == LineSamplerAttributes::One;
+            oneDPlotGroup->setEnabled( tmpBool );
 
-            if( atts->GetViewDimension() == 0 )
+            if( tmpBool )
             {
-              displayTimeLabel->
-                setEnabled( (int)atts->GetTimeSampling() == 1 &&
-                            (int)atts->GetToroidalIntegration() != LineSamplerAttributes::SampleToroidally);
+              tmpBool = (atts->GetTimeSampling() ==
+                         LineSamplerAttributes::MultipleTimeSteps &&
+                         atts->GetToroidalIntegration() !=
+                         LineSamplerAttributes::SampleToroidally);
 
-              displayTime->setEnabled( (int)atts->GetTimeSampling() == 1 &&
-                                       (int)atts->GetToroidalIntegration() != LineSamplerAttributes::SampleToroidally );
+              displayTimeLabel->setEnabled( tmpBool );
+              displayTime->setEnabled( tmpBool );
             }
 
             break;
@@ -1316,14 +1331,13 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
                                        (int)atts->GetToroidalIntegration() ==
                                        LineSamplerAttributes::IntegrateToroidally );
 
-            displayTimeLabel->
-              setEnabled( (int)atts->GetTimeSampling() == 1 &&
-                          (int)atts->GetToroidalIntegration() !=
-                          LineSamplerAttributes::SampleToroidally);
+            tmpBool = (atts->GetTimeSampling() ==
+                       LineSamplerAttributes::MultipleTimeSteps &&
+                       atts->GetToroidalIntegration() !=
+                       LineSamplerAttributes::SampleToroidally);
 
-            displayTime->setEnabled( (int)atts->GetTimeSampling() == 1 &&
-                                     (int)atts->GetToroidalIntegration() !=
-                                     LineSamplerAttributes::SampleToroidally);
+            displayTimeLabel->setEnabled( tmpBool );
+            displayTime->setEnabled( tmpBool );
             break;
           case LineSamplerAttributes::ID_toroidalAngleSampling:
             toroidalAngleSamplingButtonGroup->blockSignals(true);
@@ -1351,10 +1365,12 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
 
             displayTimeLabel->
               setEnabled( tmpBool &&
-                          (int)atts->GetToroidalIntegration() != LineSamplerAttributes::SampleToroidally);
+                          (int)atts->GetToroidalIntegration() !=
+                          LineSamplerAttributes::SampleToroidally);
 
             displayTime->setEnabled( tmpBool &&
-                                     (int)atts->GetToroidalIntegration() != LineSamplerAttributes::SampleToroidally);
+                                     (int)atts->GetToroidalIntegration() !=
+                                     LineSamplerAttributes::SampleToroidally);
 
             timeStepLabel->setEnabled(tmpBool);
             timeStepStartLabel->setEnabled(tmpBool);
@@ -1460,13 +1476,13 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
     if(which_widget == LineSamplerAttributes::ID_nChannels || doAll)
     {
         int val;
-        if( (atts->GetChannelProjection() == 0 &&
+        if( (atts->GetChannelProjection() == LineSamplerAttributes::Divergent &&
              LineEditGetInt(nDChannels, val)) ||
 
-            (atts->GetChannelProjection() == 1 &&
+            (atts->GetChannelProjection() == LineSamplerAttributes::Parallel &&
              LineEditGetInt(nPChannels, val)) ||
 
-            (atts->GetChannelProjection() == 2 &&
+            (atts->GetChannelProjection() == LineSamplerAttributes::Grid &&
              LineEditGetInt(nGChannels, val))  )
 
             atts->SetNChannels(val);
@@ -1496,14 +1512,14 @@ QvisLineSamplerWindow::GetCurrentValues(int which_widget)
     if(which_widget == LineSamplerAttributes::ID_channelOffset || doAll)
     {
         double val;
-        if( (atts->GetChannelProjection() == 1 &&
+        if( (atts->GetChannelProjection() == LineSamplerAttributes::Parallel &&
              LineEditGetDouble(channelParallelOffset, val)) ||
-            (atts->GetChannelProjection() == 2 &&
+            (atts->GetChannelProjection() == LineSamplerAttributes::Grid &&
              LineEditGetDouble(channelGridOffset, val)) )
           atts->SetChannelOffset(val);
 
-        else if( atts->GetChannelProjection() == 1 ||
-                 atts->GetChannelProjection() == 2 )
+        else if( atts->GetChannelProjection() == LineSamplerAttributes::Parallel ||
+                 atts->GetChannelProjection() == LineSamplerAttributes::Grid )
         {
             ResettingError(tr("Parallel/Grid: Offset between channels"),
                 DoubleToQString(atts->GetChannelOffset()));
@@ -2704,25 +2720,35 @@ QvisLineSamplerWindow::EnableList(bool flag)
 void
 QvisLineSamplerWindow::UpdateMeshGeometry()
 {
+  bool tmpBool;
 
-  cartesianXLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
-                                      (int)atts->GetArrayAxis()==0);
-  cartesianZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0 &&
-                                      (int)atts->GetArrayAxis()==1);
+  tmpBool = atts->GetMeshGeometry() == LineSamplerAttributes::Cartesian;
+  cartesianXLayoutLabel->setVisible(tmpBool &&
+                                    (int)atts->GetArrayAxis() ==
+                                    LineSamplerAttributes::R);
+  cartesianZLayoutLabel->setVisible(tmpBool &&
+                                    (int)atts->GetArrayAxis() ==
+                                    LineSamplerAttributes::Z);
+  cartesianConfLayoutLabel->setVisible(tmpBool);
 
-  cartesianConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==0);
+  tmpBool = atts->GetMeshGeometry() == LineSamplerAttributes::Cylindrical;
+  cylindricalRLayoutLabel->setVisible(tmpBool &&
+                                      (int)atts->GetArrayAxis() ==
+                                      LineSamplerAttributes::R);
+  cylindricalZLayoutLabel->setVisible(tmpBool &&
+                                      (int)atts->GetArrayAxis() ==
+                                      LineSamplerAttributes::Z);
+  cylindricalConfLayoutLabel->setVisible(tmpBool);
 
-  cylindricalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
-                                      (int)atts->GetArrayAxis()==0);
-  cylindricalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1 &&
-                                      (int)atts->GetArrayAxis()==1);
-  cylindricalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==1);
+  tmpBool = atts->GetMeshGeometry() == LineSamplerAttributes::Toroidal;
+  toroidalRLayoutLabel->setVisible(tmpBool &&
+                                   (int)atts->GetArrayAxis() ==
+                                   LineSamplerAttributes::R);
+  toroidalZLayoutLabel->setVisible(tmpBool &&
+                                   (int)atts->GetArrayAxis() ==
+                                   LineSamplerAttributes::R);
+  toroidalConfLayoutLabel->setVisible(tmpBool);
 
-  toroidalRLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
-                                   (int)atts->GetArrayAxis()==0);
-  toroidalZLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2 &&
-                                   (int)atts->GetArrayAxis()==1);
-  toroidalConfLayoutLabel->setVisible((int)atts->GetMeshGeometry()==2);
 
   if( atts->GetMeshGeometry() == LineSamplerAttributes::Cartesian )
   {
