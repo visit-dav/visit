@@ -444,10 +444,6 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         {
             recognized = true;
 
-
-        std::cerr << "Testing Getf with \"          -2.56+7\" and get value = " << Getf("          -2.56+7") << std::endl;
-        std::cerr << "Testing Getf with \"+1.2356-7\" and get value = " << Getf("+1.2356-7") << std::endl;
-
 #define SHORT_FIELD_WIDTH 8
             char *valstart = line + 48 - SHORT_FIELD_WIDTH;
             char *valend = line + 48;
