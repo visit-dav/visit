@@ -45,7 +45,7 @@ using namespace NASTRANDBOptions;
 
 #include <errno.h>
 #include <limits.h>
-#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -216,8 +216,8 @@ static double GetVal(const char *s)
     // it MUST be the sign of an exponent.
     std::string t(s);
     // Start scanning from 1 to avoid possible leading +/- char
-    for (i = 1; i < t.size() && t[i]!='-' && t[i]!='+' && t[i]!=' '; i++);
-    if ((t[i]=='-' || t[i]=='+') && t[i-1]!='e' && t[i-1]!='E')
+    for (i = t.size()-1; i>0 && t[i]!='-' && t[i]!='+'; i--);
+    if ((t[i]=='-' || t[i]=='+') && strchr("0123456789",t[i-1]))
         t.insert(i, "E");
 
     errno = 0;
