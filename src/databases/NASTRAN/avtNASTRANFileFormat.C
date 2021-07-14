@@ -190,6 +190,10 @@ avtNASTRANFileFormat::ActivateTimestep()
 //
 //    Mark C. Miller, Sun Jul  4 16:19:34 PDT 2021
 //    Simplified logic for NASTRAN exponential format
+//
+//    Mark C. Miller, Wed Jul 14 16:27:03 PDT 2021
+//    When handling possible `e`/`E` insertion, loop past spaces too.
+//    Output `t` variable in any error messages instead of `s` input arg
 // ****************************************************************************
 static double GetVal(const char *s)
 {
