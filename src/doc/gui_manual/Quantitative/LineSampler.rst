@@ -5,9 +5,9 @@ LineSampler
 
 Similar to the Lineout tool one-dimensional curves, created using data
 from 2D or 3D plots, are popular for analyzing data because they are
-simple to compare. However, unlike the like the Lineout which creates
-a single curve it is a tool, whereas the LineSampler is an operator
-and can create multiple curves.
+simple to compare. However, unlike the Lineout which creates a single
+curve it is a tool, whereas the LineSampler is an operator and can
+create multiple curves.
 
 As an operator the user can define the sampling. That is the user can
 define a series of "arrays" (e.g. planes) that consists of one or more
@@ -66,7 +66,7 @@ the attributes accordingly.
    sampling outside of the boundary will be disregarded, that is the
    sample ray will be clipped.
 
-   Note currently the wall file format is is specific to D3D fusion
+   Note currently the wall file format is specific to D3D fusion
    files. The coordinates are displayed in the text box.
 
 4. When using the LineSampler operator, one will need to check the
@@ -159,7 +159,7 @@ List Tab
 
 The List tab is active only if the "Array configuration" is set to
 "List." This tab allows the user to read a channel configuration file
-which defines one or arrays with one or more channels.
+which defines an array with one or more channels.
 
 1. The number of arrays to be created. That is each channel
    configuration file is considered to be one array. Multiple arrays
