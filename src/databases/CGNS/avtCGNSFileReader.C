@@ -1646,6 +1646,9 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
 // Creation:   Tue Jul  6 10:27:03 PDT 2021
 //
 // Modifications:
+//   Eric Brugger, Wed Jul 14 13:32:10 PDT 2021
+//   Added a temporary hack to only generate ghost zones if the
+//   environment variable CGNS_USE_RIND is set.
 //
 // ****************************************************************************
 
@@ -1726,6 +1729,18 @@ avtCGNSFileReader::GetQuadGhostZones(int base, int zone,
         {
             ghostPresent = true;
         }
+    }
+
+    // Temporary hack to only generate ghost zones if the environment
+    // variable CGNS_USE_RIND is set. This is because there exist some
+    // CGNS files that are single block with rind zones all around the
+    // exterior. Adding ghost zones in this case generates a blank image.
+    // The particular file is delta.cgns.
+    if (getenv("CGNS_USE_RIND") == NULL)
+    {
+        ghostPresent = false;
+        debug4 << "Disabling use of rind values." << endl;
+        debug4 << "To enable setenv CGNS_USE_RIND." << endl;
     }
 
     //  Create the ghost zones array if necessary
