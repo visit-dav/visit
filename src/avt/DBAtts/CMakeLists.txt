@@ -6,12 +6,28 @@
 # Modifications:
 #    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
 #    Add xml tools code gen targets
+#
+#    Kathleen Biagas, Tue Jul 13 14:58:28 PDT 2021
+#    Remove avtScalarMetaData and avtSimulationCommandSpecification from
+#    code gen targets list. They cannot be auto-gen'd.
+#
 #****************************************************************************
 
 
 # Add XML Code Gen Targets
 
 # Note: These names are in alphabetical order
+
+
+#####################
+# MetaData Objects that we can't Code-Gen, or have customizations:
+#####################
+
+# avtScalarMetaData: Header file has a field that cannot be part of the .xml file due to it not being
+#                    a defined Field type in tools/dev/xml/Field.h
+#
+# avtSimulationCommandSpecification:  Header file has `using` statements that currently cannot be
+#                                     specified via logic in a .code file
 
 set(METADATA_GEN_OBJECTS 
     avtArrayMetaData
@@ -23,8 +39,6 @@ set(METADATA_GEN_OBJECTS
     avtMatSpeciesMetaData
     avtMaterialMetaData
     avtMeshMetaData
-    avtScalarMetaData
-    avtSimulationCommandSpecification
     avtSimulationInformation
     avtSpeciesMetaData
     avtSubsetsMetaData
