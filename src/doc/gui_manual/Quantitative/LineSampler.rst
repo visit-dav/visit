@@ -24,11 +24,6 @@ window for the Y=0 or the Phi=0 plane. For 1D a window the results
 will be displayed as a curve plot in the same way a Lineout curve plot
 would be drawn.
 
-Unique and critical to using the LineSampler operator is that it
-should be defined in each window for each plot. Further the "Apply to
-all windows" and "Apply operators to all plots" should be checked. As
-such there is some critical setup that must be done.
-
 The genesis of the Line Sampler operator is from plasma physics and
 the synthetic diagnostics performed in fusion simulations in order to
 compare against experimental results. As such, the nomenclature is
@@ -38,7 +33,7 @@ LineSampler operator
 ~~~~~~~~~~~~~~~~~~~~
 
 Before using the LineSampler operator in main plot window set the
-Apply to "active window" and uncheck "Apply operators to all plots."
+"Apply to" to "active window" and uncheck "Apply operators to all plots."
 This setting is critical for setting up all of the plots that will use
 the LineSampler operator. Once all of the plots are set up, then, and
 only then should the settings be changed.
@@ -72,14 +67,15 @@ set up the attributes accordingly.
    Note currently the wall file format is specific to D3D fusion
    files. The coordinates are displayed in the text box.
 
-4. When using the LineSampler operator, one will need to check the
-   "Apply operators to all plots" option. So that all of the
-   parameters are propagated to all of the windows. However, the user
-   may want to have a different "Instance" of the operator in order to
-   compare different sampling configurations. By setting the
-   "Instance" to 'A' for the first, and 'B' for the second the
-   attributes will be propagated appropriately to the plots in other
-   windows when using the "Apply to all windows" option.
+4. When using the LineSampler operator, in main plot window one will
+   need to set the "Apply to" to "all windows" and check "Apply
+   operators to all plots" so that all of the parameters are
+   propagated to all of the windows. However, the user may want to
+   have a different "Instance" of the operator in order to compare
+   different sampling configurations. By setting the "Instance" to 'A'
+   for the first, and 'B' for the second the attributes will be
+   propagated appropriately to the plots in other windows when using
+   the "Apply to all windows" option.
 
 .. _LineSampler_MainTab:
 
@@ -294,32 +290,37 @@ parameters can be set.
    LineSampler View Tab
 
 Once all of the attributes are set one can apply and draw the plots
-for the 3D view, :numref:`Figure %s<LineSampler_3DView>`).
+for the 3D view, :numref:`Figure %s<LineSampler_3DView>`). This view
+shows all of the arrays and their channels as a 3D view.
 
 Create a 2D view of the data showing the channels - Clone the 3D
 window and add a slice operator to the reference plot. Set the slice
 to be in the Y=0 or the Phi=0 plane and apply. This plane is
 considered to be the reference plane for the LineSampler operator and
-regardless of the Y or Phi of the array it will be projected into this
-plane.
+regardless of the Y or Phi of the "base" array it will be projected
+into this plane. The "base" array is the first array created, all
+other arrays are derived from it. As such, only it is shown in the 2D
+view.
 
 For the plot with the LineSampler operator in the View tab set the
 View dimension to "Two."  Apply and draw the plots, :numref:`Figure
-%s<LineSampler_2DView>`).
+%s<LineSampler_2DView>`). This view now shows the "base" array and
+each channel in it as a 2D view.
 
 Create a 1D view of the channel values - Next clone the 2D window and
 delete the plot with the slice operator.
 
 For the plot with the LineSampler operator in the View tab set the
 View dimension to "One."  Apply and draw the plot :numref:`Figure
-%s<LineSampler_1DView>`).
+%s<LineSampler_1DView>`). This view now shows each channel from all of
+the arrays as series of 1D curves.
 
 All this point all three plots with Linesampler operator are in
-sync. To keep them in sync in the main plot window set the Apply to
-"all windows" and check "Apply operators to all plots." At this point
-if one changes any attribute in the LineSampler operator all of the
-plots will be updated. For instance change the number of channels and
-apply. All of the plots will be updated.
+sync. To keep them in sync in the main plot window set the "Apply to"
+to "all windows" and check "Apply operators to all plots." At this
+point if one changes any attribute in the LineSampler operator all of
+the plots will be updated. For instance change the number of channels
+and apply. All of the plots will be updated.
 
 .. _LineSampler_3DView:
 
