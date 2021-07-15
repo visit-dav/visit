@@ -20,9 +20,9 @@ points integrated over time.
 Once defined, the operator will produce the appropriate geometry and
 sampling regardless of the window dimension. That is for a 3D window
 each channel will be drawn showing its 3D position. Similarly for a 2D
-window for the Y=0 or Phi=0 plane. For 1D a window the results will be
-displayed as a curve plot in the same way a Lineout curve plot would
-be drawn.
+window for the Y=0 or the Phi=0 plane. For 1D a window the results
+will be displayed as a curve plot in the same way a Lineout curve plot
+would be drawn.
 
 Unique and critical to using the LineSampler operator is that it
 should be defined in each window for each plot. Further the "Apply to
@@ -37,11 +37,16 @@ based on this usage.
 LineSampler operator
 ~~~~~~~~~~~~~~~~~~~~
 
-To use the LineSampler mode first create a translucent Pseudocolor
-plot of the data for reference. Clone the plot and add the LineSampler
-Operator to the plot. Remember to set the Apply to "active window" and
-uncheck "Apply operators to all plots" before adding the LineSampler
-operator. Next bring up the LineSampler operator attribute window.
+Before using the LineSampler operator in main plot window set the
+Apply to "active window" and uncheck "Apply operators to all plots."
+This setting is critical for setting up all of the plots that will use
+the LineSampler operator. Once all of the plots are set up, then, and
+only then should the settings be changed.
+
+Create a 3D view of the data showing the channels - First, create a
+translucent Pseudocolor plot of the data for reference. Next, clone
+the plot and add the LineSampler Operator to the plot. Open the
+LineSampler operator attribute window.
 
 Main tab
 """"""""
@@ -102,49 +107,43 @@ more channels.
    projection one can define the number of channels and their relative
    spacing.
 
-Additional geometry attributes.
+   Divergent tab - For an array divergent channels one selects:
+
+   a. The number of divergent channels.
+   b. The relative angle between each channel.
+
+   Parallel tab - For an array of parallel channels one selects:
+
+   a. The number of parallel channels.
+   b. The relative distance between each channel.
+
+   Grid tab - For a grid of parallel channels one selects:
+
+   a. The number of channels per column.
+   b. The offset between each channel.
+   c. The number of rows.
+   d. The offset between rows.
+
+For the remaining geometery consult the reference image showing the
+attributes.
 
 4. Location of the origin for a divergent array. For a parallel and
    grid array the channels will be centered around the origin.
 
-5. The array is assumed to be in the Y=0 or Phi=0 plane as such one
-   needs to select the axis direction from the origin which will be X
-   or Z (Cartesian) or R or Z (cylindrical or toroidal).
+5. The array is assumed to be in the Y=0 or the Phi=0 plane as such
+   one needs to select the axis direction from the origin which will
+   be X or Z (Cartesian) or R or Z (cylindrical or toroidal). The
+   channel sampling will start at the origin and proceed in hte
+   negative axis direction.
 
 6. The array plane may be tilted and well as be rotated. Depending on
    the mesh geometry these are described as a series of offsets
    (Cartesian) or angles (cylindrical or toroidal) and tilts which
    defines a transform to the array plane.
 
-7. The Y offset/ toroidal angle is an offset to each array.
+7. The Y offset / Toroidal angle - add an offset to each array.
 
 8. Flip toroidal angle - flips the toroidal angle by negating it.
-
-Divergent tab
-_____________
-
-For an array divergent channels one selects:
-
-a. The number of channels.
-b. The relative angle between each channel.
-
-Parallel tab
-_____________
-
-For an array of parallel channels one selects:
-
-a. The number of channels.
-b. The relative distance between each channel.
-
-Grid tab
-________
-
-For a grid of parallel channels one selects:
-
-a. The number of channels per column.
-b. The offset between each channel.
-c. The number of rows.
-d. The offset between rows.
 
 .. _LineSampler_GeometryTab:
 
@@ -167,21 +166,20 @@ one or more channels.
 2. Depending on the "Mesh Geometry" the Y distance or toroidal angle
    between arrays.
 
-3. Read channel configuration file - read a D3D fusion Soft Xray channel
-   configuration file.
+3. Read channel configuration file - read a D3D fusion Soft Xray
+   channel configuration file. Each point consists of the origin and
+   an associated angle and is shown in the Channel list.
 
    Channel list - single click selects the channel, double click
    selects the channel for editing.
 
-   Each point consists of the origin and an associated poloidal angle.
-
-4. Add channel- add a new channel to the list
+4. Add channel - add a new channel to the list
 
 5. Delete channel - delete the selected channel
 
 6. Delete all channels - delete all channels in the list
 
-7. The Y offset / Toroidal angle is an offset to each channel.
+7. The Y offset / Toroidal angle - add an offset to each array.
 
 8. Flip toroidal angle - flips the toroidal angle by negating it.
 
@@ -230,7 +228,7 @@ Integration
 Toroidal angle sampling
 
 9. Sample - When sampling toroidally one can sample relative to the
-start point or on an absolute basis.
+   start point or on an absolute basis.
 
 10. Toroidal sample angle - The start, stop, and stride for toroidal
     sampling.
@@ -238,7 +236,7 @@ start point or on an absolute basis.
 Time sampling
 
 11. When sampling one can sample just the current time step or across
-multiple times steps which becomes the X axis.
+    multiple times steps which becomes the X axis.
 
 12. Time step - The start, stop, and stride for time sampling.
 
@@ -298,21 +296,30 @@ parameters can be set.
 Once all of the attributes are set one can apply and draw the plots
 for the 3D view, :numref:`Figure %s<LineSampler_3DView>`).
 
-Next clone the window and add a slice operator to the reference
-plot. Set the slice to be through the Y=0/Phi=0 plane and apply. For
-the plot with the LineSampler operator in the View tab set the View
-dimension to "Two." Apply and draw the plots, :numref:`Figure
+Create a 2D view of the data showing the channels - Clone the 3D
+window and add a slice operator to the reference plot. Set the slice
+to be in the Y=0 or the Phi=0 plane and apply. This plane is
+considered to be the reference plane for the LineSampler operator and
+regardless of the Y or Phi of the array it will be projected into this
+plane.
+
+For the plot with the LineSampler operator in the View tab set the
+View dimension to "Two."  Apply and draw the plots, :numref:`Figure
 %s<LineSampler_2DView>`).
 
-Next clone the window and delete the plot with the slice operator. For
-the plot with the LineSampler operator in the View tab set the View
-dimension to "One." Apply and draw the plot :numref:`Figure
+Create a 1D view of the channel values - Next clone the 2D window and
+delete the plot with the slice operator.
+
+For the plot with the LineSampler operator in the View tab set the
+View dimension to "One."  Apply and draw the plot :numref:`Figure
 %s<LineSampler_1DView>`).
 
-Next set the Apply to "all windows" and check "Apply operators to all
-plots." At this point if one changes any attribute in the LineSampler
-operator all of the plots will be updated. For instance change the
-number of channels and apply. All of the plots will be updated.
+All this point all three plots with Linesampler operator are in
+sync. To keep them in sync in the main plot window set the Apply to
+"all windows" and check "Apply operators to all plots." At this point
+if one changes any attribute in the LineSampler operator all of the
+plots will be updated. For instance change the number of channels and
+apply. All of the plots will be updated.
 
 .. _LineSampler_3DView:
 
