@@ -45,6 +45,7 @@ using namespace NASTRANDBOptions;
 
 #include <errno.h>
 #include <limits.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -189,6 +190,9 @@ avtNASTRANFileFormat::ActivateTimestep()
 //
 //    Mark C. Miller, Sun Jul  4 16:19:34 PDT 2021
 //    Simplified logic for NASTRAN exponential format
+//
+//    Mark C. Miller, Wed Jul 14 16:27:03 PDT 2021
+//    Output `t` variable in any error messages instead of `s` input arg
 // ****************************************************************************
 static double GetVal(const char *s)
 {
@@ -210,9 +214,9 @@ static double GetVal(const char *s)
     // seen characters that could represent part of a number. In such a case,
     // it MUST be the sign of an exponent.
     std::string t(s);
-    // Start scanning from 1 to avoid possible leading +/- char
-    for (i = 1; i < t.size() && t[i]!='-' && t[i]!='+'; i++);
-    if ((t[i]=='-' || t[i]=='+') && t[i-1]!='e' && t[i-1]!='E')
+    // Loop backwards through string to find rightmost sign char
+    for (i = t.size()-1; i>0 && t[i]!='-' && t[i]!='+'; i--);
+    if (i>0 && (t[i]=='-' || t[i]=='+') && strchr("0123456789",t[i-1]))
         t.insert(i, "E");
 
     errno = 0;
@@ -226,7 +230,7 @@ static double GetVal(const char *s)
         {
             char msg[512];
             snprintf(msg, sizeof(msg), "%s problem converting numerical value from \"%32s\"\n",
-                errno?strerror(errno):"", s);
+                errno?strerror(errno):"", t.c_str());
             if (!avtCallback::IssueWarning(msg))
             {
                 cerr << msg << endl;
