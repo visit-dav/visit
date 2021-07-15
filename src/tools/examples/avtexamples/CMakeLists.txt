@@ -13,6 +13,9 @@
 #      Add vtkInteractionStyle to qtvtkExample and qvtkopenglExample link.
 #      Add vtkRenderingOpenGL2 to qvtkopenglExample link.
 #  
+#   Eric Brugger, Thu Jul 15 13:34:12 PDT 2021
+#   Added viswinExample.C
+#
 #****************************************************************************
 
 INCLUDE_DIRECTORIES(
@@ -42,6 +45,8 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/avt/Plotter
+${VISIT_SOURCE_DIR}/avt/Plotter/vtk
+${VISIT_SOURCE_DIR}/avt/QtVisWindow
 ${VISIT_SOURCE_DIR}/avt/Queries/Abstract
 ${VISIT_SOURCE_DIR}/avt/Queries/Misc
 ${VISIT_SOURCE_DIR}/avt/Queries/Pick
@@ -52,6 +57,8 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/main
+${VISIT_SOURCE_DIR}/visit_vtk/full
+${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/vtkqt
 ${VTK_INCLUDE_DIRS}
 )
@@ -252,4 +259,31 @@ vtkFiltersSources
 vtkInteractionStyle
 ${OPENGL_LIBRARIES}
 ${ZLIB_LIBRARY}
+)
+
+SET(VISWINEXAMPLE_SOURCES
+viswinExample.C
+)
+
+ADD_EXECUTABLE(viswinExample ${VISWINEXAMPLE_SOURCES})
+VISIT_INSTALL_TARGETS(viswinExample)
+VISIT_EXAMPLES_ADD_FOLDER(viswinExample viswinExample)
+
+#viewersubjectproxy
+TARGET_LINK_LIBRARIES(viswinExample
+visitcommon
+avtdbatts
+avtview
+avtmath
+avtpipeline_ser
+avtplotter_ser
+avtfilters_ser
+avtviswindow_ser
+avtqtviswindow
+winutil
+${QT_QTGUI_LIBRARY}
+${QT_QTOPENGL_LIBRARY}
+${QT_QTNETWORK_LIBRARY}
+${QT_QTCORE_LIBRARY}
+vtkGUISupportQt
 )
