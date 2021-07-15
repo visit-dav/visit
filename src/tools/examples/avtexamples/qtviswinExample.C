@@ -311,7 +311,7 @@ main(int argc, char **argv)
     //
     // Initialize the timing manager.
     //
-    TimingsManager::Initialize("viswinExample");
+    TimingsManager::Initialize("qtviswinExample");
 
     //
     // Create the QApplication. This sets the qApp pointer.

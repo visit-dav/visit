@@ -14,7 +14,7 @@
 #      Add vtkRenderingOpenGL2 to qvtkopenglExample link.
 #  
 #   Eric Brugger, Thu Jul 15 13:34:12 PDT 2021
-#   Added viswinExample.C
+#   Added qtviswinExample.C
 #
 #****************************************************************************
 
@@ -261,16 +261,15 @@ ${OPENGL_LIBRARIES}
 ${ZLIB_LIBRARY}
 )
 
-SET(VISWINEXAMPLE_SOURCES
-viswinExample.C
+SET(QTVISWINEXAMPLE_SOURCES
+qtviswinExample.C
 )
 
-ADD_EXECUTABLE(viswinExample ${VISWINEXAMPLE_SOURCES})
-VISIT_INSTALL_TARGETS(viswinExample)
-VISIT_EXAMPLES_ADD_FOLDER(viswinExample viswinExample)
+ADD_EXECUTABLE(qtviswinExample ${QTVISWINEXAMPLE_SOURCES})
+VISIT_INSTALL_TARGETS(qtviswinExample)
+VISIT_EXAMPLES_ADD_FOLDER(qtviswinExample qtviswinExample)
 
-#viewersubjectproxy
-TARGET_LINK_LIBRARIES(viswinExample
+TARGET_LINK_LIBRARIES(qtviswinExample
 visitcommon
 avtdbatts
 avtview
