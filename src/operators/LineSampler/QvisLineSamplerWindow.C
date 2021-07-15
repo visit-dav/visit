@@ -1145,31 +1145,31 @@ QvisLineSamplerWindow::UpdateWindow(bool doAll)
             tmpBool = atts->GetMeshGeometry() ==
               LineSamplerAttributes::Cartesian;
             cartesianXLayoutLabel->setVisible(tmpBool &&
-                                              (int)atts->GetArrayAxis() ==
+                                              atts->GetArrayAxis() ==
                                               LineSamplerAttributes::R);
             cartesianZLayoutLabel->setVisible(tmpBool &&
-                                              (int)atts->GetArrayAxis() ==
+                                              atts->GetArrayAxis() ==
                                               LineSamplerAttributes::Z);
             cartesianConfLayoutLabel->setVisible(tmpBool);
 
             tmpBool = atts->GetMeshGeometry() ==
               LineSamplerAttributes::Cylindrical;
             cylindricalRLayoutLabel->setVisible(tmpBool &&
-                                                (int)atts->GetArrayAxis() ==
+                                                atts->GetArrayAxis() ==
                                                 LineSamplerAttributes::R);
             cylindricalZLayoutLabel->setVisible(tmpBool &&
-                                                (int)atts->GetArrayAxis() ==
+                                                atts->GetArrayAxis() ==
                                                 LineSamplerAttributes::Z);
             cylindricalConfLayoutLabel->setVisible(tmpBool);
 
             tmpBool = atts->GetMeshGeometry() ==
               LineSamplerAttributes::Toroidal;
             toroidalRLayoutLabel->setVisible(tmpBool &&
-                                             (int)atts->GetArrayAxis() ==
+                                             atts->GetArrayAxis() ==
                                              LineSamplerAttributes::R);
             toroidalZLayoutLabel->setVisible(tmpBool &&
-                                             (int)atts->GetArrayAxis() ==
-                                             LineSamplerAttributes::R);
+                                             atts->GetArrayAxis() ==
+                                             LineSamplerAttributes::Z);
             toroidalConfLayoutLabel->setVisible(tmpBool);
             break;
           case LineSamplerAttributes::ID_poloialAngle:
@@ -2724,29 +2724,29 @@ QvisLineSamplerWindow::UpdateMeshGeometry()
 
   tmpBool = atts->GetMeshGeometry() == LineSamplerAttributes::Cartesian;
   cartesianXLayoutLabel->setVisible(tmpBool &&
-                                    (int)atts->GetArrayAxis() ==
+                                    atts->GetArrayAxis() ==
                                     LineSamplerAttributes::R);
   cartesianZLayoutLabel->setVisible(tmpBool &&
-                                    (int)atts->GetArrayAxis() ==
+                                    atts->GetArrayAxis() ==
                                     LineSamplerAttributes::Z);
   cartesianConfLayoutLabel->setVisible(tmpBool);
 
   tmpBool = atts->GetMeshGeometry() == LineSamplerAttributes::Cylindrical;
   cylindricalRLayoutLabel->setVisible(tmpBool &&
-                                      (int)atts->GetArrayAxis() ==
+                                      atts->GetArrayAxis() ==
                                       LineSamplerAttributes::R);
   cylindricalZLayoutLabel->setVisible(tmpBool &&
-                                      (int)atts->GetArrayAxis() ==
+                                      atts->GetArrayAxis() ==
                                       LineSamplerAttributes::Z);
   cylindricalConfLayoutLabel->setVisible(tmpBool);
 
   tmpBool = atts->GetMeshGeometry() == LineSamplerAttributes::Toroidal;
   toroidalRLayoutLabel->setVisible(tmpBool &&
-                                   (int)atts->GetArrayAxis() ==
+                                   atts->GetArrayAxis() ==
                                    LineSamplerAttributes::R);
   toroidalZLayoutLabel->setVisible(tmpBool &&
-                                   (int)atts->GetArrayAxis() ==
-                                   LineSamplerAttributes::R);
+                                   atts->GetArrayAxis() ==
+                                   LineSamplerAttributes::Z);
   toroidalConfLayoutLabel->setVisible(tmpBool);
 
 
