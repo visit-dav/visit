@@ -19,11 +19,8 @@ def CheckComparisonOperator():
     # In the past, a bug caused a crash whenever we compared to a non-annotation
     # type object.
     #
-    result = ""
-    result += str(annot == "") + "\n"
-    result += str(annot == annot)
-    
-    TestText("ComparisonOperator_00", result)
+    TestValueEQ("ComparisonOperator_00", annot == "", False)
+    TestValueEQ("ComparisonOperator_01", annot == annot, True)
 
 def RunMain():
     CheckComparisonOperator()
