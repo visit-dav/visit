@@ -17,7 +17,7 @@ extern bool DeleteAnnotationObjectHelper(AnnotationObject *);
 // ****************************************************************************
 // Module: PyTimeSliderObject
 //
-// Purpose: 
+// Purpose:
 //   This class is a Python wrapper arround AnnotationObject that makes it
 //   look like a Time slider object.
 //
@@ -973,9 +973,9 @@ VISIT_PY_TYPE_OBJ( TimeSliderObjectType,              \
 static PyObject *
 TimeSliderObject_richcompare(PyObject *self, PyObject *other, int op)
 {
-    // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &TimeSliderObjectType)
+    // only compare against the same type
+    if ( Py_TYPE(self) != Py_TYPE(other)
+         || Py_TYPE(self) != &TimeSliderObjectType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
