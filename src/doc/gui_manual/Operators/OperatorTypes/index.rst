@@ -29,6 +29,7 @@ operators that you rarely use.
     Isosurface_operator
     Isovolume_operator
     Lineout_operator
+    LineSampler_operator
     Merge_operator
     OnionPeel_operator
     Project_operator

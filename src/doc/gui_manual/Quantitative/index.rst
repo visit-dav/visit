@@ -17,4 +17,5 @@ to compute highly sophisticated quantitative, as opposed to visual, results.
     Query
     Pick
     Lineout
+    LineSampler
     Data Level Comparisons Wizard <DataLevelComparisonsWizard>
