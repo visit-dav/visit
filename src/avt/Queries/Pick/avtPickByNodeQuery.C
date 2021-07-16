@@ -241,21 +241,15 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     // expressions are unavailable for query. In those cases, we can
     // try to directly query the current dataset.
     //
-    bool needVarInfo = false;
-    int numVars      = pickAtts.GetNumVarInfos();
+    int numVars = pickAtts.GetNumVarInfos();
 
     for (int varNum = 0; varNum < numVars; ++varNum)
     {
         if (pickAtts.GetVarInfo(varNum).HasInfo() == 0)
         {
-            needVarInfo = true;
+            RetrieveVarInfo(ds, nodeid);
             break;
         }
-    }
-
-    if (needVarInfo)
-    {
-        RetrieveVarInfo(ds, nodeid);
     }
 
     if (pickAtts.GetElementIsGlobal() && DBsuppliedNodeId && !pickByLabel)
