@@ -1,7 +1,5 @@
 # An example to get the remaining rate limit using the Github GraphQL API.
 
-# curl -i -H 'Content-Type: application/json' -H "Authorization: bearer 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" -H "GraphQL-Features: discussions_api" -X POST -d '{"query": "query {repository(owner: \"visit-dav\", name: \"temporary-play-with-discussions\") { id } }"}' https://api.github.com/graphql
-
 import requests
 
 #
