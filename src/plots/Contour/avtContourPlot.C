@@ -36,9 +36,9 @@
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Mar  2 11:34:46 PST 2001
-//    Removed data members varMin & varMax, and added legend. 
+//    Removed data members varMin & varMax, and added legend.
 //
-//    Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001 
+//    Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001
 //    Added avtLUT.
 //
 //    Hank Childs, Fri Feb 15 15:42:08 PST 2008
@@ -56,7 +56,7 @@ avtContourPlot::avtContourPlot()
     levelsLegend->SetTitle("Contour");
     avtLUT        = new avtLookupTable;
     numLevels     = 0;
-    contourFilter = NULL; 
+    contourFilter = NULL;
     edgeFilter    = NULL;
     lineFilter    = NULL;
 
@@ -155,50 +155,50 @@ avtContourPlot::Create()
 //      atts    The attributes for this isocontour plot.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   February 15, 2001 
+//  Creation:   February 15, 2001
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Mar  2 11:34:46 PST 2001
-//    Revised logic, added call to SetIsoValues if var extents are valid. 
+//    Revised logic, added call to SetIsoValues if var extents are valid.
 //
 //  Modifications:
 //    Jeremy Meredith, Fri Mar  2 13:10:02 PST 2001
 //    Made this method take a generic AttributeGroup since it is now virtual.
 //    Also made some variables const.
 //
-//    Kathleen Bonnell, Tue Mar 13 11:35:45 PST 2001 
-//    Added call to SetLegend. 
+//    Kathleen Bonnell, Tue Mar 13 11:35:45 PST 2001
+//    Added call to SetLegend.
 //
-//    Kathleen Bonnell, Wed Mar 28 17:18:05 PST 2001 
+//    Kathleen Bonnell, Wed Mar 28 17:18:05 PST 2001
 //    Removed references to ContourAttributes::VarMin/Max as they are no
-//    longer members. Added min/max arguments to SetIsoValues. 
+//    longer members. Added min/max arguments to SetIsoValues.
 //
-//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001 
+//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001
 //    Made atts a member so it can be accesses from other methods.
 //    Removed call to SetIsoValues as it is called from ApplyOperators and
-//    CustomizeBehavior. 
-//    
+//    CustomizeBehavior.
+//
 //    Jeremy Meredith, Tue Jun  5 20:33:13 PDT 2001
 //    Added code to set a flag if the plot needs recalculation.
 //
 //    Hank Childs, Sun Jun 17 18:47:57 PDT 2001
 //    Pushed code into avtContourFilter.
 //
-//    Kathleen Bonnell, Mon Jun 25 14:33:59 PDT 2001 
+//    Kathleen Bonnell, Mon Jun 25 14:33:59 PDT 2001
 //    Set numLevels based on atts. Set colors in avtLUT and use it
 //    to set mapper's. lut.
 //
 //    Kathleen Bonnell, Mon Sep 24 15:46:23 PDT 2001
 //    avtLevelsMapper no longer uses a vtkLookupTable.  Set its colors
-//    with ColorAttributeList instead. 
+//    with ColorAttributeList instead.
 //
 //    Brad Whitlock, Fri Nov 22 14:33:50 PST 2002
 //    I moved the color code to SetColors.
 //
-//    Kathleen Bonnell, Mon Sep 29 13:13:32 PDT 2003 
+//    Kathleen Bonnell, Mon Sep 29 13:13:32 PDT 2003
 //    Set AntialiasedRenderOrder dependent upon Wireframe mode.
 //
-//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004
 //    Ensure that specular properties aren't used in wireframe mode.
 //
 // ****************************************************************************
@@ -218,7 +218,7 @@ avtContourPlot::SetAtts(const AttributeGroup *a)
     {
         numLevels = (int)atts.GetContourValue().size();
     }
-    else 
+    else
     {
         numLevels = (int)atts.GetContourPercent().size();
     }
@@ -231,7 +231,7 @@ avtContourPlot::SetAtts(const AttributeGroup *a)
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
         levelsMapper->SetSpecularIsInappropriate(true);
     }
-    else 
+    else
     {
         behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
         levelsMapper->SetSpecularIsInappropriate(false);
@@ -248,7 +248,7 @@ avtContourPlot::SetAtts(const AttributeGroup *a)
 //      extents The extents used by the plot.
 //
 //  Programmer: Eric Brugger
-//  Creation:   March 25, 2004 
+//  Creation:   March 25, 2004
 //
 // ****************************************************************************
 
@@ -283,7 +283,7 @@ avtContourPlot::GetDataExtents(std::vector<double> &extents)
 // ****************************************************************************
 // Method: avtContourPlot::SetColorTable
 //
-// Purpose: 
+// Purpose:
 //   Sets the plot's color table if the color table is the same as that of
 //   the plot or we are using the default color table for the plot.
 //
@@ -296,7 +296,7 @@ avtContourPlot::GetDataExtents(std::vector<double> &extents)
 // Creation:   Tue Dec 3 09:33:47 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -347,7 +347,7 @@ avtContourPlot::NeedZBufferToCompositeEvenIn2D(void)
 // ****************************************************************************
 // Method: avtContourPlot::SetColors
 //
-// Purpose: 
+// Purpose:
 //   Sets the plot's colors.
 //
 // Programmer: Kathleen Bonnell
@@ -375,7 +375,7 @@ avtContourPlot::SetColors()
     if (atts.GetColorType() == ContourAttributes::ColorBySingleColor)
     {
         const ColorAttribute ca = atts.GetSingleColor();
-        ColorAttributeList cal; 
+        ColorAttributeList cal;
         cal.AddColors(atts.GetSingleColor());
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
         levelsMapper->SetColors(cal, needsRecalculation);
@@ -420,7 +420,7 @@ avtContourPlot::SetColors()
         }
 
         bool invert = atts.GetInvertColorTable();
-        // 
+        //
         // Add a color for each subset name.
         //
         if(ct->IsDiscrete(ctName.c_str()))
@@ -474,8 +474,8 @@ avtContourPlot::SetColors()
 //  Arguments:
 //      legendOn     true if the legend should be turned on, false otherwise.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 13, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 13, 2001
 //
 // ****************************************************************************
 
@@ -542,7 +542,7 @@ avtContourPlot::GetMapper(void)
 //
 //  Purpose:
 //      Performs the implied operators for an isocontour plot, namely,
-//      an avtContourFilter. 
+//      an avtContourFilter.
 //
 //  Arguments:
 //      input   The input data object.
@@ -564,12 +564,12 @@ avtContourPlot::GetMapper(void)
 //    Hank Childs, Sun Mar 25 12:28:25 PST 2001
 //    Fixed spot where data attributes were being used incorrectly.
 //
-//    Kathleen Bonnell, Wed Mar 28 17:18:05 PST 2001 
-//    Added arguments in call to SetIsoValues.  
+//    Kathleen Bonnell, Wed Mar 28 17:18:05 PST 2001
+//    Added arguments in call to SetIsoValues.
 //
-//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001 
+//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001
 //    Removed check for empty isoValues before call to SetIsoValues,
-//    as the logic is part of the SetIsoValues method itself. 
+//    as the logic is part of the SetIsoValues method itself.
 //
 //    Hank Childs, Fri Jun 15 09:14:24 PDT 2001
 //    Changed signature for more general data objects.
@@ -577,12 +577,12 @@ avtContourPlot::GetMapper(void)
 //    Jeremy Meredith, Wed Mar 13 11:16:25 PST 2002
 //    Added a wireframe mode.
 //
-//    Kathleen Bonnell, Mon Jun 24 15:09:37 PDT 2002  
-//    Fix potential memory leak with contourFilter. 
+//    Kathleen Bonnell, Mon Jun 24 15:09:37 PDT 2002
+//    Fix potential memory leak with contourFilter.
 //
-//    Kathleen Bonnell, Tue Oct 22 08:33:26 PDT 2002 
+//    Kathleen Bonnell, Tue Oct 22 08:33:26 PDT 2002
 //    Moved feature edges filter to ApplyRenderingTransformation, so that
-//    output of this method would be a queryable object. 
+//    output of this method would be a queryable object.
 //
 //    Eric Brugger, Thu Mar 25 16:42:45 PST 2004
 //    I added code to use the data extents from the base class if set.
@@ -633,7 +633,7 @@ avtContourPlot::ApplyOperators(avtDataObject_p input)
 //
 //  Purpose:
 //      Performs the rendering transformation for an isocontour plot, namely,
-//      an avtFeatureEdgesFilter. 
+//      an avtFeatureEdgesFilter.
 //
 //  Arguments:
 //      input   The input data object.
@@ -641,7 +641,7 @@ avtContourPlot::ApplyOperators(avtDataObject_p input)
 //  Returns:    The data object after the feature edges is applied.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   October 22, 2002 
+//  Creation:   October 22, 2002
 //
 //  Modifications:
 //    Hank Childs, Fri Feb 15 15:43:37 PST 2008
@@ -669,7 +669,7 @@ avtContourPlot::ApplyRenderingTransformation(avtDataObject_p input)
 // ****************************************************************************
 // Method: avtContourPlot::SetActualExtents
 //
-// Purpose: 
+// Purpose:
 //   Apply the actual extents filter.
 //
 // Arguments:
@@ -686,7 +686,7 @@ avtContourPlot::ApplyRenderingTransformation(avtDataObject_p input)
 // Creation:   Wed Sep  9 16:47:10 PDT 2009
 //
 // Modifications:
-//   
+//
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Renamed current->actual
 //
@@ -718,7 +718,7 @@ avtContourPlot::SetActualExtents(avtDataObject_p input)
 //  Method: avtContourPlot::CustomizeBehavior
 //
 //  Purpose:
-//      Customizes the behavior of the output.  
+//      Customizes the behavior of the output.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   February  15, 2001
@@ -731,25 +731,25 @@ avtContourPlot::SetActualExtents(avtDataObject_p input)
 //    Hank Childs, Mon Mar 12 16:59:34 PST 2001
 //    Added shift factor.
 //
-//    Kathleen Bonnell, Wed Mar 28 17:18:05 PST 2001 
+//    Kathleen Bonnell, Wed Mar 28 17:18:05 PST 2001
 //    Added arguments in call to SetIsoValues. Changed Call to levelsMapper
 //    Get DataRange method to reflect new name.
 //
-//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001 
+//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001
 //    Change call to retrieve data range.  The correct behavior is to retrieve
 //    the original data extents, as reflected in the new method call.  Added
 //    call to set the legend's VarRange so that limit text will reflect real
 //    var extents, even when artificial limits are set.
-//    
-//    Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001 
+//
+//    Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001
 //    Use avtLUT to set legend's lut.  Use better test for whether or
 //    not to display the legend.  Use information in atts to set
 //    more reasonable legend labels.  Still needs work!
 //
-//    Kathleen Bonnell, Sat Sep 22 12:13:57 PDT 2001 
-//    Removed logic for setting legend's labels.  Now contained in 
-//    CustomizeMapper. 
-//    
+//    Kathleen Bonnell, Sat Sep 22 12:13:57 PDT 2001
+//    Removed logic for setting legend's labels.  Now contained in
+//    CustomizeMapper.
+//
 //    Eric Brugger, Wed Jul 16 10:27:29 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
@@ -758,15 +758,15 @@ avtContourPlot::SetActualExtents(avtDataObject_p input)
 void
 avtContourPlot::CustomizeBehavior(void)
 {
-    // 
-    //  Need to get the data range from mapper, and 
+    //
+    //  Need to get the data range from mapper, and
     //  recreate the isoValues so they can be sent to the legend.
     //
     double min, max;
     levelsMapper->GetOriginalDataRange(min, max);
 
     //
-    // Legend limits text should be the original data extents. 
+    // Legend limits text should be the original data extents.
     //
     levelsLegend->SetVarRange(min, max);
 
@@ -778,7 +778,7 @@ avtContourPlot::CustomizeBehavior(void)
         levelsLegend->SetMessage("Constant, no levels");
     }
     else
-    { 
+    {
         levelsLegend->SetColorBarVisibility(1);
         levelsLegend->SetMessage(NULL);
     }
@@ -792,22 +792,29 @@ avtContourPlot::CustomizeBehavior(void)
 //  Method: avtContourPlot::CustomizeMapper
 //
 //  Purpose:
-//    Use the info to set the isolevels in the legend.  
+//    Use the info to set the isolevels in the legend.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   September 22, 2001 
+//  Creation:   September 22, 2001
 //
 //  Modifications:
 //    Eric Brugger, Wed Jul 16 10:27:29 PDT 2003
 //    Modified to work with the new way legends are managed.
+//
+//    Kathleen Biagas, Wed July 14, 2021
+//    Prefer use of isoValues from contourFilter rather than labels.
 //
 // ****************************************************************************
 
 void
 avtContourPlot::CustomizeMapper(avtDataObjectInformation &info)
 {
-    std::vector<std::string> isoValues;
-    info.GetAttributes().GetLabels(isoValues);
+    std::vector<double> isoValues;
+    if(contourFilter)
+    {
+        contourFilter->GetIsoValues(isoValues);
+    }
+
 
     if (!isoValues.empty())
     {
@@ -816,9 +823,20 @@ avtContourPlot::CustomizeMapper(avtDataObjectInformation &info)
         levelsLegend->SetMessage(NULL);
     }
     else
-    { 
-        levelsLegend->SetColorBarVisibility(0);
-        levelsLegend->SetMessage("Unable to compute levels");
+    {
+        std::vector<std::string> isoLabels;
+        info.GetAttributes().GetLabels(isoLabels);
+        if (!isoLabels.empty())
+        {
+            levelsLegend->SetLevels(isoLabels);
+            levelsLegend->SetColorBarVisibility(1);
+            levelsLegend->SetMessage(NULL);
+        }
+        else
+        {
+            levelsLegend->SetColorBarVisibility(0);
+            levelsLegend->SetMessage("Unable to compute levels");
+        }
     }
 }
 

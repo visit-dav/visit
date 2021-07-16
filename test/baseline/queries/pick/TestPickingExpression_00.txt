@@ -1,0 +1,20 @@
+
+A:  curv3d.silo
+curvmesh3d 
+Point: <-1.02575, 2.01314, 0.5>
+Zone:  100
+Incident Nodes:  103  104  135  134  1374  1375  1406  1405  
+mesh_quality/jacobian:  <zonal> = 0.0174432
+
+
+B:  curv3d.silo
+curvmesh3d 
+Point: <-1.6535, 1.48882, 0>
+Node:  100
+Incident Zones:  96  66  97  67  
+mesh_quality/jacobian:  <zonal> 
+    (96) = 0.0174432
+    (66) = 0.0168552
+    (97) = 0.0174432
+    (67) = 0.0168552
+
