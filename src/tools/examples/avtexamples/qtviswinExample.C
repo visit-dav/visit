@@ -49,54 +49,7 @@ VTK_MODULE_INIT(vtkRenderingOpenGL2)
 //
 // A factory that will allow VisIt to override any vtkObject
 // with a sub-class of that object.
-//
-class vtkVisItObjectFactory : public vtkObjectFactory
-{
-  public:
-    vtkVisItObjectFactory();
-    static vtkVisItObjectFactory* New() { return new vtkVisItObjectFactory; }
-    const char* GetVTKSourceVersion() override;
-    const char* GetDescription() override { return "vtkVisItObjectFactory"; }
-
-  protected:
-    vtkVisItObjectFactory(const vtkVisItObjectFactory&);
-    void operator=(const vtkVisItObjectFactory&);
-};
-
-//
-// Necessary for each object that will override a vtkObject.
-//
-VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
-VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
-VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
-
-
-const char*
-vtkVisItObjectFactory::GetVTKSourceVersion()
-{
-    return VTK_SOURCE_VERSION;
-}
-
-vtkVisItObjectFactory::vtkVisItObjectFactory()
-{
-  this->RegisterOverride("vtkCellDataToPointData", "vtkVisItCellDataToPointData",
-                         "vtkVisItCellDataToPointData override vtkCellDataToPointData",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItCellDataToPointData);
-  this->RegisterOverride("vtkRectilinearGrid", "vtkVisItRectilinearGrid",
-                         "vtkVisItRectilinearGrid override vtkRectilinearGrid",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItRectilinearGrid);
-  this->RegisterOverride("vtkStructuredGrid", "vtkVisItStructuredGrid",
-                         "vtkVisItStructuredGrid override vtkStructuredGrid",
-                         1,
-                         vtkObjectFactoryCreatevtkVisItStructuredGrid);
-
-}
-
-//
-// A factory that will allow VisIt to override any vtkObject
-// with a sub-class of that object.
+// This combines the factories from InitVTK and InitVTKRendering.
 //
 class vtkVisItGraphicsFactory : public vtkObjectFactory
 {
@@ -121,9 +74,10 @@ vtkStandardNewMacro(vtkVisItGraphicsFactory)
 // Necessary for each object that will override a vtkObject.
 //
 VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetMapper);
-//VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
-//VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
+VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
+VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
 VTK_CREATE_CREATE_FUNCTION(vtkOpenGLPointMapper);
+VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
 
 const char*
 vtkVisItGraphicsFactory::GetVTKSourceVersion()
@@ -145,11 +99,14 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
                          "vtkVisItStructuredGrid override vtkStructuredGrid",
                          1,
                          vtkObjectFactoryCreatevtkVisItStructuredGrid);
-  this->RegisterOverride("vtkPointMapper",
-    "vtkOpenGLPointMapper",
-    "vtkOpenGLPointMapper override vtkPointMapper",
-    1,
-    vtkObjectFactoryCreatevtkOpenGLPointMapper);
+  this->RegisterOverride("vtkPointMapper", "vtkOpenGLPointMapper",
+                         "vtkOpenGLPointMapper override vtkPointMapper",
+                         1,
+                         vtkObjectFactoryCreatevtkOpenGLPointMapper);
+  this->RegisterOverride("vtkCellDataToPointData", "vtkVisItCellDataToPointData",
+                         "vtkVisItCellDataToPointData override vtkCellDataToPointData",
+                         1,
+                         vtkObjectFactoryCreatevtkVisItCellDataToPointData);
 }
 
 void
@@ -288,13 +245,7 @@ main(int argc, char **argv)
     vtkDebugStream::Initialize();
 
     // Register the factory that allows VisIt objects to override vtk objects.
-    // From InitVTK.
-    vtkVisItObjectFactory *objectFactory = vtkVisItObjectFactory::New();
-    vtkObjectFactory::RegisterFactory(objectFactory);
-    objectFactory->Delete();
-
-    // Register the factory that allows VisIt objects to override vtk objects.
-    // From InitVTKRendering.
+    // This combines the factories from InitVTK and InitVTKRendering.
     vtkVisItGraphicsFactory *graphicsFactory = vtkVisItGraphicsFactory::New();
     vtkObjectFactory::RegisterFactory(graphicsFactory);
     graphicsFactory->Delete();
