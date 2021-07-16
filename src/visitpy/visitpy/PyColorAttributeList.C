@@ -71,19 +71,13 @@ ColorAttributeList_Notify(PyObject *self, PyObject *args)
 ColorAttributeList_GetColors(PyObject *self, PyObject *args)
 {
     ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetColors().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetColors().size() == 0)
-            snprintf(msg, 400, "In ColorAttributeList::GetColors : The index %d is invalid because colors is empty.", index);
-        else
-            snprintf(msg, 400, "In ColorAttributeList::GetColors : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetColors().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+    int index = -1;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetColors(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetColors().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -112,12 +106,7 @@ ColorAttributeList_AddColors(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
     if(!PyColorAttribute_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The ColorAttributeList::AddColors method only accepts ColorAttribute objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type ColorAttribute");
     ColorAttribute *newData = PyColorAttribute_FromPyObject(element);
     obj->data->AddColors(*newData);
     obj->data->SelectColors();
@@ -155,17 +144,12 @@ ColorAttributeList_Remove_One_Colors(PyObject *self, int index)
 PyObject *
 ColorAttributeList_RemoveColors(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     ColorAttributeListObject *obj = (ColorAttributeListObject *)self;
     if(index < 0 || index >= obj->data->GetNumColors())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In ColorAttributeList::RemoveColors : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return ColorAttributeList_Remove_One_Colors(self, index);
 }
@@ -223,20 +207,21 @@ PyColorAttributeList_getattr(PyObject *self, char *name)
 int
 PyColorAttributeList_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

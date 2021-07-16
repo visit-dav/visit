@@ -174,7 +174,6 @@ Py_FindMethod(PyMethodDef *table, PyObject *obj, char *name)
     {
         char msg[1024];
         snprintf(msg, 1024, "Could not find method with name `%s`", name);
-        printf("%s\n",msg);
         // set error if we didn't find the method we expected to find
         PyErr_SetString(PyExc_ValueError, msg);
     }

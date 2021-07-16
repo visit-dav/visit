@@ -83,9 +83,10 @@ Postfix:
     }
     if (bondLineStyleFound)
     {
-        fprintf(stdout, "bondLineStyle is no longer a valid Molecule "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "bondLineStyle is no longer a valid Molecule "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
 
@@ -94,10 +95,11 @@ Code: PyMoleculeAttributes_setattr
 Prefix:
 Postfix:
     // Try and handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "bondLineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'bondLineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }

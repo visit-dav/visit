@@ -84,12 +84,48 @@ SPHResampleAttributes_SetMinX(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minX in the object.
-    obj->data->SetMinX(fval);
+    obj->data->SetMinX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -108,12 +144,48 @@ SPHResampleAttributes_SetMaxX(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxX in the object.
-    obj->data->SetMaxX(fval);
+    obj->data->SetMaxX(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -132,12 +204,48 @@ SPHResampleAttributes_SetXnum(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the xnum in the object.
-    obj->data->SetXnum((int)ival);
+    obj->data->SetXnum(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -156,12 +264,48 @@ SPHResampleAttributes_SetMinY(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minY in the object.
-    obj->data->SetMinY(fval);
+    obj->data->SetMinY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -180,12 +324,48 @@ SPHResampleAttributes_SetMaxY(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxY in the object.
-    obj->data->SetMaxY(fval);
+    obj->data->SetMaxY(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -204,12 +384,48 @@ SPHResampleAttributes_SetYnum(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the ynum in the object.
-    obj->data->SetYnum((int)ival);
+    obj->data->SetYnum(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -228,12 +444,48 @@ SPHResampleAttributes_SetMinZ(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minZ in the object.
-    obj->data->SetMinZ(fval);
+    obj->data->SetMinZ(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -252,12 +504,48 @@ SPHResampleAttributes_SetMaxZ(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    float cval = float(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ float");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ float");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxZ in the object.
-    obj->data->SetMaxZ(fval);
+    obj->data->SetMaxZ(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -276,12 +564,48 @@ SPHResampleAttributes_SetZnum(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the znum in the object.
-    obj->data->SetZnum((int)ival);
+    obj->data->SetZnum(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -300,12 +624,37 @@ SPHResampleAttributes_SetTensorSupportVariable(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tensorSupportVariable in the object.
-    obj->data->SetTensorSupportVariable(std::string(str));
+    obj->data->SetTensorSupportVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -324,12 +673,37 @@ SPHResampleAttributes_SetWeightVariable(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the weightVariable in the object.
-    obj->data->SetWeightVariable(std::string(str));
+    obj->data->SetWeightVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -348,12 +722,48 @@ SPHResampleAttributes_SetRK(PyObject *self, PyObject *args)
 {
     SPHResampleAttributesObject *obj = (SPHResampleAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the RK in the object.
-    obj->data->SetRK(ival != 0);
+    obj->data->SetRK(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -447,44 +857,45 @@ PySPHResampleAttributes_getattr(PyObject *self, char *name)
 int
 PySPHResampleAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "minX") == 0)
-        obj = SPHResampleAttributes_SetMinX(self, tuple);
+        obj = SPHResampleAttributes_SetMinX(self, args);
     else if(strcmp(name, "maxX") == 0)
-        obj = SPHResampleAttributes_SetMaxX(self, tuple);
+        obj = SPHResampleAttributes_SetMaxX(self, args);
     else if(strcmp(name, "xnum") == 0)
-        obj = SPHResampleAttributes_SetXnum(self, tuple);
+        obj = SPHResampleAttributes_SetXnum(self, args);
     else if(strcmp(name, "minY") == 0)
-        obj = SPHResampleAttributes_SetMinY(self, tuple);
+        obj = SPHResampleAttributes_SetMinY(self, args);
     else if(strcmp(name, "maxY") == 0)
-        obj = SPHResampleAttributes_SetMaxY(self, tuple);
+        obj = SPHResampleAttributes_SetMaxY(self, args);
     else if(strcmp(name, "ynum") == 0)
-        obj = SPHResampleAttributes_SetYnum(self, tuple);
+        obj = SPHResampleAttributes_SetYnum(self, args);
     else if(strcmp(name, "minZ") == 0)
-        obj = SPHResampleAttributes_SetMinZ(self, tuple);
+        obj = SPHResampleAttributes_SetMinZ(self, args);
     else if(strcmp(name, "maxZ") == 0)
-        obj = SPHResampleAttributes_SetMaxZ(self, tuple);
+        obj = SPHResampleAttributes_SetMaxZ(self, args);
     else if(strcmp(name, "znum") == 0)
-        obj = SPHResampleAttributes_SetZnum(self, tuple);
+        obj = SPHResampleAttributes_SetZnum(self, args);
     else if(strcmp(name, "tensorSupportVariable") == 0)
-        obj = SPHResampleAttributes_SetTensorSupportVariable(self, tuple);
+        obj = SPHResampleAttributes_SetTensorSupportVariable(self, args);
     else if(strcmp(name, "weightVariable") == 0)
-        obj = SPHResampleAttributes_SetWeightVariable(self, tuple);
+        obj = SPHResampleAttributes_SetWeightVariable(self, args);
     else if(strcmp(name, "RK") == 0)
-        obj = SPHResampleAttributes_SetRK(self, tuple);
+        obj = SPHResampleAttributes_SetRK(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

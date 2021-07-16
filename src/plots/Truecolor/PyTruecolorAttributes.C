@@ -65,12 +65,48 @@ TruecolorAttributes_SetOpacity(PyObject *self, PyObject *args)
 {
     TruecolorAttributesObject *obj = (TruecolorAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the opacity in the object.
-    obj->data->SetOpacity(dval);
+    obj->data->SetOpacity(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -89,12 +125,48 @@ TruecolorAttributes_SetLightingFlag(PyObject *self, PyObject *args)
 {
     TruecolorAttributesObject *obj = (TruecolorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lightingFlag in the object.
-    obj->data->SetLightingFlag(ival != 0);
+    obj->data->SetLightingFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -148,24 +220,25 @@ PyTruecolorAttributes_getattr(PyObject *self, char *name)
 int
 PyTruecolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "opacity") == 0)
-        obj = TruecolorAttributes_SetOpacity(self, tuple);
+        obj = TruecolorAttributes_SetOpacity(self, args);
     else if(strcmp(name, "lightingFlag") == 0)
-        obj = TruecolorAttributes_SetLightingFlag(self, tuple);
+        obj = TruecolorAttributes_SetLightingFlag(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

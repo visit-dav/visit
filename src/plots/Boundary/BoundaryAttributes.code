@@ -97,7 +97,7 @@ Postfix:
     // Try and handle legacy fields
 
 #define DEPRECATED_MESSAGE(type) \
-    fprintf(stdout, "%s is no longer a valid Boundary attribute.\n" \
+    PyErr_WarnFormat(NULL, 3, "%s is no longer a valid Boundary attribute.\n" \
                     "It's value is being ignored, " \
                     "please remove it from your script.\n", type);
 
@@ -229,45 +229,53 @@ Code: PyBoundaryAttributes_setattr
 Prefix:
 Postfix:
     // Try and handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "filledFlag") == 0)
         {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "boundaryType") == 0)
         {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "pointType") == 0)
         {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "pointSize") == 0)
         {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "pointSizePixels") == 0)
         {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "pointSizeVarEnabled") == 0)
         {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "pointSizeVar") == 0)
         {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }

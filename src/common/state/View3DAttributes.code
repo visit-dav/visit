@@ -598,7 +598,9 @@ View3DAttributes_RotateAxis(PyObject *self, PyObject *args)
     int ival;
     double dval;
     if(!PyArg_ParseTuple(args, "id", &ival, &dval))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer 0 (x-axis), 1 (y-axis) "
+                            "or 2 (z-axis) for first argument and float "
+                            "(degrees rotation) for second.");
 
     // Out of range ival could indicate user reversed axis and angle
     if (ival < 0 || ival > 2)
@@ -611,8 +613,8 @@ View3DAttributes_RotateAxis(PyObject *self, PyObject *args)
         }
         else
         {
-            PyErr_SetString(PyExc_IndexError, "Axis arg (the first) must be 0,1 or 2 for X,Y or Z");
-            return NULL;
+            return PyErr_Format(PyExc_IndexError, "Axis arg (the first) "
+                                "must be 0,1 or 2 for X,Y or Z");
         }
     }
 
@@ -633,10 +635,8 @@ View3DAttributes_Add(PyObject *v, PyObject *w)
     bool arg1isObject = PyView3DAttributes_Check(v);
     bool arg2isObject = PyView3DAttributes_Check(w);
     if(!arg1isObject || !arg2isObject)
-    {
-        cerr << "View3DAttributes_add: One or more arguments are not View3DAttributes!" << endl;
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "View3DAttributes_add: One or "
+                            "more arguments are not View3DAttributes!");
 
     PyObject *retval = NewView3DAttributes(0);
     View3DAttributes *c = PyView3DAttributes_FromPyObject(retval);
@@ -694,7 +694,8 @@ View3DAttributes_Mul(PyObject *v, PyObject *w)
 
     if(arg1isObject && arg2isObject)
     {
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "One argument must be a View3DAttributes "
+                            "object and the other must be a number");
     }
     else
     {
@@ -718,9 +719,8 @@ View3DAttributes_Mul(PyObject *v, PyObject *w)
         else if(PyLong_Check(num))
             val = PyLong_AsDouble(num);
         else
-        {
-            cerr << "MUL: Expected numeric argument is not a number!" << endl;
-        }
+            return PyErr_Format(PyExc_TypeError, "Expected numeric argument for * (MUL) "
+                   "operator with View3DAttributes is not a number!");
 
         c->GetViewNormal()[0] = a->GetViewNormal()[0] * val;
         c->GetViewNormal()[1] = a->GetViewNormal()[1] * val;

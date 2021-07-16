@@ -63,12 +63,48 @@ EdgeAttributes_SetDummy(PyObject *self, PyObject *args)
 {
     EdgeAttributesObject *obj = (EdgeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the dummy in the object.
-    obj->data->SetDummy(ival != 0);
+    obj->data->SetDummy(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -118,22 +154,23 @@ PyEdgeAttributes_getattr(PyObject *self, char *name)
 int
 PyEdgeAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "dummy") == 0)
-        obj = EdgeAttributes_SetDummy(self, tuple);
+        obj = EdgeAttributes_SetDummy(self, args);
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 
