@@ -319,7 +319,7 @@ function initialize_build_visit()
         # Used http://en.wikipedia.org/wiki/Darwin_(operating_system)
         # to map Darwin Kernel versions to OSX version numbers.  Other
         # options for dealing with MACOSX_DEPLOYMENT_TARGET didn't
-        # work See issue #1499 (https://visitbugs.ornl.gov/issues/1499)
+        # work See issue https://github.com/visit-dav/visit/issues/1506
 
         # use gcc for 10.9 & earlier
 

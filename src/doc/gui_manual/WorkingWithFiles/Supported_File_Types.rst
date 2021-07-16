@@ -14,7 +14,7 @@ then you can first translate your data into a format that VisIt_ can read
 VisIt_. For more information on developing a database reader plugin, refer to 
 the `Getting Data Into VisIt  
 <https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisIt2.0.0.pdf>`_
-manual or send an e-mail inquiry to visit-users@elist.ornl.gov.
+manual or contact us via `Getting help <https://visit-dav.github.io/visit-website/support/>`_.
 
 File extensions
 ~~~~~~~~~~~~~~~

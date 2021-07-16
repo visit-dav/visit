@@ -19,18 +19,19 @@ Some other possible causes of this problem are
   it corrected. This is not something we have the control to correct
   ourselves.
 * You followed a bad *internal* link from within our documentation. If
-  so, please cut and paste the URL and either send an `email`_ or file
+  so, please cut and paste the URL and either create a `discussion`_ or file
   an `issue`_
 
 If none of the above helps, here are some other potentially useful places
 to go from here...
 
 * `Documentation Home <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/>`_
+* `Discussions <https://github.com/visit-dav/visit/discussions>`_
+* `Getting help <https://visit-dav.github.io/visit-website/support/>`_
 * `Project Home Page <https://visit.llnl.gov>`_
-* `User Email Archive <https://elist.ornl.gov/mailman/private/visit-users/>`_
 * `Issue Tracker <https://github.com/visit-dav/visit/issues>`_
 * `GitHub Repo <https://github.com/visit-dav/visit>`_
 * `Project Testing Dashboard <https://portal.nersc.gov/project/visit/>`_
 
-.. _email: visit-help@elist.ornl.gov
+.. _discussion: https://github.com/visit-dav/visit/discussions
 .. _issue: https://github.com/visit-dav/visit/issues/new?assignees=&labels=docs&template=documentation-request.md&title=Bad%20Link

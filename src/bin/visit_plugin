@@ -163,12 +163,6 @@ cat >> $1 <<- EOF
         % cd $pluginName
         % make clean
 
-    If you have problems, please read about more details here...
-    http://visitusers.org/index.php?title=Building_plugins_using_CMake
-    and here...
-    http://visitusers.org/index.php?title=DB_plugins
-    If you still have problems, email mailto:visit-users@ornl.gov
-
 EOF
 }
 
@@ -330,7 +324,7 @@ versionBuiltWith=
 testRun=
 commentSource="user requested update `date`"
 dontRemoveTarball=0
-meEmail=visit-users@ornl.gov
+meEmail=miller86@llnl.gov
 for options
 do
    case $1 in
@@ -486,7 +480,7 @@ if test "$optError" = "1"; then
     echo "                          to send tarball too. Multiple -email options are allowed"
     echo "        -me               email address of person executing this script. Both the"
     echo "                          sender and reply-to field of the email header will be set"
-    echo "                          to this address. Default is 'visit-users@ornl.gov'"
+    echo "                          to this address. Default is 'miller86@llnl.gov'"
     echo "        -c  | -comment <string>"
     echo "                          Add a comment to the email/readme file indicating"
     echo "                          what is new about this plugin. If <string> is the name"

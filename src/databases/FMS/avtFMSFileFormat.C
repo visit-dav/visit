@@ -1448,7 +1448,7 @@ avtFMSFileFormat::GetRefinedVar(const std::string &var_name,
 // Modifications:
 //   Cyrus Harrison, Tue May 23 10:12:52 PDT 2017
 //   Seed rng with domain id for predictable coloring results
-//   (See: http://visitbugs.ornl.gov/issues/2747)
+//   (See: https://github.com/visit-dav/visit/issues/2747)
 //
 //   Alister Maguire, Thu Jan  2 15:23:13 MST 2020
 //   Casting int to Geom::Type where appropriate. This is required after the

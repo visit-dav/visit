@@ -3,8 +3,7 @@
  * \section intro_sec Introduction
  * \par Welcome to the VisIt Source Code Documentation.
  * \section Useful External Links
- *  - https://wci.llnl.gov/codes/visit/
- *  - http://www.visitusers.org
+ *  - https://visit.llnl.gov
  *
  * \defgroup group_avt       Analysis and Visualization ToolKit (AVT)
  * \defgroup group_common    Common

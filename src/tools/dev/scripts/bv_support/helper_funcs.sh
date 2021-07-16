@@ -185,10 +185,10 @@ function error
     warn "$@"
     if test "${LOG_FILE}" != "/dev/tty" ; then
         warn "Error in build process.  See ${LOG_FILE} for more information."\
-             "If the error is unclear, please include ${LOG_FILE} in a "\
-             "message to the visit-users@ornl.gov list.  You will probably "\
+             "If the error is unclear, please include ${LOG_FILE} and contact "\
+             "the VisIt project via https://visit-help.llnl.gov. You may "\
              "need to compress the ${LOG_FILE} using a program like gzip "\
-             "so it will fit within the size limits for email attachments."
+             "so it will fit within the size limits for attachments."
         info "Log file full path: " `pwd`/${LOG_FILE}
     fi
     exit 1

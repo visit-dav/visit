@@ -459,7 +459,7 @@ function bv_visit_build
         info "To install the above tar file in a directory called \"INSTALL_DIR_PATH\""
         info "enter: ./visit-install VERSION ARCH INSTALL_DIR_PATH"
         info
-        info "If you run into problems, contact visit-users@ornl.gov."
+        info "If you run into problems, contact us via https://visit-help.llnl.gov."
     else
         if [[ $ANY_ERRORS == "no" ]] ; then
             info "Finished!"

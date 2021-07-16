@@ -976,10 +976,9 @@ avtUintahFileFormat::GetGlobalDomainNumber(int level, int local_patch)
 //
 // NOTE: The cache variable for the mesh MUST be called "any_mesh",
 // which is a problem when there are multiple meshes or one of them is
-// actually named "any_mesh" (see
-// https://visitbugs.ornl.gov/issues/52). Thus, for each mesh we keep
-// around our own cache variable and if this function finds it then it
-// just uses it again instead of recomputing it.
+// actually named "any_mesh" (see https://github.com/visit-dav/visit/issues/138
+// Thus, for each mesh we keep around our own cache variable and if this
+// function finds it then it just uses it again instead of recomputing it.
 //
 // ****************************************************************************
 void

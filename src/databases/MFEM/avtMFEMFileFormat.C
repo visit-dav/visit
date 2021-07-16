@@ -601,7 +601,7 @@ avtMFEMFileFormat::GetVectorVar(int domain, const char *varname)
 // Modifications:
 //   Cyrus Harrison, Wed Jun  1 08:46:12 PDT 2016
 //   Change MFEM Mesh constructor call to resolve coordinate system issue
-//   (See: http://visitbugs.ornl.gov/issues/2578)
+//   (See: https://github.com/visit-dav/visit/issues/2578)
 //
 //   Cyrus Harrison, Mon Aug 22 20:00:57 PDT 2016
 //   Additional change to MFEM Mesh constructor call to resolve 
@@ -982,7 +982,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 // Modifications:
 //   Cyrus Harrison, Tue May 23 10:12:52 PDT 2017
 //   Seed rng with domain id for predictable coloring results
-//   (See: http://visitbugs.ornl.gov/issues/2747)
+//   (See: https://github.com/visit-dav/visit/issues/2747)
 //
 //   Alister Maguire, Thu Jan  2 15:23:13 MST 2020
 //   Casting int to Geom::Type where appropriate. This is required after the

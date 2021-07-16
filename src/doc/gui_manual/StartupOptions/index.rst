@@ -91,8 +91,7 @@ USAGE: visit [options]::
     Other resources for help
     ---------------------------------------------------------------------------
         run-time:            While running VisIt, look under the "Help" menu.
-        on-line:             https://visit.llnl.gov
-        email:               visit-users@ornl.gov
+        on-line:             https://visit-help.llnl.gov
 
 
     ***************************************************************************
@@ -143,10 +142,6 @@ USAGE: visit [options]::
         will do this automatically if you specify the -launch-x parameter,
         but you can customize the process with the -x-args and -display
         parameters, which respect %l and %n format specifiers.
-
-        See the VisIt wiki for more information:
-
-          http://visitusers.org/index.php?title=Parallel_Hardware_Acceleration
 
     ---------------------------------------------------------------------------
         -hw-accel              Tells VisIt that it should use graphics cards.
