@@ -23,7 +23,7 @@
 
 
 // ****************************************************************************
-//  Notes:   I wanted the data member to be an actual SIL restriction (as 
+//  Notes:   I wanted the data member to be an actual SIL restriction (as
 //           opposed to a pointer to a SIL restriction).  The problem is that
 //           Python allocates the memory as C-memory, meaning that no
 //           constructors are called.  The ref_ptr then believes that it has
@@ -86,7 +86,7 @@ SILRestriction_Categories(PyObject *self, PyObject *args)
     {
         int cIndex = mapsOut[i];
         avtSILCollection_p collection = silr->GetSILCollection(cIndex);
-        
+
         PyObject *dval = PyString_FromString(collection->GetCategory().c_str());
         if(dval == NULL)
             continue;
@@ -190,7 +190,7 @@ SILRestriction_SetIndex(PyObject *self, PyObject *args)
     }
     CATCH2(VisItException, e)
     {
-        //TODO set PyError 
+        //TODO set PyError
         // VisItErrorFunc(e.Message().c_str());
         CATCH_RETURN2(1, NULL);
     }
@@ -308,8 +308,8 @@ SILRestriction_MapsOut(PyObject *self, PyObject *args)
 //   restriction.  This is consistent with handling elsewhere in the code.
 //
 //   Dave Bremer, Thu Jan 31 17:52:55 PST 2008
-//   Fixed a bug in which a vector<int> &sets is requested from an 
-//   avtSILCollection, but the collection goes out of scope and its vector 
+//   Fixed a bug in which a vector<int> &sets is requested from an
+//   avtSILCollection, but the collection goes out of scope and its vector
 //   of sets is deleted before this method is done using them.
 //
 //   Hank Childs, Tue Dec 15 13:40:40 PST 2009
@@ -566,13 +566,13 @@ SILRestriction_TurnOffSet(PyObject *self, PyObject *args)
 // Purpose:
 //   Turns the specified set index on or off.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 18 14:55:13 PST 2001
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Mon Dec  2 13:41:37 PST 2002
 //   Changed pointer to SIL restriction to reference counted pointer to a SIL
 //   restriction.  This is consistent with handling elsewhere in the code.
@@ -744,7 +744,7 @@ SILRestriction_SuspendCorrectnessChecking(PyObject *self, PyObject *args)
 // ****************************************************************************
 // Method: SILRestriction_EnableCorrectnessChecking
 //
-// Purpose: 
+// Purpose:
 //   Enables SILR correctness checking.
 //
 // Programmer: Brad Whitlock
@@ -759,7 +759,7 @@ SILRestriction_EnableCorrectnessChecking(PyObject *self, PyObject *args)
 {
     PySILRestrictionObject *obj = (PySILRestrictionObject *)self;
     avtSILRestriction_p silr = *(obj->silr);
-    silr->EnableCorrectnessChecking(); 
+    silr->EnableCorrectnessChecking();
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -940,16 +940,16 @@ VISIT_PY_TYPE_OBJ(PySILRestrictionType,        \
 static PyObject *
 SILRestriction_richcompare(PyObject *self, PyObject *other, int op)
 {
-    // only compare against the same type 
-    if ( Py_TYPE(self) == Py_TYPE(other) 
-         && Py_TYPE(self) == &PySILRestrictionType)
+    // only compare against the same type
+    if ( Py_TYPE(self) != Py_TYPE(other)
+         || Py_TYPE(self) != &PySILRestrictionType)
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
     }
 
     PyObject *res = NULL;
-    
+
     avtSILRestriction_p self_silr = *(((PySILRestrictionObject *)self)->silr);
     avtSILRestrictionTraverser trav(self_silr);
     avtSILRestriction_p other_silr = *(((PySILRestrictionObject *)other)->silr);
