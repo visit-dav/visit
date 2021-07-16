@@ -96,7 +96,7 @@ public:
     enum ToroidalIntegration
     {
         NoToroidalIntegration,
-        ToroidalTimeSample,
+        SampleToroidally,
         IntegrateToroidally
     };
     enum ToroidalAngleSampling

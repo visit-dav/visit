@@ -321,15 +321,15 @@ PyLineSamplerAttributes_ToString(const LineSamplerAttributes *atts, const char *
           break;
     }
 
-    const char *toroidalIntegration_names = "NoToroidalIntegration, ToroidalTimeSample, IntegrateToroidally";
+    const char *toroidalIntegration_names = "NoToroidalIntegration, SampleToroidally, IntegrateToroidally";
     switch (atts->GetToroidalIntegration())
     {
       case LineSamplerAttributes::NoToroidalIntegration:
           snprintf(tmpStr, 1000, "%storoidalIntegration = %sNoToroidalIntegration  # %s\n", prefix, prefix, toroidalIntegration_names);
           str += tmpStr;
           break;
-      case LineSamplerAttributes::ToroidalTimeSample:
-          snprintf(tmpStr, 1000, "%storoidalIntegration = %sToroidalTimeSample  # %s\n", prefix, prefix, toroidalIntegration_names);
+      case LineSamplerAttributes::SampleToroidally:
+          snprintf(tmpStr, 1000, "%storoidalIntegration = %sSampleToroidally  # %s\n", prefix, prefix, toroidalIntegration_names);
           str += tmpStr;
           break;
       case LineSamplerAttributes::IntegrateToroidally:
@@ -1499,7 +1499,7 @@ LineSamplerAttributes_SetToroidalIntegration(PyObject *self, PyObject *args)
         fprintf(stderr, "An invalid toroidalIntegration value was given. "
                         "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "NoToroidalIntegration, ToroidalTimeSample, IntegrateToroidally.");
+                        "NoToroidalIntegration, SampleToroidally, IntegrateToroidally.");
         return NULL;
     }
 
@@ -2206,8 +2206,8 @@ PyLineSamplerAttributes_getattr(PyObject *self, char *name)
         return LineSamplerAttributes_GetToroidalIntegration(self, NULL);
     if(strcmp(name, "NoToroidalIntegration") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::NoToroidalIntegration));
-    if(strcmp(name, "ToroidalTimeSample") == 0)
-        return PyInt_FromLong(long(LineSamplerAttributes::ToroidalTimeSample));
+    if(strcmp(name, "SampleToroidally") == 0)
+        return PyInt_FromLong(long(LineSamplerAttributes::SampleToroidally));
     if(strcmp(name, "IntegrateToroidally") == 0)
         return PyInt_FromLong(long(LineSamplerAttributes::IntegrateToroidally));
 
