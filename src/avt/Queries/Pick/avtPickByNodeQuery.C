@@ -241,13 +241,14 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     // expressions are unavailable for query. In those cases, we can
     // try to directly query the current dataset.
     //
-    int numVars = pickAtts.GetNumVarInfos();
+    bool needVarInfo = false;
+    int numVars      = pickAtts.GetNumVarInfos();
 
     for (int varNum = 0; varNum < numVars; ++varNum)
     {
         if (pickAtts.GetVarInfo(varNum).HasInfo() == 0)
         {
-            RetrieveVarInfo(ds, nodeid);
+            needVarInfo = true;
             break;
         }
     }
@@ -274,6 +275,14 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
             RetrieveVarInfo(ds, pickAtts.GetElementNumber(), currentZones); 
         else 
             RetrieveVarInfo(ds, nodeid, currentZones); 
+    }
+    else if (needVarInfo)
+    {
+        //
+        // The incident elements should be correct. We just need to get
+        // some more variable information.
+        //
+        RetrieveVarInfo(ds, nodeid, pickAtts.GetIncidentElements());
     }
 
     //

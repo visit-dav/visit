@@ -248,13 +248,14 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     // expressions are unavailable for query. In those cases, we can
     // try to directly query the current dataset.
     //
-    int numVars = pickAtts.GetNumVarInfos();
+    bool needVarInfo = false;
+    int numVars      = pickAtts.GetNumVarInfos();
 
     for (int varNum = 0; varNum < numVars; ++varNum)
     {
         if (pickAtts.GetVarInfo(varNum).HasInfo() == 0)
         {
-            RetrieveVarInfo(ds, zoneid);
+            needVarInfo = true;
             break;
         }
     }
@@ -269,7 +270,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
 
     pickAtts.SetRealElementNumber(zoneid);
     pickAtts.SetElementNumber(userZoneId+cellOrigin);
-    if (pickAtts.GetMatSelected())
+    if (pickAtts.GetMatSelected() || needVarInfo)
     {
         RetrieveVarInfo(ds, zoneid, pickAtts.GetIncidentElements());
     }
