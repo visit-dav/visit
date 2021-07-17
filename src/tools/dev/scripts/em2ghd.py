@@ -93,6 +93,9 @@ def GetDiscCategoryID(reponame, discname):
                 break
     return getattr(GetDiscCategoryID, "%s.%s"%(reponame,discname))
 
+#
+# Create a discussion and return its id
+#
 def createDiscussion(repoid, catid, subject, body):
     query = """
         mutation 
@@ -102,7 +105,7 @@ def createDiscussion(repoid, catid, subject, body):
                 repositoryId:\"%s\",
                 categoryId:\"%s\"
                 title:\"%s\",
-                body:\"%s\",
+                body:\"%s\"
             }) 
             {
                 discussion
@@ -116,8 +119,31 @@ def createDiscussion(repoid, catid, subject, body):
     # {'data': {'createDiscussion': {'discussion': {'id': 'MDEwOkRpc2N1c3Npb24zNDY0NDI1'}}}}
     return result['data']['createDiscussion']['discussion']['id']
 
+def addDiscussionComment(discid, body):
+    query = """
+        mutation 
+        {
+            addDiscussionComment(input:
+            {
+                discussionId:\"%s\",
+                body:\"%s\"
+            }) 
+            {
+                comment
+                {
+                    id
+                }
+            }
+        }
+    """%(discid, body)
+    result = run_query(query)
+    # {'data': {'addDiscussionComment': {'comment': {'id': 'MDE3OkRpc2N1c3Npb25Db21tZW50MTAxNTM5Mw=='}}}}
+    return result['data']['addDiscussionComment']['comment']['id']
+
 # Test getting repo ids
 repoid = GetRepoID("temporary-play-with-discussions")
 catid =  GetDiscCategoryID("temporary-play-with-discussions", "Ideas")
-discid = createDiscussion(repoid, catid, "Discussion with python script - second time", "Hello world")
+discid = createDiscussion(repoid, catid, "Discussion with python script", "Hello world")
 print(discid)
+addDiscussionComment(discid, "Adding a comment")
+addDiscussionComment(discid, "Adding another comment")
