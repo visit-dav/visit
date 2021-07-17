@@ -56,6 +56,9 @@ def GetRepoID(reponame):
     return getattr(GetRepoID, reponame)
 
 
+#
+# Get discussion category id by name for given repo name in visit-dav org.
+#
 def GetDiscCategoryID(reponame, discname):
     query = """
         query
@@ -90,12 +93,31 @@ def GetDiscCategoryID(reponame, discname):
                 break
     return getattr(GetDiscCategoryID, "%s.%s"%(reponame,discname))
 
+def createDiscussion(repoid, catid, subject, body):
+    query = """
+        mutation 
+        {
+            createDiscussion(input:
+            {
+                repositoryId:\"%s\",
+                categoryId:\"%s\"
+                title:\"%s\",
+                body:\"%s\",
+            }) 
+            {
+                discussion
+                {
+                    id
+                }
+            }
+        }
+    """%(repoid, catid, subject, body)
+    result = run_query(query)
+    # {'data': {'createDiscussion': {'discussion': {'id': 'MDEwOkRpc2N1c3Npb24zNDY0NDI1'}}}}
+    return result['data']['createDiscussion']['discussion']['id']
 
 # Test getting repo ids
-print(GetRepoID("visit"))
-print(GetRepoID("dashboard"))
-print(GetRepoID("visit"))
-
-print(GetDiscCategoryID("visit","Share cool stuff"))
-print(GetDiscCategoryID("visit","Share cool stuff"))
-print(GetDiscCategoryID("visit","Help using VisIt"))
+repoid = GetRepoID("temporary-play-with-discussions")
+catid =  GetDiscCategoryID("temporary-play-with-discussions", "Ideas")
+discid = createDiscussion(repoid, catid, "Discussion with python script - second time", "Hello world")
+print(discid)
