@@ -107,7 +107,7 @@ def removeBadMessages(msgLists):
 def debugListAllSubjects(msgLists):
     for k in msgLists.keys():
         mlist = msgLists[k]
-        print("List for ID=\"%s\"\n"%k)
+        print("List for ID = \"%s\"\n"%k)
         for m in mlist:
             su = " ".join(m['Subject'].split())
             print(",",su)
@@ -241,9 +241,16 @@ def createDiscussion(repoid, catid, subject, body):
             }
         }
     """%(repoid, catid, subject, body)
-    result = run_query(query)
-    # {'data': {'createDiscussion': {'discussion': {'id': 'MDEwOkRpc2N1c3Npb24zNDY0NDI1'}}}}
-    return result['data']['createDiscussion']['discussion']['id']
+    try:
+        result = run_query(query)
+        # {'data': {'createDiscussion': {'discussion': {'id': 'MDEwOkRpc2N1c3Npb24zNDY0NDI1'}}}}
+        return result['data']['createDiscussion']['discussion']['id']
+    except:
+        print("result", result)
+        print("subject", subject)
+        print("body", body)
+    
+    return None
 
 def addDiscussionComment(discid, body):
     query = """
@@ -262,9 +269,23 @@ def addDiscussionComment(discid, body):
             }
         }
     """%(discid, body)
-    result = run_query(query)
-    # {'data': {'addDiscussionComment': {'comment': {'id': 'MDE3OkRpc2N1c3Npb25Db21tZW50MTAxNTM5Mw=='}}}}
-    return result['data']['addDiscussionComment']['comment']['id']
+    try:
+        result = run_query(query)
+        # {'data': {'addDiscussionComment': {'comment': {'id': 'MDE3OkRpc2N1c3Npb25Db21tZW50MTAxNTM5Mw=='}}}}
+        return result['data']['addDiscussionComment']['comment']['id']
+    except:
+        print(result)
+        print("body", body)
+    
+    return None
+
+def filterSubject(su):
+    return " ".join(su.split()).replace('"',"'")
+
+def filterBody(body):
+    retval = body
+    retval = retval.replace('"',"'")
+    return retval
 
 # Read all email messages into a list
 items = readAllMboxFiles()
@@ -277,12 +298,17 @@ removeBadMessages(msgLists)
 
 #debugListAllSubjects(msgLists)
 
+# Get the repository id where the discussions will be created
 repoid = GetRepoID("temporary-play-with-discussions")
+
+# Get the discussion category id for the email migration discussion
 catid =  GetDiscCategoryID("temporary-play-with-discussions", "VisIt Users Email Archive")
 
-for k in list(msgLists.keys())[:3]:
+# Loop over the message list, adding each thread of
+# messages as a discussion with comments
+for k in list(msgLists.keys())[:6]:
     mlist = msgLists[k]
-    subject = " ".join(mlist[0]['Subject'].split())
-    discid = createDiscussion(repoid, catid, subject, "creating discussion")
+    subject = filterSubject(mlist[0]['Subject'])
+    discid = createDiscussion(repoid, catid, subject, filterBody(mlist[0].get_payload()))
     for m in mlist[1:]:
-        addDiscussionComment(discid, "adding comment")
+        addDiscussionComment(discid, filterBody(m.get_payload()))
