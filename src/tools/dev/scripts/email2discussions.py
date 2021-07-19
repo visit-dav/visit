@@ -1,4 +1,4 @@
-import datetime, glob, mailbox, os, pytz, re, requests, sys, time
+import datetime, email.header, glob, mailbox, os, pytz, re, requests, sys, time
 
 # Notes:
 #     Handle multi-line subjects.
@@ -39,8 +39,8 @@ def mydt(d):
 #
 def readAllMboxFiles():
 
-    #files = glob.glob("%s/*.txt"%rootDir)
-    files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
+    files = glob.glob("%s/*.txt"%rootDir)
+    #files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
     items = []
     for f in files:
         mb = mailbox.mbox(f)
@@ -109,8 +109,7 @@ def debugListAllSubjects(msgLists):
         mlist = msgLists[k]
         print("List for ID = \"%s\"\n"%k)
         for m in mlist:
-            su = " ".join(m['Subject'].split())
-            print(",",su)
+            print(",",filterSubject(m['Subject']))
         print("\n")
 
 #
@@ -373,8 +372,29 @@ def lockLockable(nodeid):
         print(result)
         print("unable to lock", nodeid)
 
+#
+# Method to filter subject lines
+#
 def filterSubject(su):
-    return " ".join(su.split()).replace('"',"'")
+
+    # Handle occasional odd-ball encoding
+    subytes,encoding = email.header.decode_header(su)[0]
+    if isinstance(subytes,bytes):
+        su = ''.join([chr(i) if i < 128 else ' ' for i in subytes])
+
+    # handle line-wraps and other strange whitespace
+    su = ' '.join(su.split()).replace('"',"'")
+
+    # Get rid of all these terms
+    stringsToRemove = ['[visit-users]', '[EXTERNAL]', '[visit-dav/live-customer-response]', '[Bulk]',
+        '[BULK]', '[EXT]', '[GitHub]', '[Ieee_vis]', '[SEC=UNCLASSIFIED]', '[SEC=UNOFFICIAL]',
+        '[SOLVED]', '[VISIT-USERS]', '[VisIt-users]', '[VisIt]', '[visit-announce]', '[visit-commits]',
+        '[visit-core-support]', '[visit-dav/visit]', '[visit-developers]', '[visit-help-asc]',
+        '[visit-help-scidac]']
+    for s in stringsToRemove:
+        su = su.replace(s,'')
+
+    return su
 
 def filterBody(body):
     retval = body
@@ -390,12 +410,11 @@ msgLists = threadMessages(items)
 # Eliminate failure cases
 removeBadMessages(msgLists)
 
-#debugListAllSubjects(msgLists)
+debugListAllSubjects(msgLists)
+sys.exit(1)
 
 # Print some diagnostics
 printDiagnostics(msgLists)
-
-sys.exit(1)
 
 # Get the repository id where the discussions will be created
 repoid = GetRepoID("temporary-play-with-discussions")
@@ -405,7 +424,7 @@ catid =  GetDiscCategoryID("temporary-play-with-discussions", "VisIt Users Email
 
 # Loop over the message list, adding each thread of
 # messages as a discussion with comments
-for k in list(msgLists.keys())[7:8]:
+for k in list(msgLists.keys())[:6]:
     mlist = msgLists[k]
     subject = filterSubject(mlist[0]['Subject'])
     discid = createDiscussion(repoid, catid, subject, filterBody(mlist[0].get_payload()))
