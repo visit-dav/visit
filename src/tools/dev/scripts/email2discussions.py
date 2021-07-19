@@ -1,4 +1,4 @@
-import datetime, glob, mailbox, os, pytz, re, requests, sys
+import datetime, glob, mailbox, os, pytz, re, requests, sys, time
 
 # Notes:
 #     Handle multi-line subjects.
@@ -129,6 +129,22 @@ def debugWriteMessagesToFiles(msgLists):
                 f.write("%s\n"%m.get_payload())
 
 #
+# Debug: print some diagnostics info
+#
+def printDiagnostics(msgLists):
+    maxlen = 0
+    maxth = None
+    for k in msgLists:
+        th = msgLists[k] 
+        l = len(th)
+        if l > maxlen:
+            maxlen = l
+            maxth = th
+    print("Total threads = %d"%len(msgLists))
+    print("Max thread length = %d with subject..."%maxlen)
+    print("    \"%s\""%filterSubject(maxth[0]['Subject']))
+
+#
 # Read token from 'ghToken.txt'
 #
 def GetGHToken():
@@ -154,13 +170,65 @@ headers = \
 # Workhorse routine for performing a query
 #
 def run_query(query): # A simple function to use requests.post to make the API call. Note the json= section.
+
+    if not hasattr(run_query, 'queryTimes'):
+        run_query.queryTimes = []
+
+    # Post the request. Time it and keep 100 most recent times in a queue
+    now1 = datetime.datetime.now()
     request = requests.post('https://api.github.com/graphql', json={'query': query}, headers=headers)
+    now2 = datetime.datetime.now()
+    run_query.queryTimes.insert(0,(now2-now1).total_seconds())
+    if len(run_query.queryTimes) > 10: # keep record of last 10 query call times
+        run_query.queryTimes.pop()
+
     if request.status_code == 200:
         return request.json()
     else:
-        raise Exception("Query failed to run by returning code of {}. {}".format(request.status_code, query))
+        raise Exception("Query failed to run by returning code of {}. {} {}".format(request.status_code, query, request.json()))
 
-        
+def throttleRates():
+    query = """
+        query
+        {
+            viewer
+            {
+                login
+            }
+            rateLimit
+            {
+                limit
+                cost
+                remaining
+                resetAt
+            }
+        }
+    """
+    try:
+        result = run_query(query)
+
+        # Gather rate limit info from the query result
+        resetAt = datetime.datetime.strptime(result['data']['rateLimit']['resetAt'],'%Y-%m-%dT%H:%M:%SZ')
+        remaining = result['data']['rateLimit']['remaining']
+        limit = result['data']['rateLimit']['limit']
+        cost = result['data']['rateLimit']['cost']
+
+        # calculate rates
+        burnOutCummRate   = float(remaining) / (resetAt - now2).total_seconds()
+        currentCummRate   = float(limit - remaining) / (now2 - run_query.start).total_seconds()
+        thisQueryInstRate = float(cost) / (now2 - now1).total_seconds()
+
+        if thisQueryInstRate > burnOutCummRate:
+            ratio = thisQueryInstRate / burnOutCummRate
+            delay = (now2-now1).total_seconds()*ratio
+            print("Burn out rate = %f, current rate = %f, this query rate = %f"%\
+                (burnOutCummRate, currentCummRate, thisQueryInstRate))
+            print("Sleeping %f seconds to stay within rate limit"%delay)
+            time.sleep(delay)
+
+    except:
+        pass
+
 #
 # Get various visit-dav org. repo ids. Caches results so that subsequent
 # queries don't do any graphql work.
@@ -177,6 +245,7 @@ def GetRepoID(reponame):
     """%reponame
     if not hasattr(GetRepoID, reponame):
         result = run_query(query)
+        print(result)
         # result = {'data': {'repository': {'id': 'MDEwOlJlcG9zaXRvcnkzMjM0MDQ1OTA='}}}
         setattr(GetRepoID, reponame, result['data']['repository']['id'])
     return getattr(GetRepoID, reponame)
@@ -279,6 +348,31 @@ def addDiscussionComment(discid, body):
     
     return None
 
+# lock an object (primarily to lock a discussion)
+def lockLockable(nodeid):
+    query = """
+        mutation
+        {
+            lockLockable(input:
+            {
+                clientMutationId:\"scratlantis:emai2discussions.py\",
+                lockReason:RESOLVED,
+                lockableId:\"%s\"
+            })
+            {
+                lockedRecord
+                {
+                    locked
+                }
+            }
+        }"""%nodeid
+    try:
+        result = run_query(query)
+        print(result)
+    except:
+        print(result)
+        print("unable to lock", nodeid)
+
 def filterSubject(su):
     return " ".join(su.split()).replace('"',"'")
 
@@ -298,6 +392,11 @@ removeBadMessages(msgLists)
 
 #debugListAllSubjects(msgLists)
 
+# Print some diagnostics
+printDiagnostics(msgLists)
+
+sys.exit(1)
+
 # Get the repository id where the discussions will be created
 repoid = GetRepoID("temporary-play-with-discussions")
 
@@ -306,9 +405,11 @@ catid =  GetDiscCategoryID("temporary-play-with-discussions", "VisIt Users Email
 
 # Loop over the message list, adding each thread of
 # messages as a discussion with comments
-for k in list(msgLists.keys())[:6]:
+for k in list(msgLists.keys())[7:8]:
     mlist = msgLists[k]
     subject = filterSubject(mlist[0]['Subject'])
     discid = createDiscussion(repoid, catid, subject, filterBody(mlist[0].get_payload()))
     for m in mlist[1:]:
         addDiscussionComment(discid, filterBody(m.get_payload()))
+    # lock this discussion
+    lockLockable(discid)
