@@ -450,7 +450,7 @@ QvisPickWindow::CreateWindowContents()
 //
 //   Alister Maguire, Mon Jul 19 11:06:57 PDT 2021
 //   Added option to show the distance between the current and previous
-//   picks.
+//   pick.
 //
 // ****************************************************************************
 
