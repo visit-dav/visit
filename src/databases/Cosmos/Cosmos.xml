@@ -12,4 +12,7 @@
     <LIBS>     
       ${HDF4_LIB}     
     </LIBS>
+    <WIN32DEFINES>
+      ${HDF4_WIN32_DEFINES}
+    </WIN32DEFINES>
   </Plugin>

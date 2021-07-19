@@ -192,6 +192,9 @@ ParseCharacters(const QString &buff_input)
 //    Kathleen Biagas, Thu Jan  2 09:18:18 PST 2020
 //    Added haslicense.
 //
+//    Kathleen Biagas, Fri July 16, 2021
+//    Added support for WIN32DEFINES (preprocessor defines for Win32).
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -279,6 +282,10 @@ class XMLParser : public QXmlDefaultHandler
             else if (currentTag == "DEFINES")
             {
                 currentPlugin->defs.push_back(strings[i]);
+            }
+            else if (currentTag == "WIN32DEFINES")
+            {
+                currentPlugin->windefs.push_back(strings[i]);
             }
             else if (currentTag == "LDFLAGS")
             {
@@ -498,6 +505,9 @@ class XMLParser : public QXmlDefaultHandler
         {
         }
         else if (tag == "DEFINES")
+        {
+        }
+        else if (tag == "WIN32DEFINES")
         {
         }
         else if (tag == "LDFLAGS")
@@ -787,6 +797,9 @@ class XMLParser : public QXmlDefaultHandler
         {
         }
         else if (tag == "DEFINES")
+        {
+        }
+        else if (tag == "WIN32DEFINES")
         {
         }
         else if (tag == "LDFLAGS")
