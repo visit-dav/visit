@@ -19,15 +19,15 @@ Prefix:
 Postfix:
     // try to handle old ddf attributes
     if(strcmp(name, "ddfName") == 0)
-        obj = ConstructDataBinningAttributes_SetName(self, tuple);
+        obj = ConstructDataBinningAttributes_SetName(self, args);
     else if(strcmp(name, "ranges") == 0)
-        obj = ConstructDataBinningAttributes_SetBinBoundaries(self, tuple);
+        obj = ConstructDataBinningAttributes_SetBinBoundaries(self, args);
     else if(strcmp(name, "statisticalOperator") == 0)
-        obj = ConstructDataBinningAttributes_SetReductionOperator(self, tuple);
+        obj = ConstructDataBinningAttributes_SetReductionOperator(self, args);
     else if(strcmp(name, "codomainName") == 0)
-        obj = ConstructDataBinningAttributes_SetVarForReductionOperator(self, tuple);
+        obj = ConstructDataBinningAttributes_SetVarForReductionOperator(self, args);
     else if(strcmp(name, "numSamples") == 0)
-        obj = ConstructDataBinningAttributes_SetNumBins(self, tuple);
+        obj = ConstructDataBinningAttributes_SetNumBins(self, args);
 
 Target: xml2atts
 Function: ReductionRequiresVariable
