@@ -1,10 +1,17 @@
-import datetime, email.header, glob, mailbox, os, pytz, re, requests, sys, textwrap, time
+# Copyright (c) 2021, Lawrence Livermore National Security, LLC
+#
+# Python script using GraphQL interface to GitHub discussions to read
+# .txt file mbox files of VisIt User's email archive and import each
+# email thread as a GitHub discussion.
+#
+# Programmer: Mark C. Miller, Tue Jul 20 10:21:40 PDT 2021
+#
+import datetime, email.header, glob, mailbox, os, pytz
+import re, requests, sys, textwrap, time
 
 # Notes:
-#     Handle multi-line subjects.
 #     Handle quoted previous email
 #     Handle MIME attachments
-#     Keep subject and date
 
 # directory containing all the .txt files from the email archive
 rootDir = "/Users/miller86/visit/visit-users-email"
@@ -35,7 +42,8 @@ def mydt(d):
 
 #
 # Iterate over all files loading each as a mailbox and catenating the
-# items together into one long list
+# items together into one long list. For testing, currently the glob
+# is disabled and we're randomly looking at just one file.
 #
 def readAllMboxFiles():
 
@@ -57,9 +65,11 @@ def threadMessages(items):
     msgLists = {}
     for i in items:
 
+        # mailbox imports all messages as a pair <int, message object>
+        # So here, we get just the message object
         msg = i[1]
 
-        # Try to put in an existing thread via References
+        # Try to put in an existing thread via Reference ids
         rids = msg['References']
         if rids:
             rids = rids.split()
@@ -74,7 +84,9 @@ def threadMessages(items):
             if foundIt:
                 continue
 
-        # Try to put in an existing thread via In-Reply-To
+        # Try to put in an existing thread via In-Reply-To id
+        # In-Reply-To isn't necessarily very reliable
+        # see https://cr.yp.to/immhf/thread.html
         rtid = msg['In-Reply-To']
         if rtid and rtid in msgLists.keys():
             msgLists[rtid] += [msg]
@@ -87,6 +99,10 @@ def threadMessages(items):
         else:
             msgLists[mid] += [msg]
 
+    #
+    # After processing all messages into threads, sort the
+    # messages in each thread by date
+    #
     for k in msgLists.keys():
         mlist = msgLists[k]
         msgLists[k] = sorted(mlist, key=lambda m: mydt(m['Date']))
@@ -113,9 +129,9 @@ def debugListAllSubjects(msgLists):
         print("\n")
 
 #
-# Debug: Write each message list to a file
+# Debug: Write whole archive of message, each thread to its own file
 #
-def debugWriteMessagesToFiles(msgLists):
+def debugWriteAllMessagesToFiles(msgLists):
     for k in msgLists.keys():
         mlist = msgLists[k]
         kfname = k.replace("/","_")
@@ -123,9 +139,9 @@ def debugWriteMessagesToFiles(msgLists):
             for m in mlist:
                 f.write("From: %s\n"%(m['From'] if m['Form'] else ''))
                 f.write("Date: %s\n"%mydt(m['Date']).strftime('%a, %d %b %Y %H:%M:%S %z'))
-                f.write("Subject: %s\n"%(m['Subject'] if m['Subject'] else ''))
+                f.write("Subject: %s\n"%(filterSubject(m['Subject']) if m['Subject'] else ''))
                 f.write("Message-ID: %s\n"%(m['Message-ID'] if m['Message-ID'] else ''))
-                f.write("%s\n"%m.get_payload())
+                f.write("%s\n"%filterBody(m.get_payload()))
 
 #
 # Debug: print some diagnostics info
@@ -143,6 +159,21 @@ def printDiagnostics(msgLists):
     print("Max thread length = %d with subject..."%maxlen)
     print("    \"%s\""%filterSubject(maxth[0]['Subject']))
 
+
+#
+# Capture failure details to a continuously appending file
+#
+def captureGraphQlFailureDetails(gqlQueryName, gqlQueryString, gqlResultString):
+    with open("email2discussion-failure-log.txt", 'w+') as f:
+        f.write("%s - %s\n"(%datetime.datetime.now().strftime('%y%b%d %I:%M:%S'),gqlQueryName))
+        f.write("--------------------------------------------------------------------------\n")
+        f.write(gqlResultString)
+        f.write("\n"
+        f.write("--------------------------------------------------------------------------\n")
+        f.write(gqlQueryString)
+        f.write("\n"
+        f.write("--------------------------------------------------------------------------\n\n\n\n")
+
 #
 # Read token from 'ghToken.txt'
 #
@@ -152,7 +183,7 @@ def GetGHToken():
             with open('ghToken.txt', 'r') as f:
                 GetGHToken.ghToken = f.readline().strip()
         except:
-            raise RuntimeError('Unable to read \'ghToken.txt\' file with your GitHub token')
+            raise RuntimeError('Put a GitHub token in \'ghToken.txt\' readable only by you.')
     return GetGHToken.ghToken
 
 #
@@ -166,7 +197,7 @@ headers = \
 }
 
 #
-# Workhorse routine for performing a query
+# Workhorse routine for performing a GraphQL query
 #
 def run_query(query): # A simple function to use requests.post to make the API call. Note the json= section.
 
@@ -185,48 +216,6 @@ def run_query(query): # A simple function to use requests.post to make the API c
         return request.json()
     else:
         raise Exception("Query failed to run by returning code of {}. {} {}".format(request.status_code, query, request.json()))
-
-def throttleRates():
-    query = """
-        query
-        {
-            viewer
-            {
-                login
-            }
-            rateLimit
-            {
-                limit
-                cost
-                remaining
-                resetAt
-            }
-        }
-    """
-    try:
-        result = run_query(query)
-
-        # Gather rate limit info from the query result
-        resetAt = datetime.datetime.strptime(result['data']['rateLimit']['resetAt'],'%Y-%m-%dT%H:%M:%SZ')
-        remaining = result['data']['rateLimit']['remaining']
-        limit = result['data']['rateLimit']['limit']
-        cost = result['data']['rateLimit']['cost']
-
-        # calculate rates
-        burnOutCummRate   = float(remaining) / (resetAt - now2).total_seconds()
-        currentCummRate   = float(limit - remaining) / (now2 - run_query.start).total_seconds()
-        thisQueryInstRate = float(cost) / (now2 - now1).total_seconds()
-
-        if thisQueryInstRate > burnOutCummRate:
-            ratio = thisQueryInstRate / burnOutCummRate
-            delay = (now2-now1).total_seconds()*ratio
-            print("Burn out rate = %f, current rate = %f, this query rate = %f"%\
-                (burnOutCummRate, currentCummRate, thisQueryInstRate))
-            print("Sleeping %f seconds to stay within rate limit"%delay)
-            time.sleep(delay)
-
-    except:
-        pass
 
 #
 # Get various visit-dav org. repo ids. Caches results so that subsequent
@@ -251,6 +240,8 @@ def GetRepoID(reponame):
 
 #
 # Get discussion category id by name for given repo name in visit-dav org.
+# Caches reponame/discname pair so that subsequent queries don't do any
+# graphql work.
 #
 def GetDiscCategoryID(reponame, discname):
     query = """
@@ -313,12 +304,13 @@ def createDiscussion(repoid, catid, subject, body):
         # {'data': {'createDiscussion': {'discussion': {'id': 'MDEwOkRpc2N1c3Npb24zNDY0NDI1'}}}}
         return result['data']['createDiscussion']['discussion']['id']
     except:
-        print("result", result)
-        print("subject", subject)
-        print("body", body)
+        captureGraphQlFailureDetails('createDiscussion', query, result)
     
     return None
 
+#
+# Add a comment to a discussion
+#
 def addDiscussionComment(discid, body):
     query = """
         mutation 
@@ -341,12 +333,13 @@ def addDiscussionComment(discid, body):
         # {'data': {'addDiscussionComment': {'comment': {'id': 'MDE3OkRpc2N1c3Npb25Db21tZW50MTAxNTM5Mw=='}}}}
         return result['data']['addDiscussionComment']['comment']['id']
     except:
-        print(result)
-        print("body", body)
+        captureGraphQlFailureDetails('addDiscussionComment %s'%discid, query, result)
     
     return None
 
+#
 # lock an object (primarily to lock a discussion)
+#
 def lockLockable(nodeid):
     query = """
         mutation
@@ -367,8 +360,7 @@ def lockLockable(nodeid):
     try:
         result = run_query(query)
     except:
-        print(result)
-        print("unable to lock", nodeid)
+        captureGraphQlFailureDetails('lockLockable %s'%nodeid, query, result)
 
 #
 # Method to filter subject lines
@@ -394,6 +386,10 @@ def filterSubject(su):
 
     return su
 
+#
+# Method to filter body. Currently designed towards the notion that the
+# body will be rendered as "code" (between ```) and not GitHub markdown.
+#
 wrapper = textwrap.TextWrapper(width=100)
 def filterBody(body):
     retval = body
@@ -414,6 +410,10 @@ def filterBody(body):
     retval = '\n'.join(mylist)
 
     return retval
+
+#
+# Main Program
+#
 
 # Read all email messages into a list
 items = readAllMboxFiles()
