@@ -1,4 +1,4 @@
-import datetime, email.header, glob, mailbox, os, pytz, re, requests, sys, time
+import datetime, email.header, glob, mailbox, os, pytz, re, requests, sys, textwrap, time
 
 # Notes:
 #     Handle multi-line subjects.
@@ -39,8 +39,8 @@ def mydt(d):
 #
 def readAllMboxFiles():
 
-    files = glob.glob("%s/*.txt"%rootDir)
-    #files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
+    #files = glob.glob("%s/*.txt"%rootDir)
+    files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
     items = []
     for f in files:
         mb = mailbox.mbox(f)
@@ -122,7 +122,7 @@ def debugWriteMessagesToFiles(msgLists):
         with open("tmp/%s"%kfname, 'w') as f:
             for m in mlist:
                 f.write("From: %s\n"%(m['From'] if m['Form'] else ''))
-                f.write("Gorfo-Date: %s\n"%mydt(m['Date']).strftime('%a, %d %b %Y %H:%M:%S %z'))
+                f.write("Date: %s\n"%mydt(m['Date']).strftime('%a, %d %b %Y %H:%M:%S %z'))
                 f.write("Subject: %s\n"%(m['Subject'] if m['Subject'] else ''))
                 f.write("Message-ID: %s\n"%(m['Message-ID'] if m['Message-ID'] else ''))
                 f.write("%s\n"%m.get_payload())
@@ -244,7 +244,6 @@ def GetRepoID(reponame):
     """%reponame
     if not hasattr(GetRepoID, reponame):
         result = run_query(query)
-        print(result)
         # result = {'data': {'repository': {'id': 'MDEwOlJlcG9zaXRvcnkzMjM0MDQ1OTA='}}}
         setattr(GetRepoID, reponame, result['data']['repository']['id'])
     return getattr(GetRepoID, reponame)
@@ -367,7 +366,6 @@ def lockLockable(nodeid):
         }"""%nodeid
     try:
         result = run_query(query)
-        print(result)
     except:
         print(result)
         print("unable to lock", nodeid)
@@ -396,9 +394,25 @@ def filterSubject(su):
 
     return su
 
+wrapper = textwrap.TextWrapper(width=100)
 def filterBody(body):
     retval = body
+
+    #
+    # Filter out signature separator lines (e.g. '--') as these convince
+    # GitHub the message is really HTML formatted
+    #
+    retval = re.sub('^\s*-+\s*$','\n---\n',retval,0,re.MULTILINE)
+    
+    # Take out some characters that cause problems with http/json parsing
+    retval = retval.replace('\\',' ')
     retval = retval.replace('"',"'")
+
+    # wrap the body text for GitHub text box size (because we're going to
+    # literal quote it (```).
+    mylist = [wrapper.wrap(s)[0] for s in retval.split('\n') if s != '']
+    retval = '\n'.join(mylist)
+
     return retval
 
 # Read all email messages into a list
@@ -410,8 +424,7 @@ msgLists = threadMessages(items)
 # Eliminate failure cases
 removeBadMessages(msgLists)
 
-debugListAllSubjects(msgLists)
-sys.exit(1)
+#debugListAllSubjects(msgLists)
 
 # Print some diagnostics
 printDiagnostics(msgLists)
@@ -427,8 +440,20 @@ catid =  GetDiscCategoryID("temporary-play-with-discussions", "VisIt Users Email
 for k in list(msgLists.keys())[:6]:
     mlist = msgLists[k]
     subject = filterSubject(mlist[0]['Subject'])
-    discid = createDiscussion(repoid, catid, subject, filterBody(mlist[0].get_payload()))
+    body = ''
+    body += '**Date: %s**\n'%mlist[0]['Date']
+    body += '**From: %s**\n'%mlist[0]['From']
+    body += '\n---\n```\n'
+    body += filterBody(mlist[0].get_payload())
+    body += '\n```\n---\n'
+    discid = createDiscussion(repoid, catid, subject, body)
     for m in mlist[1:]:
-        addDiscussionComment(discid, filterBody(m.get_payload()))
+        body = ''
+        body += '**Date: %s**\n'%m['Date']
+        body += '**From: %s**\n'%m['From']
+        body += '\n---\n```\n'
+        body += filterBody(m.get_payload())
+        body += '\n```\n---\n'
+        addDiscussionComment(discid, body)
     # lock this discussion
     lockLockable(discid)
