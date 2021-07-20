@@ -2993,7 +2993,7 @@ class MainLauncher(object):
             SETENV("LD_LIBRARY_PATH", self.joinpaths([mesa_gl_dir, GETENV("LD_LIBRARY_PATH")]))
 
         # Enable the native renderer when using mesagl. Enabling it with
-        # opengl results in a black screen. This resolves the toolbar
+        # opengl results in a black image. This resolves the toolbar
         # rendering issue when doing an initial zoom while doing X forwarding.
         if os.path.isfile(mesa_gl_lib):
             SETENV("QT_XCB_NATIVE_PAINTING", "1")
