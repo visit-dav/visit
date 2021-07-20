@@ -1139,8 +1139,18 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("removeLabelTwins", removeLabelTwins));
     }
 
-    // previousPoint is not persistent and should not be saved.
-    // showDistanceToPrevious is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_previousPoint, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("previousPoint", previousPoint, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showDistanceToPrevious, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showDistanceToPrevious", showDistanceToPrevious));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1286,8 +1296,10 @@ PickAttributes::SetFromNode(DataNode *parentNode)
         SetForcedPickLabel(node->AsString());
     if((node = searchNode->GetNode("removeLabelTwins")) != 0)
         SetRemoveLabelTwins(node->AsBool());
-    // previousPoint is not persistent and was not saved.
-    // showDistanceToPrevious is not persistent and was not saved.
+    if((node = searchNode->GetNode("previousPoint")) != 0)
+        SetPreviousPoint(node->AsDoubleArray());
+    if((node = searchNode->GetNode("showDistanceToPrevious")) != 0)
+        SetShowDistanceToPrevious(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
