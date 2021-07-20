@@ -25,7 +25,7 @@ import java.lang.Double;
 
 public class PickAttributes extends AttributeSubject
 {
-    private static int PickAttributes_numAdditionalAtts = 83;
+    private static int PickAttributes_numAdditionalAtts = 85;
 
     // Enum values
     public final static int PICKTYPE_ZONE = 0;
@@ -151,6 +151,11 @@ public class PickAttributes extends AttributeSubject
         overridePickLabel = false;
         forcedPickLabel = new String("");
         removeLabelTwins = false;
+        previousPoint = new double[3];
+        previousPoint[0] = 0;
+        previousPoint[1] = 0;
+        previousPoint[2] = 0;
+        showDistanceToPrevious = false;
     }
 
     public PickAttributes(int nMoreFields)
@@ -259,6 +264,11 @@ public class PickAttributes extends AttributeSubject
         overridePickLabel = false;
         forcedPickLabel = new String("");
         removeLabelTwins = false;
+        previousPoint = new double[3];
+        previousPoint[0] = 0;
+        previousPoint[1] = 0;
+        previousPoint[2] = 0;
+        showDistanceToPrevious = false;
     }
 
     public PickAttributes(PickAttributes obj)
@@ -434,6 +444,12 @@ public class PickAttributes extends AttributeSubject
         overridePickLabel = obj.overridePickLabel;
         forcedPickLabel = new String(obj.forcedPickLabel);
         removeLabelTwins = obj.removeLabelTwins;
+        previousPoint = new double[3];
+        previousPoint[0] = obj.previousPoint[0];
+        previousPoint[1] = obj.previousPoint[1];
+        previousPoint[2] = obj.previousPoint[2];
+
+        showDistanceToPrevious = obj.showDistanceToPrevious;
 
         SelectAll();
     }
@@ -608,6 +624,11 @@ public class PickAttributes extends AttributeSubject
         for(i = 0; i < 3 && pickHighlightColor_equal; ++i)
             pickHighlightColor_equal = (pickHighlightColor[i] == obj.pickHighlightColor[i]);
 
+        // Compare the previousPoint arrays.
+        boolean previousPoint_equal = true;
+        for(i = 0; i < 3 && previousPoint_equal; ++i)
+            previousPoint_equal = (previousPoint[i] == obj.previousPoint[i]);
+
         // Create the return value
         return (variables_equal &&
                 (showIncidentElements == obj.showIncidentElements) &&
@@ -691,7 +712,9 @@ public class PickAttributes extends AttributeSubject
                 (swivelFocusToPick == obj.swivelFocusToPick) &&
                 (overridePickLabel == obj.overridePickLabel) &&
                 (forcedPickLabel.equals(obj.forcedPickLabel)) &&
-                (removeLabelTwins == obj.removeLabelTwins));
+                (removeLabelTwins == obj.removeLabelTwins) &&
+                previousPoint_equal &&
+                (showDistanceToPrevious == obj.showDistanceToPrevious));
     }
 
     // Property setting methods
@@ -1247,6 +1270,28 @@ public class PickAttributes extends AttributeSubject
         Select(82);
     }
 
+    public void SetPreviousPoint(double[] previousPoint_)
+    {
+        previousPoint[0] = previousPoint_[0];
+        previousPoint[1] = previousPoint_[1];
+        previousPoint[2] = previousPoint_[2];
+        Select(83);
+    }
+
+    public void SetPreviousPoint(double e0, double e1, double e2)
+    {
+        previousPoint[0] = e0;
+        previousPoint[1] = e1;
+        previousPoint[2] = e2;
+        Select(83);
+    }
+
+    public void SetShowDistanceToPrevious(boolean showDistanceToPrevious_)
+    {
+        showDistanceToPrevious = showDistanceToPrevious_;
+        Select(84);
+    }
+
     // Property getting methods
     public Vector   GetVariables() { return variables; }
     public boolean  GetShowIncidentElements() { return showIncidentElements; }
@@ -1331,6 +1376,8 @@ public class PickAttributes extends AttributeSubject
     public boolean  GetOverridePickLabel() { return overridePickLabel; }
     public String   GetForcedPickLabel() { return forcedPickLabel; }
     public boolean  GetRemoveLabelTwins() { return removeLabelTwins; }
+    public double[] GetPreviousPoint() { return previousPoint; }
+    public boolean  GetShowDistanceToPrevious() { return showDistanceToPrevious; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -1508,6 +1555,10 @@ public class PickAttributes extends AttributeSubject
             buf.WriteString(forcedPickLabel);
         if(WriteSelect(82, buf))
             buf.WriteBool(removeLabelTwins);
+        if(WriteSelect(83, buf))
+            buf.WriteDoubleArray(previousPoint);
+        if(WriteSelect(84, buf))
+            buf.WriteBool(showDistanceToPrevious);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1773,6 +1824,12 @@ public class PickAttributes extends AttributeSubject
         case 82:
             SetRemoveLabelTwins(buf.ReadBool());
             break;
+        case 83:
+            SetPreviousPoint(buf.ReadDoubleArray());
+            break;
+        case 84:
+            SetShowDistanceToPrevious(buf.ReadBool());
+            break;
         }
     }
 
@@ -1900,6 +1957,8 @@ public class PickAttributes extends AttributeSubject
         str = str + boolToString("overridePickLabel", overridePickLabel, indent) + "\n";
         str = str + stringToString("forcedPickLabel", forcedPickLabel, indent) + "\n";
         str = str + boolToString("removeLabelTwins", removeLabelTwins, indent) + "\n";
+        str = str + doubleArrayToString("previousPoint", previousPoint, indent) + "\n";
+        str = str + boolToString("showDistanceToPrevious", showDistanceToPrevious, indent) + "\n";
         return str;
     }
 
@@ -2021,5 +2080,7 @@ public class PickAttributes extends AttributeSubject
     private boolean  overridePickLabel;
     private String   forcedPickLabel;
     private boolean  removeLabelTwins;
+    private double[] previousPoint;
+    private boolean  showDistanceToPrevious;
 }
 
