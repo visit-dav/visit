@@ -142,48 +142,59 @@ Postfix:
     // these should have been internal all along ...
     if (strcmp(name, "subsetType") == 0)
     {
+        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
     else if (strcmp(name, "Domain") == 0)
     {
+        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
     else if (strcmp(name, "Group") == 0)
     {
+        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
     else if (strcmp(name, "Material") == 0)
     {
+        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
     else if (strcmp(name, "Unknown") == 0)
     {
+        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
     // filledFlag -- hasn't been used in a LONG time
     else if (strcmp(name, "filledFlag") == 0)
     {
+        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
     // lineStyle and it's possible enumerations
     else if (strcmp(name, "lineStyle") == 0)
     {
+        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
     else if (strcmp(name, "SOLID") == 0)
     {
+        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
     else if (strcmp(name, "DASH") == 0)
     {
+        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
     else if (strcmp(name, "DOT") == 0)
     {
+        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
     else if (strcmp(name, "DOTDASH") == 0)
     {
+        PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
 
@@ -192,21 +203,24 @@ Code: PySubsetAttributes_setattr
 Prefix:
 Postfix:
     // Try and handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "filledFlag") == 0)
         {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         // internal only, shouldn't be set by scripts
         else if(strcmp(name, "subsetType") == 0)
         {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
