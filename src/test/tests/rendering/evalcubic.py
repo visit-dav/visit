@@ -15,7 +15,7 @@
 
 #
 # Example from:
-# Visit-tutorial-python-fly 
+# https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/tutorials/Scripting.html#animating-the-camera
 #
 
 def fly():
