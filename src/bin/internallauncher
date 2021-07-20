@@ -2880,6 +2880,9 @@ class MainLauncher(object):
     #   custom launcher since doing it here interfered with other sites that
     #   were setting LD_PRELOAD to get VisIt to work.
     #
+    #   Eric Brugger, Tue Jul 20 12:41:04 PDT 2021
+    #   Modified to only setenv QT_XCB_NATIVE_PAINTING if using mesagl.
+    #
     ############################################################################
 
     def SetupEnvironment(self):
@@ -2965,11 +2968,6 @@ class MainLauncher(object):
         # the GUI and Viewer.
         SETENV("MESA_GLX_FX", "disable")
 
-        # Enabled the native renderer.
-        # This resolves the toolbar rendering issue when doing an initial zoom
-        # while doing X forwarding.
-        SETENV("QT_XCB_NATIVE_PAINTING", "1")
-
         # The -viewerdisplay argument allows the user to specify an argument
         # that the viewer should use, no matter what the GUI was using.  This
         # can be useful for wall-type displays with a separate console, e.g.
@@ -2993,6 +2991,12 @@ class MainLauncher(object):
               (self.generalArgs.exe_name == "viewer" and
                self.generalArgs.nowin == 0))):
             SETENV("LD_LIBRARY_PATH", self.joinpaths([mesa_gl_dir, GETENV("LD_LIBRARY_PATH")]))
+
+        # Enable the native renderer when using mesagl. Enabling it with
+        # opengl results in a black image. This resolves the toolbar
+        # rendering issue when doing an initial zoom while doing X forwarding.
+        if os.path.isfile(mesa_gl_lib):
+            SETENV("QT_XCB_NATIVE_PAINTING", "1")
 
         #
         # OSMesa GL Settings
