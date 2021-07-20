@@ -37,7 +37,7 @@
 #    used by the NetworkManager.
 #
 #    Eric Brugger, Tue Jul 20 11:55:04 PDT 2021
-#    Added OPEN_INCLUDE_DIR to the include directories if building IceT
+#    Added OPENGL_INCLUDE_DIR to the include directories if building IceT
 #    with MesaGL.
 #
 #****************************************************************************
