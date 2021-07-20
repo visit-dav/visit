@@ -22,6 +22,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Bugs fixed in version 3.2.2</font></b></p>
 <ul>
   <li>Fixed a bug in the Blueprint Database Plugin where YAML or JSON root files were rewritten on open, which could strip comments and change the file entires. The root file is now opened in a read only mode.</li>
+  <li>Fixed a bug where versions of VisIt that supported hardware accelerated rendering would display a black image in the visualization window.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -33,7 +34,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.2.2</font></b></p>
 <ul>
-   <li> </li>
+   <li>Fixed a compile issue on a Fedora 31 Docker container that didn't have any OpenGL header files installed. This involved modifying engine/main/CMakeLists.txt to add OPENGL_INCLUDE_DIR to the include directories if building with IceT and MesaGL.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
