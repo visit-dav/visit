@@ -34,6 +34,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Updated the ORNL host file list to include only current machines.</li>
   <li>After a successful Export database, the informational message now contains the host and path to the export.</li>
+  <li>Attribute assignment (e.g. <code>cylinderAtts.point1=...</code> or <code>cylinderAtts.SetPoint1(...)</code>) operations were modified to catch and disallow nonsensical usage instead of silently falling back to default values and provide better error checkingand messaging. It is possible these changes may cause code that worked fine to now terminate with a Python exception. In such cases, the resulting error message should explain the cause of the failure and the changes required to fix it should be obvious and minimal.</li>
   <li>A new function was added to the Python CLI named <code>apropos(regex)</code> similar in purpose to <a href="https://en.wikipedia.org/wiki/Apropos_(Unix)">Unix' apropos</a>. It makes finding the names of functions and objects much easier. It will return a list of the names of functions or objects where the regular expression matches either in the method name or in the documentation string for the method or in a stringified instance (objects only). All matching is case insensitive.</li>
   <li>Default behavior of Python's <code>help(thing)</code> was adjusted slightly to first present what <code>help(thing)</code> would normally produce but then to also follow it up with output from <code>apropos(thing)</code> when that output is non-empty.<li>
   <li>The French translation was updated thanks to <a href="https://github.com/cessenat">@cessenat</a>. We are still looking for volunteers for translations in other languages. If interested, please <a href="https://visit-dav.github.io/visit-website/support/">contact us</a>.</li>
@@ -94,8 +95,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 3.3</font></b></p>
 <ul>
-  <li>Bug Fix 1</li>
-  <li>Bug Fix 2</li>
+  <li>Fixed bug where changing the 'Number format' for a Contour plot's legend would have no affect on the labels next to the tick marks.</li>
+  <li>Fixed a bug that prevented users from comparing particular VisIt Python objects in the CLI with non-VisIt types.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -108,7 +109,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.3</font></b></p>
 <ul>
-  <li>Developer Change 1</li>
+  <li>There is now a WIN32DEFINES xml tag for database plugins, used to specify preprocessor defines needed by a plugin on Windows. If the needed define comes from a thirdparty library, the Find module for that library should set a CMake var with those defines that the plugin could then use in the .xml file. See FindCGNS.cmake and CGNS.xml for an example.</li>
   <li>Developer Change 2</li>
 </ul>
 

@@ -313,11 +313,8 @@ View2DAttributes_Add(PyObject *v, PyObject *w)
     bool arg1isObject = PyView2DAttributes_Check(v);
     bool arg2isObject = PyView2DAttributes_Check(w);
     if(!arg1isObject || !arg2isObject)
-    {
-        cerr << "View2DAttributes_Add: One or more arguments are not View2DAttributes!" << endl;
-        return NULL;
-    }
-
+        return PyErr_Format(PyExc_TypeError, "Both arguments to + operator must "
+                            "be View2DAttributes!");
 
     PyObject *retval = NewView2DAttributes(0);
     View2DAttributes *c = PyView2DAttributes_FromPyObject(retval);
@@ -378,7 +375,8 @@ View2DAttributes_Mul(PyObject *v, PyObject *w)
 
     if(arg1isObject && arg2isObject)
     {
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "One argument must be a View2DAttributes "
+                            "object and the other must be a number");
     }
     else
     {
@@ -405,7 +403,8 @@ View2DAttributes_Mul(PyObject *v, PyObject *w)
             val = PyLong_AsDouble(num);
         else
         {
-            cerr << "MUL: Expected numeric argument is not a number!" << endl;
+            return PyErr_Format(PyExc_TypeError, "Expected numeric argument for * (MUL) "
+                   "operator with View2DAttributes is not a number!");
         }
 
 
