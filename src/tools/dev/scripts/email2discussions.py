@@ -7,7 +7,7 @@
 # Programmer: Mark C. Miller, Tue Jul 20 10:21:40 PDT 2021
 #
 import datetime, email.header, glob, mailbox, os, pytz
-import re, requests, sys, textwrap, time
+import re, requests, shutil, sys, textwrap, time
 
 # Notes:
 #     Handle quoted previous email
@@ -92,6 +92,27 @@ def threadMessages(items):
             msgLists[rtid] += [msg]
             continue
    
+        #
+        # Ok, try to match to an existing thread based on same
+        # subject and date within 60 days
+        # 
+        if msg['Subject'] and msg['Date']:
+            print(msg['Subject'])
+            sub1 = filterSubject(msg['Subject'])
+            date1 = mydt(msg['Date'])
+            foundIt = False
+            for k in msgLists.keys():
+                if msgLists[k][0]['Subject'] and msgLists[k][0]['Date']:
+                    sub2 = filterSubject(msgLists[k][0]['Subject'])
+                    date2 = mydt(msgLists[k][0]['Date'])
+                    ddate = date2-date1 if date2>date1 else date1-date2
+                    if sub1 == sub2 and ddate < datetime.timedelta(days=60):
+                        msgLists[k] += [msg]
+                        foundIt = True
+                        break
+            if foundIt:
+                continue
+
         # It looks like we can't put in an existing thread
         mid = msg['Message-ID']
         if mid not in msgLists.keys():
@@ -129,7 +150,7 @@ def debugListAllSubjects(msgLists):
         print("\n")
 
 #
-# Debug: Write whole archive of message, each thread to its own file
+# Debug: Write whole raw archive of messages, each thread to its own file
 #
 def debugWriteAllMessagesToFiles(msgLists):
     for k in msgLists.keys():
@@ -164,14 +185,14 @@ def printDiagnostics(msgLists):
 # Capture failure details to a continuously appending file
 #
 def captureGraphQlFailureDetails(gqlQueryName, gqlQueryString, gqlResultString):
-    with open("email2discussion-failure-log.txt", 'w+') as f:
-        f.write("%s - %s\n"(%datetime.datetime.now().strftime('%y%b%d %I:%M:%S'),gqlQueryName))
+    with open("email2discussion-failures-log.txt", 'w+') as f:
+        f.write("%s - %s\n"%(datetime.datetime.now().strftime('%y%b%d %I:%M:%S'),gqlQueryName))
         f.write("--------------------------------------------------------------------------\n")
         f.write(gqlResultString)
-        f.write("\n"
+        f.write("\n")
         f.write("--------------------------------------------------------------------------\n")
         f.write(gqlQueryString)
-        f.write("\n"
+        f.write("\n")
         f.write("--------------------------------------------------------------------------\n\n\n\n")
 
 #
@@ -380,11 +401,11 @@ def filterSubject(su):
         '[BULK]', '[EXT]', '[GitHub]', '[Ieee_vis]', '[SEC=UNCLASSIFIED]', '[SEC=UNOFFICIAL]',
         '[SOLVED]', '[VISIT-USERS]', '[VisIt-users]', '[VisIt]', '[visit-announce]', '[visit-commits]',
         '[visit-core-support]', '[visit-dav/visit]', '[visit-developers]', '[visit-help-asc]',
-        '[visit-help-scidac]']
+        '[visit-help-scidac]', 'RE:', 'RE :', 'Re:', 'Fwd:']
     for s in stringsToRemove:
         su = su.replace(s,'')
 
-    return su
+    return su.strip()
 
 #
 # Method to filter body. Currently designed towards the notion that the
@@ -404,12 +425,95 @@ def filterBody(body):
     retval = retval.replace('\\',' ')
     retval = retval.replace('"',"'")
 
+    # Take out some characters that might be intepreted as premature end
+    # of the code block in which this body text is being embedded.
+    retval = retval.replace('```',"'''")
+    retval = retval.replace('~~~',"'''")
+
     # wrap the body text for GitHub text box size (because we're going to
     # literal quote it (```).
-    mylist = [wrapper.wrap(s)[0] for s in retval.split('\n') if s != '']
+    mylist = [wrapper.wrap(s)[0] for s in retval.split('\n') if s.strip() != '']
     retval = '\n'.join(mylist)
 
     return retval
+
+#
+# Simple method to build body text for a message
+#
+def buildBody(msgObj):
+
+    body = ''
+    body += '**Date: %s**\n'%msgObj['Date']
+    body += '**From: %s**\n'%msgObj['From']
+    body += '\n---\n```\n'
+    body += filterBody(msgObj.get_payload())
+    body += '\n```\n---\n'
+
+    return body
+
+#
+# Debug: write message strings to be used in http/json graphql
+# queries to text files
+#
+def testWriteMessagesToTextFiles(msgLists):
+
+    shutil.rmtree("email2discussions-debug", ignore_errors=True)
+    os.mkdir("email2discussions-debug")
+
+    for k in list(msgLists.keys()):
+
+        # Get the current message thread
+        mlist = msgLists[k]
+
+        # Create file name from message id (key)
+        kfname = k.replace("/","_")
+
+        # assumes 'tmp' is dir already available to write to
+        with open("email2discussions-debug/%s"%kfname, 'w') as f:
+            subject = filterSubject(mlist[0]['Subject'])
+            body = buildBody(mlist[0])
+            if subject == 'No subject' or subject == 'no subject' or subject == '':
+                for s in body.split('\n')[5:]:
+                    if s.strip():
+                        subject = s.strip()
+                        break
+            print("Working on thread of %d messages \"%s\""%(len(mlist),subject))
+            f.write("Subject: \"%s\"\n"%subject)
+            f.write(body)
+            f.write("\n")
+            for m in mlist[1:]:
+                body = buildBody(m)
+                f.write(body)
+                f.write("\n")
+
+#
+# Loop over the message list, adding each thread of
+# messages as a discussion with comments
+#
+def importMessagesAsDiscussions(msgLists, repoid, catid):
+
+    # for k in list(msgLists.keys()): don't do whole shootin match yet
+    for k in list(msgLists.keys())[:6]:
+
+        # Get the current message thread
+        mlist = msgLists[k]
+
+        # Use first message (index 0) in thread for subject to
+        # create a new discussion topic
+        subject = filterSubject(mlist[0]['Subject'])
+        print("Working on thread of %d messages \"%s\""%(len(mlist),subject))
+        body = buildBody(mlist[0])
+        discid = createDiscussion(repoid, catid, subject, body)
+
+        # Use remaining messages in thread (starting from index 1)
+        # to add comments to this discussion
+        for m in mlist[1:]:
+            body = buildBody(m)
+            addDiscussionComment(discid, body)
+
+        # lock the discussion to prevent any non-owners from
+        # ever adding to it
+        lockLockable(discid)
 
 #
 # Main Program
@@ -435,25 +539,8 @@ repoid = GetRepoID("temporary-play-with-discussions")
 # Get the discussion category id for the email migration discussion
 catid =  GetDiscCategoryID("temporary-play-with-discussions", "VisIt Users Email Archive")
 
-# Loop over the message list, adding each thread of
-# messages as a discussion with comments
-for k in list(msgLists.keys())[:6]:
-    mlist = msgLists[k]
-    subject = filterSubject(mlist[0]['Subject'])
-    body = ''
-    body += '**Date: %s**\n'%mlist[0]['Date']
-    body += '**From: %s**\n'%mlist[0]['From']
-    body += '\n---\n```\n'
-    body += filterBody(mlist[0].get_payload())
-    body += '\n```\n---\n'
-    discid = createDiscussion(repoid, catid, subject, body)
-    for m in mlist[1:]:
-        body = ''
-        body += '**Date: %s**\n'%m['Date']
-        body += '**From: %s**\n'%m['From']
-        body += '\n---\n```\n'
-        body += filterBody(m.get_payload())
-        body += '\n```\n---\n'
-        addDiscussionComment(discid, body)
-    # lock this discussion
-    lockLockable(discid)
+# Import all the message threads as discussions
+#importMessagesAsDiscussions(msgLists, repoid, catid)
+
+# Testing: write all message threads to a text file
+testWriteMessagesToTextFiles(msgLists)
