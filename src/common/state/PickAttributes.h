@@ -112,6 +112,7 @@ public:
     void SelectPickHighlightColor();
     void SelectRemovedPicks();
     void SelectForcedPickLabel();
+    void SelectPreviousPoint();
 
     // Property setting methods
     void SetVariables(const stringVector &variables_);
@@ -196,6 +197,8 @@ public:
     void SetOverridePickLabel(bool overridePickLabel_);
     void SetForcedPickLabel(const std::string &forcedPickLabel_);
     void SetRemoveLabelTwins(bool removeLabelTwins_);
+    void SetPreviousPoint(const double *previousPoint_);
+    void SetShowDistanceToPrevious(bool showDistanceToPrevious_);
 
     // Property getting methods
     const stringVector &GetVariables() const;
@@ -316,6 +319,9 @@ public:
     const std::string  &GetForcedPickLabel() const;
           std::string  &GetForcedPickLabel();
     bool               GetRemoveLabelTwins() const;
+    const double       *GetPreviousPoint() const;
+          double       *GetPreviousPoint();
+    bool               GetShowDistanceToPrevious() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -454,6 +460,8 @@ public:
         ID_overridePickLabel,
         ID_forcedPickLabel,
         ID_removeLabelTwins,
+        ID_previousPoint,
+        ID_showDistanceToPrevious,
         ID__LAST
     };
 
@@ -544,11 +552,13 @@ private:
     MapNode              plotRequested;
     int                  pickHighlightColor[3];
     std::string          removedPicks;
+    double               previousPoint[3];
+    bool                 showDistanceToPrevious;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbbii*bbbmsbiibbbiibssbimmIsbbsb"
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbbii*bbbmsbiibbbiibssbimmIsbbsbDb"
 
 #endif

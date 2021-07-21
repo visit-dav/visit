@@ -271,11 +271,11 @@ as support for attachments.
 For the remainder of this document we simply use the term *conversation* to refer to the
 communication involved in an active SRE issue.
 
-Upon receiving a *new* inquiry via discussions, telephone hotline
-call, or walk-in (with the exception of walk-ins involving classified information),
-the procedure is for the **Primary** to cut-n-paste the initial information to a new
-GitHub `discussion <https://github.com/visit-dav/visit/discussions>`_, attach the
-SRE label and from then on handle all communication through the *conversation* associated with
+Upon receiving a *new* inquiry, if the inquiry did not start as a discussion (e.g. maybe
+it was a telephone hotline call, or a walk-in, the procedure is for the **Primary** to include
+the initial information (with the exception of inquries involving classified information) in a
+new GitHub `discussion <https://github.com/visit-dav/visit/discussions>`_,
+attach the SRE label and from then on handle all communication through the *conversation* associated with
 that discussion.
 
 For any work the **Primary** performs, even if it is a rather trivial amount
