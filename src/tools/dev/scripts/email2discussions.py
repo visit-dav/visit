@@ -506,9 +506,19 @@ def testWriteMessagesToTextFiles(msgLists):
 #
 def importMessagesAsDiscussions(msgLists, repoid, catid):
 
+    # look for restart file
+    processedKeys = []
+    if os.access('email2discussions-restart.txt', os.R_OK):
+        with open('email2discussions-restart.txt', 'r') as f:
+            processedKeys = [l.strip() for l in f.readlines()]
+
     # for k in list(msgLists.keys()): don't do whole shootin match yet
     i = 0
     for k in list(msgLists.keys())[:6]:
+
+        if k in processedKeys:
+            print("Already processed \"%s\""%k)
+            continue
 
         # Get the current message thread
         mlist = msgLists[k]
@@ -531,6 +541,13 @@ def importMessagesAsDiscussions(msgLists, repoid, catid):
         # ever adding to it
         lockLockable(discid)
         i += 1
+
+        #
+        # Update restart state
+        #
+        with open('email2discussions-restart.txt', 'a') as f:
+            f.write(k)
+            f.write('\n')
 
 #
 # Main Program
