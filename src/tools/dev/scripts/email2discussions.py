@@ -9,10 +9,6 @@
 import datetime, email.header, glob, mailbox, os, pytz
 import re, requests, shutil, sys, textwrap, time
 
-# Notes:
-#     Handle quoted previous email
-#     Handle MIME attachments
-
 # directory containing all the .txt files from the email archive
 rootDir = "/Users/miller86/visit/visit-users-email"
 
@@ -97,7 +93,6 @@ def threadMessages(items):
         # subject and date within 60 days
         # 
         if msg['Subject'] and msg['Date']:
-            print(msg['Subject'])
             sub1 = filterSubject(msg['Subject'])
             date1 = mydt(msg['Date'])
             foundIt = False
@@ -127,6 +122,22 @@ def threadMessages(items):
     for k in msgLists.keys():
         mlist = msgLists[k]
         msgLists[k] = sorted(mlist, key=lambda m: mydt(m['Date']))
+
+    #
+    # Remove cases of duplicate dates in same thread
+    #
+    for k in msgLists.keys():
+        mlist = msgLists[k]
+        deli = []
+        for i in range(1,len(mlist)):
+            if mlist[i]['Date'] and mlist[i-1]['Date'] and \
+               mydt(mlist[i]['Date']) == mydt(mlist[i-1]['Date']):
+                deli += [i]
+        if deli:
+            print("Removing %d messages w/ dup. dates from a thread of length %d"%(len(deli), len(mlist)))
+        deli.reverse()
+        for i in deli:
+            del(msgLists[k][i])
 
     return msgLists
 
@@ -443,7 +454,7 @@ def filterBody(body):
 def buildBody(msgObj):
 
     body = ''
-    body += '**Date: %s**\n'%msgObj['Date']
+    body += '**Date: %s**\n'%mydt(msgObj['Date']).strftime('%a, %d %b %Y %H:%M:%S %z')
     body += '**From: %s**\n'%msgObj['From']
     body += '\n---\n```\n'
     body += filterBody(msgObj.get_payload())
@@ -460,13 +471,14 @@ def testWriteMessagesToTextFiles(msgLists):
     shutil.rmtree("email2discussions-debug", ignore_errors=True)
     os.mkdir("email2discussions-debug")
 
+    i = 0
     for k in list(msgLists.keys()):
 
         # Get the current message thread
         mlist = msgLists[k]
 
-        # Create file name from message id (key)
-        kfname = k.replace("/","_")
+        # Create a valid file name from message id (key)
+        kfname = k.replace("/","_").replace('<','_').replace('>','_')
 
         # assumes 'tmp' is dir already available to write to
         with open("email2discussions-debug/%s"%kfname, 'w') as f:
@@ -477,7 +489,8 @@ def testWriteMessagesToTextFiles(msgLists):
                     if s.strip():
                         subject = s.strip()
                         break
-            print("Working on thread of %d messages \"%s\""%(len(mlist),subject))
+            print("Working on thread %d, \"%s\""%(i,k))
+            print("    %d messages, subject \"%s\""%(len(mlist),subject))
             f.write("Subject: \"%s\"\n"%subject)
             f.write(body)
             f.write("\n")
@@ -485,6 +498,7 @@ def testWriteMessagesToTextFiles(msgLists):
                 body = buildBody(m)
                 f.write(body)
                 f.write("\n")
+        i += 1
 
 #
 # Loop over the message list, adding each thread of
@@ -493,6 +507,7 @@ def testWriteMessagesToTextFiles(msgLists):
 def importMessagesAsDiscussions(msgLists, repoid, catid):
 
     # for k in list(msgLists.keys()): don't do whole shootin match yet
+    i = 0
     for k in list(msgLists.keys())[:6]:
 
         # Get the current message thread
@@ -501,7 +516,8 @@ def importMessagesAsDiscussions(msgLists, repoid, catid):
         # Use first message (index 0) in thread for subject to
         # create a new discussion topic
         subject = filterSubject(mlist[0]['Subject'])
-        print("Working on thread of %d messages \"%s\""%(len(mlist),subject))
+        print("Working on thread %d, \"%s\""%(i,k))
+        print("    %d messages, subject \"%s\""%(len(mlist),subject))
         body = buildBody(mlist[0])
         discid = createDiscussion(repoid, catid, subject, body)
 
@@ -514,6 +530,7 @@ def importMessagesAsDiscussions(msgLists, repoid, catid):
         # lock the discussion to prevent any non-owners from
         # ever adding to it
         lockLockable(discid)
+        i += 1
 
 #
 # Main Program
