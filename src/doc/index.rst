@@ -11,6 +11,7 @@ VisIt User Manuals
    GUI Manual <gui_manual/index>
    CLI Manual <cli_manual/index>
    Tutorials <tutorials/index>
+   Getting Data Into VisIt <data_into_visit/index>
    Developer Manual <dev_manual/index>
 
 .. Indices and tables
