@@ -442,11 +442,12 @@ def filterBody(body):
     retval = retval.replace('~~~',"'''")
 
     # wrap the body text for GitHub text box size (because we're going to
-    # literal quote it (```).
+    # literal quote it (```) and want to avoid creating content that requires
+    # horiz. scroll
     mylist = []
     for s in retval.split('\n'):
         more = wrapper.wrap(s.strip())
-        if not more:
+        if not more and mylist and mylist[-1] != '':
             mylist += ['']
         else:
             mylist += more
@@ -558,20 +559,6 @@ def importMessagesAsDiscussions(msgLists, repoid, catid):
 #
 # Main Program
 #
-x="""
-Franck,
-   I'd guess that the simulation is not working because it cannot find VisIt in your path. In that case, your simulation should call VisItSetDirectory() to let libsim know where VisIt is installed. You would pass the path to the directory containing the VisIt "bin" directory (e.g. /usr/local/visit). this must be done prior to calling one of the VisItSetupEnvironment functions. There is a ViSItOpenTraceFile() function that is useful for producing a trace of everything that libsim does. It's usually very helpful in determining why the runtime library cannot be loaded, etc.
-
-Also note that if your simulation is based on sim4p, as it appears it is, then the simulation will not pass back any metadata or data to VisIt once it connects. Most of the "sim#" example simulation files are not 100% functional; they are geared towards incrementally making something that will eventually work. There are many other complete, working examples at http://portal.nersc.gov/svn/visit/trunk/src/tools/DataManualExamples/Simulations/. I tested a few to make sure they are working within a source build of the VisIt trunk.
-
-I'll send you a couple of screen captures off-list.
-
-Brad
-"""
-
-print(filterBody(x))
-sys.exit(0)
-
 
 # Read all email messages into a list
 items = readAllMboxFiles()
