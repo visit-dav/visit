@@ -1,4 +1,4 @@
-.. _Data_Into_VisIt_Intro
+.. _Data_Into_VisIt_Intro:
 
 Introduction
 ============
@@ -35,37 +35,50 @@ It also requires learning the API for the library, which also may be complex.
 The specialized formats are typically asosociated with a specific simulation code.
 In this case, the simulation code probably already has an output file that is part of some workflow and they don't to write out another file format, possible writing out duplicate data.
 
-Below is a list of simple file formats and the grid types they support.
+Below is a list of recommended simple file formats and the grid types they support.
 
-VTK - Binary and Text
-    Description - The Visualization Toolkit file format. There are both legacy
-    and HTML formats. A single VTK file can support a single grid type, but
-    they support many different mesh types and you can group VTK files.
-    Mesh types - Point, Regular, Rectilinear, Structured, Unstructured
-    Variable centering - Node or Cell
-BOV - Text header file with binary data
-    Description - Brick Of Values.
-    Mesh types - Regular
-    Variable centering - Node or Cell
-Curve - Text
-    Description - 2D curves.
-PlainText - Text
-    Description - Simple text format
-    Mesh types - Point, 2D Structured
-  
-+------------------------------------------------------+--------------+------------------------------------------------+
-| Name                                                 | Type         | Supported mesh types                           |
-+======================================================+==============+================================================+
-| :ref:`VTK <_data_into_visit_vtk_format>`             | Binary, Text | Regular, Rectilinear, Structured, Unstructured |
-+------------------------------------------------------+--------------+------------------------------------------------+
-| :ref:`BOV <_data_into_visit_bov_format>`             | Binary       | Regular                                        |
-+------------------------------------------------------+--------------+------------------------------------------------+
-| :ref:`Curve <_data_into_visit_curve_format>`         | Text         | 2D Curves                                      |
-+------------------------------------------------------+--------------+------------------------------------------------+
-| :ref:`PlainText <_data_into_visit_plaintext_format>` | Text         | Points, 2D Rectilinear                         |
-+------------------------------------------------------+--------------+------------------------------------------------+
++-----------------------------------------------+--------------+------------------------------------------------+
+| Name                                          | Type         | Supported mesh types                           |
++===============================================+==============+================================================+
+| :ref:`VTK <data_into_visit_vtk>`              | Binary, Text | Regular, Rectilinear, Structured, Unstructured |
++-----------------------------------------------+--------------+------------------------------------------------+
+| :ref:`BOV <data_into_visit_bov>`              | Binary       | Regular                                        |
++-----------------------------------------------+--------------+------------------------------------------------+
+| :ref:`Curve <data_into_visit_curve>`          | Text         | 2D Curves                                      |
++-----------------------------------------------+--------------+------------------------------------------------+
+| :ref:`PlainText <data_into_visit_plaintext>`  | Text         | Points, 2D Rectilinear                         |
++-----------------------------------------------+--------------+------------------------------------------------+
 
-.. _data_into_visit_vtk_format
+Here is a list of recommended library based formats and the grid types they support.
+
++-----------------------------------------------+------------------------------------------------+
+| Name                                          | Supported mesh types                           |
++===============================================+================================================+
+| :ref:`Silo <data_into_visit_silo>`            | Regular, Rectilinear, Structured, Unstructured |
++-----------------------------------------------+------------------------------------------------+
+
+.. _data_into_visit_vtk:
 
 VTK file format
 ---------------
+
+.. _data_into_visit_bov:
+
+BOV file format
+---------------
+
+.. _data_into_visit_curve:
+
+Curve file format
+-----------------
+
+.. _data_into_visit_plaintext:
+
+PlainText file format
+---------------------
+
+.. _data_into_visit_silo:
+
+Silo file format
+----------------
+

@@ -8,7 +8,6 @@ Contents:
    :numbered: 
 
    Intro
-   SimpleFormats/index
 
 .. Indices and tables
 .. ==================
