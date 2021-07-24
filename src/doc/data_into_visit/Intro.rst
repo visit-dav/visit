@@ -167,6 +167,15 @@ The fourth line contains the six field values.
 The fifth line indicates that the name of the field is `var3`, the `1` indicates the field has 1 compenent, the `6` means we have six values and the `float` indicates the values should be read in as 32 bit floating point values.
 The sixth line contains the six field values.
 
+An example of a polydata file
+-----------------------------
+
+Here is an exmples of VTK file with polydata.
+
+.. literalinclude:: data_examples/polydata.vtk
+
+It supportes points, lines, polygons and triangle strips.
+
 .. _data_into_visit_bov:
 
 The BOV file format
