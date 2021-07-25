@@ -630,7 +630,9 @@ def buildBody(msgObj):
 #
 def restartFromRestart():
     processedKeys = []
-    if os.access('email2discussions-restart.txt', os.R_OK):
+    if os.path.exists('email2discussions-restart.txt'):
+        if not os.access('email2discussions-restart.txt', os.R_OK):
+            raise RuntimeError('It appears a previous run has fully completed. Remove "email2discussions-restart.txt" to rerun.')
         with open('email2discussions-restart.txt', 'r') as f:
             processedKeys = [l.strip() for l in f.readlines()]
     return processedKeys
@@ -665,6 +667,7 @@ def testWriteMessagesToTextFiles(msgLists):
         mlist = msgLists[k]
 
         # Create a valid file name from message id (key)
+        time.sleep(1) 
         kfname = k.replace("/","_").replace('<','_').replace('>','_')[:100]
 
         # assumes 'tmp' is dir already available to write to
@@ -688,6 +691,10 @@ def testWriteMessagesToTextFiles(msgLists):
         i += 1
 
         updateRestart(k)
+
+    # indicate run fully completed
+    os.chmod('email2discussions-restart.txt', 0)
+
 
 #
 # Loop over the message list, adding each thread of
@@ -732,6 +739,9 @@ def importMessagesAsDiscussions(msgLists, repoid, catid):
         # Update restart state
         #
         updateRestart(k)
+
+    # indicate run fully completed
+    os.chmod('email2discussions-restart.txt', 0)
 
 #
 # Main Program
