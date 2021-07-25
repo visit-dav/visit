@@ -8,6 +8,7 @@
 #
 import datetime, email.header, glob, mailbox, os, pytz
 import re, requests, shutil, sys, textwrap, time
+from difflib import SequenceMatcher
 
 # directory containing all the .txt files from the email archive
 rootDir = "/Users/miller86/visit/visit-users-email"
@@ -21,7 +22,7 @@ tzNames = [ \
     'GMT', 'UTC', 'ECT', 'EET', 'ART', 'EAT', 'MET', 'NET', 'PLT', 'IST', 'BST', 'VST',
     'CTT', 'JST', 'ACT', 'AET', 'SST', 'NST', 'MIT', 'HST', 'AST', 'PST', 'PNT', 'MST',
     'CST', 'EST', 'IET', 'PRT', 'CNT', 'AGT', 'BET', 'CAT', 'CET', 'PDT', 'EDT', 'CES',
-    'KST', 'MSK', 'EES']
+    'KST', 'MSK', 'EES', 'MDT', 'CDT', 'SGT', 'AKD']
 def mydt(d):
     if not d:
         return datetime.datetime.now().astimezone()
@@ -43,12 +44,15 @@ def mydt(d):
 #
 def readAllMboxFiles():
 
-    #files = glob.glob("%s/*.txt"%rootDir)
-    files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
+    print("Reading messages...")
+    files = glob.glob("%s/*.txt"%rootDir)
+    files = sorted(files, key=lambda f: datetime.datetime.strptime(f,'/Users/miller86/visit/visit-users-email/%Y-%B.txt'))
+    #files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
     items = []
     for f in files:
         mb = mailbox.mbox(f)
         items += mb.items()
+    print("%d messages read"%len(items))
 
     return items
 
@@ -58,12 +62,39 @@ def readAllMboxFiles():
 #
 def threadMessages(items):
 
+    print("Threading messages...")
+    countRemoveByGitHub = 0
+    countByMid = 0
+    countRemoveReleases = 0
+    countMerges = 0
+    countRemoveEqualDates = 0
     msgLists = {}
-    for i in items:
+    msgIds = {}
+#    for i in range(len(items)):
+    for i in range(3000):
 
         # mailbox imports all messages as a pair <int, message object>
         # So here, we get just the message object
-        msg = i[1]
+        msg = items[i][1]
+
+        # Skip stuff already on GitHub via SRE process
+        # using raw (unfiltered) subject
+        sub = msg['Subject']
+        if sub and 'visit-dav' in sub:
+            countRemoveByGitHub += 1
+            continue
+        if msg['In-Reply-To'] and 'visit-dav' in msg['In-Reply-To']:
+            countRemoveByGitHub += 1
+            continue
+        if msg['References']:
+            haveIt = False
+            for r in msg['References'].split():
+                if 'visit-dav' in r:
+                    haveIt = True
+                    break
+            if haveIt:
+                countRemoveByGitHub += 1
+                continue
 
         # Try to put in an existing thread via Reference ids
         rids = msg['References']
@@ -73,47 +104,42 @@ def threadMessages(items):
 
             foundIt = False
             for rid in rids:
-                if rid in msgLists.keys():
-                    msgLists[rid] += [msg]
+                if rid in msgIds.keys():
+                    subjectKey = msgIds[rid]
                     foundIt = True
                     break
             if foundIt:
+                countByMid += 1
+                msgLists[subjectKey] += [msg]
                 continue
 
         # Try to put in an existing thread via In-Reply-To id
         # In-Reply-To isn't necessarily very reliable
         # see https://cr.yp.to/immhf/thread.html
         rtid = msg['In-Reply-To']
-        if rtid and rtid in msgLists.keys():
-            msgLists[rtid] += [msg]
+        if rtid and rtid in msgIds.keys():
+            countByMid += 1
+            subjectKey = msgIds[rtid]
+            msgLists[subjectKey] += [msg]
             continue
-   
-        #
-        # Ok, try to match to an existing thread based on same
-        # subject and date within 60 days
-        # 
-        if msg['Subject'] and msg['Date']:
-            sub1 = filterSubject(msg['Subject'])
-            date1 = mydt(msg['Date'])
-            foundIt = False
-            for k in msgLists.keys():
-                if msgLists[k][0]['Subject'] and msgLists[k][0]['Date']:
-                    sub2 = filterSubject(msgLists[k][0]['Subject'])
-                    date2 = mydt(msgLists[k][0]['Date'])
-                    ddate = date2-date1 if date2>date1 else date1-date2
-                    if sub1 == sub2 and ddate < datetime.timedelta(days=60):
-                        msgLists[k] += [msg]
-                        foundIt = True
-                        break
-            if foundIt:
-                continue
 
-        # It looks like we can't put in an existing thread
-        mid = msg['Message-ID']
-        if mid not in msgLists.keys():
-            msgLists[mid] = [msg]
+        #
+        # Ok, using message ids didn't work to find the
+        # thread, so now try via filtered subject
+        #
+        sub = filterSubject(sub)
+
+        # Remove subjects related to announcements of releases
+        if re.match('visit [0-9]*.[0-9]*.[0-9]* released', sub):
+            countRemoveReleases += 1
+            continue
+
+        if sub in msgLists.keys():
+            msgLists[sub] += [msg]
         else:
-            msgLists[mid] += [msg]
+            mid = msg['Message-ID']
+            msgIds[mid] = sub
+            msgLists[sub] = [msg]
 
     #
     # After processing all messages into threads, sort the
@@ -133,11 +159,90 @@ def threadMessages(items):
             if mlist[i]['Date'] and mlist[i-1]['Date'] and \
                mydt(mlist[i]['Date']) == mydt(mlist[i-1]['Date']):
                 deli += [i]
-        if deli:
-            print("Removing %d messages w/ dup. dates from a thread of length %d"%(len(deli), len(mlist)))
+        countRemoveEqualDates += len(deli)
         deli.reverse()
         for i in deli:
             del(msgLists[k][i])
+
+    #
+    # We invariably wind up with a ton of threads of length
+    # one. Ordinarily, that should be rare as most messages
+    # to visit-users get replied to. So, most threads should
+    # be of minimum length 2. So, now make a pass trying to
+    # merge any threads of size one into other threads using
+    # 'similarity' of subject matches and nearnest of dates.
+    #
+    for k1 in msgLists.keys():
+
+        # Disregard these matches here
+        if re.match('digest, vol [0-9]*, issue [0-9]*', k1):
+            continue
+
+        mlist1 = msgLists[k1]
+
+        if len(mlist1) > 1:
+            continue
+
+        if len(mlist1) == 0:
+            continue
+
+        date1 = mydt(mlist1[0]['Date'])
+        maxMatchRatio = 0
+        maxMatchKey = None
+        for k2 in msgLists.keys():
+        
+            if k2 == k1:
+                continue
+
+            if not msgLists[k2]:
+                continue
+
+            date2 = mydt(msgLists[k2][0]['Date'])
+            ddate = date2-date1 if date2>date1 else date1-date2
+            if ddate > datetime.timedelta(days=90):
+                continue
+
+            r = SequenceMatcher(None, k1, k2).ratio()
+            if r < maxMatchRatio:
+                continue
+            maxMatchRatio = r
+            maxMatchKey = k2
+
+        if maxMatchRatio < 0.6:
+            continue
+
+        #print("Merging keys (ratio = %g)...\n    \"%s\" and\n    \"%s\"\n"%(maxMatchRatio,k1,maxMatchKey))
+        countMerges += 1
+        msgLists[k1] += msgLists[maxMatchKey]
+        msgLists[maxMatchKey] = []
+
+    #
+    # Ok, sort threads again by date
+    #
+    for k in msgLists.keys():
+        mlist = msgLists[k]
+        msgLists[k] = sorted(mlist, key=lambda m: mydt(m['Date']))
+
+    #
+    # Remove again any cases of duplicate dates in same thread
+    #
+    for k in msgLists.keys():
+        mlist = msgLists[k]
+        deli = []
+        for i in range(1,len(mlist)):
+            if mlist[i]['Date'] and mlist[i-1]['Date'] and \
+               mydt(mlist[i]['Date']) == mydt(mlist[i-1]['Date']):
+                deli += [i]
+        deli.reverse()
+        countRemoveEqualDates += len(deli)
+        for i in deli:
+            del(msgLists[k][i])
+
+    print("Thread %d messages by message id"%countByMid)
+    print("Removed %d GitHub messages"%countRemoveByGitHub)
+    print("Removed %d release messages"%countRemoveReleases)
+    print("Removed %d equal date messages"%countRemoveEqualDates)
+    print("Merged %d threads"%countMerges)
 
     return msgLists
 
@@ -146,8 +251,21 @@ def threadMessages(items):
 #
 def removeBadMessages(msgLists):
     if None in msgLists.keys():
-        print("There are", len(msgLists[None]), "messages without a Message-ID")
+        print("There are", len(msgLists[None]), "messages with subject = None")
         del msgLists[None]
+    if '' in msgLists.keys():
+        print("There are", len(msgLists['']), "messages with subject = ''")
+        del msgLists['']
+    delItems = []
+    for k in msgLists.keys():
+        if len(msgLists[k]) <= 1:
+            delItems += [k]
+    print("Deleting %d threads of size <= 1"%len(delItems))
+    for i in delItems:
+        del msgLists[i]
+    if '(no subject)' in msgLists.keys():
+        print("Deleting %d messages with no subject"%len(msgLists['(no subject)']))
+        del msgLists['(no subject)']
 
 #
 # Debug: list all the subject lines
@@ -155,10 +273,7 @@ def removeBadMessages(msgLists):
 def debugListAllSubjects(msgLists):
     for k in msgLists.keys():
         mlist = msgLists[k]
-        print("List for ID = \"%s\"\n"%k)
-        for m in mlist:
-            print(",",filterSubject(m['Subject']))
-        print("\n")
+        print("%d messages for subject = \"%s\"\n"%(len(mlist),k))
 
 #
 # Debug: Write whole raw archive of messages, each thread to its own file
@@ -166,7 +281,7 @@ def debugListAllSubjects(msgLists):
 def debugWriteAllMessagesToFiles(msgLists):
     for k in msgLists.keys():
         mlist = msgLists[k]
-        kfname = k.replace("/","_")
+        kfname = k.replace("/","_")[:100]
         with open("tmp/%s"%kfname, 'w') as f:
             for m in mlist:
                 f.write("From: %s\n"%(m['From'] if m['Form'] else ''))
@@ -179,17 +294,29 @@ def debugWriteAllMessagesToFiles(msgLists):
 # Debug: print some diagnostics info
 #
 def printDiagnostics(msgLists):
+    nummsg = 0
     maxlen = 0
+    maxmsglen = 0
     maxth = None
+    maxmsgth = None
     for k in msgLists:
         th = msgLists[k] 
+        for m in th:
+            msglen = len(m.get_payload())
+            if msglen > maxmsglen:
+                maxmsglen = msglen
+                maxmsgth = th
         l = len(th)
         if l > maxlen:
             maxlen = l
             maxth = th
+        nummsg += l
+    print("Total threaded messages = %d"%nummsg)
     print("Total threads = %d"%len(msgLists))
     print("Max thread length = %d with subject..."%maxlen)
     print("    \"%s\""%filterSubject(maxth[0]['Subject']))
+    print("Max message body size = %d"%maxmsglen)
+    print("    \"%s\""%filterSubject(maxmsgth[0]['Subject']))
 
 
 #
@@ -399,22 +526,49 @@ def lockLockable(nodeid):
 #
 def filterSubject(su):
 
+    if not su:
+        return "no subject"
+
+    gotit = False
+    if '#261' in su:
+        gotit = True
+        print(su)
+
     # Handle occasional odd-ball encoding
-    subytes,encoding = email.header.decode_header(su)[0]
-    if isinstance(subytes,bytes):
-        su = ''.join([chr(i) if i < 128 else ' ' for i in subytes])
+    suparts = email.header.decode_header(su)
+    newsu = ''
+    for p in suparts:
+        if isinstance(p[0],bytes):
+            try:
+                newsu += p[0].decode('utf-8')
+            except UnicodeDecodeError:
+                newsu += ''.join([chr(i) if i < 128 else ' ' for i in p[0]])
+        else:
+            newsu += p[0]
+    su = newsu
 
     # handle line-wraps and other strange whitespace
-    su = ' '.join(su.split()).replace('"',"'")
+    su = re.sub('\s+',' ', su)
+    su = su.replace('"',"'")
+    su = su.lower()
 
     # Get rid of all these terms
-    stringsToRemove = ['[visit-users]', '[EXTERNAL]', '[visit-dav/live-customer-response]', '[Bulk]',
-        '[BULK]', '[EXT]', '[GitHub]', '[Ieee_vis]', '[SEC=UNCLASSIFIED]', '[SEC=UNOFFICIAL]',
-        '[SOLVED]', '[VISIT-USERS]', '[VisIt-users]', '[VisIt]', '[visit-announce]', '[visit-commits]',
-        '[visit-core-support]', '[visit-dav/visit]', '[visit-developers]', '[visit-help-asc]',
-        '[visit-help-scidac]', 'RE:', 'RE :', 'Re:', 'Fwd:']
+    stringsToRemove = ['visit-users', '[external]', 'visit-dav/live-customer-response', '[bulk]',
+        '[ext]', '[github]', '[ieee_vis]', '[sec=unclassified]', '[sec=unofficial]',
+        '[solved]', '[visit-announce]', '[visit-commits]',
+        'visit-core-support', 'visit-dav/visit', 'visit-developers', 'visit-help-asc',
+        'visit-help-scidac', 're:', 're :', 'fwd:', 'fw:', '[unclassifed]',
+        '[non-dod source]', 'possible spam', 'suspicious message', 'warning: attachment unscanned',
+        'warning: unscannable extraction failed', '[]', '()', '{}']
+
     for s in stringsToRemove:
         su = su.replace(s,'')
+
+    # Get rid of GitHub bug identifiers
+    su = re.sub('\s+\(#[0-9]*\)','',su)
+
+    if gotit:
+        print(su)
 
     return su.strip()
 
@@ -424,7 +578,9 @@ def filterSubject(su):
 #
 wrapper = textwrap.TextWrapper(width=100)
 def filterBody(body):
-    retval = body
+
+    # retain only the first 20,000 chars of body
+    retval = body[:20000]
 
     #
     # Filter out signature separator lines (e.g. '--') as these convince
@@ -470,6 +626,24 @@ def buildBody(msgObj):
     return body
 
 #
+# load the restart file
+#
+def restartFromRestart():
+    processedKeys = []
+    if os.access('email2discussions-restart.txt', os.R_OK):
+        with open('email2discussions-restart.txt', 'r') as f:
+            processedKeys = [l.strip() for l in f.readlines()]
+    return processedKeys
+
+#
+# Update our restart file
+#
+def updateRestart(k):
+    with open('email2discussions-restart.txt', 'a') as f:
+        f.write(k)
+        f.write('\n')
+
+#
 # Debug: write message strings to be used in http/json graphql
 # queries to text files
 #
@@ -478,14 +652,20 @@ def testWriteMessagesToTextFiles(msgLists):
     shutil.rmtree("email2discussions-debug", ignore_errors=True)
     os.mkdir("email2discussions-debug")
 
+    processedKeys = restartFromRestart()
+
     i = 0
     for k in list(msgLists.keys()):
+
+        if k in processedKeys:
+            print("Already processed \"%s\""%k)
+            continue
 
         # Get the current message thread
         mlist = msgLists[k]
 
         # Create a valid file name from message id (key)
-        kfname = k.replace("/","_").replace('<','_').replace('>','_')
+        kfname = k.replace("/","_").replace('<','_').replace('>','_')[:100]
 
         # assumes 'tmp' is dir already available to write to
         with open("email2discussions-debug/%s"%kfname, 'w') as f:
@@ -507,6 +687,8 @@ def testWriteMessagesToTextFiles(msgLists):
                 f.write("\n")
         i += 1
 
+        updateRestart(k)
+
 #
 # Loop over the message list, adding each thread of
 # messages as a discussion with comments
@@ -514,10 +696,7 @@ def testWriteMessagesToTextFiles(msgLists):
 def importMessagesAsDiscussions(msgLists, repoid, catid):
 
     # look for restart file
-    processedKeys = []
-    if os.access('email2discussions-restart.txt', os.R_OK):
-        with open('email2discussions-restart.txt', 'r') as f:
-            processedKeys = [l.strip() for l in f.readlines()]
+    processedKeys = restartFromRestart()
 
     # for k in list(msgLists.keys()): don't do whole shootin match yet
     i = 0
@@ -552,9 +731,7 @@ def importMessagesAsDiscussions(msgLists, repoid, catid):
         #
         # Update restart state
         #
-        with open('email2discussions-restart.txt', 'a') as f:
-            f.write(k)
-            f.write('\n')
+        updateRestart(k)
 
 #
 # Main Program
@@ -569,10 +746,12 @@ msgLists = threadMessages(items)
 # Eliminate failure cases
 removeBadMessages(msgLists)
 
-#debugListAllSubjects(msgLists)
-
 # Print some diagnostics
 printDiagnostics(msgLists)
+
+testWriteMessagesToTextFiles(msgLists)
+
+sys.exit(0)
 
 # Get the repository id where the discussions will be created
 repoid = GetRepoID("temporary-play-with-discussions")
@@ -584,4 +763,4 @@ catid =  GetDiscCategoryID("temporary-play-with-discussions", "VisIt Users Email
 #importMessagesAsDiscussions(msgLists, repoid, catid)
 
 # Testing: write all message threads to a text file
-testWriteMessagesToTextFiles(msgLists)
+#testWriteMessagesToTextFiles(msgLists)
