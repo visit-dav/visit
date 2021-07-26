@@ -92,9 +92,27 @@ The type must be on a single line and contain either the word ASCII or BINARY.
 It contains the points and the topology.
 This part begins with a line containing the keyword DATASET followed by a keyword describing the type of dataset.
 Then, depending upon the type of dataset, other keyword/data combinations define the actual data.
+The topology can be 1D, 2D or 3D, although only 2D and 3D topologies are supported by VisIt_.
+
+The following keywords for mesh topologies are supported.
+
++---------------------+
+| Type                |
++=====================+
+| STRUCTURED_POINTS   |
++---------------------+
+| STRUCTURED_GRID     |
++---------------------+
+| RECTILINEAR_GRID    |
++---------------------+
+| POLYDATA            |
++---------------------+
+| UNSTRUCTURED_GRID   |
++---------------------+
 
 5. The final part describes the fields. The fields can be defined on either the cells or the points.
 The cell or point fields can be listed in either order.
+The fields can be either scalars, vectors or tensors. 
 
 An example VTK file
 -------------------
@@ -145,38 +163,163 @@ The indexes are 0-origin indexes into the point list.
 The second line of integers indicates that there are `2` points in the second line, made up of the 3rd and 4th points.
 The third line of integers indicates that there are `2` points in the third line, made up of the 5th and 6th points.
 
-The following lines represent one field defined on the cells.
+The following lines represent one scalar field defined on the cells.
 
 .. literalinclude:: data_examples/lines.vtk
    :lines: 18-21
 
 The first line indicates that we have field values defined on the cells, where the number of cells is `3`.
-The second line indicates we have `1` field.
-The third line indicates that the name of the field is `var1`, the `1` indicates the field has 1 compenent, the `3` means we have three values and the `float` indicates the values should be read in as 32 bit floating point values.
-The fourth line contains the three field values.
+The second line provides information about the first cell based field.
+The `var1` is the name of the field.
+The `float` indicates that the values should be read in as 32 bit floating point values.
+The `1`, if present, must be a one and indicates that we have one value per scalar field.
+The third line specifies the color lookup table to use when rendering the variable.
+It is not used by VisIt_, but must be present.
+The fourth line contains the scalar values.
 
-The following lines represent two fields defined at the points.
+The following lines represent two scalar fields defined at the points.
 
 .. literalinclude:: data_examples/lines.vtk
    :lines: 23-
 
 The first line indicates that we have field values defined at the points, where the number of points is `6`.
-The second line indicates we have `2` fields.
-The third line indicates that the name of the field is `var2`, the `1` indicates the field has 1 compenent, the `6` means we have six values and the `float` indicates the values should be read in as 32 bit floating point values.
-The fourth line contains the six field values.
-The fifth line indicates that the name of the field is `var3`, the `1` indicates the field has 1 compenent, the `6` means we have six values and the `float` indicates the values should be read in as 32 bit floating point values.
-The sixth line contains the six field values.
+The next three lines represent the first scalar field.
+The three lines after that represent the second scalar field. 
+
+An example of a structured points file
+--------------------------------------
+
+A structured points file results in a regular mesh with constant spacing in each direction.
+The mesh can be 2D or 3D.
+It is defined by specifying `STRUCTURED_POINTS` as the `DATASET` type in the mesh structure portion of the file.
+
+Here is an example of a VTK file with 3D structured points.
+
+.. literalinclude:: data_examples/structuredpoints.vtk
+ 
+This defines a regular mesh consiting of 12 points and 2 cells.
+For the cells, it defines a single scalar variable named `var1`.
+For the points, it defines 2 scalar variables named `var2` and `var3`, a vector variable named `vec1`, and a tensor variable named `ten1`.
+
+Here is an example of a VTK file with 2D structured points.
+
+.. literalinclude:: data_examples/structuredpoints2d.vtk
+ 
+This defines a mesh similar to the previous one except that it has one row of points in the Z-direction.
+Note that the number of dimensions in the Z-direction is 1 and that Z origin is zero.
+The spacing in the Z-direction is one, but it could be any value.
+
+An example of a structured grid file
+------------------------------------
+
+A structured grid file results in a structured mesh where the position of each node in the mesh is specified.
+The mesh can be 2D or 3D.
+It is defined by specifying `STRUCTURED_GRID` as the `DATASET` type in the mesh structure portion of the file.
+
+Here is an example of a VTK file with a 3D structured grid.
+
+.. literalinclude:: data_examples/structuredgrid.vtk
+ 
+It defines a structured mesh that is the same as the structured point example except that the mesh points are no longer regular.
+This defines a structure mesh consiting of 12 points and 2 cells.
+For the cells, it defines a single scalar variable named `var1`.
+For the points, it defines 2 scalar variables named `var2` and `var3`, a vector variable named `vec1`, and a tensor variable named `ten1`.
+
+Here is an example of a VTK file with a 2D structured grid.
+
+.. literalinclude:: data_examples/structuredgrid2d.vtk
+ 
+This defines a mesh similar to the previous one except that it has one row of points in the Z-direction.
+Note that the number of dimensions in the Z-direction is 1 and that the Z values are all zero.
+
+An example of a rectilinear grid file
+-------------------------------------
+
+A rectilinear grid file results in a structured mesh where the coordinates along each axis are specified as a 1-D array of values.
+The mesh can be 2D or 3D.
+It is defined by specifying `RECTILINEAR_GRID` as the `DATASET` type in the mesh structure portion of the file.
+
+Here is an example of a VTK file with a 3D rectilinear grid.
+
+.. literalinclude:: data_examples/rectilineargrid.vtk
+ 
+It defines a rectilinear mesh that is the same as the structured point example.
+
+Here is an example of a VTK file with a 2D rectilinear grid.
+
+.. literalinclude:: data_examples/rectilineargrid2d.vtk
+ 
+This defines a mesh similar to the previous one except that it has one row of points in the Z-direction.
+Note that in the Z-direction there is 1 value and that it is zero.
 
 An example of a polydata file
 -----------------------------
 
-Here is an exmples of VTK file with polydata.
+A polydata file results in a points, lines and surface cells.
+The mesh can be 2D or 3D.
+It is defined by specifying `POLYDATA` as the `DATASET` type in the mesh structure portion of the file.
+
+Here is an example of a VTK file with polydata.
 
 .. literalinclude:: data_examples/polydata.vtk
 
 It supportes points, lines, polygons and triangle strips.
 
 .. _data_into_visit_bov:
+
+An example of a unstructured grid file
+--------------------------------------
+
+An unstructured grid file results in an arbitrary combination of cell types.
+The points are explicitely specified.
+The mesh can be 2D or 3D.
+It is defined by specifying `UNSTRUCTURED_GRID` as the `DATASET` type in the mesh structure portion of the file.
+
+The following cell types are supported.
+
++--------------------------------+-------+
+| Type                           | Value |
++================================+=======+
+| VTK_VERTEX                     | 1     |
++--------------------------------+-------+
+| VTK_POLY_VERTEX                | 2     |
++--------------------------------+-------+
+| VTK_LINE                       | 3     |
++--------------------------------+-------+
+| VTK_POLY_LINE                  | 4     |
++--------------------------------+-------+
+| VTK_TRIANGLE                   | 5     |
++--------------------------------+-------+
+| VTK_TRIANGLE_STRIP             | 6     |
++--------------------------------+-------+
+| VTK_POLYGON                    | 7     |
++--------------------------------+-------+
+| VTK_PIXEL                      | 8     |
++--------------------------------+-------+
+| VTK_QUAD                       | 9     |
++--------------------------------+-------+
+| VTK_TETRA                      | 10    |
++--------------------------------+-------+
+| VTK_VOXEL                      | 11    |
++--------------------------------+-------+
+| VTK_HEXAHEDRON                 | 12    |
++--------------------------------+-------+
+| VTK_WEDGE                      | 13    |
++--------------------------------+-------+
+| VTK_PYRAMID                    | 14    |
++--------------------------------+-------+
+| VTK_QUADRATIC_EDGE             | 21    |
++--------------------------------+-------+
+| VTK_QUADRATIC_TRIANGLE         | 22    |
++--------------------------------+-------+
+| VTK_QUADRATIC_QUAD             | 23    |
++--------------------------------+-------+
+| VTK_QUADRATIC_TETRA            | 24    |
++--------------------------------+-------+
+| VTK_QUADRATIC_HEXAHEDRON       | 25    |
++--------------------------------+-------+
+
+Here is an example of a VTK file with a 3D unstructured grid.
 
 The BOV file format
 ===================
