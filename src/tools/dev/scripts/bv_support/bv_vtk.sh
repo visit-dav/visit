@@ -947,7 +947,7 @@ EOF
 
 function apply_vtkospray_patches
 {
-	count_patches=3
+	count_patches=4
     # patch vtkOSPRay files:
 
     # 1) expose vtkViewNodeFactory via vtkOSPRayPass
@@ -1177,6 +1177,7 @@ EOF
         return 1
     fi
 
+	# 3) fix vtkOSPRayVolumeMapper
 	((current_patch++))
     patch -p0 << \EOF
 *** Rendering/OSPRay/vtkOSPRayVolumeMapper.cxx.original	2018-04-23 15:32:58.538749914 -0400
@@ -1195,6 +1196,28 @@ EOF
 EOF
     if [[ $? != 0 ]] ; then
         warn "vtk patch $current_patch/$count_patches for vtkOSPRayVolumeMapper failed."
+        return 1
+    fi
+
+	# 4) Add include string to vtkOSPRayMaterialHelpers.h for gcc 10.
+	((current_patch++))
+    patch -p0 << \EOF
+diff -c Rendering/OSPRay/vtkOSPRayMaterialHelpers.h.original Rendering/OSPRay/vtkOSPRayMaterialHelpers.h
+*** Rendering/OSPRay/vtkOSPRayMaterialHelpers.h.original	Mon Jul 26 16:14:55 2021
+--- Rendering/OSPRay/vtkOSPRayMaterialHelpers.h	Mon Jul 26 16:15:11 2021
+***************
+*** 33,38 ****
+--- 33,39 ----
+  
+  #include "ospray/ospray.h"
+  #include <map>
++ #include <string>
+  
+  class vtkImageData;
+  class vtkOSPRayRendererNode;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch $current_patch/$count_patches for vtkOSPRayMaterialHelpers."
         return 1
     fi
 }
