@@ -52,7 +52,8 @@ def readAllMboxFiles():
     for f in files:
         mb = mailbox.mbox(f)
         items += mb.items()
-    print("%d messages read"%len(items))
+        print("    read %d items from file \"%s\""%(len(mb.items()),f),end='\r')
+    print("\n%d messages read"%len(items))
 
     return items
 
@@ -70,8 +71,8 @@ def threadMessages(items):
     countRemoveEqualDates = 0
     msgLists = {}
     msgIds = {}
-#    for i in range(len(items)):
-    for i in range(3000):
+    for i in range(len(items)):
+#    for i in range(3000):
 
         # mailbox imports all messages as a pair <int, message object>
         # So here, we get just the message object
@@ -172,7 +173,14 @@ def threadMessages(items):
     # merge any threads of size one into other threads using
     # 'similarity' of subject matches and nearnest of dates.
     #
+    print("Merging threads by similarity of subjects...")
+    i = 0
     for k1 in msgLists.keys():
+
+        i += 1
+        p10 = int(100*float(i)/len(msgLists))
+        if not p10 % 10:
+            print("    %d %% completed"%p10, end='\r')
 
         # Disregard these matches here
         if re.match('digest, vol [0-9]*, issue [0-9]*', k1):
@@ -667,7 +675,7 @@ def testWriteMessagesToTextFiles(msgLists):
         mlist = msgLists[k]
 
         # Create a valid file name from message id (key)
-        time.sleep(1) 
+        #time.sleep(1) 
         kfname = k.replace("/","_").replace('<','_').replace('>','_')[:100]
 
         # assumes 'tmp' is dir already available to write to
