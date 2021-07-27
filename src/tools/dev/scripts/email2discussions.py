@@ -649,6 +649,14 @@ def filterSubject(su):
 
     return su.strip()
 
+
+#
+# Replacement function for re.sub to replace phone number matches with
+# a string of the same number of characters
+#
+def replacePhone(m):
+    return '#' * len(m.group())
+
 #
 # Method to filter body. Currently designed towards the notion that the
 # body will be rendered as "code" (between ```) and not GitHub markdown.
@@ -657,6 +665,10 @@ wrapper = textwrap.TextWrapper(width=100)
 def filterBody(body):
 
     retval = body[:20000]+' truncated...' if (len(body)) > 20000 else body
+
+    # filter out anything that looks like a phone number
+    retval = re.sub('[ ([]?[0-9]{3}[ )\]]?[-\.+=: ]?[0-9]{3}[-\.+=: ]?[0-9]{4}',
+        replacePhone,retval,0,re.MULTILINE)
 
     #
     # Filter out signature separator lines (e.g. '--') as these convince
