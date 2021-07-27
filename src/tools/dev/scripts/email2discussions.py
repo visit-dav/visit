@@ -476,13 +476,13 @@ def GetRepoID(orgname, reponame):
 # Caches reponame/discname pair so that subsequent queries don't do any
 # graphql work.
 #
-def GetDiscCategoryID(orgname, reponame, discname):
+def GetObjectIDByName(orgname, reponame, gqlObjname, gqlCount, objname):
     query = """
         query
         {
             repository(owner: \"%s\", name: \"%s\")
             {
-                discussionCategories(first:10)
+                %s(first:%d)
                 {
                     edges
                     {  
@@ -496,19 +496,19 @@ def GetDiscCategoryID(orgname, reponame, discname):
                 } 
             }
         }
-    """%(orgname, reponame)
-    if not hasattr(GetDiscCategoryID, "%s.%s"%(reponame,discname)):
+    """%(orgname, reponame, gqlObjname, gqlCount)
+    if not hasattr(GetObjectIDByName, "%s.%s"%(reponame,objname)):
         result = run_query(query)
         # result = d['data']['repository']['discussionCategories']['edges'][0] =
         # {'node': {'description': 'Ask the community for help using VisIt', 'name': 'Help using VisIt', 'id': 'MDE4OkRpc2N1c3Npb25DYXRlZ29yeTMyOTAyNDY5'}}
         # d['data']['repository']['discussionCategories']['edges'][1]
         # {'node': {'description': 'Share cool ways you use VisIt including pictures or movies', 'name': 'Share cool stuff', 'id': 'MDE4OkRpc2N1c3Npb25DYXRlZ29yeTMyOTAyNDcw'}}
-        edges = result['data']['repository']['discussionCategories']['edges']
+        edges = result['data']['repository'][gqlObjname]['edges']
         for e in edges:
-            if e['node']['name'] == discname:
-                setattr(GetDiscCategoryID, "%s.%s"%(reponame,discname), e['node']['id'])
+            if e['node']['name'] == objname:
+                setattr(GetObjectIDByName, "%s.%s"%(reponame,objname), e['node']['id'])
                 break
-    return getattr(GetDiscCategoryID, "%s.%s"%(reponame,discname))
+    return getattr(GetObjectIDByName, "%s.%s"%(reponame,objname))
 
 #
 # Create a discussion and return its id
@@ -596,6 +596,41 @@ def lockLockable(nodeid):
         result = run_query(query)
     except:
         captureGraphQlFailureDetails('lockLockable %s'%nodeid, query,
+            repr(result) if 'result' in locals() else "")
+
+#
+# lock an object (primarily to lock a discussion)
+#
+def addLabelsToLabelable(nodeid, labid):
+    query = """
+        mutation
+        {
+            addLabelsToLabelable(input:
+            {
+                clientMutationId:\"scratlantis:emai2discussions.py\",
+                labelIds:[\"%s\"],
+                labelableId:\"%s\"
+            })
+            {
+                labelable
+                {
+                    labels(first:1)
+                    {
+                        edges
+                        {  
+                            node
+                            {
+                                id
+                            }
+                        }
+                    }
+                }
+            }
+        }"""%(labid, nodeid)
+    try:
+        result = run_query(query)
+    except:
+        captureGraphQlFailureDetails('addLabelsToLabelable %s'%nodeid, query,
             repr(result) if 'result' in locals() else "")
 
 #
@@ -789,7 +824,7 @@ def testWriteMessagesToTextFiles(msgLists):
 # Loop over the message list, adding each thread of
 # messages as a discussion with comments
 #
-def importMessagesAsDiscussions(msgLists, repoid, catid):
+def importMessagesAsDiscussions(msgLists, repoid, catid, labid):
 
     # look for restart file
     processedKeys = restartFromRestart()
@@ -816,6 +851,9 @@ def importMessagesAsDiscussions(msgLists, repoid, catid):
         print("Working on thread %d of %d (%d messages, subject = \"%s\")"%(i,len(msgLists.keys()),len(mlist),k))
         body = buildBody(mlist[0])
         discid = createDiscussion(repoid, catid, subject, body)
+
+        # label this discussion for easy filtering
+        addLabelsToLabelable(discid, labid)
 
         # Use remaining messages in thread (starting from index 1)
         # to add comments to this discussion
@@ -858,11 +896,12 @@ printDiagnostics(msgLists)
 repoid = GetRepoID("markcmiller86", "discussions-testing")
 
 # Get the discussion category id for the email migration discussion
-#catid =  GetDiscCategoryID("visit-dav", "temporary-play-with-discussions", "VisIt Users Email Archive")
-catid =  GetDiscCategoryID("markcmiller86", "discussions-testing", "Ideas")
+#catid =  GetObjectIDByName("visit-dav", "temporary-play-with-discussions", "discussionCategories", 10, "VisIt Users Email Archive")
+catid =  GetObjectIDByName("markcmiller86", "discussions-testing", "discussionCategories", 10, "Ideas")
+labid =  GetObjectIDByName("markcmiller86", "discussions-testing", "labels", 30, "visit-users email")
 
 # Import all the message threads as discussions
 #testWriteMessagesToTextFiles(msgLists)
 if os.access('email2discussions-failures-log.txt', os.R_OK):
     os.unlink('email2discussions-failures-log.txt')
-importMessagesAsDiscussions(msgLists, repoid, catid)
+importMessagesAsDiscussions(msgLists, repoid, catid, labid)
