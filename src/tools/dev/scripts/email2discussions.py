@@ -63,9 +63,10 @@ def readAllMboxFiles():
 #
 def threadMessages(items):
 
-    print("Threading messages...")
+    print("Threading messages by message ids...")
     countRemoveByGitHub = 0
     countByMid = 0
+    countBySub = 0
     countRemoveReleases = 0
     countMerges = 0
     countRemoveEqualDates = 0
@@ -137,6 +138,7 @@ def threadMessages(items):
 
         if sub in msgLists.keys():
             msgLists[sub] += [msg]
+            countBySub += 1
         else:
             mid = msg['Message-ID']
             msgIds[mid] = sub
@@ -182,7 +184,9 @@ def threadMessages(items):
         if not p10 % 10:
             print("    %d %% completed"%p10, end='\r')
 
-        # Disregard these matches here
+        # Don't perform subject similarity matching on these
+        # subjects because they easily match on similarity but
+        # are wholly different topics
         if re.match('digest, vol [0-9]*, issue [0-9]*', k1):
             continue
 
@@ -246,7 +250,8 @@ def threadMessages(items):
         for i in deli:
             del(msgLists[k][i])
 
-    print("Thread %d messages by message id"%countByMid)
+    print("Threaded %d messages by message id"%countByMid)
+    print("Threaded %d messages by subject"%countBySub)
     print("Removed %d GitHub messages"%countRemoveByGitHub)
     print("Removed %d release messages"%countRemoveReleases)
     print("Removed %d equal date messages"%countRemoveEqualDates)
@@ -599,7 +604,8 @@ def lockLockable(nodeid):
             repr(result) if 'result' in locals() else "")
 
 #
-# lock an object (primarily to lock a discussion)
+# Add a convenience label to each discussion
+# The label id was captured during startup
 #
 def addLabelsToLabelable(nodeid, labid):
     query = """
@@ -689,8 +695,8 @@ def filterSubject(su):
 # Replacement function for re.sub to replace phone number matches with
 # a string of the same number of characters
 #
-def replacePhone(m):
-    return '#' * len(m.group())
+def overwriteChars(m):
+    return 'X' * len(m.group())
 
 #
 # Method to filter body. Currently designed towards the notion that the
@@ -701,9 +707,32 @@ def filterBody(body):
 
     retval = body[:20000]+' truncated...' if (len(body)) > 20000 else body
 
-    # filter out anything that looks like a phone number
-    retval = re.sub('[ ([]?[0-9]{3}[ )\]]?[-\.+=: ]?[0-9]{3}[-\.+=: ]?[0-9]{4}',
-        replacePhone,retval,0,re.MULTILINE)
+    # filter out anything that looks like a phone number including international #'s
+    # Unfortunately, this can corrupt any lines of raw integer or floating point
+    # data in the email body. Masking telephone numbers trumps raw data though.
+    retval = re.sub('[ ({[]?[0-9]{3}[ )}\]]?[-\.+=: ]?[0-9]{3}[-\.+=: ]?[0-9]{4}',
+        overwriteChars,retval,0,re.MULTILINE)
+    retval = re.sub('[ ({[]?[0-9]{3}[ )}\]]?[-\.+=: ]?[0-9]{4}[-\.+=: ]?[0-9]{4}',
+        overwriteChars,retval,0,re.MULTILINE)
+    retval = re.sub('[ ({[]?[0-9]{2}[ )}\]]?[-\.+=: ]?[ ([]?[0-9]{2}[ )\]]?[-\.+=: ]?[0-9]{4}[-\.+=: ]?[0-9]{4}',
+        overwriteChars,retval,0,re.MULTILINE)
+    retval = re.sub('[ ({[]?[0-9]{3}[ )}\]]?[-\.+=: ]?[ ([]?[0-9]{1}[ )\]]?[-\.+=: ]?[0-9]{3}[-\.+=: ]?[0-9]{4}',
+        overwriteChars,retval,0,re.MULTILINE)
+    retval = re.sub('[ ({[]?[0-9]{3}[ )}\]]?[-\.+=: ]?[ ([]?[0-9]{1}[ )\]]?[-\.+=: ]?[0-9]{2}[-\.+=: ]?[0-9]{2}[-\.+=: ]?[0-9]{2}[-\.+=: ]?[0-9]{2}',
+        overwriteChars,retval,0,re.MULTILINE)
+
+    # Remove these specific lines. In many cases, these lines are quoted and
+    # re-wrapped (sometimes with chars inserted in arbitrary places) so this isn't
+    # foolproof.
+    retval = re.sub('^[>\s]*VisIt Users Wiki: http://visitusers.org/.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*Frequently Asked Questions for VisIt: http://visit.llnl.gov/FAQ.html.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*To Unsubscribe: send a blank email to visit-users-unsubscribe at elist.ornl.gov.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*More Options: https://elist.ornl.gov/mailman/listinfo/visit-users.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*To Unsubscribe: send a blank email to.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*visit-users-unsubscribe at elist.ornl.gov.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*-------------- next part --------------.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*An HTML attachment was scrubbed\.\.\..*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*URL: <https://elist.ornl.gov/pipermail/visit-users/attachments.*$', '',retval,0,re.MULTILINE)
 
     #
     # Filter out signature separator lines (e.g. '--') as these convince
@@ -896,12 +925,12 @@ printDiagnostics(msgLists)
 repoid = GetRepoID("markcmiller86", "discussions-testing")
 
 # Get the discussion category id for the email migration discussion
-#catid =  GetObjectIDByName("visit-dav", "temporary-play-with-discussions", "discussionCategories", 10, "VisIt Users Email Archive")
 catid =  GetObjectIDByName("markcmiller86", "discussions-testing", "discussionCategories", 10, "Ideas")
+
+# Get the label id for the 'visit-uers email'
 labid =  GetObjectIDByName("markcmiller86", "discussions-testing", "labels", 30, "visit-users email")
 
 # Import all the message threads as discussions
-#testWriteMessagesToTextFiles(msgLists)
 if os.access('email2discussions-failures-log.txt', os.R_OK):
     os.unlink('email2discussions-failures-log.txt')
 importMessagesAsDiscussions(msgLists, repoid, catid, labid)
