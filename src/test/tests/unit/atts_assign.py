@@ -11,6 +11,11 @@
 #
 #  Mark C. Miller, Tue Jun  8 15:51:59 PDT 2021
 #
+#  Modifications:
+#    Kathleen Biagas, Tue July 27, 2021
+#    Assigning Max32BitInt+1 to int on Windows causes TypeError, not
+#    ValueError, so change expected results in those cases.
+#
 # ----------------------------------------------------------------------------
 import copy, io, sys
 
@@ -198,7 +203,10 @@ def TestAssignmentToInt():
         pass
 
     fails =  [    '123',      1+2j,      None,         X, Max32BitInt1]
-    excpts = [TypeError, TypeError, TypeError, TypeError, ValueError]
+    if sys.platform.startswith("win"):
+        excpts = [TypeError, TypeError, TypeError, TypeError, TypeError]
+    else:
+        excpts = [TypeError, TypeError, TypeError, TypeError, ValueError]
     for i in range(len(fails)):
         try:
             va.samplesPerRay = fails[i]
@@ -566,8 +574,12 @@ def TestAssignmentToIntVector():
 
     fails =  [(Max32BitInt1,), (1+2j,), ('b',), (None,), (1,Max32BitInt1,3),
               (1,1+2j,3), (1,X,3), (1,'b',3), (1,None,3)]
-    excpts = [ValueError, TypeError, TypeError, TypeError, ValueError,
-              TypeError, TypeError, TypeError, TypeError]
+    if sys.platform.startswith("win"):
+        excpts = [TypeError, TypeError, TypeError, TypeError, TypeError,
+                  TypeError, TypeError, TypeError, TypeError]
+    else:
+        excpts = [ValueError, TypeError, TypeError, TypeError, ValueError,
+                  TypeError, TypeError, TypeError, TypeError]
     for i in range(len(fails)):
         try:
             opa.index = fails[i]
@@ -797,9 +809,13 @@ def TestAssignmentToIntArray():
         TestFOA('ra.reflections=0,1,0,1,0,1,0,1', LINE())
         pass
 
-    fails =  [(0,1,None,1,0,1,0,1), (0,1,1+2j,1,0,1,0,1), (0,1,X,1,0,1,0,1), (0,1,Max32BitInt1,1,0,1,0,1),
-              (0,1,'123',1,0,1,0,1), (0,1,0,1,0,1,0,1,1), (0,1,0,1,0,1,0)]
-    excpts = [TypeError, TypeError, TypeError, ValueError, TypeError, TypeError, TypeError]
+    fails =  [(0,1,None,1,0,1,0,1), (0,1,1+2j,1,0,1,0,1), (0,1,X,1,0,1,0,1),
+              (0,1,Max32BitInt1,1,0,1,0,1), (0,1,'123',1,0,1,0,1),
+              (0,1,0,1,0,1,0,1,1), (0,1,0,1,0,1,0)]
+    if sys.platform.startswith("win"):
+        excpts = [TypeError, TypeError, TypeError, TypeError, TypeError, TypeError, TypeError]
+    else: 
+        excpts = [TypeError, TypeError, TypeError, ValueError, TypeError, TypeError, TypeError]
     for i in range(len(fails)):
         try:
             ra.reflections = fails[i]
