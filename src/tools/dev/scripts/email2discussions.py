@@ -47,7 +47,7 @@ def readAllMboxFiles():
     print("Reading messages...")
     files = glob.glob("%s/*.txt"%rootDir)
     files = sorted(files, key=lambda f: datetime.datetime.strptime(f,'/Users/miller86/visit/visit-users-email/%Y-%B.txt'))
-    #files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
+    files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
     items = []
     for f in files:
         mb = mailbox.mbox(f)
@@ -272,8 +272,11 @@ def removeBadMessages(msgLists):
     for i in delItems:
         del msgLists[i]
     if '(no subject)' in msgLists.keys():
-        print("Deleting %d messages with no subject"%len(msgLists['(no subject)']))
+        print("Deleting %d messages @ \"(no subject)\""%len(msgLists['(no subject)']))
         del msgLists['(no subject)']
+    if 'no subject' in msgLists.keys():
+        print("Deleting %d messages @ \"no subject\""%len(msgLists['no subject']))
+        del msgLists['no subject']
 
 #
 # Debug: list all the subject lines
@@ -331,7 +334,7 @@ def printDiagnostics(msgLists):
 # Capture failure details to a continuously appending file
 #
 def captureGraphQlFailureDetails(gqlQueryName, gqlQueryString, gqlResultString):
-    with open("email2discussion-failures-log.txt", 'w+') as f:
+    with open("email2discussions-failures-log.txt", 'a') as f:
         f.write("%s - %s\n"%(datetime.datetime.now().strftime('%y%b%d %I:%M:%S'),gqlQueryName))
         f.write("--------------------------------------------------------------------------\n")
         f.write(gqlResultString)
@@ -368,12 +371,26 @@ headers = \
 #
 def run_query(query): # A simple function to use requests.post to make the API call. Note the json= section.
 
+    run_query.sleep = 0 # amount to sleep to prevent exceeding GitHub rate limits
     if not hasattr(run_query, 'queryTimes'):
         run_query.queryTimes = []
+    if not hasattr(run_query, 'startTime'):
+        run_query.startTime = datetime.datetime.now()
+    if not hasattr(run_query, 'numSuccessiveFailures'):
+        run_query.numSuccessiveFailures = 0;
 
     # Post the request. Time it and keep 100 most recent times in a queue
     now1 = datetime.datetime.now()
-    request = requests.post('https://api.github.com/graphql', json={'query': query}, headers=headers)
+    try:
+        request = requests.post('https://api.github.com/graphql', json={'query': query}, headers=headers)
+        run_query.numSuccessiveFailures = 0
+    except:
+        captureGraphQlFailureDetails('run_query', query, "")
+        run_query.numSuccessiveFailures += 1
+        if run_query.numSuccessiveFailures > 3:
+            raise Exception(">3 successive query failures, exiting...")
+            sys.exit(1)
+
     now2 = datetime.datetime.now()
     run_query.queryTimes.insert(0,(now2-now1).total_seconds())
     if len(run_query.queryTimes) > 10: # keep record of last 10 query call times
@@ -382,22 +399,71 @@ def run_query(query): # A simple function to use requests.post to make the API c
     if request.status_code == 200:
         return request.json()
     else:
-        raise Exception("Query failed to run by returning code of {}. {} {}".format(request.status_code, query, request.json()))
+        raise Exception("run_query failed with code of {}. {} {}".format(request.status_code, query, request.json()))
+
+#
+# A method to periodically call to ensure we don't
+# exceed GitHub's rate limits
+#
+def throttleRate():
+
+    if not hasattr(throttleRate, 'lastCheckNow'):
+        throttleRate.lastCheckNow = datetime.datetime.now()
+
+    query = """
+        query
+        {
+            viewer
+            {
+                login
+            }
+            rateLimit
+            {
+                limit
+                remaining
+                resetAt
+            }
+        }
+    """
+
+    # Perform this check only about once a minute
+    now = datetime.datetime.now()
+    if (now - throttleRate.lastCheckNow).total_seconds() < 60:
+        return
+    throttleRate.lastCheckNow = now
+
+    try:
+        result = run_query(query)
+
+        # Gather rate limit info from the query result
+        limit = result['data']['rateLimit']['limit']
+        remaining = result['data']['rateLimit']['remaining']
+        # resetAt is given in Zulu (UTC-Epoch) time
+        resetAt = datetime.datetime.strptime(result['data']['rateLimit']['resetAt'],'%Y-%m-%dT%H:%M:%SZ')
+        toSleep = (resetAt-now).total_seconds() - 7 * 3600 # subtract timezone offset from Zulu
+        print("GraphQl Throttle: limit=%d, remaining=%d, resetAt=%g seconds"%(limit, remaining, toSleep))
+
+        if remaining < 50:
+            print("Reaching end of available queries for this cycle. Sleeping %g seconds..."%toSleep)
+            time.sleep(toSleep)
+
+    except:
+        pass
 
 #
 # Get various visit-dav org. repo ids. Caches results so that subsequent
 # queries don't do any graphql work.
 #
-def GetRepoID(reponame):
+def GetRepoID(orgname, reponame):
     query = """
         query
         {
-            repository(owner: \"visit-dav\", name: \"%s\")
+            repository(owner: \"%s\", name: \"%s\")
             {
                 id
             }
         }
-    """%reponame
+    """%(orgname, reponame)
     if not hasattr(GetRepoID, reponame):
         result = run_query(query)
         # result = {'data': {'repository': {'id': 'MDEwOlJlcG9zaXRvcnkzMjM0MDQ1OTA='}}}
@@ -410,11 +476,11 @@ def GetRepoID(reponame):
 # Caches reponame/discname pair so that subsequent queries don't do any
 # graphql work.
 #
-def GetDiscCategoryID(reponame, discname):
+def GetDiscCategoryID(orgname, reponame, discname):
     query = """
         query
         {
-            repository(owner: \"visit-dav\", name: \"%s\")
+            repository(owner: \"%s\", name: \"%s\")
             {
                 discussionCategories(first:10)
                 {
@@ -430,7 +496,7 @@ def GetDiscCategoryID(reponame, discname):
                 } 
             }
         }
-    """%(reponame)
+    """%(orgname, reponame)
     if not hasattr(GetDiscCategoryID, "%s.%s"%(reponame,discname)):
         result = run_query(query)
         # result = d['data']['repository']['discussionCategories']['edges'][0] =
@@ -471,7 +537,8 @@ def createDiscussion(repoid, catid, subject, body):
         # {'data': {'createDiscussion': {'discussion': {'id': 'MDEwOkRpc2N1c3Npb24zNDY0NDI1'}}}}
         return result['data']['createDiscussion']['discussion']['id']
     except:
-        captureGraphQlFailureDetails('createDiscussion', query, result)
+        captureGraphQlFailureDetails('createDiscussion', query,
+            repr(result) if 'result' in locals() else "")
     
     return None
 
@@ -500,7 +567,8 @@ def addDiscussionComment(discid, body):
         # {'data': {'addDiscussionComment': {'comment': {'id': 'MDE3OkRpc2N1c3Npb25Db21tZW50MTAxNTM5Mw=='}}}}
         return result['data']['addDiscussionComment']['comment']['id']
     except:
-        captureGraphQlFailureDetails('addDiscussionComment %s'%discid, query, result)
+        captureGraphQlFailureDetails('addDiscussionComment %s'%discid, query,
+            repr(result) if 'result' in locals() else "")
     
     return None
 
@@ -527,7 +595,8 @@ def lockLockable(nodeid):
     try:
         result = run_query(query)
     except:
-        captureGraphQlFailureDetails('lockLockable %s'%nodeid, query, result)
+        captureGraphQlFailureDetails('lockLockable %s'%nodeid, query,
+            repr(result) if 'result' in locals() else "")
 
 #
 # Method to filter subject lines
@@ -587,8 +656,7 @@ def filterSubject(su):
 wrapper = textwrap.TextWrapper(width=100)
 def filterBody(body):
 
-    # retain only the first 20,000 chars of body
-    retval = body[:20000]
+    retval = body[:20000]+' truncated...' if (len(body)) > 20000 else body
 
     #
     # Filter out signature separator lines (e.g. '--') as these convince
@@ -627,6 +695,7 @@ def buildBody(msgObj):
     body = ''
     body += '**Date: %s**\n'%mydt(msgObj['Date']).strftime('%a, %d %b %Y %H:%M:%S %z')
     body += '**From: %s**\n'%msgObj['From']
+    body += 'This post was [imported from the visit-users@ornl.gov email archive](https://github.com/visit-dav/visit/wiki/About-the-visit-users@ornl.gov-email-archive)\n'
     body += '\n---\n```\n'
     body += filterBody(msgObj.get_payload())
     body += '\n```\n---\n'
@@ -715,11 +784,16 @@ def importMessagesAsDiscussions(msgLists, repoid, catid):
 
     # for k in list(msgLists.keys()): don't do whole shootin match yet
     i = 0
-    for k in list(msgLists.keys())[:6]:
+    for k in list(msgLists.keys()):
+
+        i += 1
 
         if k in processedKeys:
             print("Already processed \"%s\""%k)
             continue
+
+        # Make sure we don't exceed GitHub's GraphQL API limits
+        throttleRate()
 
         # Get the current message thread
         mlist = msgLists[k]
@@ -727,8 +801,7 @@ def importMessagesAsDiscussions(msgLists, repoid, catid):
         # Use first message (index 0) in thread for subject to
         # create a new discussion topic
         subject = filterSubject(mlist[0]['Subject'])
-        print("Working on thread %d, \"%s\""%(i,k))
-        print("    %d messages, subject \"%s\""%(len(mlist),subject))
+        print("Working on thread %d of %d (%d messages, subject = \"%s\")"%(i,len(msgLists.keys()),len(mlist),k))
         body = buildBody(mlist[0])
         discid = createDiscussion(repoid, catid, subject, body)
 
@@ -741,7 +814,6 @@ def importMessagesAsDiscussions(msgLists, repoid, catid):
         # lock the discussion to prevent any non-owners from
         # ever adding to it
         lockLockable(discid)
-        i += 1
 
         #
         # Update restart state
@@ -767,18 +839,18 @@ removeBadMessages(msgLists)
 # Print some diagnostics
 printDiagnostics(msgLists)
 
-testWriteMessagesToTextFiles(msgLists)
-
-sys.exit(0)
+#testWriteMessagesToTextFiles(msgLists)
 
 # Get the repository id where the discussions will be created
-repoid = GetRepoID("temporary-play-with-discussions")
+#repoid = GetRepoID("visit-dav", "temporary-play-with-discussions")
+repoid = GetRepoID("markcmiller86", "discussions-testing")
 
 # Get the discussion category id for the email migration discussion
-catid =  GetDiscCategoryID("temporary-play-with-discussions", "VisIt Users Email Archive")
+#catid =  GetDiscCategoryID("visit-dav", "temporary-play-with-discussions", "VisIt Users Email Archive")
+catid =  GetDiscCategoryID("markcmiller86", "discussions-testing", "Ideas")
 
 # Import all the message threads as discussions
-#importMessagesAsDiscussions(msgLists, repoid, catid)
-
-# Testing: write all message threads to a text file
 #testWriteMessagesToTextFiles(msgLists)
+if os.access('email2discussions-failures-log.txt', os.R_OK):
+    os.unlink('email2discussions-failures-log.txt')
+importMessagesAsDiscussions(msgLists, repoid, catid)
