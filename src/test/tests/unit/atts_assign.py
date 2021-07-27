@@ -760,6 +760,7 @@ def TestAssignmentToUCharArray():
             TestFOA('va.freeformOpacity=%s'%repr(fails[i][:7]).replace(')',', ...'), LINE())
             pass
 
+    # Test star-deref of tuple
     for i in range(len(fails)):
         try:
             va.SetFreeformOpacity(*fails[i])
@@ -769,6 +770,18 @@ def TestAssignmentToUCharArray():
             pass
         except:
             TestFOA('va.SetFreeformOpacity%s'%repr(fails[i][:7]).replace(')',', ...)'), LINE())
+            pass
+
+    # Test just passing the tuple
+    for i in range(len(fails)):
+        try:
+            va.SetFreeformOpacity(fails[i])
+            TestFOA('va.SetFreeformOpacity(fails[%d])'%i, LINE())
+        except TypeError:
+            TestPOA('va.SetFreeformOpacity(fails[%d])'%i)
+            pass
+        except:
+            TestFOA('va.SetFreeformOpacity(fails[%d])'%i, LINE())
             pass
 
 def TestAssignmentToIntArray():
