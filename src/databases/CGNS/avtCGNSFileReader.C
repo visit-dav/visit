@@ -2454,7 +2454,7 @@ avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
         {
             avtCallback::IssueWarning("VisIt found quadratic or cubic cells "
                 "in the mesh and reduced them to linear cells. Contact "
-                "visit-users@ornl.gov if you would like VisIt to natively "
+                "https://visit-help.llnl.gov if you would like VisIt to natively "
                 "process higher order elements.");
         }
     }

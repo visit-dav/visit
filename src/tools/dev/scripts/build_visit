@@ -11,8 +11,8 @@
 #   Warning:
 #       This script is only expected to work for Linux, and Darwin systems.
 #
-#   Please send feedback to visit-users@ornl.gov if you run into problems
-#   so that this script can be improved in the future.
+#   Please visit https://visit-help.llnl.gov to send feedback if you run into
+#   problems so that this script can be improved in the future.
 #
 
 # To create your own modular file these 7 functions need to be implemented..
