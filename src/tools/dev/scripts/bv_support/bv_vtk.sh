@@ -1199,7 +1199,7 @@ EOF
         return 1
     fi
 
-	# 4) Add include string to vtkOSPRayMaterialHelpers.h for gcc 10.
+	# 4) Add include string to vtkOSPRayMaterialHelpers.h for gcc 10.3.
 	((current_patch++))
     patch -p0 << \EOF
 diff -c Rendering/OSPRay/vtkOSPRayMaterialHelpers.h.original Rendering/OSPRay/vtkOSPRayMaterialHelpers.h
