@@ -118,11 +118,11 @@ within the response time goal, to each inquiry. Ideally, all SRE
 activity during the week is handled and :ref:`resolved <sre_response_vs_resolution>`
 solely by the **Primary**. However, :ref:`escalations <sre_escalation>`, which we
 hope are rare, will wind up engaging the **Backup** and may even engage other
-developers. In addition, any :ref:`active SRE issues <sre_active_issues>` that remain
+developers. In addition, any :ref:`active SRE dicussions <sre_active_discussions>` that remain
 unresolved at the end of the week are formally :ref:`handed off <sre_handoffs>` to
 the next **Primary**.
 
-:ref:`Active SRE issues <sre_active_issues>` will be logged and tracked in a separate GitHub,
+:ref:`Active SRE discussions <sre_active_discussions>` will be logged and tracked in a separate GitHub,
 `issues-only repository <https://github.com/visit-dav/live-customer-response/issues>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. Upon
 resolution of :ref:`serious incidents <sre_serious>`, the **Primary** will prepare a brief
@@ -130,7 +130,7 @@ resolution of :ref:`serious incidents <sre_serious>`, the **Primary** will prepa
 in practices to avoid repeating such major incidents.
 
 Because SRE work tends to be :ref:`interrupt driven <sre_misconceptions>`, there is always
-the chance that the **Primary** will have no :ref:`active <sre_active_issues>` issues.
+the chance that the **Primary** will have no :ref:`active <sre_active_discussions>` discussions.
 At these *idle* times, the **Primary** shall use their time to address general
 :ref:`housekeeping <sre_sre_vs_product_development>` or other *low-hanging fruit* type work. In
 particular, there shall be no expectation that a developer serving as **Primary**
@@ -253,12 +253,12 @@ and/or new issue(s) being added to the
 Any new *product development* issues should be linked back to the original
 SRE issue that spawned them.
 
-.. _sre_active_issues:
+.. _sre_active_discussions:
 
-Active SRE Issues
------------------
+Active SRE Discussions
+----------------------
 
-:ref:`Active SRE issues <sre_active_issues>` will be logged and tracked as discussions
+:ref:`Active SRE issues <sre_active_discussions>` will be logged and tracked as discussions
 in our `GitHub Discussions <https://github.com/visit-dav/visit/discussions>`_
 within the `visit-dav GitHub organization <https://github.com/visit-dav>`_. 
 For each new inquiry, a discussion will be created either by the primary or by the
