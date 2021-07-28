@@ -255,8 +255,8 @@ SRE issue that spawned them.
 
 .. _sre_active_issues:
 
-Active SRE Issues Repo
-----------------------
+Active SRE Issues
+-----------------
 
 :ref:`Active SRE issues <sre_active_issues>` will be logged and tracked as discussions
 in our `GitHub Discussions <https://github.com/visit-dav/visit/discussions>`_
@@ -280,13 +280,19 @@ that discussion.
 
 For any work the **Primary** performs, even if it is a rather trivial amount
 of work to resolve, there should be an associated discussion for tracking that work.
-Tracking even the trivial issues will help to build a database of issues we
+Tracking even the trivial tasks will help to build a database of activity we
 may be able to later mine to identify patterns and further process improvements.
 
-An SRE discussion is closed when the associated inquiry is
-:ref:`resolved <sre_response_vs_resolution>`. Or, it is closed and labeled
+An SRE discussion is *answered* when the associated inquiry is
+:ref:`resolved <sre_response_vs_resolution>`. Or, it is *answered* and labeled
 ``wontfix`` if 21 days pass since the user last engaged in any conversation with
-VisIt_ developers to reach a resolution.
+VisIt_ developers to reach a resolution. Because of the manner in which the
+interface to GitHub discussions behaves, the natural chain of communication may
+not always lend itself well to using GitHub's *check this reply as the answer*
+feature to indicate an SRE discussion is resolved. In such circumstances, the
+adopted approach is to add a *new*, top-level comment with a link to whichever
+previous, embedded comment best answers the issue and then tag that new, top-level
+comment as the discussion's answer.
 
 Supported Methods of Contact
 ----------------------------
