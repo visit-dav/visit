@@ -1,8 +1,26 @@
 # Copyright (c) 2021, Lawrence Livermore National Security, LLC
 #
-# Python script using GraphQL interface to GitHub discussions to read
+# Python3 script using GraphQL interface to GitHub discussions to read
 # .txt file mbox files of VisIt User's email archive and import each
 # email thread as a GitHub discussion.
+#
+# 1. Reads a directory of .txt files (readAllMboxFiles) in mbox format
+#    for messages.
+# 2. Threads messages (threadMessages) using message ids (which is
+#    unreliable) and then using subjects in a dict of threads
+#    keyed by subject/topic
+# 3. Removes various failure cases (removeBadMessages)
+# 3.5 Reads your GitHub token from a .txt file `ghToken.txt`
+# 4. Iterates over threads using GraphQl interface to create a new
+#    discussion for each thread and adding remaining messages in a thread
+#    as comments (importMessagesAsDiscussions)
+# 5. Locks resulting discussion (lockLockable)
+# 6. Applies a label to resulting discussion (addLabelsToLabelable)
+# 7. Throttles (inserts sleeps) to stay within GitHub GraphQl rate
+#    limits (throttleRate)
+# 8. Maintains knowledge of state to safely restart and pick up
+#    where it left off (restartFromRestart)
+# 9. Logs failure cases to a message log (text) file
 #
 # Programmer: Mark C. Miller, Tue Jul 20 10:21:40 PDT 2021
 #
@@ -47,7 +65,8 @@ def readAllMboxFiles():
     print("Reading messages...")
     files = glob.glob("%s/*.txt"%rootDir)
     files = sorted(files, key=lambda f: datetime.datetime.strptime(f,'/Users/miller86/visit/visit-users-email/%Y-%B.txt'))
-#    files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
+    files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
+
     items = []
     for f in files:
         mb = mailbox.mbox(f)
@@ -73,7 +92,6 @@ def threadMessages(items):
     msgLists = {}
     msgIds = {}
     for i in range(len(items)):
-#    for i in range(3000):
 
         # mailbox imports all messages as a pair <int, message object>
         # So here, we get just the message object
@@ -174,6 +192,7 @@ def threadMessages(items):
     # be of minimum length 2. So, now make a pass trying to
     # merge any threads of size one into other threads using
     # 'similarity' of subject matches and nearnest of dates.
+    # This is an O(n^2) operation where n=#threads.
     #
     print("Merging threads by similarity of subjects...")
     i = 0
@@ -192,12 +211,22 @@ def threadMessages(items):
 
         mlist1 = msgLists[k1]
 
+        # we're looking only for threads of length 1
         if len(mlist1) > 1:
             continue
 
+        # we might see threads of length zero for any
+        # threads already merged
         if len(mlist1) == 0:
             continue
 
+        #
+        # Look for a thread whose lead message is within
+        # 90 days and whose subject has strongest 'similarity'
+        # match. This might go faster/better if we instead build
+        # a list of all 'matches' (date proximity and similarity
+        # above threshhold) to merge together.
+        #
         date1 = mydt(mlist1[0]['Date'])
         maxMatchRatio = 0
         maxMatchKey = None
@@ -250,6 +279,9 @@ def threadMessages(items):
         for i in deli:
             del(msgLists[k][i])
 
+    #
+    # Report some counts of activity
+    #
     print("Threaded %d messages by message id"%countByMid)
     print("Threaded %d messages by subject"%countBySub)
     print("Removed %d GitHub messages"%countRemoveByGitHub)
@@ -260,15 +292,18 @@ def threadMessages(items):
     return msgLists
 
 #
-# Handle (skip) all messages that had no id
+# Remove all the bad cases
 #
 def removeBadMessages(msgLists):
+    # remove thread where subject was None
     if None in msgLists.keys():
         print("There are", len(msgLists[None]), "messages with subject = None")
         del msgLists[None]
+    # remove thread where subject was empty string
     if '' in msgLists.keys():
         print("There are", len(msgLists['']), "messages with subject = ''")
         del msgLists['']
+    # remove threads of length <=1
     delItems = []
     for k in msgLists.keys():
         if len(msgLists[k]) <= 1:
@@ -276,9 +311,11 @@ def removeBadMessages(msgLists):
     print("Deleting %d threads of size <= 1"%len(delItems))
     for i in delItems:
         del msgLists[i]
+    # remove thread where subject was '(no subject)'
     if '(no subject)' in msgLists.keys():
         print("Deleting %d messages @ \"(no subject)\""%len(msgLists['(no subject)']))
         del msgLists['(no subject)']
+    # remove thread where subject was 'no subject'
     if 'no subject' in msgLists.keys():
         print("Deleting %d messages @ \"no subject\""%len(msgLists['no subject']))
         del msgLists['no subject']
@@ -350,7 +387,7 @@ def captureGraphQlFailureDetails(gqlQueryName, gqlQueryString, gqlResultString):
         f.write("--------------------------------------------------------------------------\n\n\n\n")
 
 #
-# Read token from 'ghToken.txt'
+# Read GitHub token from 'ghToken.txt'
 #
 def GetGHToken():
     if not hasattr(GetGHToken, 'ghToken'):
@@ -376,16 +413,10 @@ headers = \
 #
 def run_query(query): # A simple function to use requests.post to make the API call. Note the json= section.
 
-    run_query.sleep = 0 # amount to sleep to prevent exceeding GitHub rate limits
-    if not hasattr(run_query, 'queryTimes'):
-        run_query.queryTimes = []
-    if not hasattr(run_query, 'startTime'):
-        run_query.startTime = datetime.datetime.now()
     if not hasattr(run_query, 'numSuccessiveFailures'):
         run_query.numSuccessiveFailures = 0;
 
     # Post the request. Time it and keep 100 most recent times in a queue
-    now1 = datetime.datetime.now()
     try:
         request = requests.post('https://api.github.com/graphql', json={'query': query}, headers=headers)
         run_query.numSuccessiveFailures = 0
@@ -396,11 +427,6 @@ def run_query(query): # A simple function to use requests.post to make the API c
             raise Exception(">3 successive query failures, exiting...")
             sys.exit(1)
 
-    now2 = datetime.datetime.now()
-    run_query.queryTimes.insert(0,(now2-now1).total_seconds())
-    if len(run_query.queryTimes) > 10: # keep record of last 10 query call times
-        run_query.queryTimes.pop()
-
     if request.status_code == 200:
         return request.json()
     else:
@@ -408,7 +434,10 @@ def run_query(query): # A simple function to use requests.post to make the API c
 
 #
 # A method to periodically call to ensure we don't
-# exceed GitHub's rate limits
+# exceed GitHub's rate limits. We call it once per
+# new discussion but it does actual GraphQL work only
+# about once per minute. If we fall below a remaining
+# points threshold, sleep until the GitHub count resets.
 #
 def throttleRate():
 
@@ -469,7 +498,7 @@ def throttleRate():
         captureGraphQlFailureDetails('rateLimit', query, "")
 
 #
-# Get various visit-dav org. repo ids. Caches results so that subsequent
+# Get various repo ids. Caches results so that subsequent
 # queries don't do any graphql work.
 #
 def GetRepoID(orgname, reponame):
@@ -660,11 +689,6 @@ def filterSubject(su):
     if not su:
         return "no subject"
 
-    gotit = False
-    if '#261' in su:
-        gotit = True
-        print(su)
-
     # Handle occasional odd-ball encoding
     suparts = email.header.decode_header(su)
     newsu = ''
@@ -697,9 +721,6 @@ def filterSubject(su):
 
     # Get rid of GitHub bug identifiers
     su = re.sub('\s+\(#[0-9]*\)','',su)
-
-    if gotit:
-        print(su)
 
     return su.strip()
 
@@ -934,17 +955,14 @@ removeBadMessages(msgLists)
 # Print some diagnostics
 printDiagnostics(msgLists)
 
-#testWriteMessagesToTextFiles(msgLists)
-
 # Get the repository id where the discussions will be created
-#repoid = GetRepoID("visit-dav", "temporary-play-with-discussions")
-repoid = GetRepoID("markcmiller86", "discussions-testing")
+repoid = GetRepoID("visit-dav", "visit")
 
 # Get the discussion category id for the email migration discussion
-catid =  GetObjectIDByName("markcmiller86", "discussions-testing", "discussionCategories", 10, "Ideas")
+catid =  GetObjectIDByName("visit-dav", "visit", "discussionCategories", 10, "visit-users email archive")
 
 # Get the label id for the 'visit-uers email'
-labid =  GetObjectIDByName("markcmiller86", "discussions-testing", "labels", 30, "visit-users email")
+labid =  GetObjectIDByName("visit-dav", "visit", "labels", 30, "visit-users email")
 
 # Import all the message threads as discussions
 if os.access('email2discussions-failures-log.txt', os.R_OK):
