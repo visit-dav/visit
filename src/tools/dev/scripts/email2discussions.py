@@ -47,7 +47,7 @@ def readAllMboxFiles():
     print("Reading messages...")
     files = glob.glob("%s/*.txt"%rootDir)
     files = sorted(files, key=lambda f: datetime.datetime.strptime(f,'/Users/miller86/visit/visit-users-email/%Y-%B.txt'))
-    files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
+#    files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
     items = []
     for f in files:
         mb = mailbox.mbox(f)
@@ -412,8 +412,10 @@ def run_query(query): # A simple function to use requests.post to make the API c
 #
 def throttleRate():
 
+    # set the *last* check 61 seconds in the past to force a check
+    # the very *first* time we run this
     if not hasattr(throttleRate, 'lastCheckNow'):
-        throttleRate.lastCheckNow = datetime.datetime.now()
+        throttleRate.lastCheckNow = datetime.datetime.now()-datetime.timedelta(seconds=61)
 
     query = """
         query
@@ -440,20 +442,31 @@ def throttleRate():
     try:
         result = run_query(query)
 
+        zuluOffset = 7 * 3600 # subtract PDT timezone offset from Zulu
+        
+        if 'errors' in result.keys():
+            toSleep = (throttleRate.resetAt-now).total_seconds() - zuluOffset + 1
+            print("Reached end of available queries for this cycle. Sleeping %g seconds..."%toSleep)
+            time.sleep(toSleep)
+            return
+
         # Gather rate limit info from the query result
         limit = result['data']['rateLimit']['limit']
         remaining = result['data']['rateLimit']['remaining']
         # resetAt is given in Zulu (UTC-Epoch) time
         resetAt = datetime.datetime.strptime(result['data']['rateLimit']['resetAt'],'%Y-%m-%dT%H:%M:%SZ')
-        toSleep = (resetAt-now).total_seconds() - 7 * 3600 # subtract timezone offset from Zulu
+        toSleep = (resetAt-now).total_seconds() - zuluOffset
         print("GraphQl Throttle: limit=%d, remaining=%d, resetAt=%g seconds"%(limit, remaining, toSleep))
 
-        if remaining < 50:
+        # Capture the first valid resetAt point in the future
+        throttleRate.resetAt = resetAt
+
+        if remaining < 200:
             print("Reaching end of available queries for this cycle. Sleeping %g seconds..."%toSleep)
             time.sleep(toSleep)
 
     except:
-        pass
+        captureGraphQlFailureDetails('rateLimit', query, "")
 
 #
 # Get various visit-dav org. repo ids. Caches results so that subsequent
@@ -477,8 +490,8 @@ def GetRepoID(orgname, reponame):
 
 
 #
-# Get discussion category id by name for given repo name in visit-dav org.
-# Caches reponame/discname pair so that subsequent queries don't do any
+# Get object id by name for given repo name and org/user name. 
+# Caches reponame/objname pair so that subsequent queries don't do any
 # graphql work.
 #
 def GetObjectIDByName(orgname, reponame, gqlObjname, gqlCount, objname):
@@ -724,15 +737,18 @@ def filterBody(body):
     # Remove these specific lines. In many cases, these lines are quoted and
     # re-wrapped (sometimes with chars inserted in arbitrary places) so this isn't
     # foolproof.
-    retval = re.sub('^[>\s]*VisIt Users Wiki: http://visitusers.org/.*$', '',retval,0,re.MULTILINE)
-    retval = re.sub('^[>\s]*Frequently Asked Questions for VisIt: http://visit.llnl.gov/FAQ.html.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*VisIt Users Wiki: http://[ +_\*]*visitusers.org/.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*Frequently Asked Questions for VisIt: http://[ +_\*]*visit.llnl.gov/FAQ.html.*$', '',retval,0,re.MULTILINE)
     retval = re.sub('^[>\s]*To Unsubscribe: send a blank email to visit-users-unsubscribe at elist.ornl.gov.*$', '',retval,0,re.MULTILINE)
-    retval = re.sub('^[>\s]*More Options: https://elist.ornl.gov/mailman/listinfo/visit-users.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*More Options: https://[ +_\*]*elist.ornl.gov/mailman/listinfo/visit-users.*$', '',retval,0,re.MULTILINE)
     retval = re.sub('^[>\s]*To Unsubscribe: send a blank email to.*$', '',retval,0,re.MULTILINE)
     retval = re.sub('^[>\s]*visit-users-unsubscribe at elist.ornl.gov.*$', '',retval,0,re.MULTILINE)
     retval = re.sub('^[>\s]*-------------- next part --------------.*$', '',retval,0,re.MULTILINE)
     retval = re.sub('^[>\s]*An HTML attachment was scrubbed\.\.\..*$', '',retval,0,re.MULTILINE)
-    retval = re.sub('^[>\s]*URL: <https://elist.ornl.gov/pipermail/visit-users/attachments.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*URL: <?https://[ +_\*]*elist.ornl.gov/pipermail/visit-users/attachments.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*URL: <?https://[ +_\*]*email.ornl.gov/pipermail/visit-users/attachments.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*List subscription information: https://[ +_\*]*email.ornl.gov/mailman/listinfo/visit-users.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*Searchable list archives: https://[ +_\*]*email.ornl.gov/pipermail/visit-users.*$', '',retval,0,re.MULTILINE)
 
     #
     # Filter out signature separator lines (e.g. '--') as these convince
