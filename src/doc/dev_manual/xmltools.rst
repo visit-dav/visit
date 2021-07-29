@@ -9,7 +9,7 @@ VisIt_'s features. The source core for these tools is kept in
 
 Types Managed by XML Tools
 --------------------------
-There XML tools are designed to be aware of a number of basic data types. These include...
+These XML tools are designed to be aware of a number of basic data types. These include...
 
 * ``Bool``
 * ``Int``
