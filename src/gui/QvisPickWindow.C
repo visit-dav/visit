@@ -158,6 +158,9 @@ void PickRecord::reset() {
 //   Kathleen Biagas, Wed Jan 25 16:00:17 MST 2012
 //   Added timeOptsTabIndex.
 //
+//   Alister Maguire, Mon Jul 19 11:06:57 PDT 2021
+//   Added initialiation of previousPoint.
+//
 // ****************************************************************************
 
 QvisPickWindow::QvisPickWindow(PickAttributes *subj, const QString &caption,
@@ -175,6 +178,9 @@ QvisPickWindow::QvisPickWindow(PickAttributes *subj, const QString &caption,
     activeOptionsTab = 0;
     timeOptsTabIndex = 0;
     plotList = 0;
+    previousPoint[0] = 0.0;
+    previousPoint[1] = 0.0;
+    previousPoint[2] = 0.0;
 }
 
 // ****************************************************************************
@@ -442,6 +448,10 @@ QvisPickWindow::CreateWindowContents()
 //   Alister Maguire, Wed Aug  8 15:33:21 PDT 2018
 //   Added option to update the swivel focus.
 //
+//   Alister Maguire, Mon Jul 19 11:06:57 PDT 2021
+//   Added option to show the distance between the current and previous
+//   pick.
+//
 // ****************************************************************************
 
 void
@@ -487,13 +497,19 @@ QvisPickWindow::CreateDisplayOptionsTab()
                                       pageDisplay);
     connect(displayPickLetter, SIGNAL(toggled(bool)),
             this, SLOT(displayPickLetterToggled(bool)));
-    dLayout->addWidget(displayPickLetter, 4, 0, 1, 4);
+    dLayout->addWidget(displayPickLetter, 3, 0, 1, 4);
 
     displayPickHighlight = new QCheckBox(tr("Pick highlights"),
                                       pageDisplay);
     connect(displayPickHighlight, SIGNAL(toggled(bool)),
             this, SLOT(displayPickHighlightToggled(bool)));
-    dLayout->addWidget(displayPickHighlight, 4, 2, 1, 2);
+    dLayout->addWidget(displayPickHighlight, 3, 2, 1, 2);
+
+    displayDistance = new QCheckBox(tr("Distance to previous"),
+                                      pageDisplay);
+    connect(displayDistance, SIGNAL(toggled(bool)),
+            this, SLOT(displayDistanceToggled(bool)));
+    dLayout->addWidget(displayDistance, 4, 0, 1, 2);
 
     // Node settings
     QGroupBox *nodeGroupBox = new QGroupBox(pageDisplay);
@@ -1035,6 +1051,10 @@ QvisPickWindow::UpdateTimeOptions()
 //   Kathleen Biagas, Thu Jan 21, 2021
 //   Replace QString.asprintf with QString.arg.
 //
+//   Alister Maguire, Mon Jul 19 11:06:57 PDT 2021
+//   Appropriately set the previous point so that we can calculate a
+//   distance if requested.
+//
 // ****************************************************************************
 
 void
@@ -1051,6 +1071,24 @@ QvisPickWindow::UpdatePage()
     }
     else if (lastLetter != pickLetter && pickAtts->GetFulfilled())
     {
+        if (lastLetter != QString(" "))
+        {
+            pickAtts->SetPreviousPoint(previousPoint);
+        }
+        else
+        {
+            //
+            // If this is our first pick, set the previous point to
+            // the current point so that we get a distance of 0.
+            //
+            pickAtts->SetPreviousPoint(pickAtts->GetPickPoint());
+        }
+
+        for (int i = 0; i < 3; ++i)
+        {
+            previousPoint[i] = pickAtts->GetPickPoint()[i];
+        }
+
         QString temp;
         std::string displayString;
 
@@ -1974,6 +2012,30 @@ void
 QvisPickWindow::displayPickHighlightToggled(bool val)
 {
     pickAtts->SetShowPickHighlight(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::displayDistanceToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the distance between the current and previous pick point should
+//   be shown.
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Alister Maguire
+// Creation:   Jul 19, 2021
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::displayDistanceToggled(bool val)
+{
+    pickAtts->SetShowDistanceToPrevious(val);
     Apply();
 }
 
