@@ -29,7 +29,7 @@ There is also support for a number of types that require special handling. These
 
            **Show/Hide Code for** ``avtTypes.h``
 
-       .. literalinclude:: ../../../../src/avt/DBAtts/MetaData/avtTypes.h
+       .. literalinclude:: ../../../src/avt/DBAtts/MetaData/avtTypes.h
            :language: C++
            :start-after: #ifndef AVT_TYPES_H
            :end-before: DBATTS_API extern const char * AUXILIARY_DATA_DATA_EXTENTS;
