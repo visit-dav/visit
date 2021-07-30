@@ -120,6 +120,10 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Alister Maguire, Fri Oct 11 15:37:24 PDT 2019
 //    Set the real id for direct database lookups. 
 //
+//    Alister Maguire, Thu Jul 15 14:38:13 PDT 2021
+//    If we were unable to retrieve variable information from the database,
+//    query the current dataset.
+//
 // ****************************************************************************
 
 void
@@ -238,6 +242,24 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     if (!pickAtts.GetFulfilled())
         return;
 
+    //
+    // There are times when we aren't able to retrieve information
+    // for a patricular variable from the database query. For example,
+    // expressions are unavailable for query. In those cases, we can
+    // try to directly query the current dataset.
+    //
+    bool needVarInfo = false;
+    int numVars      = pickAtts.GetNumVarInfos();
+
+    for (int varNum = 0; varNum < numVars; ++varNum)
+    {
+        if (pickAtts.GetVarInfo(varNum).HasInfo() == 0)
+        {
+            needVarInfo = true;
+            break;
+        }
+    }
+
     if (pickAtts.GetElementIsGlobal() && DBsuppliedZoneId && !pickByLabel)
     {
        zoneid =  GetCurrentZoneForOriginal(ds, pickAtts.GetElementNumber());
@@ -248,7 +270,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
 
     pickAtts.SetRealElementNumber(zoneid);
     pickAtts.SetElementNumber(userZoneId+cellOrigin);
-    if (pickAtts.GetMatSelected())
+    if (pickAtts.GetMatSelected() || needVarInfo)
     {
         RetrieveVarInfo(ds, zoneid, pickAtts.GetIncidentElements());
     }

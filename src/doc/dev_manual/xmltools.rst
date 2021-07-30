@@ -7,6 +7,38 @@ VisIt_ developers use several xml-based code generation tools to implement
 VisIt_'s features. The source core for these tools is kept in 
 ``src/tools/dev/xml/`` and ``src/tools/dev/xmledit/``.
 
+Types Managed by XML Tools
+--------------------------
+These XML tools are designed to be aware of a number of basic data types. These include...
+
+* ``Bool``
+* ``Int``
+* ``Float``
+* ``Double``
+* ``UChar`` (aka Unsigned Char)
+* ``String``
+
+In addition to these *basic* types as *scalars*, we also support ``Arrays`` of fixed length and ``Vectors`` of arbitrary length of these basic types.
+There is also support for a number of types that require special handling. These are...
+
+* types defined in the ``avtTypes.h`` `header file <https://github.com/visit-dav/visit/blob/develop/src/avt/DBAtts/MetaData/avtTypes.h>`_
+
+   .. container:: collapsible
+
+       .. container:: header
+
+           **Show/Hide Code for** ``avtTypes.h``
+
+       .. literalinclude:: ../../../src/avt/DBAtts/MetaData/avtTypes.h
+           :language: C++
+           :start-after: #ifndef AVT_TYPES_H
+           :end-before: DBATTS_API extern const char * AUXILIARY_DATA_DATA_EXTENTS;
+
+* types representing some high-level knowledge such as a ``LineWidth``, a database ``VariableName``, an ``Opacity`` (slider) value, etc.
+
+The implementation of these types in C++, Java, Python and Qt is handled by various of the ``GenerateXXX.h`` `header files <https://github.com/visit-dav/visit/tree/b962e70292903a0444d2c95cd7a6e64e8e946a75/src/tools/dev/xml>`_.
+
+For more details, please see `this issue <https://github.com/visit-dav/visit/issues/5875>`_.
 
 CMake Integration
 --------------------
