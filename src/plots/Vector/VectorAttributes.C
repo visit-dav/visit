@@ -1792,10 +1792,10 @@ VectorAttributes::ProcessOldVersions(DataNode *parentNode,
     {
         DataNode *k = 0;
         if((k = searchNode->GetNode("colorByMag")) != 0)
-	{
+        {
             searchNode->AddNode(new DataNode("colorByMagnitude", k->AsBool()));
             searchNode->RemoveNode(k, true);
-	}
+        }
     }
 }
 

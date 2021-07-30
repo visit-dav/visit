@@ -208,6 +208,10 @@ void PickAttributes::Init()
     swivelFocusToPick = false;
     overridePickLabel = false;
     removeLabelTwins = false;
+    previousPoint[0] = 0;
+    previousPoint[1] = 0;
+    previousPoint[2] = 0;
+    showDistanceToPrevious = false;
 
     PickAttributes::SelectAll();
 }
@@ -346,6 +350,11 @@ void PickAttributes::Copy(const PickAttributes &obj)
     overridePickLabel = obj.overridePickLabel;
     forcedPickLabel = obj.forcedPickLabel;
     removeLabelTwins = obj.removeLabelTwins;
+    previousPoint[0] = obj.previousPoint[0];
+    previousPoint[1] = obj.previousPoint[1];
+    previousPoint[2] = obj.previousPoint[2];
+
+    showDistanceToPrevious = obj.showDistanceToPrevious;
 
     PickAttributes::SelectAll();
 }
@@ -545,6 +554,11 @@ PickAttributes::operator == (const PickAttributes &obj) const
     for(int i = 0; i < 3 && pickHighlightColor_equal; ++i)
         pickHighlightColor_equal = (pickHighlightColor[i] == obj.pickHighlightColor[i]);
 
+    // Compare the previousPoint arrays.
+    bool previousPoint_equal = true;
+    for(int i = 0; i < 3 && previousPoint_equal; ++i)
+        previousPoint_equal = (previousPoint[i] == obj.previousPoint[i]);
+
     // Create the return value
     return ((variables == obj.variables) &&
             (showIncidentElements == obj.showIncidentElements) &&
@@ -628,7 +642,9 @@ PickAttributes::operator == (const PickAttributes &obj) const
             (swivelFocusToPick == obj.swivelFocusToPick) &&
             (overridePickLabel == obj.overridePickLabel) &&
             (forcedPickLabel == obj.forcedPickLabel) &&
-            (removeLabelTwins == obj.removeLabelTwins));
+            (removeLabelTwins == obj.removeLabelTwins) &&
+            previousPoint_equal &&
+            (showDistanceToPrevious == obj.showDistanceToPrevious));
 }
 
 // ****************************************************************************
@@ -855,6 +871,8 @@ PickAttributes::SelectAll()
     Select(ID_overridePickLabel,           (void *)&overridePickLabel);
     Select(ID_forcedPickLabel,             (void *)&forcedPickLabel);
     Select(ID_removeLabelTwins,            (void *)&removeLabelTwins);
+    Select(ID_previousPoint,               (void *)previousPoint, 3);
+    Select(ID_showDistanceToPrevious,      (void *)&showDistanceToPrevious);
 }
 
 // ****************************************************************************
@@ -1121,6 +1139,18 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("removeLabelTwins", removeLabelTwins));
     }
 
+    if(completeSave || !FieldsEqual(ID_previousPoint, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("previousPoint", previousPoint, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_showDistanceToPrevious, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("showDistanceToPrevious", showDistanceToPrevious));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1266,6 +1296,10 @@ PickAttributes::SetFromNode(DataNode *parentNode)
         SetForcedPickLabel(node->AsString());
     if((node = searchNode->GetNode("removeLabelTwins")) != 0)
         SetRemoveLabelTwins(node->AsBool());
+    if((node = searchNode->GetNode("previousPoint")) != 0)
+        SetPreviousPoint(node->AsDoubleArray());
+    if((node = searchNode->GetNode("showDistanceToPrevious")) != 0)
+        SetShowDistanceToPrevious(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1856,6 +1890,22 @@ PickAttributes::SetRemoveLabelTwins(bool removeLabelTwins_)
 {
     removeLabelTwins = removeLabelTwins_;
     Select(ID_removeLabelTwins, (void *)&removeLabelTwins);
+}
+
+void
+PickAttributes::SetPreviousPoint(const double *previousPoint_)
+{
+    previousPoint[0] = previousPoint_[0];
+    previousPoint[1] = previousPoint_[1];
+    previousPoint[2] = previousPoint_[2];
+    Select(ID_previousPoint, (void *)previousPoint, 3);
+}
+
+void
+PickAttributes::SetShowDistanceToPrevious(bool showDistanceToPrevious_)
+{
+    showDistanceToPrevious = showDistanceToPrevious_;
+    Select(ID_showDistanceToPrevious, (void *)&showDistanceToPrevious);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2570,6 +2620,24 @@ PickAttributes::GetRemoveLabelTwins() const
     return removeLabelTwins;
 }
 
+const double *
+PickAttributes::GetPreviousPoint() const
+{
+    return previousPoint;
+}
+
+double *
+PickAttributes::GetPreviousPoint()
+{
+    return previousPoint;
+}
+
+bool
+PickAttributes::GetShowDistanceToPrevious() const
+{
+    return showDistanceToPrevious;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2782,6 +2850,12 @@ void
 PickAttributes::SelectForcedPickLabel()
 {
     Select(ID_forcedPickLabel, (void *)&forcedPickLabel);
+}
+
+void
+PickAttributes::SelectPreviousPoint()
+{
+    Select(ID_previousPoint, (void *)previousPoint, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3088,6 +3162,8 @@ PickAttributes::GetFieldName(int index) const
     case ID_overridePickLabel:           return "overridePickLabel";
     case ID_forcedPickLabel:             return "forcedPickLabel";
     case ID_removeLabelTwins:            return "removeLabelTwins";
+    case ID_previousPoint:               return "previousPoint";
+    case ID_showDistanceToPrevious:      return "showDistanceToPrevious";
     default:  return "invalid index";
     }
 }
@@ -3195,6 +3271,8 @@ PickAttributes::GetFieldType(int index) const
     case ID_overridePickLabel:           return FieldType_bool;
     case ID_forcedPickLabel:             return FieldType_string;
     case ID_removeLabelTwins:            return FieldType_bool;
+    case ID_previousPoint:               return FieldType_doubleArray;
+    case ID_showDistanceToPrevious:      return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -3302,6 +3380,8 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_overridePickLabel:           return "bool";
     case ID_forcedPickLabel:             return "string";
     case ID_removeLabelTwins:            return "bool";
+    case ID_previousPoint:               return "doubleArray";
+    case ID_showDistanceToPrevious:      return "bool";
     default:  return "invalid index";
     }
 }
@@ -3782,6 +3862,21 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (removeLabelTwins == obj.removeLabelTwins);
         }
         break;
+    case ID_previousPoint:
+        {  // new scope
+        // Compare the previousPoint arrays.
+        bool previousPoint_equal = true;
+        for(int i = 0; i < 3 && previousPoint_equal; ++i)
+            previousPoint_equal = (previousPoint[i] == obj.previousPoint[i]);
+
+        retval = previousPoint_equal;
+        }
+        break;
+    case ID_showDistanceToPrevious:
+        {  // new scope
+        retval = (showDistanceToPrevious == obj.showDistanceToPrevious);
+        }
+        break;
     default: retval = false;
     }
 
@@ -4118,7 +4213,13 @@ PickAttributes::PrintSelf(ostream &os)
 //   Kathleen Biagas, Wed Mar 08 17:12:07 PST 2012
 //   Use plot overrides of showXXX settings if set in plotRequested MapNode.
 //
+//   Alister Maguire, Mon Jul 19 11:06:57 PDT 2021
+//   Include the distance to a previous pick if enabled.
+//
 // ****************************************************************************
+
+#include <DebugStream.h>
+#include <math.h>
 
 void
 PickAttributes::CreateOutputString(std::string &os, bool withLetter)
@@ -4208,12 +4309,21 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     else if (meshCoordType == ZR)
         point += " (R,Z)";
 
+    bool mustCalculateDistance = (showDistanceToPrevious &&
+        (pickType != CurveNode) && (pickType != CurveZone));
+
     std::string pointString;
-    if (plotRequested.HasEntry("pointString"))
+    if (plotRequested.HasEntry("pointString") && !mustCalculateDistance)
         pointString = plotRequested.GetEntry("pointString")->AsString();
 
     if (pointString.empty())
     {
+        //
+        // Just to be safe, let's make sure that we don't reach outside of
+        // our memory bounds.
+        //
+        int safeDim = dimension;
+
         if (pickType == CurveNode)
         {
             format = "Point: <" + floatFormat + ", " + floatFormat + ">\n";
@@ -4266,8 +4376,37 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
                     snprintf(buff, 512, format.c_str(),
                             point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
                 }
+
+                if (dimension != 3)
+                {
+                    debug2 << "PickAttributes encountered an unexpected "
+                           << "dimension of " << dimension << ". "
+                           << "Unexpected behavior may result from this."
+                           << endl;
+
+                    safeDim = 3;
+                }
             }
+
             os += buff;
+
+            if (showDistanceToPrevious)
+            {
+                double distanceToPrev = 0;
+
+                for (int i = 0; i < safeDim; ++i)
+                {
+                    distanceToPrev += pow(cellPoint[i] - previousPoint[i], 2.);
+                }
+
+                distanceToPrev = sqrt(distanceToPrev);
+
+                format = "Distance to previous: " + floatFormat + "\n";
+                snprintf(buff, 512, format.c_str(),
+                    distanceToPrev);
+
+                os += buff;
+            }
         }
     }
     else
@@ -4641,7 +4780,13 @@ PickAttributes::PrepareForNewPick()
 //   Kathleen Biagas, Wed Mar 08 17:12:07 PST 2012
 //   Use plot overrides of showXXX settings if set in plotRequested MapNode.
 //
+//   Alister Maguire, Mon Jul 19 11:06:57 PDT 2021
+//   Include the distance to a previous pick if enabled.
+//
 // ****************************************************************************
+
+#include <DebugStream.h>
+#include <math.h>
 
 void
 PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
@@ -4709,12 +4854,21 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         }
     }
 
+    bool mustCalculateDistance = (showDistanceToPrevious &&
+        (pickType != CurveNode) && (pickType != CurveZone));
+
     std::string pointString;
-    if (plotRequested.HasEntry("pointString"))
+    if (plotRequested.HasEntry("pointString") && !mustCalculateDistance)
         pointString = plotRequested.GetEntry("pointString")->AsString();
 
     if (pointString.empty())
     {
+        //
+        // Just to be safe, let's make sure that we don't reach outside of
+        // our memory bounds.
+        //
+        int safeDim = dimension;
+
         if (pickType == CurveNode)
         {
             format = " at <" + floatFormat + ", " + floatFormat +  ">\n";
@@ -4743,8 +4897,37 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
                                  + floatFormat +  ">\n";
                 snprintf(buff, 512, format.c_str(),
                             cellPoint[0], cellPoint[1], cellPoint[2]);
+
+                if (dimension != 3)
+                {
+                    debug2 << "PickAttributes encountered an unexpected "
+                           << "dimension of " << dimension << ". "
+                           << "Unexpected behavior may result from this."
+                           << endl;
+
+                    safeDim = 3;
+                }
             }
+
             os += buff;
+
+            if (showDistanceToPrevious)
+            {
+                double distanceToPrev = 0;
+
+                for (int i = 0; i < safeDim; ++i)
+                {
+                    distanceToPrev += pow(cellPoint[i] - previousPoint[i], 2.);
+                }
+
+                distanceToPrev = sqrt(distanceToPrev);
+
+                format = "Distance: " + floatFormat + " ";
+                snprintf(buff, 512, format.c_str(),
+                    distanceToPrev);
+
+                os += buff;
+            }
         }
     }
     else

@@ -77,9 +77,6 @@
 #####################
 # Metadata Objects that we can't Code-Gen, or have customizations:
 #####################
-# avtMeshMetaData -- OK?
-# avtSimulationInformation -- OK?
-# avtSpeciesMetaData -- OK?
 
 SET(PY_GEN_METADATA_OBJECTS
     avtArrayMetaData
@@ -90,11 +87,11 @@ SET(PY_GEN_METADATA_OBJECTS
     avtLabelMetaData
     avtMatSpeciesMetaData
     avtMaterialMetaData
-    avtMeshMetaData # (see above note)
+    avtMeshMetaData
     avtScalarMetaData
     avtSimulationCommandSpecification
-    avtSimulationInformation # (see above note)
-    avtSpeciesMetaData # (see above note)
+    avtSimulationInformation
+    avtSpeciesMetaData
     avtSubsetsMetaData
     avtSymmetricTensorMetaData
     avtTensorMetaData
@@ -109,9 +106,6 @@ SET(PY_GEN_METADATA_OBJECTS
 #####################
 # State Objects that we can't Code-Gen, or have customizations:
 #####################
-# ColorControlPointList -- OK? 
-# SaveSubWindowAttributes -- OK?
-#
 # DatabaseCorrelation - NOT OK
 # View2DAttributes -- NOT OK -- need as_number worked out
 # View3DAttributes -- NOT OK -- need as_number worked out
@@ -125,11 +119,10 @@ SET(PY_GEN_STATE_OBJECTS
     AxisAttributes
     AxisLabels
     AxisTickMarks
-    AxisTitle
     ColorAttribute
     ColorAttributeList
     ColorControlPoint
-    ColorControlPointList  # (see above note)
+    ColorControlPointList
     ColorTableAttributes 
     ConstructDataBinningAttributes
     # DatabaseCorrelation # (see above note)
@@ -163,7 +156,7 @@ SET(PY_GEN_STATE_OBJECTS
     RenderingAttributes
     SaveWindowAttributes
     SaveSubWindowAttributes 
-    SaveSubWindowsAttributes # (see above note)
+    SaveSubWindowsAttributes
     SelectionProperties
     SelectionSummary
     SelectionVariableSummary

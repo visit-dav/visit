@@ -7062,6 +7062,9 @@ avtDatabaseMetaData::VarIsCompound(const std::string &v) const
         return false;
     }
 
+    //
+    // Let's check if this is truly a known mesh.
+    //
     std::string meshName = v.substr(beg + 1, end - beg - 1);
 
     int nmeshes = GetNumMeshes();

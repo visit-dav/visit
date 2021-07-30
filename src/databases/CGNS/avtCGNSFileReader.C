@@ -12,14 +12,18 @@
 #include <algorithm>
 #include <string>
 
+#include <vtkCellData.h>
 #include <vtkCellTypes.h>
 #include <vtkCharArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkLongArray.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtCallback.h>
@@ -1626,6 +1630,166 @@ avtCGNSFileReader::GetCoords(int timestate, int base, int zone, const cgsize_t *
 }
 
 // ****************************************************************************
+// Method: avtCGNSFileReader::GetQuadGhostZones
+//
+// Purpose:
+//   Add the ghost zone information to the specified data set.
+//
+// Arguments:
+//   base       : The base to use
+//   zone       : The zone (mesh) that whose rind data we want.
+//   zsize      : The zone size information.
+//   cell_dim   : The cell dimension.
+//   ds         : The data set to add the ghost data to.
+//
+// Programmer: Eric Brugger
+// Creation:   Tue Jul  6 10:27:03 PDT 2021
+//
+// Modifications:
+//   Eric Brugger, Wed Jul 14 13:32:10 PDT 2021
+//   Added a temporary hack to only generate ghost zones if the
+//   environment variable CGNS_USE_RIND is set.
+//
+// ****************************************************************************
+
+void
+avtCGNSFileReader::GetQuadGhostZones(int base, int zone,
+    const cgsize_t *zsize, int cell_dim, vtkDataSet *ds)
+{
+    const char *mName = "avtCGNSFileReader::GetQuadGhostZones: ";
+
+    // Read the rind data.
+    debug4 << "Reading rind node." << endl;
+    int rind[6];
+    if(cg_goto(GetFileHandle(), base, "Zone_t", zone, "FlowSolution_t", 1, "end") == CG_OK)
+    {
+        if (cg_rind_read(rind) == CG_OK)
+        {
+            debug4 << "rind=" << rind[0] << "," << rind[1] << ","
+                              << rind[2] << "," << rind[3] << ","
+                              << rind[4] << "," << rind[5] << endl;
+        }
+        else
+        {
+            debug4 << "No rind data." << endl;
+            return;
+        }
+    }
+    else
+    {
+        debug4 << "Error going to FlowSolution." << endl;
+        return;
+    }
+
+    // Determine the size of the mesh.
+    unsigned int ncells = 0;
+    cgsize_t cdims[3] = {1,1,1};
+    if(cell_dim == 1)
+    {
+        cdims[0] = zsize[0]-1;
+    }
+    else if(cell_dim == 2)
+    {
+        cdims[0] = zsize[0]-1;
+        cdims[1] = zsize[1]-1;
+    }
+    else
+    {
+        cdims[0] = zsize[0]-1;
+        cdims[1] = zsize[1]-1;
+        cdims[2] = zsize[2]-1;
+    }
+    ncells = cdims[0] * cdims[1] * cdims[2];
+
+    // Determine if the rind information is valid.
+    cgsize_t first[3];
+    cgsize_t last[3];
+    bool ghostPresent = false;
+    bool badIndex = false;
+    for (int i = 0; i < cell_dim; i++)
+    {
+        first[i] = rind[i*2];
+        last[i]  = cdims[i] - rind[i*2+1] - 1;
+
+        if (first[i] < 0 || first[i] >= cdims[i])
+        {
+            debug1 << "bad rind value: rind[" << i*2 << "]=" << rind[i*2]
+                   << endl;
+            badIndex = true;
+        }
+
+        if (last[i] < 0 || last[i] >= cdims[i])
+        {
+            debug1 << "bad rind value: rind[" << i*2+1 << "]=" << rind[i*2+1]
+                   << endl;
+            badIndex = true;
+        }
+
+        if (first[i] != 0 || last[i] != cdims[i] - 1)
+        {
+            ghostPresent = true;
+        }
+    }
+
+    // Temporary hack to only generate ghost zones if the environment
+    // variable CGNS_USE_RIND is set. This is because there exist some
+    // CGNS files that are single block with rind zones all around the
+    // exterior. Adding ghost zones in this case generates a blank image.
+    // The particular file is delta.cgns.
+    if (getenv("CGNS_USE_RIND") == NULL)
+    {
+        ghostPresent = false;
+        debug4 << "Disabling use of rind values." << endl;
+        debug4 << "To enable setenv CGNS_USE_RIND." << endl;
+    }
+
+    //  Create the ghost zones array if necessary
+    if (ghostPresent && !badIndex)
+    {
+        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+        ghostCells->SetName("avtGhostZones");
+        ghostCells->Allocate(ncells);
+
+        unsigned char realVal = 0;
+        unsigned char ghostVal = 0;
+        avtGhostData::AddGhostZoneType(ghostVal,
+                                       DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+        for (int i = 0; i < ncells; i++)
+            ghostCells->InsertNextValue(ghostVal);
+
+        unsigned char *gv = ghostCells->GetPointer(0);
+        for (int k = first[2]; k <= last[2]; k++) {
+            for (int j = first[1]; j <= last[1]; j++) {
+                for (int i = first[0]; i <= last[0]; i++)
+                {
+                    int index = k*cdims[1]*cdims[0] + j*cdims[0] + i;
+                    gv[index] = realVal;
+                }
+            }
+        }
+
+        ds->GetCellData()->AddArray(ghostCells);
+        ghostCells->Delete();
+
+        vtkIntArray *realDims = vtkIntArray::New();
+        realDims->SetName("avtRealDims");
+        realDims->SetNumberOfValues(6);
+        realDims->SetValue(0, first[0]);
+        realDims->SetValue(1, last[0]+1);
+        realDims->SetValue(2, first[1]);
+        realDims->SetValue(3, last[1]+1);
+        realDims->SetValue(4, first[2]);
+        realDims->SetValue(5, last[2]+1);
+        ds->GetFieldData()->AddArray(realDims);
+        ds->GetFieldData()->CopyFieldOn("avtRealDims");
+        realDims->Delete();
+    }
+
+    ds->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
+}
+
+// ****************************************************************************
 // Method: avtCGNSFileReader::GetCurvilinearMesh
 //
 // Purpose:
@@ -1726,6 +1890,8 @@ avtCGNSFileReader::GetCurvilinearMesh(int timestate, int base, int zone, const c
     {
         EXCEPTION1(InvalidVariableException, meshname);
     }
+
+    GetQuadGhostZones(base, zone, zsize, cell_dim, retval);
 
     return retval;
 }
@@ -2288,7 +2454,7 @@ avtCGNSFileReader::ReadMixedAndNamedElementSections(vtkUnstructuredGrid *ugrid,
         {
             avtCallback::IssueWarning("VisIt found quadratic or cubic cells "
                 "in the mesh and reduced them to linear cells. Contact "
-                "visit-users@ornl.gov if you would like VisIt to natively "
+                "https://visit-help.llnl.gov if you would like VisIt to natively "
                 "process higher order elements.");
         }
     }
