@@ -119,72 +119,49 @@ An example VTK file
 
 A basic VTK file is shown here.
 
-.. literalinclude:: data_examples/lines.vtk
+.. literalinclude:: data_examples/rectilineargrid.vtk
+   :lines: 1-21
 
 The line below contains the version and identifier.
 
-.. literalinclude:: data_examples/lines.vtk
+.. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: -1
 
 The line below contains the title.
 
-.. literalinclude:: data_examples/lines.vtk
+.. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: 2-2
 
 The line below contains the data type, which in this case is ASCII.
 
-.. literalinclude:: data_examples/lines.vtk
+.. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: 3-3
 
-The line below identifies the type of the mesh, which in this case is polydata.
+The line below identifies the type of the mesh, which in this case is a rectilinear grid.
 
-.. literalinclude:: data_examples/lines.vtk
+.. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: 4-4
 
 The following lines provide the coordinate information for the mesh.
 
-.. literalinclude:: data_examples/lines.vtk
+.. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: 5-11
 
-The `6` represents the number of points and `float` indicates that the values should be read in as floats.
-After that are the 6 points, one point per line for readability.
-There is no requirement that you have one point per line.
-
-The following lines represent the polydata.
-
-.. literalinclude:: data_examples/lines.vtk
-   :lines: 13-16
-
-The `3` indicates that there are three lines and the `9` indicates that there are 9 integers defining the lines.
-The three lines are then defined, one line per line for readability.
-There is no requirement that you have one line per line.
-The first line of integers indicates that there are `2` points in the first line, made up of the 1st and 2nd points.
-The indexes are 0-origin indexes into the point list.
-The second line of integers indicates that there are `2` points in the second line, made up of the 3rd and 4th points.
-The third line of integers indicates that there are `2` points in the third line, made up of the 5th and 6th points.
+The information provides the dimensions of the coordinate arrays of the mesh along with the coordinates in each of the three directions.
 
 The following lines represent one scalar field defined on the cells.
 
-.. literalinclude:: data_examples/lines.vtk
+.. literalinclude:: data_examples/rectilineargrid.vtk
+   :lines: 13-16
+
+The information tells us that there are 2 values for the cell data, that it is a scalar, that the name of the variable is `var1`, that it should be read in as float values, that we should use the default lookup table, and that the values consist of `1 2`.
+
+The following lines represent one scalar field defined at the points.
+
+.. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: 18-21
 
-The first line indicates that we have field values defined on the cells, where the number of cells is `3`.
-The second line provides information about the first cell based field.
-The `var1` is the name of the field.
-The `float` indicates that the values should be read in as 32 bit floating point values.
-The `1`, if present, must be a one and indicates that we have one value per scalar field.
-The third line specifies the color lookup table to use when rendering the variable.
-It is not used by VisIt_, but must be present.
-The fourth line contains the scalar values.
-
-The following lines represent two scalar fields defined at the points.
-
-.. literalinclude:: data_examples/lines.vtk
-   :lines: 23-
-
-The first line indicates that we have field values defined at the points, where the number of points is `6`.
-The next three lines represent the first scalar field.
-The three lines after that represent the second scalar field. 
+The information tells us that there are 12 values for the point data, that it is a scalar, that the name of the variable is `var2`, that it should be read in as float values, that we should use the default lookup table, and that the values consist of `1 2 3 1 2 3 1 2 3 1 2 3`.
 
 An example of a structured points file
 --------------------------------------
