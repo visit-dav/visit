@@ -101,21 +101,104 @@ The fields can be either scalars, vectors or tensors.
 Mesh topology
 ~~~~~~~~~~~~~
 
-The following keywords for mesh topologies are supported.
+The following mesh topologies are supported.
 
-+---------------------+
-| Type                |
-+=====================+
-| STRUCTURED_POINTS   |
-+---------------------+
-| STRUCTURED_GRID     |
-+---------------------+
-| RECTILINEAR_GRID    |
-+---------------------+
-| POLYDATA            |
-+---------------------+
-| UNSTRUCTURED_GRID   |
-+---------------------+
+* Structured points
+* Structured grid
+* Rectilinear grid
+* Polydata
+* Unstructured grid
+
+Structured points
+"""""""""""""""""
+
+The structured points section has the following structure. ::
+
+    DATASET STRUCTURED_POINTS
+    DIMENSIONS nx ny nz
+    ORIGIN x y z
+    SPACING sx sy sz
+
+`nx`, `ny`, `nz` are the number of dimensions in the X- Y- and Z-directions.
+`x`, `y`, `z` is the origin of the grid.
+`sx`, `sy`, `sz` is the spacing in the X- Y- and Z-directions.
+
+Structured grid
+"""""""""""""""
+
+The structured grid section has the following structure. ::
+
+    DATASET STRUCTURED_GRID
+    DIMENSIONS nx ny nz
+    POINTS nPoints dataType
+
+`nx`, `ny`, `nz` are the number of dimensions in the X- Y- and Z-directions.
+`nPoints` is the number of points.
+`nPoints` must be consistent with the dimensions.
+Supported data types in VisIt_ are `float` and `double`.
+
+Rectilinear grid
+""""""""""""""""
+
+The rectilinear grid section has the following structure. ::
+
+    DATASET RECTILINEAR_GRID
+    DIMENSIONS nx ny nz
+    X_COORDINATES nx dataType
+    x1 x2 ... xn
+    Y_COORDINATES ny dataType
+    y1 y2 ... yn
+    Z_COORDINATES nz dataType
+    z1 z2 ... zn
+
+`nx`, `ny`, `nz` are the number of dimensions in the X- Y- and Z-directions.
+`nx`, `ny`, `nz` in the dimensions statement must be constient with the ones in the coordinates statement.
+Supported data types in VisIt_ are `float` and `double`.
+
+Polydata
+""""""""
+
+The polydata grid section has the following structure. ::
+
+    DATASET POLYDATA
+    POINTS nPoints dataType
+    x1 y1 z1
+    x2 y2 z2
+      ...
+    xn yn zn
+
+    VERTICES nVertices size
+    1 p1
+    1 p2
+    ...
+    1 pn
+
+    LINES nLines size
+    2 l11 l12
+    2 l21 l22
+    ...
+    2 ln1 ln2
+
+    POLYGONS nPolygons size
+    nIndices1 i11 i12 ... i1n
+    nIndices2 i21 i22 ... i2n
+    ...
+    nIndicesm im1 im2 ... imn
+
+    TRIANGLE_STRIPS nStrips size
+    nIndices1 i11 i12 ... i1n
+    nIndices2 i21 i22 ... i2n
+    ...
+    nIndicesm im1 im2 ... imn
+
+Supported data types in VisIt_ are `float` and `double`.
+The vertices, lines, polygons and triangle_strips sections may or may not be prsent.
+The vertices, lines, polygons and triangle_strips sections may be in any order.
+
+Unstructured grid
+"""""""""""""""""
+
+The unstructured grid section has the following structure. ::
 
 Cell data
 ~~~~~~~~~
