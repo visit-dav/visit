@@ -147,10 +147,7 @@ swa.height = 16384
 swa.fileName = "image_16384x16384"
 swa.family = 0
 SetSaveWindowAttributes(swa)
-try:
-    SaveWindow()
-except:
-    TestValueEQ("md5 hash for 16384x16384 image", "Save failed", "9196b516c25ecbeac1fab4cd54ee0c59")
+SaveWindow()
 
 # Comparing md5 sum instead of image, since the image is large.
 md5_hash = hashlib.md5()
@@ -158,6 +155,6 @@ with open("image_16384x16384.png","rb") as f:
     # Read and update hash in chunks of 4K
     for byte_block in iter(lambda: f.read(4096),b""):
         md5_hash.update(byte_block)
-TestValueEQ("md5 hash for 16384x16384 image", "Save failed", "9196b516c25ecbeac1fab4cd54ee0c59")
+TestValueEQ("md5 hash for 16384x16384 image", md5_hash.hexdigest(), "9196b516c25ecbeac1fab4cd54ee0c59")
 
 Exit()
