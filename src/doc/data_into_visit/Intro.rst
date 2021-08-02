@@ -94,6 +94,13 @@ This part begins with a line containing the keyword DATASET followed by a keywor
 Then, depending upon the type of dataset, other keyword/data combinations define the actual data.
 The topology can be 1D, 2D or 3D, although only 2D and 3D topologies are supported by VisIt_.
 
+5. The final part describes the fields. The fields can be defined on either the cells or the points.
+The cell or point fields can be listed in either order.
+The fields can be either scalars, vectors or tensors. 
+
+Mesh topology
+~~~~~~~~~~~~~
+
 The following keywords for mesh topologies are supported.
 
 +---------------------+
@@ -110,20 +117,22 @@ The following keywords for mesh topologies are supported.
 | UNSTRUCTURED_GRID   |
 +---------------------+
 
-5. The final part describes the fields. The fields can be defined on either the cells or the points.
-The cell or point fields can be listed in either order.
-The fields can be either scalars, vectors or tensors. 
-
 Cell data
 ~~~~~~~~~
 
-The cell data starts with a single line with the keyword `CELL_DATA` followed by the number of cells.
+The cell data section starts with a single line with the keyword `CELL_DATA` followed by the number of cells.
 The number of cells must match the number of cells defined by the topology.
 Next comes a list of fields.
 Fields can be either scalars, vectors or tensors.
 
 Scalar fields
 """""""""""""
+
+The scalar field section has the following structure. ::
+
+    SCALARS fieldName dataType 1
+    LOOKUP_TABLE default
+    s1 s2 ... sN
 
 The scalar field section starts with a single line with the keyword `SCALARS` followed by the name of the field followed by the data type followed by the number of values per scalar.
 The number of values per scalar is optional, and if present, must be `1`.
@@ -137,6 +146,14 @@ The scalar values can be split up into lines in an arbitrary manner.
 Vector fields
 """""""""""""
 
+The vector field section has the following structure. ::
+
+    VECTORS fieldName dataType
+    v11 v12 v13
+    v21 v22 v23
+        ...
+    vN1 vN2 vN3
+
 The vector field section starts with a single line with the keyword `VECTORS` followed by the name of the field followed by the data type.
 Next come the vector values.
 The vector values consist of three values per point, regardless of whether it is for a 2D or 3D mesh.
@@ -144,6 +161,20 @@ The vector values can be split up into lines in an arbitrary manner.
 
 Tensor fields
 """""""""""""
+
+The tensor field section has the following structure. ::
+
+    TENSORS fieldName dataType
+    t111 t112 t113
+    t121 t122 t123
+    t131 t132 t133
+    t211 t212 t213
+    t221 t222 t223
+    t231 t232 t233
+        ...
+    tN11 tN12 tN13
+    tN21 tN22 tN23
+    tN31 tN32 tN33
 
 The tensor field section starts with a single line with the keyword `TENSORS` followed by the name of the field followed by the data type.
 Next come the tensor values.
@@ -153,7 +184,7 @@ The tensor values can be split up into lines in an arbitrary manner.
 Point data
 ~~~~~~~~~~
 
-The point data starts with a single line with the keyword `POINT_DATA` followed by the number of points.
+The point data section starts with a single line with the keyword `POINT_DATA` followed by the number of points.
 The number of points must match the number of points defined by the topology.
 The rest of the point data section is the same as the cell data section.
 
