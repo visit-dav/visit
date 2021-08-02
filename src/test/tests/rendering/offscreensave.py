@@ -21,7 +21,13 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Eric Brugger, Mon Aug  2 09:42:50 PDT 2021
+#    Added test of 16384 x 16384 image save.
+#
 # ----------------------------------------------------------------------------
+
+import hashlib
 
 TurnOnAllAnnotations()
 OpenDatabase(silo_data_path("multi_ucd3d.silo"))
@@ -122,5 +128,36 @@ slider.position = (0.5, 0.5)
 swa.width=300
 swa.height=300
 Test("offscreen_11",swa)
+
+# Test saving a 16384 x 16384 image
+slider.Delete()
+DeleteAllPlots()
+
+OpenDatabase(silo_data_path("curv2d.silo"))
+
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+
+view2=GetView2D()
+view2.fullFrameActivationMode=view2.Off
+SetView2D(view2)
+
+swa.width = 16384
+swa.height = 16384
+swa.fileName = "image_16384x16384"
+swa.family = 0
+SetSaveWindowAttributes(swa)
+try:
+    SaveWindow()
+except:
+    TestValueEQ("md5 hash for 16384x16384 image", "Save failed", "9196b516c25ecbeac1fab4cd54ee0c59")
+
+# Comparing md5 sum instead of image, since the image is large.
+md5_hash = hashlib.md5()
+with open("image_16384x16384.png","rb") as f:
+    # Read and update hash in chunks of 4K
+    for byte_block in iter(lambda: f.read(4096),b""):
+        md5_hash.update(byte_block)
+TestValueEQ("md5 hash for 16384x16384 image", "Save failed", "9196b516c25ecbeac1fab4cd54ee0c59")
 
 Exit()
