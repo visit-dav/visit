@@ -114,6 +114,49 @@ The following keywords for mesh topologies are supported.
 The cell or point fields can be listed in either order.
 The fields can be either scalars, vectors or tensors. 
 
+Cell data
+~~~~~~~~~
+
+The cell data starts with a single line with the keyword `CELL_DATA` followed by the number of cells.
+The number of cells must match the number of cells defined by the topology.
+Next comes a list of fields.
+Fields can be either scalars, vectors or tensors.
+
+Scalar fields
+"""""""""""""
+
+The scalar field section starts with a single line with the keyword `SCALARS` followed by the name of the field followed by the data type followed by the number of values per scalar.
+The number of values per scalar is optional, and if present, must be `1`.
+Next comes the lookup table information.
+The lookup table information consists of a single line with the keyword `LOOKUP_TABLE` followed by the keyword `default`.
+The lookup table specifies the lookup table name when mapping the scalar to colors.
+The lookup table is not used by VisIt_.
+Next come the scalar values.
+The scalar values can be split up into lines in an arbitrary manner.
+
+Vector fields
+"""""""""""""
+
+The vector field section starts with a single line with the keyword `VECTORS` followed by the name of the field followed by the data type.
+Next come the vector values.
+The vector values consist of three values per point, regardless of whether it is for a 2D or 3D mesh.
+The vector values can be split up into lines in an arbitrary manner.
+
+Tensor fields
+"""""""""""""
+
+The tensor field section starts with a single line with the keyword `TENSORS` followed by the name of the field followed by the data type.
+Next come the tensor values.
+The tensor values consist of nine values per point, regardless of whether it is for a 2D or 3D mesh.
+The tensor values can be split up into lines in an arbitrary manner.
+
+Point data
+~~~~~~~~~~
+
+The point data starts with a single line with the keyword `POINT_DATA` followed by the number of points.
+The number of points must match the number of points defined by the topology.
+The rest of the point data section is the same as the cell data section.
+
 An example VTK file
 -------------------
 
