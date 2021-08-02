@@ -33,7 +33,7 @@ The disadvantage is that it requires an external library, which adds build compl
 It also requires learning the API for the library, which also may be complex.
 
 The specialized formats are typically asosociated with a specific simulation code.
-In this case, the simulation code probably already has an output file that is part of some workflow and they don't to write out another file format, possible writing out duplicate data.
+In this case, the simulation code probably already has an output file that is part of some workflow and they don't want to write out another file format, possible writing out duplicate data.
 
 Below is a list of recommended simple file formats and the mesh types they support.
 
