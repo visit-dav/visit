@@ -476,6 +476,8 @@ Here is an example of a VTK file with a 3D unstructured grid.
 
 .. literalinclude:: data_examples/unstructuredgrid.vtk
 
+It contains all the linear element types.
+
 .. _data_into_visit_bov:
 
 The BOV file format
