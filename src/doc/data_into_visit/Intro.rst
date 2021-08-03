@@ -399,8 +399,6 @@ Here is an example of a VTK file with polydata.
 
 It supportes points, lines, polygons and triangle strips.
 
-.. _data_into_visit_bov:
-
 An example of a unstructured grid file
 --------------------------------------
 
@@ -454,6 +452,10 @@ The following cell types are supported.
 +--------------------------------+-------+
 
 Here is an example of a VTK file with a 3D unstructured grid.
+
+.. literalinclude:: data_examples/unstructuredgrid.vtk
+
+.. _data_into_visit_bov:
 
 The BOV file format
 ===================
