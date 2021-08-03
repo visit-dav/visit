@@ -93,8 +93,10 @@ It contains the points and the topology.
 This part begins with a line containing the keyword DATASET followed by a keyword describing the type of dataset.
 Then, depending upon the type of dataset, other keyword/data combinations define the actual data.
 The topology can be 1D, 2D or 3D, although only 2D and 3D topologies are supported by VisIt_.
+If the Z-coordinates are all zero, VisIt_ will treat the mesh as 2D and display it in 2D.
 
-5. The final part describes the fields. The fields can be defined on either the cells or the points.
+5. The final part describes the fields.
+The fields can be defined on either the cells or the points.
 The cell or point fields can be listed in either order.
 The fields can be either scalars, vectors or tensors. 
 
@@ -164,7 +166,7 @@ The polydata grid section has the following structure. ::
     POINTS nPoints dataType
     x1 y1 z1
     x2 y2 z2
-      ...
+    ...
     xn yn zn
 
     VERTICES nVertices size
@@ -180,25 +182,88 @@ The polydata grid section has the following structure. ::
     2 ln1 ln2
 
     POLYGONS nPolygons size
-    nIndices1 i11 i12 ... i1n
-    nIndices2 i21 i22 ... i2n
+    n1 i11 i12 ... i1n1
+    n2 i21 i22 ... i2n2
     ...
-    nIndicesm im1 im2 ... imn
+    nn in1 in2 ... innn
 
     TRIANGLE_STRIPS nStrips size
-    nIndices1 i11 i12 ... i1n
-    nIndices2 i21 i22 ... i2n
+    n1 i11 i12 ... i1n1
+    n2 i21 i22 ... i2n2
     ...
-    nIndicesm im1 im2 ... imn
+    nn in1 in2 ... innn
 
 Supported data types in VisIt_ are `float` and `double`.
-The vertices, lines, polygons and triangle_strips sections may or may not be prsent.
+The vertices, lines, polygons and triangle_strips sections may or may not be present.
 The vertices, lines, polygons and triangle_strips sections may be in any order.
+`xn`, `yn` and `zn` are the coordinates of the nth point.
+`n1`, `n2` and `nm` are the number of indices for each cell.
+`in1`, `in2` and `innn` are the zero origin indices for the nth cell.
 
 Unstructured grid
 """""""""""""""""
 
 The unstructured grid section has the following structure. ::
+
+    DATASET UNSTRUCTURED_GRID
+    POINTS nPoints dataType
+    x1 y1 z1
+    x2 y2 z2
+    ...
+    xn yn zn
+
+    CELLS nCells size
+    n1 i11 i12 ... i1n1
+    n2 i21 i22 ... i2n2
+    ...
+    nn in1 in2 ... innn
+
+    CELL_TYPES nCells
+    t1
+    t2
+    ...
+    tn
+
+Supported data types in VisIt_ are `float` and `double`.
+The cells and cell_types sections may be in any order.
+`xn`, `yn` and `zn` are the coordinates of the nth point.
+`n1`, `n2` and `nm` are the number of indices for each cell.
+`in1`, `in2` and `innn` are the zero origin indices for the nth cell.
+`t1`, `t2` and `tn` are the cell types for each cell.
+
+The following cell types are supported.
+
++----------------------------+-------+----------------------------+-------+
+| Type                       | Value | Type                       | Value |
++============================+=======+============================+=======+
+| VTK_VERTEX                 | 1     | VTK_QUADRATIC_EDGE         | 21    |
++----------------------------+-------+----------------------------+-------+
+| VTK_POLY_VERTEX            | 2     | VTK_QUADRATIC_TRIANGLE     | 22    |
++----------------------------+-------+----------------------------+-------+
+| VTK_LINE                   | 3     | VTK_QUADRATIC_QUAD         | 23    |
++----------------------------+-------+----------------------------+-------+
+| VTK_POLY_LINE              | 4     | VTK_QUADRATIC_TETRA        | 24    |
++----------------------------+-------+----------------------------+-------+
+| VTK_TRIANGLE               | 5     | VTK_QUADRATIC_HEXAHEDRON   | 25    |
++----------------------------+-------+----------------------------+-------+
+| VTK_TRIANGLE_STRIP         | 6     | VTK_BIQUADRATIC_QUAD       | 28    |
++----------------------------+-------+----------------------------+-------+
+| VTK_POLYGON                | 7     | VTK_BIQUADRATIC_TRIANGLE   | 34    |
++----------------------------+-------+----------------------------+-------+
+| VTK_PIXEL                  | 8     | VTK_CUBIC_LINE             | 35    |
++----------------------------+-------+----------------------------+-------+
+| VTK_QUAD                   | 9     | VTK_LAGRANGE_TRIANGLE      | 69    |
++----------------------------+-------+----------------------------+-------+
+| VTK_TETRA                  | 10    | VTK_LAGRANGE_QUADRILATERAL | 70    |
++----------------------------+-------+----------------------------+-------+
+| VTK_VOXEL                  | 11    | VTK_LAGRANGE_TETRAHEDRON   | 71    |
++----------------------------+-------+----------------------------+-------+
+| VTK_HEXAHEDRON             | 12    | VTK_LAGRANGE_HEXAHEDRON    | 72    |
++----------------------------+-------+----------------------------+-------+
+| VTK_WEDGE                  | 13    |                            |       |
++----------------------------+-------+----------------------------+-------+
+| VTK_PYRAMID                | 14    |                            |       |
++----------------------------+-------+----------------------------+-------+
 
 Cell data
 ~~~~~~~~~
@@ -406,50 +471,6 @@ An unstructured grid file results in an arbitrary combination of cell types.
 The points are explicitely specified.
 The mesh can be 2D or 3D.
 It is defined by specifying `UNSTRUCTURED_GRID` as the `DATASET` type in the mesh structure portion of the file.
-
-The following cell types are supported.
-
-+--------------------------------+-------+
-| Type                           | Value |
-+================================+=======+
-| VTK_VERTEX                     | 1     |
-+--------------------------------+-------+
-| VTK_POLY_VERTEX                | 2     |
-+--------------------------------+-------+
-| VTK_LINE                       | 3     |
-+--------------------------------+-------+
-| VTK_POLY_LINE                  | 4     |
-+--------------------------------+-------+
-| VTK_TRIANGLE                   | 5     |
-+--------------------------------+-------+
-| VTK_TRIANGLE_STRIP             | 6     |
-+--------------------------------+-------+
-| VTK_POLYGON                    | 7     |
-+--------------------------------+-------+
-| VTK_PIXEL                      | 8     |
-+--------------------------------+-------+
-| VTK_QUAD                       | 9     |
-+--------------------------------+-------+
-| VTK_TETRA                      | 10    |
-+--------------------------------+-------+
-| VTK_VOXEL                      | 11    |
-+--------------------------------+-------+
-| VTK_HEXAHEDRON                 | 12    |
-+--------------------------------+-------+
-| VTK_WEDGE                      | 13    |
-+--------------------------------+-------+
-| VTK_PYRAMID                    | 14    |
-+--------------------------------+-------+
-| VTK_QUADRATIC_EDGE             | 21    |
-+--------------------------------+-------+
-| VTK_QUADRATIC_TRIANGLE         | 22    |
-+--------------------------------+-------+
-| VTK_QUADRATIC_QUAD             | 23    |
-+--------------------------------+-------+
-| VTK_QUADRATIC_TETRA            | 24    |
-+--------------------------------+-------+
-| VTK_QUADRATIC_HEXAHEDRON       | 25    |
-+--------------------------------+-------+
 
 Here is an example of a VTK file with a 3D unstructured grid.
 
