@@ -23,6 +23,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed a bug in the Blueprint Database Plugin where YAML or JSON root files were rewritten on open, which could strip comments and change the file entires. The root file is now opened in a read only mode.</li>
   <li>Fixed a bug where versions of VisIt that supported hardware accelerated rendering would display a black image in the visualization window.</li>
+  <li>Fixed a crash when saving images greater than approximately 8,000 x 8,000. Now images can be saved up to 16,384 x 16,384.</li>
+  <li>Fixed a bug in the <i>Chombo Users</i> configuration that prevented the macros from being loaded and appearing in the "Macros" window.</li>
 </ul>
 
 <a name="Enhancements"></a>
