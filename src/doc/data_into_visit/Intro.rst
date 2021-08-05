@@ -40,7 +40,7 @@ Below is a list of recommended simple file formats and the mesh types they suppo
 +----------------------------------------+--------------+-------------------------------------------------------+
 | Name                                   | Type         | Supported mesh types                                  |
 +========================================+==============+=======================================================+
-| :ref:`VTK <data_into_visit_vtk>`       | Binary, Text | Point, Regular, Rectilinear, Structured, Unstructured |
+| :ref:`VTK <data_into_visit_vtk>`       | Binary, Text | Regular, Rectilinear, Structured, Unstructured        |
 +----------------------------------------+--------------+-------------------------------------------------------+
 | :ref:`BOV <data_into_visit_bov>`       | Binary       | Regular                                               |
 +----------------------------------------+--------------+-------------------------------------------------------+
@@ -72,6 +72,120 @@ The VTK file format
 There are primarily two types of VTK files, legacy and XML.
 We are going to focus on the legacy files, since they are a little bit simpler.
 In addition to the standard VTK content, VisIt_ also has some conventions for data specific to it.
+
+* VTK files can represent a single timestep.
+
+  * If you have multiple times you can group them with a `.visit` file.
+
+* VTK files can be text or binary
+
+  * Both text and binary files have text meta data.
+  * Binary files have binary fields and coordinates imbedded in the text.
+
+* VisIt_ has conventions for additional meta data that fits within the VTK specification.
+
+The remainder of this VTK documentation consistes of a description of the file format, a simple example, and then more complex examples of the different mesh types.
+
+* For a description of a VTK file go :ref:`here<data_into_visit_vtk_structure>`.
+* For an example VTK file go :ref:`here<data_into_visit_vtk_example>`.
+* For an example structured points file go :ref:`here<data_into_visit_vtk_struct_points>`.
+* For an example structured grid file go :ref:`here<data_into_visit_vtk_struct_grid>`.
+* For an example rectilinear grid file go :ref:`here<data_into_visit_vtk_rect_grid>`.
+* For an example polydata file go :ref:`here<data_into_visit_vtk_polydata>`.
+* For an example unstructured grid file go :ref:`here<data_into_visit_vtk_unstruct_grid>`.
+
+.. _data_into_visit_vtk_structure:
+
+VisIt_ conventions for VTK files
+--------------------------------
+
+VisIt_ supports a number of conventions for storing additional data. This data is stored as FIELD data and additional CELL_DATA or POINT_DATA.
+
+The Following types of data are stored as FIELD data.
+
+avtRealDims
+~~~~~~~~~~~
+
+`avtRealDims` specifies the real zones within a uniform grid, structured grid or rectilinear grid.
+
+`avtRealDims` has the following structure. ::
+
+    avtRealDims 1 6 int
+    startx endx starty endy startz endz
+
+`startx`, `endx`, `starty`, `endy`, `startz` and `endz` are integers representing the zero-origin indexes of the first real zone and the last real zone.
+In the case of 2D meshes `startz` and `endz` are zero.
+
+group_id
+~~~~~~~~
+
+`group_id` specifies the zero-origin id into the group.
+
+`group_id` has the following structure. ::
+
+   group_id 1 1 int
+   gid
+
+`gid` is the zero origin index of the group for this block.
+
+base_index
+~~~~~~~~~~
+
+`base_index` specifies the zero-origin index into the group.
+
+`base_index` has the following structure. ::
+
+    base_index 1 3 int
+    startx starty startz
+
+`startx`, `starty` and `startz` are the zero origin base indices into the group.
+
+avtOriginalBounds
+~~~~~~~~~~~~~~~~~
+
+`avtOriginalBounds` specifies the bounds of the coordinates before any operations were applied to it.
+This is typically used when VisIt_ is used to subselecting the mesh and indicates what the extents were before the mesh was subselected.
+
+`avtOriginalBounds` has the following structure. ::
+
+    avtOriginalBounds 1 6 double
+    startx endx starty endy startz endz
+
+`startx`, `endx`, `starty`, `endy`, `startz` and `endz` are double precision values representing the extents of the mesh before it was subselected.
+In the case of 2D meshes `startz` and `endz` are zero.
+
+MeshName
+~~~~~~~~
+
+`MeshName` has the following structure. ::
+
+    MeshName 1 1 string
+    curvmesh2d
+
+CYCLE
+~~~~~
+
+`CYCLE` has the following structure. ::
+
+    CYCLE 1 1 int
+    48
+
+TIME
+~~~~
+
+`TIME` has the following structure. ::
+
+    TIME 1 1 double
+    4.8
+
+VisItExpressions
+~~~~~~~~~~~~~~~~
+
+`VisItExpressions` has the following structure. ::
+
+    VisItExpressions 1 2 string
+    vel;vector;{u,v}
+    speed;scalar;sqrt(u*u+v*v)
 
 The basic structure of a VTK file
 ---------------------------------
@@ -336,6 +450,8 @@ The point data section starts with a single line with the keyword `POINT_DATA` f
 The number of points must match the number of points defined by the topology.
 The rest of the point data section is the same as the cell data section.
 
+.. _data_into_visit_vtk_example:
+
 An example VTK file
 -------------------
 
@@ -385,6 +501,8 @@ The following lines represent one scalar field defined at the points.
 
 The information tells us that there are 12 values for the point data, that it is a scalar, that the name of the variable is `var2`, that it should be read in as float values, that we should use the default lookup table, and that the values consist of `1 2 3 1 2 3 1 2 3 1 2 3`.
 
+.. _data_into_visit_vtk_struct_points:
+
 An example of a structured points file
 --------------------------------------
 
@@ -407,6 +525,8 @@ Here is an example of a VTK file with 2D structured points.
 This defines a mesh similar to the previous one except that it has one row of points in the Z-direction.
 Note that the number of dimensions in the Z-direction is 1 and that Z origin is zero.
 The spacing in the Z-direction is one, but it could be any value.
+
+.. _data_into_visit_vtk_struct_grid:
 
 An example of a structured grid file
 ------------------------------------
@@ -431,6 +551,8 @@ Here is an example of a VTK file with a 2D structured grid.
 This defines a mesh similar to the previous one except that it has one row of points in the Z-direction.
 Note that the number of dimensions in the Z-direction is 1 and that the Z values are all zero.
 
+.. _data_into_visit_vtk_rect_grid:
+
 An example of a rectilinear grid file
 -------------------------------------
 
@@ -451,6 +573,8 @@ Here is an example of a VTK file with a 2D rectilinear grid.
 This defines a mesh similar to the previous one except that it has one row of points in the Z-direction.
 Note that in the Z-direction there is 1 value and that it is zero.
 
+.. _data_into_visit_vtk_polydata:
+
 An example of a polydata file
 -----------------------------
 
@@ -463,6 +587,8 @@ Here is an example of a VTK file with polydata.
 .. literalinclude:: data_examples/polydata.vtk
 
 It supportes points, lines, polygons and triangle strips.
+
+.. _data_into_visit_vtk_unstruct_grid:
 
 An example of a unstructured grid file
 --------------------------------------
