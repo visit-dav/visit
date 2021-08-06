@@ -2,6 +2,297 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="es_ES">
 <context>
+    <name>AddOperatorActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="82"/>
+        <source>Add operator</source>
+        <translation type="unfinished">Agregar operador</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="118"/>
+        <source>Add %1 operator</source>
+        <translation type="unfinished">Agregar operador %1</translation>
+    </message>
+</context>
+<context>
+    <name>AddPlotActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="364"/>
+        <source>Add plot</source>
+        <translation type="unfinished">Agregar trama</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="404"/>
+        <source>Add %1 plot</source>
+        <translation type="unfinished">Agregar %1 trama</translation>
+    </message>
+</context>
+<context>
+    <name>AddWindowActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="80"/>
+        <source>Create a new viewer window</source>
+        <translation type="unfinished">Crear una nueva ventana de visor</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="81"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+</context>
+<context>
+    <name>AnimationPlayActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/AnimationActionsUI.C" line="129"/>
+        <source>Play</source>
+        <translation type="unfinished">Tocar</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/AnimationActionsUI.C" line="130"/>
+        <source>Play animation</source>
+        <translation type="unfinished">Reproducir animación</translation>
+    </message>
+</context>
+<context>
+    <name>AnimationReversePlayActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/AnimationActionsUI.C" line="59"/>
+        <source>Reverse play</source>
+        <translation type="unfinished">Juego inverso</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/AnimationActionsUI.C" line="60"/>
+        <source>Play animation in reverse</source>
+        <translation type="unfinished">Reproducir la animación al revés</translation>
+    </message>
+</context>
+<context>
+    <name>AnimationStopActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/AnimationActionsUI.C" line="84"/>
+        <source>Stop</source>
+        <translation type="unfinished">Detener</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/AnimationActionsUI.C" line="85"/>
+        <source>Stop animation</source>
+        <translation type="unfinished">Detener animación</translation>
+    </message>
+</context>
+<context>
+    <name>ChooseCenterOfRotationActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="384"/>
+        <source>Choose center</source>
+        <translation type="unfinished">Elija el centro</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="385"/>
+        <source>Choose center of rotation</source>
+        <translation type="unfinished">Elija el centro de rotación</translation>
+    </message>
+</context>
+<context>
+    <name>ClearAllWindowsActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="247"/>
+        <source>Clear all windows</source>
+        <translation type="unfinished">Limpiar todas las ventanas</translation>
+    </message>
+</context>
+<context>
+    <name>ClearPickPointsActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="271"/>
+        <source>Clear pick points</source>
+        <translation type="unfinished">Puntos de selección claros</translation>
+    </message>
+</context>
+<context>
+    <name>ClearReferenceLinesActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="365"/>
+        <source>Clear reference lines</source>
+        <translation type="unfinished">Líneas de referencia claras</translation>
+    </message>
+</context>
+<context>
+    <name>ClearWindowActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="198"/>
+        <source>Clear all plots from this window</source>
+        <translation type="unfinished">Borrar todas las tramas de esta ventana</translation>
+    </message>
+</context>
+<context>
+    <name>CloneWindowActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="110"/>
+        <source>Clone this window</source>
+        <translation type="unfinished">Clonar esta ventana</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="111"/>
+        <source>Clone</source>
+        <translation type="unfinished">Para clonar</translation>
+    </message>
+</context>
+<context>
+    <name>CopyPlotActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="1053"/>
+        <source>Copy active plots</source>
+        <translation type="unfinished">Copiar tramas activas</translation>
+    </message>
+</context>
+<context>
+    <name>DeleteActivePlotsActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="1008"/>
+        <source>Delete active plots</source>
+        <translation type="unfinished">Eliminar tramas activas</translation>
+    </message>
+</context>
+<context>
+    <name>DeleteWindowActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="140"/>
+        <source>Delete this window</source>
+        <translation type="unfinished">Eliminar esta ventana</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="141"/>
+        <source>Delete</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+</context>
+<context>
+    <name>DrawPlotsActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="918"/>
+        <source>Draw plots</source>
+        <translation type="unfinished">Dibujar tramas</translation>
+    </message>
+</context>
+<context>
+    <name>EnableToolActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="889"/>
+        <source>Tools</source>
+        <translation type="unfinished">Herramientas</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="898"/>
+        <source>Box</source>
+        <translation type="unfinished">Caja</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="898"/>
+        <source>Box tool</source>
+        <translation type="unfinished">Herramienta de caja</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="900"/>
+        <source>Line</source>
+        <translation type="unfinished">Línea</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="900"/>
+        <source>Line tool</source>
+        <translation type="unfinished">Herramienta de línea</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="902"/>
+        <source>Plane</source>
+        <translation type="unfinished">Plano</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="902"/>
+        <source>Plane tool</source>
+        <translation type="unfinished">Herramienta de plano</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="904"/>
+        <source>Sphere</source>
+        <translation type="unfinished">Esfera</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="904"/>
+        <source>Sphere tool</source>
+        <translation type="unfinished">Herramienta esfera</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="906"/>
+        <source>Point</source>
+        <translation type="unfinished">Punto</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="906"/>
+        <source>Point tool</source>
+        <translation type="unfinished">Herramienta de punto</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="908"/>
+        <source>Axis Restriction</source>
+        <translation type="unfinished">Restricción del eje</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="908"/>
+        <source>Axis Restriction tool</source>
+        <translation type="unfinished">Herramienta de restricción de eje</translation>
+    </message>
+</context>
+<context>
+    <name>EnableToolbarActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ToolbarActionsUI.C" line="39"/>
+        <source>Toolbars</source>
+        <translation type="unfinished">Barras de herramientas</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ToolbarActionsUI.C" line="40"/>
+        <source>Enable toolbars</source>
+        <translation type="unfinished">Habilitar barras de herramientas</translation>
+    </message>
+</context>
+<context>
+    <name>HideActivePlotsActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="962"/>
+        <source>Hide active plots</source>
+        <translation type="unfinished">Ocultar tramas activas</translation>
+    </message>
+</context>
+<context>
+    <name>HideToolbarsActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ToolbarActionsUI.C" line="74"/>
+        <source>Hide toolbars</source>
+        <translation type="unfinished">Ocultar barras de herramientas</translation>
+    </message>
+</context>
+<context>
+    <name>HideToolbarsForAllWindowsActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ToolbarActionsUI.C" line="96"/>
+        <source>Hide toolbars (all windows)</source>
+        <translation type="unfinished">Ocultar barras de herramientas (todas las ventanas)</translation>
+    </message>
+</context>
+<context>
+    <name>InvertBackgroundActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="634"/>
+        <source>Invert background</source>
+        <translation type="unfinished">Invertir fondo</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="635"/>
+        <source>Swap background and foreground colors</source>
+        <translation type="unfinished">Intercambiar colores de fondo y de primer plano</translation>
+    </message>
+</context>
+<context>
     <name>KeyframeDataModel</name>
     <message>
         <location filename="../../gui/KeyframeDataModel.C" line="317"/>
@@ -1037,7 +1328,7 @@ VisIt intentará continuar procesando, pero puede comportarse de manera poco con
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="603"/>
         <source>Show tick marks</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mostrar marcas de graduación</translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="613"/>
@@ -1375,7 +1666,7 @@ VisIt intentará continuar procesando, pero puede comportarse de manera poco con
         <location filename="../../operators/AxisAlignedSlice4D/QvisAxisAlignedSlice4DWindow.C" line="95"/>
         <location filename="../../operators/AxisAlignedSlice4D/QvisAxisAlignedSlice4DWindow.C" line="216"/>
         <source>K</source>
-        <translation type="unfinished">A</translation>
+        <translation type="unfinished">K</translation>
     </message>
     <message>
         <location filename="../../operators/AxisAlignedSlice4D/QvisAxisAlignedSlice4DWindow.C" line="102"/>
@@ -1936,7 +2227,7 @@ El intervalo de tiempo que quiero cambiará a medida que cambie el control desli
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="1069"/>
         <source>&lt;u&gt;What do you want to do with the donor field?&lt;u&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&lt;u&gt; ¿Qué quieres hacer con el campo de donantes?&lt;u&gt;</translation>
     </message>
     <message>
         <source>&lt;u&gt;What do you want to do with the donor field?&lt;/u&gt;</source>
@@ -4230,12 +4521,12 @@ El intervalo de tiempo que quiero cambiará a medida que cambie el control desli
     <message>
         <location filename="../../operators/Explode/QvisExplodeWindow.C" line="533"/>
         <source>cylinderPoint1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">cilindro Punto 1</translation>
     </message>
     <message>
         <location filename="../../operators/Explode/QvisExplodeWindow.C" line="547"/>
         <source>cylinderPoint2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">cilindro Punto 2</translation>
     </message>
     <message>
         <location filename="../../operators/Explode/QvisExplodeWindow.C" line="561"/>
@@ -5508,7 +5799,7 @@ Answering No will just detach the GUI and leave the viewer and its remaining cli
     <message>
         <location filename="../../gui/QvisGUIApplication.C" line="3575"/>
         <source>Keyframer</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fotograma clave (Keyframer)</translation>
     </message>
     <message>
         <location filename="../../gui/QvisGUIApplication.C" line="3589"/>
@@ -5785,7 +6076,7 @@ usarán esta misma ventana.</translation>
         <location filename="../../gui/QvisGlobalLineoutWindow.C" line="182"/>
         <source>These items can be overridden
 by the Lineout operator</source>
-<translation type="unfinished">El operador Lineout
+        <translation type="unfinished">El operador Lineout
 puede anular estos elementos.</translation>
     </message>
     <message>
@@ -9568,7 +9859,7 @@ Error http %2: %3.</translation>
         <source>Streamline
     Compute trajectories in an (instantaneous) snapshot of the vector field.
     Uses and loads vector data from only the current time slice.</source>
-    <translation type="unfinished">Líneas de corriente
+        <translation type="unfinished">Líneas de corriente
     Calcule trayectorias en una instantánea (instantánea) del campo vectorial.
     Utiliza y carga datos vectoriales solo del intervalo de tiempo actual.</translation>
     </message>
@@ -9644,7 +9935,7 @@ Error http %2: %3.</translation>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="705"/>
         <source>Have VisIt select the best algorithm</source>
-        <translation type="unfinished">>Deje que VisIt elija el mejor algoritmo</translation>
+        <translation type="unfinished">&gt;Deje que VisIt elija el mejor algoritmo</translation>
     </message>
     <message>
         <location filename="../../operators/LimitCycle/QvisLimitCycleWindow.C" line="711"/>
@@ -10105,8 +10396,8 @@ to A for the first, and B for the second. These
 settings will allow the attributes to be
 propagated to plots in other windows when
 using the &quot;Apply to all windows&quot; option.</source>
-<translation type="unfinished">Establezca la instancia al aplicar a múltiples
-parcelas en una sola ventana. Es decir. si desea comparar
+        <translation type="unfinished">Establezca la instancia al aplicar a múltiples
+tramas en una sola ventana. Es decir. si desea comparar
 diferentes muestreos, establezca la instancia en A para el primero y B para el segundo.
 Esta configuración permitirá que los atributos se propaguen
 a los gráficos en otras ventanas cuando se utiliza
@@ -10900,12 +11191,12 @@ la opción &quot;Aplicar a todas las ventanas&quot;.</translation>
     </message>
     <message>
         <source>&amp;Exit</source>
-        <translation type="obsolete">Salida</translation>
+        <translation type="obsolete">Salir</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="523"/>
         <source>E&amp;xit</source>
-        <translation type="unfinished">Salida</translation>
+        <translation type="unfinished">Salir</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="531"/>
@@ -10955,7 +11246,7 @@ la opción &quot;Aplicar a todas las ventanas&quot;.</translation>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="556"/>
         <source>&amp;Keyframing . . .</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fotogramas clave (&amp;Keyframing) . . .</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="559"/>
@@ -10965,7 +11256,7 @@ la opción &quot;Aplicar a todas las ventanas&quot;.</translation>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="562"/>
         <source>&amp;Lineout . . .</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;Lineout . . .</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="565"/>
@@ -11467,7 +11758,7 @@ la opción &quot;Aplicar a todas las ventanas&quot;.</translation>
     <message>
         <location filename="../../gui/QvisMeshManagementWindow.C" line="170"/>
         <source>Smallest zone (% bbox diag)</source>
-        <translation type="unfinished">Smallest zone (% bbox diag)</translation>
+        <translation type="unfinished">Zona más pequeña (% de la diag del cuadro delimitador [&quot;bbox&quot;])</translation>
     </message>
     <message>
         <location filename="../../gui/QvisMeshManagementWindow.C" line="179"/>
@@ -12354,8 +12645,8 @@ la opción &quot;Aplicar a todas las ventanas&quot;.</translation>
 Do you want to apply the %2 operator?
 
 </source>
-        <translation type="unfinished">No se encontró ningún operador% 1 para las parcelas seleccionadas.
-¿Quiere aplicar el operador% 2?
+        <translation type="unfinished">No se encontró ningún operador %1 para las tramas seleccionadas.
+¿Quiere aplicar el operador %2?
 
 </translation>
     </message>
@@ -13188,7 +13479,7 @@ Do you want to apply the %2 operator?
     <message>
         <location filename="../../gui/QvisPlotListBox.C" line="716"/>
         <source>Clone</source>
-        <translation type="unfinished">Clon</translation>
+        <translation type="unfinished">Para clonar</translation>
     </message>
     <message>
         <location filename="../../gui/QvisPlotListBox.C" line="717"/>
@@ -14069,7 +14360,7 @@ Do you want to apply the %2 operator?
         <source>Pathline    
     Compute trajectories in the time-varying vector field.
     Uses and loads vector data from all relevant time slices</source>
-    <translation type="unfinished">Trayectorias
+        <translation type="unfinished">Trayectorias
     Calcule trayectorias en el campo vectorial variable en el tiempo.
     Utiliza y carga datos vectoriales de todos los intervalos de tiempo relevantess</translation>
     </message>
@@ -21398,7 +21689,7 @@ no pasos ni tiempos.</translation>
         <location filename="../../gui/QvisViewWindow.C" line="1821"/>
         <location filename="../../gui/QvisViewWindow.C" line="1832"/>
         <source>axis3DScales</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">axis3DScales</translation>
     </message>
     <message>
         <location filename="../../gui/QvisViewWindow.C" line="1846"/>
@@ -21411,7 +21702,7 @@ no pasos ni tiempos.</translation>
     <message>
         <location filename="../../gui/QvisViewportWidget.C" line="857"/>
         <source>Viewport</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Viewport</translation>
     </message>
 </context>
 <context>
@@ -22247,6 +22538,77 @@ no pasos ni tiempos.</translation>
     </message>
 </context>
 <context>
+    <name>RecenterViewActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="80"/>
+        <source>Recenter view</source>
+        <translation type="unfinished">Vista de nuevo centro</translation>
+    </message>
+</context>
+<context>
+    <name>RedoViewActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="116"/>
+        <source>Redo view</source>
+        <translation type="unfinished">Rehacer vista</translation>
+    </message>
+</context>
+<context>
+    <name>RemoveAllOperatorsActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="293"/>
+        <source>Remove all operators</source>
+        <translation type="unfinished">Eliminar todos los operadores</translation>
+    </message>
+</context>
+<context>
+    <name>RemoveLastOperatorActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="242"/>
+        <source>Remove last operator</source>
+        <translation type="unfinished">Eliminar el último operador</translation>
+    </message>
+</context>
+<context>
+    <name>RemovePicksActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="318"/>
+        <source>Remove picks</source>
+        <translation type="unfinished">Quitar picos</translation>
+    </message>
+</context>
+<context>
+    <name>ResetViewActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="62"/>
+        <source>Reset view</source>
+        <translation type="unfinished">Reestablecer vista</translation>
+    </message>
+</context>
+<context>
+    <name>SaveViewActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="176"/>
+        <source>Clear saved views</source>
+        <translation type="unfinished">Borrar vistas guardadas</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="177"/>
+        <source>Save view</source>
+        <translation type="unfinished">Guardar vista</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="178"/>
+        <source>Save current view</source>
+        <translation type="unfinished">Guardar vista actual</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="261"/>
+        <source>Use saved view %1</source>
+        <translation type="unfinished">Usar vista guardada %1</translation>
+    </message>
+</context>
+<context>
     <name>ScatterPlotRoleNames</name>
     <message>
         <location filename="../../plots/Scatter/QvisScatterPlotWindow.C" line="28"/>
@@ -22275,6 +22637,248 @@ no pasos ni tiempos.</translation>
     </message>
 </context>
 <context>
+    <name>SetActiveWindowActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="415"/>
+        <source>Make active</source>
+        <translation type="unfinished">Activar</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="416"/>
+        <source>Make this window active</source>
+        <translation type="unfinished">Activar esta ventana</translation>
+    </message>
+</context>
+<context>
+    <name>SetPlotFollowsTimeActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/PlotAndOperatorActionsUI.C" line="1101"/>
+        <source>Plot follows time slider</source>
+        <translation type="unfinished">La trama sigue el control deslizante de tiempo</translation>
+    </message>
+</context>
+<context>
+    <name>SetToolUpdateModeActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="1011"/>
+        <source>Tool Updates</source>
+        <translation type="unfinished">Actualizaciones de herramientas</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="1012"/>
+        <source>Set tool update frequency</source>
+        <translation type="unfinished">Establecer la frecuencia de actualización de la herramienta</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="1017"/>
+        <source>Continuously</source>
+        <translation type="unfinished">Continuamente</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="1018"/>
+        <source>On Mouse Release</source>
+        <translation type="unfinished">Al soltar el mouse</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="1019"/>
+        <source>On Tool Close</source>
+        <translation type="unfinished">Al cerrar la herramienta</translation>
+    </message>
+</context>
+<context>
+    <name>SetToolbarIconSizeActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ToolbarActionsUI.C" line="166"/>
+        <source>Use large icons (all windows)</source>
+        <translation type="unfinished">Utilice iconos grandes (todas las ventanas)</translation>
+    </message>
+</context>
+<context>
+    <name>SetWindowLayoutActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="537"/>
+        <source>Layout</source>
+        <translation type="unfinished">Diseño</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="538"/>
+        <source>Set window layout</source>
+        <translation type="unfinished">Establecer el diseño de la ventana</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="545"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="554"/>
+        <source>1x1</source>
+        <translation type="unfinished">1x1</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="545"/>
+        <source>1 x 1 window layout</source>
+        <translation type="unfinished">Diseño de ventana 1 x 1</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="546"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="555"/>
+        <source>1x2</source>
+        <translation type="unfinished">1x2</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="546"/>
+        <source>1 x 2 window layout</source>
+        <translation type="unfinished">Diseño de ventana 1 x 2</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="547"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="556"/>
+        <source>2x2</source>
+        <translation type="unfinished">2x2</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="547"/>
+        <source>2 x 2 window layout</source>
+        <translation type="unfinished">Diseño de ventana 2 x 2</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="548"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="557"/>
+        <source>2x3</source>
+        <translation type="unfinished">2x3</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="548"/>
+        <source>2 x 3 window layout</source>
+        <translation type="unfinished">Diseño de ventana 2 x 3</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="549"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="558"/>
+        <source>2x4</source>
+        <translation type="unfinished">2x4</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="549"/>
+        <source>2 x 4 window layout</source>
+        <translation type="unfinished">Diseño de ventana 2 x 4</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="550"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="559"/>
+        <source>3x3</source>
+        <translation type="unfinished">3x3</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="550"/>
+        <source>3 x 3 window layout</source>
+        <translation type="unfinished">Diseño de ventana 3 x 3</translation>
+    </message>
+</context>
+<context>
+    <name>SetWindowModeActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="678"/>
+        <source>Mode</source>
+        <translation type="unfinished">Modo</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="679"/>
+        <source>Set window mode</source>
+        <translation type="unfinished">Establecer el modo de ventana</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="692"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="702"/>
+        <source>Navigate</source>
+        <translation type="unfinished">Navegar</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="692"/>
+        <source>Navigate mode</source>
+        <translation type="unfinished">Modo de navegación</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="693"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="703"/>
+        <source>Zoom</source>
+        <translation type="unfinished">Zoom</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="693"/>
+        <source>Zoom mode</source>
+        <translation type="unfinished">Modo de zoom</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="694"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="704"/>
+        <source>Zone Pick</source>
+        <translation type="unfinished">Selección de zona</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="694"/>
+        <source>Zone Pick mode</source>
+        <translation type="unfinished">Modo de selección de zona</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="695"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="705"/>
+        <source>Node Pick</source>
+        <translation type="unfinished">Selección de nodo</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="695"/>
+        <source>Node Pick mode</source>
+        <translation type="unfinished">Modo de selección de nodo</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="696"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="706"/>
+        <source>Spreadsheet Pick</source>
+        <translation type="unfinished">Selección de hoja de cálculo</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="696"/>
+        <source>Spreadsheet Pick mode</source>
+        <translation type="unfinished">Modo de selección de hoja de cálculo</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="697"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="707"/>
+        <source>Add DDT Pick</source>
+        <translation type="unfinished">Agregar selección de DDT</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="697"/>
+        <source>DDT Pick mode</source>
+        <translation type="unfinished">Modo de selección de DDT</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="698"/>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="708"/>
+        <source>Lineout</source>
+        <translation type="unfinished">Salida de línea</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="698"/>
+        <source>Lineout mode</source>
+        <translation type="unfinished">Lineout mode</translation>
+    </message>
+</context>
+<context>
+    <name>ShowToolbarsActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ToolbarActionsUI.C" line="116"/>
+        <source>Show toolbars</source>
+        <translation type="unfinished">Mostrar barras de herramientas</translation>
+    </message>
+</context>
+<context>
+    <name>ShowToolbarsForAllWindowsActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ToolbarActionsUI.C" line="138"/>
+        <source>Show toolbars (all windows)</source>
+        <translation type="unfinished">Mostrar barras de herramientas (todas las ventanas)</translation>
+    </message>
+</context>
+<context>
     <name>SimCommandSlots</name>
     <message>
         <location filename="../../gui/SimCommandSlots.C" line="70"/>
@@ -22296,102 +22900,102 @@ no pasos ni tiempos.</translation>
 <context>
     <name>SplashScreen</name>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="262"/>
+        <location filename="../../gui/SplashScreen.C" line="265"/>
         <source>VisIt %1 splash screen</source>
         <translation type="unfinished">VisIt %1 pantalla de presentación</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="305"/>
+        <location filename="../../gui/SplashScreen.C" line="308"/>
         <source>Beta</source>
         <translation type="unfinished">Beta</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="310"/>
+        <location filename="../../gui/SplashScreen.C" line="313"/>
         <source>Patch %1</source>
         <translation type="unfinished">Parche %1</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="347"/>
+        <location filename="../../gui/SplashScreen.C" line="350"/>
         <source>All Rights Reserved</source>
         <translation type="unfinished">Reservados todos los derechos</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="358"/>
+        <location filename="../../gui/SplashScreen.C" line="361"/>
         <source>January</source>
         <translation type="unfinished">Enero</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="359"/>
+        <location filename="../../gui/SplashScreen.C" line="362"/>
         <source>February</source>
         <translation type="unfinished">Febrero</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="360"/>
+        <location filename="../../gui/SplashScreen.C" line="363"/>
         <source>March</source>
         <translation type="unfinished">Marcha</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="361"/>
+        <location filename="../../gui/SplashScreen.C" line="364"/>
         <source>April</source>
         <translation type="unfinished">Abril</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="362"/>
+        <location filename="../../gui/SplashScreen.C" line="365"/>
         <source>May</source>
         <translation type="unfinished">Mayo</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="363"/>
+        <location filename="../../gui/SplashScreen.C" line="366"/>
         <source>June</source>
         <translation type="unfinished">Junio</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="364"/>
+        <location filename="../../gui/SplashScreen.C" line="367"/>
         <source>July</source>
         <translation type="unfinished">Julio</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="365"/>
+        <location filename="../../gui/SplashScreen.C" line="368"/>
         <source>August</source>
         <translation type="unfinished">Agosto</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="366"/>
+        <location filename="../../gui/SplashScreen.C" line="369"/>
         <source>September</source>
         <translation type="unfinished">Septiembre</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="367"/>
+        <location filename="../../gui/SplashScreen.C" line="370"/>
         <source>October</source>
         <translation type="unfinished">Octubre</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="368"/>
+        <location filename="../../gui/SplashScreen.C" line="371"/>
         <source>November</source>
         <translation type="unfinished">Noviembre</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="369"/>
+        <location filename="../../gui/SplashScreen.C" line="372"/>
         <source>December</source>
         <translation type="unfinished">Diciembre</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="384"/>
+        <location filename="../../gui/SplashScreen.C" line="387"/>
         <source>Starting VisIt...</source>
         <translation type="unfinished">Iniciando VisIt ...</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="437"/>
+        <location filename="../../gui/SplashScreen.C" line="440"/>
         <source>Copyright...</source>
         <translation type="unfinished">Derechos de autor...</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="446"/>
+        <location filename="../../gui/SplashScreen.C" line="449"/>
         <source>Contributors...</source>
         <translation type="unfinished">Colaboradores ...</translation>
     </message>
     <message>
-        <location filename="../../gui/SplashScreen.C" line="456"/>
+        <location filename="../../gui/SplashScreen.C" line="459"/>
         <source>Dismiss</source>
         <translation type="unfinished">Despedir</translation>
     </message>
@@ -22597,6 +23201,1147 @@ no pasos ni tiempos.</translation>
         <location filename="../../plots/Spreadsheet/SpreadsheetViewer.C" line="2823"/>
         <source>The average value of the selected cells is: %1.</source>
         <translation type="unfinished">El valor medio de las celdas seleccionadas es: %1.</translation>
+    </message>
+</context>
+<context>
+    <name>TimeSliderForwardStepActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/AnimationActionsUI.C" line="173"/>
+        <source>Forward step</source>
+        <translation type="unfinished">Paso adelante</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/AnimationActionsUI.C" line="174"/>
+        <source>Step forward one frame</source>
+        <translation type="unfinished">Da un paso adelante un fotograma</translation>
+    </message>
+</context>
+<context>
+    <name>TimeSliderReverseStepActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/AnimationActionsUI.C" line="41"/>
+        <source>Reverse step</source>
+        <translation type="unfinished">Paso inverso</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/AnimationActionsUI.C" line="42"/>
+        <source>Step back one frame</source>
+        <translation type="unfinished">Retrocede un cuadro</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleAllowPopupActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/LockActionsUI.C" line="37"/>
+        <source>Allow Popup</source>
+        <translation type="unfinished">Permitir ventana emergente</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleFullFrameActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="135"/>
+        <source>Full frame</source>
+        <translation type="unfinished">Fotograma completo</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="136"/>
+        <source>Toggle full frame</source>
+        <translation type="unfinished">Alternar fotograma completo</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleLockTimeActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/LockActionsUI.C" line="120"/>
+        <source>Lock time</source>
+        <translation type="unfinished">Tiempo de bloqueo</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleLockToolActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/LockActionsUI.C" line="152"/>
+        <source>Lock tools</source>
+        <translation type="unfinished">Herramientas de bloqueo</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleLockViewActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/LockActionsUI.C" line="80"/>
+        <source>Lock view</source>
+        <translation type="unfinished">Bloquear vista</translation>
+    </message>
+</context>
+<context>
+    <name>TogglePerspectiveViewActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="38"/>
+        <source>Perspective</source>
+        <translation type="unfinished">Perspectiva</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="39"/>
+        <source>Toggle perspective view</source>
+        <translation type="unfinished">Alternar vista en perspectiva</translation>
+    </message>
+</context>
+<context>
+    <name>ToggleSpinModeActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="464"/>
+        <source>Spin</source>
+        <translation type="unfinished">Girar</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/WindowActionsUI.C" line="465"/>
+        <source>Toggle spin mode</source>
+        <translation type="unfinished">Alternar el modo de giro</translation>
+    </message>
+</context>
+<context>
+    <name>TurnOffAllLocksActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/LockActionsUI.C" line="184"/>
+        <source>Unlock everything</source>
+        <translation type="unfinished">Desbloquea todo</translation>
+    </message>
+</context>
+<context>
+    <name>UndoViewActionUI</name>
+    <message>
+        <location filename="../../viewer/main/ui/ViewActionsUI.C" line="98"/>
+        <source>Undo view</source>
+        <translation type="unfinished">Deshacer vista</translation>
+    </message>
+</context>
+<context>
+    <name>ViewerConnectionProgressDialog</name>
+    <message>
+        <location filename="../../viewer/main/ui/ViewerConnectionProgressDialog.C" line="86"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancelar</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewerConnectionProgressDialog.C" line="249"/>
+        <source>VisIt is waiting for a parallel %1 to launch on %2.</source>
+        <translation type="unfinished">VisIt está esperando que se inicie %1 paralelo en %2.</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewerConnectionProgressDialog.C" line="252"/>
+        <source>VisIt is waiting for a %1 to launch on %2.</source>
+        <translation type="unfinished">VisIt está esperando que %1 se inicie en %2.</translation>
+    </message>
+</context>
+<context>
+    <name>ViewerHostProfileSelectorWithWin</name>
+    <message>
+        <location filename="../../viewer/main/ui/ViewerHostProfileSelectorWithWin.C" line="90"/>
+        <source>Num procs</source>
+        <translation type="unfinished">Numero de procesadores</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewerHostProfileSelectorWithWin.C" line="110"/>
+        <source>Num nodes</source>
+        <translation type="unfinished">Numero de nodos</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewerHostProfileSelectorWithWin.C" line="129"/>
+        <source>Bank</source>
+        <translation type="unfinished">Banco</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewerHostProfileSelectorWithWin.C" line="134"/>
+        <source>Time limit</source>
+        <translation type="unfinished">Límite de tiempo</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewerHostProfileSelectorWithWin.C" line="139"/>
+        <source>Machine file</source>
+        <translation type="unfinished">Archivo de máquina</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewerHostProfileSelectorWithWin.C" line="148"/>
+        <source>OK</source>
+        <translation type="unfinished">OK</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewerHostProfileSelectorWithWin.C" line="154"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancelar</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/ViewerHostProfileSelectorWithWin.C" line="253"/>
+        <source>Select options for &apos;%1&apos;</source>
+        <translation type="unfinished">Seleccionar opciones para &apos;%1&apos;</translation>
+    </message>
+</context>
+<context>
+    <name>VisItChangeUsernameWindow</name>
+    <message>
+        <location filename="../../viewer/main/ui/VisItChangeUsernameWindow.C" line="33"/>
+        <source>Choose new username</source>
+        <translation type="unfinished">Elija un nuevo nombre de usuario</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/VisItChangeUsernameWindow.C" line="41"/>
+        <source>Username for localhost: </source>
+        <translation type="unfinished">Nombre de usuario para localhost:</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/VisItChangeUsernameWindow.C" line="51"/>
+        <source>Confirm username</source>
+        <translation type="unfinished">Confirme nombre de usuario</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/VisItChangeUsernameWindow.C" line="56"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancelar</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/VisItChangeUsernameWindow.C" line="92"/>
+        <source>New username for %1: </source>
+        <translation type="unfinished">Nuevo nombre de usuario para %1:</translation>
+    </message>
+</context>
+<context>
+    <name>VisItPasswordWindow</name>
+    <message>
+        <location filename="../../viewer/main/ui/VisItPasswordWindow.C" line="50"/>
+        <source>Password for localhost: </source>
+        <translation type="unfinished">Contraseña para localhost:</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/VisItPasswordWindow.C" line="61"/>
+        <source>OK</source>
+        <translation type="unfinished">OK</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/VisItPasswordWindow.C" line="66"/>
+        <source>Change username</source>
+        <translation type="unfinished">Cambie el nombre de usuario</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/VisItPasswordWindow.C" line="71"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancelar</translation>
+    </message>
+    <message>
+        <location filename="../../viewer/main/ui/VisItPasswordWindow.C" line="75"/>
+        <source>Enter password</source>
+        <translation type="unfinished">Introducir la contraseña</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEdit</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="46"/>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="228"/>
+        <source>XMLEdit: %1</source>
+        <translation type="unfinished">XMLEdit: %1</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="48"/>
+        <source>&amp;File</source>
+        <translation type="unfinished">Archivo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="49"/>
+        <source>&amp;New</source>
+        <translation type="unfinished">&amp;Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="50"/>
+        <source>&amp;Open</source>
+        <translation type="unfinished">Abiert&amp;o</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="51"/>
+        <source>&amp;Save</source>
+        <translation type="unfinished">Guardar</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="52"/>
+        <source>Save &amp;as</source>
+        <translation type="unfinished">Guardar como</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="54"/>
+        <source>&amp;Generate code</source>
+        <translation type="unfinished">&amp;Generar codigo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="56"/>
+        <source>E&amp;xit</source>
+        <translation type="unfinished">Salir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="62"/>
+        <source>Plugin</source>
+        <translation type="unfinished">Enchufar (plugin)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="65"/>
+        <source>CMake</source>
+        <translation type="unfinished">CMake</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="68"/>
+        <source>Attribute</source>
+        <translation type="unfinished">Atributo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="71"/>
+        <source>Enums</source>
+        <translation type="unfinished">Enumeraciones</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="74"/>
+        <source>Fields</source>
+        <translation type="unfinished">Campos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="77"/>
+        <source>Functions</source>
+        <translation type="unfinished">Funciones</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="80"/>
+        <source>Constants</source>
+        <translation type="unfinished">Constantes</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="83"/>
+        <source>Includes</source>
+        <translation type="unfinished">Incluye</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="86"/>
+        <source>Code</source>
+        <translation type="unfinished">Código</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="100"/>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="174"/>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="319"/>
+        <source>untitled.xml</source>
+        <translation type="unfinished">untitled.xml</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="122"/>
+        <source>Open file...</source>
+        <translation type="unfinished">Abrir documento...</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="124"/>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="152"/>
+        <source>XML files (*.xml)</source>
+        <translation type="unfinished">Archivos XML (* .xml)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="150"/>
+        <source>Save file...</source>
+        <translation type="unfinished">Guardar el archivo...</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="253"/>
+        <source>XMLEdit: </source>
+        <translation type="unfinished">XMLEdit: </translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="347"/>
+        <source>Select items to generate</source>
+        <translation type="unfinished">Seleccionar elementos para generar</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEdit.C" line="352"/>
+        <source>Generate code for %1</source>
+        <translation type="unfinished">Generar código para% 1</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditAttribute</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditAttribute.C" line="77"/>
+        <source>Base Class</source>
+        <translation type="unfinished">Clase base</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditCode</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="46"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="49"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="58"/>
+        <source>Target</source>
+        <translation type="unfinished">Objetivo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="63"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="68"/>
+        <source>Prefix</source>
+        <translation type="unfinished">Prefijo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="79"/>
+        <source>Postfix</source>
+        <translation type="unfinished">Sufijo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCode.C" line="415"/>
+        <source>unnamed%1</source>
+        <translation type="unfinished"> %1 sin nombre</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditCodeGeneratorWindow</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeGeneratorWindow.C" line="59"/>
+        <source>Dismiss</source>
+        <translation type="unfinished">Despedir</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditCodeSelectionDialog</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="46"/>
+        <source>Attributes</source>
+        <translation type="unfinished">Atributos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="50"/>
+        <source>C++</source>
+        <translation type="unfinished">C ++</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="52"/>
+        <source>Java</source>
+        <translation type="unfinished">Java</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="54"/>
+        <source>Python</source>
+        <translation type="unfinished">Python</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="62"/>
+        <source>Plugin</source>
+        <translation type="unfinished">Enchufar</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="66"/>
+        <source>Window</source>
+        <translation type="unfinished">Ventana</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="68"/>
+        <source>CMake</source>
+        <translation type="unfinished">CMake</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="70"/>
+        <source>Plugin information</source>
+        <translation type="unfinished">Información del complemento</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="72"/>
+        <source>AVT code skeleton</source>
+        <translation type="unfinished">Esqueleto de código AVT</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="82"/>
+        <source>Ok</source>
+        <translation type="unfinished">OK</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditCodeSelectionDialog.C" line="83"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancelar</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditConstants</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="47"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="50"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="60"/>
+        <source>Target</source>
+        <translation type="unfinished">Objetivo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="65"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="70"/>
+        <source>Class member</source>
+        <translation type="unfinished">Miembro de la clase</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="74"/>
+        <source>Declaration</source>
+        <translation type="unfinished">Declaración</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="79"/>
+        <source>Definition</source>
+        <translation type="unfinished">Definición</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditConstants.C" line="445"/>
+        <source>unnamed%1</source>
+        <translation type="unfinished"> %1 sin nombre</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditEnums</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditEnums.C" line="42"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditEnums.C" line="45"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditEnums.C" line="56"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditEnums.C" line="60"/>
+        <source>Values</source>
+        <translation type="unfinished">Valores</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditEnums.C" line="349"/>
+        <source>unnamed%1</source>
+        <translation type="unfinished"> %1 sin nombre</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditFields</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="98"/>
+        <source>Up</source>
+        <translation type="unfinished">Arriba</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="101"/>
+        <source>Down</source>
+        <translation type="unfinished">Abajo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="104"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="107"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="123"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="128"/>
+        <source>Label</source>
+        <translation type="unfinished">Etiqueta</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="135"/>
+        <source>Type</source>
+        <translation type="unfinished">Tipo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="139"/>
+        <source>Length</source>
+        <translation type="unfinished">Largo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="146"/>
+        <source>Subtype</source>
+        <translation type="unfinished">Subtipo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="151"/>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="367"/>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="616"/>
+        <source>(none)</source>
+        <translation type="unfinished">(ninguno)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="152"/>
+        <source>Enabler</source>
+        <translation type="unfinished">Habilitador</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="157"/>
+        <source>Values</source>
+        <translation type="unfinished">Valores</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="161"/>
+        <source>Internal use only</source>
+        <translation type="unfinished">Solo para uso interno</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="165"/>
+        <source>Persistent</source>
+        <translation type="unfinished">Persistente</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="171"/>
+        <source>Accepted variable types</source>
+        <translation type="unfinished">Tipos de variables aceptados</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="181"/>
+        <source>Meshes</source>
+        <translation type="unfinished">Mallas</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="184"/>
+        <source>Scalars</source>
+        <translation type="unfinished">Escalares</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="187"/>
+        <source>Materials</source>
+        <translation type="unfinished">Materiales</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="190"/>
+        <source>Labels</source>
+        <translation type="unfinished">Etiquetas</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="194"/>
+        <source>Vectors</source>
+        <translation type="unfinished">Vectores</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="197"/>
+        <source>Subsets</source>
+        <translation type="unfinished">Subconjuntos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="200"/>
+        <source>Species</source>
+        <translation type="unfinished">Especies</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="203"/>
+        <source>Arrays</source>
+        <translation type="unfinished">Matrices</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="207"/>
+        <source>Curves</source>
+        <translation type="unfinished">Curvas</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="210"/>
+        <source>Tensors</source>
+        <translation type="unfinished">Tensores</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="213"/>
+        <source>Symmetric Tensors</source>
+        <translation type="unfinished">Tensores simétricos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="221"/>
+        <source>Ignore field for attribute
+equality calculations</source>
+        <translation type="unfinished">Ignorar campo para cálculos de igualdad de atributos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="225"/>
+        <source>Access</source>
+        <translation type="unfinished">Acceso</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="228"/>
+        <source>private</source>
+        <translation type="unfinished">privado</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="229"/>
+        <source>protected</source>
+        <translation type="unfinished">protegido</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="230"/>
+        <source>public</source>
+        <translation type="unfinished">público</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="246"/>
+        <source>Special initialization code</source>
+        <translation type="unfinished">Código de inicialización especial</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFields.C" line="250"/>
+        <source>Initialization Values / Code</source>
+        <translation type="unfinished">Valores / código de inicialización</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditFunctions</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="52"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="55"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="63"/>
+        <source>Target</source>
+        <translation type="unfinished">Objetivo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="68"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="75"/>
+        <source>New function</source>
+        <translation type="unfinished">Nueva función</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="76"/>
+        <source>Replaces builtin</source>
+        <translation type="unfinished">Replaces builtin</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="86"/>
+        <source>Class member</source>
+        <translation type="unfinished">Miembro de la clase</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="90"/>
+        <source>Access</source>
+        <translation type="unfinished">Acceso</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="92"/>
+        <source>private</source>
+        <translation type="unfinished">privado</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="93"/>
+        <source>protected</source>
+        <translation type="unfinished">protegido</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="94"/>
+        <source>public</source>
+        <translation type="unfinished">público</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="99"/>
+        <source>Declaration</source>
+        <translation type="unfinished">Declaración</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditFunctions.C" line="529"/>
+        <source>unnamed%1</source>
+        <translation type="unfinished"> %1 sin nombre</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditIncludes</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="47"/>
+        <source>New</source>
+        <translation type="unfinished">Nuevo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="50"/>
+        <source>Del</source>
+        <translation type="unfinished">Suprimir</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="63"/>
+        <source>Source (.C) file</source>
+        <translation type="unfinished">Archivo fuente (.C)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="64"/>
+        <source>Header (.h) file</source>
+        <translation type="unfinished">Archivo de encabezado (.h)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="74"/>
+        <source>Use quotes &quot;&quot;</source>
+        <translation type="unfinished">Utilice comillas ""</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="75"/>
+        <source>Use angle brackets &lt;&gt;</source>
+        <translation type="unfinished">Utilice corchetes angulares &lt;&gt;</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="84"/>
+        <source>Target</source>
+        <translation type="unfinished">Objetivo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditIncludes.C" line="89"/>
+        <source>Include file</source>
+        <translation type="unfinished">Incluir archivo</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditMakefile</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="59"/>
+        <source>CXXFLAGS</source>
+        <translation type="unfinished">CXXFLAGS</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="64"/>
+        <source>LDFLAGS</source>
+        <translation type="unfinished">LDFLAGS</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="69"/>
+        <source>LIBS</source>
+        <translation type="unfinished">LIBS</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="74"/>
+        <source>DEFINES</source>
+        <translation type="unfinished">DEFINE</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="79"/>
+        <source>GUI Files</source>
+        <translation type="unfinished">Archivos GUI</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="85"/>
+        <source>GUI Libs</source>
+        <translation type="unfinished">Libs GUI</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="91"/>
+        <source>GUI Widget Files</source>
+        <translation type="unfinished">Archivos de widget de GUI</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="97"/>
+        <source>Scripting Files</source>
+        <translation type="unfinished">Archivos de secuencias de comandos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="103"/>
+        <source>Viewer Files</source>
+        <translation type="unfinished">Archivos del visor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="109"/>
+        <source>Viewer Libs</source>
+        <translation type="unfinished">Bibliotecas del visor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="115"/>
+        <source>Viewer Widget Files</source>
+        <translation type="unfinished">Archivos del widget del visor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="121"/>
+        <source>MDServer Files</source>
+        <translation type="unfinished">Archivos MDServer</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="127"/>
+        <source>MDServer Libs</source>
+        <translation type="unfinished">MDServer Libs</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="133"/>
+        <source>Engine Files</source>
+        <translation type="unfinished">Archivos del motor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="139"/>
+        <source>Engine Libs (ser)</source>
+        <translation type="unfinished">Libs del motor (ser)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="145"/>
+        <source>Engine Libs (par)</source>
+        <translation type="unfinished">Libs del motor (par)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="151"/>
+        <source>Plugin has code specific to the Engine</source>
+        <translation type="unfinished">El complemento (&quot;Plugin&quot;) tiene código específico para el motor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditMakefile.C" line="156"/>
+        <source>Plugin has code specific to the MDServer (Database Plugins only)</source>
+        <translation type="unfinished">El complemento (&quot;Plugin&quot;) tiene código específico para MDServer (solo complementos de base de datos)</translation>
+    </message>
+</context>
+<context>
+    <name>XMLEditPlugin</name>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="81"/>
+        <source>Plugin</source>
+        <translation type="unfinished">Enchufar</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="82"/>
+        <source>Attribute only</source>
+        <translation type="unfinished">Solo atributo</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="96"/>
+        <source>General Plugin attributes</source>
+        <translation type="unfinished">Atributos generales del complemento</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="107"/>
+        <source>Plot</source>
+        <translation type="unfinished">Gráfico</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="108"/>
+        <source>Operator</source>
+        <translation type="unfinished">Operador</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="109"/>
+        <source>Database</source>
+        <translation type="unfinished">Base de datos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="110"/>
+        <source>Plugin type</source>
+        <translation type="unfinished">Tipo de complemento</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="113"/>
+        <source>Plugin is enabled by default</source>
+        <translation type="unfinished">El complemento está habilitado de forma predeterminada</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="119"/>
+        <source>Name</source>
+        <translation type="unfinished">Nombre</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="123"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="167"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="219"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="250"/>
+        <source>Label</source>
+        <translation type="unfinished">Etiqueta</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="127"/>
+        <source>Version</source>
+        <translation type="unfinished">Versión</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="131"/>
+        <source>Has icon</source>
+        <translation type="unfinished">Tiene icono</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="144"/>
+        <source>Plot Plugin attributes</source>
+        <translation type="unfinished">Trazar atributos del complemento</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="154"/>
+        <source>Variable types accepted by the plot</source>
+        <translation type="unfinished">Tipos de variables aceptados por la trama</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="158"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="210"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="241"/>
+        <source>Mesh</source>
+        <translation type="unfinished">Malla</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="159"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="211"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="242"/>
+        <source>Scalar</source>
+        <translation type="unfinished">Escalar</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="160"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="212"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="243"/>
+        <source>Vector</source>
+        <translation type="unfinished">Vector</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="161"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="213"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="244"/>
+        <source>Material</source>
+        <translation type="unfinished">Material</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="162"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="214"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="245"/>
+        <source>Subset</source>
+        <translation type="unfinished">Subconjunto</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="163"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="215"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="246"/>
+        <source>Species</source>
+        <translation type="unfinished">Especies</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="164"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="216"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="247"/>
+        <source>Curve</source>
+        <translation type="unfinished">Curva</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="165"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="217"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="248"/>
+        <source>Tensor</source>
+        <translation type="unfinished">Tensor</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="166"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="218"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="249"/>
+        <source>Symmetric Tensor</source>
+        <translation type="unfinished">Tensor simétrico</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="168"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="220"/>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="251"/>
+        <source>Array</source>
+        <translation type="unfinished">Matriz/Colección</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="191"/>
+        <source>Operator Plugin attributes</source>
+        <translation type="unfinished">Atributos del complemento de operador</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="200"/>
+        <source>Operator creates new variable via expressions</source>
+        <translation type="unfinished">El operador crea una nueva variable a través de expresiones</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="205"/>
+        <source>Variable type inputted by the operator</source>
+        <translation type="unfinished">Tipo de variable introducido por el operador</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="237"/>
+        <source>Variable type created by the operator</source>
+        <translation type="unfinished">Tipo de variable creado por el operador</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="274"/>
+        <source>Database Plugin attributes</source>
+        <translation type="unfinished">Atributos del complemento de base de datos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="285"/>
+        <source>STSD - Generic single time single domain</source>
+        <translation type="unfinished">STSD: dominio único genérico de tiempo único</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="286"/>
+        <source>MTSD - Generic multi  time single domain</source>
+        <translation type="unfinished">MTSD: dominio único genérico de múltiples tiempos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="287"/>
+        <source>STMD - Generic single time multi  domain</source>
+        <translation type="unfinished">STMD: multidominio genérico de una sola vez</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="288"/>
+        <source>MTMD - Generic multi  time multi  domain</source>
+        <translation type="unfinished">MTMD: multidominio multitemporal genérico</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="289"/>
+        <source>Custom - Fully customized database type</source>
+        <translation type="unfinished">Personalizado: tipo de base de datos totalmente personalizado</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="294"/>
+        <source>Default file name patterns</source>
+        <translation type="unfinished">Patrones de nombre de archivo predeterminados</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="299"/>
+        <source>File name patterns are strict by default</source>
+        <translation type="unfinished">Los patrones de nombre de archivo son estrictos de forma predeterminada</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="304"/>
+        <source>File format opens a whole directory (not a single file)</source>
+        <translation type="unfinished">El formato de archivo abre un directorio completo (no un solo archivo)</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="309"/>
+        <source>File format can also write data</source>
+        <translation type="unfinished">El formato de archivo también puede escribir datos</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="314"/>
+        <source>File format provides options for reading or writing data.</source>
+        <translation type="unfinished">El formato de archivo ofrece opciones para leer o escribir datos.</translation>
+    </message>
+    <message>
+        <location filename="../../tools/dev/xmledit/XMLEditPlugin.C" line="319"/>
+        <source>File format provides license.</source>
+        <translation type="unfinished">El formato de archivo proporciona licencia.</translation>
     </message>
 </context>
 </TS>
