@@ -3376,6 +3376,7 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showSelectionsWindow2(const QString &)));
      connect(mainWin, SIGNAL(activateSetupHostProfilesAndConfig()),
              this, SLOT(setupHostProfilesAndConfig()));
+}
 
 // ****************************************************************************
 // Method: QvisGUIApplication::WindowFactory
