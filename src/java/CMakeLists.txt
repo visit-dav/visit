@@ -34,6 +34,9 @@
 #   Cyrus Harrison, Mon Dec  9 12:07:55 PST 2019
 #   Add code gen targets, change logic to guard java interface build.
 #
+#   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+#   Removed support for SeedMe.
+#
 #****************************************************************************
 
 PROJECT(JavaClient)
@@ -145,7 +148,6 @@ SET(JAVA_GEN_STATE_OBJECTS
     SaveSubWindowAttributes
     SaveSubWindowsAttributes
     SaveWindowAttributes 
-    SeedMeAttributes
     SelectionList
     SelectionProperties
     SelectionSummary
@@ -303,7 +305,6 @@ SimulationUIValues.java
 SaveSubWindowAttributes.java
 SaveSubWindowsAttributes.java
 SaveWindowAttributes.java 
-SeedMeAttributes.java
 SelectionList.java
 SelectionProperties.java
 SelectionSummary.java

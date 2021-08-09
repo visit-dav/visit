@@ -74,7 +74,6 @@ class PlotInfoAttributes;
     VIEWER_REGISTER_OBJECT(SelectionList,            SelectionList, false)\
     VIEWER_REGISTER_OBJECT(ViewerClientAttributes,   ViewerClientAttributes, false)\
     VIEWER_REGISTER_OBJECT(ViewerClientInformation,  ViewerClientInformation, false) \
-    VIEWER_REGISTER_OBJECT(SeedMeAttributes,         SeedMeAttributes, true)\
     VIEWER_REGISTER_OBJECT(CinemaAttributes,          CinemaAttributes, true)\
 
 //
