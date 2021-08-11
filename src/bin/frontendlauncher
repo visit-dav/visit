@@ -29,6 +29,10 @@
 #   Modified the logic that determines the python version to work with a
 #   two digit version when launching the cli.
 #
+#   Eric Brugger, Wed Aug 11 14:31:38 PDT 2021
+#   Added "-u" to the command line when launching python to disable buffering
+#   on output streams.
+#
 ###############################################################################
 
 # Determine VisIt architecture
@@ -173,9 +177,9 @@ if test -n "$visitpython"; then
 
     #echo "VisIt Python: $visitpython $frontendlauncherpy $0 ${1+"$@"}"
 
-    exec "$visitpython" $frontendlauncherpy $0 ${1+"$@"}
+    exec "$visitpython" -u $frontendlauncherpy $0 ${1+"$@"}
 else
     #echo "System python $frontendlauncherpy $0 ${1+"$@"}"
-    exec python $frontendlauncherpy $0 ${1+"$@"}
+    exec python -u $frontendlauncherpy $0 ${1+"$@"}
 fi
 $0 = shift @ARGV;
