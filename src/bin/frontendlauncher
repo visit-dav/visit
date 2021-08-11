@@ -177,9 +177,12 @@ if test -n "$visitpython"; then
 
     #echo "VisIt Python: $visitpython $frontendlauncherpy $0 ${1+"$@"}"
 
+    # Pass "-u" to python to turn off buffering
     exec "$visitpython" -u $frontendlauncherpy $0 ${1+"$@"}
 else
     #echo "System python $frontendlauncherpy $0 ${1+"$@"}"
+
+    # Pass "-u" to python to turn off buffering
     exec python -u $frontendlauncherpy $0 ${1+"$@"}
 fi
 $0 = shift @ARGV;
