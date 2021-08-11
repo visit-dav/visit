@@ -6,6 +6,10 @@
 #  Programmer: Hank Childs
 #  Date:       October 15, 2010
 #
+#  Modifications:
+#     Eddie Rusu, Tue Apr 13 12:08:59 PDT 2021
+#     Changed Pseudocolor CurrentPlot to ActualData.
+#
 # ----------------------------------------------------------------------------
 
 OpenDatabase(data_path("synergia_test_data/vis_particles_* database"),0, "Vs")
@@ -100,7 +104,7 @@ PseudocolorAtts.minFlag = 0
 PseudocolorAtts.maxFlag = 0
 PseudocolorAtts.centering = PseudocolorAtts.Natural  # Natural, Nodal, Zonal
 PseudocolorAtts.scaling = PseudocolorAtts.Linear  # Linear, Log, Skew
-PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, CurrentPlot
+PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, ActualData
 PseudocolorAtts.min = 0
 PseudocolorAtts.max = 1
 PseudocolorAtts.pointSize = 0.001
@@ -122,7 +126,7 @@ PseudocolorAtts.minFlag = 0
 PseudocolorAtts.maxFlag = 1
 PseudocolorAtts.centering = PseudocolorAtts.Natural  # Natural, Nodal, Zonal
 PseudocolorAtts.scaling = PseudocolorAtts.Linear  # Linear, Log, Skew
-PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, CurrentPlot
+PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, ActualData
 PseudocolorAtts.min = 0
 PseudocolorAtts.max = 20
 PseudocolorAtts.pointSize = 0.001
@@ -146,7 +150,7 @@ PseudocolorAtts.minFlag = 0
 PseudocolorAtts.maxFlag = 1
 PseudocolorAtts.centering = PseudocolorAtts.Natural  # Natural, Nodal, Zonal
 PseudocolorAtts.scaling = PseudocolorAtts.Linear  # Linear, Log, Skew
-PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, CurrentPlot
+PseudocolorAtts.limitsMode = PseudocolorAtts.OriginalData  # OriginalData, ActualData
 PseudocolorAtts.min = 0
 PseudocolorAtts.max = 20
 PseudocolorAtts.pointSize = 0.05

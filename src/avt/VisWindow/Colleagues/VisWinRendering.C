@@ -37,8 +37,9 @@
 #include <vtkSmartPointer.h>
 #include <vtk_glew.h>
 
+// PRE_VTK8 way re-enabled KSB 4-13-2021.
 // We'd do it another way in VTK8
-//#define VALUE_IMAGE_RENDERING_PRE_VTK8
+#define VALUE_IMAGE_RENDERING_PRE_VTK8
 #ifdef VALUE_IMAGE_RENDERING_PRE_VTK8
 #include <vtkVisItDataSetMapper.h>
 #include <vtkProperty.h>
@@ -136,6 +137,12 @@ bool VisWinRendering::stereoEnabled = false;
 //
 //   Garrett Morrison, Fri May 11 17:57:47 PDT 2018
 //   Added optional OSPRay initialization to constructor
+//
+//   Kathleen Biagas, Thur Apr 15 2021
+//   Since vtkVisItDataSetMapper is a subclass of and used as an override
+//   for vtkDataSetMapper within VisIt, changed pd_maker to be an override of
+//   vtkVisItDataSetMapper.
+//
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
@@ -187,7 +194,10 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
 
     osprayPass = vtkOSPRayPass::New();
     vtkViewNodeFactory* factory = osprayPass->GetViewNodeFactory();
-    factory->RegisterOverride("vtkDataSetMapper",
+    // Override vtkVisItDataSetMapper instead of vtkDataSetMapper.
+    // If the use of vtkVisItDataSetMapper as a general override of
+    // vtkDataSetMapper is removed this code will need to be changed.
+    factory->RegisterOverride("vtkVisItDataSetMapper",
                               vtkVisItViewNodeFactory::pd_maker);
     factory->RegisterOverride("vtkPointGlyphMapper",
                               vtkVisItViewNodeFactory::pd_maker);

@@ -36,6 +36,10 @@
 #    I added the ProgrammableCompositer, a helper class
 #    used by the NetworkManager.
 #
+#    Eric Brugger, Tue Jul 20 11:55:04 PDT 2021
+#    Added OPENGL_INCLUDE_DIR to the include directories if building IceT
+#    with MesaGL.
+#
 #****************************************************************************
 
 set(LIBENGINE_SOURCES
@@ -118,7 +122,6 @@ endif()
 # Add link directories
 link_directories(
   ${LIBRARY_OUTPUT_DIRECTORY}
-  ${TCMALLOC_LIBRARY_DIR}
   ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 )
 
@@ -171,7 +174,6 @@ target_link_libraries(engine_ser_exe
     vtkpng
     ${VTK_FREETYPE_LIBRARIES}
     ${ALL_THIRDPARTY_IO_LIB}
-    ${TCMALLOC_LIB}
     ${CMAKE_THREAD_LIBS}
     ${ZLIB_LIBRARY}
 )
@@ -199,6 +201,9 @@ if(VISIT_PARALLEL)
         set(ICET_SOURCES IceTNetworkManager.C)
         include_directories(${ICET_INCLUDE_DIR})
         link_directories(${ICET_LIBRARY_DIR})
+        if(VISIT_MESAGL_DIR)
+            include_directories(${OPENGL_INCLUDE_DIR})
+        endif()
     endif()
 
     ADD_PARALLEL_LIBRARY(engine_par ${LIBENGINE_SOURCES} ${ENGINE_PAR_SOURCES} ${ICET_SOURCES})
@@ -276,7 +281,6 @@ if(VISIT_PARALLEL)
         ${VTK_FREETYPE_LIBRARIES}
         ${ALL_THIRDPARTY_IO_LIB}
         ${ICET_STATIC_LIB}
-        ${TCMALLOC_LIB}
         ${CMAKE_THREAD_LIBS}
         ${ZLIB_LIBRARY}
     )

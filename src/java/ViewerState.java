@@ -30,6 +30,9 @@ import java.util.Vector;
 //   Brad Whitlock, Mon Jun 20 15:10:20 PDT 2011
 //   I added SelectionProperties and SimulationUIValues.
 //
+//   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+//   Removed support for SeedMe.
+//
 // ****************************************************************************
 /**
  * ViewerState contains all of the state objects that make up the
@@ -155,8 +158,6 @@ public class ViewerState
             Register(attsViewerClientAttributes);
         attsViewerClientInformation = new ViewerClientInformation();
             Register(attsViewerClientInformation);
-        attsSeedMeAttributes = new SeedMeAttributes();
-            Register(attsSeedMeAttributes);
         attsCinemaAttributes = new CinemaAttributes();
             Register(attsCinemaAttributes);
     }
@@ -218,7 +219,6 @@ public class ViewerState
     public SelectionList             GetSelectionList() { return attsSelectionList; }
     public ViewerClientAttributes    GetViewerClientAttributes() { return attsViewerClientAttributes; }
     public ViewerClientInformation   GetViewerClientInformation() { return attsViewerClientInformation; }
-    public SeedMeAttributes          GetSeedMeAttributes() { return attsSeedMeAttributes; }
     public CinemaAttributes          GetCinemaAttributes() { return attsCinemaAttributes; }
 
     /**
@@ -388,7 +388,6 @@ public class ViewerState
     private SelectionList            attsSelectionList;
     private ViewerClientAttributes   attsViewerClientAttributes;
     private ViewerClientInformation  attsViewerClientInformation;
-    private SeedMeAttributes         attsSeedMeAttributes;
     private CinemaAttributes         attsCinemaAttributes;
 
     private Vector objVector;

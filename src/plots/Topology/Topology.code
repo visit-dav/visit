@@ -81,9 +81,10 @@ Postfix:
     }
     if (lineStyleFound)
     {
-        fprintf(stdout, "lineStyle is no longer a valid Topology "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "lineStyle is no longer a valid Topology "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
 
@@ -93,10 +94,11 @@ Code: PyTopologyAttributes_setattr
 Prefix:
 Postfix:
     // Try and handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'lineStyle' is obsolete.", 2);
             Py_INCREF(Py_None);
             obj = Py_None;
         }

@@ -558,6 +558,6 @@ if test "$testHost" = "pascal" ; then
     subTag=`date +%Y-%m-%d-%H:%M`
     ssh pascal "./checkout_pascal $subTag"
     ssh pascal "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=10:00:00 -o pascal_testit_$subTag.out -q pvis -A wbronze -z ./runit_pascal $subTag"
-    sleep 28800
+    sleep 36000
     ssh pascal "./postit_pascal $subTag"
 fi

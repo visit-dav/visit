@@ -20,14 +20,14 @@ You can then browse the root of the manual by pointing your browser to
 :file:`./_build/index.html`.  The ``-a`` forces a re-build of everything.
 Remove it when you are constantly revising and rebuilding.
 
-Your changes to any files in :file:`trunk/docs/SphinxDocs` will go live
+Your changes to any ``.rst`` files in :file:`visit/src/doc` will go live
 `here <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/>`_
 soon after you push them. If `RTD <https://readthedocs.org>`_ resources are
 busy, a rebuild of the docs may take as long as 15 minutes. If you are working
 on a branch and want to see your branch's docs rendered *and* you yourself do
 not have access to the RTD account that controls this, you may ask another
 developer who does to *activate* your branch there. Once the branch is merged,
-it should be *deactivated*.
+it should be *deactivated* on RTD.
 
 Quick Reference
 ---------------
@@ -96,26 +96,27 @@ use of Sphinx as we move forward. These are discussed at the
   Note that the files listed in the ``.. toctree::`` block do not include
   their ``.rst`` extensions.
 
-* Wherever possible, keep lines in ``.rst`` files to 80 columns or less.
+* Do not break full sentences by *wrapping* them on arbitrary column boundaries.
+  Instead, keep each full sentence to its own :ref:`single line <contributing_line_length>`, regardless of line length.
 * Avoid contractions such as ``isn't``, ``can't`` and ``you've``.
 * Avoid hyphenation of words.
 * Use ``VisIt_`` or ``VisIt_'s`` when referring to VisIt_ by name.
-* Use upper case for all letters in acronyms (:abbr:`MPI (Message Passing Interface)`, VTK)
-* Use case conventions of product names (QuickTime, TotalView, Valgrind).
-* Bracket word(s) with two stars (``**some words**``) for **bold**.
+* Use upper case for all letters in acronyms (:abbr:`IDE (Integrated Development Environment)`, GUI)
+* Use case conventions of product names (MPI, VTK, QuickTime, TotalView, Valgrind).
 * Bracket word(s) with one star (``*word*``) for *italics*.
+* Bracket word(s) with two stars (``**some words**``) for **bold**.
 * Bracket word(s) with two backticks (:samp:`\ ``some words```) for ``literal``.
 * Bracketed word(s) should not span line breaks.
-* Use **bold** to refer to VisIt_ **Widget** names, **Operator** or **Plot**
-  names and other named objects part of VisIt_'s interface.
+* Use ``literals`` for code, commands, arguments, file names, etc.
+* Use **bold** to refer to VisIt_ **Widget**, **Operator** or **Plot**
+  names and other named objects part of VisIt_'s interface(s).
+* Avoid use of **bold** for other purposes. Instead use *italics*.
 * Use the following terminology when referring to widget names.
 
 .. figure:: images/GUIWidgetNames.png
 
 .. figure:: images/GUIWidgetNames2.png
 
-* Avoid use of **bold** for other purposes. Instead use *italics*.
-* Use ``literals`` for code, commands, arguments, file names, etc.
 * Use :samp:`\ :t\ erm:`glossary term`` at least for the *first* use of a
   glossary term in a section.
 * Use :samp:`\ :a\ bbr:`ABR (Long Form)`` at least for the *first* use of an
@@ -194,6 +195,22 @@ use of Sphinx as we move forward. These are discussed at the
   could try an
   `on-line, real-time reStructuredText Renderer <http://rst.ninjs.org>`_
   to quickly try different things and see how they work.
+
+.. _contributing_line_length:
+
+About Line Length
+-----------------
+
+When we originally converted from OpenOffice to Sphinx, we decided to restrict line lengths to 80 columns.
+More recently, we've decided that we should not impose any absolute character count on line length and instead adopt the practice of `a single sentence per line <https://asciidoctor.org/docs/asciidoc-recommended-practices/#one-sentence-per-line>`_.
+Some lines will be very short.
+Other lines can be very long, especially if they include long URLs like `this one <https://chart.apis.google.com/chart?chs=500x500&chma=0,0,100,100&cht=p&chco=FF0000%2CFFFF00%7CFF8000%2C00FF00%7C00FF00%2C0000FF&chd=t%3A122%2C42%2C17%2C10%2C8%2C7%2C7%2C7%2C7%2C6%2C6%2C6%2C6%2C5%2C5&chl=122%7C42%7C17%7C10%7C8%7C7%7C7%7C7%7C7%7C6%7C6%7C6%7C6%7C5%7C5&chdl=android%7Cjava%7Cstack-trace%7Cbroadcastreceiver%7Candroid-ndk%7Cuser-agent%7Candroid-webview%7Cwebview%7Cbackground%7Cmultithreading%7Candroid-source%7Csms%7Cadb%7Csollections%7Cactivity>`_.
+There are many advantages to using a single sentence per line mostly having to do with the way diffing tools compute and display diffs.
+
+This practice, of course, does not apply to source code.
+It applies only to ascii files that are intended to represent, more or less, human readable prose.
+Going forward, we will not reformat existing documentation to a sentence per line en masse.
+However, when updates to documentation are made we will encourage developers to follow this practice and request changes in PRs when it is not followed.
 
 .. _contributing_images:
 
@@ -400,6 +417,22 @@ All of the above is automated with the ``linkcheck`` make target also.
 
 .. _contributing_forward:
 
+Previewing Branch Changes on ReadTheDocs
+----------------------------------------
+
+Even with the ability to run ``sphinx-build`` locally or as an alternative to running it locally, it is often convenient to be able to preview documentation changes being made on a branch directly on ReadTheDocs.
+
+In order to do this, the branch with the changes needs to be made *active* on the ReadTheDocs project where the VisIt_ user manuals are hosted.
+Anyone who is a *maintainer* in the project can do this.
+To become a maintainer, email any of the existing maintainers your ReadTheDocs username and ask them to add you.
+Once the branch is activated on ReadTheDocs, it may take some time for the documentation on the branch to be generated.
+The resulting docs will be browseable on ReadTheDocs with a URL of the form ``https://visit-sphinx-github-user-manual.readthedocs.io/en/<branch-name>/``
+
+Be aware that if you are doing anything on the branch that could cause generation to fail (e.g. changing ``conf.py``), you will need to examine the build logs on ReadTheDocs to diagnose the cause.
+
+Please clean up after yourself when you are done working with the branch.
+To do this, first *wipe* the branch (removes the generated version) on ReadTheDocs and then deactivate it.
+
 Things To Consider Going Forward
 --------------------------------
 
@@ -422,9 +455,6 @@ Things To Consider Going Forward
 * All VisIt_ manuals should probably be hosted at a URL like
   ``visit.readthedocs.io`` and from there users can find manuals for GUI, CLI
   Getting Data Into VisIt_, etc.
-* Change name of docs dir to ``Sphinx`` and not ``Sphynx``.
-* Add at least another LLNL person to RTD project so we have coverage to fix
-  issues as they come up.
 * Additional features of Sphinx to consider adopting...
 
   * ``:guilable:`` role for referring to GUI widgets.
@@ -519,7 +549,7 @@ Things To Consider Going Forward
    SaveBBoxedImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_window.png')
 
    # Make a change to another PC att, capture and save it
-   pcatts.limitsMode = pcatts.CurrentPlot
+   pcatts.limitsMode = pcatts.ActualData
    SetPlotOptions(pcatts) # Causes widget to map due to state change
    gui_image = pyscreenshot.grab()
    SaveBBoxedImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_limit_mode_window.png')

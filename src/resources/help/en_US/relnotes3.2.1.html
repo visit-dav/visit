@@ -1,0 +1,72 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <title>VisIt 3.2.1 Release Notes</title>
+</head>
+<body>
+<center><b><font size="6">VisIt 3.2.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+
+<p><b>Sections</b></p>
+<ul>
+  <li><a href="#Bugs_fixed">Bug Fixes</a></li>
+  <li><a href="#Enhancements">Enhancements</a></li>
+  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
+</ul>
+
+<a name="Bugs_fixed"></a>
+<p><b><font size="4">Bugs fixed in version 3.2.1</font></b></p>
+<ul>
+  <li>Fixed a bug that resulted in incorrect plots of mesh_quality/min_side_volume and mesh_quality/max_side_volume.</li>
+  <li>Fixed a few issues running build_visit with '--static'.</li>
+  <li>Fixed a bug with the CreateBonds operator window displaying %.1 in Bonds list Max field instead of correct value.</li>
+  <li>Fixed a bug where the splash screen in some binary distributions would display "Unknown" for the git version instead of the actual git version.</li>
+  <li>Fixed a bug with the Xdmf Reader not reading TIME_LIST for temporal data collections.</li>
+  <li>Fixed a bug with the Mili reader where some of the material colors in a filled boundary plot would be black. The Mili reader would assign random colors to materials when no material colors were specified in the file, which resulted in some materials being black. Now the reader doesn't specify any colors in that case so that the material colors are chosen using the filled boundary plot's default color selection algorithm.</li>
+  <li>Fixed a bug with the DataBinning operator window where the Dimension 2 variable would be disabled for 3D.</li>
+  <li>Fixed a bug with ghost zone generation that caused VisIt to not display any data when displaying data from a parallel Exodus file when subsetting based on ElementBlock.</li>
+  <li>Fixed a bug with full frame mode that resulted in the labels from the label plot not being drawn correctly.</li>
+  <li>Fixed a bug launching the CLI when specifying "-v 3.2" when the default version in that installation was still an older version of VisIt (e.g. 3.1.4).</li>
+  <li>Fixed a crash with the Molecule plot when drawn with Sphere Imposters for atoms and either the 'scaleRadiusBy' or 'radiusScaleFactor' options are changed.</li> 
+  <li>Fixed a bug in the Molecule plot where created bonds colored by atom were being colored incorrectly.</li>
+  <li>Fixed a crash in the CLI when attempting to 'print' a legend annotation object.</li>
+  <li>Fixed a bug with the Legend annotation object window where the <i>Values</i> column in the <i>Values/Labels</i> table in the <i>Tick marks</i> tab wasn't being prefilled.</li>
+  <li>Fixed a bug for Windows where importing VisIt into python failed due to an inability to retrieve necessary enviroment variable information.</li>
+  <li>Fixed a bug that resulted in the rubber band zoom box being rendered incorrectly on Mac retina displays.</li>
+  <li>Fixed a bug for Windows where exporting a multi-block Silo file into a non-default directory would make the file unreadable by VisIt.</li>
+  <li>Fixed a bug in build_visit that prevented CGNS from building on Linux systems.</li>
+  <li>Fixed a bug causing Pick queries on expression variables to fail.</li>
+</ul>
+
+<a name="Enhancements"></a>
+<p><b><font size="4">Enhancements in version 3.2.1</font></b></p>
+<ul>
+  <li>Added a section on developing at GitHub to the developers manual.</li>
+  <li>Datasets that contain AMR meshes are now treated as time varying by default. This will guard against issues that arise with time varying AMR meshes that aren't explicitly tagged as time varying within the datasets.</li>
+  <li>New feature to allow users while in zoom mode to rotate the view, using alt-left mouse drag. This new feature removes the need to use navigate mode to rotate.</li>
+  <li>Added support for reading Rind values for structured grids from CGNS files to provide ghost zone information. To enable the reading of Rind values you must set the environment variable CGNS_USE_RIND (i.e. "setenv CGNS_USE_RIND").</li>
+  <li>When exporting a database on a remote machine, the window will now display the host name next to the Directory name text field.</li>
+</ul>
+
+<a name="Dev_changes"></a>
+<p><b><font size="4">Changes for VisIt developers in version 3.2.1</font></b></p>
+<ul>
+  <li>When viewing test results in a web browser, the text tests will now correctly display leading spaces.</li>
+  <li>The build_visit python module was changed so that when --system-python or --alt-python3-dir is specified, python3 is searched for first.</li>
+  <li>Removed tcmalloc from VisIt.</li>
+  <li>Fixed problems building Mesa and VTK (with python wrappers) with gcc 10.</li>
+  <li>Fixed a bug in build_visit where specifying --no-sphinx resulted in the failure of being able to build VisIt.</li>
+  <li>Fixed a bug in build_visit that caused it to improperly set the architecture directory name when using gcc 10.2. For example, on a linux system with an x86_64 processor, it previously set it to <i>linux-x86_64_gcc</i> instead of the correct <i>linux-x86_64_gcc-10.2</i>.</li>
+  <li>Fixed a bug in build_visit that prevented CGNS from building on Linux systems.</li>
+</ul>
+
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href=relnotes3.2.0.html>3.2.0</a>.</p>
+</body>
+</html>

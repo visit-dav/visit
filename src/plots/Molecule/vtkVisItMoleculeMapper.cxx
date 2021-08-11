@@ -11,7 +11,7 @@
 
 // LLNL
 #include <AtomicProperties.h> // common/utility
-#include <avtColorTables.h> 
+#include <avtColorTables.h>
 // a VisIt class
 #include <vtkPointMapper.h>
 
@@ -161,7 +161,7 @@ MoleculeMapperHelper::CreateRectangleBetweenTwoPoints(double *p0, double *p1,
   if (v_len == 0)
     return 0;
 
-  vtkNew<vtkIdList> ids;    
+  vtkNew<vtkIdList> ids;
   ids->InsertNextId(pts->InsertNextPoint(p0[0] + r*v[0], p0[1] + r*v[1], 0.));
   ids->InsertNextId(pts->InsertNextPoint(p1[0] + r*v[0], p1[1] + r*v[1], 0.));
   ids->InsertNextId(pts->InsertNextPoint(p1[0] - r*v[0], p1[1] - r*v[1], 0.));
@@ -198,7 +198,7 @@ MoleculeMapperHelper::CreateCylinderBetweenTwoPoints(double *p0, double *p1,
   this->CalculateCylPts();
 
   int ncells = 0;
-  float vc[3] = {static_cast<float>(p1[0]-p0[0]), 
+  float vc[3] = {static_cast<float>(p1[0]-p0[0]),
                  static_cast<float>(p1[1]-p0[1]),
                  static_cast<float>(p1[2]-p0[2])
                 };
@@ -264,6 +264,8 @@ MoleculeMapperHelper::CreateCylinderBetweenTwoPoints(double *p0, double *p1,
 //  Creation:    January 25, 2010
 //
 //  Modifications:
+//    Kathleen Biagas, June 16, 2021
+//    Add normals for all inserted ids.
 //
 // ****************************************************************************
 
@@ -318,27 +320,29 @@ MoleculeMapperHelper::CreateCylinderCap(double *p0, double *p1, int half,
     if (half==0)
       {
       ids->InsertNextId(pts->InsertNextPoint(p1[0] + r*v0[0], p1[1] + r*v0[1], p1[2] + r*v0[2]));
+      normals->InsertNextTypedTuple(vc);
       }
     else
       {
       ids->InsertNextId(pts->InsertNextPoint(p0[0] + r*v0[0], p0[1] + r*v0[1], p0[2] + r*v0[2]));
+      normals->InsertNextTypedTuple(vc);
       }
     }
 
   for (int i = 1; i < ids->GetNumberOfIds()-1; ++i)
     {
     vtkNew<vtkTriangle> tri;
-    tri->GetPointIds()->SetId(0, ids->GetId(0));   
-    tri->GetPointIds()->SetId(0, ids->GetId(i));   
-    tri->GetPointIds()->SetId(0, ids->GetId(i+1));   
+    tri->GetPointIds()->SetId(0, ids->GetId(0));
+    tri->GetPointIds()->SetId(0, ids->GetId(i));
+    tri->GetPointIds()->SetId(0, ids->GetId(i+1));
     cells->InsertNextCell(tri.GetPointer());
     ncells++;
     }
     // close the fan
     vtkNew<vtkTriangle> tri;
-    tri->GetPointIds()->SetId(0, ids->GetId(0));   
-    tri->GetPointIds()->SetId(0, ids->GetId(ids->GetNumberOfIds()-1));   
-    tri->GetPointIds()->SetId(0, ids->GetId(1));   
+    tri->GetPointIds()->SetId(0, ids->GetId(0));
+    tri->GetPointIds()->SetId(0, ids->GetId(ids->GetNumberOfIds()-1));
+    tri->GetPointIds()->SetId(0, ids->GetId(1));
     cells->InsertNextCell(tri.GetPointer());
     ncells++;
     return ncells;
@@ -349,6 +353,11 @@ MoleculeMapperHelper::CreateCylinderCap(double *p0, double *p1, int half,
 vtkStandardNewMacro(vtkVisItMoleculeMapper)
 
 //----------------------------------------------------------------------------
+// Modifications:
+//   Kathleen Biagas, Fri Jun 18 2021
+//   Register 'AtomPolyData' to this class to prevent strange crash under
+//   certain conditions when plot attributes update. (Bug #5794)
+
 vtkVisItMoleculeMapper::vtkVisItMoleculeMapper()
   : RenderAtoms(true),
     DrawAtomsAs(Spheres),
@@ -382,25 +391,39 @@ vtkVisItMoleculeMapper::vtkVisItMoleculeMapper()
 
   // ATOMS
   // Setup glyph sources
-  sphere->LatLongTessellationOn();
-  sphere->SetRadius(1.0);
-  sphere->SetThetaResolution(12);
-  sphere->SetPhiResolution(7);
-  sphere->Update();
+  this->sphere = vtkSphereSource::New();
+  this->sphere->LatLongTessellationOn();
+  this->sphere->SetRadius(1.0);
+  this->sphere->SetThetaResolution(12);
+  this->sphere->SetPhiResolution(7);
+  this->sphere->Update();
+
+  this->AtomMapper = vtkGlyph3DMapper::New();
   this->AtomMapper->SetSourceConnection(sphere->GetOutputPort());
   this->AtomMapper->SetScaleModeToScaleByMagnitude();
 
+  this->AtomPolyData = vtkPolyData::New();
+  this->AtomPolyData->Register(this);
   // Connect the trivial producers to forward the glyph polydata
-  this->AtomOutput->SetOutput(this->AtomPolyData.GetPointer());
+
+  this->AtomOutput = vtkTrivialProducer::New();
+  this->AtomOutput->SetOutput(this->AtomPolyData);
   this->AtomMapper->SetInputConnection (this->AtomOutput->GetOutputPort());
 
+  this->ImposterMapper = vtkPointMapper::New();
   this->ImposterMapper->SetColorModeToMapScalars();
   this->ImposterMapper->SetScalarModeToUsePointData();
   this->ImposterMapper->UseImpostersOn();
   this->ImposterMapper->SetInputConnection(this->AtomOutput->GetOutputPort());
 
   // Connect the trivial producers to forward the glyph polydata
-  this->BondOutput->SetOutput(this->BondLinesPolyData.GetPointer());
+  this->BondLinesPolyData = vtkPolyData::New();
+  this->BondCylsPolyData = vtkPolyData::New();
+
+  this->BondOutput = vtkTrivialProducer::New();
+  this->BondOutput->SetOutput(this->BondLinesPolyData);
+
+  this->BondMapper = vtkPolyDataMapper::New();
   this->BondMapper->SetInputConnection
     (this->BondOutput->GetOutputPort());
 
@@ -416,6 +439,16 @@ vtkVisItMoleculeMapper::~vtkVisItMoleculeMapper()
     delete[] this->MolColors;
   this->MolColors = NULL;
   delete this->Helper;
+
+  this->sphere->Delete();
+  this->AtomPolyData->Delete();
+  this->AtomOutput->Delete();
+  this->BondLinesPolyData->Delete();
+  this->BondCylsPolyData->Delete();
+  this->BondOutput->Delete();
+  this->AtomMapper->Delete();
+  this->ImposterMapper->Delete();
+  this->BondMapper->Delete();
 }
 
 
@@ -520,7 +553,7 @@ vtkVisItMoleculeMapper::SetColors()
   else if (varName == "resseq" ||
           (varName.length()>7 && varName.substr(varName.length()-7)=="/resseq"))
     {
-    new_colortablename = this->ResSeqCTName; 
+    new_colortablename = this->ResSeqCTName;
     if (new_colortablename == "Default")
       new_colortablename = string(ct->GetDefaultDiscreteColorTable());
 
@@ -550,14 +583,14 @@ vtkVisItMoleculeMapper::SetColors()
       new_colortablename == this->ColorTableName)
     {
     return;
-    } 
+    }
 
   this->NumColors      = new_numcolors;
   this->ColorTableName = new_colortablename;
 
   if (this->MolColors)
     delete[] this->MolColors;
-    
+
   this->MolColors = new unsigned char[this->NumColors * 4];
   unsigned char *cptr = this->MolColors;
   //
@@ -657,6 +690,12 @@ void vtkVisItMoleculeMapper::UpdatePolyData()
 
 //----------------------------------------------------------------------------
 // Generate scale and position information for each atom sphere
+//
+// Modifications:
+//   Kathleen Biagas, Fri Jun 18 2021
+//   Register 'scol' array to this class to prevent strange crash under
+//   certain conditions when plot attributes update. (Bug #5794)
+
 void vtkVisItMoleculeMapper::UpdateAtomPolyData()
 {
   this->AtomPolyData->Initialize();
@@ -724,7 +763,7 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
                   (primaryname.length() > 8 &&
                    primaryname.substr(primaryname.length()-8) == "/restype"));
 
-  vtkDataArray *element = primary_is_element ? primary : 
+  vtkDataArray *element = primary_is_element ? primary :
                                  input->GetPointData()->GetArray("element");
 
   if (element && !element->IsA("vtkFloatArray"))
@@ -774,6 +813,7 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
   scol->SetName("Colors");
   scol->SetNumberOfComponents(4);
   scol->Allocate(numverts*3);
+  scol->Register(this);
 
   vtkPoints *pts = points->NewInstance();
   pts->Allocate(numverts*4);
@@ -821,7 +861,7 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
     double *pt = points->GetPoint(atom);
     vtkIdType id = pts->InsertNextPoint(pt);
     cells->InsertNextCell(1, &id);
-    scaleFactors->InsertNextValue(radius); 
+    scaleFactors->InsertNextValue(radius);
     // Determine color
     if (color_by_element)
       {
@@ -834,7 +874,7 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
       int level = int(scalar[atom]) - (primary_is_resseq ? 1 : 0);
       if(levelsLUT != 0)
         {
-        const unsigned char *rgb = 
+        const unsigned char *rgb =
               levelsLUT->MapValue(level);
         for (int i = 0; i < npts; ++i)
           scol->InsertNextTypedTuple(rgb);
@@ -853,7 +893,7 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
         alpha = 0.5;
       else
         alpha = (scalar[atom] - this->VarMin) / (this->VarMax - this->VarMin);
-            
+
       int color = int((float(this->NumColors)-.01) * alpha);
       if (color < 0)
         color = 0;
@@ -869,7 +909,7 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
   this->AtomPolyData->SetPoints(pts);
   this->AtomPolyData->GetPointData()->SetScalars(scol.GetPointer());
 
-  this->AtomPolyData->SetVerts(cells.GetPointer()); 
+  this->AtomPolyData->SetVerts(cells.GetPointer());
   this->AtomPolyData->GetPointData()->AddArray(scaleFactors.GetPointer());
   this->AtomMapper->SetScaleArray("ScaleFactors");
   this->ImposterMapper->SetImposterScaleArray("ScaleFactors");
@@ -877,6 +917,12 @@ void vtkVisItMoleculeMapper::UpdateAtomPolyData()
 
 //----------------------------------------------------------------------------
 // Generate position, scale, and orientation vectors for each bond cylinder
+//
+//  Modifications:
+//    Kathleen Biagas, June 16, 2021
+//    Use separate color arrays for lines and cylinders as they have different
+//    number of cells.
+//
 void vtkVisItMoleculeMapper::UpdateBondPolyData()
 {
   this->BondLinesPolyData->Initialize();
@@ -896,10 +942,13 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
   vtkNew<vtkCellArray> cylPolys;
   vtkNew<vtkFloatArray> cylNorms;
   cylNorms->SetNumberOfComponents(3);
-  vtkNew<vtkUnsignedCharArray> bondColors;
-  bondColors->SetName("Colors");
-  bondColors->SetNumberOfComponents(3);
-  
+  vtkNew<vtkUnsignedCharArray> cylinderBondColors;
+  cylinderBondColors->SetName("Colors");
+  cylinderBondColors->SetNumberOfComponents(3);
+  vtkNew<vtkUnsignedCharArray> lineBondColors;
+  lineBondColors->SetName("Colors");
+  lineBondColors->SetNumberOfComponents(3);
+
   bool primary_is_cell_centered = false;
   vtkDataArray *primary = input->GetPointData()->GetScalars();
   if (!primary)
@@ -937,7 +986,7 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
                   (primaryname.length() > 8 &&
                    primaryname.substr(primaryname.length()-8) == "/restype"));
 
-  vtkDataArray *element = primary_is_element ? primary : 
+  vtkDataArray *element = primary_is_element ? primary :
                                  input->GetPointData()->GetArray("element");
   if (element && !element->IsA("vtkFloatArray"))
     {
@@ -1091,7 +1140,8 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
           {
           unsigned char bc[3] = {255,0, 0};
           for (int i = 0;i < ncells; ++i)
-            bondColors->InsertNextTypedTuple(this->BondColor);
+            cylinderBondColors->InsertNextTypedTuple(this->BondColor);
+          lineBondColors->InsertNextTypedTuple(this->BondColor);
           }
         else // (this->BondColorMode == ColorByAtom)
           {
@@ -1105,23 +1155,26 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
             {
             int level = element_number % this->NumColors;
             for (int i = 0;i < ncells; ++i)
-              bondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
+              cylinderBondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
+            lineBondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
             }
           else if (color_by_levels)
             {
             int level = int(scalarval) - (primary_is_resseq ? 1 : 0);
             if(levelsLUT != 0)
               {
-              const unsigned char *rgb = 
+              const unsigned char *rgb =
               levelsLUT->MapValue(level);
               for (int i = 0;i < ncells; ++i)
-                bondColors->InsertNextTypedTuple(rgb);
+                cylinderBondColors->InsertNextTypedTuple(rgb);
+              lineBondColors->InsertNextTypedTuple(rgb);
               }
             else
               {
               level = level % this->NumColors;
               for (int i = 0;i < ncells; ++i)
-                bondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
+                cylinderBondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
+              lineBondColors->InsertNextTypedTuple(&this->MolColors[4*level]);
               }
             }
           else
@@ -1131,14 +1184,15 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
               alpha = 0.5;
             else
               alpha = (scalarval - this->VarMin) / (this->VarMax - this->VarMin);
-          
+
             int color = int((float(this->NumColors)-.01) * alpha);
             if (color < 0)
               color = 0;
             if (color > this->NumColors-1)
               color = this->NumColors-1;
             for (int i = 0;i < ncells; ++i)
-              bondColors->InsertNextTypedTuple(&this->MolColors[4*color]);
+              cylinderBondColors->InsertNextTypedTuple(&this->MolColors[4*color]);
+            lineBondColors->InsertNextTypedTuple(&this->MolColors[4*color]);
             }
           } // color by atom
         } // for half
@@ -1147,10 +1201,10 @@ void vtkVisItMoleculeMapper::UpdateBondPolyData()
     } // for number of lines
   this->BondLinesPolyData->SetPoints(linePoints);
   this->BondLinesPolyData->SetLines(lineLines.GetPointer());
-  this->BondLinesPolyData->GetCellData()->SetScalars(bondColors.GetPointer());
+  this->BondLinesPolyData->GetCellData()->SetScalars(lineBondColors.GetPointer());
   this->BondCylsPolyData->SetPoints(cylPoints);
   this->BondCylsPolyData->SetPolys(cylPolys.GetPointer());
-  this->BondCylsPolyData->GetCellData()->SetScalars(bondColors.GetPointer());
+  this->BondCylsPolyData->GetCellData()->SetScalars(cylinderBondColors.GetPointer());
   this->BondCylsPolyData->GetPointData()->SetNormals(cylNorms.GetPointer());
 }
 
@@ -1174,9 +1228,9 @@ void vtkVisItMoleculeMapper::SetDrawBondsAs(int type)
 {
   DrawBondsAs = type;
   if (DrawBondsAs == vtkVisItMoleculeMapper::Lines)
-    this->BondOutput->SetOutput(this->BondLinesPolyData.GetPointer());
-  else 
-    this->BondOutput->SetOutput(this->BondCylsPolyData.GetPointer());
+    this->BondOutput->SetOutput(this->BondLinesPolyData);
+  else
+    this->BondOutput->SetOutput(this->BondCylsPolyData);
   this->BondMapper->Modified();
 }
 

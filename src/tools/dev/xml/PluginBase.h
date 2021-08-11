@@ -62,6 +62,9 @@
 //    Kathleen Biagas, Thu Jan  2 09:31:08 PST 2020
 //    Added hasLicense.
 //
+//    Kathleen Biagas, Fri July 16, 2021
+//    Added windefs storage for WIN32DEFINES.
+//
 // ****************************************************************************
 
 class PluginBase
@@ -93,6 +96,7 @@ public:
     std::vector<QString> ldflags;
     std::vector<QString> libs;
     std::vector<QString> defs;
+    std::vector<QString> windefs;
     std::vector<QString> filePatterns;        // for DB plugins
     bool                 filePatternsStrict;  // for DB plugins
     bool                 opensWholeDirectory; // for DB plugins
@@ -150,6 +154,7 @@ public:
           ldflags(),
           libs(),
           defs(),
+          windefs(),
           filePatterns(),
           filePatternsStrict(false),
           opensWholeDirectory(false),

@@ -15,6 +15,7 @@ operators that you rarely use.
     Clip_operator
     Cone_operator
     ConnectedComponents_operator
+    CreateBonds_operator
     Cylinder_operator
     Decimate_operator
     DeferExpression_operator
@@ -28,10 +29,12 @@ operators that you rarely use.
     Isosurface_operator
     Isovolume_operator
     Lineout_operator
+    LineSampler_operator
     Merge_operator
     OnionPeel_operator
     Project_operator
     Reflect_operator
+    Replicate_operator
     Resample_operator
     Revolve_operator
     Slice_operator

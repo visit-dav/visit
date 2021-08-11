@@ -61,6 +61,10 @@ typedef std::unordered_map<string, int> StrToIntMap;
 //    Updated the constructor to take in DBOptionsAttributes, and added
 //    the globalIntegrationPoint variable.
 //
+//    Alister Maguire, Fri Mar 26 10:02:15 PDT 2021
+//    Added methods AddStressStrainDerivations, and
+//    AddSymmetricTensorComponentExpressions.
+//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -199,7 +203,7 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     vtkElementLabelArray  *GenerateLabelArray(int,
                                               int,
                                               const stringVector *,
-                                             std::vector<MiliClassMetaData *>);
+                                              std::vector<MiliClassMetaData *>);
 
     //
     // Expression helpers.
@@ -211,6 +215,18 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     Expression             ScalarExpressionFromVec(const char *,
                                                    const char *,
                                                    int);
+
+    void                   AddStressStrainDerivations(avtDatabaseMetaData *,
+                                                      std::string,
+                                                      std::string,
+                                                      std::string,
+                                                      bool);
+
+    void                   AddSymmetricTensorComponentExpressions(
+                                                     avtDatabaseMetaData *,
+                                                     std::string,
+                                                     stringVector,
+                                                     intVector = intVector());
 
     //
     // Protected data.

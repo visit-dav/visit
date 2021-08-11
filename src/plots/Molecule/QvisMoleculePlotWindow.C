@@ -363,6 +363,10 @@ QvisMoleculePlotWindow::CreateWindowContents()
 //   Use helper function FloatToQString for consistency in formatting across
 //   all windows.
 //
+//   Kathleen Biagas, Fri Jun 18 2021
+//   Moved atom related widget enable/disable to end of method, for easier
+//   coding due to complex dependencies.
+//
 // ****************************************************************************
 
 void
@@ -382,67 +386,11 @@ QvisMoleculePlotWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case MoleculeAttributes::ID_drawAtomsAs:
-            if (atts->GetDrawAtomsAs() != MoleculeAttributes::NoAtoms)
-            {
-                atomSphereQualityLabel->setEnabled(true);
-                atomSphereQuality->setEnabled(true);
-                scaleRadiusByLabel->setEnabled(true);
-                scaleRadiusBy->setEnabled(true);
-                radiusVariableLabel->setEnabled(true);
-                radiusVariable->setEnabled(true);
-                radiusScaleFactorLabel->setEnabled(true);
-                radiusScaleFactor->setEnabled(true);
-                radiusFixedLabel->setEnabled(true);
-                radiusFixed->setEnabled(true);
-            }
-            else
-            {
-                atomSphereQualityLabel->setEnabled(false);
-                atomSphereQuality->setEnabled(false);
-                scaleRadiusByLabel->setEnabled(false);
-                scaleRadiusBy->setEnabled(false);
-                radiusVariableLabel->setEnabled(false);
-                radiusVariable->setEnabled(false);
-                radiusScaleFactorLabel->setEnabled(false);
-                radiusScaleFactor->setEnabled(false);
-                radiusFixedLabel->setEnabled(false);
-                radiusFixed->setEnabled(false);
-            }
             drawAtomsAs->blockSignals(true);
             drawAtomsAs->setCurrentIndex(atts->GetDrawAtomsAs());
             drawAtomsAs->blockSignals(false);
             break;
           case MoleculeAttributes::ID_scaleRadiusBy:
-            if (atts->GetScaleRadiusBy() == MoleculeAttributes::Variable)
-            {
-                radiusVariable->setEnabled(true);
-                radiusVariableLabel->setEnabled(true);
-            }
-            else
-            {
-                radiusVariable->setEnabled(false);
-                radiusVariableLabel->setEnabled(false);
-            }
-            if (atts->GetScaleRadiusBy() == MoleculeAttributes::Atomic || atts->GetScaleRadiusBy() == MoleculeAttributes::Covalent || atts->GetScaleRadiusBy() == MoleculeAttributes::Variable)
-            {
-                radiusScaleFactor->setEnabled(true);
-                radiusScaleFactorLabel->setEnabled(true);
-            }
-            else
-            {
-                radiusScaleFactor->setEnabled(false);
-                radiusScaleFactorLabel->setEnabled(false);
-            }
-            if (atts->GetScaleRadiusBy() == MoleculeAttributes::Fixed)
-            {
-                radiusFixed->setEnabled(true);
-                radiusFixedLabel->setEnabled(true);
-            }
-            else
-            {
-                radiusFixed->setEnabled(false);
-                radiusFixedLabel->setEnabled(false);
-            }
             scaleRadiusBy->blockSignals(true);
             scaleRadiusBy->setCurrentIndex(atts->GetScaleRadiusBy());
             scaleRadiusBy->blockSignals(false);
@@ -595,6 +543,68 @@ QvisMoleculePlotWindow::UpdateWindow(bool doAll)
           case MoleculeAttributes::ID_scalarMax:
             scalarMax->setText(FloatToQString(atts->GetScalarMax()));
             break;
+        }
+    }
+    if (atts->GetDrawAtomsAs() == MoleculeAttributes::NoAtoms)
+    {
+        atomSphereQualityLabel->setEnabled(false);
+        atomSphereQuality->setEnabled(false);
+        scaleRadiusByLabel->setEnabled(false);
+        scaleRadiusBy->setEnabled(false);
+        radiusVariableLabel->setEnabled(false);
+        radiusVariable->setEnabled(false);
+        radiusScaleFactorLabel->setEnabled(false);
+        radiusScaleFactor->setEnabled(false);
+        radiusFixedLabel->setEnabled(false);
+        radiusFixed->setEnabled(false);
+    }
+    else
+    {
+        scaleRadiusByLabel->setEnabled(true);
+        scaleRadiusBy->setEnabled(true);
+
+        if (atts->GetDrawAtomsAs() == MoleculeAttributes::SphereAtoms)
+        {
+            atomSphereQualityLabel->setEnabled(true);
+            atomSphereQuality->setEnabled(true);
+        }
+        else
+        {
+            atomSphereQualityLabel->setEnabled(false);
+            atomSphereQuality->setEnabled(false);
+        }
+
+        if (atts->GetScaleRadiusBy() == MoleculeAttributes::Variable)
+        {
+            radiusVariable->setEnabled(true);
+            radiusVariableLabel->setEnabled(true);
+        }
+        else
+        {
+            radiusVariable->setEnabled(false);
+            radiusVariableLabel->setEnabled(false);
+        }
+
+        if (atts->GetScaleRadiusBy() != MoleculeAttributes::Fixed)
+        {
+            radiusScaleFactor->setEnabled(true);
+            radiusScaleFactorLabel->setEnabled(true);
+        }
+        else
+        {
+            radiusScaleFactor->setEnabled(false);
+            radiusScaleFactorLabel->setEnabled(false);
+        }
+
+        if (atts->GetScaleRadiusBy() == MoleculeAttributes::Fixed)
+        {
+            radiusFixed->setEnabled(true);
+            radiusFixedLabel->setEnabled(true);
+        }
+        else
+        {
+            radiusFixed->setEnabled(false);
+            radiusFixedLabel->setEnabled(false);
         }
     }
 }

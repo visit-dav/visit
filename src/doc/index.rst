@@ -7,6 +7,7 @@ VisIt User Manuals
    :maxdepth: 1 
 
    How to Search <searching>
+   Building VisIt <building_visit/index>
    GUI Manual <gui_manual/index>
    CLI Manual <cli_manual/index>
    Tutorials <tutorials/index>

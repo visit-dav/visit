@@ -1613,7 +1613,7 @@ avtMiliFileFormat::GetVar(int timestep,
 {
     if (fltArray == NULL)
     {
-        debug1 << "MILI: GetVar recieved a null array?! "
+        debug1 << "MILI: GetVar received a null array?! "
                << "This shouldn't happen...";
         char msg[128];
         snprintf(msg, 128, "Data array must be initialized!");
@@ -1664,7 +1664,7 @@ avtMiliFileFormat::GetVar(int timestep,
         //   and we must apply each of those values to their respective
         //   materials.
         // Global variables:
-        //   We recieve a single value that is applied to all cells.
+        //   We receive a single value that is applied to all cells.
         //
         int dBuffSize = 0;
         bool isMatVar = varMD->IsMatVar();
@@ -2258,7 +2258,7 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
     }
 
     //
-    // Loop over the subrecords, and retreive the variable
+    // Loop over the subrecords, and retrieve the variable
     // data from mili.
     //
     for (int i = 0 ; i < SRIds.size(); i++)
@@ -2354,6 +2354,10 @@ avtMiliFileFormat::ReadMiliVarToBuffer(char *varName,
 //  Creation:    May 8, 2019
 //
 //  Modifications
+//
+//      Alister Maguire, Fri Mar 26 10:02:15 PDT 2021
+//      Simplified the process for creating symmetric tensor component
+//      expressions. They are now function calls.
 //
 // ****************************************************************************
 
@@ -2514,48 +2518,11 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                 AddSymmetricTensorVarToMetaData(avtMD, mPath,
                     meshNames[i], centering, 9);
 
-                //
-                // Now we add the individual components.
-                //
-                int multDimIdxs[] = {1, 2, 0};
+                AddSymmetricTensorComponentExpressions(avtMD,
+                                                       mPath,
+                                                       vComps,
+                                                       compIdxs);
 
-                for (int j = 0; j < 3; ++j)
-                {
-                    int cIdx = compIdxs[j];
-
-                    //
-                    // First, get the "single-dim" values: xx, yy, zz.
-                    //
-                    Expression singleDim;
-                    singleDim.SetType(Expression::ScalarMeshVar);
-
-                    char singleDef[256];
-                    snprintf(singleDef, 256, "<%s>[%d][%d]",
-                        mPath.c_str(), cIdx, cIdx);
-                    singleDim.SetDefinition(singleDef);
-
-                    string singleName = mPath + "/" + vComps[cIdx];
-                    singleDim.SetName(singleName);
-
-                    avtMD->AddExpression(&singleDim);
-
-                    //
-                    // Next, get the "multi-dim" values: xy, yz, zx
-                    //
-                    int mltDIdx = cIdx + 3;
-                    Expression multDim;
-                    multDim.SetType(Expression::ScalarMeshVar);
-
-                    char multDef[256];
-                    snprintf(multDef, 256, "<%s>[%d][%d]", mPath.c_str(),
-                        cIdx, multDimIdxs[cIdx]);
-                    multDim.SetDefinition(multDef);
-
-                    string multName = mPath + "/" + vComps[mltDIdx];
-                    multDim.SetName(multName);
-
-                    avtMD->AddExpression(&multDim);
-                }
             }
             break;
         }
@@ -2568,45 +2535,10 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
                 AddTensorVarToMetaData(avtMD, mPath,
                     meshNames[i], centering, vecSize);
 
-                //
-                // Now we add the individual components.
-                //
-                int multDimIdxs[] = {1, 2, 0};
-
-                for (int j = 0; j < 3; ++j)
-                {
-                    int cIdx = compIdxs[j];
-
-                    //
-                    // First, get the "single-dim" values: xx, yy, zz.
-                    //
-                    Expression singleDim;
-                    singleDim.SetType(Expression::ScalarMeshVar);
-
-                    char singleDef[256];
-                    snprintf(singleDef, 256, "<%s>[%d][%d]",
-                        mPath.c_str(), cIdx, cIdx);
-                    singleDim.SetDefinition(singleDef);
-
-                    string singleName = mPath + "/" + vComps[cIdx];
-                    singleDim.SetName(singleName);
-
-                    avtMD->AddExpression(&singleDim);
-
-                    //
-                    // Next, get the "multi-dim" values: xy, yz, zx
-                    //
-                    int mltDIdx = cIdx + 3;
-                    Expression multDim;
-                    char multDef[256];
-                    snprintf(multDef, 256, "<%s>[%d][%d]", mPath.c_str(),
-                        cIdx, multDimIdxs[cIdx]);
-                    string multName = mPath + "/" + vComps[mltDIdx];
-                    multDim.SetName(multName);
-                    multDim.SetDefinition(multDef);
-                    multDim.SetType(Expression::ScalarMeshVar);
-                    avtMD->AddExpression(&multDim);
-                }
+                AddSymmetricTensorComponentExpressions(avtMD,
+                                                       mPath,
+                                                       vComps,
+                                                       compIdxs);
             }
             break;
         }
@@ -2665,6 +2597,12 @@ avtMiliFileFormat::AddMiliVariableToMetaData(avtDatabaseMetaData *avtMD,
 //
 //  Modifications
 //
+//      Alister Maguire, Thu Mar 25 13:55:53 PDT 2021
+//      Added support for stress and strain derivations and the sand mesh.
+//
+//      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
+//      Only add pressure for stress.
+//
 // ****************************************************************************
 
 void
@@ -2672,7 +2610,18 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
                                            const int meshId,
                                            const std::string meshName)
 {
-    std::string derivedNodePath = "Derived/node";
+    //
+    // If this is the sand mesh, we need to put it into that path.
+    //
+    std::string meshPath = "";
+    std::size_t sandPos  = meshName.find("sand_mesh");
+
+    if (sandPos != std::string::npos)
+    {
+        meshPath = "sand_mesh/";
+    }
+
+    std::string derivedNodePath = meshPath + "Derived/node";
 
     //
     // First, check if node displacement exists. If not, add it now.
@@ -2716,6 +2665,180 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
             md->AddExpression(&expr);
         }
     }
+
+    //
+    // Next, let's handle derivations of stress and strain. If they already
+    // exist in the database, we can build off of them.
+    // NOTE: since stress and strain can be shared, they might exist across
+    // multiple Classes. We need to grab them all and look for the one that
+    // contains the VisIt path.
+    //
+    std::vector< std::vector<MiliVariableMetaData *> > varMDVecs;
+    varMDVecs.reserve(2);
+    varMDVecs.push_back(miliMetaData[meshId]->GetVarMDByShortName("stress"));
+    varMDVecs.push_back(miliMetaData[meshId]->GetVarMDByShortName("strain"));
+
+    //
+    // If strain isn't defined in the dataset, we need to derive it ourselves.
+    //
+    bool mustDeriveStrain = false;
+    if (varMDVecs[1].size() == 0)
+    {
+        mustDeriveStrain = true;
+    }
+
+    //
+    // Iterate over stress and strain meta data vectors.
+    //
+    for (std::vector< std::vector<MiliVariableMetaData *> >::iterator vecIt =
+         varMDVecs.begin(); vecIt != varMDVecs.end(); ++vecIt)
+    {
+
+        //
+        // Iterate over the variable metadata. If shared, these will be multiple
+        // Classes containing the same variable.
+        //
+        for (std::vector<MiliVariableMetaData *>::iterator mdItr =
+             vecIt->begin(); mdItr != vecIt->end(); ++mdItr)
+        {
+            std::string varPath = (*mdItr)->GetPath();
+
+            //
+            // If the variable is shared, only one of them will have a
+            // defined path within VisIt. Since they're all included in that
+            // one path, we can skip the ones without paths.
+            //
+            if (varPath == "")
+            {
+                continue;
+            }
+
+            //
+            // To construct the derived path, we replace "Primal" with
+            // "Derived".
+            //
+            std::size_t primalPos = varPath.find("Primal/");
+            std::string derivedPath;
+
+            if (primalPos != std::string::npos)
+            {
+                derivedPath = meshPath + "Derived/" +
+                    varPath.substr(primalPos + 7);
+            }
+            else
+            {
+                derivedPath = meshPath + "Derived/" + varPath;
+            }
+
+            bool needPressure = false;
+
+            //
+            // Currently, we only add pressure for stress.
+            //
+            if ((*mdItr)->GetShortName() == "stress")
+            {
+                needPressure = true;
+            }
+
+            AddStressStrainDerivations(md, (*mdItr)->GetShortName(),
+                varPath, derivedPath, needPressure);
+
+            //
+            // If we've added one, we've added them all.
+            //
+            break;
+        }
+    }
+
+    if (mustDeriveStrain)
+    {
+        std::string initCoordsName = meshPath +
+            "Derived/Shared/strain/initial_strain_coords";
+        Expression initCoordsExpr;
+        initCoordsExpr.SetName(initCoordsName);
+        initCoordsExpr.SetDefinition("conn_cmfe(coord(<[0]i:" +
+            meshName + ">)," + meshName + ")");
+        initCoordsExpr.SetType(Expression::VectorMeshVar);
+        initCoordsExpr.SetHidden(true);
+        md->AddExpression(&initCoordsExpr);
+
+        std::string varName;
+        std::string varPath;
+        std::string varPathBase = "Derived/Shared/strain/";
+
+        std::vector<std::string> tensorCompNames;
+        tensorCompNames.push_back("x");
+        tensorCompNames.push_back("y");
+        tensorCompNames.push_back("z");
+        tensorCompNames.push_back("xy");
+        tensorCompNames.push_back("xz");
+        tensorCompNames.push_back("yz");
+
+        //
+        // Green lagrange strain.
+        //
+        varName = "green_lagrange";
+        varPath = meshPath + varPathBase + varName;
+
+        Expression strainGreen;
+        strainGreen.SetName(varPath);
+        strainGreen.SetDefinition("strain_green_lagrange(" + meshName +
+            ",<" + initCoordsName + ">)");
+        strainGreen.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainGreen);
+
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
+
+        //
+        // Infinitesimal strain.
+        //
+        varName = "infinitesimal";
+        varPath = meshPath + varPathBase + varName;
+
+        Expression strainInfinitesimal;
+        strainInfinitesimal.SetName(varPath);
+        strainInfinitesimal.SetDefinition("strain_infinitesimal(" + meshName +
+            ",<" + initCoordsName + ">)");
+        strainInfinitesimal.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainInfinitesimal);
+
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
+
+        //
+        // Almansi strain.
+        //
+        varName = "almansi";
+        varPath = meshPath + varPathBase + varName;
+
+        Expression strainAlmansi;
+        strainAlmansi.SetName(varPath);
+        strainAlmansi.SetDefinition("strain_almansi(" + meshName +
+            ",<" + initCoordsName + ">)");
+        strainAlmansi.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainAlmansi);
+
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
+
+        //
+        // Strain rate.
+        //
+        std::string nodeVelName = meshPath + "Primal/node/nodvel";
+        varName = "rate";
+        varPath = meshPath + varPathBase + varName;
+
+        Expression strainRate;
+        strainRate.SetName(varPath);
+        strainRate.SetDefinition("strain_rate(" + meshName +
+            ",<" + nodeVelName + ">)");
+        strainRate.SetType(Expression::TensorMeshVar);
+        md->AddExpression(&strainRate);
+
+        AddStressStrainDerivations(md, varName, varPath, varPath, false);
+        AddSymmetricTensorComponentExpressions(md, varPath, tensorCompNames);
+    }
 }
 
 
@@ -2733,7 +2856,6 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 //  Creation:    Jan 16, 2019
 //
 //  Modifications
-//
 //      Alister Maguire, Fri Jun 28 15:01:24 PDT 2019
 //      Added checks to determine if shared variables have been added
 //      or not.
@@ -2745,6 +2867,9 @@ avtMiliFileFormat::AddMiliDerivedVariables(avtDatabaseMetaData *md,
 //      Alister Maguire, Tue Jul 21 10:52:18 PDT 2020
 //      No need to add the materials for each mesh. Only add to the
 //      non-sand mesh.
+//
+//      Eric Brugger, Fri May  7 15:54:32 PDT 2021
+//      Don't add any material colors if no material colors were specified.
 //
 // ****************************************************************************
 
@@ -2790,12 +2915,19 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
         stringVector matNames;
         miliMetaData[meshId]->GetMaterialNames(matNames);
-        AddMaterialToMetaData(md,
-                              matName,
-                              meshName,
-                              numMats,
-                              matNames,
-                              matColors);
+        if (matColors.empty())
+            AddMaterialToMetaData(md,
+                                  matName,
+                                  meshName,
+                                  numMats,
+                                  matNames);
+        else
+            AddMaterialToMetaData(md,
+                                  matName,
+                                  meshName,
+                                  numMats,
+                                  matNames,
+                                  matColors);
 
         AddLabelVarToMetaData(md,
                               "OriginalZoneLabels",
@@ -2836,6 +2968,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             sandMesh->hasSpatialExtents    = false;
 
             md->Add(sandMesh);
+            AddMiliDerivedVariables(md, meshId, std::string(sandMeshName));
         }
 
         //
@@ -3585,10 +3718,13 @@ avtMiliFileFormat::ExtractJsonClasses(rapidjson::Document &jDoc,
 //  Date:   April 9, 2019
 //
 //  Modifications:
-//
 //      Alister Maguire, Tue Jul  9 13:31:59 PDT 2019
 //      Check that we have the correct file format. JSON tends to hang when
 //      it tries to open non-json files.
+//
+//      Eric Brugger, Fri May  7 15:54:32 PDT 2021
+//      Remove the code that assigns a random color to a material if no
+//      material color is specified.
 //
 // ****************************************************************************
 void
@@ -3710,12 +3846,11 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                 string name = jItr->name.GetString();
                 const rapidjson::Value &mat = jItr->value;
 
-                string matName = "";
-                std::stringstream colorSS;
-                colorSS << "#";
-
                 if (mat.IsObject())
                 {
+                    string matName = "";
+                    string colorString;
+
                     if (mat.HasMember("name"))
                     {
                         matName = mat["name"].GetString();
@@ -3737,6 +3872,9 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                         //
                         if (mColors.IsArray())
                         {
+                            std::stringstream colorSS;
+                            colorSS << "#";
+
                             for (rapidjson::SizeType i = 0;
                                  i < mColors.Size(); ++i)
                             {
@@ -3747,24 +3885,15 @@ avtMiliFileFormat::LoadMiliInfoJson(const char *fpath)
                                     std::max(0, std::min(255, iVal));
                             }
 
-                        }
-                    }
-                    else
-                    {
-                        //
-                        // If this material doesn't have a color,
-                        // assign a random color.
-                        //
-                        for (int i = 0; i < 3; ++i)
-                        {
-                            int randInt = (rand() % static_cast<int> (256));
-                            colorSS << std::hex << randInt;
+                            colorString = string(colorSS.str());
                         }
                     }
 
+                    //
+                    // An empty color string indicates no color.
+                    //
                     MiliMaterialMetaData *miliMaterial =
-                        new MiliMaterialMetaData(matName,
-                                                 string(colorSS.str()));
+                        new MiliMaterialMetaData(matName, colorString);
 
                     miliMetaData[meshId]->AddMaterialMD(matCount++,
                                                         miliMaterial);
@@ -4114,4 +4243,191 @@ avtMiliFileFormat::ScalarExpressionFromVec(const char *vecPath,
     snprintf(def, 256, "<%s>[%d]", vecPath, dim);
     Expression::ExprType eType = Expression::ScalarMeshVar;
     return CreateGenericExpression(scalarPath, def, eType);
+}
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::AddStressStrainDerivations
+//
+//  Purpose:
+//      Add derivatives for stress or strain variables.
+//
+//  Arguments:
+//    md               A pointer to the atDatabaseMetaData.
+//    varName          The name of the stress/strain variable.
+//    varPath          The VisIt path of the stress/strain variable.
+//    derivedPath      The path for the derived variables.
+//    includePressure  Should we include the pressure derivation? This should
+//                     only be true when stress/strain comes from the database.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    March 25, 2021
+//
+//  Modifications
+//
+//      Alister Maguire, Wed Apr  7 11:26:57 PDT 2021
+//      Added missing component (1) for the principal tensor expressions.
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::AddStressStrainDerivations(avtDatabaseMetaData *md,
+                                              std::string varName,
+                                              std::string varPath,
+                                              std::string derivedPath,
+                                              bool includePressure)
+{
+    //
+    // We can only include pressure if the stress/strain variables
+    // are not derived.
+    //
+    if (includePressure)
+    {
+        Expression pressure;
+        pressure.SetName(derivedPath + "/pressure");
+        pressure.SetDefinition("-trace(<" + varPath + ">)/3");
+        pressure.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&pressure);
+    }
+
+    Expression effTensor;
+    effTensor.SetName(derivedPath + "/eff_" + varName.c_str());
+    effTensor.SetDefinition("effective_tensor(<" + varPath + ">)");
+    effTensor.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&effTensor);
+
+    Expression pDev1;
+    pDev1.SetName(derivedPath + "/prin_dev_" + varName.c_str() + "/1");
+    pDev1.SetDefinition("principal_deviatoric_tensor(<" + varPath + ">)[0]");
+    pDev1.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pDev1);
+
+    Expression pDev2;
+    pDev2.SetName(derivedPath + "/prin_dev_" + varName.c_str() + "/2");
+    pDev2.SetDefinition("principal_deviatoric_tensor(<" + varPath + ">)[1]");
+    pDev2.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pDev2);
+
+    Expression pDev3;
+    pDev3.SetName(derivedPath + "/prin_dev_" + varName.c_str() + "/3");
+    pDev3.SetDefinition("principal_deviatoric_tensor(<" + varPath + ">)[2]");
+    pDev3.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pDev3);
+
+    Expression maxShear;
+    maxShear.SetName(derivedPath + "/max_shear_" + varName.c_str());
+    maxShear.SetDefinition("tensor_maximum_shear(<" + varPath + ">)");
+    maxShear.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&maxShear);
+
+    Expression pTensor1;
+    pTensor1.SetName(derivedPath + "/prin_" + varName.c_str() + "/1");
+    pTensor1.SetDefinition("principal_tensor(<" + varPath + ">)[0]");
+    pTensor1.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pTensor1);
+
+    Expression pTensor2;
+    pTensor2.SetName(derivedPath + "/prin_" + varName.c_str() + "/2");
+    pTensor2.SetDefinition("principal_tensor(<" + varPath + ">)[1]");
+    pTensor2.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pTensor2);
+
+    Expression pTensor3;
+    pTensor3.SetName(derivedPath + "/prin_" + varName.c_str() + "/3");
+    pTensor3.SetDefinition("principal_tensor(<" + varPath + ">)[2]");
+    pTensor3.SetType(Expression::ScalarMeshVar);
+    md->AddExpression(&pTensor3);
+}
+
+
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::AddSymmetricTensorComponentExpressions
+//
+//  Purpose:
+//      Create expression variables for all components of a symmetric tensor.
+//
+//      NOTE: the components will be added in the following order:
+//          {0, 0}
+//          {1, 1}
+//          {2, 2}
+//          {0, 1}
+//          {0, 2}
+//          {1, 2}
+//
+//  Arguments:
+//    md             A pointer to the atDatabaseMetaData.
+//    varPath        The VisIt path of the tensor variable.
+//    compNames      The names for each component.
+//    firstCompIdxs  An optional vector containing the first dimension's
+//                   indices. If empty, the 0 dimension indices are assumed
+//                   to match those in the description.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    March 26, 2021
+//
+//  Modifications
+//
+// ****************************************************************************
+
+void
+avtMiliFileFormat::AddSymmetricTensorComponentExpressions(
+                                                     avtDatabaseMetaData *md,
+                                                     std::string varPath,
+                                                     stringVector compNames,
+                                                     intVector firstCompIdxs)
+{
+    //
+    // In the general case, we're working with a standard symmetric tensor and
+    // we'll assume the standard layout.
+    //
+    if (firstCompIdxs.size() == 0)
+    {
+        firstCompIdxs.push_back(0);
+        firstCompIdxs.push_back(1);
+        firstCompIdxs.push_back(2);
+        firstCompIdxs.push_back(0);
+        firstCompIdxs.push_back(0);
+        firstCompIdxs.push_back(1);
+    }
+
+    //
+    // Now we add the individual components.
+    //
+    int multDimIdxs[] = {1, 2, 0};
+
+    for (int j = 0; j < 3; ++j)
+    {
+        int cIdx = firstCompIdxs[j];
+
+        //
+        // First, get the "single-dim" values: xx, yy, zz.
+        //
+        Expression singleDim;
+        singleDim.SetType(Expression::ScalarMeshVar);
+
+        char singleDef[256];
+        snprintf(singleDef, 256, "<%s>[%d][%d]",
+            varPath.c_str(), cIdx, cIdx);
+        singleDim.SetDefinition(singleDef);
+
+        string singleName = varPath + "/" + compNames[cIdx];
+        singleDim.SetName(singleName);
+
+        md->AddExpression(&singleDim);
+
+        //
+        // Next, get the "multi-dim" values: xy, yz, zx
+        //
+        int mltDIdx = cIdx + 3;
+        Expression multDim;
+        char multDef[256];
+        snprintf(multDef, 256, "<%s>[%d][%d]", varPath.c_str(),
+            cIdx, multDimIdxs[cIdx]);
+        string multName = varPath + "/" + compNames[mltDIdx];
+        multDim.SetName(multName);
+        multDim.SetDefinition(multDef);
+        multDim.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&multDim);
+    }
 }
