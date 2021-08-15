@@ -1,8 +1,40 @@
 # Copyright (c) 2021, Lawrence Livermore National Security, LLC
 #
-# Python script using GraphQL interface to GitHub discussions to read
+# Python3 script using GraphQL interface to GitHub discussions to read
 # .txt file mbox files of VisIt User's email archive and import each
 # email thread as a GitHub discussion.
+#
+# 1. Reads a directory of .txt files in mbox format for messages (readAllMboxFiles)
+# 2. Removes duplicate messages (removeDateAndSubjectDups) which have
+#    identical dates and highly similar subjects.
+# 3. Threads messages using filtered email subjects and date proximity
+#    (threadMessages) in a dict of threads keyed by subject. Also wholly
+#    removes some selection of message topics.
+# 4. Removes various bad cases (removeBadMessages).
+# 5. Reads your GitHub token from a .txt file `ghToken.txt`
+# 6. Iterates over threads using GraphQl interface to create a new
+#    discussion for each thread and adding remaining messages in threads
+#    as comments.
+# 7. Locks each resulting discussion
+# 8. Applies a label to resulting discussion
+# 9. Throttles (inserts sleeps) to stay within GitHub GraphQl rate
+#    limits (throttleRate)
+# 10. Maintains knowledge of state to safely restart and pick up
+#     where it left off
+# 11. Logs failure cases to a message log (text) file
+# 12. In addition to GraphQl work, this script will create two files
+#      - email2discussions-restart.txt: list of subject keys successfully processed
+#      - email2discussions-failures-log.txt: graphql failures
+# 13. You will need to modify data on these lines...
+#     Params to threadMessages algorithm to control date proximity,
+#         subject similarity, subject uniqeness
+#     line 39: rootDir containing all mbox .txt files
+#     line 46: you may need to add time-zone names
+#     line 158-166: Logic to ignore certain email subjects.
+#     function filterSubject: which filters email subject lines
+#     function filterBody: whith filters email body
+#     lines 927-end: GitHub org/user name, repo names, label names,
+#     discussion names...
 #
 # Programmer: Mark C. Miller, Tue Jul 20 10:21:40 PDT 2021
 #
@@ -11,7 +43,8 @@ import re, requests, shutil, sys, textwrap, time
 from difflib import SequenceMatcher
 
 # directory containing all the .txt files from the email archive
-rootDir = "/Users/miller86/visit/visit-users-email"
+#rootDir = "/Users/miller86/visit/visit-users-email"
+rootDir = "/Users/miller86/visit/visit-developers-email"
 
 #
 # Smarter datetime func that culls time-zone name if present and
@@ -22,7 +55,7 @@ tzNames = [ \
     'GMT', 'UTC', 'ECT', 'EET', 'ART', 'EAT', 'MET', 'NET', 'PLT', 'IST', 'BST', 'VST',
     'CTT', 'JST', 'ACT', 'AET', 'SST', 'NST', 'MIT', 'HST', 'AST', 'PST', 'PNT', 'MST',
     'CST', 'EST', 'IET', 'PRT', 'CNT', 'AGT', 'BET', 'CAT', 'CET', 'PDT', 'EDT', 'CES',
-    'KST', 'MSK', 'EES', 'MDT', 'CDT', 'SGT', 'AKD']
+    'KST', 'MSK', 'EES', 'MDT', 'CDT', 'SGT', 'AKD', 'US/']
 def mydt(d):
     if not d:
         return datetime.datetime.now().astimezone()
@@ -39,228 +72,208 @@ def mydt(d):
 
 #
 # Iterate over all files loading each as a mailbox and catenating the
-# items together into one long list. For testing, currently the glob
-# is disabled and we're randomly looking at just one file.
+# items together into one long list. Sort resulting list by date
 #
 def readAllMboxFiles():
 
     print("Reading messages...")
     files = glob.glob("%s/*.txt"%rootDir)
-    files = sorted(files, key=lambda f: datetime.datetime.strptime(f,'/Users/miller86/visit/visit-users-email/%Y-%B.txt'))
-    files = ["/Users/miller86/visit/visit-users-email/2013-February.txt"]
+    files = sorted(files, key=lambda f: datetime.datetime.strptime(f,rootDir+'/%Y-%B.txt'))
     items = []
     for f in files:
         mb = mailbox.mbox(f)
         items += mb.items()
-        print("    read %d items from file \"%s\""%(len(mb.items()),f),end='\r')
+        print("    read %03d items from file \"%s\"      "%(len(mb.items()),f),end='\r')
     print("\n%d messages read"%len(items))
 
-    return items
+    print("Sorting messages by date...")
+    sitems = sorted(items, key=lambda m: mydt(m[1]['Date']))
+    print("Done")
+
+    return sitems
 
 #
-# Reorganize single list of emails, above, as a dict of lists
-# (threads) key'd by Message-ID
+# If adjacent items have identical dates and highly similar subjects
+# they are probably dups. Remove them now.
 #
-def threadMessages(items):
+def removeDateAndSubjectDups(sitems):
+    i = 0
+    count = len(sitems)-1
+    rmcount = 0
+    while i < count:
+        curdate = mydt(sitems[i][1]['Date'])
+        cursubj = filterSubject(sitems[i][1]['Subject'])
+        j = i+1
+        while (j < count) and (mydt(sitems[j][1]['Date']) == curdate):
+            cksubj = filterSubject(sitems[j][1]['Subject'])
+            r = SequenceMatcher(None, cursubj, cksubj).ratio()
+            if r > 0.6:
+                del sitems[j]
+                count -= 1
+                rmcount += 1
+            else:
+                j += 1
+        i += 1
+    print("Removed %d dups with equal datetimes and similar subjects"%rmcount)
+    return sitems
 
-    print("Threading messages by message ids...")
-    countRemoveByGitHub = 0
-    countByMid = 0
-    countBySub = 0
-    countRemoveReleases = 0
-    countMerges = 0
-    countRemoveEqualDates = 0
-    msgLists = {}
-    msgIds = {}
-    for i in range(len(items)):
-#    for i in range(3000):
+#
+# Thread messages keyed by filtered subject and within 90 days of
+# each other. When an exact subject match fails, try a similarity
+# match before giving up and creating a new thread.
+#
+#    - timeDeltaDays is how wide a window, in days, is used to match
+#      similar (not identical) subjects
+#    - similarityThreshold is the minimum similarity ratio (defined by
+#      sequence-matcher) to consider two different subjects the same.
+#      The default value of 0.6 is that recommended by SequenceMatcher docs.
+#    - uniqSubjLen is the minimum length of a subject, in characters,
+#      that matching instances more than timeDeltaDays apart are still
+#      considered part of the *same* thread.
+#
+def threadMessages(sitems, timeDeltaDays=90, similarityThreshold=0.6, uniqSubjLen=25):
+    print("Threading...")
 
-        # mailbox imports all messages as a pair <int, message object>
-        # So here, we get just the message object
-        msg = items[i][1]
+    threads = {}
+    recentSubjects = [] 
+    recentDates = []
+    coincidentalSubjectCounts = {}
+    for i in range(len(sitems)):
 
-        # Skip stuff already on GitHub via SRE process
-        # using raw (unfiltered) subject
+        # Dereference the current message
+        msg = sitems[i][1]
+
+        # Output progress information
+        p = int(100*float(i)/len(sitems))
+        print("    %02d %% completed, recent subjects count=%03d"%(p,len(recentSubjects)), end='\r')
+
+        # Ignore messgaes that appear to be GitHub related
+        # notifications using raw (unfiltered) subject
         sub = msg['Subject']
         if sub and 'visit-dav' in sub:
-            countRemoveByGitHub += 1
             continue
         if msg['In-Reply-To'] and 'visit-dav' in msg['In-Reply-To']:
-            countRemoveByGitHub += 1
             continue
-        if msg['References']:
-            haveIt = False
-            for r in msg['References'].split():
-                if 'visit-dav' in r:
-                    haveIt = True
-                    break
-            if haveIt:
-                countRemoveByGitHub += 1
+        if msg['References'] and 'visit-dav' in msg['References']:
+            continue
+
+        curdate = mydt(msg['Date'])
+        cursubj = filterSubject(msg['Subject'])
+
+        # Ignore messages with subjects that appear to be announcements of releases
+        # or subversion commit/update messages or test suite runs
+        if re.match('visit [0-9]*.[0-9]*.[0-9]* released', cursubj):
+            continue
+        if 'svn' in cursubj and 'update' in cursubj: 
+            continue
+        if 'svn' in cursubj and 'commit' in cursubj: 
+            continue
+        if 'test suite run' in cursubj and \
+            ('passed' in cursubj or 'failed' in cursubj):
+            continue
+
+        # Keep recent subjects/dates up to date by deleting entries (at beginning)
+        # timeDeltaDays days older than current. This works because the input messages
+        # list is already sorted by date.
+        while recentDates and \
+           (curdate - recentDates[0]) > datetime.timedelta(days=timeDeltaDays):
+            del recentDates[0]
+            del recentSubjects[0]
+ 
+        # Try exact match first
+        if cursubj in recentSubjects:
+            threads[cursubj] += [msg]
+            idx = recentSubjects.index(cursubj)
+            del recentSubjects[idx]
+            del recentDates[idx]
+            recentSubjects += [cursubj]
+            recentDates += [curdate]
+            continue
+
+        # Try exact match on modified subject if this a subject
+        # for which we have multiple threads
+        if cursubj in coincidentalSubjectCounts.keys():
+            cursubj1 = cursubj + "~%d"%coincidentalSubjectCounts[cursubj]
+            if cursubj1 in recentSubjects:
+                threads[cursubj1] += [msg]
+                idx = recentSubjects.index(cursubj1)
+                del recentSubjects[idx]
+                del recentDates[idx]
+                recentSubjects += [cursubj1]
+                recentDates += [curdate]
                 continue
 
-        # Try to put in an existing thread via Reference ids
-        rids = msg['References']
-        if rids:
-            rids = rids.split()
-            rids.reverse()
-
-            foundIt = False
-            for rid in rids:
-                if rid in msgIds.keys():
-                    subjectKey = msgIds[rid]
-                    foundIt = True
-                    break
-            if foundIt:
-                countByMid += 1
-                msgLists[subjectKey] += [msg]
-                continue
-
-        # Try to put in an existing thread via In-Reply-To id
-        # In-Reply-To isn't necessarily very reliable
-        # see https://cr.yp.to/immhf/thread.html
-        rtid = msg['In-Reply-To']
-        if rtid and rtid in msgIds.keys():
-            countByMid += 1
-            subjectKey = msgIds[rtid]
-            msgLists[subjectKey] += [msg]
+        # Ok, try fuzzy match by taking the *first* maximum-ratio match
+        # for which that maximum ratio exceeds our similarity threshold
+        ratios = [SequenceMatcher(None, cursubj, recentSubjects[j]).ratio() for j in range(len(recentSubjects))]
+        maxr = max(ratios) if ratios else 0
+        if maxr > similarityThreshold:
+            maxi = ratios.index(maxr)
+            cursubj1 = recentSubjects[maxi]
+            threads[cursubj1] += [msg]
+            del recentSubjects[maxi]
+            del recentDates[maxi]
+            recentSubjects += [cursubj1]
+            recentDates += [curdate]
             continue
 
         #
-        # Ok, using message ids didn't work to find the
-        # thread, so now try via filtered subject
+        # Looks like a new thread. However, it could coincidentally have a
+        # subject identical to a more than timeDeltaDays day old thread. This
+        # is common for subjects like "question" or "help" or "no subject", etc.
+        # The more characters there are in a thread subject, the more unique
+        # it is and so identical matches here for longer subject names are more
+        # than likely part of the same thread even if separated in time more
+        # than timeDeltaDays days.
         #
-        sub = filterSubject(sub)
+        if cursubj in threads.keys():
 
-        # Remove subjects related to announcements of releases
-        if re.match('visit [0-9]*.[0-9]*.[0-9]* released', sub):
-            countRemoveReleases += 1
-            continue
+            if len(cursubj) > uniqSubjLen:
 
-        if sub in msgLists.keys():
-            msgLists[sub] += [msg]
-            countBySub += 1
-        else:
-            mid = msg['Message-ID']
-            msgIds[mid] = sub
-            msgLists[sub] = [msg]
-
-    #
-    # After processing all messages into threads, sort the
-    # messages in each thread by date
-    #
-    for k in msgLists.keys():
-        mlist = msgLists[k]
-        msgLists[k] = sorted(mlist, key=lambda m: mydt(m['Date']))
-
-    #
-    # Remove cases of duplicate dates in same thread
-    #
-    for k in msgLists.keys():
-        mlist = msgLists[k]
-        deli = []
-        for i in range(1,len(mlist)):
-            if mlist[i]['Date'] and mlist[i-1]['Date'] and \
-               mydt(mlist[i]['Date']) == mydt(mlist[i-1]['Date']):
-                deli += [i]
-        countRemoveEqualDates += len(deli)
-        deli.reverse()
-        for i in deli:
-            del(msgLists[k][i])
-
-    #
-    # We invariably wind up with a ton of threads of length
-    # one. Ordinarily, that should be rare as most messages
-    # to visit-users get replied to. So, most threads should
-    # be of minimum length 2. So, now make a pass trying to
-    # merge any threads of size one into other threads using
-    # 'similarity' of subject matches and nearnest of dates.
-    #
-    print("Merging threads by similarity of subjects...")
-    i = 0
-    for k1 in msgLists.keys():
-
-        i += 1
-        p10 = int(100*float(i)/len(msgLists))
-        if not p10 % 10:
-            print("    %d %% completed"%p10, end='\r')
-
-        # Don't perform subject similarity matching on these
-        # subjects because they easily match on similarity but
-        # are wholly different topics
-        if re.match('digest, vol [0-9]*, issue [0-9]*', k1):
-            continue
-
-        mlist1 = msgLists[k1]
-
-        if len(mlist1) > 1:
-            continue
-
-        if len(mlist1) == 0:
-            continue
-
-        date1 = mydt(mlist1[0]['Date'])
-        maxMatchRatio = 0
-        maxMatchKey = None
-        for k2 in msgLists.keys():
-        
-            if k2 == k1:
+                # add to existing thread
+                threads[cursubj] += [msg]
+                try:
+                    idx = recentSubjects.index(cursubj)
+                    del recentSubjects[idx]
+                    del recentDates[idx]
+                except ValueError:
+                    pass
+                recentSubjects += [cursubj]
+                recentDates += [curdate]
                 continue
 
-            if not msgLists[k2]:
+            else:
+
+                # This logic deals with possible same subject separated in time
+                # by more than our timeDeltaDays threshold. Encountering the same
+                # subject more than timeDeltaDays days later is treated as a *new*
+                # thread of that subject so we append a number/count to the subject.
+                if cursubj in coincidentalSubjectCounts.keys():
+                    coincidentalSubjectCounts[cursubj] += 1
+                else:
+                    coincidentalSubjectCounts[cursubj] = 1
+                cursubj1 = cursubj + "~%d"%coincidentalSubjectCounts[cursubj]
+
+                # start a new thread on this modified subject
+                threads[cursubj1] = [msg]
+                recentSubjects += [cursubj1]
+                recentDates += [curdate]
                 continue
 
-            date2 = mydt(msgLists[k2][0]['Date'])
-            ddate = date2-date1 if date2>date1 else date1-date2
-            if ddate > datetime.timedelta(days=90):
-                continue
+        # start a *new* thread
+        threads[cursubj] = [msg]
+        recentSubjects += [cursubj]
+        recentDates += [curdate]
 
-            r = SequenceMatcher(None, k1, k2).ratio()
-            if r < maxMatchRatio:
-                continue
-            maxMatchRatio = r
-            maxMatchKey = k2
+    print("\nDone")
+    print("Subjects with multiple instances in time...")
+    for s in coincidentalSubjectCounts.keys():
+        print("   %d distinct threads with subject \"%s\""%(coincidentalSubjectCounts[s],s))
 
-        if maxMatchRatio < 0.6:
-            continue
-
-        #print("Merging keys (ratio = %g)...\n    \"%s\" and\n    \"%s\"\n"%(maxMatchRatio,k1,maxMatchKey))
-        countMerges += 1
-        msgLists[k1] += msgLists[maxMatchKey]
-        msgLists[maxMatchKey] = []
-
-    #
-    # Ok, sort threads again by date
-    #
-    for k in msgLists.keys():
-        mlist = msgLists[k]
-        msgLists[k] = sorted(mlist, key=lambda m: mydt(m['Date']))
-
-    #
-    # Remove again any cases of duplicate dates in same thread
-    #
-    for k in msgLists.keys():
-        mlist = msgLists[k]
-        deli = []
-        for i in range(1,len(mlist)):
-            if mlist[i]['Date'] and mlist[i-1]['Date'] and \
-               mydt(mlist[i]['Date']) == mydt(mlist[i-1]['Date']):
-                deli += [i]
-        deli.reverse()
-        countRemoveEqualDates += len(deli)
-        for i in deli:
-            del(msgLists[k][i])
-
-    print("Threaded %d messages by message id"%countByMid)
-    print("Threaded %d messages by subject"%countBySub)
-    print("Removed %d GitHub messages"%countRemoveByGitHub)
-    print("Removed %d release messages"%countRemoveReleases)
-    print("Removed %d equal date messages"%countRemoveEqualDates)
-    print("Merged %d threads"%countMerges)
-
-    return msgLists
+    return threads
 
 #
-# Handle (skip) all messages that had no id
+# Remove certain bad cases
 #
 def removeBadMessages(msgLists):
     if None in msgLists.keys():
@@ -276,12 +289,6 @@ def removeBadMessages(msgLists):
     print("Deleting %d threads of size <= 1"%len(delItems))
     for i in delItems:
         del msgLists[i]
-    if '(no subject)' in msgLists.keys():
-        print("Deleting %d messages @ \"(no subject)\""%len(msgLists['(no subject)']))
-        del msgLists['(no subject)']
-    if 'no subject' in msgLists.keys():
-        print("Deleting %d messages @ \"no subject\""%len(msgLists['no subject']))
-        del msgLists['no subject']
 
 #
 # Debug: list all the subject lines
@@ -290,21 +297,6 @@ def debugListAllSubjects(msgLists):
     for k in msgLists.keys():
         mlist = msgLists[k]
         print("%d messages for subject = \"%s\"\n"%(len(mlist),k))
-
-#
-# Debug: Write whole raw archive of messages, each thread to its own file
-#
-def debugWriteAllMessagesToFiles(msgLists):
-    for k in msgLists.keys():
-        mlist = msgLists[k]
-        kfname = k.replace("/","_")[:100]
-        with open("tmp/%s"%kfname, 'w') as f:
-            for m in mlist:
-                f.write("From: %s\n"%(m['From'] if m['Form'] else ''))
-                f.write("Date: %s\n"%mydt(m['Date']).strftime('%a, %d %b %Y %H:%M:%S %z'))
-                f.write("Subject: %s\n"%(filterSubject(m['Subject']) if m['Subject'] else ''))
-                f.write("Message-ID: %s\n"%(m['Message-ID'] if m['Message-ID'] else ''))
-                f.write("%s\n"%filterBody(m.get_payload()))
 
 #
 # Debug: print some diagnostics info
@@ -373,33 +365,38 @@ headers = \
 
 #
 # Workhorse routine for performing a GraphQL query
-#
-def run_query(query): # A simple function to use requests.post to make the API call. Note the json= section.
+# # A simple function to use requests.post to make the API call. Note the json= section.
+def run_query(query):
 
-    run_query.sleep = 0 # amount to sleep to prevent exceeding GitHub rate limits
-    if not hasattr(run_query, 'queryTimes'):
-        run_query.queryTimes = []
-    if not hasattr(run_query, 'startTime'):
-        run_query.startTime = datetime.datetime.now()
     if not hasattr(run_query, 'numSuccessiveFailures'):
         run_query.numSuccessiveFailures = 0;
 
-    # Post the request. Time it and keep 100 most recent times in a queue
-    now1 = datetime.datetime.now()
+    # Post the request. Check for possible error return and sleep and retry if so.
     try:
         request = requests.post('https://api.github.com/graphql', json={'query': query}, headers=headers)
+        result = request.json()
+
+        i = 0
+        while 'errors' in result and i < 100:
+            print("....retrying \"%s\" after sleeping 3 seconds"%query[:30])
+            time.sleep(3)
+            request = requests.post('https://api.github.com/graphql', json={'query': query}, headers=headers)
+            result = request.json()
+            i = i + 1
+
+        if 'errors' in result and i == 100:
+            raise Exception(">100 successive query failures, exiting...")
+            sys.exit(1)
+
         run_query.numSuccessiveFailures = 0
+
     except:
+
         captureGraphQlFailureDetails('run_query', query, "")
         run_query.numSuccessiveFailures += 1
         if run_query.numSuccessiveFailures > 3:
             raise Exception(">3 successive query failures, exiting...")
             sys.exit(1)
-
-    now2 = datetime.datetime.now()
-    run_query.queryTimes.insert(0,(now2-now1).total_seconds())
-    if len(run_query.queryTimes) > 10: # keep record of last 10 query call times
-        run_query.queryTimes.pop()
 
     if request.status_code == 200:
         return request.json()
@@ -408,12 +405,17 @@ def run_query(query): # A simple function to use requests.post to make the API c
 
 #
 # A method to periodically call to ensure we don't
-# exceed GitHub's rate limits
+# exceed GitHub's rate limits. It costs us part of our limit to
+# call this so we don't want to call it all the time. It is coded
+# to do *real* GraphQl work only once per minute, no matter how
+# often it is actually called.
 #
 def throttleRate():
 
+    # set the *last* check 61 seconds in the past to force a check
+    # the very *first* time we run this
     if not hasattr(throttleRate, 'lastCheckNow'):
-        throttleRate.lastCheckNow = datetime.datetime.now()
+        throttleRate.lastCheckNow = datetime.datetime.now()-datetime.timedelta(seconds=61)
 
     query = """
         query
@@ -440,20 +442,31 @@ def throttleRate():
     try:
         result = run_query(query)
 
+        zuluOffset = 7 * 3600 # subtract PDT timezone offset from Zulu
+        
+        if 'errors' in result.keys():
+            toSleep = (throttleRate.resetAt-now).total_seconds() - zuluOffset + 1
+            print("Reached end of available queries for this cycle. Sleeping %g seconds..."%toSleep)
+            time.sleep(toSleep)
+            return
+
         # Gather rate limit info from the query result
         limit = result['data']['rateLimit']['limit']
         remaining = result['data']['rateLimit']['remaining']
         # resetAt is given in Zulu (UTC-Epoch) time
         resetAt = datetime.datetime.strptime(result['data']['rateLimit']['resetAt'],'%Y-%m-%dT%H:%M:%SZ')
-        toSleep = (resetAt-now).total_seconds() - 7 * 3600 # subtract timezone offset from Zulu
+        toSleep = (resetAt-now).total_seconds() - zuluOffset
         print("GraphQl Throttle: limit=%d, remaining=%d, resetAt=%g seconds"%(limit, remaining, toSleep))
 
-        if remaining < 50:
+        # Capture the first valid resetAt point in the future
+        throttleRate.resetAt = resetAt
+
+        if remaining < 200:
             print("Reaching end of available queries for this cycle. Sleeping %g seconds..."%toSleep)
             time.sleep(toSleep)
 
     except:
-        pass
+        captureGraphQlFailureDetails('rateLimit', query, "")
 
 #
 # Get various visit-dav org. repo ids. Caches results so that subsequent
@@ -477,8 +490,8 @@ def GetRepoID(orgname, reponame):
 
 
 #
-# Get discussion category id by name for given repo name in visit-dav org.
-# Caches reponame/discname pair so that subsequent queries don't do any
+# Get object id by name for given repo name and org/user name. 
+# Caches reponame/objname pair so that subsequent queries don't do any
 # graphql work.
 #
 def GetObjectIDByName(orgname, reponame, gqlObjname, gqlCount, objname):
@@ -505,9 +518,6 @@ def GetObjectIDByName(orgname, reponame, gqlObjname, gqlCount, objname):
     if not hasattr(GetObjectIDByName, "%s.%s"%(reponame,objname)):
         result = run_query(query)
         # result = d['data']['repository']['discussionCategories']['edges'][0] =
-        # {'node': {'description': 'Ask the community for help using VisIt', 'name': 'Help using VisIt', 'id': 'MDE4OkRpc2N1c3Npb25DYXRlZ29yeTMyOTAyNDY5'}}
-        # d['data']['repository']['discussionCategories']['edges'][1]
-        # {'node': {'description': 'Share cool ways you use VisIt including pictures or movies', 'name': 'Share cool stuff', 'id': 'MDE4OkRpc2N1c3Npb25DYXRlZ29yeTMyOTAyNDcw'}}
         edges = result['data']['repository'][gqlObjname]['edges']
         for e in edges:
             if e['node']['name'] == objname:
@@ -647,11 +657,6 @@ def filterSubject(su):
     if not su:
         return "no subject"
 
-    gotit = False
-    if '#261' in su:
-        gotit = True
-        print(su)
-
     # Handle occasional odd-ball encoding
     suparts = email.header.decode_header(su)
     newsu = ''
@@ -685,11 +690,7 @@ def filterSubject(su):
     # Get rid of GitHub bug identifiers
     su = re.sub('\s+\(#[0-9]*\)','',su)
 
-    if gotit:
-        print(su)
-
     return su.strip()
-
 
 #
 # Replacement function for re.sub to replace phone number matches with
@@ -724,15 +725,18 @@ def filterBody(body):
     # Remove these specific lines. In many cases, these lines are quoted and
     # re-wrapped (sometimes with chars inserted in arbitrary places) so this isn't
     # foolproof.
-    retval = re.sub('^[>\s]*VisIt Users Wiki: http://visitusers.org/.*$', '',retval,0,re.MULTILINE)
-    retval = re.sub('^[>\s]*Frequently Asked Questions for VisIt: http://visit.llnl.gov/FAQ.html.*$', '',retval,0,re.MULTILINE)
-    retval = re.sub('^[>\s]*To Unsubscribe: send a blank email to visit-users-unsubscribe at elist.ornl.gov.*$', '',retval,0,re.MULTILINE)
-    retval = re.sub('^[>\s]*More Options: https://elist.ornl.gov/mailman/listinfo/visit-users.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*VisIt Users Wiki: http://[ +_\*]*visitusers.org/.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*Frequently Asked Questions for VisIt: http://[ +_\*]*visit.llnl.gov/FAQ.html.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*To Unsubscribe: send a blank email to visit-developers-unsubscribe at elist.ornl.gov.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*More Options: https://[ +_\*]*elist.ornl.gov/mailman/listinfo/visit-developers.*$', '',retval,0,re.MULTILINE)
     retval = re.sub('^[>\s]*To Unsubscribe: send a blank email to.*$', '',retval,0,re.MULTILINE)
-    retval = re.sub('^[>\s]*visit-users-unsubscribe at elist.ornl.gov.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*visit-developers-unsubscribe at elist.ornl.gov.*$', '',retval,0,re.MULTILINE)
     retval = re.sub('^[>\s]*-------------- next part --------------.*$', '',retval,0,re.MULTILINE)
     retval = re.sub('^[>\s]*An HTML attachment was scrubbed\.\.\..*$', '',retval,0,re.MULTILINE)
-    retval = re.sub('^[>\s]*URL: <https://elist.ornl.gov/pipermail/visit-users/attachments.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*URL: <?https://[ +_\*]*elist.ornl.gov/pipermail/visit-developers/attachments.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*URL: <?https://[ +_\*]*email.ornl.gov/pipermail/visit-developers/attachments.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*List subscription information: https://[ +_\*]*email.ornl.gov/mailman/listinfo/visit-developers.*$', '',retval,0,re.MULTILINE)
+    retval = re.sub('^[>\s]*Searchable list archives: https://[ +_\*]*email.ornl.gov/pipermail/visit-users.*$', '',retval,0,re.MULTILINE)
 
     #
     # Filter out signature separator lines (e.g. '--') as these convince
@@ -771,7 +775,7 @@ def buildBody(msgObj):
     body = ''
     body += '**Date: %s**\n'%mydt(msgObj['Date']).strftime('%a, %d %b %Y %H:%M:%S %z')
     body += '**From: %s**\n'%msgObj['From']
-    body += 'This post was [imported from the visit-users@ornl.gov email archive](https://github.com/visit-dav/visit/wiki/About-the-visit-users@ornl.gov-email-archive)\n'
+    body += 'This post was [imported from the visit-developers@ornl.gov email archive](https://github.com/visit-dav/visit/wiki/About-the-visit-users@ornl.gov-email-archive)\n'
     body += '\n---\n```\n'
     body += filterBody(msgObj.get_payload())
     body += '\n```\n---\n'
@@ -906,31 +910,30 @@ def importMessagesAsDiscussions(msgLists, repoid, catid, labid):
 # Main Program
 #
 
-# Read all email messages into a list
+# Read all email messages into a list sorted by date
 items = readAllMboxFiles()
 
-# Thread messages together
+# Remove duplicates
+items = removeDateAndSubjectDups(items)
+
+# Thread the messages
 msgLists = threadMessages(items)
 
-# Eliminate failure cases
+# Eliminate common bad cases
 removeBadMessages(msgLists)
 
-# Print some diagnostics
-printDiagnostics(msgLists)
-
+#printDiagnostics(msgLists)
 #testWriteMessagesToTextFiles(msgLists)
+#sys.exit(0)
 
 # Get the repository id where the discussions will be created
-#repoid = GetRepoID("visit-dav", "temporary-play-with-discussions")
-repoid = GetRepoID("markcmiller86", "discussions-testing")
+repoid = GetRepoID("visit-dav", "visit")
 
 # Get the discussion category id for the email migration discussion
-catid =  GetObjectIDByName("markcmiller86", "discussions-testing", "discussionCategories", 10, "Ideas")
+catid =  GetObjectIDByName("visit-dav", "visit", "discussionCategories", 10, "visit-developers email archive")
 
 # Get the label id for the 'visit-uers email'
-labid =  GetObjectIDByName("markcmiller86", "discussions-testing", "labels", 30, "visit-users email")
+labid =  GetObjectIDByName("visit-dav", "visit", "labels", 30, "email archive")
 
 # Import all the message threads as discussions
-if os.access('email2discussions-failures-log.txt', os.R_OK):
-    os.unlink('email2discussions-failures-log.txt')
 importMessagesAsDiscussions(msgLists, repoid, catid, labid)
