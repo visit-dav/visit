@@ -64,7 +64,7 @@ function bv_p7zip_ensure
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_P7ZIP="no"
-            error "Unable to build P7ZIP.  ${P7ZIP_FILE} not found."
+            error "Unable to build p7zip. ${P7ZIP_FILE} not found."
         fi
     fi
 }
@@ -74,6 +74,39 @@ function bv_p7zip_dry_run
     if [[ "$DO_P7ZIP" == "yes" ]] ; then
         echo "Dry run option not set for p7zip."
     fi
+}
+
+function apply_p7zip_patch
+{
+    # Apply a patch to fix a narrowing error with gcc 10.3.
+    patch -p0 << \EOF
+diff -c CPP/Windows/ErrorMsg.cpp.orig CPP/Windows/ErrorMsg.cpp
+*** CPP/Windows/ErrorMsg.cpp.orig	Wed Aug  4 15:41:48 2021
+--- CPP/Windows/ErrorMsg.cpp	Wed Aug  4 15:42:01 2021
+***************
+*** 13,19 ****
+    const char * txt = 0;
+    AString msg;
+  
+!   switch(errorCode) {
+      case ERROR_NO_MORE_FILES   : txt = "No more files"; break ;
+      case E_NOTIMPL             : txt = "E_NOTIMPL"; break ;
+      case E_NOINTERFACE         : txt = "E_NOINTERFACE"; break ;
+--- 13,19 ----
+    const char * txt = 0;
+    AString msg;
+  
+!   switch((Int32)errorCode) {
+      case ERROR_NO_MORE_FILES   : txt = "No more files"; break ;
+      case E_NOTIMPL             : txt = "E_NOTIMPL"; break ;
+      case E_NOINTERFACE         : txt = "E_NOINTERFACE"; break ;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "p7zip patch failed."
+        return 1
+    fi
+
+    return 0
 }
 
 # *************************************************************************** #
@@ -91,11 +124,31 @@ function build_p7zip
     prepare_build_dir $P7ZIP_BUILD_DIR $P7ZIP_FILE
     untarred_p7zip=$?
     if [[ $untarred_p7zip == -1 ]] ; then
-        warn "Unable to prepare P7ZIP build directory. Giving Up!"
+        warn "Unable to prepare p7zip build directory. Giving Up!"
         return 1
     fi
 
-    cd $P7ZIP_BUILD_DIR || error "Can't cd to P7ZIP build dir."
+    #
+    # Apply patches
+    #
+    cd $P7ZIP_BUILD_DIR || error "Can't cd to p7zip build dir."
+    info "Patching p7zip"
+    apply_p7zip_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_p7zip == 1 ]] ; then
+            warn "Giving up on p7zip build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing. I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    #
+    # Build P7ZIP
+    #
     if [[ "$OPSYS" == "Darwin" ]] ; then
         if [[ -z "${MACOSX_DEPLOYMENT_TARGET}" ]]; then
             cp makefile.macosx_llvm_64bits makefile.machine
@@ -109,24 +162,21 @@ function build_p7zip
         fi
     fi
 
-    #
-    # Build P7ZIP
-    #
     info "Building P7ZIP . . . (~1 minute)"
     $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
-        warn "P7ZIP build failed.  Giving up"
+        warn "p7zip build failed. Giving up"
         return 1
     fi
 
     #
     # Install into the VisIt third party location.
     #
-    info "Installing P7ZIP"
+    info "Installing p7zip"
     grep -v '^DEST_HOME=' install.sh > install2.sh
     env DEST_HOME="$VISITDIR/p7zip/$P7ZIP_VERSION/$VISITARCH" sh install2.sh
     if [[ $? != 0 ]] ; then
-        warn "P7ZIP install failed.  Giving up"
+        warn "p7zip install failed. Giving up"
         return 1
     fi
 
@@ -135,7 +185,7 @@ function build_p7zip
         chgrp -R ${GROUP} "$VISITDIR/p7zip"
     fi
     cd "$START_DIR"
-    info "Done with P7ZIP"
+    info "Done with p7zip"
     return 0
 }
 
@@ -162,14 +212,14 @@ function bv_p7zip_build
     if [[ "$DO_P7ZIP" == "yes" ]] ; then
         check_if_installed "p7zip" $P7ZIP_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping P7ZIP build.  P7ZIP is already installed."
+            info "Skipping p7zip build. p7zip is already installed."
         else
-            info "Building P7ZIP (~1 minute)"
+            info "Building p7zip (~1 minute)"
             build_p7zip
             if [[ $? != 0 ]] ; then
-                error "Unable to build or install P7ZIP.  Bailing out."
+                error "Unable to build or install p7zip. Bailing out."
             fi
-            info "Done building P7ZIP"
+            info "Done building p7zip"
         fi
     fi
 }
