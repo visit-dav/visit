@@ -7,18 +7,18 @@ ORIGIN 0 0 0
 SPACING 1 1 1
 
 CELL_DATA 2
-SCALARS var1 float 1
+SCALARS density float 1
 LOOKUP_TABLE default
 1 2
 
 POINT_DATA 12
-SCALARS var2 float 1
+SCALARS u float 1
 LOOKUP_TABLE default
 1 2 3 1 2 3 1 2 3 1 2 3
-SCALARS var3 float 1
+SCALARS v float 1
 LOOKUP_TABLE default
 1 1 1 2 2 2 1 1 1 2 2 2
-VECTORS vec1 float
+VECTORS velocity float
 0 1 0
 0 1 0
 0 1 0
@@ -31,7 +31,7 @@ VECTORS vec1 float
 0 2 0
 0 2 0
 0 2 0
-TENSORS ten1 float
+TENSORS stress float
 1 0 0
 0 1 0
 0 0 1

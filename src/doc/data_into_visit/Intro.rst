@@ -71,7 +71,6 @@ The VTK file format
 
 There are primarily two types of VTK files, legacy and XML.
 We are going to focus on the legacy files, since they are a little bit simpler.
-In addition to the standard VTK content, VisIt_ also has some conventions for data specific to it.
 
 * VTK files can represent a single timestep.
 
@@ -87,7 +86,9 @@ In addition to the standard VTK content, VisIt_ also has some conventions for da
 The remainder of this VTK documentation consistes of a description of the file format, a simple example, and then more complex examples of the different mesh types.
 
 * For a description of a VTK file go :ref:`here<data_into_visit_vtk_structure>`.
+* For a description of the VisIt_ VTK meta data conventions go :ref:`here<data_into_visit_vtk_conventions>`.
 * For an example VTK file go :ref:`here<data_into_visit_vtk_example>`.
+* For an example of a VTK file with extra metadata go :ref:`here<data_into_visit_vtk_metadata_example>`.
 * For an example structured points file go :ref:`here<data_into_visit_vtk_struct_points>`.
 * For an example structured grid file go :ref:`here<data_into_visit_vtk_struct_grid>`.
 * For an example rectilinear grid file go :ref:`here<data_into_visit_vtk_rect_grid>`.
@@ -95,97 +96,6 @@ The remainder of this VTK documentation consistes of a description of the file f
 * For an example unstructured grid file go :ref:`here<data_into_visit_vtk_unstruct_grid>`.
 
 .. _data_into_visit_vtk_structure:
-
-VisIt_ conventions for VTK files
---------------------------------
-
-VisIt_ supports a number of conventions for storing additional data. This data is stored as FIELD data and additional CELL_DATA or POINT_DATA.
-
-The Following types of data are stored as FIELD data.
-
-avtRealDims
-~~~~~~~~~~~
-
-`avtRealDims` specifies the real zones within a uniform grid, structured grid or rectilinear grid.
-
-`avtRealDims` has the following structure. ::
-
-    avtRealDims 1 6 int
-    startx endx starty endy startz endz
-
-`startx`, `endx`, `starty`, `endy`, `startz` and `endz` are integers representing the zero-origin indexes of the first real zone and the last real zone.
-In the case of 2D meshes `startz` and `endz` are zero.
-
-group_id
-~~~~~~~~
-
-`group_id` specifies the zero-origin id into the group.
-
-`group_id` has the following structure. ::
-
-   group_id 1 1 int
-   gid
-
-`gid` is the zero origin index of the group for this block.
-
-base_index
-~~~~~~~~~~
-
-`base_index` specifies the zero-origin index into the group.
-
-`base_index` has the following structure. ::
-
-    base_index 1 3 int
-    startx starty startz
-
-`startx`, `starty` and `startz` are the zero origin base indices into the group.
-
-avtOriginalBounds
-~~~~~~~~~~~~~~~~~
-
-`avtOriginalBounds` specifies the bounds of the coordinates before any operations were applied to it.
-This is typically used when VisIt_ is used to subselecting the mesh and indicates what the extents were before the mesh was subselected.
-
-`avtOriginalBounds` has the following structure. ::
-
-    avtOriginalBounds 1 6 double
-    startx endx starty endy startz endz
-
-`startx`, `endx`, `starty`, `endy`, `startz` and `endz` are double precision values representing the extents of the mesh before it was subselected.
-In the case of 2D meshes `startz` and `endz` are zero.
-
-MeshName
-~~~~~~~~
-
-`MeshName` has the following structure. ::
-
-    MeshName 1 1 string
-    curvmesh2d
-
-CYCLE
-~~~~~
-
-`CYCLE` has the following structure. ::
-
-    CYCLE 1 1 int
-    48
-
-TIME
-~~~~
-
-`TIME` has the following structure. ::
-
-    TIME 1 1 double
-    4.8
-
-VisItExpressions
-~~~~~~~~~~~~~~~~
-
-`VisItExpressions` has the following structure. ::
-
-    VisItExpressions 1 2 string
-    vel;vector;{u,v}
-    speed;scalar;sqrt(u*u+v*v)
 
 The basic structure of a VTK file
 ---------------------------------
@@ -450,6 +360,70 @@ The point data section starts with a single line with the keyword `POINT_DATA` f
 The number of points must match the number of points defined by the topology.
 The rest of the point data section is the same as the cell data section.
 
+.. _data_into_visit_vtk_conventions:
+
+VisIt_ meta data conventions for VTK files
+------------------------------------------
+
+VisIt_ supports a number of conventions for storing additional data. This data is stored as FIELD data as additional information in the DATASET, CELL_DATA or POINT_DATA.
+
+The Following meta data is stored as FIELD data.
+
+MeshName
+~~~~~~~~
+
+The mesh name is represented as a string.
+
+Here is an example of specifying the mesh name.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 6-7
+
+CYCLE
+~~~~~
+
+The cycle is specified as a single integer value.
+
+Here is an example of specifying the cycle.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 8-9
+
+TIME
+~~~~
+
+The time is specified as a single double precision value.
+
+Here is an example of specifying the time.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 10-11
+
+VisItExpressions
+~~~~~~~~~~~~~~~~
+
+Each string represents a single expression.
+The string contains the expression name, the expression type and the expression.
+The three properties are seperated by semicolons.
+The expression type consists of one of `curve`, `scalar`, `vector`, `tensor`, `array`, `material` or `species`.
+
+Here is an example of specifying the expressions.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 12-14
+
+avtGhostZones
+~~~~~~~~~~~~~
+
+The ghost zones specify a flag indicating if the zone is a ghost zone or a real zone.
+A one indicates a ghost zone.
+A zero indicates a real zone.
+
+Here is an example of specifying ghost zones.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 31-35
+
 .. _data_into_visit_vtk_example:
 
 An example VTK file
@@ -492,14 +466,49 @@ The following lines represent one scalar field defined on the cells.
 .. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: 13-16
 
-The information tells us that there are 2 values for the cell data, that it is a scalar, that the name of the variable is `var1`, that it should be read in as float values, that we should use the default lookup table, and that the values consist of `1 2`.
+The information tells us that there are 2 values for the cell data, that it is a scalar, that the name of the variable is `density`, that it should be read in as float values, that we should use the default lookup table, and that the values consist of `1 2`.
 
 The following lines represent one scalar field defined at the points.
 
 .. literalinclude:: data_examples/rectilineargrid.vtk
    :lines: 18-21
 
-The information tells us that there are 12 values for the point data, that it is a scalar, that the name of the variable is `var2`, that it should be read in as float values, that we should use the default lookup table, and that the values consist of `1 2 3 1 2 3 1 2 3 1 2 3`.
+The information tells us that there are 12 values for the point data, that it is a scalar, that the name of the variable is `u`, that it should be read in as float values, that we should use the default lookup table, and that the values consist of `1 2 3 1 2 3 1 2 3 1 2 3`.
+
+.. _data_into_visit_vtk_metadata_example:
+
+An example of a VTK file with extra metadata
+--------------------------------------------
+
+A VTK file with extra meta data is shown here.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 1-45
+
+The following lines represent the name of the mesh name associated with this file.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 6-7
+
+The following lines represent cycle associated with this file.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 8-9
+
+The following lines represent the time associated with this file.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 10-11
+
+The following lines represent the expressions associated with this file.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 12-14
+
+The following lines represent the ghost zones associated with this file.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 31-35
 
 .. _data_into_visit_vtk_struct_points:
 
@@ -515,8 +524,8 @@ Here is an example of a VTK file with 3D structured points.
 .. literalinclude:: data_examples/structuredpoints.vtk
  
 This defines a regular mesh consiting of 12 points and 2 cells.
-For the cells, it defines a single scalar variable named `var1`.
-For the points, it defines 2 scalar variables named `var2` and `var3`, a vector variable named `vec1`, and a tensor variable named `ten1`.
+For the cells, it defines a single scalar variable named `density`.
+For the points, it defines 2 scalar variables named `u` and `v`, a vector variable named `velocity`, and a tensor variable named `stress`.
 
 Here is an example of a VTK file with 2D structured points.
 
@@ -541,8 +550,8 @@ Here is an example of a VTK file with a 3D structured grid.
  
 It defines a structured mesh that is the same as the structured point example except that the mesh points are no longer regular.
 This defines a structure mesh consiting of 12 points and 2 cells.
-For the cells, it defines a single scalar variable named `var1`.
-For the points, it defines 2 scalar variables named `var2` and `var3`, a vector variable named `vec1`, and a tensor variable named `ten1`.
+For the cells, it defines a single scalar variable named `density`.
+For the points, it defines 2 scalar variables named `u` and `v`, a vector variable named `velocity`, and a tensor variable named `stress`.
 
 Here is an example of a VTK file with a 2D structured grid.
 

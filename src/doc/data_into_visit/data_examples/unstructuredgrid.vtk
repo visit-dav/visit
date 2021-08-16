@@ -91,6 +91,6 @@ CELL_TYPES 17
 14
 
 CELL_DATA 17
-SCALARS var1 float 1
+SCALARS density float 1
 LOOKUP_TABLE default
 1 1 2 3 3 4 5 5 6 7 8 9 10 11 12 13 14

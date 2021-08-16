@@ -38,14 +38,14 @@ TRIANGLE_STRIPS 1 5
 4 13 14 15 16
 
 CELL_DATA 8
-SCALARS var1 float 1
+SCALARS density float 1
 LOOKUP_TABLE default
 1 2 3 4 5 6 7 8
 
 POINT_DATA 17
-SCALARS var2 float 1
+SCALARS u float 1
 LOOKUP_TABLE default
 0 0 0 0.5 0.5 1 1 1.5 1.5 2 2 2 2 3 3 3 3
-SCALARS var3 float 1
+SCALARS v float 1
 LOOKUP_TABLE default
 0 0 0 0.05 1 0.05 1 0.05 1 0.5 0.5 1 1 0.5 1 0.5 1
