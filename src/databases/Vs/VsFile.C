@@ -5,7 +5,7 @@
  *      Author: mdurant
  */
 
-#include <hdf5.h>
+#include <vshdf5.h>
 #include <visit-hdf5.h>
 
 #include "VsFile.h"

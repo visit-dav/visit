@@ -12,7 +12,7 @@
 #define VSUNSTRUCTUREDMESH_H_
 
 #include "VsMesh.h"
-#include <hdf5.h>
+#include <vshdf5.h>
 #include <string>
 
 class VsGroup;

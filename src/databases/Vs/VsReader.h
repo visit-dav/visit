@@ -12,12 +12,12 @@
  * Copyright &copy; 2008 by Tech-X Corporation
  */
 
-#include <hdf5.h>
+#include <vshdf5.h>
 
 #ifndef VS_READER_H_
 #define VS_READER_H_
 
-#include <hdf5.h>
+#include <vshdf5.h>
 #include <string>
 
 class VsVariable;

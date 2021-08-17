@@ -1,4 +1,4 @@
-#include <hdf5.h>
+#include <vshdf5.h>
 /**
  *
  * @file        VsFilter.cpp
@@ -13,7 +13,7 @@
  */
 
 // vsh5
-#include <hdf5.h>
+#include <vshdf5.h>
 #include <visit-hdf5.h>
 
 #include <VsFilter.h>

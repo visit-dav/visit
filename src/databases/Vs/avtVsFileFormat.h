@@ -21,7 +21,7 @@
 #include <avtSTMDFileFormat.h>
 #include "HighOrderUnstructuredData.h"
 
-#include <hdf5.h>
+#include <vshdf5.h>
 #include <visit-hdf5.h>
 
 #include <string>
