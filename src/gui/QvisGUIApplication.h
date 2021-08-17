@@ -325,6 +325,9 @@ class SplashScreen;
 //    Cyrus Harrison, Tue Aug 13 15:46:52 PDT 2019
 //    Removed updateVisIt related logic.
 //
+//   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+//   Removed support for SeedMe.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -502,7 +505,6 @@ protected slots:
     void showSelectionsWindow();
     void showSelectionsWindow2(const QString &);
     void setupHostProfilesAndConfig();
-    void showSeedMeWindow();
 
 private:
     void DestructorHelper(bool fastExit = false);

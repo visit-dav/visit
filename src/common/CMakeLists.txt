@@ -56,6 +56,9 @@
 #   Kathleen Biagas, Tue Jul 13 14:57:13 PDT 2021
 #   Remove ExpressionList from code-gen target list. It cannot be auto-gen'd.
 #
+#   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+#   Removed support for SeedMe.
+#
 #****************************************************************************
 
 
@@ -153,7 +156,6 @@ set(COMMON_STATE_GEN_OBJECTS
     SaveSubWindowAttributes
     SaveSubWindowsAttributes
     SaveWindowAttributes
-    SeedMeAttributes
     SelectionList
     SelectionProperties
     SelectionSummary
@@ -405,7 +407,6 @@ state/RenderingAttributes.C
 state/SaveWindowAttributes.C
 state/SaveSubWindowAttributes.C
 state/SaveSubWindowsAttributes.C
-state/SeedMeAttributes.C
 state/SelectionList.C
 state/SelectionProperties.C
 state/SelectionSummary.C

@@ -145,7 +145,6 @@ to download those additional libraries.
   wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/numpy-1.14.1.zip
   wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/pyparsing-1.5.2.tar.gz
   wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/requests-2.5.1.tar.gz
-  wget http://portal.nersc.gov/project/visit/releases/3.0.1/third_party/seedme-python-client-v1.2.4.zip
 
 It's possible that the list could change and the above list becomes outdated.
 In this case you can run ``build_visit`` to just build Python and that will

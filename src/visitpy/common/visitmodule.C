@@ -165,8 +165,6 @@
 #include <PyavtDatabaseMetaData.h>
 #include <PyViewerRPC.h>
 
-#include <SeedMeAttributes.h>
-
 // Variant & MapNode Helpers:
 #include <PyVariant.h>
 #include <PyMapNode.h>
@@ -15035,30 +15033,6 @@ DeleteAnnotationObjectHelper(AnnotationObject *annot)
     return transferOwnership;
 }
 
-STATIC PyObject *
-visit_UpdateSeedMeStatus(PyObject *self, PyObject *args)
-{
-    ENSURE_VIEWER_EXISTS();
-
-    const char* col = 0;
-    const char *result = 0;
-    if (!PyArg_ParseTuple(args, "ss", &col, &result))
-    {
-        VisItErrorFunc("UpdateSeedMeStatus: Cannot parse response");
-        return NULL;
-    }
-
-    MUTEX_LOCK();
-    if(atoi(col) > 0)
-        GetViewerState()->GetSeedMeAttributes()->SetCollectionID(atoi(col));
-    GetViewerState()->GetSeedMeAttributes()->SetOperationResult(result);
-    GetViewerState()->GetSeedMeAttributes()->Notify();
-    MUTEX_UNLOCK();
-
-    // Return the success value.
-    return IntReturnValue(Synchronize());
-}
-
 // ****************************************************************************
 // Function: CreateAnnotationWrapper
 //
@@ -18296,7 +18270,6 @@ AddProxyMethods()
     AddMethod("GetNumPlots", visit_GetNumPlots, visit_GetNumPlots_doc);
     AddMethod("Argv", visit_Argv, NULL);
     AddMethod("UpdateMouseActions", visit_UpdateMouseActions, NULL);
-    AddMethod("UpdateSeedMeStatus", visit_UpdateSeedMeStatus, NULL);
 }
 
 // ****************************************************************************

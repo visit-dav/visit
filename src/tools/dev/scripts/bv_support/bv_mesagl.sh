@@ -207,6 +207,68 @@ EOF
         return 1
     fi
 
+    #
+    # Patch to increase the maximum image size in the llvmpipe
+    # driver to 16K x 16K.
+    #
+    patch -p0 << \EOF
+diff -c src/gallium/drivers/llvmpipe/lp_limits.h.orig src/gallium/drivers/llvmpipe/lp_limits.h
+*** src/gallium/drivers/llvmpipe/lp_limits.h.orig       Fri Jul 30 10:03:06 2021
+--- src/gallium/drivers/llvmpipe/lp_limits.h    Fri Jul 30 10:04:41 2021
+***************
+*** 44,50 ****
+   * Max texture sizes
+   */
+  #define LP_MAX_TEXTURE_SIZE (1 * 1024 * 1024 * 1024ULL)  /* 1GB for now */
+! #define LP_MAX_TEXTURE_2D_LEVELS 14  /* 8K x 8K for now */
+  #define LP_MAX_TEXTURE_3D_LEVELS 12  /* 2K x 2K x 2K for now */
+  #define LP_MAX_TEXTURE_CUBE_LEVELS 14  /* 8K x 8K for now */
+  #define LP_MAX_TEXTURE_ARRAY_LAYERS 512 /* 8K x 512 / 8K x 8K x 512 */
+--- 44,50 ----
+   * Max texture sizes
+   */
+  #define LP_MAX_TEXTURE_SIZE (1 * 1024 * 1024 * 1024ULL)  /* 1GB for now */
+! #define LP_MAX_TEXTURE_2D_LEVELS 15  /* 16K x 16K for now */
+  #define LP_MAX_TEXTURE_3D_LEVELS 12  /* 2K x 2K x 2K for now */
+  #define LP_MAX_TEXTURE_CUBE_LEVELS 14  /* 8K x 8K for now */
+  #define LP_MAX_TEXTURE_ARRAY_LAYERS 512 /* 8K x 512 / 8K x 8K x 512 */
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 4 failed."
+        return 1
+    fi
+
+    #
+    # Patch to increase the maximum scene temporary storage in the llvmpipe
+    # driver. This is required for large image sizes.
+    #
+    patch -p0 << \EOF
+diff -c src/gallium/drivers/llvmpipe/lp_scene.h.orig src/gallium/drivers/llvmpipe/lp_scene.h
+*** src/gallium/drivers/llvmpipe/lp_scene.h.orig        Fri Jul 30 12:11:39 2021
+--- src/gallium/drivers/llvmpipe/lp_scene.h     Fri Jul 30 12:11:49 2021
+***************
+*** 60,66 ****
+  
+  /* Scene temporary storage is clamped to this size:
+   */
+! #define LP_SCENE_MAX_SIZE (9*1024*1024)
+  
+  /* The maximum amount of texture storage referenced by a scene is
+   * clamped to this size:
+--- 60,66 ----
+  
+  /* Scene temporary storage is clamped to this size:
+   */
+! #define LP_SCENE_MAX_SIZE (64*1024*1024)
+  
+  /* The maximum amount of texture storage referenced by a scene is
+   * clamped to this size:
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 5 failed."
+        return 1
+    fi
+
     return 0;
 }
 
