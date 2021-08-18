@@ -748,7 +748,7 @@ Tensor Expressions
 Often, using the tensor expression functions described here necessitates a detailed understanding of the actual numerical calculations VisIt_ uses in evaluating the expressions.
 Therefore, in many cases here, we provide collapsible sections that can be expanded to show the actual C++ source code VisIt_ is compiled with to compute a given tensor expression.
 The code displayed in these sections is derived from links to the actual source code files.
-So, the reader can be assured it is a faithful representation of the operations VisIt_ is actually performing.
+So, the reader can be assured it is a faithful representation of the numerical operations VisIt_ is actually performing.
 
 .. _Contraction_Expression_Function:
 
