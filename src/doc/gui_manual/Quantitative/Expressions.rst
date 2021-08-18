@@ -947,7 +947,7 @@ Array Expressions
 
 .. _Array_Compose_Expression_Function:
 
-Array Compose Function: ``array_compose()`` : ``array_compose(expr1, exprN, ..., exprK)``
+Array Compose Function: ``array_compose()`` : ``array_compose(expr1, expr2, ..., exprK)``
     Create a new *array* expression variable which is everywhere the array
     composition of its arguments, which all must be *scalar* type.
     An array mesh variable is useful when using the label plot or when
@@ -967,7 +967,7 @@ Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compos
     This expression combines two related concepts.
     One is the array concept where a group of individual scalar mesh variables are grouped into an array variable.
     The other is a set of *coordinate* values (interpreted as histogram bin boundaries), that will be used by VisIt_ for certain kinds of operations involving the array variable.
-    **Note** that the bin boundaries is specified as a single additional argument to the function as a *list* of values embedded in square brackets.
+    **Note** that the bin boundaries are specified as a single additional argument to the function as a *list* of values embedded in square brackets.
     If there are ``K`` variables in the array, ``expr1, expr2,..., exprK``, there are K+1 coordinate values (or bin boundaries), ``[b0,b1,...,bK+1]``.
     When such a variable is picked using one of VisIt_'s pick operations, VisIt_ can plot a **Histogram** plot.
     Each bar in the **Histogram** plot has a height determined by the associated member of the array and a width determined by the associated bin-boundaries.
