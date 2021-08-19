@@ -1,4 +1,4 @@
-.. _Data_Into_VisIt_VTK
+.. _Data_Into_VisIt_VTK:
 
 The VTK file format
 ===================
