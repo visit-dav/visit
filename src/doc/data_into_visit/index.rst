@@ -8,6 +8,13 @@ Contents:
    :numbered: 
 
    Intro
+   VTKFormat
+   BOVFormat
+   CurveFormat
+   PlainTextFormat
+   SiloFormat
+   XdmfFormat
+   BlueprintFormat
 
 .. Indices and tables
 .. ==================
