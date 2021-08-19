@@ -10,6 +10,7 @@
 <body>
 
 <center><b><font size="6">VisIt 3.3 Release Notes</font></b></center>
+<center><b><font size="4">October, 2021</font></b></center>
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
@@ -25,6 +26,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Configuration_changes">Configuration changes</a></li>
   <li><a href="#Build_features">Changes for build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
@@ -39,7 +41,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Default behavior of Python's <code>help(thing)</code> was adjusted slightly to first present what <code>help(thing)</code> would normally produce but then to also follow it up with output from <code>apropos(thing)</code> when that output is non-empty.<li>
   <li>The French translation was updated thanks to <a href="https://github.com/cessenat">@cessenat</a>. We are still looking for volunteers for translations in other languages. If interested, please <a href="https://visit-dav.github.io/visit-website/support/">contact us</a>.</li>
   <li>A new (beta) <a href="https://en.wikipedia.org/wiki/Names_given_to_the_Spanish_language">Castilian Spanish</a> translation was created thanks to <a href="https://github.com/cessenat">@cessenat</a> using auto-translation from English. It likely still requires review by someone who is fluent in Spanish and we would welcome any volunteers.</li>
+  <li>References to old email lists (@ornl.gov) throughout code and documentation were replaced with references to the help pages of the new website.</li>
   <li>The <code>Pick</code> operator now has the option to include the Euclidean distance between the current and previous <code>Pick</code> in the GUI's output window. To enable this option, check the <code>Distance to previous</code> box. You should then see a new field in the tabular output display titled <code>Distance to previous</code>.</li>
+  <li>Support for <i>SeedMe</i> was removed since the service was retired.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -99,6 +103,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug that prevented users from comparing particular VisIt Python objects in the CLI with non-VisIt types.</li>
 </ul>
 
+<a name="Configuration_changes"></a>
+<p><b><font size="4">Configuration changes in version 3.3</font></b></p>
+<ul>
+  <li>Configuration Change 1</li>
+  <li>Configuration Change 2</li>
+</ul>
+
 <a name="Build_features"></a>
 <p><b><font size="4">Build features added in version 3.3</font></b></p>
 <ul>
@@ -114,6 +125,6 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes3.2.Z.html>3.2.Z</a>.</p>
+of VisIt: <a href=relnotes3.2.3.html>3.2.3</a>.</p>
 </body>
 </html>

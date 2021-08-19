@@ -110,7 +110,7 @@ protected:
 
   int currTimeStep        {0};
 
-  // VisIt meshes (see https://visitbugs.ornl.gov/issues/52)
+  // VisIt meshes (see https://github.com/visit-dav/visit/issues/138)
   std::map<std::string, void_ref_ptr> mesh_domains;
   std::map<std::string, void_ref_ptr> mesh_boundaries;
 

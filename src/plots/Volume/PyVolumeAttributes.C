@@ -1507,6 +1507,7 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
 //
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
+    PyObject *packaged_args = 0;
     unsigned char *cvals = obj->data->GetFreeformOpacity();
     int opacity, index;
     if (PyTuple_Check(args) || PyList_Check(args))
@@ -1518,6 +1519,20 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
             if (opacity < 0 || opacity >= 256)
                 return PyErr_Format(PyExc_ValueError, "second arg (opacity) must be in range [0...255]");
             cvals[index] = (unsigned char)(opacity);
+        }
+        else if (PySequence_Size(args) == 1)
+        {
+            packaged_args = PySequence_GetItem(args, 0);
+            if (PyTuple_Check(packaged_args) || PyList_Check(packaged_args))
+            {
+                if (PySequence_Size(packaged_args) != 256)
+                {
+                    Py_XDECREF(packaged_args);
+                    return PyErr_Format(PyExc_TypeError, "when setting whole opacity array, "
+                        "must pass a list or tuple of 256 values");
+                }
+                args = packaged_args;
+            }
         }
         else if (PySequence_Size(args) != 256)
             return PyErr_Format(PyExc_TypeError, "when setting whole opacity array, must pass 256 values");
@@ -1553,6 +1568,8 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
     {
         return NULL;
     }
+
+    Py_XDECREF(packaged_args);
 
     // Mark the freeformOpacity in the object as modified.
     obj->data->SelectFreeformOpacity();

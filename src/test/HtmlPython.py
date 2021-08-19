@@ -59,7 +59,9 @@ class Parser:
         self.out.write('<html><body bgcolor="#e0e0e0"><head><title>%s</title></head><pre><font face="Lucida,Courier New">'%title)
         try:
             if (sys.version_info > (3, 0)):
-                tokenize.generate_tokens(text.readline)
+                tokens = tokenize.generate_tokens(text.readline)
+                for toktype,toktext,tok_start,tok_end,line in tokens:
+                    self.__call__(toktype,toktext,tok_start,tok_end,line)
             else:
                 tokenize.tokenize(text.readline,self)
         except tokenize.TokenError as ex:
