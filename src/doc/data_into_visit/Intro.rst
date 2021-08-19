@@ -57,7 +57,7 @@ Here is a list of recommended library based formats and the mesh types they supp
 | :ref:`Silo <Data_Into_VisIt_Silo>`            | Point, Regular, Rectilinear, Structured, Unstructured, |
 |                                               | Multiblock, Patch based AMR                            |
 +-----------------------------------------------+--------------------------------------------------------+
-| :ref:`XDMF <Data_Into_VisIt_Xdmf>`            | Point, Regular, Rectilinear, Structured, Unstructured, |
+| :ref:`Xdmf <Data_Into_VisIt_Xdmf>`            | Point, Regular, Rectilinear, Structured, Unstructured, |
 |                                               | Multiblock                                             |
 +-----------------------------------------------+--------------------------------------------------------+
 | :ref:`Conduit/Blueprint <Data_Into_VisIt_BP>` | Point, Regular, Rectilinear, Structured, Unstructured, |
