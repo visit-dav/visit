@@ -109,7 +109,6 @@
 #include <QvisRenderingWindow.h>
 #include <QvisSaveMovieWizard.h>
 #include <QvisSaveWindow.h>
-#include <QvisSeedMeWindow.h>
 #include <QvisSelectionsWindow.h>
 #include <QvisSessionFileDatabaseLoader.h>
 #include <QvisSimulationWindow.h>
@@ -204,7 +203,6 @@
 #define WINDOW_MACRO            32
 #define WINDOW_SELECTIONS       33
 #define WINDOW_SETUP_CFG        34
-#define WINDOW_SEEDME           35
 
 #define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
 #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
@@ -631,6 +629,9 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
 //   Kathleen Biagas, Fri Apr 12 15:04:39 PDT 2019
 //   Initialize orientation (used same init value as AppearanceAtts).
 //
+//   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+//   Removed support for SeedMe.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *proxy) :
@@ -851,7 +852,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     windowNames += tr("Macros");
     windowNames += tr("Selections");
     windowNames += tr("Setup Host Profiles and Configuration");
-    windowNames += tr("SeedMe");
 
     // If the geometry was not passed on the command line then the
     // savedGUIGeometry flag will still be set to false. If we
@@ -3240,6 +3240,9 @@ QvisGUIApplication::CreateMainWindow()
 //   Renamed signal/slot connection to make Mac configuration window a general
 //   configuration setup window.
 //
+//   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+//   Removed support for SeedMe.
+//
 // ****************************************************************************
 
 void
@@ -3373,8 +3376,7 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showSelectionsWindow2(const QString &)));
      connect(mainWin, SIGNAL(activateSetupHostProfilesAndConfig()),
              this, SLOT(setupHostProfilesAndConfig()));
-     connect(mainWin, SIGNAL(activateSeedMeWindow()),
-             this, SLOT(showSeedMeWindow()));}
+}
 
 // ****************************************************************************
 // Method: QvisGUIApplication::WindowFactory
@@ -3452,6 +3454,9 @@ QvisGUIApplication::SetupWindows()
 //
 //   Kathleen Biagas, Fri Aug 31 14:13:17 PDT 2018
 //   Connect Save Window with DBPluginInfoAtts.
+//
+//   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+//   Removed support for SeedMe.
 //
 // ****************************************************************************
 
@@ -3718,15 +3723,6 @@ QvisGUIApplication::WindowFactory(int i)
     case WINDOW_SETUP_CFG:
         {
             win = new QvisSetupHostProfilesAndConfigWindow(windowNames[i]);
-        }
-        break;
-    case WINDOW_SEEDME:
-        {
-            win = new QvisSeedMeWindow(GetViewerState()->GetSeedMeAttributes(),
-                                       windowNames[i], windowNames[i],
-                                       mainWin->GetNotepad());
-            connect(win, SIGNAL(runCommand(const QString &)),
-                    this, SLOT(Interpret(const QString &)));
         }
         break;
     }
@@ -9330,4 +9326,3 @@ QvisGUIApplication::showSelectionsWindow2(const QString &selName)
     selWindow->highlightSelection(selName);
 }
 void QvisGUIApplication::setupHostProfilesAndConfig() { GetInitializedWindowPointer(WINDOW_SETUP_CFG)->show(); }
-void QvisGUIApplication::showSeedMeWindow() { GetInitializedWindowPointer(WINDOW_SEEDME)->show(); }

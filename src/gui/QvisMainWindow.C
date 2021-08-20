@@ -344,6 +344,9 @@
 //    Dirk Schubert (Allinea Software), Fri 12 Oct, 2012
 //    Add 'connect to DDT' action optionally (HAVE_DDT)
 //
+//   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+//   Removed support for SeedMe.
+//
 // ****************************************************************************
 #include <InstallationFunctions.h>
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -460,8 +463,6 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->addAction(tr("File &information . . ."),
                          this, SIGNAL(activateFileInformationWindow()),
                          QKeySequence(Qt::CTRL + Qt::Key_I));
-    filePopup->addAction(tr("SeedMe . . ."),
-                         this, SIGNAL(activateSeedMeWindow()));
 
     filePopup->addSeparator();
 

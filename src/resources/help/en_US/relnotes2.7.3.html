@@ -30,10 +30,10 @@ list of changes in release 2.7.</p>
 
 <p><b><font size="4">Bugs fixed in version 2.7.3</font></b></p>
 <ul>
-<li>Fixed a bug with ray-casted volume plots where it wouldn't correctly parse a compound variable (eg <i>"earth/water/temperature"</i>) when in log-scale mode (<a href="https://visitbugs.ornl.gov/issues/1778">ticket #1778</a>).</li>
-<li>Fixed a bug with command recording for Time picks that resulted in an empty 'time_options' argument (<a href="https://visitbugs.ornl.gov/issues/1778">ticket #1780</a>).</li>
-<li>Fixed a failure with Pick and Query from the CLI with a single non-default variable specified in 'vars' argument (<a href="https://visitbugs.ornl.gov/issues/1778">ticket #1784</a>).</li>
-<li>Fixed a bug that could crash the engine or deliver bad results when Index Select operator applied to a Contour plot (<a href="https://visitbugs.ornl.gov/issues/1462">ticket #1462</a>).</li>
+<li>Fixed a bug with ray-casted volume plots where it wouldn't correctly parse a compound variable (eg <i>"earth/water/temperature"</i>) when in log-scale mode (<a href="https://github.com/visit-dav/visit/issues/1784">ticket #1784</a>).</li>
+<li>Fixed a bug with command recording for Time picks that resulted in an empty 'time_options' argument (<a href="https://github.com/visit-dav/visit/issues/1786">ticket #1786</a>).</li>
+<li>Fixed a failure with Pick and Query from the CLI with a single non-default variable specified in 'vars' argument (<a href="https://github.com/visit-dav/visit/issues/1790">ticket #1790</a>).</li>
+<li>Fixed a bug that could crash the engine or deliver bad results when Index Select operator applied to a Contour plot (<a href="https://github.com/visit-dav/visit/issues/1469">ticket #1469</a>).</li>
 <li>Fixed host-profile creation on Windows to include full 'host.domain' as host Alias.</li>
 <li>Fixed a bug in the Chombo reader that prevented the AMRStitchCell operator to work on 2D datasets. Corrected an error message in AMRStitchCell operator.</li>
 <li>Fixed a bug in saving multiple lineout curves.</li>
