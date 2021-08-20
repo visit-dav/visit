@@ -28,6 +28,7 @@ The remainder of this VTK documentation consistes of a description of the file f
 * For an example rectilinear grid file go :ref:`here<data_into_visit_vtk_rect_grid>`.
 * For an example polydata file go :ref:`here<data_into_visit_vtk_polydata>`.
 * For an example unstructured grid file go :ref:`here<data_into_visit_vtk_unstruct_grid>`.
+* The official VTK file format descriptions can be found `here <https://kitware.github.io/vtk-examples/site/VTKFileFormats/>`_.
 
 .. _data_into_visit_vtk_structure:
 
