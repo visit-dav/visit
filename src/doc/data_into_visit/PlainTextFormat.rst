@@ -4,9 +4,9 @@ The PlainText file format
 =========================
 
 Plain text files are text files with tables of data.
-These are standard CSV (Comma Seperated Values) files.
+These are standard CSV (Comma Separated Values) files.
 The file can start with an arbitrary number of lines that may be skipped.
-The files can be used to represent the following types of data.
+The files can be used to represent the following types of data:
 
 * A collection of curves, all defined on the same domain.
 * Points in 2D or 3D with variables defined on the points.
