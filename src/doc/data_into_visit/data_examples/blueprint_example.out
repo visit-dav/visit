@@ -1,0 +1,27 @@
+coordsets: 
+  coords: 
+    type: "uniform"
+    dims: 
+      i: 3
+      j: 3
+    origin: 
+      x: -10.0
+      y: -10.0
+    spacing: 
+      dx: 10.0
+      dy: 10.0
+topologies: 
+  topo: 
+    type: "uniform"
+    coordset: "coords"
+fields: 
+  ele_example: 
+    association: "element"
+    topology: "topo"
+    values: [1.0, 2.0, 3.0, 4.0]
+  vert_example: 
+    association: "vertex"
+    topology: "topo"
+    values: [1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0]
+
+PyRelay_io_blueprint_write_mesh
