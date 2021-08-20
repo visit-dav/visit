@@ -1,6 +1,6 @@
 .. _Data_Into_VisIt_Curve:
 
-the Curve file format
+The Curve file format
 =====================
 
 A curve file is a text file for specifying 1D curves.
