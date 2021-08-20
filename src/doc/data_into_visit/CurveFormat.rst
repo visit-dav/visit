@@ -3,8 +3,13 @@
 the Curve file format
 =====================
 
-The curve file is a text file for specifying 1D curves.
-It consists of a curve name that is on a line starting with a `#` followed by the X-Y coordinates of the curve, one point per line.
+A curve file is a text file for specifying 1D curves.
+It consists of one or more comment lines with meta data about the curve followed by the coordinates.
+The comment lines start with either a `#` or `%` character.
+Comment lines consist of keyword / value pairs.
+Supported keywords are `CYCLE` and `TIME`.
+The last comment line contains the name of the curve.
+The points consists of the X-Y coordinates for each point, one per line.
 The X coordinates must be monotonically increasing.
 A curve file may contain multiple curves per file.
 
