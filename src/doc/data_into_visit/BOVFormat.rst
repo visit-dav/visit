@@ -6,9 +6,6 @@ The BOV file format
 The BOV (Brick Of Values) format is a binary format used to represent a single variable defined on a regular mesh.
 The BOV file consists of two files, a small text file describing a file with the binary data.
 
-* For a description of a BOV file go :ref:`here<data_into_visit_bov_structure>`.
-* For an example BOV file go :ref:`here<data_into_visit_bov_example>`.
-
 .. _data_into_visit_bov_structure:
 
 The structure of a BOV file

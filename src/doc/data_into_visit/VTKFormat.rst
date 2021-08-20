@@ -19,16 +19,7 @@ We are going to focus on the legacy files, since they are a little bit simpler.
 
 The remainder of this VTK documentation consistes of a description of the file format, a simple example, and then more complex examples of the different mesh types.
 
-* For a description of a VTK file go :ref:`here<data_into_visit_vtk_structure>`.
-* For a description of the VisIt_ VTK meta data conventions go :ref:`here<data_into_visit_vtk_conventions>`.
-* For an example VTK file go :ref:`here<data_into_visit_vtk_example>`.
-* For an example of a VTK file with extra metadata go :ref:`here<data_into_visit_vtk_metadata_example>`.
-* For an example structured points file go :ref:`here<data_into_visit_vtk_struct_points>`.
-* For an example structured grid file go :ref:`here<data_into_visit_vtk_struct_grid>`.
-* For an example rectilinear grid file go :ref:`here<data_into_visit_vtk_rect_grid>`.
-* For an example polydata file go :ref:`here<data_into_visit_vtk_polydata>`.
-* For an example unstructured grid file go :ref:`here<data_into_visit_vtk_unstruct_grid>`.
-* The official VTK file format descriptions can be found `here <https://kitware.github.io/vtk-examples/site/VTKFileFormats/>`_.
+The official VTK file format descriptions can be found `here <https://kitware.github.io/vtk-examples/site/VTKFileFormats/>`_.
 
 .. _data_into_visit_vtk_structure:
 
