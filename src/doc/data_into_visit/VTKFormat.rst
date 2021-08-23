@@ -295,6 +295,18 @@ VisIt_ supports a number of conventions for storing additional data. This data i
 
 The Following meta data is stored as DATASET FIELD data.
 
+MeshCoordType
+~~~~~~~~~~~~~
+
+This specifies if the mesh coordinates are 2D cylindrical coordinates.
+If the value is a `1`, it is an R-Z mesh.
+If the value is a `2`, it is a Z-R mesh.
+
+Here is an example of specifyint the mesh coordinate type.
+
+.. literalinclude:: data_examples/extra_metadata.vtk
+   :lines: 6-7
+
 MeshName
 ~~~~~~~~
 
@@ -303,7 +315,7 @@ The mesh name is represented as a string.
 Here is an example of specifying the mesh name.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 6-7
+   :lines: 8-9
 
 CYCLE
 ~~~~~
@@ -313,7 +325,7 @@ The cycle is specified as a single integer value.
 Here is an example of specifying the cycle.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 8-9
+   :lines: 10-11
 
 TIME
 ~~~~
@@ -323,7 +335,7 @@ The time is specified as a single double precision value.
 Here is an example of specifying the time.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 10-11
+   :lines: 12-13
 
 VisItExpressions
 ~~~~~~~~~~~~~~~~
@@ -336,7 +348,7 @@ The expression type consists of one of `curve`, `scalar`, `vector`, `tensor`, `a
 Here is an example of specifying the expressions.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 12-14
+   :lines: 14-16
 
 avtGhostZones
 ~~~~~~~~~~~~~
@@ -349,7 +361,7 @@ The ghost zone meta data is stored as CELL_DATA FIELD data.
 Here is an example of specifying ghost zones.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
-   :lines: 31-35
+   :lines: 33-37
 
 .. _data_into_visit_vtk_example:
 
