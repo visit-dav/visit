@@ -249,8 +249,8 @@ The vector field section has the following structure. ::
     VECTORS fieldName dataType
     v11 v12 v13
     v21 v22 v23
-        ...
-    vN1 vN2 vN3
+    ...
+    vn1 vn2 vn3
 
 The vector field section starts with a single line with the keyword `VECTORS` followed by the name of the field followed by the data type.
 Next come the vector values.
@@ -269,10 +269,10 @@ The tensor field section has the following structure. ::
     t211 t212 t213
     t221 t222 t223
     t231 t232 t233
-        ...
-    tN11 tN12 tN13
-    tN21 tN22 tN23
-    tN31 tN32 tN33
+    ...
+    tn11 tn12 tn13
+    tn21 tn22 tn23
+    tn31 tn32 tn33
 
 The tensor field section starts with a single line with the keyword `TENSORS` followed by the name of the field followed by the data type.
 Next come the tensor values.
@@ -285,6 +285,24 @@ Point data
 The point data section starts with a single line with the keyword `POINT_DATA` followed by the number of points.
 The number of points must match the number of points defined by the topology.
 The rest of the point data section is the same as the cell data section.
+
+Field data
+~~~~~~~~~~
+
+Field data is an array of data arrays that can be associated with a `DATASET`, `CELL_DATA` or `POINT_DATA`.
+
+Field data has the following general format. ::
+
+    FIELD FieldData numberOfFields
+    FieldName numberOfComponent numberOfTuples dataType
+    t11 t12 ... t1cn
+    t21 t22 ... t2cn
+    ...
+    tn1 tn2 ... tncn
+
+The field data section begines with a single line that starts with the keywords `FIELD` and `FieldData` followed by the number of fields.
+Next come the fields.
+Each field starts with a single line with the field name, the number of components, the number of tuples and the data type.
 
 .. _data_into_visit_vtk_conventions:
 
