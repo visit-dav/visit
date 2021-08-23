@@ -293,7 +293,7 @@ VisIt_ meta data conventions for VTK files
 
 VisIt_ supports a number of conventions for storing additional data. This data is stored as FIELD data as additional information in the DATASET, CELL_DATA or POINT_DATA.
 
-The Following meta data is stored as FIELD data.
+The Following meta data is stored as DATASET FIELD data.
 
 MeshName
 ~~~~~~~~
@@ -344,6 +344,7 @@ avtGhostZones
 The ghost zones specify a flag indicating if the zone is a ghost zone or a real zone.
 A one indicates a ghost zone.
 A zero indicates a real zone.
+The ghost zone meta data is stored as CELL_DATA FIELD data.
 
 Here is an example of specifying ghost zones.
 
@@ -411,7 +412,7 @@ A VTK file with extra meta data is shown here.
 .. literalinclude:: data_examples/extra_metadata.vtk
    :lines: 1-45
 
-The following lines represent the name of the mesh name associated with this file.
+The following lines represent the mesh name associated with this file.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
    :lines: 6-7
@@ -475,7 +476,7 @@ Here is an example of a VTK file with a 3D structured grid.
 .. literalinclude:: data_examples/structuredgrid.vtk
  
 It defines a structured mesh that is the same as the structured point example except that the mesh points are no longer regular.
-This defines a structure mesh consiting of 12 points and 2 cells.
+This defines a structured mesh consiting of 12 points and 2 cells.
 For the cells, it defines a single scalar variable named `density`.
 For the points, it defines 2 scalar variables named `u` and `v`, a vector variable named `velocity`, and a tensor variable named `stress`.
 
@@ -529,7 +530,7 @@ An example of a unstructured grid file
 --------------------------------------
 
 An unstructured grid file results in an arbitrary combination of cell types.
-The points are explicitely specified.
+The points are explicitly specified.
 The mesh can be 2D or 3D.
 It is defined by specifying `UNSTRUCTURED_GRID` as the `DATASET` type in the mesh structure portion of the file.
 

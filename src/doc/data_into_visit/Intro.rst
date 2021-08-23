@@ -10,7 +10,7 @@ VisIt_ comes with over 100 database readers.
 If you are using an existing format that we support, then it is just matter of opening the file.
 VisIt_ uses file extensions to determine the type of reader to use. If your files don't have the correct extension you can force VisIt_ to use a specific reader.
 If you don't already have an existing file format or VisIt_ doesn't support your format, there are two routes you can take.
-One, is to use one of the existing formats and the other is to write your own database reader.
+One is to use one of the existing formats and the other is to write your own database reader.
 
 The database readers can be categorized into the following groups:
 
@@ -19,7 +19,7 @@ The database readers can be categorized into the following groups:
 * Library based formats
 * Specialized formats
 
-The simple formats are characterized by the fact that they can easily be written by a programs using text or binary based write statements.
+The simple formats are characterized by the fact that they can easily be written by a program using text or binary based write statements.
 The advantage is primarily that they are simple and that code can easily be added to a simulation to output the files without any external dependencies.
 Typically they support a single type of mesh, although not necessarily.
 Typically simple text formats must be read completely, even when only a portion of the data in the file may be necessary to perform the desired operation.
@@ -32,7 +32,7 @@ Reading only a portion of the file can provide a significant performance improve
 The disadvantage is that it requires an external library, which adds build complexity to the simulation.
 It also requires learning the API for the library, which also may be complex.
 
-The specialized formats are typically asosociated with a specific simulation code.
+The specialized formats are typically associated with a specific simulation code.
 In this case, the simulation code probably already has an output file that is part of some workflow and they don't want to write out another file format, possible writing out duplicate data.
 
 Below is a list of recommended simple file formats and the mesh types they support.

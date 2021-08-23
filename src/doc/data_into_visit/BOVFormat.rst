@@ -132,7 +132,7 @@ A flag indicating if the array should be divided into chunks that can be process
 Valid values are `TRUE` and `FALSE`.
 When DIVIDE_BRICK is true, the values stored in DATA_BRICKLETS specifies the size of the chunks.
 
-Here is an example of specifying the size of your grid. ::
+Here is an example of specifying divide brick. ::
 
     DIVIDE_BRICK: TRUE
 
