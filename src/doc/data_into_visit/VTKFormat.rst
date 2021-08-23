@@ -302,7 +302,7 @@ This specifies if the mesh coordinates are 2D cylindrical coordinates.
 If the value is a `1`, it is an R-Z mesh.
 If the value is a `2`, it is a Z-R mesh.
 
-Here is an example of specifyint the mesh coordinate type.
+Here is an example of specifying the mesh coordinate type.
 
 .. literalinclude:: data_examples/extra_metadata.vtk
    :lines: 6-7

@@ -9,8 +9,10 @@ The comment lines start with either a `#` or `%` character.
 Comment lines consist of keyword / value pairs.
 Supported keywords are `CYCLE` and `TIME`.
 The last comment line contains the name of the curve.
-The points consists of the X-Y coordinates for each point, one per line.
-The X coordinates must be monotonically increasing.
+The coordinates are provided one point per line.
+Both Cartesian and Polar coordinates are supported.
+Cartesion coordinates are assumed by default.
+This can be overriden with options to the Curve plot.
 A curve file may contain multiple curves per file.
 
 Here is a sample curve file.
