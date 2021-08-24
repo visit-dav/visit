@@ -14,7 +14,9 @@
 #include <void_ref_ptr.h>
 
 #include <ExpressionList.h>
+#include <avtTypes.h>
 
+class avtDatabaseMetaData;
 class vtkDataArray;
 class vtkDataSet;
 class vtkRectilinearGrid;
@@ -34,11 +36,11 @@ class DBOptionsAttributes;
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
-//    vtkScalars and vtkVectors have been deprecated in VTK 4.0, 
+//    vtkScalars and vtkVectors have been deprecated in VTK 4.0,
 //    use vtkDataArray instead.
 //
-//    Kathleen Bonnell, Thu Mar 11 12:53:12 PST 2004 
-//    Added ConvertStructuredPointsToRGrid. 
+//    Kathleen Bonnell, Thu Mar 11 12:53:12 PST 2004
+//    Added ConvertStructuredPointsToRGrid.
 //
 //    Hank Childs, Tue May 24 12:06:52 PDT 2005
 //    Added argument to constructor for DB options.
@@ -49,8 +51,8 @@ class DBOptionsAttributes;
 //    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
 //    Added GetAuxiliaryData to support materials
 //
-//    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
-//    Added 'extension' to store file extension. 
+//    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005
+//    Added 'extension' to store file extension.
 //
 //    Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006
 //    Added GetTime method.
@@ -87,6 +89,12 @@ class DBOptionsAttributes;
 //
 //    Mark C. Miller, Mon Mar  9 19:52:43 PDT 2020
 //    Add vtk_exprs to support expressions from VTK files.
+//
+//    Kathleen Biagas, Fri Aug 13, 2021
+//    Add virtual tag to PopulateDatabaseMetaData, FreeUpResources and
+//    ReadInFile so that avtPVDReader could override them.  Change pieceNames
+//    type to vector<string>.
+//
 // ****************************************************************************
 
 class avtVTKFileReader
@@ -103,11 +111,11 @@ class avtVTKFileReader
     void         *GetAuxiliaryData(const char *var, int,
                                    const char *type, void *, DestructorFunction &df);
 
-    void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+     virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
     bool          IsEmpty();
 
-    void          FreeUpResources(void);
+    virtual void   FreeUpResources(void);
 
     double        GetTime(void);
     int           GetCycle(void);
@@ -129,7 +137,7 @@ class avtVTKFileReader
     std::vector<std::string> blockNames;
     std::vector<int>         groupIds;
 
-    char                **pieceFileNames;
+    std::vector<std::string> pieceFileNames;
     vtkDataSet          **pieceDatasets;
     int                 **pieceExtents;
 
@@ -148,7 +156,7 @@ class avtVTKFileReader
 
     std::map<std::string, vtkRectilinearGrid *> vtkCurves;
 
-    void                  ReadInFile(int _domain=-1);
+    virtual void          ReadInFile(int _domain=-1);
     void                  ReadInDataset(int domain);
     vtkDataSet           *ConvertStructuredPointsToRGrid(vtkStructuredPoints *,
                                                          int *);
