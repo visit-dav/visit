@@ -30,4 +30,4 @@ Here is the output.
 
 .. literalinclude:: data_examples/blueprint_example.out
 
-The complete documentation for Blueprint can be found  `here <https:llnl-conduit.readthedocs.io/en/latest/blueprint.html>`_.
+The complete documentation for Blueprint can be found  `here <https://llnl-conduit.readthedocs.io/en/latest/blueprint.html>`_.
