@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ***************************************************************************
 //  avtPVDFileReader.C
-// ************************************************************************* //
+// ***************************************************************************
 
 #include <avtPVDFileReader.h>
 #include <VTMParser.h>
@@ -23,6 +23,7 @@
 
 #include <set>
 
+using std::array;
 using std::map;
 using std::set;
 using std::string;
@@ -44,7 +45,7 @@ using std::vector;
 // ****************************************************************************
 
 avtPVDFileReader::avtPVDFileReader(const char *fname,
-    const DBOptionsAttributes *opt) : pvdFile(fname), avtVTKFileReader(fname, opt)
+    const DBOptionsAttributes *opt) : avtVTKFileReader(fname, opt), pvdFile(fname)
 {
     currentTS = -1;
 }
@@ -153,7 +154,6 @@ avtPVDFileReader::ReadInFile(int _domain)
             EXCEPTION2(InvalidFilesException, pvdFile, errorMessage);
         }
 
-        int n = collectionNode->GetNumberOfNestedElements();
         // to keep track of unique time states and parts
         std::set<int> parts;
         std::set<double> stimes;
@@ -247,11 +247,30 @@ avtPVDFileReader::ReadInFile(int _domain)
                     xmlpReader->SetFileName(datafile.c_str());
                     xmlpReader->ReadXMLInformation();
                     string pieceFileName;
+                    bool processExtents = true;
                     // STILL NEED TO READ AND STORE PIECE EXTENTS
                     for (int i = 0; i < xmlpReader->GetNumberOfPieces(); ++i)
                     {
                         pieceFileName  = xmlpReader->GetPieceFileName(i);
                         dataFileNames.push_back(pieceFileName);
+                        if(processExtents)
+                        {
+                            int *pe = xmlpReader->GetExtent(i);
+                            if(pe == NULL)
+                            {
+                                processExtents = false;
+                                allPieceExtents.clear();
+                            }
+                            else
+                            {
+                                array<int,6> ext={pe[0], pe[1], pe[2], pe[3], pe[4], pe[5]};
+                                allPieceExtents.push_back(ext);
+                                if (processTimes)
+                                {
+                                    timePieceMap[t].push_back(ext);
+                                }
+                            }
+                        }
                         // keep track of this block's time and partId
                         if (processTimes)
                         {
@@ -306,9 +325,15 @@ avtPVDFileReader::ReadInFile(int _domain)
         blockPieceName = "block";
 
         if (times.empty())
+        {
             pieceFileNames = dataFileNames;
+            pieceExtents = allPieceExtents;
+        }
         else
+        {
             pieceFileNames = timeBlockMap[times[0]];
+            pieceExtents = timePieceMap[times[0]];
+        }
 
         pieceDatasets = new vtkDataSet*[nblocks];
         for (int i = 0; i < nblocks; ++i)
@@ -428,7 +453,7 @@ avtPVDFileReader::GetNBlocks(int ts)
 void
 avtPVDFileReader::ActivateTimestep(int ts)
 {
-    if (!readInDataset || (!times.empty() && (ts < 0 || ts >= times.size())))
+    if (!readInDataset || (!times.empty() && (ts < 0 || ts >= int(times.size()))))
         return;
 
     if (currentTS != ts)
@@ -452,5 +477,12 @@ avtPVDFileReader::ActivateTimestep(int ts)
         {
             pieceDatasets[i] = NULL;
         }
+    }
+    if (pieceExtents.empty())
+    {
+        if (times.empty())
+            pieceExtents = allPieceExtents;
+        else
+            pieceExtents = timePieceMap[times[ts]];
     }
 }

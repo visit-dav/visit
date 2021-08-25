@@ -53,6 +53,7 @@
   #define strcasecmp stricmp
 #endif
 
+using std::array;
 using std::string;
 using std::vector;
 
@@ -113,6 +114,7 @@ double avtVTKFileReader::INVALID_TIME = -DBL_MAX;
 //
 //    Kathleen Biagas, Fri Aug 13 2021
 //    pieceFileNames now a vector<string>.
+//    pieceExtents now vector<array<int,6>>.
 //
 // ****************************************************************************
 
@@ -124,7 +126,6 @@ avtVTKFileReader::avtVTKFileReader(const char *fname, const DBOptionsAttributes 
 
     nblocks = 1;
     pieceDatasets = NULL;
-    pieceExtents = NULL;
 
     readInDataset = false;
     matvarname = NULL;
@@ -181,6 +182,7 @@ avtVTKFileReader::avtVTKFileReader(const char *fname, const DBOptionsAttributes 
 //
 //    Kathleen Biagas, Fri Aug 13 2021
 //    pieceFileNames now a vector<string>.
+//    pieceExtents now vector<array<int,6>>.
 //
 // ****************************************************************************
 void
@@ -204,16 +206,7 @@ avtVTKFileReader::FreeUpResources(void)
         delete [] pieceDatasets;
         pieceDatasets = 0;
     }
-    if (pieceExtents != NULL)
-    {
-        for (int i = 0; i < nblocks; i++)
-        {
-            if (pieceExtents[i] != NULL)
-                delete [] pieceExtents[i];
-        }
-        delete [] pieceExtents;
-        pieceExtents = 0;
-    }
+    pieceExtents.clear();
     for(std::map<string, vtkRectilinearGrid *>::iterator pos = vtkCurves.begin();
         pos != vtkCurves.end(); ++pos)
     {
@@ -304,6 +297,7 @@ avtVTKFileReader::GetNumberOfDomains()
 //
 //    Kathleen Biagas, Fri Aug 13 2021
 //    pieceFileNames now a vector<string>. Combine 2 for-blocks into 1.
+//    pieceExtents now vector<array<int,6>>.
 //
 // ****************************************************************************
 
@@ -323,23 +317,16 @@ avtVTKFileReader::ReadInFile(int _domain)
         ngroups = 1;
         nblocks = xmlpReader->GetNumberOfPieces();
         pieceFileNames.resize(nblocks);
-        pieceExtents = new int*[nblocks];
+        pieceExtents.resize(nblocks);
         for (int i = 0; i < nblocks; i++)
         {
             pieceFileNames[i] = xmlpReader->GetPieceFileName(i);
 
-            int *readerExtent = xmlpReader->GetExtent(i);
-            if (readerExtent == NULL)
+            int *ext = xmlpReader->GetExtent(i);
+            if (ext != NULL)
             {
-                pieceExtents[i] = NULL;
-            }
-            else
-            {
-                pieceExtents[i] = new int[6];
-                int *ext = pieceExtents[i];
-                ext[0] = readerExtent[0]; ext[1] = readerExtent[1];
-                ext[2] = readerExtent[2]; ext[3] = readerExtent[3];
-                ext[4] = readerExtent[4]; ext[5] = readerExtent[5];
+                array<int, 6> pe = {ext[0], ext[1], ext[2], ext[3], ext[4], ext[5]};
+                pieceExtents[i] = pe;
             }
         }
 
@@ -368,15 +355,13 @@ avtVTKFileReader::ReadInFile(int _domain)
 
         if (parser->HasExtents())
         {
-            pieceExtents = new int*[nblocks];
+            pieceExtents.resize(nblocks);
             for (int i = 0; i < nblocks; i++)
             {
                 vector< int >  &readerExtent = parser->GetPieceExtent(i);
-                pieceExtents[i] = new int[6];
-                int *ext = pieceExtents[i];
-                ext[0] = readerExtent[0]; ext[1] = readerExtent[1];
-                ext[2] = readerExtent[2]; ext[3] = readerExtent[3];
-                ext[4] = readerExtent[4]; ext[5] = readerExtent[5];
+                array<int,6> pe;
+                std::copy_n(readerExtent.begin(), 6, pe.begin());
+                pieceExtents[i] = pe;
             }
         }
 
@@ -429,13 +414,6 @@ avtVTKFileReader::ReadInFile(int _domain)
     pieceDatasets = new vtkDataSet*[nblocks];
     for (int i = 0; i < nblocks; i++)
         pieceDatasets[i] = NULL;
-
-    if (pieceExtents == NULL)
-    {
-        pieceExtents = new int*[nblocks];
-        for (int i = 0; i < nblocks; i++)
-            pieceExtents[i] = NULL;
-    }
 
     ReadInDataset(domain);
 
@@ -517,15 +495,21 @@ avtVTKFileReader::ReadInFile(int _domain)
 //    Add logic to support VisIt expressions as vtkStringArrays
 //
 //    Kathleen Biagas, Fri Aug 13 2021
-//    pieceFileNames now a vector<string>. Change debug message to correctly
-//    identify actual file being read in.
+//    Change debug message to correctly identify actual file being read in.
+//    pieceFileNames now a vector<string>.
+//    pieceExtents now vector<array<int,6>>.
 //
 // ****************************************************************************
 
 void
 avtVTKFileReader::ReadInDataset(int domain)
 {
-    debug4 << "Reading in dataset from VTK file " << pieceFileNames[domain] << endl;
+    debug4 << "Reading in dataset from VTK file "; 
+    if (!pieceFileNames.empty())
+        debug4 << pieceFileNames[domain];
+    else
+        debug4 << filename;
+    debug4 << " (domain = " << domain << ") " << endl;
 
     //
     // This shouldn't ever happen (since we would already have the dataset
@@ -703,7 +687,7 @@ avtVTKFileReader::ReadInDataset(int domain)
         // The old dataset passed in will be deleted, a new one will be
         // returned.
         //
-        if((pieceExtents == NULL || pieceExtents[domain] == NULL)  &&
+        if((pieceExtents.empty() || pieceExtents[domain].empty())  &&
            dataset->GetDataObjectType() == VTK_IMAGE_DATA)
         {
           vtkImageData *img = vtkImageData::SafeDownCast(dataset);
@@ -717,7 +701,7 @@ avtVTKFileReader::ReadInDataset(int domain)
         else
         {
             dataset = ConvertStructuredPointsToRGrid((vtkStructuredPoints*)dataset,
-                                                     pieceExtents[domain]);
+                                                     pieceExtents[domain].data());
         }
     }
 
@@ -1005,7 +989,12 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
 vtkDataSet *
 avtVTKFileReader::GetMesh(int domain, const char *mesh)
 {
-    debug5 << "Getting mesh from VTK file: " << pieceFileNames[domain] << " (domain = " << domain << ") " << endl;
+    debug5 << "Getting mesh from VTK file: " ;
+    if (!pieceFileNames.empty())
+        debug5 << pieceFileNames[domain];
+    else
+        debug5 << filename;
+    debug5 << " (domain = " << domain << ") " << endl;
 
     if (!readInDataset)
     {
@@ -1097,7 +1086,12 @@ avtVTKFileReader::GetMesh(int domain, const char *mesh)
 vtkDataArray *
 avtVTKFileReader::GetVar(int domain, const char *real_name)
 {
-    debug5 << "Getting var from VTK file " << pieceFileNames[domain] << endl;
+    debug5 << "Getting var from VTK file ";
+    if (!pieceFileNames.empty())
+        debug5 << pieceFileNames[domain];
+    else
+        debug5 << filename;
+    debug5 << " (domain = " << domain << ") " << endl;
 
     if (!readInDataset)
     {

@@ -9,8 +9,10 @@
 #ifndef AVT_VTK_FILE_READER_H
 #define AVT_VTK_FILE_READER_H
 
+#include <array>
 #include <map>
 #include <string>
+#include <vector>
 #include <void_ref_ptr.h>
 
 #include <ExpressionList.h>
@@ -93,7 +95,7 @@ class DBOptionsAttributes;
 //    Kathleen Biagas, Fri Aug 13, 2021
 //    Add virtual tag to PopulateDatabaseMetaData, FreeUpResources and
 //    ReadInFile so that avtPVDReader could override them.  Change pieceNames
-//    type to vector<string>.
+//    type to vector<string>. Change pieceExtents to vectr<array<int, 6>>.
 //
 // ****************************************************************************
 
@@ -139,7 +141,7 @@ class avtVTKFileReader
 
     std::vector<std::string> pieceFileNames;
     vtkDataSet          **pieceDatasets;
-    int                 **pieceExtents;
+    std::vector<std::array<int,6> > pieceExtents;
 
     static const char    *MESHNAME;
     static const char    *VARNAME;

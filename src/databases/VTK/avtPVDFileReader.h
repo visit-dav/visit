@@ -10,6 +10,7 @@
 #define AVT_PVD_FILE_READER_H
 
 #include <avtVTKFileReader.h>
+#include <array>
 #include <map>
 #include <string>
 #include <vector>
@@ -58,6 +59,8 @@ class avtPVDFileReader : public avtVTKFileReader
     std::vector<double>       dataFileTimes;
     std::vector<std::string>  dataFileNames;
     std::map<double, std::vector<std::string> >  timeBlockMap;
+    std::map<double, std::vector<std::array<int,6> > >  timePieceMap;
+    std::vector<std::array<int,6> >  allPieceExtents;
 
     std::vector<double>       times;
 
