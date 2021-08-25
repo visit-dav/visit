@@ -121,8 +121,7 @@ IF("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
     MESSAGE(WARNING "Archiver \"${VISIT_DATA_ARCHIVER_NAME}\" not found, data files cannot be extracted. Try setting VISIT_SEVEN_ZIP_DIR to location of 7-zip package, and VISIT_DATA_ARCHIVER_NAME to correct 7-zip executable name (eg, 7za, p7zip, 7z).")
     #--------------------------------------------------------------------------
     # CMake target to handle make-time requests to build targets that require
-    # 7z archiver yet none was provided. The test "" forces make-time failure
-    # whereas test " " (note the space) silently succeeds.
+    # 7z archiver yet none was provided. The test "" forces make-time failure.
     #--------------------------------------------------------------------------
     ADD_CUSTOM_TARGET(missing-7z-archiver ALL
         COMMAND ${CMAKE_COMMAND} -E echo ""
