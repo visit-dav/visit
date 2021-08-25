@@ -248,7 +248,6 @@ avtPVDFileReader::ReadInFile(int _domain)
                     xmlpReader->ReadXMLInformation();
                     string pieceFileName;
                     bool processExtents = true;
-                    // STILL NEED TO READ AND STORE PIECE EXTENTS
                     for (int i = 0; i < xmlpReader->GetNumberOfPieces(); ++i)
                     {
                         pieceFileName  = xmlpReader->GetPieceFileName(i);
