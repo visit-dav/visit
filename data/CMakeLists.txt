@@ -119,6 +119,15 @@ ENDIF(WIN32)
 #-----------------------------------------------------------------------------
 IF("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
     MESSAGE(WARNING "Archiver \"${VISIT_DATA_ARCHIVER_NAME}\" not found, data files cannot be extracted. Try setting VISIT_SEVEN_ZIP_DIR to location of 7-zip package, and VISIT_DATA_ARCHIVER_NAME to correct 7-zip executable name (eg, 7za, p7zip, 7z).")
+    #--------------------------------------------------------------------------
+    # CMake target to handle make-time requests to build targets that require
+    # 7z archiver yet none was provided. The test "" forces make-time failure.
+    #--------------------------------------------------------------------------
+    ADD_CUSTOM_TARGET(missing-7z-archiver ALL
+        COMMAND ${CMAKE_COMMAND} -E echo ""
+        COMMAND ${CMAKE_COMMAND} -E echo "No 7z archiver"
+        COMMAND ${CMAKE_COMMAND} -E echo ""
+        COMMAND test "")
 ELSE("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
     SET(ARCHIVER_CMD ${ARCHIVER_EXE})
     SET(ARCHIVER_XARGS x -y)                 # Expand archive args
@@ -165,10 +174,14 @@ FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
     SET(DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET})
 ENDFOREACH()
 
+IF(NOT DEFINED ARCHIVER_CMD)
+   set(DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} missing-7z-archiver)
+endif()
+
 #-----------------------------------------------------------------------------
 # Add custom targets: "data" & "testdata"
 #-----------------------------------------------------------------------------
-ADD_CUSTOM_TARGET(data DEPENDS missing-7z-archiver ${DATA_TARGET_DEPENDS})
+ADD_CUSTOM_TARGET(data DEPENDS ${DATA_TARGET_DEPENDS})
 ADD_CUSTOM_TARGET(testdata)
 ADD_DEPENDENCIES(testdata data)
 
@@ -179,21 +192,6 @@ ADD_DEPENDENCIES(testdata data)
 #-----------------------------------------------------------------------------
 SET(ARCHIVE_NAME {ANAME})
 SET(ARCHIVE_FILES {AFILES})
-
-#-----------------------------------------------------------------------------
-# CMake target to handle make-time requests to build targets that require
-# 7z archiver yet none was provided. The test "" forces make-time failure
-# whereas test " " (note the space) silently succeeds.
-#-----------------------------------------------------------------------------
-IF(NOT DEFINED ARCHIVER_CMD)
-    ADD_CUSTOM_TARGET(missing-7z-archiver ALL
-        COMMAND ${CMAKE_COMMAND} -E echo ""
-        COMMAND ${CMAKE_COMMAND} -E echo "No 7z archiver"
-        COMMAND ${CMAKE_COMMAND} -E echo ""
-        COMMAND test "")
-ELSE(NOT DEFINED ARCHIVER_CMD)
-    ADD_CUSTOM_TARGET(missing-7z-archiver COMMAND test " ")
-ENDIF(NOT DEFINED ARCHIVER_CMD)
 
 #-----------------------------------------------------------------------------
 # Define convenience command/target to create an archive
