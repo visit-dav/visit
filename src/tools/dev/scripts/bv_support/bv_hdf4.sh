@@ -1340,6 +1340,7 @@ function build_hdf4
     cd $HDF4_BUILD_DIR || error "Can't cd to hdf4 build dir."
     info "Invoking command to configure HDF4"
     MAKEOPS=""
+    set -x
     if [[ "$OPSYS" == "Darwin" || "$OPSYS" == "AIX" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
         # In order to ensure $FORTRANARGS is expanded to build the arguments to
@@ -1379,6 +1380,7 @@ function build_hdf4
             return 1
         fi
     fi
+    set +x
 
     #
     # Build HDF4

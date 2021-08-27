@@ -630,16 +630,13 @@ function build_hdf5
         # In order to ensure $cf_fortranargs is expanded to build the arguments to
         # configure, we wrap the invokation in 'sh -c "..."' syntax
         info "Invoking command to configure $bt HDF5"
-        info "../configure CC=\"$cf_c_compiler\" \
-            CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
-            --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
-            ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
-            ${cf_build_parallel} ${extra_ac_flags} $build_mode"
+        set -x
         sh -c "../configure CC=\"$cf_c_compiler\" \
             CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
             ${cf_build_parallel} ${extra_ac_flags} $build_mode"
+        set +x
         if [[ $? != 0 ]] ; then
             warn "$bt HDF5 configure failed.  Giving up"
             return 1
@@ -649,8 +646,9 @@ function build_hdf5
         # Build HDF5
         #
         info "Making $bt HDF5 . . ."
-        info "$MAKE $MAKE_OPT_FLAGS" lib
+        set -x
         $MAKE $MAKE_OPT_FLAGS lib
+        set +x
         if [[ $? != 0 ]] ; then
             warn "$bt HDF5 build failed.  Giving up"
             return 1
