@@ -93,15 +93,12 @@ function build_xercesc
     info "Configuring Xerces-C . . ."
     cd $XERCESC_BUILD_DIR || error "Can't cd to Xerces-C build dir."
 
-    info "env CXX=$CXX_COMPILER CC=$C_COMPILER ./configure \
-    --prefix=$VISITDIR/xerces-c/$XERCESC_VERSION/$VISITARCH \
-    --disable-threads --disable-network --disable-shared \
-    --enable-transcoder-iconv"
-    
+    set -x
     env CXX=$CXX_COMPILER CC=$C_COMPILER ./configure \
         --prefix=$VISITDIR/xerces-c/$XERCESC_VERSION/$VISITARCH \
         --disable-threads --disable-network --disable-shared \
         --enable-transcoder-iconv
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "Xerces-C configuration failed. Giving up"

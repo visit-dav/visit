@@ -199,6 +199,7 @@ function build_boxlib
     #
     info "Building Boxlib. . . (~4 minutes)"
 
+    set -x
     if [[ "$OPSYS" == "AIX" ]]; then
         $MAKE -f GNUmakefile CXX="$CXX_COMPILER" CC="$C_COMPILER" \
               CCFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
@@ -230,7 +231,7 @@ function build_boxlib
               DEBUG="FALSE" DIM=2 USE_MPI="FALSE" \
               BL_NO_FORT="TRUE" || error "Boxlib build failed. Giving up"
     fi
-
+    set +x
     #
     # Create dynamic library for Darwin
     #
