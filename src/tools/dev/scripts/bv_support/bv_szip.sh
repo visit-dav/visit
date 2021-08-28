@@ -107,15 +107,12 @@ function build_szip
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
     fi
 
-    info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" LIBS=\"-lm\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        --prefix=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" ${cf_szip} \
-        ${extra_ac_flags}"
-
+    set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" LIBS="-lm" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" ${cf_szip} \
                 ${extra_ac_flags}
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "SZIP configure failed.  Giving up"
