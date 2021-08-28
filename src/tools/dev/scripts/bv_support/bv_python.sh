@@ -692,14 +692,14 @@ function build_python
     PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${PY_ZLIB_LIB}"
     PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
 
-    info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-         "LDFLAGS=\"$PYTHON_LDFLAGS\" CPPFLAGS=\"$PYTHON_CPPFLAGS\""\
-         "${PYTHON_SHARED} --prefix=\"$PYTHON_PREFIX_DIR\" --disable-ipv6"
+    info "Configuring Python"
+    set -x
     ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
                 LDFLAGS="$PYTHON_LDFLAGS" \
                 CPPFLAGS="$PYTHON_CPPFLAGS" \
                 ${PYTHON_SHARED} \
                 --prefix="$PYTHON_PREFIX_DIR" --disable-ipv6
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "Python configure failed.  Giving up"
@@ -770,14 +770,12 @@ function build_pillow
     pushd $PILLOW_BUILD_DIR > /dev/null
 
     info "Building Pillow ...\n" \
-     "CC=${C_COMPILER} CXX=${CXX_COMPILER} " \
-     "  CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} LDFLAGS=${PYEXT_LDFLAGS} " \
-     "  ${PYTHON_COMMAND} ./setup.py build_ext --disable-jpeg install --prefix=${PYHOME}"
-
+    set -x
     CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS="${PYEXT_CFLAGS}" \
      CXXFLAGS="${PYEXT_CXXFLAGS}" \
      LDFLAGS="${PYEXT_LDFLAGS}" \
      ${PYTHON_COMMAND} ./setup.py build_ext --disable-jpeg install --prefix="${PYHOME}"
+    set +x
 
     if test $? -ne 0 ; then
         popd > /dev/null

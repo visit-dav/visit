@@ -527,18 +527,14 @@ function build_qt
         qt_flags="${qt_flags} -debug"
     fi
 
-    info "Configuring ${QT_VER_MSG}: " \
-         "CFLAGS=${QT_CFLAGS} CXXFLAGS=${QT_CXXFLAGS}" \
-         "./configure -prefix ${QT_INSTALL_DIR}" \
-         "-platform ${QT_PLATFORM}" \
-         "-make libs -make tools -no-separate-debug-info" \
-         "${qt_flags}" 
-
+    info "Configuring ${QT_VER_MSG}: "
+    set -x
     (echo "o"; echo "yes") | CFLAGS="${QT_CFLAGS}" CXXFLAGS="${QT_CXXFLAGS}"  \
                                    ./configure -prefix ${QT_INSTALL_DIR} \
                                    -platform ${QT_PLATFORM} \
                                    -make libs -make tools -no-separate-debug-info \
                                    ${qt_flags} | tee qt.config.out
+    set +x
     if [[ $? != 0 ]] ; then
         warn "${QT_VER_MSG} configure failed. Giving up."
         return 1
