@@ -2,7 +2,7 @@
 name: Project update meeting
 about: Capture regular agenda and any needed notes from project meetings
 title: Project update meeting
-labels: reviewed
+labels: admin, reviewed
 assignees: ''
 
 ---
