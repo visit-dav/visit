@@ -313,14 +313,7 @@ function build_adios
         #HDF5_DYLIB=""
     fi
 
-    info   ./configure ${OPTIONAL} CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-           CFLAGS=\"$CFLAGS $C_OPT_FLAGS $WITH_MPI_INC\" \
-           CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $WITH_MPI_INC\" \
-           $WITH_MPI_ARGS $WITH_HDF5_ARGS \
-           --disable-fortran \
-           --without-netcdf --without-nc4par --without-phdf5 --without-mxml \
-           --prefix="$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH"
-
+    set -x
     sh -c "./configure ${OPTIONAL} CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
            CFLAGS=\"$CFLAGS $C_OPT_FLAGS $WITH_MPI_INC\" \
            CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $WITH_MPI_INC\" \
@@ -329,6 +322,7 @@ function build_adios
            --without-netcdf --without-nc4par --without-phdf5 --without-mxml \
            --prefix=\"$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH\""
 
+    set +x
     if [[ $? != 0 ]] ; then
         warn "ADIOS configure failed.  Giving up"
         return 1

@@ -394,25 +394,18 @@ function build_cgns
     # Disable fortran
     FORTRANARGS="--with-fortran=no"
 
+    set -x
     if [[ "$OPSYS" == "Darwin" ]] ; then
-        info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-            CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-            LDFLAGS=\"$LDFLAGS_ENV\" LIBS=\"$LIBS_ENV\" \
-            ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
-
         env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
             CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
             LDFLAGS="$LDFLAGS_ENV" LIBS="$LIBS_ENV" \
             ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
     else
-        info "    env CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-            CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-            ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix=\"$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH\""
-
         env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
             CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
             ./configure --enable-64bit --enable-cgnstools=no ${cf_build_type} $H5ARGS $FORTRANARGS --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
     fi
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "CGNS configure failed.  Giving up"
