@@ -304,6 +304,15 @@ function build_mesagl
     fi
 
     #
+    # Handle case where python doesn't exist.
+    # The magic to determine if python exist comes from
+    # https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
+    #
+    if ! command -v python > /dev/null 2>&1 ; then
+        sed -i "s/python2.7/python3 python2.7/" configure.ac
+    fi
+
+    #
     # Build MESAGL.
     #
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
