@@ -470,6 +470,16 @@ function build_qt
     fi
 
     #
+    # Handle case where python doesn't exist.
+    # The magic to determine if python exist comes from
+    # https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
+    #
+    if ! command -v python > /dev/null 2>&1 ; then
+        sed -i "s/python/python3/" ./qtdeclarative/src/3rdparty/masm/masm.pri
+        sed -i "s/python -c/python3 -c/" ./qtdeclarative/qtdeclarative.pro
+    fi
+
+    #
     # Platform specific configuration
     #
 
