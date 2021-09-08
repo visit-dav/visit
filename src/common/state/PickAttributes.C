@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <float.h>
 #include <cstring>
+#include <FileFunctions.h>
 #include <PickVarInfo.h>
 
 //
@@ -3846,7 +3847,12 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   Kathleen Biagas, Tue Jul 22 11:35:33 MST 2014
 //   Account for global ids.
 //
+//   Kathleen Biagas, Wed Sept 8 2021
+//   Use FileFunctions::Basename to strip off path, for consistency on all
+//   platforms.
+//
 // ****************************************************************************
+
 void
 PickAttributes::PrintSelf(ostream &os)
 {
@@ -3854,13 +3860,8 @@ PickAttributes::PrintSelf(ostream &os)
 
     char buff[512];
 
-    std::string fileName;
+    std::string fileName(FileFunctions::Basename(databaseName));
     std::string format;
-    size_t pos = databaseName.find_last_of('/');
-    if (pos >= databaseName.size())
-        fileName = databaseName;
-    else
-        fileName = databaseName.substr(pos+1) ;
     if (pickLetter.size() != 0)
         os << "\n" << pickLetter.c_str() << ":  ";
     else
@@ -4118,6 +4119,10 @@ PickAttributes::PrintSelf(ostream &os)
 //   Kathleen Biagas, Wed Mar 08 17:12:07 PST 2012
 //   Use plot overrides of showXXX settings if set in plotRequested MapNode.
 //
+//   Kathleen Biagas, Wed Sept 8 2021
+//   Use FileFunctions::Basename to strip off path, for consistency on all
+//   platforms.
+//
 // ****************************************************************************
 
 void
@@ -4140,13 +4145,8 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
 
     char buff[512];
 
-    std::string fileName;
+    std::string fileName(FileFunctions::Basename(databaseName));
     std::string format;
-    size_t pos = databaseName.find_last_of('/');
-    if (pos >= databaseName.size())
-        fileName = databaseName;
-    else
-        fileName = databaseName.substr(pos+1) ;
 
     if (withLetter)
     {
@@ -4641,6 +4641,10 @@ PickAttributes::PrepareForNewPick()
 //   Kathleen Biagas, Wed Mar 08 17:12:07 PST 2012
 //   Use plot overrides of showXXX settings if set in plotRequested MapNode.
 //
+//   Kathleen Biagas, Wed Sept 8 2021
+//   Use FileFunctions::Basename to strip off path, for consistency on all
+//   platforms.
+//
 // ****************************************************************************
 
 void
@@ -4648,13 +4652,8 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
 {
     char buff[512];
 
-    std::string fileName;
+    std::string fileName(FileFunctions::Basename(databaseName));
     std::string format;
-    size_t pos = databaseName.find_last_of('/');
-    if (pos >= databaseName.size())
-        fileName = databaseName;
-    else
-        fileName = databaseName.substr(pos+1) ;
 
     if (withLetter)
     {
@@ -5082,6 +5081,10 @@ PickAttributes::ClearLines()
 //   Kathleen Biagas, Tue Jul 22 11:35:33 MST 2014
 //   Account for showing global ids.
 //
+//   Kathleen Biagas, Wed Sept 8 2021
+//   Use FileFunctions::Basename to strip off path, for consistency on all
+//   platforms.
+//
 // ****************************************************************************
 
 void
@@ -5147,14 +5150,8 @@ PickAttributes::CreateOutputMapNode(MapNode &m, bool withLetter)
 #endif
     }
 
-    std::string fileName;
-    size_t pos = databaseName.find_last_of('/');
-    if (pos >= databaseName.size())
-        fileName = databaseName;
-    else
-        fileName = databaseName.substr(pos+1) ;
 
-    m["filename"] = fileName;
+    m["filename"] = FileFunctions::Basename(databaseName);
 
     if (withLetter)
     {
