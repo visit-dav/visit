@@ -132,7 +132,7 @@ class Simulation:
             VisItExecuteCommand('AddPlot("Pseudocolor", "zonal")\n')
             VisItExecuteCommand('DrawPlots()\n')
         elif cmd == "exportVTK":
-            self.export_vtvty()
+            self.export_vtk()
 
     def GetInputFromConsole(self):
         return VisItReadConsole()
