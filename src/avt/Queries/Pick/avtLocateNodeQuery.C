@@ -160,12 +160,10 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
             }
         }
     }
-#if 0
     else
     {
         foundNode = RGridFindNode(ds, dist, isect);
     }
-#endif
 
     if ((foundNode != -1) && (dist < minDist))
     {
