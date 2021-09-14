@@ -18,7 +18,6 @@
 #include <DebugStream.h>
 #include <vtkVisItCellLocator.h>
 #include <vtkVisItUtility.h>
-#include <TimingsManager.h>
 
 #include <math.h>
 #include <float.h>
