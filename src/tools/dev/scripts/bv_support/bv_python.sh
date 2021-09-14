@@ -594,6 +594,92 @@ EOF
     return 0
 }
 
+function apply_python_macos11_configure_patch
+{
+    # These two patches come from python-3.7.12, to address build failures on MacOS11
+    info "Patching Python: applying configure patch for MacOS 11"
+    patch -f -p0 << \EOF
+*** configure.orig	Mon Mar  9 23:11:12 2020
+--- configure	Fri Sep  3 20:49:21 2021
+***************
+*** 3374,3380 ****
+    # has no effect, don't bother defining them
+    Darwin/[6789].*)
+      define_xopen_source=no;;
+!   Darwin/1[0-9].*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+--- 3374,3380 ----
+    # has no effect, don't bother defining them
+    Darwin/[6789].*)
+      define_xopen_source=no;;
+!   Darwin/[12][0-9].*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+***************
+*** 9251,9256 ****
+--- 9251,9259 ----
+      	ppc)
+      		MACOSX_DEFAULT_ARCH="ppc64"
+      		;;
++     	arm64)
++     		MACOSX_DEFAULT_ARCH="arm64"
++     		;;
+      	*)
+      		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
+      		;;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Python patch to configure for MacOS 11  failed."
+        return 1
+    fi
+
+    info "Patching Python: applying configure.ac patch for MacOS 11"
+    patch -f -p0 << \EOF
+*** configure.ac.orig	Mon Mar  9 23:11:12 2020
+--- configure.ac	Fri Sep  3 20:49:21 2021
+***************
+*** 490,496 ****
+    # has no effect, don't bother defining them
+    Darwin/@<:@6789@:>@.*)
+      define_xopen_source=no;;
+!   Darwin/1@<:@0-9@:>@.*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+--- 490,496 ----
+    # has no effect, don't bother defining them
+    Darwin/@<:@6789@:>@.*)
+      define_xopen_source=no;;
+!   Darwin/@<:@[12]@:>@@<:@0-9@:>@.*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+***************
+*** 2456,2461 ****
+--- 2456,2464 ----
+      	ppc)
+      		MACOSX_DEFAULT_ARCH="ppc64"
+      		;;
++     	arm64)
++     		MACOSX_DEFAULT_ARCH="arm64"
++     		;;
+      	*)
+      		AC_MSG_ERROR([Unexpected output of 'arch' on OSX])
+      		;;
+
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Python patch to configure.ac for MacOS 11 failed."
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_python_patch
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -603,6 +689,13 @@ function apply_python_patch
             if [[ $? != 0 ]] ; then
                 return 1
             fi
+        fi
+
+        # shouldn't do any harm applying this
+        # on all mac versions
+        apply_python_macos11_configure_patch
+        if [[ $? != 0 ]] ; then
+            return 1
         fi
     fi
 
