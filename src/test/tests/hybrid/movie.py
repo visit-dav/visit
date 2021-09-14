@@ -19,6 +19,10 @@
 #     Kathleen Biagas, Mon Oct 23 17:41:43 MST 2017
 #     Use Image lib for image conversion instead of 'convert'.
 #
+#     Kathleen Biagas, Tue Sep 14 09:51:45 PDT 2021
+#     Added call to CloseComputeEngine to GenerateMoive method, since the
+#     movie script launches its own. Prevents a hang when run in parallel.
+#
 # ----------------------------------------------------------------------------
 import os
 import subprocess
@@ -26,6 +30,7 @@ import visit_utils
 from PIL import Image
 
 def GenerateMovie(movieArgs):
+    CloseComputeEngine()
     if TestEnv.params["parallel"]:
         args = [TestEnv.params["visit_bin"], "-movie", "-noconfig", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + movieArgs
     else:
