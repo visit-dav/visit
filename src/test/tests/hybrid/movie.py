@@ -20,7 +20,7 @@
 #     Use Image lib for image conversion instead of 'convert'.
 #
 #     Kathleen Biagas, Tue Sep 14 09:51:45 PDT 2021
-#     Added call to CloseComputeEngine to GenerateMoive method, since the
+#     Added call to CloseComputeEngine to GenerateMovie method, since the
 #     movie script launches its own. Prevents a hang when run in parallel.
 #
 # ----------------------------------------------------------------------------
