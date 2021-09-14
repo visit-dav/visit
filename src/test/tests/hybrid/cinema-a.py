@@ -19,11 +19,16 @@
 #    Kathleen Biagas, Tue Jun 11 11:44:14 PDT 2019
 #    Pass '-noconfig' to generated command line in GenerateCinema.
 #
+#    Kathleen Biagas, Tue Sep 14 09:51:45 PDT 2021
+#    Added call to CloseComputeEngine to GenerateCinema method, since the
+#    cinema script launches its own. Prevents a hang when run in parallel.
+#
 # ----------------------------------------------------------------------------
 import os
 import subprocess
 
 def GenerateCinema(cinemaArgs):
+    CloseComputeEngine()
     if TestEnv.params["parallel"]:
         args = [TestEnv.params["visit_bin"], "-noconfig", "-cinema", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + cinemaArgs
     else:
