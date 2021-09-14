@@ -16,6 +16,7 @@ int VisIt_OptionList_setValueI(visit_handle h, const char *, int);
 int VisIt_OptionList_setValueF(visit_handle h, const char *, float);
 int VisIt_OptionList_setValueD(visit_handle h, const char *, double);
 int VisIt_OptionList_setValueS(visit_handle h, const char *, const char *);
+int VisIt_OptionList_setValueE(visit_handle h, const char *, int);
 
 int VisIt_OptionList_getNumValues(visit_handle h, int *);
 int VisIt_OptionList_getName(visit_handle h, int, char **);
@@ -25,6 +26,7 @@ int VisIt_OptionList_getValueI(visit_handle h, const char *, int *);
 int VisIt_OptionList_getValueF(visit_handle h, const char *, float *);
 int VisIt_OptionList_getValueD(visit_handle h, const char *, double *);
 int VisIt_OptionList_getValueS(visit_handle h, const char *, char **);
+int VisIt_OptionList_getValueE(visit_handle h, const char *, int *);
 
 #ifdef __cplusplus
 }
