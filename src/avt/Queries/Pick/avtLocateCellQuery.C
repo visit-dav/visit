@@ -143,10 +143,10 @@ avtLocateCellQuery::~avtLocateCellQuery()
 //    Remove constraint that lines should only be 2D spatially.
 //
 //    Kathleen Biagas, Tue Sep 14 09:48:24 PDT 2021
-//    Don't use Rectilinear grid fast-path if there are ghosts. They would
-//    need to be removed and it takes longer to remove them than to use the
-//    slower path.  Resolves pick failure on rectilinear grids with ghosts
-//    external to problem completely surrounding real zones.
+//    Don't use Rectilinear grid fast-path if there are exterior boundary
+//    ghosts. They would need to be removed and it takes longer to remove them
+//    than to use the slower path.  Resolves pick failure on rectilinear grids
+//    with ghosts external to problem completely surrounding real zones.
 //
 // ****************************************************************************
 
