@@ -142,6 +142,12 @@ avtLocateCellQuery::~avtLocateCellQuery()
 //    Kathleen Biagas, Thu Jun 29 13:02:07 PDT 2017
 //    Remove constraint that lines should only be 2D spatially.
 //
+//    Kathleen Biagas, Tue Sep 14 09:48:24 PDT 2021
+//    Don't use Rectilinear grid fast-path if there are exterior boundary
+//    ghosts. They would need to be removed and it takes longer to remove them
+//    than to use the slower path.  Resolves pick failure on rectilinear grids
+//    with ghosts external to problem completely surrounding real zones.
+//
 // ****************************************************************************
 
 void
@@ -167,8 +173,10 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
     int foundCell = -1;
 
     // Find the cell, intersection point, and distance along the ray.
-    //
-    if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+    // Don't use the RectilinearGrid fast-path if there are ghosts, as it
+    // takes longer to remove the ghosts than to use the fast-path.
+    if ( ds->GetDataObjectType() != VTK_RECTILINEAR_GRID ||
+         dataAtts.GetContainsExteriorBoundaryGhosts())
     {
         if (topodim == 1) // Lines
         {
