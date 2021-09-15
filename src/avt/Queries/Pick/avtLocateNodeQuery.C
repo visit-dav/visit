@@ -138,7 +138,7 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
     // Don't use the RectilinearGrid fast-path if there are ghosts.  It
     // takes longer to remove the ghosts than it does to use the slower path.
     if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID ||
-        info.GetAttributes().GetContainsGhostZones())
+        info.GetAttributes().GetContainsExteriorBoundaryGhosts())
     {
         if (topodim == 1) // LINES
         {
