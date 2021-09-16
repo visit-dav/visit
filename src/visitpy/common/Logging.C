@@ -1783,6 +1783,11 @@ static std::string log_ConstructDataBinningRPC(ViewerRPC *rpc)
 
 static std::string log_ExportDBRPC(ViewerRPC *rpc)
 {
+#if 0
+// This commented out due to crash in
+// PyDBOptionsAttributes_CreateDictionaryFromDBOptions
+// (Ticket #17008)
+
     std::string s(constructor(PyExportDBAttributes_GetLogString()));
 
     // if ops were included, we need to call differently 
@@ -1794,7 +1799,9 @@ static std::string log_ExportDBRPC(ViewerRPC *rpc)
     {
         s += "ExportDatabase(ExportDBAtts)\n";
     }
-
+#else
+    std::string s("Logging of ExportDatabase currently disabled.\n");
+#endif
     return visitmodule() + s;
 }
 
