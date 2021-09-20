@@ -194,6 +194,9 @@
 #    Kathleen Biagas, Tue May 4, 2021
 #    Rename SW4 to sw4img to fix static builds.
 #
+#    Gabriel Wlazłowski & Andrzej Makowski, Tue 15 Sep, 2021
+#    Add WData plugin.
+#
 #****************************************************************************
 
 IF(NOT WIN32)
@@ -379,6 +382,7 @@ if(VISIT_PARADIS)
 endif()
 
 CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
+CHECK_THIRDPARTY_SATISFIED(WData WData)
 
 # Save the list of all library dirs and libs so the engine can use it
 IF(VISIT_STATIC)
