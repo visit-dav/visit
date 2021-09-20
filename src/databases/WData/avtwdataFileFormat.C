@@ -94,13 +94,14 @@ int WDataVariable::loadCycle(int cycleid)
     if (loadedcycle != cycleid)
     {
         wdata_operation(wdata_read_cycle(md, md->var[vid].name, cycleid, data));
-        
-        if (ierr == 0 && d2f==1) // downgrade precision
+
+        if (ierr == 0 && d2f == 1) // downgrade precision
         {
             int bs = (int)(wdata_get_blocksize(md, &md->var[vid]) / sizeof(double));
-            double * dd = (double*)data;
-            float * df = (float*)data;
-            for(int i=0; i<bs; i++) df[i]=(float)dd[i];
+            double *dd = (double *)data;
+            float *df = (float *)data;
+            for (int i = 0; i < bs; i++)
+                df[i] = (float)dd[i];
         }
     }
 
@@ -168,7 +169,7 @@ bool WDataRealVariable::getVariable(const char *_varname, int cycleid, float *da
 }
 
 // =======================================================================================
-// ============================= WDataComplexVariable =======================================
+// ============================= WDataComplexVariable ====================================
 // =======================================================================================
 WDataComplexVariable::WDataComplexVariable(wdata_metadata *wdmd, int varid, int precdowngrade) : WDataVariable(wdmd, varid, precdowngrade)
 {
@@ -305,7 +306,7 @@ bool WDataComplexVariable::getVariable(const char *_varname, int cycleid, float 
 }
 
 // =======================================================================================
-// ============================= WDataVectorVariable =======================================
+// ============================= WDataVectorVariable =====================================
 // =======================================================================================
 WDataVectorVariable::WDataVectorVariable(wdata_metadata *wdmd, int varid, int precdowngrade) : WDataVariable(wdmd, varid, precdowngrade)
 {
@@ -420,7 +421,7 @@ avtWDataFileFormat::avtWDataFileFormat(const char *filename)
     int _correct_type;
     for (int i = 0; i < wdmd.nvar; i++)
     {
-        _correct_type=1;
+        _correct_type = 1;
 
         if (strcmp(wdmd.var[i].type, "real") == 0)
             _var = new WDataRealVariable(&wdmd, i, 1);
@@ -440,9 +441,11 @@ avtWDataFileFormat::avtWDataFileFormat(const char *filename)
             _var = new WDataVectorVariable(&wdmd, i, 1);
         else if (strcmp(wdmd.var[i].type, "vector4") == 0)
             _var = new WDataVectorVariable(&wdmd, i, 0);
-        else _correct_type=0;
+        else
+            _correct_type = 0;
 
-        if(_correct_type==1) variable.push_back(_var);
+        if (_correct_type == 1)
+            variable.push_back(_var);
     }
 
 // fill comment section

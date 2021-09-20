@@ -36,9 +36,9 @@
 *
 *****************************************************************************/
 
-#include <wdataPluginInfo.h>
+#include <WDataPluginInfo.h>
 
-VISIT_DATABASE_PLUGIN_ENTRY(wdata, MDServer)
+VISIT_DATABASE_PLUGIN_ENTRY(WData, MDServer)
 
 // this makes compilers happy... remove if we ever have functions here
 void WDataMDServerPluginInfo::dummy()

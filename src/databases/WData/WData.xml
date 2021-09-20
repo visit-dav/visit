@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="WData" type="database" label="WDATA format reader" version="0.2.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
     <CXXFLAGS>
-      -I./
     </CXXFLAGS>
     <LIBS>
       -lm 

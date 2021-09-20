@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ****************************************************************************
-//                               wdataPluginInfo.h
+//                               WDataPluginInfo.h
 // ****************************************************************************
 
 #ifndef WDATA_PLUGIN_INFO_H
@@ -49,10 +49,10 @@ class avtDatabase;
 class avtDatabaseWriter;
 
 // ****************************************************************************
-//  Class: wdataDatabasePluginInfo
+//  Class: WDataDatabasePluginInfo
 //
 //  Purpose:
-//    Classes that provide all the information about the wdata plugin.
+//    Classes that provide all the information about the WData plugin.
 //    Portions are separated into pieces relevant to the appropriate
 //    components of VisIt.
 //

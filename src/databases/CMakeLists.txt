@@ -382,7 +382,6 @@ if(VISIT_PARADIS)
 endif()
 
 CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
-CHECK_THIRDPARTY_SATISFIED(WData WData)
 
 # Save the list of all library dirs and libs so the engine can use it
 IF(VISIT_STATIC)
@@ -459,6 +458,7 @@ VASP
 VTK
 WavefrontOBJ
 WellLogs
+WData
 XSF
 XYZ
 Xmdv
