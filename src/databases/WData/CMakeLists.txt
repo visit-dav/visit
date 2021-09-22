@@ -2,8 +2,8 @@
 PROJECT(WData_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
-ADD_DATABASE_CODE_GEN_TARGETS(WData)
 
+ADD_DATABASE_CODE_GEN_TARGETS(WData)
 
 SET(COMMON_SOURCES
 WDataPluginInfo.C
@@ -48,9 +48,6 @@ ${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
 ${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTKh_INCLUDE_DIRS}
-${VTKM_DIR}/include/vtkm-1.2
-${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
 ${VTK_INCLUDE_DIRS}
 )
 
@@ -62,23 +59,36 @@ SET(INSTALLTARGETS IWDataDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MWDataDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MWDataDatabase visitcommon avtdbatts avtdatabase_ser -lm )
+    TARGET_LINK_LIBRARIES(MWDataDatabase visitcommon avtdbatts avtdatabase_ser )
+    if(NOT WIN32)
+        target_link_libraries(MWDataDatabase m)
+    endif()
+
     ADD_TARGET_DEFINITIONS(MWDataDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MWDataDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EWDataDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EWDataDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser -lm )
+TARGET_LINK_LIBRARIES(EWDataDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser )
+if(NOT WIN32)
+    target_link_libraries(EWDataDatabase_ser m)
+endif()
+
 ADD_TARGET_DEFINITIONS(EWDataDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EWDataDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EWDataDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EWDataDatabase_par visitcommon avtdatabase_par avtpipeline_par -lm )
+    TARGET_LINK_LIBRARIES(EWDataDatabase_par visitcommon avtdatabase_par avtpipeline_par )
+    if(NOT WIN32)
+        target_link_libraries(EWDataDatabase_par m)
+    endif()
+
     ADD_TARGET_DEFINITIONS(EWDataDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EWDataDatabase_par)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})
 VISIT_PLUGIN_TARGET_RTOD(databases ${INSTALLTARGETS})
+VISIT_PLUGIN_TARGET_FOLDER(databases WData ${INSTALLTARGETS})
 

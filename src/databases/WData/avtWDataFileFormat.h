@@ -20,20 +20,35 @@ typedef std::complex<float> Complex;
 
 #include "wdata.h"
 
+// ****************************************************************************
+//  Class: WDataVariable
+//
+//  Purpose:
+//
+//  Programmer: gabrielw
+//  Creation:   Wed Jul 29 19:18:00 PST 2020
+//
+//  Modifications:
+//    Kathleen Biagas, Wed Sept 22, 2021
+//    Have getVariable, isScalar and isVector return false to fix compile error
+//    on Windows.  Cast numberOfVariables return to int. Remove unneeded ';'.
+//
+// ****************************************************************************
+
 class WDataVariable
 {
 public:
     WDataVariable(wdata_metadata *wdmd, int varid, int precdowngrade);
-    virtual ~WDataVariable() { ; };
+    virtual ~WDataVariable() { ; }
 
-    virtual bool getVariable(const char *_varname, int cycleid, float *data_for_visit) { ; };
+    virtual bool getVariable(const char *_varname, int cycleid, float *data_for_visit) { return false; }
 
-    int numberOfVariables() { return varname.size(); };
-    std::string getIthVariableName(int ith) { return varname[ith]; };
-    std::string getIthVariableUnit(int ith) { return varunit[ith]; };
+    int numberOfVariables() { return int(varname.size()); }
+    std::string getIthVariableName(int ith) { return varname[ith]; }
+    std::string getIthVariableUnit(int ith) { return varunit[ith]; }
 
-    virtual bool isScalar() { ; };
-    virtual bool isVector() { ; };
+    virtual bool isScalar() { return false; }
+    virtual bool isVector() { return false; }
 
 protected:
     int loadCycle(int cycleid);
