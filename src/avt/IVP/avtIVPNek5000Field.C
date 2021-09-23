@@ -76,7 +76,7 @@ avtIVPNek5000Field::avtIVPNek5000Field( vtkDataSet* dataset,
   else 
   {
     EXCEPTION1( InvalidVariableException,
-                "Uninitialized option. (Please contact visit-developer mailing list to report)" );
+                "Uninitialized option. (Please report at https://github.com/visit-dav/visit/discussions)" );
   }
 
   unsigned int iBlockSize2[3] = { 2*iBlockSize[0],
