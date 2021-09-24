@@ -2300,6 +2300,10 @@ def TestBatchSimulation(sim):
 #    Mark C. Miller, Fri Jun 29 08:51:36 PDT 2018
 #    Replaced surface with pascal
 #
+#    Kathleen Biagas, Fri Sep 24 08:49:01 PDT 2021
+#    Add --overlap option to srun, to work around recent changes to slurm,
+#    which prevented movie-generation processes from running.
+#
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1, batch=False):
@@ -2350,14 +2354,14 @@ class Simulation(object):
                     f.write("#!/bin/sh\n")
                     f.write("cd %s\n" % os.path.abspath(os.curdir))
                     f.write("ulimit -c 0\n")
-                    f.write("srun -n %d" % self.np)
+                    f.write("srun --overlap -n %d" % self.np)
                     for a in args:
                         f.write(" %s" % a)
                     f.write("\n")
                     f.close()
                     args = ["msub", "-l", "nodes=1:ppn=12", msubscript]
                 else:
-                    args = ["srun", "-n", str(self.np)] + args
+                    args = ["srun", "--overlap", "-n", str(self.np)] + args
             else:
                 args = ["mpiexec", "-n", str(self.np)] + args
         else:
@@ -2806,7 +2810,7 @@ def InitTestEnv():
             if TestEnv.params["parallel_launch"] == "mpirun":
                 haveParallelEngine = (OpenComputeEngine(TestEnv.params["data_host"], ("-np", "2")) == 1)
             elif TestEnv.params["parallel_launch"] == "srun":
-                haveParallelEngine = (OpenComputeEngine(TestEnv.params["data_host"], ("-l", "srun", "-np", "2")) == 1)
+                haveParallelEngine = (OpenComputeEngine(TestEnv.params["data_host"], ("-l", "srun", "-la", "--overlap", "-np", "2")) == 1)
         if haveParallelEngine == False:
             Exit()
         else:
