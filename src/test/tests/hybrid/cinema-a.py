@@ -206,9 +206,8 @@ def main():
     db = MakeShortWave()
     test0(db)
     test1(db)
-    #test0(db)
 
-    #os.unlink(db)
+    os.unlink(db)
 
 main()
 Exit()
