@@ -27,11 +27,11 @@ function bv_vtkh_initialize_vars
 
 function bv_vtkh_info
 {
-    export VTKH_VERSION=${VTKH_VERSION:-"v0.6.6"}
-    export VTKH_FILE=${VTKH_FILE:-"vtkh-${VTKH_VERSION}.tar.gz"}
+    export VTKH_VERSION=${VTKH_VERSION:-"d9b38a"}
+    export VTKH_FILE=${VTKH_FILE:-"vtk-h-${VTKH_VERSION}.tar.gz"}
     export VTKH_BUILD_DIR=${VTKH_BUILD_DIR:-"vtkh-${VTKH_VERSION}"}
-    export VTKH_MD5_CHECKSUM="ec9bead5d3bcc317149fb273f7c5a4af"
-    export VTKH_SHA256_CHECKSUM="5fe8bae5f55dbeb3047a37499cc41f3b548e4d86f0058993069f1df57f7915a1"
+    export VTKH_MD5_CHECKSUM="72efe1e44bc54269b39251fadc4e651e"
+    export VTKH_SHA256_CHECKSUM="a0dcf7695b38074eabd6016af0018a3e4332686cd34eba4f0f19eac705ff8b65"
 }
 
 function bv_vtkh_print
@@ -115,7 +115,7 @@ function build_vtkh
         warn "Unable to prepare VTKh build directory. Giving Up!"
         return 1
     fi
-    
+
     #
     # Apply patches
     #
@@ -139,7 +139,7 @@ function build_vtkh
     # Configure VTKH
     #
     info "Configuring VTKh . . ."
-    
+
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
 
     # Make a build directory for an out-of-source build.. Change the
@@ -209,7 +209,7 @@ function build_vtkh
 function bv_vtkh_is_enabled
 {
     if [[ $DO_VTKH == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
