@@ -52,7 +52,7 @@
 //
 //  Programmer: Hank Childs
 //  Creation:   March 19, 2005
-//     
+//
 //  Modifications:
 //
 //    Hank Childs, Sun Mar 27 11:36:49 PST 2005
@@ -122,20 +122,20 @@ void
 avtThresholdFilter::SetAtts(const AttributeGroup *a)
 {
     atts = *(const ThresholdOpAttributes*)a;
-    
+
     atts.SupplyMissingDefaultsIfAppropriate();
-    
+
     if (!atts.AttributesAreConsistent()) atts.ForceAttributeConsistency();
-    
+
     activeVarName = std::string("<unused>");
-    
+
     stringVector curVarNames = atts.GetListedVarNames();
 
     if (curVarNames.size() > 0)
     {
         std::string defaultVariable = atts.GetDefaultVarName();
         std::string firstVarInList = curVarNames[0];
-        
+
         if (firstVarInList == std::string("default"))
             firstVarInList = defaultVariable;
 
@@ -299,13 +299,7 @@ avtThresholdFilter::VTKmAble(avtDataRepresentation *in_dr) const
 {
     bool useVTKm = false;
 
-    const intVector    curZonePortions = atts.GetZonePortions();
-    if (std::count(curZonePortions.begin(), curZonePortions.end(), (int)ThresholdOpAttributes::PartOfZone))
-    {
-        // VTKm currently only supports allInRange for thresholds
-        useVTKm = false;
-    }
-    else if (atts.GetOutputMeshType() == ThresholdOpAttributes::PointMesh)
+    if (atts.GetOutputMeshType() == ThresholdOpAttributes::PointMesh)
     {
         // VTKm currently does not support outputing a point mesh
         useVTKm = false;
@@ -366,7 +360,7 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
     atts.SupplyMissingDefaultsIfAppropriate();
 
     if (!atts.AttributesAreConsistent()) atts.ForceAttributeConsistency();
-    
+
     if (atts.GetListedVarNames().size() == 0)
     {
         in_ds->Register(NULL);
@@ -406,10 +400,10 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
     const doubleVector curLowerBounds  = atts.GetLowerBounds();
     const doubleVector curUpperBounds  = atts.GetUpperBounds();
     const stringVector curBoundsRange = atts.GetBoundsRange();
-    
+
     const char *curVarName;
     char errMsg[1024];
-    
+
     for (size_t curVarNum = 0; curVarNum < curVariables.size(); curVarNum++)
     {
         vtkThreshold *threshold = vtkThreshold::New();
@@ -432,7 +426,7 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
         if (bypassThreshold == false)
         {
             curVarName = curVariables[curVarNum].c_str();
-            
+
             if(atts.GetBoundsInputType() == ThresholdOpAttributes::Default || IsSimpleRange(curBoundsRange[curVarNum]))
             {
                 threshold->SetInputData(curOutDataSet);
@@ -441,10 +435,10 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
                 // So decrement its reference count.
                 if (curOutDataSet != in_ds)
                     curOutDataSet->Delete();
-                
+
                 threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS,
                                                   vtkDataSetAttributes::SCALARS);
-                
+
                 if (curZonePortions[curVarNum] == (int)ThresholdOpAttributes::PartOfZone)
                 {
                     threshold->AllScalarsOff();
@@ -461,7 +455,7 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
                 }
 
                 threshold->ThresholdBetween(curLowerBounds[curVarNum], curUpperBounds[curVarNum]);
-                
+
                 if (curOutDataSet->GetPointData()->GetArray(curVarName) != NULL)
                 {
                     threshold->SetInputArrayToProcess(
@@ -475,12 +469,12 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
                 else
                 {
                     threshold->Delete();
-                    
+
                     sprintf (errMsg, "Data for variable \"%s\" is not currently available.", curVarName);
                     debug1 << errMsg << endl;
                     EXCEPTION1(VisItException, errMsg);
                 }
-                
+
                 threshold->Update();
                 curOutDataSet = threshold->GetOutput();
             }
@@ -526,7 +520,7 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
     {
         curOutDataSet->GetFieldData()->PassData(in_ds->GetFieldData());
     }
-    
+
     avtDataRepresentation *out_dr = new avtDataRepresentation(curOutDataSet,
         in_dr->GetDomain(), in_dr->GetLabel());
 
@@ -534,7 +528,7 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
         curOutDataSet->Delete();
 
     visitTimer->StopTimer(timerHandle, "avtThresholdFilter::ProcessOneChunk_VTK");
-    
+
     return out_dr;
 }
 
@@ -559,7 +553,7 @@ avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
     return NULL;
 #else
     int timerHandle = visitTimer->StartTimer();
-    
+
     vtkh::DataSet *in_ds = in_dr->GetDataVTKm();
     if (!in_ds || in_ds->GetNumberOfDomains() != 1)
         return NULL;
@@ -569,15 +563,15 @@ avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
     const doubleVector curLowerBounds  = atts.GetLowerBounds();
     const doubleVector curUpperBounds  = atts.GetUpperBounds();
     const stringVector curBoundsRange  = atts.GetBoundsRange();
-    
+
     const char *curVarName;
     char errMsg[1024];
-    
+
     vtkh::DataSet *out_ds = in_ds;
     for (size_t curVarNum = 0; curVarNum < curVariables.size(); curVarNum++)
     {
         vtkh::Threshold thresher;
-    
+
         std::map<std::string,int>::iterator iterFind;
         bool bypassThreshold = false;
         iterFind = selIDs.find(curVariables[curVarNum]);
@@ -600,6 +594,16 @@ avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
             thresher.SetField(curVariables[curVarNum]);
             thresher.SetUpperThreshold(curUpperBounds[curVarNum]);
             thresher.SetLowerThreshold(curLowerBounds[curVarNum]);
+
+            if (curZonePortions[curVarNum] == (int)ThresholdOpAttributes::PartOfZone)
+            {
+                thresher.SetAllInRange(false);
+            }
+            else if (curZonePortions[curVarNum] == (int)ThresholdOpAttributes::EntireZone)
+            {
+                thresher.SetAllInRange(true);
+            }
+cerr << "running vtkm thresher" << endl;
             thresher.Update();
             out_ds = thresher.GetOutput();
         }
@@ -639,10 +643,10 @@ avtThresholdFilter::IsSimpleRange(const std::string range)
     {
         return true;
     }
-        
-    
+
+
     std::size_t pos = range.find(",");
-    
+
     return (pos == std::string::npos);
 }
 
@@ -668,17 +672,17 @@ avtThresholdFilter::CheckForMinMax(const std::string str)
 {
     size_t minPos = str.find("min");
     size_t maxPos = str.find("max");
-    
+
     if(minPos != std::string::npos)
     {
         return std::string("-1e+37");
     }
-    
+
     if(maxPos != std::string::npos)
     {
         return std::string("1e+37");
     }
-    
+
     return str;
 }
 
@@ -702,25 +706,25 @@ stringVector
 avtThresholdFilter::GetRangeList(const std::string rangeStr)
 {
     stringVector rangeTokens;
-    
+
     if(rangeStr.empty())
     {
         return rangeTokens;
     }
-    
+
     // Create list of ranges
     std::size_t pos = rangeStr.find(",");
     std::size_t startPos = 0;
-    
+
     while(pos != std::string::npos)
     {
         rangeTokens.push_back(rangeStr.substr(startPos, pos-startPos));
         startPos = pos+1;
         pos = rangeStr.find(",", startPos);
     }
-    
+
     rangeTokens.push_back(rangeStr.substr(startPos));
-    
+
     return rangeTokens;
 }
 
@@ -758,27 +762,27 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
 {
     // Create list of ranges
     stringVector rangeTokens = GetRangeList(rangeStr);
-    
+
     // Setup Threshold Data Array
     const char *keeperName = "_avt_threshold_keeper";
     const vtkDataObject::FieldAssociations FIELD_ASSOC = (in_ds->GetPointData()->GetArray(varName) != NULL) ? vtkDataObject::FIELD_ASSOCIATION_POINTS
                                                                                                             : vtkDataObject::FIELD_ASSOCIATION_CELLS;
-    
+
     vtkDataArray *curVarArray = (FIELD_ASSOC == vtkDataObject::FIELD_ASSOCIATION_POINTS) ? in_ds->GetPointData()->GetArray(varName)
                                                                                          : in_ds->GetCellData()->GetArray(varName);
-    
+
     vtkIntArray *keeper = vtkIntArray::New();
     keeper->SetName(keeperName);
-    
+
     int keeperSize = curVarArray->GetSize();
     keeper->SetNumberOfTuples(keeperSize);
-    
+
     // Initialize keeper
     for(int i=0; i<keeperSize; i++)
     {
         keeper->SetTuple1(i, 0);
     }
-    
+
     // Determine what data we want to keep based on the ranges
     for(int i=0; i<rangeTokens.size(); i++)
     {
@@ -786,16 +790,16 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
         {
             continue;
         }
-        
+
         double threshLow = 0;
         double threshHigh = 0;
-        
+
         size_t pos = rangeTokens[i].find(":");
         if(pos != std::string::npos)
         {
             std::string lowStr = rangeTokens[i].substr(0, pos).c_str();
             std::string highStr = rangeTokens[i].substr(pos+1).c_str();
-        
+
             threshLow = atof(CheckForMinMax(lowStr).c_str());
             threshHigh = atof(CheckForMinMax(highStr).c_str());
         }
@@ -804,20 +808,20 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
             threshLow = atof(CheckForMinMax(rangeTokens[i]).c_str());
             threshHigh = threshLow;
         }
-        
+
         debug5 << "threshLow: " << threshLow << " threshHigh: " << threshHigh << endl;
-        
+
         for(int j=0; j<curVarArray->GetSize(); j++)
         {
             double value = curVarArray->GetTuple1(j);
-            
+
             if((value >= threshLow) && (value <= threshHigh))
             {
                 keeper->SetTuple1(j, 1);
             }
         }
     }
-    
+
     // Add threshold array to the dataset
     if(FIELD_ASSOC == vtkDataObject::FIELD_ASSOCIATION_POINTS)
     {
@@ -827,11 +831,11 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
     {
         in_ds->GetCellData()->AddArray(keeper);
     }
-    
+
     // Ready to threshold
     threshold->SetInputData(in_ds);
     threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS, vtkDataSetAttributes::SCALARS);
-    
+
     if (curZonePortion == (int)ThresholdOpAttributes::PartOfZone)
     {
         threshold->AllScalarsOff();
@@ -846,13 +850,13 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
         << "in Threshold operator attributes." << endl;
         threshold->AllScalarsOff();
     }
-    
+
     threshold->ThresholdBetween(1, 1);
     threshold->SetInputArrayToProcess(0, 0, 0, FIELD_ASSOC, keeperName);
     threshold->Update();
-    
+
     in_ds = threshold->GetOutput();
-    
+
     if(FIELD_ASSOC == vtkDataObject::FIELD_ASSOCIATION_POINTS)
     {
         in_ds->GetPointData()->RemoveArray(keeperName);
@@ -861,9 +865,9 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
     {
         in_ds->GetCellData()->RemoveArray(keeperName);
     }
-    
+
     keeper->Delete();
-    
+
     return in_ds;
 }
 
@@ -912,13 +916,13 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
     int curVarCount = (int)curVariables.size();
     int curVarNum;
     vtkPointData *inPointData = in_ds->GetPointData();
-    
+
     std::vector<vtkDataArray *> valueArrays;
 
     for (curVarNum = 0; curVarNum < curVarCount; curVarNum++)
     {
         vtkDataArray *dataArray = inPointData->GetArray(curVariables[curVarNum].c_str());
-        
+
         if (dataArray == NULL)
         {
             EXCEPTION1(VisItException,
@@ -933,7 +937,7 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
     const doubleVector curLowerBounds  = atts.GetLowerBounds();
     const doubleVector curUpperBounds  = atts.GetUpperBounds();
     const stringVector curBoundsRange = atts.GetBoundsRange();
-    
+
     int inPointCount = in_ds->GetNumberOfPoints();
     int plotPointCount = 0;
     int inPointID;
@@ -944,7 +948,7 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
         for (curVarNum = 0; curVarNum < curVarCount; curVarNum++)
         {
             doubleValue = valueArrays[curVarNum]->GetTuple1(inPointID);
-            
+
             if((atts.GetBoundsInputType() == ThresholdOpAttributes::Default) || IsSimpleRange(curBoundsRange[curVarNum]))
             {
                 if (doubleValue < curLowerBounds[curVarNum]) break;
@@ -954,17 +958,17 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
             {
                 bool breakLoop = true;
                 stringVector rangeTokens = GetRangeList(curBoundsRange[curVarNum]);
-                
+
                 for(int i=0; i<rangeTokens.size(); i++)
                 {
                     if(rangeTokens[i].empty())
                     {
                         continue;
                     }
-                    
+
                     double threshLow = 0;
                     double threshHigh = 0;
-                    
+
                     size_t pos = rangeTokens[i].find(":");
                     if(pos != std::string::npos)
                     {
@@ -976,14 +980,14 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
                         threshLow = atof(CheckForMinMax(rangeTokens[i]).c_str());
                         threshHigh = threshLow;
                     }
-                    
+
                     if((doubleValue >= threshLow) && (doubleValue <= threshHigh))
                     {
                         breakLoop = false;
                         break;
                     }
                 }
-                
+
                 if(breakLoop)
                 {
                     break;
@@ -1020,7 +1024,7 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
         for (curVarNum = 0; curVarNum < curVarCount; curVarNum++)
         {
             doubleValue = valueArrays[curVarNum]->GetTuple1(inPointID);
-            
+
             if((atts.GetBoundsInputType() == ThresholdOpAttributes::Default) || IsSimpleRange(curBoundsRange[curVarNum]))
             {
                 if (doubleValue < curLowerBounds[curVarNum]) break;
@@ -1030,17 +1034,17 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
             {
                 bool breakLoop = true;
                 stringVector rangeTokens = GetRangeList(curBoundsRange[curVarNum]);
-                
+
                 for(int i=0; i<rangeTokens.size(); i++)
                 {
                     if(rangeTokens[i].empty())
                     {
                         continue;
                     }
-                    
+
                     double threshLow = 0;
                     double threshHigh = 0;
-                    
+
                     size_t pos = rangeTokens[i].find(":");
                     if(pos != std::string::npos)
                     {
@@ -1052,14 +1056,14 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
                         threshLow = atof(CheckForMinMax(rangeTokens[i]).c_str());
                         threshHigh = threshLow;
                     }
-                    
+
                     if((doubleValue >= threshLow) && (doubleValue <= threshHigh))
                     {
                         breakLoop = false;
                         break;
                     }
                 }
-                
+
                 if(breakLoop)
                 {
                     break;
@@ -1319,8 +1323,8 @@ avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
 //    Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //    Rewrote to support multi-variable thresholding.
 //
-//    Kathleen Bonnell, Mon May  1 08:50:46 PDT 2006 
-//    Set OrigElementsRequiredForPick. 
+//    Kathleen Bonnell, Mon May  1 08:50:46 PDT 2006
+//    Set OrigElementsRequiredForPick.
 //
 // ****************************************************************************
 
@@ -1386,17 +1390,17 @@ avtThresholdFilter::PreExecute(void)
     int inputVarNum;
     std::string inputVarName;
     stringVector inputVarNames;
-    
+
     for (inputVarNum = 0; inputVarNum < inputVarCount; inputVarNum++)
     {
         inputVarName =
             GetInput()->GetInfo().GetAttributes().GetVariableName(inputVarNum);
-        
+
         if (GetInput()->GetInfo().GetAttributes().GetVariableType(inputVarName.c_str())
             == AVT_SCALAR_VAR)
             inputVarNames.push_back(inputVarName);
     }
-    
+
     inputVarCount = (int)inputVarNames.size();
     bool allScalars = true;
     stringVector curListedVarNames = atts.GetListedVarNames();
@@ -1409,7 +1413,7 @@ avtThresholdFilter::PreExecute(void)
          if (! foundMatch)
              allScalars = false;
     }
-    
+
     if (! allScalars)
     {
         atts.SetDefaultVarIsScalar(false);
@@ -1435,35 +1439,35 @@ avtThresholdFilter::PreExecute(void)
     size_t listVarNum;
     bool changedTheList;
     bool atLeast1Change = false;
-    
+
     do
     {
         changedTheList = false;
-    
+
         for (listVarNum = 0; listVarNum < curListedVarNames.size(); listVarNum++)
         {
             listVarName = curListedVarNames[listVarNum];
-    
+
             for (inputVarNum = 0; inputVarNum < inputVarCount; inputVarNum++)
             {
                 if (inputVarNames[inputVarNum] == listVarName) break;
             }
-            
+
             if (inputVarNum >= inputVarCount)
             {
                 curListedVarNames.erase(curListedVarNames.begin() + listVarNum);
                 curZonePortions.erase  (curZonePortions.begin()   + listVarNum);
                 curLowerBounds.erase   (curLowerBounds.begin()    + listVarNum);
                 curUpperBounds.erase   (curUpperBounds.begin()    + listVarNum);
-                
+
                 changedTheList = true; atLeast1Change = true;
-                
+
                 break;
             }
         }
     }
     while (changedTheList);
-    
+
     if (atLeast1Change)
     {
         atts.SetListedVarNames(curListedVarNames);
@@ -1496,8 +1500,8 @@ avtThresholdFilter::PreExecute(void)
 //    Mark Blair, Tue Mar  7 13:25:00 PST 2006
 //    Rewrote to support multi-variable thresholding.
 //
-//    Kathleen Bonnell, Mon May  1 08:50:46 PDT 2006 
-//    Turn on Node & Zone numbers when appropriate. 
+//    Kathleen Bonnell, Mon May  1 08:50:46 PDT 2006
+//    Turn on Node & Zone numbers when appropriate.
 //
 //    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //    Now accommodates an empty list of threshold variables; does pass-through.
@@ -1533,19 +1537,19 @@ avtContract_p
 avtThresholdFilter::ModifyContract(avtContract_p in_spec)
 {
     atts.SupplyMissingDefaultsIfAppropriate();
-    
+
     if (!atts.AttributesAreConsistent()) atts.ForceAttributeConsistency();
 
     const char *pipelineVar = in_spec->GetDataRequest()->GetVariable();
     const char *activeVar = activeVarName.c_str();
-    
+
     if (activeVarName == std::string("<unused>"))
         activeVar = pipelineVar;
-        
+
     atts.SetDefaultVarName(std::string(pipelineVar));
 
     atts.SwitchDefaultVariableNameToTrueName();
-    
+
     if (atts.GetListedVarNames().size() == 0) return in_spec;
 
     avtContract_p outSpec = new avtContract(in_spec);
@@ -1560,7 +1564,7 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
     for (listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)
     {
         curListedVar = curListedVars[listedVarNum].c_str();
-        
+
         if ((strcmp(curListedVar, pipelineVar) != 0) &&
             (strcmp(curListedVar, activeVar  ) != 0))
         {
@@ -1595,7 +1599,7 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
     for (listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)
     {
         curListedVar = curListedVars[listedVarNum].c_str();
-        
+
         if ((it = GetMetaData()->GetDataExtents(curListedVar)) != NULL)
         {
             lowerBound = curLowerBounds[listedVarNum];
@@ -1684,11 +1688,11 @@ avtThresholdFilter::ModifyContract(avtContract_p in_spec)
 //  Creation:   February 23, 2009
 //
 //  Modifications:
-//  
+//
 //    Gunther H. Weber, Mon Apr 27 20:41:18 PDT 2009
 //    Fix a crash due to deleting a reference we don't own. (Analogous to
-//    a fix Hank did on Mon Apr 6 17:13:58 PDT 2009 in 
-//    avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection 
+//    a fix Hank did on Mon Apr 6 17:13:58 PDT 2009 in
+//    avtParallelCoordinatesFilter::CreateDBAcceleratedNamedSelection
 //
 //    Brad Whitlock, Fri Oct 28 11:00:26 PDT 2011
 //    Change named selection API.
@@ -1721,7 +1725,7 @@ avtThresholdFilter::CreateNamedSelection(avtContract_p c, const std::string &s)
         upperBound = curUpperBounds[listedVarNum];
 
         std::string var = curListedVars[listedVarNum];
-        avtDataRangeSelection *sel = new avtDataRangeSelection(var, lowerBound, 
+        avtDataRangeSelection *sel = new avtDataRangeSelection(var, lowerBound,
                                                                upperBound);
         drs.push_back(sel);
     }
@@ -1745,5 +1749,3 @@ avtThresholdFilter::CreateNamedSelection(avtContract_p c, const std::string &s)
 
     return rv;
 }
-
-
