@@ -14,6 +14,8 @@
 #  Date:       Wed Sep 19 12:18:14 PDT 2018
 #
 #  Modifications:
+#    James Kress, Tue Oct  5 14:00:28 PST 2021
+#    Adding additional threshold tests.
 #
 # ----------------------------------------------------------------------------
 
@@ -140,13 +142,27 @@ DeleteAllPlots()
 AddPlot("Pseudocolor", "u")
 AddOperator("Threshold")
 ThresholdAtts = ThresholdAttributes()
-ThresholdAtts.zonePortions = (0)
+ThresholdAtts.zonePortions = (1)
 ThresholdAtts.lowerBounds = (-0.2)
 ThresholdAtts.upperBounds = (0.39)
 SetOperatorOptions(ThresholdAtts)
 DrawPlots()
 
 Test("vtkm_rect3d_07")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (-0.2)
+ThresholdAtts.upperBounds = (0.39)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_rect3d_08")
+
 
 #
 # Test a 2d curvilinear mesh.
@@ -271,13 +287,26 @@ DeleteAllPlots()
 AddPlot("Pseudocolor", "u")
 AddOperator("Threshold")
 ThresholdAtts = ThresholdAttributes()
-ThresholdAtts.zonePortions = (0)
+ThresholdAtts.zonePortions = (1)
 ThresholdAtts.lowerBounds = (-0.5)
 ThresholdAtts.upperBounds = (0.5)
 SetOperatorOptions(ThresholdAtts)
 DrawPlots()
 
 Test("vtkm_curv3d_07")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Threshold")
+ThresholdAtts = ThresholdAttributes()
+ThresholdAtts.zonePortions = (0)
+ThresholdAtts.lowerBounds = (-0.5)
+ThresholdAtts.upperBounds = (0.5)
+SetOperatorOptions(ThresholdAtts)
+DrawPlots()
+
+Test("vtkm_curv3d_08")
 
 #
 # Test a 2d unstructured mesh.
