@@ -219,6 +219,14 @@ function apply_qt_patch
                     return 1
                 fi
             fi
+            #
+            # If /usr/lib64 doesn't exist, replace references to it with
+            # /usr/lib.
+            #
+            if [[ ! -d /usr/lib64 ]] ; then
+                sed -i "s/\/usr\/lib64/\/usr\/lib/" ./qtbase/mkspecs/linux-g++-64/qmake.conf
+                sed -i "s/\/usr\/lib64/\/usr\/lib/" ./qtbase/mkspecs/linux-icc-64/qmake.conf
+            fi
         fi
         if [[ "$OPSYS" == "Darwin" ]]; then
             if [[ $(echo $MACOSX_DEPLOYMENT_TARGET | tr -d '.') -ge 1014 ]]; then
