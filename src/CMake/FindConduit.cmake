@@ -14,7 +14,7 @@ SET_UP_THIRD_PARTY(CONDUIT lib include/conduit conduit conduit_relay conduit_blu
 # so it will be installed properly
 if(VISIT_PARALLEL)
     set(CONDUIT_MPI_DIR ${CONDUIT_DIR})
-    SET_UP_THIRD_PARTY(CONDUIT_MPI lib include/conduit conduit_relay_mpi)
+    SET_UP_THIRD_PARTY(CONDUIT_MPI lib include/conduit conduit_relay_mpi conduit_blueprint_mpi)
 endif()
 
 
