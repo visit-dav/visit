@@ -182,6 +182,9 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
 //  Chris Laganella Thu Nov  4 15:22:37 EDT 2021
 //  I moved the subdirectory creation code out into its own function (CreateOutputDir),
 //  and only create the directory if we are not performing an operation.
+//
+//  Chris Laganella Thu Nov  4 18:53:09 EDT 2021
+//  Updated m_nblocks to match the number of target domains if we are partitioning
 // ****************************************************************************
 
 void
@@ -191,8 +194,8 @@ avtBlueprintWriter::OpenFile(const string &stemname, int nb)
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called OpenFile().");
 #endif
     m_stem = stemname;
-    m_nblocks = nb;
-    if(m_op == BP_MESH_OP_NONE)
+    m_nblocks = (m_target > 0) ? m_target : nb;
+    if(m_op == BP_MESH_OP_NONE || m_op == BP_MESH_OP_PARTITION)
     {
         m_genRoot = true;
         n_root_file.reset();
@@ -359,9 +362,9 @@ avtBlueprintWriter::CreateOutputDir()
     m_output_dir  =  oss.str();
 
 #ifdef WIN32
-        _mkdir(m_output_dir.c_str());
+    _mkdir(m_output_dir.c_str());
 #else
-        mkdir(m_output_dir.c_str(), 0777);
+    mkdir(m_output_dir.c_str(), 0777);
 #endif
     BP_PLUGIN_INFO("BlueprintMeshWriter: create output dir "<<m_output_dir);
 }
@@ -509,6 +512,9 @@ avtBlueprintWriter::WriteMeshDomain(Node &mesh, int domain_id)
 //
 //  Chris Laganella Thu Nov  4 16:47:28 EDT 2021
 //  Added support for flatten to CSV or HDF5
+//
+//  Chris Laganella Thu Nov  4 18:54:15 EDT 2021
+//  Added support for partition to a target number of domains
 // ****************************************************************************
 void
 avtBlueprintWriter::CloseFile(void)
@@ -543,9 +549,9 @@ avtBlueprintWriter::CloseFile(void)
             conduit::relay::io::save(table, filename);
         }
     }
-#if 0
     else if(m_op == BP_MESH_OP_PARTITION)
     {
+        int rank = 0;
         Node opts;
         if(m_target > 0)
         {
@@ -554,7 +560,7 @@ avtBlueprintWriter::CloseFile(void)
 
         Node repart_mesh;
 #ifdef PARALLEL
-        int rank = writeContext.Rank();
+        rank = writeContext.Rank();
         BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " partitioning.");
         conduit::blueprint::mpi::mesh::partition(m_chunks, opts, repart_mesh,
             writeContext.GetCommunicator());
@@ -564,14 +570,27 @@ avtBlueprintWriter::CloseFile(void)
         // Don't need the original data anymore
         m_chunks.reset();
 
-#ifdef PARALLEL
-        const std::string filename = m_stem + std::to_string(rank) + ".hdf5";
-#else
-        const std::string filename = m_stem + ".hdf5";
-#endif
-        relay::io::save(repart_mesh, filename);
+        if(!repart_mesh.dtype().is_empty())
+        {
+            const std::vector<Node*> n_domains =
+                conduit::blueprint::mesh::domains(repart_mesh);
+
+            for(Node *m : n_domains)
+            {
+                BP_PLUGIN_INFO("Rank " << rank << " domain:" << m->schema().to_json());
+                int dom_id = m->fetch("state/domain_id").to_int();
+                WriteMeshDomain(*m, dom_id);
+
+                if(m_genRoot)
+                {
+                    BP_PLUGIN_INFO("BlueprintMeshWriter: generating root");
+                    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+                    GenRootNode(*m, m_output_dir, ndims);
+                    m_genRoot = false;
+                }
+            }
+        }
     }
-#endif
 }
 
 // ****************************************************************************
@@ -585,12 +604,14 @@ avtBlueprintWriter::CloseFile(void)
 //
 //  Modifications:
 //
+//  Chris Laganella Thu Nov  4 18:55:00 EDT 2021
+//  Writes a root file as long as we aren't flattening
 // ****************************************************************************
 
 void
 avtBlueprintWriter::WriteRootFile()
 {
-    if(m_op == BP_MESH_OP_NONE)
+    if(m_op == BP_MESH_OP_NONE || m_op == BP_MESH_OP_PARTITION)
     {
         int root_writer = 0;
         int rank = 0;
