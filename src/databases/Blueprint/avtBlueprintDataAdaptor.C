@@ -571,6 +571,20 @@ StructuredTopologyToVTKStructuredGrid(const Node &n_coords,
 
 
 // ****************************************************************************
+//  Method: HomogeneousShapeTopologyToVTKCellArray
+//
+//  Purpose:
+//   Translates the blueprint connectivity array to a VTK connectivity array
+//
+//  Programmer:
+//  Creation:
+//
+//  Modifications:
+//
+//  Chris Laganella, Fri Nov  5 17:21:05 EDT 2021
+//  I fixed a bug where it was copying the entire connectivity array in each
+//  iteration of the for loop.
+// ****************************************************************************
 vtkCellArray *
 HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
                                        int npts)
@@ -600,22 +614,23 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
         int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
         int csize = VTKCellTypeSize(ctype);
         int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
-
-        int_array topo_conn;
         ida->SetNumberOfTuples(ncells * (csize + 1));
+
+        // Extract connectivity as int array, using 'to_int_array' if needed.
+        int_array topo_conn;
+        Node n_tmp;
+        if(n_topo["elements/connectivity"].dtype().is_int())
+        {
+            topo_conn = n_topo["elements/connectivity"].as_int_array();
+        }
+        else
+        {
+            n_topo["elements/connectivity"].to_int_array(n_tmp);
+            topo_conn = n_tmp.as_int_array();
+        }
+
         for (int i = 0 ; i < ncells; i++)
         {
-            Node n_tmp;
-            if(n_topo["elements/connectivity"].dtype().is_int())
-            {
-                topo_conn = n_topo["elements/connectivity"].as_int_array();
-            }
-            else
-            {
-                n_topo["elements/connectivity"].to_int_array(n_tmp);
-                topo_conn = n_tmp.as_int_array();
-            }
-
             ida->SetComponent((csize+1)*i, 0, csize);
             for (int j = 0; j < csize; j++)
             {
