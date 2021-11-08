@@ -69,6 +69,8 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
 
     ExpressionList exprList;
 
+    static void    BuildSelections(conduit::Node &domains,
+                                   conduit::Node &selections);
     void           ChunkToBpMesh(vtkDataSet *, int, int, conduit::Node &);
     void           CreateOutputDir();
     void           GenRootNode(conduit::Node &mesh,

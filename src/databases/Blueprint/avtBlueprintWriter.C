@@ -284,6 +284,79 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
     // Need to defer all mesh operations to CloseFile()
 }
 
+
+// ****************************************************************************
+//  Method: avtBlueprintWriter::BuildSelections
+//
+//  Purpose:
+//      Reads the avtGhostZones field and builds a "selections" node so that
+//      ghost cells do not contribute to the partition operation.
+//
+//      This function will remove the avtGhostZones field from the input domains.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Mon Nov  8 15:26:05 EST 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtBlueprintWriter::BuildSelections(Node &domains,
+                                    Node &selections)
+{
+    selections.reset();
+    const std::vector<Node*> n_domains =
+        conduit::blueprint::mesh::domains(domains);
+
+    for(Node *m : n_domains)
+    {
+        if(!m->has_path("fields/avtGhostZones"))
+        {
+            continue;
+        }
+        const Node &avtGhostZones = m->fetch("fields/avtGhostZones");
+
+        // This path should always be correct, the field is created by VisIt.
+        const Node &values = avtGhostZones.fetch_existing("values/c0");
+        const DataType dt = DataType::index_t(values.dtype().number_of_elements());
+
+        // Cast the ghost info to the correct type if necessary
+        Node n_tmp;
+        DataArray<index_t> orig_vals;
+        if(values.dtype().is_index_t())
+        {
+            orig_vals = values.value();
+        }
+        else
+        {
+            values.to_data_type(dt.id(), n_tmp);
+            orig_vals = n_tmp.value();
+        }
+
+        // Build selection element ids
+        std::vector<index_t> sel;
+        sel.reserve(dt.number_of_elements());
+        for(index_t i = 0; i < orig_vals.number_of_elements(); i++)
+        {
+            if(orig_vals[i] == 0)
+            {
+                sel.push_back(i);
+            }
+        }
+
+        // Create a selection for this domain
+        Node &selection = selections.append();
+        selection["type"].set("explicit");
+        selection["topology"].set(avtGhostZones.child("topology"));
+        selection["domain_id"].set(m->fetch_existing("state/domain_id"));
+        selection["elements"].set(sel);
+
+        // No longer need the avtGhostZones field
+        m->child("fields").remove_child("avtGhostZones");
+    }
+    BP_PLUGIN_INFO("Done building selections." << selections.schema().to_json());
+}
+
 // ****************************************************************************
 //  Method: avtBlueprintWriter::ChunkToBpMesh
 //
@@ -515,6 +588,9 @@ avtBlueprintWriter::WriteMeshDomain(Node &mesh, int domain_id)
 //
 //  Chris Laganella Thu Nov  4 18:54:15 EDT 2021
 //  Added support for partition to a target number of domains
+//
+//  Chris Laganella Mon Nov  8 16:58:22 EST 2021
+//  Added BuildSelections call and surrounding logic
 // ****************************************************************************
 void
 avtBlueprintWriter::CloseFile(void)
@@ -552,21 +628,28 @@ avtBlueprintWriter::CloseFile(void)
     else if(m_op == BP_MESH_OP_PARTITION)
     {
         int rank = 0;
-        Node opts;
-        if(m_target > 0)
-        {
-            opts["target"].set(m_target);
-        }
-
         Node repart_mesh;
+        {
+            Node selections, opts;
+            BuildSelections(m_chunks, selections);
+            if(!selections.dtype().is_empty())
+            {
+                opts["selections"].set_external(selections);
+            }
+            if(m_target > 0)
+            {
+                opts["target"].set(m_target);
+            }
+
 #ifdef PARALLEL
-        rank = writeContext.Rank();
-        BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " partitioning.");
-        conduit::blueprint::mpi::mesh::partition(m_chunks, opts, repart_mesh,
-            writeContext.GetCommunicator());
+            rank = writeContext.Rank();
+            BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " partitioning.");
+            conduit::blueprint::mpi::mesh::partition(m_chunks, opts, repart_mesh,
+                writeContext.GetCommunicator());
 #else
-        conduit::blueprint::mesh::partition(m_chunks, opts, repart_mesh);
+            conduit::blueprint::mesh::partition(m_chunks, opts, repart_mesh);
 #endif
+        }
         // Don't need the original data anymore
         m_chunks.reset();
 
