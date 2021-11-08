@@ -38,9 +38,6 @@
 #include <vtkTransform.h>
 #include <vtkTransformFilter.h>
 
-#include <avtWorldSpaceToImageSpaceTransform.h>
-#include <avtResampleFilter.h>
-
 #include <vtkWindowToImageFilter.h>
 #include <vtkPNGWriter.h>
 
@@ -480,7 +477,7 @@ avtVisItVTKOSPRayDevice::CreateFinalImage(const void *colorBuffer,
       writer->Write();
       writer->Delete();
     }
-    
+
     finalImageData->Delete();
 
     return finalImage;
@@ -619,7 +616,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
         // There could be both a scalar and opacity data arrays. So get both.
         vtkDataArray *dataArr = in_ds->GetPointData()->GetScalars();
-	// FIXME - need to secondary variable.
+        // FIXME - need to secondary variable.
         vtkDataArray *opacArr = in_ds->GetPointData()->GetScalars();
 
         double dataRange[2] = {0., 0.};
@@ -695,7 +692,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         std::cerr << __LINE__ << " [VisItVTK::OSPRAY] useInterpolation: "
                   << useInterpolation << "  "
                   << std::endl;
-	
+
         // vtkDataSetSurfaceFilter* dssFilter = vtkDataSetSurfaceFilter::New();
         vtkGeometryFilter* dssFilter = vtkGeometryFilter::New();
         dssFilter->SetInputData( imageToRender );
@@ -726,7 +723,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         // Create the transfer function and the opacity mapping.
         const RGBAF *transferTable = transferFn1D->GetTableFloat();
         int tableSize = transferFn1D->GetNumberOfTableEntries();
-        double range = (scalarRange[1] - scalarRange[0]) / double(tableSize-1);
+        // double range = (scalarRange[1] - scalarRange[0]) / double(tableSize-1);
 
         vtkColorTransferFunction* transFunc = vtkColorTransferFunction::New();
         vtkPiecewiseFunction*     opacity   = vtkPiecewiseFunction::New();
@@ -740,13 +737,8 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
                                     transferTable[i].G,
                                     transferTable[i].B );
             opacity->AddPoint( i, transferTable[i].A );
-
-	    if( i%8 == 0 )
-	      std::cerr << transferTable[i].A << "  ";
         }
 
-	std::cerr << std::endl;
-	
         transFunc->SetScaleToLinear();
         transFunc->SetClamping(false);
         opacity->SetClamping(false);
@@ -758,13 +750,13 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
                                 transferTable[0].R,
                                 transferTable[0].G,
                                 transferTable[0].B);
-        opacity->AddPoint( -1.0, transferTable[0].A );
+        opacity->AddPoint( -1.0, transferTable[0].A  );
 
         transFunc->AddRGBPoint( tableSize,
                                 transferTable[tableSize-1].R,
                                 transferTable[tableSize-1].G,
                                 transferTable[tableSize-1].B);
-        opacity->AddPoint( tableSize, transferTable[tableSize-1].A );
+        opacity->AddPoint( tableSize, transferTable[tableSize-1].A  );
 
         std::cerr << __LINE__ << " [VisItVTK::OSPRAY] RGBA: " << tableSize << "  "
                   << transferTable[64].R << "  "
@@ -784,7 +776,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         vtkVolumeProperty * volumeProperty = vtkVolumeProperty::New();
         volumeProperty->SetColor(transFunc);
         volumeProperty->SetScalarOpacity(opacity);
-        volumeProperty->IndependentComponentsOn();
+        volumeProperty->IndependentComponentsOff();
 
         volumeProperty->SetShade( m_renderingAttribs.shadowsEnabled );
 
@@ -808,6 +800,29 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
             volumeProperty->SetInterpolationTypeToNearest();
         }
 
+        //
+        // A sample distance needs to be calculate the so to apply an
+        // opacity correction.
+        //
+        // NOTE 1: vtkSmartVolumeMapper->SetSampleDistance does not work, so we
+        // need to rely on vtkVolumeProperty->SetScalarOpacityUnitDistance.
+        //
+        // NOTE 2: This magic number "sampleDistReference" is completely
+        // made up. It acts as a "reference sample count" that results in
+        // an opacity correction that generally "looks good". Increasing this
+        // value will result in an increased opacity intensity, while decreasing
+        // this value will result in a decreased opacity intensity.
+        //
+        double spacing[3];
+        imageToRender->GetSpacing(spacing);
+
+        double sampleDistReference = 1.0 / 10.0;
+        double averageSpacing = (spacing[0] + spacing[1] + spacing[2]) / 3.0;
+        double sampleDist     = averageSpacing / sampleDistReference;
+
+        volumeProperty->SetScalarOpacityUnitDistance(1, sampleDist);
+
+
         vtkVolume * volume = vtkVolume::New();
         volume->SetMapper(volumeMapper);
         volume->SetProperty(volumeProperty);
@@ -820,6 +835,8 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
         // Create the renderer
         vtkRenderer* renderer = vtkRenderer::New();
+        renderer->SetBackground(1.0, 1.0, 1.0);
+        renderer->SetBackgroundAlpha(0.0);
         renderer->AddViewProp(volume);
         renderer->AddActor(dssActor);
         renderer->SetActiveCamera( camera );
@@ -827,7 +844,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
         if (ambientOn)
         {
-            renderer->SetAmbient(ambientColor);
+            // renderer->SetAmbient(ambientColor);
         }
         else
         {
@@ -839,13 +856,31 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         renderWin->SetMultiSamples(false);
         renderWin->AddRenderer(renderer);
         renderWin->SetOffScreenRendering(true);
+        renderWin->SetAlphaBitPlanes(true);
 
         camera->Render( renderer );
 
         renderWin->Render();
 
+        double r, g, b, a = renderer->GetBackgroundAlpha();
+        renderer->GetBackground(r, g, b);
+        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] Background RGBA: "
+                  << r << "  " << g << "  " << b << "  " << a << "  " << std::endl;
+
         unsigned char * renderedFrameBuffer =
           renderWin->GetRGBACharPixelData( 0, 0, width-1, height-1, 1 );
+
+        {
+          vtkWindowToImageFilter* im = vtkWindowToImageFilter::New();
+          vtkPNGWriter* writer = vtkPNGWriter::New();
+
+          im->SetInput(renderWin);
+          im->Update();
+          writer->SetInputConnection(im->GetOutputPort());
+          writer->SetFileName("renderWindow.png");
+          writer->Write();
+          writer->Delete();
+        }
 
         // Create final image
         float zVal = std::abs(bounds[4] + ((bounds[5] - bounds[4]) / 2.0f));
