@@ -13,6 +13,7 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 #include <StackTimer.h>
+#include <ImproperUseException.h>
 
 #include <vtkImageData.h>
 #include <vtkCellData.h>
@@ -38,6 +39,10 @@
 #include <vtkTransformFilter.h>
 
 #include <avtWorldSpaceToImageSpaceTransform.h>
+#include <avtResampleFilter.h>
+
+#include <vtkWindowToImageFilter.h>
+#include <vtkPNGWriter.h>
 
 #include <vector>
 
@@ -187,54 +192,51 @@ avtVisItVTKOSPRayDevice::StatusCallback(void *userData, const char *details)
 vtkCamera *
 avtVisItVTKOSPRayDevice::CreateCamera()
 {
-    float aspect = 1.0f;
-    int imgWidth  = screen[0];
-    int imgHeight = screen[1];
+    // float aspect = 1.0f;
+    // int imgWidth  = screen[0];
+    // int imgHeight = screen[1];
 
-    if(imgHeight > 0)
-    {
-        aspect = static_cast<float>(imgWidth) / static_cast<float>(imgHeight);
-    }
+    // if(imgHeight > 0)
+    // {
+    //     aspect = static_cast<float>(imgWidth) / static_cast<float>(imgHeight);
+    // }
 
-    double cameraPosition[3] = {static_cast<float>(viewInfo.camera[0]),
-                                static_cast<float>(viewInfo.camera[1]),
-                                static_cast<float>(viewInfo.camera[2])};
+    // double cameraPosition[3] = {static_cast<float>(viewInfo.camera[0]),
+    //                             static_cast<float>(viewInfo.camera[1]),
+    //                             static_cast<float>(viewInfo.camera[2])};
 
-    double cameraUp[3] = {static_cast<float>(viewInfo.viewUp[0]),
-                          static_cast<float>(viewInfo.viewUp[1]),
-                          static_cast<float>(viewInfo.viewUp[2])};
+    // double cameraUp[3] = {static_cast<float>(viewInfo.viewUp[0]),
+    //                       static_cast<float>(viewInfo.viewUp[1]),
+    //                       static_cast<float>(viewInfo.viewUp[2])};
 
-    double cameraDirection[3];
+    // double cameraDirection[3];
 
-    if(m_viewDirectionPtr)
-    {
-        cameraDirection[0] = m_viewDirectionPtr[0];
-        cameraDirection[1] = m_viewDirectionPtr[1];
-        cameraDirection[2] = m_viewDirectionPtr[2];
-    }
-    else
-    {
-        double viewDirection[3];
-        viewDirection[0] = viewInfo.focus[0] - viewInfo.camera[0];
-        viewDirection[1] = viewInfo.focus[1] - viewInfo.camera[1];
-        viewDirection[2] = viewInfo.focus[2] - viewInfo.camera[2];
-        double mag = sqrt(viewDirection[0]*viewDirection[0] +
-                          viewDirection[1]*viewDirection[1] +
-                          viewDirection[2]*viewDirection[2]);
-        if (mag != 0) // only 0 if focus and camera are the same
-        {
-            viewDirection[0] /= mag;
-            viewDirection[1] /= mag;
-            viewDirection[2] /= mag;
-        }
+    // if(m_viewDirectionPtr)
+    // {
+    //     cameraDirection[0] = m_viewDirectionPtr[0];
+    //     cameraDirection[1] = m_viewDirectionPtr[1];
+    //     cameraDirection[2] = m_viewDirectionPtr[2];
+    // }
+    // else
+    // {
+    //     double viewDirection[3];
+    //     viewDirection[0] = viewInfo.focus[0] - viewInfo.camera[0];
+    //     viewDirection[1] = viewInfo.focus[1] - viewInfo.camera[1];
+    //     viewDirection[2] = viewInfo.focus[2] - viewInfo.camera[2];
+    //     double mag = sqrt(viewDirection[0]*viewDirection[0] +
+    //                       viewDirection[1]*viewDirection[1] +
+    //                       viewDirection[2]*viewDirection[2]);
+    //     if (mag != 0) // only 0 if focus and camera are the same
+    //     {
+    //         viewDirection[0] /= mag;
+    //         viewDirection[1] /= mag;
+    //         viewDirection[2] /= mag;
+    //     }
 
-        cameraDirection[0] = static_cast<float>(viewDirection[0]);
-        cameraDirection[1] = static_cast<float>(viewDirection[1]);
-        cameraDirection[2] = static_cast<float>(viewDirection[2]);
-    }
-
-    vtkCamera *camera = vtkCamera::New();
-    viewInfo.SetCameraFromView( camera );
+    //     cameraDirection[0] = static_cast<float>(viewDirection[0]);
+    //     cameraDirection[1] = static_cast<float>(viewDirection[1]);
+    //     cameraDirection[2] = static_cast<float>(viewDirection[2]);
+    // }
 
     // vtkCamera *camera = vtkCamera::New();
     // camera->SetPosition  ( cameraPosition);
@@ -249,6 +251,9 @@ avtVisItVTKOSPRayDevice::CreateCamera()
     //     camera->ParallelProjectionOff();
 
     // camera->SetParallelScale(viewInfo.parallelScale);
+
+    vtkCamera *camera = vtkCamera::New();
+    viewInfo.SetCameraFromView( camera );
 
     return camera;
 }
@@ -454,7 +459,7 @@ avtVisItVTKOSPRayDevice::CreateFinalImage(const void *colorBuffer,
     const int nColorChannels = 4;
     avtImage_p finalImage = new avtImage(this);
     vtkImageData *finalImageData =
-      avtImageRepresentation::NewImage(width, height, nColorChannels);
+        avtImageRepresentation::NewImage(width, height, nColorChannels);
 
     finalImage->GetImage().SetImageVTK(finalImageData);
     // finalImage->GetImage() = imageData;
@@ -466,6 +471,16 @@ avtVisItVTKOSPRayDevice::CreateFinalImage(const void *colorBuffer,
                           height,
                           nColorChannels);
 
+    {
+      // vtkImageWriter* writer = vtkImageWriter::New();
+      vtkPNGWriter* writer = vtkPNGWriter::New();
+
+      writer->SetInputData(finalImageData);
+      writer->SetFileName("finialImage.png");
+      writer->Write();
+      writer->Delete();
+    }
+    
     finalImageData->Delete();
 
     return finalImage;
@@ -522,140 +537,77 @@ avtVisItVTKOSPRayDevice::Execute()
 void
 avtVisItVTKOSPRayDevice::ExecuteVolume()
 {
+    const int width  = screen[0];
+    const int height = screen[1];
+
     auto inputTree = GetInputDataTree(); // avtDataTree_p
     int nsets = 0;
-    debug5 << "[VisItVTK::OSPRAY] nsets: " << nsets << std::endl;
     vtkDataSet **datasetPtrs = inputTree->GetAllLeaves(nsets);
     debug5 << "[VisItVTK::OSPRAY] nsets: " << nsets << std::endl;
 
-    int width  = screen[0];
-    int height = screen[1];
+    std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+              << "rank: "  << PAR_Rank() << "  "
+              << "nsets: " << nsets << "  "
+              << std::endl;
 
-    std::cerr << __LINE__ << " [VisItVTK::OSPRAY] width height: "
-	      << width << "  " << height
-	      << std::endl;
-
-    if(nsets > 0)
+    // There should only be one data set. If more than one it should be
+    // resampled upstream in avtVolumePlot::ApplyRenderingTransformation.
+    if(nsets == 1)
     {
-      //
-      // First we need to transform all of domains into camera space.
-      //
-      double aspect = 1.;
-      if (screen[1] > 0)
-      {
-	  aspect = (double)screen[0] / (double)screen[1];
-      }
+        vtkDataSet* in_ds = datasetPtrs[ 0 ];
+        vtkRectilinearGrid* rgrid = vtkRectilinearGrid::SafeDownCast( in_ds );
 
-      double scale[3] = {1,1,1};
-      vtkMatrix4x4 *transform = vtkMatrix4x4::New();
-      avtWorldSpaceToImageSpaceTransform::CalculateTransform(viewInfo, transform,
-							     scale, aspect);
-      double newNearPlane, newFarPlane, oldNearPlane, oldFarPlane;
-      TightenClippingPlanes(viewInfo, transform, newNearPlane, newFarPlane);
-      oldNearPlane = viewInfo.nearPlane;  oldFarPlane  = viewInfo.farPlane;
-      viewInfo.nearPlane = newNearPlane;  viewInfo.farPlane  = newFarPlane;
+        if( rgrid->GetDataObjectType() != VTK_RECTILINEAR_GRID )
+        {
+            std::cerr << datasetPtrs[ 0 ]->GetDataObjectType() << std::endl;
 
-      vtkDataSet *in_ds = nullptr;
+            EXCEPTION1(ImproperUseException,
+                       "Only vtkRectilinearGrid may be rendered.");
+        }
 
-      if( datasetPtrs[ 0 ]->GetDataObjectType() == VTK_RECTILINEAR_GRID )
-      {
-          vtkRectilinearGrid *rectGrid =
-            vtkRectilinearGrid::SafeDownCast(datasetPtrs[ 0 ]);
-
-	  // std::cerr << __LINE__ << " [VisItVTK::OSPRAY] rectGrid: " << rectGrid << std::endl;
-
-          // vtkTransform *tmp_transform = vtkTransform::New();
-	  // tmp_transform->SetMatrix( transform );
-	  
-	  // vtkTransformFilter *tmp_transformFilter = vtkTransformFilter::New();
-
-	  // tmp_transformFilter->SetTransform( tmp_transform );
-	  // tmp_transformFilter->SetInputData( rectGrid );
-	  // tmp_transformFilter->Update();
-
-	  // in_ds = tmp_transformFilter->GetOutput();
-
-	  // tmp_transformFilter->Delete();
-	  // tmp_transform->Delete();
-	  
-          // in_ds = trans.TransformRectilinearToRectilinear( rectGrid );
-	  in_ds = rectGrid;
-	  
-	  std::cerr << __LINE__ << " [VisItVTK::OSPRAY] in_ds: " << in_ds << std::endl;
-      }
-
-      transform->Delete();
-      
-      avtWorldSpaceToImageSpaceTransform trans(viewInfo, aspect);
-      trans.SetInput(GetInput());
-      trans.SetPassThruRectilinearGrids(true);
-      
-      // Since we're applying a transform to the data, an existing
-      // implied transform will need to change.  Update it here.
-      avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
-      if (inatts.GetRectilinearGridHasTransform())
-      {
-	std::cerr << __LINE__ << " [VisItVTK::OSPRAY] GetRectilinearGridHasTransform" << std::endl;
-      }
-      
-      
-      // vtkCamera *camera = vtkCamera::New();
-      // camera->SetViewShear (viewInfo.shear[0],  viewInfo.shear[1],  viewInfo.shear[2]);
-      // camera->SetPosition  (viewInfo.camera[0], viewInfo.camera[1], viewInfo.camera[2]);
-      // camera->SetFocalPoint(viewInfo.focus [0], viewInfo.focus [1], viewInfo.focus [2]);
-      // camera->SetViewUp    (viewInfo.viewUp[0], viewInfo.viewUp[1], viewInfo.viewUp[2]);
-      // camera->SetViewAngle(viewInfo.viewAngle);
-      // camera->SetClippingRange(oldNearPlane, oldFarPlane);
-
-      // if (viewInfo.orthographic)
-      //   camera->ParallelProjectionOn();
-      // else
-      //   camera->ParallelProjectionOff();
-
-      // camera->SetParallelScale(viewInfo.parallelScale);
-      // camera->SetFocalDisk(viewInfo.imageZoom);
-
-        // BAD ASSUMPTION !!!
-        // Assume that there is only one dataset and that it is a
-        // rectilinear grid. That is because at this point the data
-        // has been resampled on to a rectilinear grid.
-        vtkRectilinearGrid *rectGrid = vtkRectilinearGrid::SafeDownCast(in_ds);
+        // Check for an implied transform.
+        avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
+        if (inatts.GetRectilinearGridHasTransform())
+        {
+            EXCEPTION1(ImproperUseException,
+                       "vtkRectilinear grids with an implied transform can not be rendered.");
+        }
 
         double bounds[6];
-        rectGrid->GetBounds(bounds);
+        rgrid->GetBounds(bounds);
 
         // The volume mapper requires a vtkImageData as input.
         int dims[3], extent[6];
-        rectGrid->GetDimensions(dims);
-        rectGrid->GetExtent(extent);
+        rgrid->GetDimensions(dims);
+        rgrid->GetExtent(extent);
 
-        double spacingX = (rectGrid->GetXCoordinates()->GetTuple1(1)-
-                           rectGrid->GetXCoordinates()->GetTuple1(0));
-        double spacingY = (rectGrid->GetYCoordinates()->GetTuple1(1)-
-                           rectGrid->GetYCoordinates()->GetTuple1(0));
-        double spacingZ = (rectGrid->GetZCoordinates()->GetTuple1(1)-
-                           rectGrid->GetZCoordinates()->GetTuple1(0));
+        double spacingX = (rgrid->GetXCoordinates()->GetTuple1(1)-
+                           rgrid->GetXCoordinates()->GetTuple1(0));
+        double spacingY = (rgrid->GetYCoordinates()->GetTuple1(1)-
+                           rgrid->GetYCoordinates()->GetTuple1(0));
+        double spacingZ = (rgrid->GetZCoordinates()->GetTuple1(1)-
+                           rgrid->GetZCoordinates()->GetTuple1(0));
 
-	std::cerr << __LINE__ << " [VisItVTK::OSPRAY] dims : "
-		  << dims[0] << "  " << dims[1] << "  "<< dims[2] << "  "
-		  << std::endl;	
+        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] dims : "
+                  << dims[0] << "  " << dims[1] << "  "<< dims[2] << "  "
+                  << std::endl;
 
-	std::cerr << __LINE__ << " [VisItVTK::OSPRAY] extents : "
-		  << extent[1] << "  " << extent[0] << "  "
-		  << extent[3] << "  " << extent[2] << "  "
-		  << extent[5] << "  " << extent[4] << "  "
-		  << std::endl;	
+        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] extent : "
+                  << extent[0] << "  " << extent[1] << "  "
+                  << extent[2] << "  " << extent[3] << "  "
+                  << extent[4] << "  " << extent[5] << "  "
+                  << std::endl;
 
-	std::cerr << __LINE__ << " [VisItVTK::OSPRAY] spacing : "
-		  << spacingX << "  " << spacingX << "  "<< spacingX << "  "
-		  << std::endl;	
+        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] bounds : "
+                  << bounds[0] << "  " << bounds[1] << "  "
+                  << bounds[2] << "  " << bounds[3] << "  "
+                  << bounds[4] << "  " << bounds[5] << "  "
+                  << std::endl;
 
-	std::cerr << __LINE__ << " [VisItVTK::OSPRAY] extents : "
-		  << (extent[1]-extent[0])/(dims[0]-1) << "  "
-		  << (extent[3]-extent[2])/(dims[1]-1) << "  "
-		  << (extent[5]-extent[4])/(dims[2]-1) << "  "
-		  << std::endl;	
-	
+        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] spacing : "
+                  << spacingX << "  " << spacingX << "  "<< spacingX << "  "
+                  << std::endl;
+
         vtkImageData* imageToRender = vtkImageData::New();
         imageToRender->SetDimensions(dims);
         imageToRender->SetExtent(extent);
@@ -667,9 +619,9 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
         // There could be both a scalar and opacity data arrays. So get both.
         vtkDataArray *dataArr = in_ds->GetPointData()->GetScalars();
+	// FIXME - need to secondary variable.
         vtkDataArray *opacArr = in_ds->GetPointData()->GetScalars();
 
-        avtDataset_p input = GetTypedInput();
         double dataRange[2] = {0., 0.};
         double opacityRange[2] = {0., 0.};
         in_ds->GetScalarRange( dataRange );
@@ -685,13 +637,13 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
                   << opacityRange[1] << "  "
                   << std::endl;
 
-        // float dataMag = volume.data.max - volume.data.min;
-        // float opacMag = volume.opacity.max - volume.opacity.min;
+        // double dataMag = volume.data.max - volume.data.min;
+        // double opacMag = volume.opacity.max - volume.opacity.min;
 
-        float dataScale    = 255.0 / (   dataRange[1] -    dataRange[0]);
-        float opacityScale = 255.0 / (opacityRange[1] - opacityRange[0]);
+        double dataScale    = 255.0 / (   dataRange[1] -    dataRange[0]);
+        double opacityScale = 255.0 / (opacityRange[1] - opacityRange[0]);
 
-        // Transfer the rectGrid data to the image data
+        // Transfer the rgrid data to the image data
         // and scale to the proper range.
         bool useInterpolation = true;
 
@@ -705,34 +657,34 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
             {
                 for (int x = 0; x < dims[0]; ++x)
                 {
-                    // The opacity and color data may differ. We
-                    // need to add both as two separate components.
-                    float dataTuple = dataArr->GetTuple1(ptId);
+                    // The opacity and color data may differ so add
+                    // both as two separate components.
+                    double dataTuple = dataArr->GetTuple1(ptId);
                     if (dataTuple <= NO_DATA_VALUE)
                     {
                         // The color map is 0 -> 255. For no data values,
                         // assign a new value just out side of the map.
-                        imageToRender->SetScalarComponentFromFloat(x, y, z, 0, -1.0);
+                        imageToRender->SetScalarComponentFromDouble(x, y, z, 0, -1.0);
                         useInterpolation = false;
                     }
                     else
                     {
-                        float val = (dataTuple - dataRange[0]) * dataScale;
-                        imageToRender->SetScalarComponentFromFloat(x, y, z, 0, val);
+                        double val = (dataTuple - dataRange[0]) * dataScale;
+                        imageToRender->SetScalarComponentFromDouble(x, y, z, 0, val);
                     }
 
-                    float opacityTuple = opacArr->GetTuple1(ptId);
+                    double opacityTuple = opacArr->GetTuple1(ptId);
                     if (opacityTuple <= NO_DATA_VALUE)
                     {
                         // The color map is 0 -> 255. For no data values,
                         // assign a new value just out side of the map.
-                        imageToRender->SetScalarComponentFromFloat(x, y, z, 1, -1.0);
+                        imageToRender->SetScalarComponentFromDouble(x, y, z, 1, -1.0);
                         useInterpolation = false;
                     }
                     else
                     {
-                        float val = (opacityTuple - opacityRange[0]) * opacityScale;
-                        imageToRender->SetScalarComponentFromFloat(x, y, z, 1, val);
+                        double val = (opacityTuple - opacityRange[0]) * opacityScale;
+                        imageToRender->SetScalarComponentFromDouble(x, y, z, 1, val);
                     }
 
                     ptId++;
@@ -740,6 +692,10 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
             }
         }
 
+        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] useInterpolation: "
+                  << useInterpolation << "  "
+                  << std::endl;
+	
         // vtkDataSetSurfaceFilter* dssFilter = vtkDataSetSurfaceFilter::New();
         vtkGeometryFilter* dssFilter = vtkGeometryFilter::New();
         dssFilter->SetInputData( imageToRender );
@@ -755,7 +711,6 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         // Create the volume mapper.
         // vtkOSPRayVolumeMapper* volumeMapper = vtkOSPRayVolumeMapper::New();
         vtkSmartVolumeMapper* volumeMapper = vtkSmartVolumeMapper::New();
-        volumeMapper->SetInputData( rectGrid );
         volumeMapper->SetInputData(imageToRender);
         volumeMapper->SetScalarModeToUsePointData();
         volumeMapper->SetBlendModeToComposite();
@@ -768,8 +723,6 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
                   << scalarRange[1] << "  "
                   << std::endl;
 
-        vtkVolumeProperty * volumeProperty = vtkVolumeProperty::New();
-
         // Create the transfer function and the opacity mapping.
         const RGBAF *transferTable = transferFn1D->GetTableFloat();
         int tableSize = transferFn1D->GetNumberOfTableEntries();
@@ -777,8 +730,6 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
         vtkColorTransferFunction* transFunc = vtkColorTransferFunction::New();
         vtkPiecewiseFunction*     opacity   = vtkPiecewiseFunction::New();
-
-        double rgbaScale = 255;
 
         for(int i=0; i<tableSize; i++)
         {
@@ -789,11 +740,16 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
                                     transferTable[i].G,
                                     transferTable[i].B );
             opacity->AddPoint( i, transferTable[i].A );
+
+	    if( i%8 == 0 )
+	      std::cerr << transferTable[i].A << "  ";
         }
 
+	std::cerr << std::endl;
+	
         transFunc->SetScaleToLinear();
-        transFunc->SetClamping(0);
-        opacity->SetClamping(0);
+        transFunc->SetClamping(false);
+        opacity->SetClamping(false);
 
         // For some reason, the endpoints aren't included when
         // clamping is turned off. So, add some padding on the ends of
@@ -811,6 +767,13 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         opacity->AddPoint( tableSize, transferTable[tableSize-1].A );
 
         std::cerr << __LINE__ << " [VisItVTK::OSPRAY] RGBA: " << tableSize << "  "
+                  << transferTable[64].R << "  "
+                  << transferTable[64].G << "  "
+                  << transferTable[64].B << "  "
+                  << transferTable[64].A << "  "
+                  << std::endl;
+
+        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] RGBA: " << tableSize << "  "
                   << transferTable[128].R << "  "
                   << transferTable[128].G << "  "
                   << transferTable[128].B << "  "
@@ -818,15 +781,12 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
                   << std::endl;
 
         // Set the volume properties.
-        // vtkVolumeProperty * volumeProperty = vtkVolumeProperty::New();
-
+        vtkVolumeProperty * volumeProperty = vtkVolumeProperty::New();
         volumeProperty->SetColor(transFunc);
         volumeProperty->SetScalarOpacity(opacity);
         volumeProperty->IndependentComponentsOn();
 
         volumeProperty->SetShade( m_renderingAttribs.shadowsEnabled );
-
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] nsets: " << nsets << std::endl;
 
         // Set ambient, diffuse, specular, and specular power (shininess).
         volumeProperty->SetAmbient      (m_materialPropertiesPtr[0]);
@@ -834,15 +794,12 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         volumeProperty->SetSpecular     (m_materialPropertiesPtr[2]);
         volumeProperty->SetSpecularPower(m_materialPropertiesPtr[3]);
 
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] nsets: " << nsets << std::endl;
-
         // If the dataset contains NO_DATA_VALUEs, interpolation will
         // not work correctly on the boundaries (between a real value
         // and a no data value). Hopefully this will be addressed in the
         // future. For now, only interpolate when our dataset contains
         // none of these values.
-        // FIXME
-        if (1) //useInterpolation)
+        if (useInterpolation)
         {
             volumeProperty->SetInterpolationTypeToLinear();
         }
@@ -850,8 +807,6 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         {
             volumeProperty->SetInterpolationTypeToNearest();
         }
-
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] nsets: " << nsets << std::endl;
 
         vtkVolume * volume = vtkVolume::New();
         volume->SetMapper(volumeMapper);
@@ -881,15 +836,16 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
         vtkRenderWindow* renderWin = vtkRenderWindow::New();
         renderWin->SetSize(width, height);
-        renderWin->SetMultiSamples(0);
+        renderWin->SetMultiSamples(false);
         renderWin->AddRenderer(renderer);
+        renderWin->SetOffScreenRendering(true);
 
         camera->Render( renderer );
 
         renderWin->Render();
 
         unsigned char * renderedFrameBuffer =
-          renderWin->GetRGBACharPixelData( 0, 0, width, height, 1 );
+          renderWin->GetRGBACharPixelData( 0, 0, width-1, height-1, 1 );
 
         // Create final image
         float zVal = std::abs(bounds[4] + ((bounds[5] - bounds[4]) / 2.0f));
@@ -898,9 +854,6 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
         if(PAR_Rank() == 0)
             SetOutput(finalImage);
-
-        // if(PAR_Rank() == 0)
-        //     camera->PrintSelf(std::cerr, vtkIndent(2));
 
         dssMapper->Delete();
         dssActor->Delete();
@@ -914,7 +867,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         renderer->Delete();
         renderWin->Delete();
     }
-    else
+    else if( nsets == 0 )
     {
         debug5 << "[VisItVTK::OSPRay] Nothing to render, no data." << std::endl;
 
@@ -925,5 +878,9 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
             if(PAR_Rank() == 0)
                 SetOutput(finalImage);
         #endif
+    }
+    else
+    {
+        EXCEPTION1(ImproperUseException, "Only one input dataset may be rendered.");
     }
 }
