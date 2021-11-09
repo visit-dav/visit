@@ -41,6 +41,8 @@
                        "cgns",
                        "netcdf",
                        "mfem",
+                       "fms",
+                       "p7zip",
                        "silo",
                        "szip",
                        "icet",
