@@ -28,7 +28,7 @@ namespace avt
     {
         namespace ospray
         {
-            struct RenderingAttribs 
+            struct RenderingAttribs
             {
                 RenderingAttribs(): lightingEnabled(false),
                                     shadowsEnabled(false),
@@ -40,7 +40,8 @@ namespace avt
                                     aoSamples(0),
                                     samplesPerPixel(1),
                                     aoDistance(100000.0f),
-                                    minContribution(0.001f),
+                                    minContribution(2.00f),
+                                    maxContribution(0.01f),
                                     samplesPerRay(500),
                                     samplingRate(3.0f) {}
 
@@ -58,9 +59,10 @@ namespace avt
                 int     samplesPerPixel;
                 // Maximum distance to consider for ambient occlusion
                 float   aoDistance;
-                // Sample contributions below this value will be neglected
-                // to speed up rendering. 
+                // Sample contributions below/above this value will be neglected
+                // to speed up rendering.
                 float   minContribution;
+                float   maxContribution;
 
                 int     samplesPerRay;
                 // Sampling rate for volumes
@@ -102,13 +104,14 @@ public:
     void SetSamplesPerPixel(const int v)        { m_renderingAttribs.samplesPerPixel = v; }
     void SetAoDistance(const float v)           { m_renderingAttribs.aoDistance = v; }
     void SetMinContribution(const float v)      { m_renderingAttribs.minContribution = v; }
+    void SetMaxContribution(const float v)      { m_renderingAttribs.maxContribution = v; }
 
     // Ray Casting Options
     void SetSamplingRate(const float v)         { m_renderingAttribs.samplingRate = v; }
     // Maximum reay recursion depth
     void SetSamplesPerRay(const int s)          { m_renderingAttribs.samplesPerRay = s; }
 
-    // Lighting and Material Properties    
+    // Lighting and Material Properties
     void SetMatProperties(const double[4]);
     void SetViewDirection(const double[3]);
 
@@ -122,8 +125,8 @@ protected:
     DataType                    m_dataType;
     const char*                 m_activeVariablePtr;
     // VisIt has 8 lights that can be setup
-    LightList                   m_lightList; 
-    
+    LightList                   m_lightList;
+
     OSPRayRenderingAttribs      m_renderingAttribs;
 
     std::unique_ptr<float[]>    m_materialPropertiesPtr;
@@ -144,7 +147,7 @@ private:
     double ambientCoefficient{0.0};
     double ambientColor[3] = { 0., 0., 0.};
 
-    /*    
+    /*
     VisItVTKVolume             CreateStructuredRegularVolume(vtkDataSet * const);
     VisItVTKVolumetricModel    CreateVolumetricModel(vtkDataSet * const);
     VisItVTKInstance           CreateInstance(vtkDataSet * const);
@@ -157,8 +160,8 @@ private:
                                               bool channelAccum = false,
                                               bool channelDepth = false,
                                               bool channelAlbedo = false);
-    
-    */    
+
+    */
     static const std::string   DEVICE_TYPE_STR;
     /*
     VisItVTKModule             m_module;
