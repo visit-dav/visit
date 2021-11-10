@@ -900,8 +900,9 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
     //resample group
     {
         resampleGroup = new QGroupBox(parent);
-        resampleGroup->setFlat(true);
-        resampleGroup->setContentsMargins(0,0,0,0);
+        resampleGroup->setTitle(tr("Resampling Options"));
+        // resampleGroup->setFlat(true);
+        // resampleGroup->setContentsMargins(0,0,0,0);
         QHBoxLayout *resampleLayout     = new QHBoxLayout(                                  resampleGroup);
         resampleTargetWidget            = new QWidget();
         QHBoxLayout *resampleTargetLayout= new QHBoxLayout(                                 resampleTargetWidget);
@@ -922,6 +923,7 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         resampleTargetLayout->addWidget(resampleTargetLabel,Qt::AlignRight);
         resampleTargetLayout->addWidget(resampleTarget,Qt::AlignLeft);
         resampleGroup->setVisible(false);
+        pLayout->addWidget(resampleGroup);
     }
 
     //default group
@@ -1018,11 +1020,11 @@ void QvisVolumePlotWindow::UpdateLowGradientGroup(bool enable)
 void QvisVolumePlotWindow::EnableDefaultGroup()
 {
     //resampleGroup is shared between several renderers' options
-    defaultGroupLayout->addWidget(resampleGroup);
     resampleGroup->setVisible(true);
     resampleGroup->setEnabled(true);
-    defaultGroup->setVisible(true);
-    defaultOptions->setEnabled(true);
+    // Currently there is nothing in this group.
+    // defaultGroup->setVisible(true);
+    // defaultOptions->setEnabled(true);
 }
 
 void QvisVolumePlotWindow::UpdateSamplingGroup()
@@ -1113,6 +1115,8 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
 
 #ifdef VISIT_OSPRAY
     case VolumeAttributes::RayCastingOSPRay:
+        resampleGroup->setVisible(true);
+        resampleGroup->setEnabled(true);
         osprayGroup->setVisible(true);
         osprayGroup->setEnabled(true);
         raycastingGroup->setVisible(true);
@@ -3452,26 +3456,6 @@ QvisVolumePlotWindow::opacityVariableChanged(const QString &var)
     SetUpdate(false);
     Apply();
 }
-
-// ****************************************************************************
-// Method:  QvisVolumePlotWindow::compactVariableChanged
-//
-// Purpose:
-//   Qt slot function, called when compactVariable is changed.
-//
-// Programmer:  Allen Harvey
-// Creation:    October 30, 2011
-//
-// ****************************************************************************
-
-void
-QvisVolumePlotWindow::compactVariableChanged(const QString &var)
-{
-    volumeAtts->SetCompactVariable(var.toStdString());
-    SetUpdate(false);
-    Apply();
-}
-
 
 // ****************************************************************************
 //  Method:  QvisVolumePlotWindow::gradientTypeChanged

@@ -63,9 +63,6 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
     if (opacityVariable != obj.opacityVariable)
         return true;
 
-    if (compactVariable != obj.compactVariable)
-        return true;
-
     if (resampleTarget != obj.resampleTarget)
         return true;
 

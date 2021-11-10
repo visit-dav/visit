@@ -174,7 +174,6 @@ private slots:
     void colorMinProcessText();
     void colorMaxToggled(bool val);
     void colorMaxProcessText();
-    void compactVariableChanged(const QString &);
     void opacityVariableChanged(const QString &);
     void opacityMinToggled(bool val);
     void opacityMinProcessText();
@@ -244,7 +243,6 @@ private:
     QLineEdit                *colorMax;
     QButtonGroup             *scalingButtons;
     QLineEdit                *skewLineEdit;
-    QvisVariableButton       *compactVariable;
     QvisVariableButton       *opacityVariable;
     QCheckBox                *opacityMinToggle;
     QLineEdit                *opacityMin;

@@ -104,7 +104,6 @@ public:
     void SelectColorControlPoints();
     void SelectOpacityControlPoints();
     void SelectOpacityVariable();
-    void SelectCompactVariable();
     void SelectFreeformOpacity();
     void SelectMaterialProperties();
 
@@ -128,7 +127,6 @@ public:
     void SetResampleFlag(bool resampleFlag_);
     void SetResampleTarget(int resampleTarget_);
     void SetOpacityVariable(const std::string &opacityVariable_);
-    void SetCompactVariable(const std::string &compactVariable_);
     void SetFreeformOpacity(const unsigned char *freeformOpacity_);
     void SetUseColorVarMin(bool useColorVarMin_);
     void SetColorVarMin(float colorVarMin_);
@@ -175,8 +173,6 @@ public:
     int                            GetResampleTarget() const;
     const std::string              &GetOpacityVariable() const;
           std::string              &GetOpacityVariable();
-    const std::string              &GetCompactVariable() const;
-          std::string              &GetCompactVariable();
     const unsigned char            *GetFreeformOpacity() const;
           unsigned char            *GetFreeformOpacity();
     bool                           GetUseColorVarMin() const;
@@ -282,7 +278,6 @@ public:
         ID_resampleFlag,
         ID_resampleTarget,
         ID_opacityVariable,
-        ID_compactVariable,
         ID_freeformOpacity,
         ID_useColorVarMin,
         ID_colorVarMin,
@@ -328,7 +323,6 @@ private:
     bool                     resampleFlag;
     int                      resampleTarget;
     std::string              opacityVariable;
-    std::string              compactVariable;
     unsigned char            freeformOpacity[256];
     bool                     useColorVarMin;
     float                    colorVarMin;
@@ -356,6 +350,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bbbbbbiiddbbafiabissUbfbfbfbfbiiiidiifibdD"
+#define VOLUMEATTRIBUTES_TMFS "bbbbbbiiddbbafiabisUbfbfbfbfbiiiidiifibdD"
 
 #endif

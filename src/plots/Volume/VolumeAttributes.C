@@ -373,7 +373,6 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
     resampleFlag = obj.resampleFlag;
     resampleTarget = obj.resampleTarget;
     opacityVariable = obj.opacityVariable;
-    compactVariable = obj.compactVariable;
     for(int i = 0; i < 256; ++i)
         freeformOpacity[i] = obj.freeformOpacity[i];
 
@@ -426,7 +425,7 @@ const AttributeGroup::private_tmfs_t VolumeAttributes::TmfsStruct = {VOLUMEATTRI
 
 VolumeAttributes::VolumeAttributes() :
     AttributeSubject(VolumeAttributes::TypeMapFormatString),
-    opacityVariable("default"), compactVariable("default")
+    opacityVariable("default")
 {
     VolumeAttributes::Init();
 }
@@ -448,7 +447,7 @@ VolumeAttributes::VolumeAttributes() :
 
 VolumeAttributes::VolumeAttributes(private_tmfs_t tmfs) :
     AttributeSubject(tmfs.tmfs),
-    opacityVariable("default"), compactVariable("default")
+    opacityVariable("default")
 {
     VolumeAttributes::Init();
 }
@@ -588,7 +587,6 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (resampleFlag == obj.resampleFlag) &&
             (resampleTarget == obj.resampleTarget) &&
             (opacityVariable == obj.opacityVariable) &&
-            (compactVariable == obj.compactVariable) &&
             freeformOpacity_equal &&
             (useColorVarMin == obj.useColorVarMin) &&
             (colorVarMin == obj.colorVarMin) &&
@@ -773,7 +771,6 @@ VolumeAttributes::SelectAll()
     Select(ID_resampleFlag,                    (void *)&resampleFlag);
     Select(ID_resampleTarget,                  (void *)&resampleTarget);
     Select(ID_opacityVariable,                 (void *)&opacityVariable);
-    Select(ID_compactVariable,                 (void *)&compactVariable);
     Select(ID_freeformOpacity,                 (void *)freeformOpacity, 256);
     Select(ID_useColorVarMin,                  (void *)&useColorVarMin);
     Select(ID_colorVarMin,                     (void *)&colorVarMin);
@@ -952,12 +949,6 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     {
         addToParent = true;
         node->AddNode(new DataNode("opacityVariable", opacityVariable));
-    }
-
-    if(completeSave || !FieldsEqual(ID_compactVariable, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("compactVariable", compactVariable));
     }
 
     if(completeSave || !FieldsEqual(ID_freeformOpacity, &defaultObject))
@@ -1180,8 +1171,6 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         SetResampleTarget(node->AsInt());
     if((node = searchNode->GetNode("opacityVariable")) != 0)
         SetOpacityVariable(node->AsString());
-    if((node = searchNode->GetNode("compactVariable")) != 0)
-        SetCompactVariable(node->AsString());
     if((node = searchNode->GetNode("freeformOpacity")) != 0)
         SetFreeformOpacity(node->AsUnsignedCharArray());
     if((node = searchNode->GetNode("useColorVarMin")) != 0)
@@ -1450,13 +1439,6 @@ VolumeAttributes::SetOpacityVariable(const std::string &opacityVariable_)
 {
     opacityVariable = opacityVariable_;
     Select(ID_opacityVariable, (void *)&opacityVariable);
-}
-
-void
-VolumeAttributes::SetCompactVariable(const std::string &compactVariable_)
-{
-    compactVariable = compactVariable_;
-    Select(ID_compactVariable, (void *)&compactVariable);
 }
 
 void
@@ -1753,18 +1735,6 @@ VolumeAttributes::GetOpacityVariable()
     return opacityVariable;
 }
 
-const std::string &
-VolumeAttributes::GetCompactVariable() const
-{
-    return compactVariable;
-}
-
-std::string &
-VolumeAttributes::GetCompactVariable()
-{
-    return compactVariable;
-}
-
 const unsigned char *
 VolumeAttributes::GetFreeformOpacity() const
 {
@@ -1932,12 +1902,6 @@ VolumeAttributes::SelectOpacityVariable()
 }
 
 void
-VolumeAttributes::SelectCompactVariable()
-{
-    Select(ID_compactVariable, (void *)&compactVariable);
-}
-
-void
 VolumeAttributes::SelectFreeformOpacity()
 {
     Select(ID_freeformOpacity, (void *)freeformOpacity, 256);
@@ -1992,7 +1956,6 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_resampleFlag:                    return "resampleFlag";
     case ID_resampleTarget:                  return "resampleTarget";
     case ID_opacityVariable:                 return "opacityVariable";
-    case ID_compactVariable:                 return "compactVariable";
     case ID_freeformOpacity:                 return "freeformOpacity";
     case ID_useColorVarMin:                  return "useColorVarMin";
     case ID_colorVarMin:                     return "colorVarMin";
@@ -2058,7 +2021,6 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_resampleFlag:                    return FieldType_bool;
     case ID_resampleTarget:                  return FieldType_int;
     case ID_opacityVariable:                 return FieldType_variablename;
-    case ID_compactVariable:                 return FieldType_variablename;
     case ID_freeformOpacity:                 return FieldType_ucharArray;
     case ID_useColorVarMin:                  return FieldType_bool;
     case ID_colorVarMin:                     return FieldType_float;
@@ -2124,7 +2086,6 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_resampleFlag:                    return "bool";
     case ID_resampleTarget:                  return "int";
     case ID_opacityVariable:                 return "variablename";
-    case ID_compactVariable:                 return "variablename";
     case ID_freeformOpacity:                 return "ucharArray";
     case ID_useColorVarMin:                  return "bool";
     case ID_colorVarMin:                     return "float";
@@ -2266,11 +2227,6 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_opacityVariable:
         {  // new scope
         retval = (opacityVariable == obj.opacityVariable);
-        }
-        break;
-    case ID_compactVariable:
-        {  // new scope
-        retval = (compactVariable == obj.compactVariable);
         }
         break;
     case ID_freeformOpacity:
@@ -2443,9 +2399,6 @@ bool
 VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
 {
     if (opacityVariable != obj.opacityVariable)
-        return true;
-
-    if (compactVariable != obj.compactVariable)
         return true;
 
     if (resampleTarget != obj.resampleTarget)

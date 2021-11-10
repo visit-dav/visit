@@ -132,9 +132,6 @@
       <Field name="opacityVariable" label="opacityVariable" type="variablename" vartypes="01000000000">
         default
       </Field>
-      <Field name="compactVariable" label="compactVariable" type="variablename" vartypes="01000000000">
-        default
-      </Field>
       <Field name="freeformOpacity" label="freeformOpacity" type="ucharArray" length="256" init="true">
       </Field>
       <Field name="useColorVarMin" label="useColorVarMin" type="bool">
