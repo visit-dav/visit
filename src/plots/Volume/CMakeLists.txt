@@ -92,10 +92,6 @@ ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
 ${VISIT_INCLUDE_DIR}/avt/Expressions/General
 )
 
-if(VISIT_OSPRAY)
-    include_directories(${OSPRAY_INCLUDE_DIR})
-endif()
-
 if(VISIT_SLIVR)
     add_definitions(-DVISIT_SLIVR)
 endif()
@@ -116,7 +112,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     vtk_module_autoinit(TARGETS VVolumePlot MODULES VTK::RenderingVolumeOpenGL2 )
 
     if(VISIT_OSPRAY)
-        target_link_libraries(VVolumePlot ${OSPRAY_LIBRARIES})
+        target_link_libraries(VVolumePlot VTK::RenderingRayTracing)
     endif()
 
 
@@ -149,7 +145,7 @@ ADD_LIBRARY(EVolumePlot_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtplotter_ser avtpipeline_ser avtexpressions_ser VTK::RenderingVolumeOpenGL2 )
 vtk_module_autoinit(TARGETS EVolumePlot_ser  MODULES VTK::RenderingVolumeOpenGL2 )
 if(VISIT_OSPRAY)
-    target_link_libraries(EVolumePlot_ser ${OSPRAY_LIBRARIES})
+    target_link_libraries(EVolumePlot_ser VTK::RenderingRayTracing)
 endif()
 
 SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_ser)
@@ -160,7 +156,7 @@ IF(VISIT_PARALLEL)
     TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtplotter_par avtpipeline_par avtexpressions_par VTK::RenderingVolumeOpenGL2 )
     vtk_module_autoinit(TARGETS EVolumePlot_par  MODULES VTK::RenderingVolumeOpenGL2 )
     if(VISIT_OSPRAY)
-        target_link_libraries(EVolumePlot_par ${OSPRAY_LIBRARIES})
+        target_link_libraries(EVolumePlot_par VTK::RenderingRayTracing)
     endif()
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_par)
