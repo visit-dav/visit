@@ -14,6 +14,7 @@
 #include <TimingsManager.h>
 #include <StackTimer.h>
 #include <ImproperUseException.h>
+#include <InvalidVariableException.h>
 
 #include <vtkImageData.h>
 #include <vtkCellData.h>
@@ -31,6 +32,7 @@
 #include <vtkPolydataMapper.h>
 #include <vtkDataSetMapper.h>
 #include <vtkOSPRayVolumeMapper.h>
+#include <vtkOSPRayRendererNode.h>
 #include <vtkVolumeProperty.h>
 
 #include <vtkDataSetSurfaceFilter.h>
@@ -404,12 +406,12 @@ avtVisItVTKOSPRayDevice::CreateLights()
         // lights yields a more pleasing visual result.
         //
         ambientCoefficient /= (double) ambientCount;
-        // FIXME
+        // FIXME - now done in ExecuteVolume
         // canvas->SetAmbient(ambientColor);
     }
     else
     {
-        // FIXME
+        // FIXME - now done in ExecuteVolume
         // canvas->SetAmbient(1., 1., 1.);
     }
 
@@ -537,7 +539,10 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
     const int width  = screen[0];
     const int height = screen[1];
 
-    auto inputTree = GetInputDataTree(); // avtDataTree_p
+    auto input = GetTypedInput();
+    auto inputTree = input->GetDataTree(); // avtDataTree_p
+
+    // auto inputTree = GetInputDataTree(); // avtDataTree_p
     int nsets = 0;
     vtkDataSet **datasetPtrs = inputTree->GetAllLeaves(nsets);
     debug5 << "[VisItVTK::OSPRAY] nsets: " << nsets << std::endl;
@@ -616,26 +621,30 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
         // There could be both a scalar and opacity data arrays. So get both.
         vtkDataArray *dataArr = in_ds->GetPointData()->GetScalars();
-        // FIXME - need to secondary variable.
-        vtkDataArray *opacArr = in_ds->GetPointData()->GetScalars();
+        vtkDataArray *opacArr;
+
+        if( opacityVarName == "default" )
+            opacArr = dataArr;
+        else
+            opacArr = in_ds->GetPointData()->GetScalars( opacityVarName.c_str() );
+
+        if( opacArr == nullptr )
+        {
+            EXCEPTION1(InvalidVariableException, opacityVarName);
+        }
 
         double dataRange[2] = {0., 0.};
         double opacityRange[2] = {0., 0.};
-        in_ds->GetScalarRange( dataRange );
-        in_ds->GetScalarRange( opacityRange );
+        dataArr->GetRange( dataRange );
+        opacArr->GetRange( opacityRange );
 
         std::cerr << __LINE__ << " [VisItVTK::OSPRAY] data range : "
-                  << dataRange[0] << "  "
-                  << dataRange[1] << "  "
+                  << dataRange[0] << "  " << dataRange[1] << "  "
                   << std::endl;
 
         std::cerr << __LINE__ << " [VisItVTK::OSPRAY] opacity range : "
-                  << opacityRange[0] << "  "
-                  << opacityRange[1] << "  "
+                  << opacityRange[0] << "  " << opacityRange[1] << "  "
                   << std::endl;
-
-        // double dataMag = volume.data.max - volume.data.min;
-        // double opacMag = volume.opacity.max - volume.opacity.min;
 
         double dataScale    = 255.0 / (   dataRange[1] -    dataRange[0]);
         double opacityScale = 255.0 / (opacityRange[1] - opacityRange[0]);
@@ -707,7 +716,9 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
         // Create the volume mapper.
         // vtkOSPRayVolumeMapper* volumeMapper = vtkOSPRayVolumeMapper::New();
+
         vtkSmartVolumeMapper* volumeMapper = vtkSmartVolumeMapper::New();
+        // volumeMapper->SetRequestedRenderModeToOSPRay();
         volumeMapper->SetInputData(imageToRender);
         volumeMapper->SetScalarModeToUsePointData();
         volumeMapper->SetBlendModeToComposite();
@@ -835,16 +846,23 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
         // Create the renderer
         vtkRenderer* renderer = vtkRenderer::New();
-        renderer->SetBackground(1.0, 1.0, 1.0);
+        renderer->SetBackground(float(background[0])/255.0,
+                                float(background[1])/255.0,
+                                float(background[2])/255.0);
         renderer->SetBackgroundAlpha(0.0);
         renderer->AddViewProp(volume);
         renderer->AddActor(dssActor);
         renderer->SetActiveCamera( camera );
         renderer->SetLightCollection( lights );
 
+        vtkOSPRayRendererNode::SetRendererType("pathtracer", renderer);
+        vtkOSPRayRendererNode::SetSamplesPerPixel(m_renderingAttribs.samplesPerPixel, renderer);
+        vtkOSPRayRendererNode::SetAmbientSamples (m_renderingAttribs.aoSamples,       renderer);
+        vtkOSPRayRendererNode::SetMinContribution(m_renderingAttribs.minContribution, renderer);
+
         if (ambientOn)
         {
-            // renderer->SetAmbient(ambientColor);
+            renderer->SetAmbient(ambientColor);
         }
         else
         {
