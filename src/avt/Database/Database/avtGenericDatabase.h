@@ -22,7 +22,7 @@
 
 #include <vectortypes.h>
 
-struct    avtDatasetCollection;
+class    avtDatasetCollection;
 class     avtMatSpeciesMetaData;
 class     avtDomainBoundaries;
 class     avtStreamingGhostGenerator;
