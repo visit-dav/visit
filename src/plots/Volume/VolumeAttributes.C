@@ -289,6 +289,7 @@ VolumeAttributes::LowGradientLightingReduction_FromString(const std::string &s, 
 
 void VolumeAttributes::Init()
 {
+    osprayEnabledFlag = false;
     osprayShadowsEnabledFlag = false;
     osprayUseGridAcceleratorFlag = false;
     osprayPreIntegrationFlag = false;
@@ -354,6 +355,7 @@ void VolumeAttributes::Init()
 void VolumeAttributes::Copy(const VolumeAttributes &obj)
 {
 
+    osprayEnabledFlag = obj.osprayEnabledFlag;
     osprayShadowsEnabledFlag = obj.osprayShadowsEnabledFlag;
     osprayUseGridAcceleratorFlag = obj.osprayUseGridAcceleratorFlag;
     osprayPreIntegrationFlag = obj.osprayPreIntegrationFlag;
@@ -568,7 +570,8 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
         materialProperties_equal = (materialProperties[i] == obj.materialProperties[i]);
 
     // Create the return value
-    return ((osprayShadowsEnabledFlag == obj.osprayShadowsEnabledFlag) &&
+    return ((osprayEnabledFlag == obj.osprayEnabledFlag) &&
+            (osprayShadowsEnabledFlag == obj.osprayShadowsEnabledFlag) &&
             (osprayUseGridAcceleratorFlag == obj.osprayUseGridAcceleratorFlag) &&
             (osprayPreIntegrationFlag == obj.osprayPreIntegrationFlag) &&
             (ospraySingleShadeFlag == obj.ospraySingleShadeFlag) &&
@@ -752,6 +755,7 @@ VolumeAttributes::NewInstance(bool copy) const
 void
 VolumeAttributes::SelectAll()
 {
+    Select(ID_osprayEnabledFlag,               (void *)&osprayEnabledFlag);
     Select(ID_osprayShadowsEnabledFlag,        (void *)&osprayShadowsEnabledFlag);
     Select(ID_osprayUseGridAcceleratorFlag,    (void *)&osprayUseGridAcceleratorFlag);
     Select(ID_osprayPreIntegrationFlag,        (void *)&osprayPreIntegrationFlag);
@@ -824,6 +828,12 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     bool addToParent = false;
     // Create a node for VolumeAttributes.
     DataNode *node = new DataNode("VolumeAttributes");
+
+    if(completeSave || !FieldsEqual(ID_osprayEnabledFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayEnabledFlag", osprayEnabledFlag));
+    }
 
     if(completeSave || !FieldsEqual(ID_osprayShadowsEnabledFlag, &defaultObject))
     {
@@ -1119,6 +1129,8 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("osprayEnabledFlag")) != 0)
+        SetOsprayEnabledFlag(node->AsBool());
     if((node = searchNode->GetNode("osprayShadowsEnabledFlag")) != 0)
         SetOsprayShadowsEnabledFlag(node->AsBool());
     if((node = searchNode->GetNode("osprayUseGridAcceleratorFlag")) != 0)
@@ -1307,6 +1319,13 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+VolumeAttributes::SetOsprayEnabledFlag(bool osprayEnabledFlag_)
+{
+    osprayEnabledFlag = osprayEnabledFlag_;
+    Select(ID_osprayEnabledFlag, (void *)&osprayEnabledFlag);
+}
 
 void
 VolumeAttributes::SetOsprayShadowsEnabledFlag(bool osprayShadowsEnabledFlag_)
@@ -1602,6 +1621,12 @@ VolumeAttributes::SetMaterialProperties(const double *materialProperties_)
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+bool
+VolumeAttributes::GetOsprayEnabledFlag() const
+{
+    return osprayEnabledFlag;
+}
 
 bool
 VolumeAttributes::GetOsprayShadowsEnabledFlag() const
@@ -1937,6 +1962,7 @@ VolumeAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
+    case ID_osprayEnabledFlag:               return "osprayEnabledFlag";
     case ID_osprayShadowsEnabledFlag:        return "osprayShadowsEnabledFlag";
     case ID_osprayUseGridAcceleratorFlag:    return "osprayUseGridAcceleratorFlag";
     case ID_osprayPreIntegrationFlag:        return "osprayPreIntegrationFlag";
@@ -2002,6 +2028,7 @@ VolumeAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
+    case ID_osprayEnabledFlag:               return FieldType_bool;
     case ID_osprayShadowsEnabledFlag:        return FieldType_bool;
     case ID_osprayUseGridAcceleratorFlag:    return FieldType_bool;
     case ID_osprayPreIntegrationFlag:        return FieldType_bool;
@@ -2067,6 +2094,7 @@ VolumeAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
+    case ID_osprayEnabledFlag:               return "bool";
     case ID_osprayShadowsEnabledFlag:        return "bool";
     case ID_osprayUseGridAcceleratorFlag:    return "bool";
     case ID_osprayPreIntegrationFlag:        return "bool";
@@ -2134,6 +2162,11 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_osprayEnabledFlag:
+        {  // new scope
+        retval = (osprayEnabledFlag == obj.osprayEnabledFlag);
+        }
+        break;
     case ID_osprayShadowsEnabledFlag:
         {  // new scope
         retval = (osprayShadowsEnabledFlag == obj.osprayShadowsEnabledFlag);

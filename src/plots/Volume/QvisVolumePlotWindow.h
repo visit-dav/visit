@@ -37,7 +37,7 @@ typedef int WidgetID;
 //   This class contains the widgets that manipulate the transfer function
 //   used to do the volume rendering.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 27 11:55:49 PDT 2001
@@ -45,7 +45,7 @@ typedef int WidgetID;
 // Modifications:
 //    Jeremy Meredith, Tue Nov 13 11:46:23 PST 2001
 //    Added resample target LineEdit and Slider, and opacity variable LineEdit.
-//   
+//
 //    Hank Childs, Fri Feb  8 18:53:41 PST 2002
 //    Added support for smoothing the data and setting the number of samples
 //    per ray.
@@ -68,8 +68,8 @@ typedef int WidgetID;
 //    I removed the raytrace toggle and made it a rendering mode. Changed to
 //    a combobox widget.
 //
-//    Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
-//    Added skewLineEdit and scalingButtons. 
+//    Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005
+//    Added skewLineEdit and scalingButtons.
 //
 //    Hank Childs, Sun Jan  8 08:14:11 PST 2006
 //    Added support for kernel based sampling.
@@ -90,7 +90,7 @@ typedef int WidgetID;
 //    Brad Whitlock, Tue Dec 9 14:41:37 PST 2008
 //    Always include a pointer to the QvisCMap2Widget widget or else moc
 //    gets the object size confused. We forward declare QvisCMap2Widget
-//    and use a dummy class if we don't end up needing it. If we don't do 
+//    and use a dummy class if we don't end up needing it. If we don't do
 //    this, we get weird memory errors when deleting the window when
 //    SLIVR is enabled.
 //
@@ -116,7 +116,7 @@ typedef int WidgetID;
 //    Make resampling optional.
 //
 //    Alister Maguire, Fri May 12 10:15:45 PDT 2017
-//    Removed Splatting and Texture3D, and added the Default renderer. 
+//    Removed Splatting and Texture3D, and added the Default renderer.
 //
 //    Kathleen Biagas, Fri Mar  2 14:53:14 MST 2018
 //    Removed Tuvok.
@@ -208,6 +208,7 @@ private slots:
     void setGuassians();
     void setManyGuassians();
     // ospray options
+    void osprayToggled(bool val);
     void osprayShadowToggled(bool val);
     void osprayUseGridAcceleratorToggled(bool val);
     void osprayPreIntegrationToggled(bool val);
@@ -268,6 +269,7 @@ private:
     QWidget                  *tfRendererOptions;
 
     // General widgets
+    QCheckBox                *osprayToggle;
     QCheckBox                *legendToggle;
     QCheckBox                *lightingToggle;
     QCheckBox                *resampleToggle;
@@ -327,7 +329,7 @@ private:
 
     //OSPRay group
     QGroupBox               *osprayGroup;
-    QGridLayout             *osprayGroupLayout;
+    QWidget                 *osprayProperties;
     QCheckBox               *osprayShadowToggle;
     QCheckBox               *osprayUseGridAcceleratorToggle;
     QCheckBox               *osprayPreIntegrationToggle;
@@ -346,7 +348,7 @@ private:
     QWidget                 *osprayMinContributionWidget;
     QLabel                  *osprayMinContributionLabel;
     QDoubleSpinBox          *osprayMinContribution;
-    
+
     //Sampling group
     QGroupBox               *resampleGroup;
     QWidget                 *defaultOptions;
@@ -359,6 +361,5 @@ private:
     void                    EnableSamplingMethods(bool enable);
     void                    EnableDefaultGroup();
     void                    UpdateLowGradientGroup(bool enable);
-
 };
 #endif

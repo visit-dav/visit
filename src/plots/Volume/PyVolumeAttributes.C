@@ -43,6 +43,11 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
+    if(atts->GetOsprayEnabledFlag())
+        snprintf(tmpStr, 1000, "%sosprayEnabledFlag = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sosprayEnabledFlag = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetOsprayShadowsEnabledFlag())
         snprintf(tmpStr, 1000, "%sosprayShadowsEnabledFlag = 1\n", prefix);
     else
@@ -354,6 +359,30 @@ VolumeAttributes_Notify(PyObject *self, PyObject *args)
     obj->data->Notify();
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_SetOsprayEnabledFlag(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the osprayEnabledFlag in the object.
+    obj->data->SetOsprayEnabledFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetOsprayEnabledFlag(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayEnabledFlag()?1L:0L);
+    return retval;
 }
 
 /*static*/ PyObject *
@@ -1523,6 +1552,8 @@ VolumeAttributes_GetMaterialProperties(PyObject *self, PyObject *args)
 
 PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"Notify", VolumeAttributes_Notify, METH_VARARGS},
+    {"SetOsprayEnabledFlag", VolumeAttributes_SetOsprayEnabledFlag, METH_VARARGS},
+    {"GetOsprayEnabledFlag", VolumeAttributes_GetOsprayEnabledFlag, METH_VARARGS},
     {"SetOsprayShadowsEnabledFlag", VolumeAttributes_SetOsprayShadowsEnabledFlag, METH_VARARGS},
     {"GetOsprayShadowsEnabledFlag", VolumeAttributes_GetOsprayShadowsEnabledFlag, METH_VARARGS},
     {"SetOsprayUseGridAcceleratorFlag", VolumeAttributes_SetOsprayUseGridAcceleratorFlag, METH_VARARGS},
@@ -1626,6 +1657,8 @@ static PyObject *VolumeAttributes_richcompare(PyObject *self, PyObject *other, i
 PyObject *
 PyVolumeAttributes_getattr(PyObject *self, char *name)
 {
+    if(strcmp(name, "osprayEnabledFlag") == 0)
+        return VolumeAttributes_GetOsprayEnabledFlag(self, NULL);
     if(strcmp(name, "osprayShadowsEnabledFlag") == 0)
         return VolumeAttributes_GetOsprayShadowsEnabledFlag(self, NULL);
     if(strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
@@ -1781,7 +1814,9 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     Py_INCREF(args);
     PyObject *obj = NULL;
 
-    if(strcmp(name, "osprayShadowsEnabledFlag") == 0)
+    if(strcmp(name, "osprayEnabledFlag") == 0)
+        obj = VolumeAttributes_SetOsprayEnabledFlag(self, tuple);
+    else if(strcmp(name, "osprayShadowsEnabledFlag") == 0)
         obj = VolumeAttributes_SetOsprayShadowsEnabledFlag(self, tuple);
     else if(strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
         obj = VolumeAttributes_SetOsprayUseGridAcceleratorFlag(self, tuple);

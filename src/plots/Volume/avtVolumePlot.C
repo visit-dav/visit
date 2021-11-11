@@ -74,12 +74,12 @@
 
 avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
 {
-    volumeFilter       = nullptr;
-    volumeLowResFilter = nullptr;
-    gradientFilter = nullptr;
-    resampleFilter = nullptr;
-    shiftCentering = nullptr;
-    compactTree = nullptr;
+    volumeFilter = NULL;
+    volumeImageFilter = NULL;
+    gradientFilter = NULL;
+    resampleFilter = NULL;
+    shiftCentering = NULL;
+    compactTree = NULL;
     renderer = avtVolumeRenderer::New();
 
     avtCustomRenderer_p cr;
@@ -137,18 +137,18 @@ avtVolumePlot::~avtVolumePlot()
     delete shiftCentering;
     delete avtLUT;
 
-    if (volumeFilter != nullptr)
+    if (volumeFilter != NULL)
         delete volumeFilter;
-    if (volumeLowResFilter != nullptr)
-        delete volumeLowResFilter;
-    if (gradientFilter != nullptr)
+    if (volumeImageFilter != NULL)
+        delete volumeImageFilter;
+    if (gradientFilter != NULL)
         delete gradientFilter;
-    if (resampleFilter != nullptr)
+    if (resampleFilter != NULL)
         delete resampleFilter;
-    if (compactTree != nullptr)
+    if (compactTree != NULL)
         delete compactTree;
 
-    renderer = nullptr;
+    renderer = NULL;
 
     //
     // Do not delete the varLegend since it is being held by varLegendRefPtr.
@@ -264,7 +264,7 @@ avtVolumePlot::SetAtts(const AttributeGroup *a)
     SetLegendOpacities();
 
     double min = 0., max = 1.;
-    if (*(mapper->GetInput()) != nullptr)
+    if (*(mapper->GetInput()) != NULL)
         mapper->GetRange(min, max);
     if (atts.GetUseColorVarMin())
     {
@@ -341,7 +341,7 @@ avtVolumePlot::SetLegendOpacities()
 int
 avtVolumePlot::GetNumberOfStagesForImageBasedPlot(const WindowAttributes &a) const
 {
-    return volumeFilter->GetNumberOfStages(a);
+    return volumeImageFilter->GetNumberOfStages(a);
 }
 
 // ****************************************************************************
@@ -361,10 +361,10 @@ avtVolumePlot::ImageExecute(avtImage_p input,
 {
     avtImage_p rv = input;
 
-    if (volumeFilter != nullptr)
+    if (volumeImageFilter != NULL)
     {
-        volumeFilter->SetAttributes(atts);
-        rv = volumeFilter->RenderImage(input, window_atts);
+        volumeImageFilter->SetAttributes(atts);
+        rv = volumeImageFilter->RenderImage(input, window_atts);
     }
     else
     {
@@ -472,10 +472,10 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
     //
     // Clean up any old filters.
     //
-    if (shiftCentering != nullptr)
+    if (shiftCentering != NULL)
     {
         delete shiftCentering;
-        shiftCentering = nullptr;
+        shiftCentering = NULL;
     }
 
     //
@@ -509,7 +509,7 @@ bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth)
     debug5<<"datts->GetTimeIndex(): "<<datts.GetTimeIndex()<<endl;
     debug5<<"datts->GetCycle(): "<<datts.GetCycle()<<endl;
 
-    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), nullptr);
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), NULL);
     avtDatabaseMetaData *md = dbp->GetMetaData(datts.GetTimeIndex(), 1);
     std::string mesh = md->MeshForVar(datts.GetVariableName());
     const avtMeshMetaData *mmd = md->GetMesh(mesh);
@@ -562,28 +562,26 @@ bool DataMustBeResampled(avtDataObject_p input)
     // we must resample.
     //
     avtMeshType mt = input->GetInfo().GetAttributes().GetMeshType();
-
-    // if (mt != AVT_RECTILINEAR_MESH)
-    // {
-    //     return true;
-    // }
+    if (mt != AVT_RECTILINEAR_MESH)
+    {
+        return true;
+    }
 
     const avtDataAttributes &datts = input->GetInfo().GetAttributes();
     std::string db = input->GetInfo().GetAttributes().GetFullDBName();
 
-    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), nullptr);
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), NULL);
     avtDatabaseMetaData *md = dbp->GetMetaData(datts.GetTimeIndex(), 1);
 
     try
     {
-      std::cerr << __FILE__ << "  "  << __LINE__ << "  "
-                << "Domains " << md->GetNDomains(datts.GetVariableName()) << std::endl;
-
          //
          // If we have multiple domains, we still need to resample
          // onto a single domain.
          //
-        return (md->GetNDomains(datts.GetVariableName()) > 1);
+         if (md->GetNDomains(datts.GetVariableName()) > 1)
+             return true;
+         return false;
     }
     catch(...)
     {
@@ -659,36 +657,31 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     //
     // Clean up any old filters.
     //
-    if (volumeFilter != nullptr)
+    if (volumeFilter != NULL)
     {
         delete volumeFilter;
-        volumeFilter = nullptr;
+        volumeFilter = NULL;
     }
-
-    if (volumeLowResFilter != nullptr)
-    {
-        delete volumeLowResFilter;
-        volumeLowResFilter = nullptr;
-    }
-
-    if (gradientFilter != nullptr)
+    if (gradientFilter != NULL)
     {
         delete gradientFilter;
-        gradientFilter = nullptr;
+        gradientFilter = NULL;
     }
-
-    if (resampleFilter != nullptr)
+    if (volumeImageFilter != NULL)
+    {
+        delete volumeImageFilter;
+        volumeImageFilter = NULL;
+    }
+    if (resampleFilter != NULL)
     {
         delete resampleFilter;
-        resampleFilter = nullptr;
+        resampleFilter = NULL;
     }
-
-    if (compactTree != nullptr)
+    if (compactTree != NULL)
     {
         delete compactTree;
-        compactTree = nullptr;
+        compactTree = NULL;
     }
-
     avtDataObject_p dob = input;
 
     if (atts.GetRendererType() == VolumeAttributes::RayCasting ||
@@ -697,7 +690,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay)
     {
 #ifdef ENGINE
-        // Gradient calc for raycasting integration not needed, but
+        // gradient calc for raycasting integration not needed, but
         // lighting flag may still be on
         if (atts.GetRendererType() == VolumeAttributes::RayCasting &&
             atts.GetLightingFlag())
@@ -719,81 +712,51 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             snprintf(gradName, 128, "_%s_gradient", gradvar);
 
             gradientFilter = new avtGradientExpression();
-            gradientFilter->SetInput(dob);
+            gradientFilter->SetInput(input);
             gradientFilter->SetAlgorithm(FAST);
             gradientFilter->SetOutputVariableName(gradName);
             gradientFilter->AddInputVariableName(gradvar);
 
-            // Prevent this intermediate object from getting cleared
-            // out, so it is still there when we want to render.
+            // prevent this intermediate object from getting cleared out, so
+            // it is still there when we want to render.
             gradientFilter->GetOutput()->SetTransientStatus(false);
             dob = gradientFilter->GetOutput();
         }
 #endif
-    }
 
-    // Some renderers can only render vtkRectilinearGrids so
-    // resample the data on to a vtkRectilinearGrid.
-    if (atts.GetRendererType() == VolumeAttributes::Default ||
-        atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay)
+        volumeImageFilter = new avtVolumeFilter();
+        volumeImageFilter->SetAttributes(atts);
+        volumeImageFilter->SetInput(dob);
+        dob = volumeImageFilter->GetOutput();
+    }
+    else // not ray casting pipeline
     {
-        // User can force resampling
+        //User can force resampling
         bool forceResample = atts.GetResampleFlag();
 
-        if (DataMustBeResampled(dob) || forceResample)
+        if (DataMustBeResampled(input) || forceResample)
         {
-            std::cerr << __FILE__ << "  "  << __LINE__ << "  "
-                      << "Resampling" << std::endl;
-
-            // Some renderers can render MULTIPLE vtkRectilinearGrids
-            // so allow the data to redistributed across all ranks.
-            bool redistribute =
-#ifdef PARALLEL
-              (atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay);
-#else
-              false;
-#endif
+            //
             // Resample the data
+            //
             InternalResampleAttributes resampleAtts;
-            resampleAtts.SetDistributedResample(redistribute);
+            resampleAtts.SetDistributedResample(false);
             resampleAtts.SetTargetVal(atts.GetResampleTarget());
-            resampleAtts.SetPrefersPowersOfTwo(true);
+            resampleAtts.SetPrefersPowersOfTwo(atts.GetRendererType() == VolumeAttributes::Default);
             resampleAtts.SetUseTargetVal(true);
 
             resampleFilter = new avtResampleFilter(&resampleAtts);
-            resampleFilter->SetInput(dob);
+            resampleFilter->SetInput(input);
+
             dob = resampleFilter->GetOutput();
-
-            std::cerr << __FILE__ << "  "  << __LINE__ << "  "
-                      << "Resampling" << std::endl;
         }
-    }
 
-    // Do the rendering via the volume filter.
-    if (atts.GetRendererType() == VolumeAttributes::RayCasting ||
-        atts.GetRendererType() == VolumeAttributes::RayCastingIntegration ||
-        atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
-        atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay )
-    {
-        std::cerr << __FILE__ << "  "  << __LINE__ << "  "
-                  << "Rendering " << std::endl;
-
-        volumeFilter = new avtVolumeFilter();
-        volumeFilter->SetAttributes(atts);
+        // Apply a filter that will work on the combined data to make histograms.
+        volumeFilter = new avtLowerResolutionVolumeFilter();
+        volumeFilter->SetAtts(&atts);
         volumeFilter->SetInput(dob);
         dob = volumeFilter->GetOutput();
-
-        std::cerr << __FILE__ << "  "  << __LINE__ << "  "
-                  << "Rendering " << std::endl;
     }
-    else // if (atts.GetRendererType() == VolumeAttributes::Default )
-    {
-        volumeLowResFilter = new avtLowerResolutionVolumeFilter();
-        volumeLowResFilter->SetAtts(&atts);
-        volumeLowResFilter->SetInput(dob);
-        dob = volumeLowResFilter->GetOutput();
-    }
-
     return dob;
 }
 
@@ -871,7 +834,8 @@ avtVolumePlot::EnhanceSpecification(avtContract_p spec)
     std::string ov = atts.GetOpacityVariable();
     if (ov == "default")
     {
-        return spec;
+        if(atts.GetResampleFlag())
+            return spec;
     }
     avtDataRequest_p ds = spec->GetDataRequest();
     std::string primaryVariable(ds->GetVariable());
@@ -899,7 +863,6 @@ avtVolumePlot::EnhanceSpecification(avtContract_p spec)
         debug5 << "Adding secondary variable: " << ov << endl;
         nds->AddSecondaryVariable(ov.c_str());
     }
-
     avtContract_p rv = new avtContract(spec, nds);
     rv->SetCalculateVariableExtents(ov, true);
 
@@ -923,11 +886,11 @@ avtVolumePlot::ReleaseData(void)
 {
     avtVolumeDataPlot::ReleaseData();
 
-    if (volumeFilter != nullptr)
+    if (volumeImageFilter != NULL)
     {
-        volumeFilter->ReleaseData();
+        volumeImageFilter->ReleaseData();
     }
-    if (shiftCentering != nullptr)
+    if (shiftCentering != NULL)
     {
         shiftCentering->ReleaseData();
     }

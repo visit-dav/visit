@@ -93,10 +93,10 @@ avtVolumeRenderer::~avtVolumeRenderer()
 //  Method:  avtVolumeRenderer::ReleaseGraphicsResources
 //
 //  Purpose:
-//    
+//
 //
 //  Arguments:
-//    
+//
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October  1, 2003
@@ -272,7 +272,7 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 //
 //  Modifications:
 //    Jeremy Meredith, Tue Nov 13 11:31:57 PST 2001
-//    Made it use the Sobel gradient operator by default since it looks so 
+//    Made it use the Sobel gradient operator by default since it looks so
 //    much better.  Fixed the Sobel operator to work with ghost values.
 //
 //    Hank Childs, Mon Nov 19 08:49:55 PST 2001
@@ -284,9 +284,9 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 //    Hank Childs, Wed Dec 12 10:54:58 PST 2001
 //    Allow for variable extents to be artificially set.
 //
-//    Kathleen Bonnell, Mon Nov 19 16:05:37 PST 2001 
+//    Kathleen Bonnell, Mon Nov 19 16:05:37 PST 2001
 //    VTK 4.0 API changes require use of vtkDataArray in place of
-//    vtkScalars for rgrid coordinates. 
+//    vtkScalars for rgrid coordinates.
 //
 //    Kathleen Bonnell, Fri Feb  8 11:03:49 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
@@ -303,8 +303,8 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 //    I was missing some checks in the non-ghost centered diff gradient
 //    calculation to make sure we didn't walk off the edge of the mesh.
 //
-//    Kathleen Bonnell, Fri Mar  4 13:55:09 PST 2005 
-//    Account for Log scaling when determining vmin and vmax. 
+//    Kathleen Bonnell, Fri Mar  4 13:55:09 PST 2005
+//    Account for Log scaling when determining vmin and vmax.
 //
 //    Hank Childs, Tue Feb  6 15:39:01 PST 2007
 //    Treat the values for "min" and "max" as min and max, not as log(min),
@@ -334,7 +334,7 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
         return;
 
     VolumeGetVariableExtents(atts, data,
-        this->varmin, this->varmax, 
+        this->varmin, this->varmax,
         this->vmin, this->vmax, this->vsize);
 
     // Get the opacity variable's extents.
@@ -383,24 +383,11 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
             gmn = new float[nels];
             hs = new float[nels];
             float ghostval = omax+osize;
+            bool calcHS = true;
 
-            bool calcHS = atts.GetCompactVariable() == "default";
-            if(!calcHS)
-            {
-                vtkDataArray *compactSupport = 
-                    VolumeGetScalar(ds, atts.GetCompactVariable().c_str());
-                if (compactSupport != NULL)
-                {   //assign h values
-                    for (int i = 0; i<nels; i++)    
-                        hs[i] = fabs(compactSupport->GetTuple1(i));
-                }
-                else
-                    calcHS = true;
-            }
-
-            gm_max = VolumeCalculateGradient_SPH(ds, opac, 
+            gm_max = VolumeCalculateGradient_SPH(ds, opac,
                 gx, gy, gz, gm, gmn, hs, calcHS, ghostval);
-            
+
             //Set the extents for the compact support variables;
             hs_size = nels;
             hs_min = hs[0]; hs_max = hs[0];
@@ -417,7 +404,7 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
     data->Delete();
     opac->Delete();
     initialized = true;
-} 
+}
 
 bool
 avtVolumeRenderer::GetScalars(vtkDataSet *ds, vtkDataArray *&d, vtkDataArray *&o)
@@ -460,7 +447,7 @@ void
 avtVolumeRenderer::SetAtts(const AttributeGroup *a)
 {
     const VolumeAttributes *newAtts = (const VolumeAttributes*)a;
-    
+
     if (*newAtts == atts)
         return;
     currentRendererIsValid = (atts.GetRendererType() == newAtts->GetRendererType());

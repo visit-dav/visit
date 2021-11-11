@@ -70,10 +70,6 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
     VolumeAttributes         atts;
     char                    *primaryVariable;
 
-#ifdef VISIT_OSPRAY /* handler for ospray volume rendering filter*/
-    void                    *ospray;
-#endif
-
     avtOpacityMap            CreateOpacityMap(double range[2]);
 
     virtual void             Execute(void);

@@ -43,8 +43,8 @@ class avtResampleFilter;
 //    Brad Whitlock, Thu Apr 19 15:07:38 PST 2001
 //    I added a legend to the plot.
 //
-//    Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001 
-//    Added avtLookupTable. 
+//    Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001
+//    Added avtLookupTable.
 //
 //    Hank Childs, Tue Nov 20 12:09:13 PST 2001
 //    Added support for software volume rendering as well.
@@ -53,8 +53,8 @@ class avtResampleFilter;
 //    Allow for data to be smoothed with a shift centering filter.
 //
 //    Kathleen Bonnell, Tue Oct 22 08:33:26 PDT 2002
-//    Added ApplyRenderingTransformation. 
-//    
+//    Added ApplyRenderingTransformation.
+//
 //    Hank Childs, Wed Nov 24 16:44:44 PST 2004
 //    Integrated this plot with SR mode, meaning that a lot of infrastructure
 //    for delivering images could be removed.
@@ -73,7 +73,7 @@ class avtResampleFilter;
 //    unnecessary pipeline re-executions.
 //
 //    Brad Whitlock, Mon Dec 15 15:58:08 PST 2008
-//    I added a new avtLowerResolutionVolumeFilter that works on the 
+//    I added a new avtLowerResolutionVolumeFilter that works on the
 //    resampled data.
 //
 //    Kathleen Bonnell, Tue Mar  3 13:37:13 PST 2009
@@ -135,7 +135,4 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual avtContract_p    EnhanceSpecification(avtContract_p);
 };
 
-
 #endif
-
-

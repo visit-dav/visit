@@ -8,16 +8,23 @@
 
 #include "avtDefaultRenderer.h"
 
-#include <vtkRectilinearGrid.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkRenderer.h>
-#include <vtkVolumeProperty.h>
-#include <vtkImageData.h>
-
-#include <VolumeAttributes.h>
 #include <avtCallback.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+
+#include <vtkColorTransferFunction.h>
+#include <vtkImageData.h>
+#include <vtkPiecewiseFunction.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkRenderer.h>
+#include <vtkSmartVolumeMapper.h>
+#include <vtkVolume.h>
+#include <vtkVolumeProperty.h>
+#include <vtkOSPRayVolumeMapper.h>
+#include <vtkOSPRayRendererNode.h>
+
+#include <vtkGeometryFilter.h>
+#include <vtkPolyDataMapper.h>
 
 #ifndef NO_DATA_VALUE
 #define NO_DATA_VALUE -1e+37
@@ -34,7 +41,7 @@
 //  Method: avtDefaultRenderer::avtDefaultRenderer
 //
 //  Purpose:
-//    Initialize the memebers associated with the default renderer. 
+//    Initialize the memebers associated with the default renderer.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    April 3, 2017
@@ -45,17 +52,18 @@
 
 avtDefaultRenderer::avtDefaultRenderer()
 {
-    VTKRen           = NULL;
-    imageToRender    = NULL;
+    VTKRen           = nullptr;
+
+    curVolume        = vtkVolume::New();
+
+    imageToRender    = nullptr;
+    mapper           = nullptr;
 
     volumeProp       = vtkVolumeProperty::New();
-    mapper           = vtkSmartVolumeMapper::New();
-    curVolume        = vtkVolume::New();
     transFunc        = vtkColorTransferFunction::New();
     opacity          = vtkPiecewiseFunction::New();
 
     resetColorMap    = false;
-    useInterpolation = true;
 }
 
 
@@ -63,7 +71,7 @@ avtDefaultRenderer::avtDefaultRenderer()
 //  Method: avtDefaultRenderer::~avtDefaultRenderer
 //
 //  Purpose:
-//    Destructor.  
+//    Destructor.
 //
 //  Programmer:  Alister Maguire
 //  Creation:    April 3, 2017
@@ -71,34 +79,36 @@ avtDefaultRenderer::avtDefaultRenderer()
 //  Modifications:
 //
 //    Alister Maguire, Tue Dec 11 10:18:31 PST 2018
-//    Added deletions for curVolume, imageToRender, volumeProp, 
-//    and mapper. 
+//    Added deletions for curVolume, imageToRender, volumeProp,
+//    and mapper.
 //
 // ****************************************************************************
 
 avtDefaultRenderer::~avtDefaultRenderer()
 {
-    if (curVolume != NULL)
+    if (curVolume != nullptr)
     {
         curVolume->Delete();
     }
-    if (imageToRender != NULL)
+
+    if (imageToRender != nullptr)
     {
         imageToRender->Delete();
     }
-    if (volumeProp != NULL)
-    {
-        volumeProp->Delete();
-    }
-    if (mapper != NULL)
+    if (mapper != nullptr)
     {
         mapper->Delete();
     }
-    if (transFunc != NULL)
+
+    if (volumeProp != nullptr)
+    {
+        volumeProp->Delete();
+    }
+    if (transFunc != nullptr)
     {
         transFunc->Delete();
     }
-    if (opacity != NULL)
+    if (opacity != nullptr)
     {
         opacity->Delete();
     }
@@ -109,11 +119,11 @@ avtDefaultRenderer::~avtDefaultRenderer()
 //  Method:  avtDefaultRenderer::Render
 //
 //  Purpose:
-//    Render a volume using a vtkSmartVolumeMapper 
+//    Render a volume using a vtkSmartVolumeMapper
 //
 //  Arguments:
 //    props   : the rendering properties
-//    volume  : the volume to be rendered 
+//    volume  : the volume to be rendered
 //
 //  Programmer:  Alister Maguire
 //  Creation:    April 3, 2017
@@ -123,16 +133,16 @@ avtDefaultRenderer::~avtDefaultRenderer()
 //    Alister Maguire, Tue Dec 11 13:02:20 PST 2018
 //    Refactored to appropriately handle the NO_DATA_VALUE. Also
 //    changed smart pointers to standard pointers and added memory
-//    management. 
+//    management.
 //
 //    Alister Maguire, Mon Mar 25 09:20:43 PDT 2019
-//    Updated to use different scalars for opacity and color. 
+//    Updated to use different scalars for opacity and color.
 //
 //    Alister Maguire, Tue Jun 11 11:08:52 PDT 2019
-//    Update to use ambient, diffuse, specular, and specular power. 
+//    Update to use ambient, diffuse, specular, and specular power.
 //
 //    Alister Maguire, Tue Jun 18 11:36:44 PDT 2019
-//    If VTKRen is NULL, we can't render. 
+//    If VTKRen is nullptr, we can't render.
 //
 //    Alister Maguire, Wed Nov  4 07:29:17 PST 2020
 //    Set the scalar opacity unit distance. This is basically setting
@@ -144,52 +154,78 @@ void
 avtDefaultRenderer::Render(
     const avtVolumeRendererImplementation::RenderProperties &props,
     const avtVolumeRendererImplementation::VolumeData &volume)
-{ 
+{
     const char *mName = "avtDefaultRenderer::Render: ";
 
-    if (VTKRen == NULL)
+    if (VTKRen == nullptr)
     {
-        debug1 << mName << "Default Renderer: VTKRen is NULL!";
+        debug1 << mName << "Default Renderer: VTKRen is nullptr!";
         EXCEPTION0(ImproperUseException);
     }
 
-    // 
-    // 2D data has no volume, so we don't try to render this. 
-    // 
+    // 2D data has no volume, so don't try to render.
     if (props.dataIs2D)
     {
-        debug5 << mName << "Cannot perform volume rendering on " 
+        debug5 << mName << "Cannot perform volume rendering on "
             << "2D data... returning";
         return;
     }
 
-    if (imageToRender == NULL)
+    if (imageToRender == nullptr)
     {
-        debug5 << mName << "Converting from rectilinear grid " 
+        debug5 << mName << "Converting from rectilinear grid "
             << "to image data";
 
-        //
-        // Our mapper requires a vtkImageData as input. We must 
-        // create one. 
-        //
+        vtkRectilinearGrid* rgrid = vtkRectilinearGrid::SafeDownCast( volume.grid );
+
+        if( rgrid->GetDataObjectType() != VTK_RECTILINEAR_GRID )
+        {
+            EXCEPTION1(ImproperUseException,
+                       "Only vtkRectilinearGrid may be rendered.");
+        }
+
+        // Check for an implied transform.
+        // avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
+        // if (inatts.GetRectilinearGridHasTransform())
+        // {
+        //     EXCEPTION1(ImproperUseException,
+        //                "vtkRectilinear grids with an implied transform can not be rendered.");
+        // }
+
+        double bounds[6];
+        rgrid->GetBounds(bounds);
+
+        // The volume mapper requires a vtkImageData as input.
         int dims[3], extent[6];
-        ((vtkRectilinearGrid *)volume.grid)->GetDimensions(dims);
-        ((vtkRectilinearGrid *)volume.grid)->GetExtent(extent);
+        rgrid->GetDimensions(dims);
+        rgrid->GetExtent(extent);
 
-        //
-        // We might be using a different scalar for opacity than 
-        // for color. We need to get both arrays. 
-        //
-        vtkDataArray *dataArr = volume.data.data;
-        vtkDataArray *opacArr = volume.opacity.data;
+        double spacingX = (rgrid->GetXCoordinates()->GetTuple1(1)-
+                           rgrid->GetXCoordinates()->GetTuple1(0));
+        double spacingY = (rgrid->GetYCoordinates()->GetTuple1(1)-
+                           rgrid->GetYCoordinates()->GetTuple1(0));
+        double spacingZ = (rgrid->GetZCoordinates()->GetTuple1(1)-
+                           rgrid->GetZCoordinates()->GetTuple1(0));
 
-        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *)volume.grid;
-        double spacingX = rgrid->GetXCoordinates()->GetTuple1(1)-
-            rgrid->GetXCoordinates()->GetTuple1(0);
-        double spacingY = rgrid->GetYCoordinates()->GetTuple1(1)-
-            rgrid->GetYCoordinates()->GetTuple1(0);
-        double spacingZ = rgrid->GetZCoordinates()->GetTuple1(1)-
-            rgrid->GetZCoordinates()->GetTuple1(0);
+        std::cerr << __LINE__ << " [Default Renderer] dims : "
+                  << dims[0] << "  " << dims[1] << "  "<< dims[2] << "  "
+                  << std::endl;
+
+        std::cerr << __LINE__ << " [Default Renderer] extent : "
+                  << extent[0] << "  " << extent[1] << "  "
+                  << extent[2] << "  " << extent[3] << "  "
+                  << extent[4] << "  " << extent[5] << "  "
+                  << std::endl;
+
+        std::cerr << __LINE__ << " [Default Renderer] bounds : "
+                  << bounds[0] << "  " << bounds[1] << "  "
+                  << bounds[2] << "  " << bounds[3] << "  "
+                  << bounds[4] << "  " << bounds[5] << "  "
+                  << std::endl;
+
+        std::cerr << __LINE__ << " [Default Renderer] spacing : "
+                  << spacingX << "  " << spacingX << "  "<< spacingX << "  "
+                  << std::endl;
 
         imageToRender = vtkImageData::New();
         imageToRender->SetDimensions(dims);
@@ -197,23 +233,36 @@ avtDefaultRenderer::Render(
         imageToRender->SetSpacing(spacingX, spacingY, spacingZ);
         imageToRender->AllocateScalars(VTK_FLOAT, 2);
 
-        //
         // Set the origin to match the lower bounds of the grid
-        //
-        double bounds[6];
-        ((vtkRectilinearGrid *)volume.grid)->GetBounds(bounds);
         imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
 
-        float dataMag   = volume.data.max - volume.data.min;
-        float opacMag   = volume.opacity.max - volume.opacity.min;
+        // There could be both a scalar and opacity data arrays. So get both.
+        vtkDataArray *dataArr    = volume.data.data;
+        vtkDataArray *opacityArr = volume.opacity.data;
 
-        //
-        // We need to transfer the rgrid data over to the image data
-        // and scale to the proper range. 
-        // VisIt populates empty space with the NO_DATA_VALUE. 
-        // We need to map this to a value that our mapper accepts, 
-        // and then clamp it out of vision.  
-        //
+        double dataRange[2] = {0., 0.};
+        double opacityRange[2] = {0., 0.};
+        dataArr->GetRange( dataRange );
+        opacityArr->GetRange( opacityRange );
+
+        std::cerr << __LINE__ << " [Default Renderer] data range : "
+                  << dataRange[0] << "  " << dataRange[1] << "  "
+                  << std::endl;
+
+        std::cerr << __LINE__ << " [Default Renderer] opacity range : "
+                  << opacityRange[0] << "  " << opacityRange[1] << "  "
+                  << std::endl;
+
+        double dataScale    = 255.0 / (   dataRange[1] -    dataRange[0]);
+        double opacityScale = 255.0 / (opacityRange[1] - opacityRange[0]);
+
+        // Transfer the rgrid data to the image data
+        // and scale to the proper range.
+        useInterpolation = true;
+
+        // VisIt populates empty space with the NO_DATA_VALUE.
+        // This needs to map this to a value that the mapper accepts,
+        // and then clamp it so to be fully translucent.
         int ptId = 0;
         for (int z = 0; z < dims[2]; ++z)
         {
@@ -221,45 +270,34 @@ avtDefaultRenderer::Render(
             {
                 for (int x = 0; x < dims[0]; ++x)
                 {
-                    //
-                    // Our opacity and color data may differ. We
-                    // need to add both as two separate components. 
-                    //
-                    float dataTuple = dataArr->GetTuple1(ptId);
+                    // The opacity and color data may differ so add
+                    // both as two separate components.
+                    double dataTuple = dataArr->GetTuple1(ptId);
                     if (dataTuple <= NO_DATA_VALUE)
                     {
-                        //
-                        // Our color map is 0 -> 255. For no data values, 
-                        // assign a new value just out side of the map. 
-                        //
-                        imageToRender->SetScalarComponentFromFloat(
-                            x, y, z, 0, -1.0);
+                        // The color map is 0 -> 255. For no data values,
+                        // assign a new value just out side of the map.
+                        imageToRender->SetScalarComponentFromFloat(x, y, z, 0, -1.0);
                         useInterpolation = false;
                     }
                     else
                     {
-                        float numerator = 255.0 * (dataTuple - volume.data.min);
-                        imageToRender->SetScalarComponentFromFloat(
-                            x, y, z, 0, (numerator / dataMag));
+                        double val = (dataTuple - dataRange[0]) * dataScale;
+                        imageToRender->SetScalarComponentFromFloat(x, y, z, 0, val);
                     }
 
-                    float opacTuple = opacArr->GetTuple1(ptId);
-                    if (opacTuple <= NO_DATA_VALUE)
+                    double opacityTuple = opacityArr->GetTuple1(ptId);
+                    if (opacityTuple <= NO_DATA_VALUE)
                     {
-                        //
-                        // Our color map is 0 -> 255. For no data values, 
-                        // assign a new value just out side of the map. 
-                        //
-                        imageToRender->SetScalarComponentFromFloat(
-                            x, y, z, 1, -1.0);
+                        // The opacity map is 0 -> 255. For no data values,
+                        // assign a new value just out side of the map.
+                        imageToRender->SetScalarComponentFromFloat(x, y, z, 1, -1.0);
                         useInterpolation = false;
                     }
                     else
                     {
-                        float numerator = 255.0 * 
-                            (opacTuple - volume.opacity.min);
-                        imageToRender->SetScalarComponentFromFloat(
-                            x, y, z, 1, (numerator / opacMag));
+                        double val = (opacityTuple - opacityRange[0]) * opacityScale;
+                        imageToRender->SetScalarComponentFromFloat(x, y, z, 1, val);
                     }
 
                     ptId++;
@@ -267,98 +305,127 @@ avtDefaultRenderer::Render(
             }
         }
 
+        std::cerr << __LINE__ << " [Default Renderer] useInterpolation: "
+                  << useInterpolation << "  "
+                  << std::endl;
+    }
+
+    if( mapper == nullptr || lastMapper != props.atts.GetOsprayEnabledFlag())
+    {
+        lastMapper = props.atts.GetOsprayEnabledFlag();
+
+        if (mapper != nullptr)
+            mapper->Delete();
+
+        if( props.atts.GetOsprayEnabledFlag())
+            mapper = vtkOSPRayVolumeMapper::New();
+        else
+            mapper = vtkSmartVolumeMapper::New();
+
         debug5 << mName << "Adding data to the SmartVolumeMapper" << endl;
 
         mapper->SetInputData(imageToRender);
         mapper->SetScalarModeToUsePointData();
         mapper->SetBlendModeToComposite();
         resetColorMap = true;
+
+        double scalarRange[2];
+        mapper->GetInput()->GetScalarRange(scalarRange);
+        std::cerr << __LINE__ << " [Default Renderer] scalarRange: "
+                  << scalarRange[0] << "  "
+                  << scalarRange[1] << "  "
+                  << std::endl;
     }
 
     if (resetColorMap || oldAtts != props.atts)
     {
+        double rgbaScale = 1.0 / 255.0;
+
+        resetColorMap = false;
+        oldAtts       = props.atts;
+
         debug5 << mName << "Resetting color" << endl;
 
-        //
-        // Getting color/alpha transfer function from VisIt
-        //
-        unsigned char rgba[256*4];
+        // Create the transfer function and the opacity mapping.
+        constexpr int tableSize = 256;
+        unsigned char rgba[tableSize*4];
         props.atts.GetTransferFunction(rgba);
 
-        //
-        // We don't want to see the no data values, so we turn clamping
+        // To make the  NO_DATA_VALUEs fully translucent turn clamping
         // off (opacity becomes 0.0)
-        //
         transFunc->SetScaleToLinear();
-        transFunc->SetClamping(0);
-        opacity->SetClamping(0);
+        transFunc->SetClamping(false);
+        opacity->SetClamping(false);
 
-        float atten = props.atts.GetOpacityAttenuation() / 255.f;
+        double atten = props.atts.GetOpacityAttenuation();
 
-        //
         // Add the color map to vtk's transfer function
-        //
-        for(int i = 0; i < 256; i++) 
+        for(int i = 0; i < tableSize; i++)
         {
             int rgbIdx  = 4 * i;
-            float curOp = rgba[rgbIdx + 3] * atten; 
-            transFunc->AddRGBPoint(i, rgba[rgbIdx] / 255.f, 
-                rgba[rgbIdx + 1] / 255.f, 
-                rgba[rgbIdx + 2] / 255.f);
-            opacity->AddPoint(i, MAX(0.0, MIN(1.0, curOp)));
-        }
- 
-        //
-        // For some reason, the endpoints aren't included when clamping 
-        // is turned off. So, let's put some padding on the ends of our
-        // mapping functions. 
-        //
-        int lastIdx = 255*4;
-        transFunc->AddRGBPoint(-1, rgba[0] / 255.f, 
-            rgba[1] / 255.f, 
-            rgba[2] / 255.f);
-        transFunc->AddRGBPoint(256, rgba[lastIdx] / 255.f, 
-            rgba[lastIdx + 1] / 255.f, 
-            rgba[lastIdx + 2] / 255.f);
-        opacity->AddPoint(-1, rgba[3] * atten);
-        opacity->AddPoint(256, rgba[lastIdx + 3] * atten);
-
-        //
-        // Set ambient, diffuse, specular, and specular power (shininess).
-        //
-        const double *matProp = props.atts.GetMaterialProperties();
-   
-        if (matProp != NULL)
-        {
-            volumeProp->SetAmbient(matProp[0]); 
-            volumeProp->SetDiffuse(matProp[1]); 
-            volumeProp->SetSpecular(matProp[2]); 
-            volumeProp->SetSpecularPower(matProp[3]); 
+            transFunc->AddRGBPoint(i,
+                                   double(rgba[rgbIdx    ]) * rgbaScale,
+                                   double(rgba[rgbIdx + 1]) * rgbaScale,
+                                   double(rgba[rgbIdx + 2]) * rgbaScale);
+            opacity->AddPoint(i, double(rgba[rgbIdx + 3]) * rgbaScale * atten);
         }
 
-        //
+        // For some reason, the endpoints aren't included when
+        // clamping is turned off. So add some padding on the ends of
+        // the mapping functions.
+        transFunc->AddRGBPoint(-1,
+                               double(rgba[0]) * rgbaScale,
+                               double(rgba[1]) * rgbaScale,
+                               double(rgba[2]) * rgbaScale);
+        opacity->AddPoint(-1, double(rgba[3]) * rgbaScale * atten);
+
+        int rgbIdx = (tableSize-1) * 4;
+        transFunc->AddRGBPoint(tableSize,
+                               double(rgba[rgbIdx    ]) * rgbaScale,
+                               double(rgba[rgbIdx + 1]) * rgbaScale,
+                               double(rgba[rgbIdx + 2]) * rgbaScale);
+        opacity->AddPoint(tableSize, double(rgba[rgbIdx + 3]) * rgbaScale * atten);
+
+	// transFunc->PrintSelf( std::cerr, vtkIndent(2) );
+	
+        rgbIdx  = 4 * 64;
+        std::cerr << __LINE__ << " [Default Renderer] RGBA: " << 64 << "  "
+                  << double(rgba[rgbIdx  ]) * rgbaScale << "  "
+                  << double(rgba[rgbIdx+1]) * rgbaScale << "  "
+                  << double(rgba[rgbIdx+2]) * rgbaScale << "  "
+                  << double(rgba[rgbIdx+3]) * rgbaScale * atten << "  "
+                  << std::endl;
+
+        rgbIdx  = 4 * 128;
+        std::cerr << __LINE__ << " [Default Renderer] RGBA: " << 128 << "  "
+                  << double(rgba[rgbIdx  ]) * rgbaScale << "  "
+                  << double(rgba[rgbIdx+1]) * rgbaScale << "  "
+                  << double(rgba[rgbIdx+2]) * rgbaScale << "  "
+                  << double(rgba[rgbIdx+3]) * rgbaScale * atten << "  "
+                  << std::endl;
+
         // Set the volume properties.
-        //
-        if (props.atts.GetLightingFlag()) 
-        {
-            volumeProp->SetShade(1);
-        }
-        else
-        {
-            volumeProp->SetShade(0);
-        }
-
-        volumeProp->SetScalarOpacity(opacity);
         volumeProp->SetColor(transFunc);
+        volumeProp->SetScalarOpacity(opacity);
         volumeProp->IndependentComponentsOff();
+        volumeProp->SetShade( props.atts.GetLightingFlag() );
 
-        //
-        // If our dataset contains NO_DATA_VALUEs, interpolation will
-        // not work correctly on the boundaries (between a real value and
-        // a no data value). Hopefully this will be addressed in the 
-        // future. For now, we only interpolate when our dataset contains
-        // none of these values. 
-        //
+        // Set ambient, diffuse, specular, and specular power (shininess).
+        const double *matProp = props.atts.GetMaterialProperties();
+
+        if (matProp != nullptr)
+        {
+            volumeProp->SetAmbient(matProp[0]);
+            volumeProp->SetDiffuse(matProp[1]);
+            volumeProp->SetSpecular(matProp[2]);
+            volumeProp->SetSpecularPower(matProp[3]);
+        }
+
+        // If the dataset contains NO_DATA_VALUEs, interpolation will
+        // not work correctly on the boundaries (between a real value
+        // and a no data value). Hopefully this will be addressed in the
+        // future. For now, only interpolate when the dataset contains
+        // none of these values.
         if (useInterpolation)
         {
             volumeProp->SetInterpolationTypeToLinear();
@@ -368,11 +435,7 @@ avtDefaultRenderer::Render(
             volumeProp->SetInterpolationTypeToNearest();
         }
 
-        resetColorMap = false;
-        oldAtts       = props.atts;
-
-        //
-        // We need to calculate the sample distance so that we can apply
+        // A sample distance needs to be calculate the so to apply an
         // opacity correction.
         //
         // NOTE 1: vtkSmartVolumeMapper->SetSampleDistance does not work, so we
@@ -383,7 +446,6 @@ avtDefaultRenderer::Render(
         // an opacity correction that generally "looks good". Increasing this
         // value will result in an increased opacity intensity, while decreasing
         // this value will result in a decreased opacity intensity.
-        //
         double spacing[3];
         imageToRender->GetSpacing(spacing);
 
@@ -395,6 +457,14 @@ avtDefaultRenderer::Render(
 
         curVolume->SetMapper(mapper);
         curVolume->SetProperty(volumeProp);
+    }
+
+    if( props.atts.GetOsprayEnabledFlag() )
+    {
+        vtkOSPRayRendererNode::SetRendererType("pathtracer", VTKRen);
+        vtkOSPRayRendererNode::SetSamplesPerPixel(props.atts.GetOspraySpp(), VTKRen);
+        vtkOSPRayRendererNode::SetAmbientSamples (props.atts.GetOsprayAoSamples(), VTKRen);
+        vtkOSPRayRendererNode::SetMinContribution(props.atts.GetOsprayMinContribution(), VTKRen);
     }
 
     mapper->Render(VTKRen, curVolume);

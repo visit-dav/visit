@@ -398,7 +398,7 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
       std::cerr << __FILE__ << "  " << __LINE__ << "  "
                 << "Update" << std::endl;
 
-      GetInput()->Update(GetGeneralContract());
+      // GetInput()->Update(GetGeneralContract());
 
       std::cerr << __FILE__ << "  " << __LINE__ << "  "
                 << "Update" << std::endl;
@@ -430,9 +430,9 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
             avtVisItVTKDevice *device = avtVisItVTKRenderer::GetDevice();
 
             if(device != nullptr)
-              {
+            {
                 software = dynamic_cast<avtRayTracerBase *>(device);
-              }
+	    }
             else
             {
                 EXCEPTION1(VisItException, "[VisIt VTK Device] Device type not set or set to unknown.");
@@ -624,6 +624,11 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
         {
             avtVisItVTKOSPRayDevice *device =
               dynamic_cast<avtVisItVTKOSPRayDevice *>(software);
+
+            device->SetOSPRayEnabled(atts.GetOsprayEnabledFlag());
+	    
+            device->SetForceResample(atts.GetResampleFlag());
+            device->SetResampleTargetVal(atts.GetResampleTarget());
 
             device->SetRenderingType(DataType::VOLUME);
             device->SetActiveVariable(primaryVariable);

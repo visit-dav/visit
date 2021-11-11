@@ -12,27 +12,29 @@
 #include <avtVolumeRendererImplementation.h>
 #include <VolumeAttributes.h>
 
-#include <vtkVolume.h>
-#include <vtkSmartVolumeMapper.h>
-#include <vtkColorTransferFunction.h>
-#include <vtkPiecewiseFunction.h>
+class vtkColorTransferFunction;
+class vtkImageData;
+class vtkPiecewiseFunction;
+class vtkVolume;
+class vtkVolumeMapper;
+class vtkVolumeProperty;
 
 // ****************************************************************************
 //  Class: avtDefaultRenderer
 //
 //  Purpose:
 //      A default volume renderer using vtkSmartVolumeMapper. The mapper checks
-//      for hardware compatability and rendering parameters to choose which 
-//      rendering method to use. 
+//      for hardware compatability and rendering parameters to choose which
+//      rendering method to use.
 //
 //  Programmer: Alister Maguire
 //  Creation:   April  3, 2017
 //
 //  Modifications:
-//  
+//
 //    Alister Maguire, Tue Dec 11 10:18:31 PST 2018
-//    Changed pointers to standard instead of smart. 
-//    Added transfer function and opacity. 
+//    Changed pointers to standard instead of smart.
+//    Added transfer function and opacity.
 //
 // ****************************************************************************
 
@@ -46,17 +48,19 @@ class avtDefaultRenderer : public avtVolumeRendererImplementation
     virtual void               Render(const RenderProperties &props,
                                       const VolumeData &volume);
 
-    vtkColorTransferFunction  *transFunc;
-    vtkPiecewiseFunction      *opacity;
-    vtkVolume                 *curVolume;
-    vtkImageData              *imageToRender;
-    vtkVolumeProperty         *volumeProp;
-    vtkSmartVolumeMapper      *mapper;
+    vtkColorTransferFunction  *transFunc    {nullptr};
+    vtkPiecewiseFunction      *opacity      {nullptr};
+    vtkVolume                 *curVolume    {nullptr};
+    vtkImageData              *imageToRender{nullptr};
+    vtkVolumeProperty         *volumeProp   {nullptr};
+    vtkVolumeMapper           *mapper       {nullptr};
 
     VolumeAttributes           oldAtts;
 
-    bool                       resetColorMap;
-    bool                       useInterpolation;
+    bool                       resetColorMap{true};
+    bool                       useInterpolation{true};
+
+    bool                       lastMapper{false};
 };
 
-#endif 
+#endif

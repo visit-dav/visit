@@ -76,6 +76,9 @@
         Highest
       </Enum>
       
+      <Field name="osprayEnabledFlag" label="Enable OSPRay" type="bool">
+        false
+      </Field>
       <Field name="osprayShadowsEnabledFlag" label="osprayShadowsEnabledFlag" type="bool">
         false
       </Field>

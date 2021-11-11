@@ -108,6 +108,7 @@ public:
     void SelectMaterialProperties();
 
     // Property setting methods
+    void SetOsprayEnabledFlag(bool osprayEnabledFlag_);
     void SetOsprayShadowsEnabledFlag(bool osprayShadowsEnabledFlag_);
     void SetOsprayUseGridAcceleratorFlag(bool osprayUseGridAcceleratorFlag_);
     void SetOsprayPreIntegrationFlag(bool osprayPreIntegrationFlag_);
@@ -151,6 +152,7 @@ public:
     void SetMaterialProperties(const double *materialProperties_);
 
     // Property getting methods
+    bool                           GetOsprayEnabledFlag() const;
     bool                           GetOsprayShadowsEnabledFlag() const;
     bool                           GetOsprayUseGridAcceleratorFlag() const;
     bool                           GetOsprayPreIntegrationFlag() const;
@@ -259,7 +261,8 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_osprayShadowsEnabledFlag = 0,
+        ID_osprayEnabledFlag = 0,
+        ID_osprayShadowsEnabledFlag,
         ID_osprayUseGridAcceleratorFlag,
         ID_osprayPreIntegrationFlag,
         ID_ospraySingleShadeFlag,
@@ -304,6 +307,7 @@ public:
     };
 
 private:
+    bool                     osprayEnabledFlag;
     bool                     osprayShadowsEnabledFlag;
     bool                     osprayUseGridAcceleratorFlag;
     bool                     osprayPreIntegrationFlag;
@@ -350,6 +354,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bbbbbbiiddbbafiabisUbfbfbfbfbiiiidiifibdD"
+#define VOLUMEATTRIBUTES_TMFS "bbbbbbbiiddbbafiabisUbfbfbfbfbiiiidiifibdD"
 
 #endif
