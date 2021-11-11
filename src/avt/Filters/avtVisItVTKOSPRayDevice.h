@@ -22,6 +22,8 @@
 #include <filters_exports.h>
 #include <LightList.h>
 
+class avtResampleFilter;
+
 namespace avt
 {
     namespace visit_vtk
@@ -30,7 +32,12 @@ namespace avt
         {
             struct RenderingAttribs
             {
-                RenderingAttribs(): lightingEnabled(false),
+                RenderingAttribs(): OSPRayEnabled(false),
+
+                                    forceResample{false},
+                                    resampleTargetVal{static_cast<int>(1e6)},
+
+                                    lightingEnabled(false),
                                     shadowsEnabled(false),
                                     useGridAccelerator(false),
                                     preIntegration(false),
@@ -44,6 +51,11 @@ namespace avt
                                     maxContribution(0.01f),
                                     samplesPerRay(500),
                                     samplingRate(3.0f) {}
+
+                bool    OSPRayEnabled;
+
+                bool    forceResample;
+                int     resampleTargetVal;
 
                 bool    lightingEnabled;
                 // Whether to compute (hard) shadows
@@ -86,20 +98,24 @@ public:
     virtual const char      *GetDescription() override  { return "VisItVTK OSPRay Back-end Device"; }
     virtual const char      *GetDeviceType() override   { return DEVICE_TYPE_STR.c_str(); }
 
-    void SetRenderingType(const DataType dt)       { m_dataType = dt; }
+    void SetRenderingType(const DataType dt)    { m_dataType = dt; }
 
      // VisIt options
     void SetActiveVariable(const char *s)       { m_activeVariablePtr = s; }
     void SetLightInfo(const LightList& l)       { m_lightList = l; }
 
     // OSPRay Options
+    void SetOSPRayEnabled(const bool b)         { m_renderingAttribs.OSPRayEnabled = b; }
+    void SetForceResample(const bool b)         { m_renderingAttribs.forceResample = b; }
+    void SetResampleTargetVal(const int v)      { m_renderingAttribs.resampleTargetVal = v; }
+
     void SetLighting(const bool b)              { m_renderingAttribs.lightingEnabled = b; }
     void SetShadowsEnabled(const bool b)        { m_renderingAttribs.shadowsEnabled = b; }
-    void SetUseGridAccelerator(const bool l)    { m_renderingAttribs.useGridAccelerator = l; }
-    void SetPreIntegration(const bool l)        { m_renderingAttribs.preIntegration = l; }
-    void SetSingleShade(const bool l)           { m_renderingAttribs.singleShade = l; }
-    void SetOneSidedLighting(const bool l)      { m_renderingAttribs.oneSidedLighting = l; }
-    void SetAoTransparencyEnabled(const bool l) { m_renderingAttribs.aoTransparencyEnabled = l; }
+    void SetUseGridAccelerator(const bool b)    { m_renderingAttribs.useGridAccelerator = b; }
+    void SetPreIntegration(const bool b)        { m_renderingAttribs.preIntegration = b; }
+    void SetSingleShade(const bool b)           { m_renderingAttribs.singleShade = b; }
+    void SetOneSidedLighting(const bool b)      { m_renderingAttribs.oneSidedLighting = b; }
+    void SetAoTransparencyEnabled(const bool b) { m_renderingAttribs.aoTransparencyEnabled = b; }
     void SetAoSamples(const int v)              { m_renderingAttribs.aoSamples = v; }
     void SetSamplesPerPixel(const int v)        { m_renderingAttribs.samplesPerPixel = v; }
     void SetAoDistance(const float v)           { m_renderingAttribs.aoDistance = v; }
@@ -109,7 +125,7 @@ public:
     // Ray Casting Options
     void SetSamplingRate(const float v)         { m_renderingAttribs.samplingRate = v; }
     // Maximum reay recursion depth
-    void SetSamplesPerRay(const int s)          { m_renderingAttribs.samplesPerRay = s; }
+    void SetSamplesPerRay(const int v)          { m_renderingAttribs.samplesPerRay = v; }
 
     // Lighting and Material Properties
     void SetMatProperties(const double[4]);
@@ -146,7 +162,7 @@ private:
     bool ambientOn{false};
     double ambientCoefficient{0.0};
     double ambientColor[3] = { 0., 0., 0.};
-
+    avtResampleFilter * resampleFilter{nullptr};
     /*
     VisItVTKVolume             CreateStructuredRegularVolume(vtkDataSet * const);
     VisItVTKVolumetricModel    CreateVolumetricModel(vtkDataSet * const);
