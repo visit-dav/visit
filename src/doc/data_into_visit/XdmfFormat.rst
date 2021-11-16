@@ -3,7 +3,7 @@
 The Xdmf file format
 ====================
 
-Xdmf (eXtensible Data Model and Format) files can represent a variety of mesh including the basic simple mesh types, such as, point, regular, rectilinear, curvilinear and unstructured.
+Xdmf (eXtensible Data Model and Format) files can represent a variety of meshes including the basic simple mesh types, such as, point, regular, rectilinear, curvilinear and unstructured.
 They also support multi-block meshes.
 Xdmf files consist of an XML (eXensible Markup Language) file containing meta data that references binary data in separate files.
 The binary files can either be raw binary files or HDF5 files.
@@ -61,7 +61,7 @@ Here is the structure of a basic Xdmf file. ::
 DataItem
 ~~~~~~~~
 
-The `DataItem` is used store embedded data or external binary data.
+The `DataItem` is used to store embedded data or external binary data.
 
 The following is an example of a `DataItem` that embeds the data directly in the Xdmf file. ::
 
@@ -75,7 +75,7 @@ The following is an example of a `DataItem` that references an array in an HDF5 
         output.h5:/values
     </DataItem>
 
-The following is an example of a `DataItem` that references an array in an HDF5 file. ::
+The following is an example of a `DataItem` that references an array in a binary file. ::
 
     <DataItem Format="Binary" NumberType="Float" Precision="4" Endian="Little" Seek="0" Dimensions="3">
         output.bin
@@ -104,7 +104,7 @@ The valid values for `Precision` are:
 
 `Dimensions` consists of one to three values representing a 1D, 2D or 3D array.
 
-The valid values for `Edian` are:
+The valid values for `Endian` are:
 
 * Native
 * Big
@@ -183,7 +183,7 @@ The following mesh geometries are supported.
 * XY - Z is set to 0.0
 * X_Y_Z - X, Y and Z are seperate arrays
 * VXVYVZ - Three arrays, one for each axis
-* ORIGIN_DXDYDZ - Six values, Ox, Oy, Oz + Dx, Dy, DZ
+* ORIGIN_DXDYDZ - Six values, Ox, Oy, Oz + Dx, Dy, Dz
 * ORIGIN_DXDY - Four values, Ox, Oy + Dx, Dy
 
 Attribute
@@ -204,7 +204,7 @@ The following `Centering` are supported.
 An example of a regular mesh file
 ---------------------------------
 
-A regular mesh consists of structured mesh with constant spacing in each direction.
+A regular mesh consists of a structured mesh with constant spacing in each direction.
 The mesh can be 2D or 3D.
 It is defined by a `2DCoRectMesh` or `3DCoRectMesh` topology.
 
