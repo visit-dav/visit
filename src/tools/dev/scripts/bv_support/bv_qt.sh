@@ -207,6 +207,10 @@ function qt_license_prompt
 function apply_qt_patch
 {
     if [[ ${QT_VERSION} == 5.14.2 ]] ; then
+        apply_qt_5142_numeric_limits_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
         if [[ "$OPSYS" == "Linux" ]]; then
             if [[ "$DO_MESAGL" == "yes" ]] ; then
                 apply_qt_5142_linux_mesagl_patch
@@ -237,6 +241,71 @@ function apply_qt_patch
             fi
         fi
     fi
+    return 0
+}
+
+function apply_qt_5142_numeric_limits_patch
+{   
+    info "Patching qt 5.14.2 for numeric-limits" 
+    patch -p0 <<EOF
+diff -c qtbase/src/corelib/global/qendian.h.orig c qtbase/src/corelib/global/qendian.h
+*** qtbase/src/corelib/global/qendian.h.orig	Wed Oct 13 20:10:58 2021
+--- qtbase/src/corelib/global/qendian.h	Wed Oct 13 20:11:12 2021
+***************
+*** 47,52 ****
+--- 47,53 ----
+  // include stdlib.h and hope that it defines __GLIBC__ for glibc-based systems
+  #include <stdlib.h>
+  #include <string.h>
++ #include <limits>
+  
+  #ifdef min // MSVC
+  #undef min
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.14.2 for numeric-limits patch1 failed"
+        return 1
+    fi
+
+    patch -p0 <<EOF
+diff -c qtbase/src/corelib/global/qfloat16.h.orig c qtbase/src/corelib/global/qfloat16.h
+*** qtbase/src/corelib/global/qfloat16.h.orig	Wed Oct 13 20:09:19 2021
+--- qtbase/src/corelib/global/qfloat16.h	Wed Oct 13 20:09:50 2021
+***************
+*** 44,49 ****
+--- 44,50 ----
+  #include <QtCore/qglobal.h>
+  #include <QtCore/qmetatype.h>
+  #include <string.h>
++ #include <limits>
+  
+  #if defined(QT_COMPILER_SUPPORTS_F16C) && defined(__AVX2__) && !defined(__F16C__)
+  // All processors that support AVX2 do support F16C too. That doesn't mean
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.14.2 for numeric-limits patch2 failed"
+        return 1
+    fi
+    patch -p0 <<EOF
+diff -c qtbase/src/corelib/text/qbytearraymatcher.h.orig c qtbase/src/corelib/text/qbytearraymatcher.h
+*** qtbase/src/corelib/text/qbytearraymatcher.h.orig	Wed Oct 13 20:11:58 2021
+--- qtbase/src/corelib/text/qbytearraymatcher.h	Wed Oct 13 20:12:21 2021
+***************
+*** 41,46 ****
+--- 41,47 ----
+  #define QBYTEARRAYMATCHER_H
+  
+  #include <QtCore/qbytearray.h>
++ #include <limits>
+  
+  QT_BEGIN_NAMESPACE
+  
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.14.2 for numeric-limits patch3 failed"
+        return 1
+    fi
+
     return 0
 }
 
