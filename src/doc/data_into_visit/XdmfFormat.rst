@@ -16,7 +16,6 @@ The advantage to writing out the files directly is that there are fewer external
 In fact, if you write out raw binary files, you will have zero external dependencies.
 
 The remainder of this Xdmf documentation consists of a description of the file format, a simple example, and then more complex examples of the different mesh types.
-The examples consist of C++ code fragments that write out Xdmf files directly.
 
 The official Xdmf file format specification and description can be found `here <https://xdmf.org/index.php/Main_Page>`_.
 
@@ -200,6 +199,13 @@ The following `Centering` are supported.
 
 * Node
 * Cell
+
+The C++ examples
+----------------
+
+The examples consist of C++ code fragments that write out Xdmf files directly.
+The code fragments that write out the corresponding HDF5 data are not shown.
+The full C++ source code that contains all the example XDMF code shown is found `here <https://github.com/visit-dav/visit/blob/develop/src/tools/data/datagen/xdmf.C>`_.
 
 An example of a regular mesh file
 ---------------------------------
