@@ -207,6 +207,22 @@ The examples consist of C++ code fragments that write out Xdmf files directly.
 The code fragments that write out the corresponding HDF5 data are not shown.
 The full C++ source code that contains all the example XDMF code shown is found `here <https://github.com/visit-dav/visit/blob/develop/src/tools/data/datagen/xdmf.C>`__. This includes the code that generates the example mesh data and the code that writes out the binary mesh data to the HDF5 file.
 
+An example of a point mesh
+--------------------------
+
+A point mesh consists of an unstructured mesh made up of a collection of points.
+The mesh can be 2D or 3D.
+It is defined by a `Polyvertex` topology.
+
+Here is the code that writes a 3D point mesh.
+
+.. literalinclude:: data_examples/xdmf.C
+      :lines: 1672-1715
+
+Here is the resultant Xdmf file.
+
+.. literalinclude:: data_examples/point3d.xmf
+
 An example of a regular mesh file
 ---------------------------------
 
@@ -217,7 +233,7 @@ It is defined by a `2DCoRectMesh` or `3DCoRectMesh` topology.
 Here is the code that writes a 3D regular mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1476-1523
+      :lines: 1522-1569
 
 Here is the resultant Xdmf file.
 
@@ -226,7 +242,7 @@ Here is the resultant Xdmf file.
 Here is the code that writes a 2D regular mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1427-1474
+      :lines: 1473-1520
 
 Here is the resultant Xdmf file.
 
@@ -242,7 +258,7 @@ It is defined by a `2DRectMesh` or `3DRectMesh` topology.
 Here is the code that writes a 3D rectilinear mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1574-1624
+      :lines: 1620-1670
 
 Here is the resultant Xdmf file.
 
@@ -251,25 +267,34 @@ Here is the resultant Xdmf file.
 Here is the code that writes a 2D rectilinear mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1525-1572
+      :lines: 1571-1618
 
 Here is the resultant Xdmf file.
 
 .. literalinclude:: data_examples/rect2d.xmf
 
-An example of a point mesh
---------------------------
+An example of a curvilinear mesh
+--------------------------------
 
-A point mesh consists of an unstructured mesh made up of a collection of points.
+A curvilinear mesh consists of a structured mesh where the coordinates are specified as multi-dimensional arrays of values.
 The mesh can be 2D or 3D.
-It is defined by a `Polyvertex` topology.
+It is defined by a `2DSMesh` or `3DSMesh` topology.
 
-Here is the code that writes a 3D point mesh.
+Here is the code that writes a 3D curvilinear mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1626-1669
+      :lines: 1344-1398
 
 Here is the resultant Xdmf file.
 
-.. literalinclude:: data_examples/point3d.xmf
+.. literalinclude:: data_examples/curv3d.xmf
+
+Here is the code that writes a 2D curvilinear mesh.
+
+.. literalinclude:: data_examples/xdmf.C
+      :lines: 1298-1342
+
+Here is the resultant Xdmf file.
+
+.. literalinclude:: data_examples/curv2d.xmf
 

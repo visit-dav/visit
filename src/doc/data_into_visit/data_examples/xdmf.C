@@ -1296,14 +1296,60 @@ create_multi_grid3d()
 }
 
 void
-create_uniform3d()
+create_curv2d()
 {
     FILE *xmf = 0;
 
     /*
      * Open the file and write the header.
      */
-    xmf = fopen("uniform3d.xmf", "w");
+    xmf = fopen("curv2d.xmf", "w");
+    fprintf(xmf, "<?xml version=\"1.0\" ?>\n");
+    fprintf(xmf, "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n");
+    fprintf(xmf, "<Xdmf Version=\"2.0\">\n");
+
+    /*
+     * Write the mesh description and the variables defined on the mesh.
+     */
+    fprintf(xmf, " <Domain>\n");
+
+    fprintf(xmf, "   <Grid Name=\"mesh\" GridType=\"Uniform\">\n");
+    fprintf(xmf, "     <Topology TopologyType=\"2DSMesh\" NumberOfElements=\"%d %d\"/>\n", NY+1, NX+1);
+    fprintf(xmf, "     <Geometry GeometryType=\"XY\">\n");
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"Float\" Precision=\"4\" Format=\"HDF\">\n", (NY+1)*(NX+1), 2);
+    fprintf(xmf, "        mesh.h5:/XY\n");
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Geometry>\n");
+    fprintf(xmf, "     <Attribute Name=\"Pressure_2D\" AttributeType=\"Scalar\" Center=\"Cell\">\n");
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"UChar\" Precision=\"4\" Format=\"HDF\">\n", NY, NX);
+    fprintf(xmf, "        mesh.h5:/Pressure_2D\n");
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Attribute>\n");
+    fprintf(xmf, "     <Attribute Name=\"VelocityX_2D\" AttributeType=\"Scalar\" Center=\"Node\">\n");
+    fprintf(xmf, "       <DataItem Dimensions=\"%d %d\" NumberType=\"Char\" Precision=\"4\" Format=\"HDF\">\n", NY+1, NX+1);
+    fprintf(xmf, "        mesh.h5:/VelocityX_2D\n");
+    fprintf(xmf, "       </DataItem>\n");
+    fprintf(xmf, "     </Attribute>\n");
+    fprintf(xmf, "   </Grid>\n");
+
+    fprintf(xmf, " </Domain>\n");
+
+    /*
+     * Write the footer and close the file.
+     */
+    fprintf(xmf, "</Xdmf>\n");
+    fclose(xmf);
+}
+
+void
+create_curv3d()
+{
+    FILE *xmf = 0;
+
+    /*
+     * Open the file and write the header.
+     */
+    xmf = fopen("curv3d.xmf", "w");
     fprintf(xmf, "<?xml version=\"1.0\" ?>\n");
     fprintf(xmf, "<!DOCTYPE Xdmf SYSTEM \"Xdmf.dtd\" []>\n");
     fprintf(xmf, "<Xdmf Version=\"2.0\">\n");
@@ -2261,7 +2307,8 @@ main()
     create_tree3d();
     create_multi_domain3d();
     create_multi_grid3d();
-    create_uniform3d();
+    create_curv2d();
+    create_curv3d();
     create_xml_data();
     create_corect2d();
     create_corect3d();
