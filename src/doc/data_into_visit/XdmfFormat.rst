@@ -17,7 +17,7 @@ In fact, if you write out raw binary files, you will have zero external dependen
 
 The remainder of this Xdmf documentation consists of a description of the file format, a simple example, and then more complex examples of the different mesh types.
 
-The official Xdmf file format specification and description can be found `here <https://xdmf.org/index.php/Main_Page>`_.
+The official Xdmf file format specification and description can be found `here <https://xdmf.org/index.php/Main_Page>`__.
 
 Basic structure of an Xdmf file
 -------------------------------
@@ -205,7 +205,7 @@ The C++ examples
 
 The examples consist of C++ code fragments that write out Xdmf files directly.
 The code fragments that write out the corresponding HDF5 data are not shown.
-The full C++ source code that contains all the example XDMF code shown is found `here <https://github.com/visit-dav/visit/blob/develop/src/tools/data/datagen/xdmf.C>`_.
+The full C++ source code that contains all the example XDMF code shown is found `here <https://github.com/visit-dav/visit/blob/develop/src/tools/data/datagen/xdmf.C>`__. This includes the code that generates the example mesh data and the code that writes out the binary mesh data to the HDF5 file.
 
 An example of a regular mesh file
 ---------------------------------
