@@ -196,7 +196,7 @@ The following mesh geometries are supported.
 =============  ====================================
 XYZ            Interlaced locations
 XY             Z is set to 0.0
-X_Y_Z          X, Y and Z are seperate arrays
+X_Y_Z          X, Y and Z are separate arrays
 VXVYVZ         Three arrays, one for each axis
 ORIGIN_DXDYDZ  Six values, Ox, Oy, Oz + Dx, Dy, Dz
 ORIGIN_DXDY    Four values, Ox, Oy + Dx, Dy
