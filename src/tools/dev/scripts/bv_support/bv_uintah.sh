@@ -255,22 +255,7 @@ function build_uintah
         sdk_root=`xcrun --show-sdk-path`
 
         info "Invoking command to configure UINTAH"
-        info "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
-        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
-        --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
-        ${cf_darwin} \
-        ${cf_build_type} \
-	--enable-minimal --enable-optimize \
-	--with-fortran=no --with-petsc=no --with-hypre=no \
-	--with-lapack=no --with-blas=no \
-        --with-mpi=\"$PAR_INCLUDE_DIR/..\" \ 
-        --with-libxml2=\"$sdk_root/usr\" "
-
-        #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
-        #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
-
+        set -x
         sh -c "../src/configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS -headerpad_max_install_names\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
@@ -279,27 +264,19 @@ function build_uintah
         ${cf_darwin} \
         ${cf_build_type} \
         --enable-minimal --enable-optimize \
-	--with-fortran=no --with-petsc=no --with-hypre=no \
-	--with-lapack=no --with-blas=no \
+        --with-fortran=no --with-petsc=no --with-hypre=no \
+        --with-lapack=no --with-blas=no \
         --with-mpi=\"$PAR_INCLUDE_DIR/..\" \
         --with-libxml2=\"$sdk_root/usr\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
         #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
+        set +x
 
     else
 
         info "Invoking command to configure UINTAH"
-        info "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
-        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
-        --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
-        ${cf_build_type} \
-        --enable-minimal --enable-optimize \
-	--with-fortran=no --with-petsc=no --with-hypre=no \
-	--with-lapack=no --with-blas=no \
-        --with-mpi=built-in"
+        set -x
 
         sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
@@ -309,8 +286,9 @@ function build_uintah
         ${cf_build_type} \
         --enable-minimal --enable-optimize \
         --with-fortran=no --with-petsc=no --with-hypre=no \
-	--with-lapack=no --with-blas=no \
+        --with-lapack=no --with-blas=no \
         --with-mpi=built-in"
+        set +x
     fi
 
 

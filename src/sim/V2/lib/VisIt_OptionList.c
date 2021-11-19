@@ -18,7 +18,7 @@ int
 VisIt_OptionList_free(visit_handle obj)
 {
     VISIT_DYNAMIC_EXECUTE(OptionList_free,
-                    int, (visit_handle), 
+                    int, (visit_handle),
                     (obj));
 }
 
@@ -56,6 +56,13 @@ int VisIt_OptionList_setValueS(visit_handle h, const char *name, const char *val
     VISIT_DYNAMIC_EXECUTE(OptionList_setValue,
         int, (visit_handle, const char *, int, void *),
         (h, name, VISIT_DATATYPE_STRING, (void*)value));
+}
+
+int VisIt_OptionList_setValueE(visit_handle h, const char *name, int value)
+{
+    VISIT_DYNAMIC_EXECUTE(OptionList_setValue,
+        int, (visit_handle, const char *, int, void *),
+        (h, name, VISIT_DATATYPE_ENUM, &value));
 }
 
 int VisIt_OptionList_getNumValues(visit_handle h, int *nvalues)
@@ -113,17 +120,17 @@ static int VisIt_OptionList_getValue(visit_handle h, int index, void **pvalue)
 
 int VisIt_OptionList_getValueI(visit_handle h, const char *name, int *value)
 {
-    GETVALUE_BODY(VISIT_DATATYPE_INT, int) 
+    GETVALUE_BODY(VISIT_DATATYPE_INT, int)
 }
 
 int VisIt_OptionList_getValueF(visit_handle h, const char *name, float *value)
 {
-    GETVALUE_BODY(VISIT_DATATYPE_FLOAT, float) 
+    GETVALUE_BODY(VISIT_DATATYPE_FLOAT, float)
 }
 
 int VisIt_OptionList_getValueD(visit_handle h, const char *name, double *value)
 {
-    GETVALUE_BODY(VISIT_DATATYPE_DOUBLE, double) 
+    GETVALUE_BODY(VISIT_DATATYPE_DOUBLE, double)
 }
 
 int VisIt_OptionList_getValueS(visit_handle h, const char *name, char **value)
@@ -143,6 +150,11 @@ int VisIt_OptionList_getValueS(visit_handle h, const char *name, char **value)
         }
     }
     return retval;
+}
+
+int VisIt_OptionList_getValueE(visit_handle h, const char *name, int *value)
+{
+    GETVALUE_BODY(VISIT_DATATYPE_ENUM, int)
 }
 
 /************************** Fortran callable routines *************************/

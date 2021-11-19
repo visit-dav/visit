@@ -109,18 +109,14 @@ function build_zlib
         STATICARGS=""
     fi
 
-    info "env CXX=$CXX_COMPILER CC=$C_COMPILER \
-         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-         CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-         ./configure \
-        --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATIC_ARGS"
-
     # Call configure
+    set -x
     env CXX=$CXX_COMPILER CC=$C_COMPILER \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" \
         CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         ./configure \
         --prefix=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH $STATIC_ARGS
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "ZLIB configure failed.  Giving up"

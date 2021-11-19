@@ -9097,6 +9097,17 @@ SWIGINTERN PyObject *VISIT_DATATYPE_STRING_swigconstant(PyObject *SWIGUNUSEDPARM
 }
 
 
+SWIGINTERN PyObject *VISIT_DATATYPE_ENUM_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_DATATYPE_ENUM",SWIG_From_int(static_cast< int >(1)));
+  return SWIG_Py_Void();
+}
+
+
 SWIGINTERN PyObject *VISIT_OWNER_SIM_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *module;
   PyObject *d;
@@ -14308,6 +14319,50 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisIt_OptionList_setValueE(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  char *arg2 = (char *) 0 ;
+  int arg3 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  int result;
+
+  if (!PyArg_ParseTuple(args,(char *)"OOO:VisIt_OptionList_setValueE",&obj0,&obj1,&obj2)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_OptionList_setValueE" "', argument " "1"" of type '" "visit_handle""'");
+  }
+  arg1 = static_cast< visit_handle >(val1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "VisIt_OptionList_setValueE" "', argument " "2"" of type '" "char const *""'");
+  }
+  arg2 = reinterpret_cast< char * >(buf2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisIt_OptionList_setValueE" "', argument " "3"" of type '" "int""'");
+  }
+  arg3 = static_cast< int >(val3);
+  result = (int)VisIt_OptionList_setValueE(arg1,(char const *)arg2,arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return NULL;
+}
+
+
+
 SWIGINTERN PyObject *_wrap_VisIt_PointMesh_alloc__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   visit_handle *arg1 = (visit_handle *) 0 ;
@@ -18187,6 +18242,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VISIT_DATATYPE_DOUBLE_swigconstant", VISIT_DATATYPE_DOUBLE_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_DATATYPE_LONG_swigconstant", VISIT_DATATYPE_LONG_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_DATATYPE_STRING_swigconstant", VISIT_DATATYPE_STRING_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_DATATYPE_ENUM_swigconstant", VISIT_DATATYPE_ENUM_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_OWNER_SIM_swigconstant", VISIT_OWNER_SIM_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_OWNER_VISIT_swigconstant", VISIT_OWNER_VISIT_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_OWNER_COPY_swigconstant", VISIT_OWNER_COPY_swigconstant, METH_VARARGS, NULL},
@@ -18390,6 +18446,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VisIt_OptionList_setValueF", _wrap_VisIt_OptionList_setValueF, METH_VARARGS, NULL},
 	 { (char *)"VisIt_OptionList_setValueD", _wrap_VisIt_OptionList_setValueD, METH_VARARGS, NULL},
 	 { (char *)"VisIt_OptionList_setValueS", _wrap_VisIt_OptionList_setValueS, METH_VARARGS, NULL},
+	 { (char *)"VisIt_OptionList_setValueE", _wrap_VisIt_OptionList_setValueE, METH_VARARGS, NULL},
 	 { (char *)"VisIt_PointMesh_alloc", _wrap_VisIt_PointMesh_alloc, METH_VARARGS, NULL},
 	 { (char *)"VisIt_PointMesh_free", _wrap_VisIt_PointMesh_free, METH_VARARGS, NULL},
 	 { (char *)"VisIt_PointMesh_setCoordsXY", _wrap_VisIt_PointMesh_setCoordsXY, METH_VARARGS, NULL},

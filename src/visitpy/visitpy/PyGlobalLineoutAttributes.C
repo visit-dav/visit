@@ -940,7 +940,7 @@ static Observer *GlobalLineoutAttributesObserver = 0;
 std::string
 PyGlobalLineoutAttributes_GetLogString()
 {
-    std::string s("GlobalLineoutAtts = GlobalLineoutAttributes()\n");
+    std::string s("GlobalLineoutAtts = GetGlobalLineoutAttributes()\n");
     if(currentAtts != 0)
         s += PyGlobalLineoutAttributes_ToString(currentAtts, "GlobalLineoutAtts.");
     return s;
@@ -954,7 +954,7 @@ PyGlobalLineoutAttributes_CallLogRoutine(Subject *subj, void *data)
 
     if(cb != 0)
     {
-        std::string s("GlobalLineoutAtts = GlobalLineoutAttributes()\n");
+        std::string s("GlobalLineoutAtts = GetGlobalLineoutAttributes()\n");
         s += PyGlobalLineoutAttributes_ToString(currentAtts, "GlobalLineoutAtts.");
         cb(s);
     }
