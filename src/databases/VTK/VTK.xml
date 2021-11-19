@@ -4,18 +4,20 @@
       *.vtk
       *.vti
       *.vtp
-      *.vtr 
+      *.vtr
       *.vts
       *.vtu
       *.vtm
       *.pvti
       *.pvtk
       *.pvtp
-      *.pvtr 
+      *.pvtr
       *.pvts
       *.pvtu
+      *.pvd
     </FilePatterns>
     <Files components="M">
+      avtPVDFileReader.C
       avtVTKFileFormat.C
       avtVTKFileReader.C
       avtVTKOptions.C
@@ -24,6 +26,7 @@
       VTMParser.C
     </Files>
     <Files components="E">
+      avtPVDFileReader.C
       avtVTKFileFormat.C
       avtVTKFileReader.C
       avtVTKOptions.C

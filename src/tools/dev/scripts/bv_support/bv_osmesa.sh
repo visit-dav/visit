@@ -307,6 +307,15 @@ function build_osmesa
     fi
 
     #
+    # Handle case where python doesn't exist.
+    # The magic to determine if python exist comes from
+    # https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
+    #
+    if ! command -v python > /dev/null 2>&1 ; then
+        sed -i "s/python2.7/python3 python2.7/" configure.ac
+    fi
+
+    #
     # Build OSMESA.
     #
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
@@ -317,28 +326,7 @@ function build_osmesa
     fi
 
     info "Configuring OSMesa . . ."
-    echo CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        CXX=${CXX_COMPILER} \
-        CFLAGS="${CFLAGS} ${C_OPT_FLAGS}" \
-        CC=${C_COMPILER} \
-        ./autogen.sh \
-        --prefix=${VISITDIR}/osmesa/${OSMESA_VERSION}/${VISITARCH} \
-        --disable-gles1 \
-        --disable-gles2 \
-        --disable-dri \
-        --disable-dri3 \
-        --disable-glx \
-        --disable-glx-tls \
-        --disable-egl \
-        --disable-gbm \
-        --disable-xvmc \
-        --disable-vdpau \
-        --disable-va \
-        --with-platforms= \
-        --with-gallium-drivers=swrast,swr \
-        --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC  $OSMESA_DEBUG_BUILD \
-        --disable-llvm-shared-libs \
-        --with-llvm-prefix=${VISIT_LLVM_DIR}
+    set -x
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
         CFLAGS="${CFLAGS} ${C_OPT_FLAGS}" \
@@ -361,6 +349,7 @@ function build_osmesa
         --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC $OSMESA_DEBUG_BUILD \
         --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "OSMesa configure failed.  Giving up"

@@ -18459,6 +18459,9 @@ AddExtensions()
 //   Brad Whitlock, Wed Jul 16 11:50:44 PDT 2014
 //   Add EngineProperties.
 //
+//   Kathleen Biagas, Fri Sep 10, 2021
+//   Add GlobalLineoutAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -18472,6 +18475,7 @@ InitializeExtensions()
     PyExpression_StartUp(0, 0);
     PyExpressionList_StartUp(GetViewerState()->GetExpressionList(), 0);
     PyGlobalAttributes_StartUp(GetViewerState()->GetGlobalAttributes(), 0);
+    PyGlobalLineoutAttributes_StartUp(GetViewerState()->GetGlobalLineoutAttributes(), 0);
     PyKeyframeAttributes_StartUp(GetViewerState()->GetKeyframeAttributes(), 0);
     PyLaunchProfile_StartUp(0, 0);
     PyMachineProfile_StartUp(0, 0);

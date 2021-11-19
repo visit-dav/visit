@@ -304,6 +304,15 @@ function build_mesagl
     fi
 
     #
+    # Handle case where python doesn't exist.
+    # The magic to determine if python exist comes from
+    # https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
+    #
+    if ! command -v python > /dev/null 2>&1 ; then
+        sed -i "s/python2.7/python3 python2.7/" configure.ac
+    fi
+
+    #
     # Build MESAGL.
     #
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
@@ -332,28 +341,7 @@ function build_mesagl
         fi
     fi
 
-    echo CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        CXX=${CXX_COMPILER} \
-        CFLAGS="${CFLAGS} ${C_OPT_FLAGS} ${mesa_c_opt_flags}" \
-        CC=${C_COMPILER} \
-        ./autogen.sh \
-        --prefix=${VISITDIR}/mesagl/${MESAGL_VERSION}/${VISITARCH} \
-        --with-platforms=x11 \
-        --disable-dri \
-        --disable-dri3 \
-        --disable-egl \
-        --disable-gbm \
-        --disable-gles1 \
-        --disable-gles2 \
-        --disable-xvmc \
-        --disable-vdpau \
-        --disable-va \
-        --enable-glx \
-        --enable-llvm \
-        --with-gallium-drivers=${MESAGL_GALLIUM_DRIVERS} \
-        --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
-        --disable-llvm-shared-libs \
-        --with-llvm-prefix=${VISIT_LLVM_DIR}
+    set -x
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
         CFLAGS="${CFLAGS} ${C_OPT_FLAGS} ${mesa_c_opt_flags}" \
@@ -376,6 +364,7 @@ function build_mesagl
         --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
         --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "MesaGL configure failed.  Giving up"

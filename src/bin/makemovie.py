@@ -856,6 +856,8 @@ class MakeMovie(object):
         print("                       Method is one of the following: mpirun, poe,")
         print("                       psub, srun.")
         print("    -la   <args>       Additional arguments for the parallel launcher.")
+        print("                       Multiple arguments should be space-separated")
+        print("                       and the entire list enclosed in quotes.")
         print("    -p    <part>       Partition to run in.")
         print("    -b    <bank>       Bank from which to draw resources.")
         print("    -t    <time>       Maximum job run time.")
@@ -1135,6 +1137,11 @@ class MakeMovie(object):
     #   Kathleen Biagas, Tue Sep 29 15:52:44 MST 2015
     #   On Windows, only fail if format NOT compatible.
     #
+    #   Kathleen Biagas, Fri Sep 24 08:27:11 PDT 2021
+    #   Modified how launchArgs (-la) is processed. Expect multiple launch args
+    #   to be space-separated and enclosed in quotes, so they can be processed
+    #   as a single entity. Previous processing of -la created an endless loop.
+    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -1164,15 +1171,7 @@ class MakeMovie(object):
         i = 0
         outputName = "movie"
         outputSpecified = 0
-        processingLA = 0
         while(i < len(commandLine)):
-            # If we're processing launch arguments for the parallel launcher
-            # then append the argument to the the list of launch args.
-            if processingLA == 1:
-                self.engineCommandLineProperties["launchArgs"] = \
-                self.engineCommandLineProperties["launchArgs"] + [commandLine[i]]
-                continue
-
             # We're processing arguments as usual.
             if(commandLine[i] == "-format"):
                 if((i+1) < len(commandLine)):
@@ -1436,9 +1435,13 @@ class MakeMovie(object):
                     self.PrintUsage()
                     sys.exit(-1)
             elif(commandLine[i] == "-la"):
-                self.engineCommandLineProperties["launchArgs"] = []
-                self.engineCommandLineProperties["launchArgsSet"] = 1
-                processingLA = 1
+                if((i+1) < len(commandLine)):
+                    self.engineCommandLineProperties["launchArgs"] = [commandLine[i+1]]
+                    self.engineCommandLineProperties["launchArgsSet"] = 1
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
             elif(commandLine[i] == "-expedite"):
                 if "arguments" in list(self.engineCommandLineProperties.keys()):
                     self.engineCommandLineProperties["arguments"] = self.engineCommandLineProperties["arguments"] + ["-expedite"]

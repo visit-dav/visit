@@ -2983,8 +2983,9 @@ def PickRangeLabel():
     options["vars"] = "OriginalZoneLabels"
 
     output_dict = PickByZoneLabel(options)
-    s = str(output_dict)
-    TestText("PickRangeByZoneLabel",s)
+    # use json.dumps for dictionary object, makes for easier parsing
+    # of diffs when there are errors
+    TestText("PickRangeByZoneLabel",json.dumps(output_dict, indent=2))
     ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()

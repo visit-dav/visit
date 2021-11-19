@@ -6502,9 +6502,8 @@ QvisGUIApplication::ReadFromViewer(int)
         CATCH(LostConnectionException)
         {
             cerr << "VisIt's viewer exited abnormally! Aborting the Graphical "
-                 << "User Interface. VisIt's developers may be reached via "
-                 << "the visit-users mailing list.  Please see:" << std::endl
-                 << "        https://wci.llnl.gov/simulation/computer-codes/visit/faqs/faq01"
+                 << "User Interface. VisIt's developers may be reached via our "
+                 << "GitHub discussions, https://github.com/visit-dav/visit/discussions"
                  << endl;
             viewerIsAlive = false;
 

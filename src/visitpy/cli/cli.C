@@ -177,6 +177,11 @@ extern "C" void cli_runscript(const char *);
 //    Cyrus Harrison, Wed Feb 24 16:09:45 PST 2021
 //    Adjustments for Pyside 2 support. 
 //
+//    Kathleen Biagas, Fri Sep 24 08:36:43 PDT 2021
+//    When processing args, look for '-sla' or '-la' and skip the next arg,
+//    as '-s' is a viable option that could be passed to srun via -sla or -la
+//    and we don't that option to be proccessed as a cli '-s' option.
+//
 // ****************************************************************************
 
 int
@@ -294,6 +299,26 @@ main(int argc, char *argv[])
             }
         }
 #else
+        else if(strcmp(argv[i], "-sla") == 0 && (i+1 < argc))
+        {
+            // skip next arg, since it may be '-s'
+            // Pass the array along to the visitmodule.
+            argv2[argc2++] = argv[i];
+            argv_after_s[argc_after_s++] = argv[i];
+            argv2[argc2++] = argv[i+1];
+            argv_after_s[argc_after_s++] = argv[i+1];
+
+            ++i;
+        }
+        else if(strcmp(argv[i], "-la") == 0 && (i+1 < argc))
+        {
+            // skip next arg, since it may be '-s'
+            argv2[argc2++] = argv[i];
+            argv_after_s[argc_after_s++] = argv[i];
+            argv2[argc2++] = argv[i+1];
+            argv_after_s[argc_after_s++] = argv[i+1];
+            ++i;
+        }
         else if(strcmp(argv[i], "-s") == 0 && (i+1 < argc))
         {
             runFile = argv[i+1];

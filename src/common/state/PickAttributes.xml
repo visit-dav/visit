@@ -299,4 +299,7 @@
     <Include file="source" quoted="false">
       cstring
     </Include>
+    <Include file="source" quoted="false">
+      FileFunctions.h
+    </Include>
   </Attribute>

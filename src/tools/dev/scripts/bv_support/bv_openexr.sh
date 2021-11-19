@@ -123,9 +123,11 @@ function build_ilmbase
         DISABLE_BUILDTYPE="--disable-static"
     fi
     info "Configuring ILMBase . . ."
+    set -x
     ./configure ${OPTIONAL} CXX="$CXX_COMPILER" \
                 CC="$C_COMPILER" CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 --prefix="$VISITDIR/openexr/$ILMBASE_VERSION/$VISITARCH" $DISABLE_BUILDTYPE
+    set +x
     if [[ $? != 0 ]] ; then
         warn "ILMBase configure failed.  Giving up"
         return 1

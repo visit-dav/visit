@@ -19,6 +19,16 @@
 #     Kathleen Biagas, Mon Oct 23 17:41:43 MST 2017
 #     Use Image lib for image conversion instead of 'convert'.
 #
+#     Kathleen Biagas, Tue Sep 14 09:51:45 PDT 2021
+#     Added call to CloseComputeEngine to GenerateMovie method, since the
+#     movie script launches its own. Prevents a hang when run in parallel.
+#
+#     Kathleen Biagas, Tue Sep 21 17:22:58 PDT 2021
+#     Removed CloseComputeEngine, it prevented the non-movie-generation parts
+#     of the test from running in parallel.  If the nightlies use srun,
+#     add "--overlap" srun option.  This allows cinema test to succeed in
+#     parallel with recent changes to slurm.
+#
 # ----------------------------------------------------------------------------
 import os
 import subprocess
@@ -26,10 +36,11 @@ import visit_utils
 from PIL import Image
 
 def GenerateMovie(movieArgs):
+    args = [TestEnv.params["visit_bin"], "-noconfig", "-movie"] + movieArgs
     if TestEnv.params["parallel"]:
-        args = [TestEnv.params["visit_bin"], "-movie", "-noconfig", "-np", "2", "-l", TestEnv.params["parallel_launch"]] + movieArgs
-    else:
-        args = [TestEnv.params["visit_bin"], "-movie", "-noconfig"] + movieArgs
+        args = args + ["-np", "2", "-l", TestEnv.params["parallel_launch"]]
+        if TestEnv.params["parallel_launch"] == "srun":
+            args = args + ["-la", "--overlap"]
     p = subprocess.check_output(args)
     return p
 

@@ -98,14 +98,12 @@ function build_openssl
     WITH_ZLIB_LIB="--with-zlib-lib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
     WITH_ZLIB_INCLUDE="--with-zlib-include=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
 
-    info env CC="$C_COMPILER $CFLAGS $C_OPT_FLAGS" KERNEL_BITS=64 ./config \
-            $WITH_ZLIB_LIB $WITH_ZLIB_INCLUDE \
-            --prefix="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/" \
-            --openssldir="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/etc/openssl" 
+    set -x
     env CC="$C_COMPILER $CFLAGS $C_OPT_FLAGS" KERNEL_BITS=64 ./config \
             $WITH_ZLIB_LIB $WITH_ZLIB_INCLUDE \
             --prefix="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/" \
             --openssldir="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/etc/openssl" 
+    set +x
 
     #
     # Build openssl
