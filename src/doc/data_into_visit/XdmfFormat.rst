@@ -217,7 +217,7 @@ It is defined by a `Polyvertex` topology.
 Here is the code that writes a 3D point mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1672-1715
+      :lines: 1666-1709
 
 Here is the resultant Xdmf file.
 
@@ -233,7 +233,7 @@ It is defined by a `2DCoRectMesh` or `3DCoRectMesh` topology.
 Here is the code that writes a 3D regular mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1522-1569
+      :lines: 1516-1563
 
 Here is the resultant Xdmf file.
 
@@ -242,7 +242,7 @@ Here is the resultant Xdmf file.
 Here is the code that writes a 2D regular mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1473-1520
+      :lines: 1467-1514
 
 Here is the resultant Xdmf file.
 
@@ -258,7 +258,7 @@ It is defined by a `2DRectMesh` or `3DRectMesh` topology.
 Here is the code that writes a 3D rectilinear mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1620-1670
+      :lines: 1614-1664
 
 Here is the resultant Xdmf file.
 
@@ -267,7 +267,7 @@ Here is the resultant Xdmf file.
 Here is the code that writes a 2D rectilinear mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1571-1618
+      :lines: 1565-1612
 
 Here is the resultant Xdmf file.
 
@@ -283,7 +283,7 @@ It is defined by a `2DSMesh` or `3DSMesh` topology.
 Here is the code that writes a 3D curvilinear mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1344-1398
+      :lines: 1338-1392
 
 Here is the resultant Xdmf file.
 
@@ -292,7 +292,7 @@ Here is the resultant Xdmf file.
 Here is the code that writes a 2D curvilinear mesh.
 
 .. literalinclude:: data_examples/xdmf.C
-      :lines: 1298-1342
+      :lines: 1292-1336
 
 Here is the resultant Xdmf file.
 
