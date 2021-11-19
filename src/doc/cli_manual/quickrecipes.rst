@@ -195,7 +195,7 @@ based on the more abstract pattern used to create the filenames.
     OpenDatabase("/usr/local/visit/data/wave0000.silo") 
 
     # Opening a virtual database representing all wave*.silo files. 
-    OpenDatabase("/usr/local/visit/data/wave*.silo database.) 
+    OpenDatabase("/usr/local/visit/data/wave*.silo database") 
 
 Opening a remote database
 ~~~~~~~~~~~~~~~~~~~~~~~~~
