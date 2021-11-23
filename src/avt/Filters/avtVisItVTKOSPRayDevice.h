@@ -23,6 +23,8 @@
 #include <LightList.h>
 
 class avtResampleFilter;
+class vtkImageData;
+class vtkVolumeMapper;
 
 namespace avt
 {
@@ -34,7 +36,7 @@ namespace avt
             {
                 RenderingAttribs(): OSPRayEnabled(false),
 
-                                    forceResample{false},
+                                    resampleType{0},
                                     resampleTargetVal{static_cast<int>(1e6)},
 
                                     lightingEnabled(false),
@@ -54,7 +56,7 @@ namespace avt
 
                 bool    OSPRayEnabled;
 
-                bool    forceResample;
+                int     resampleType;
                 int     resampleTargetVal;
 
                 bool    lightingEnabled;
@@ -92,7 +94,7 @@ class AVTFILTERS_API avtVisItVTKOSPRayDevice : public avtVisItVTKDevice, public 
 {
 public:
                             avtVisItVTKOSPRayDevice();
-    virtual                 ~avtVisItVTKOSPRayDevice() = default;
+    virtual                 ~avtVisItVTKOSPRayDevice();
 
     virtual const char      *GetType() override         { return "avtVisItVTKOSPRayDevice"; }
     virtual const char      *GetDescription() override  { return "VisItVTK OSPRay Back-end Device"; }
@@ -101,12 +103,11 @@ public:
     void SetRenderingType(const DataType dt)    { m_dataType = dt; }
 
      // VisIt options
-    void SetActiveVariable(const char *s)       { m_activeVariablePtr = s; }
     void SetLightInfo(const LightList& l)       { m_lightList = l; }
 
     // OSPRay Options
     void SetOSPRayEnabled(const bool b)         { m_renderingAttribs.OSPRayEnabled = b; }
-    void SetForceResample(const bool b)         { m_renderingAttribs.forceResample = b; }
+    void SetResampleType(const int v)           { m_renderingAttribs.resampleType = v; }
     void SetResampleTargetVal(const int v)      { m_renderingAttribs.resampleTargetVal = v; }
 
     void SetLighting(const bool b)              { m_renderingAttribs.lightingEnabled = b; }
@@ -131,15 +132,11 @@ public:
     void SetMatProperties(const double[4]);
     void SetViewDirection(const double[3]);
 
-    // VisItVTK Callback Functions
-    static void                 ErrorCallback(void *, vtkErrorCode::ErrorIds, const char *);
-    static void                 StatusCallback(void *, const char *);
-
 protected:
     virtual void                Execute(void) override;
 
     DataType                    m_dataType;
-    const char*                 m_activeVariablePtr;
+
     // VisIt has 8 lights that can be setup
     LightList                   m_lightList;
 
@@ -148,41 +145,35 @@ protected:
     std::unique_ptr<float[]>    m_materialPropertiesPtr;
     std::unique_ptr<float[]>    m_viewDirectionPtr;
 
-    // avtOSPRayImageCompositor imgComm;
+    bool                        m_useInterpolation{true};
+    bool                        m_resetColorMap{true};
 
-private:
-    void                        ExecuteVolume();
-    void                        ExecuteSurface();
-    avtImage_p                  CreateFinalImage(const void *, const int, const int, const float);
+    bool                        m_lastMapper{false};
 
-    vtkCamera *                 CreateCamera();
-    vtkLightCollection *        CreateLights();
+    int                         m_nComponents{1};
 
-    int numLightsEnabled{0};
-    bool ambientOn{false};
+    int                         m_resampleType{0};
+    int                         m_resampleTargetVal{0};
+
+ private:
+    void                 ExecuteVolume();
+    void                 ExecuteSurface();
+    avtImage_p           CreateFinalImage(const void *, const int, const int, const float);
+
+    vtkCamera *          CreateCamera();
+    vtkLightCollection * CreateLights();
+
+    int    numLightsEnabled{0};
+    bool   ambientOn{false};
     double ambientCoefficient{0.0};
     double ambientColor[3] = { 0., 0., 0.};
-    avtResampleFilter * resampleFilter{nullptr};
-    /*
-    VisItVTKVolume             CreateStructuredRegularVolume(vtkDataSet * const);
-    VisItVTKVolumetricModel    CreateVolumetricModel(vtkDataSet * const);
-    VisItVTKInstance           CreateInstance(vtkDataSet * const);
-    VisItVTKWorld              CreateWorld();
-    VisItVTKRenderer           CreateRenderer(const RendererType);
-    VisItVTKFrame              CreateFrameBuffer(const int,
-                                              int  width,
-                                              int  height,
-                                              bool channelColor = true,
-                                              bool channelAccum = false,
-                                              bool channelDepth = false,
-                                              bool channelAlbedo = false);
 
-    */
+    avtResampleFilter * resampleFilter{nullptr};
+
+    vtkImageData* imageToRender{nullptr};
+    vtkVolumeMapper* volumeMapper{nullptr};
+
     static const std::string   DEVICE_TYPE_STR;
-    /*
-    VisItVTKModule             m_module;
-    VisItVTKDevice             m_device;
-    */
 };
 
 #endif
