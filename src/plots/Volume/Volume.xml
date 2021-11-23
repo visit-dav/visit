@@ -36,11 +36,17 @@
     </LIBS>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VolumeAttributes.code">
       <Enum name="Renderer">
-        Default
-        RayCasting
-        RayCastingIntegration
-        RayCastingSLIVR
-        RayCastingOSPRay
+        Serial
+        Parallel
+        Composite
+        Integration
+        SLIVR
+      </Enum>
+      <Enum name="Resample">
+        None
+        SingleDomain
+        ParallelRedistribute
+        ParallelPerRank
       </Enum>
       <Enum name="GradientType">
         CenteredDifferences
@@ -94,22 +100,24 @@
       <Field name="osprayOneSidedLightingFlag" label="osprayOneSidedLightingFlag" type="bool">
         false
       </Field>
-      <Field name="osprayAoTransparencyEnabledFlag" label="osprayAoTransparencyEnabledFlag" type="bool">
+      <Field name="osprayAOTransparencyEnabledFlag" label="osprayAOTransparencyEnabledFlag" type="bool">
         false
       </Field>
-      <Field name="ospraySpp" label="ospraySpp" type="int">
+      <Field name="ospraySPP" label="ospraySPP" type="int">
         1
       </Field>
-      <Field name="osprayAoSamples" label="osprayAoSamples" type="int">
+      <Field name="osprayAOSamples" label="osprayAOSamples" type="int">
         0
       </Field>
-      <Field name="osprayAoDistance" label="osprayAoDistance" type="double">
+      <Field name="osprayAODistance" label="osprayAODistance" type="double">
         100000.0
       </Field>
       <Field name="osprayMinContribution" label="osprayMinContribution" type="double">
         0.001
-      </Field>
-      
+      </Field>      
+      <Field name="osprayMaxContribution" label="osprayMaxContribution" type="double">
+        2.0
+      </Field>      
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
       </Field>
@@ -126,8 +134,8 @@
       </Field>
       <Field name="opacityControlPoints" label="opacityControlPoints" type="att" subtype="GaussianControlPointList">
       </Field>
-      <Field name="resampleFlag" label="Resample" type="bool">
-        true
+      <Field name="resampleType" label="Resample Type" type="enum" subtype="Resample">
+        None
       </Field>
       <Field name="resampleTarget" label="resampleTarget" type="int">
         1000000
@@ -168,7 +176,7 @@
         500
       </Field>
       <Field name="rendererType" label="Renderer Type" type="enum" subtype="Renderer">
-        Default
+        Serial
       </Field>
       <Field name="gradientType" label="Gradient Type" type="enum" subtype="GradientType">
         SobelOperator
@@ -182,7 +190,7 @@
       <Field name="limitsMode" label="Limits Mode" type="enum" subtype="LimitsMode">
         OriginalData
       </Field>
-      <Field name="sampling" label="Sampling Type" type="enum" subtype="SamplingType" enabler="rendererType:RayCasting">
+      <Field name="sampling" label="Sampling Type" type="enum" subtype="SamplingType">
         Rasterization
       </Field>
       <Field name="rendererSamples" label="Render samples" type="float" enabler="sampling:Trilinear">

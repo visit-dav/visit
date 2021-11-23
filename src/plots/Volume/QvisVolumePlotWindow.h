@@ -165,7 +165,6 @@ private slots:
     void attenuationChanged(int opacity);
     void legendToggled(bool val);
     void lightingToggled(bool val);
-    void resampleToggled(bool val);
     void lowGradientLightingReductionChanged(int val);
     void lowGradientClampToggled(bool val);
     void lowGradientClampProcessText();
@@ -186,6 +185,7 @@ private slots:
     void resampleTargetChanged(int val);
     void samplesPerRayChanged(int val);
     void rendererTypeChanged(int val);
+    void resampleTypeChanged(int val);
     void gradientTypeChanged(int val);
     void samplingTypeChanged(int val);
     void processSkewText();
@@ -214,11 +214,12 @@ private slots:
     void osprayPreIntegrationToggled(bool val);
     void ospraySingleShadeToggled(bool val);
     void osprayOneSidedLightingToggled(bool val);
-    void osprayAoTransparencyToggled(bool val);
-    void ospraySppChanged(int val);
-    void osprayAoSamplesChanged(int val);
-    void osprayAoDistanceChanged(double val);
+    void osprayAOTransparencyToggled(bool val);
+    void ospraySPPChanged(int val);
+    void osprayAOSamplesChanged(int val);
+    void osprayAODistanceChanged(double val);
     void osprayMinContributionChanged(double val);
+    void osprayMaxContributionChanged(double val);
 
 private:
     int                      plotType;
@@ -272,7 +273,6 @@ private:
     QCheckBox                *osprayToggle;
     QCheckBox                *legendToggle;
     QCheckBox                *lightingToggle;
-    QCheckBox                *resampleToggle;
     QGroupBox                *methodsGroup;
     QGroupBox                *lowGradientGroup;
     QLabel                   *lowGradientLightingReductionLabel;
@@ -282,6 +282,7 @@ private:
     QCheckBox                *softwareToggle;
     QCheckBox                *smoothDataToggle;
     QComboBox                *rendererTypesComboBox;
+    QComboBox                *resampleTypesComboBox;
     QButtonGroup             *gradientButtonGroup;
     QButtonGroup             *samplingButtonGroup;
     QWidget                  *samplingMethodWidget;
@@ -335,19 +336,22 @@ private:
     QCheckBox               *osprayPreIntegrationToggle;
     QCheckBox               *ospraySingleShadeToggle;
     QCheckBox               *osprayOneSidedLightingToggle;
-    QCheckBox               *osprayAoTransparencyToggle;
-    QWidget                 *ospraySppWidget;
-    QLabel                  *ospraySppLabel;
-    QSpinBox                *ospraySpp;
-    QWidget                 *osprayAoSamplesWidget;
-    QLabel                  *osprayAoSamplesLabel;
-    QSpinBox                *osprayAoSamples;
-    QWidget                 *osprayAoDistanceWidget;
-    QLabel                  *osprayAoDistanceLabel;
-    QDoubleSpinBox          *osprayAoDistance;
+    QCheckBox               *osprayAOTransparencyToggle;
+    QWidget                 *ospraySPPWidget;
+    QLabel                  *ospraySPPLabel;
+    QSpinBox                *ospraySPP;
+    QWidget                 *osprayAOSamplesWidget;
+    QLabel                  *osprayAOSamplesLabel;
+    QSpinBox                *osprayAOSamples;
+    QWidget                 *osprayAODistanceWidget;
+    QLabel                  *osprayAODistanceLabel;
+    QDoubleSpinBox          *osprayAODistance;
     QWidget                 *osprayMinContributionWidget;
     QLabel                  *osprayMinContributionLabel;
     QDoubleSpinBox          *osprayMinContribution;
+    QWidget                 *osprayMaxContributionWidget;
+    QLabel                  *osprayMaxContributionLabel;
+    QDoubleSpinBox          *osprayMaxContribution;
 
     //Sampling group
     QGroupBox               *resampleGroup;

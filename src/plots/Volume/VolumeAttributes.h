@@ -30,11 +30,18 @@ class VolumeAttributes : public AttributeSubject
 public:
     enum Renderer
     {
-        Default,
-        RayCasting,
-        RayCastingIntegration,
-        RayCastingSLIVR,
-        RayCastingOSPRay
+        Serial,
+        Parallel,
+        Composite,
+        Integration,
+        SLIVR
+    };
+    enum Resample
+    {
+        None,
+        SingleDomain,
+        ParallelRedistribute,
+        ParallelPerRank
     };
     enum GradientType
     {
@@ -114,18 +121,19 @@ public:
     void SetOsprayPreIntegrationFlag(bool osprayPreIntegrationFlag_);
     void SetOspraySingleShadeFlag(bool ospraySingleShadeFlag_);
     void SetOsprayOneSidedLightingFlag(bool osprayOneSidedLightingFlag_);
-    void SetOsprayAoTransparencyEnabledFlag(bool osprayAoTransparencyEnabledFlag_);
-    void SetOspraySpp(int ospraySpp_);
-    void SetOsprayAoSamples(int osprayAoSamples_);
-    void SetOsprayAoDistance(double osprayAoDistance_);
+    void SetOsprayAOTransparencyEnabledFlag(bool osprayAOTransparencyEnabledFlag_);
+    void SetOspraySPP(int ospraySPP_);
+    void SetOsprayAOSamples(int osprayAOSamples_);
+    void SetOsprayAODistance(double osprayAODistance_);
     void SetOsprayMinContribution(double osprayMinContribution_);
+    void SetOsprayMaxContribution(double osprayMaxContribution_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetColorControlPoints(const ColorControlPointList &colorControlPoints_);
     void SetOpacityAttenuation(float opacityAttenuation_);
     void SetOpacityMode(OpacityModes opacityMode_);
     void SetOpacityControlPoints(const GaussianControlPointList &opacityControlPoints_);
-    void SetResampleFlag(bool resampleFlag_);
+    void SetResampleType(Resample resampleType_);
     void SetResampleTarget(int resampleTarget_);
     void SetOpacityVariable(const std::string &opacityVariable_);
     void SetFreeformOpacity(const unsigned char *freeformOpacity_);
@@ -158,11 +166,12 @@ public:
     bool                           GetOsprayPreIntegrationFlag() const;
     bool                           GetOspraySingleShadeFlag() const;
     bool                           GetOsprayOneSidedLightingFlag() const;
-    bool                           GetOsprayAoTransparencyEnabledFlag() const;
-    int                            GetOspraySpp() const;
-    int                            GetOsprayAoSamples() const;
-    double                         GetOsprayAoDistance() const;
+    bool                           GetOsprayAOTransparencyEnabledFlag() const;
+    int                            GetOspraySPP() const;
+    int                            GetOsprayAOSamples() const;
+    double                         GetOsprayAODistance() const;
     double                         GetOsprayMinContribution() const;
+    double                         GetOsprayMaxContribution() const;
     bool                           GetLegendFlag() const;
     bool                           GetLightingFlag() const;
     const ColorControlPointList    &GetColorControlPoints() const;
@@ -171,7 +180,7 @@ public:
     OpacityModes                   GetOpacityMode() const;
     const GaussianControlPointList &GetOpacityControlPoints() const;
           GaussianControlPointList &GetOpacityControlPoints();
-    bool                           GetResampleFlag() const;
+    Resample                       GetResampleType() const;
     int                            GetResampleTarget() const;
     const std::string              &GetOpacityVariable() const;
           std::string              &GetOpacityVariable();
@@ -209,6 +218,11 @@ public:
     static bool Renderer_FromString(const std::string &, Renderer &);
 protected:
     static std::string Renderer_ToString(int);
+public:
+    static std::string Resample_ToString(Resample);
+    static bool Resample_FromString(const std::string &, Resample &);
+protected:
+    static std::string Resample_ToString(int);
 public:
     static std::string GradientType_ToString(GradientType);
     static bool GradientType_FromString(const std::string &, GradientType &);
@@ -267,18 +281,19 @@ public:
         ID_osprayPreIntegrationFlag,
         ID_ospraySingleShadeFlag,
         ID_osprayOneSidedLightingFlag,
-        ID_osprayAoTransparencyEnabledFlag,
-        ID_ospraySpp,
-        ID_osprayAoSamples,
-        ID_osprayAoDistance,
+        ID_osprayAOTransparencyEnabledFlag,
+        ID_ospraySPP,
+        ID_osprayAOSamples,
+        ID_osprayAODistance,
         ID_osprayMinContribution,
+        ID_osprayMaxContribution,
         ID_legendFlag,
         ID_lightingFlag,
         ID_colorControlPoints,
         ID_opacityAttenuation,
         ID_opacityMode,
         ID_opacityControlPoints,
-        ID_resampleFlag,
+        ID_resampleType,
         ID_resampleTarget,
         ID_opacityVariable,
         ID_freeformOpacity,
@@ -313,18 +328,19 @@ private:
     bool                     osprayPreIntegrationFlag;
     bool                     ospraySingleShadeFlag;
     bool                     osprayOneSidedLightingFlag;
-    bool                     osprayAoTransparencyEnabledFlag;
-    int                      ospraySpp;
-    int                      osprayAoSamples;
-    double                   osprayAoDistance;
+    bool                     osprayAOTransparencyEnabledFlag;
+    int                      ospraySPP;
+    int                      osprayAOSamples;
+    double                   osprayAODistance;
     double                   osprayMinContribution;
+    double                   osprayMaxContribution;
     bool                     legendFlag;
     bool                     lightingFlag;
     ColorControlPointList    colorControlPoints;
     float                    opacityAttenuation;
     int                      opacityMode;
     GaussianControlPointList opacityControlPoints;
-    bool                     resampleFlag;
+    int                      resampleType;
     int                      resampleTarget;
     std::string              opacityVariable;
     unsigned char            freeformOpacity[256];
@@ -354,6 +370,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bbbbbbbiiddbbafiabisUbfbfbfbfbiiiidiifibdD"
+#define VOLUMEATTRIBUTES_TMFS "bbbbbbbiidddbbafiaiisUbfbfbfbfbiiiidiifibdD"
 
 #endif

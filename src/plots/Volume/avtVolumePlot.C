@@ -198,10 +198,10 @@ avtVolumePlot::ManagesOwnTransparency(void)
 bool
 avtVolumePlot::PlotIsImageBased(void)
 {
-    return (atts.GetRendererType() == VolumeAttributes::RayCasting ||
-            atts.GetRendererType() == VolumeAttributes::RayCastingIntegration ||
-            atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
-            atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay);
+    return (atts.GetRendererType() == VolumeAttributes::Composite ||
+            atts.GetRendererType() == VolumeAttributes::Integration ||
+            atts.GetRendererType() == VolumeAttributes::SLIVR ||
+            atts.GetRendererType() == VolumeAttributes::Parallel);
 }
 
 
@@ -684,15 +684,16 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     }
     avtDataObject_p dob = input;
 
-    if (atts.GetRendererType() == VolumeAttributes::RayCasting ||
-        atts.GetRendererType() == VolumeAttributes::RayCastingIntegration ||
-        atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
-        atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay)
+    if (atts.GetRendererType() == VolumeAttributes::Composite ||
+        atts.GetRendererType() == VolumeAttributes::Integration ||
+        atts.GetRendererType() == VolumeAttributes::SLIVR ||
+        atts.GetRendererType() == VolumeAttributes::Parallel)
     {
 #ifdef ENGINE
-        // gradient calc for raycasting integration not needed, but
-        // lighting flag may still be on
-        if (atts.GetRendererType() == VolumeAttributes::RayCasting &&
+        // The gradient calc for ray casting integration not needed,
+        // but lighting flag may still be on
+        if ((atts.GetRendererType() == VolumeAttributes::Composite ||
+             atts.GetRendererType() == VolumeAttributes::Parallel) &&
             atts.GetLightingFlag())
         {
             char gradName[128], gradName2[128];
@@ -708,6 +709,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
                 else
                     gradvar = varname;
             }
+
             // The avtVolumeFilter uses this exact name downstream.
             snprintf(gradName, 128, "_%s_gradient", gradvar);
 
@@ -717,10 +719,14 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             gradientFilter->SetOutputVariableName(gradName);
             gradientFilter->AddInputVariableName(gradvar);
 
-            // prevent this intermediate object from getting cleared out, so
-            // it is still there when we want to render.
+            // Prevent this intermediate object from getting cleared
+            // out, so it is still there when rendering.
             gradientFilter->GetOutput()->SetTransientStatus(false);
             dob = gradientFilter->GetOutput();
+
+            std::cerr << __LINE__ << "  " << __FILE__ << "  "
+                      << "Gradient " << gradvar << "  " << gradName
+                      << std::endl;
         }
 #endif
 
@@ -729,12 +735,12 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         volumeImageFilter->SetInput(dob);
         dob = volumeImageFilter->GetOutput();
     }
-    else // not ray casting pipeline
+    else // Non ray casting pipeline
     {
-        //User can force resampling
-        bool forceResample = atts.GetResampleFlag();
-
-        if (DataMustBeResampled(input) || forceResample)
+        // User can force resampling - for the default everything is
+        // sampled on to a single grid regardless of the resample type.
+        if (DataMustBeResampled(input) ||
+            atts.GetResampleType() != VolumeAttributes::None)
         {
             //
             // Resample the data
@@ -742,7 +748,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             InternalResampleAttributes resampleAtts;
             resampleAtts.SetDistributedResample(false);
             resampleAtts.SetTargetVal(atts.GetResampleTarget());
-            resampleAtts.SetPrefersPowersOfTwo(atts.GetRendererType() == VolumeAttributes::Default);
+            resampleAtts.SetPrefersPowersOfTwo(atts.GetRendererType() == VolumeAttributes::Serial);
             resampleAtts.SetUseTargetVal(true);
 
             resampleFilter = new avtResampleFilter(&resampleAtts);
@@ -751,12 +757,14 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             dob = resampleFilter->GetOutput();
         }
 
-        // Apply a filter that will work on the combined data to make histograms.
+        // Apply a filter that will work on the combined data to make
+        // histograms.
         volumeFilter = new avtLowerResolutionVolumeFilter();
         volumeFilter->SetAtts(&atts);
         volumeFilter->SetInput(dob);
         dob = volumeFilter->GetOutput();
     }
+
     return dob;
 }
 
@@ -834,21 +842,21 @@ avtVolumePlot::EnhanceSpecification(avtContract_p spec)
     std::string ov = atts.GetOpacityVariable();
     if (ov == "default")
     {
-        if(atts.GetResampleFlag())
+      if(atts.GetResampleType() != VolumeAttributes::None)
             return spec;
     }
     avtDataRequest_p ds = spec->GetDataRequest();
     std::string primaryVariable(ds->GetVariable());
     if (ov == primaryVariable)
     {
-         if(atts.GetResampleFlag())
-         {
-             //
-             // They didn't leave it as "default", but it is the same variable, so
-             // don't read it in again.
-             //
-             return spec;
-         }
+        if(atts.GetResampleType() != VolumeAttributes::None)
+        {
+            //
+            // They didn't leave it as "default", but it is the same
+            // variable, so don't read it in again.
+            //
+            return spec;
+        }
     }
 
     //
@@ -921,7 +929,7 @@ avtVolumePlot::Equivalent(const AttributeGroup *a)
     const VolumeAttributes *objAtts = (const VolumeAttributes *)a;
     // Almost the inverse of changes require recalculation -- doSoftware being
     // different is okay!
-    if (atts.GetResampleFlag() != objAtts->GetResampleFlag())
+    if (atts.GetResampleType() != objAtts->GetResampleType())
         return false;
     if (atts.GetOpacityVariable() != objAtts->GetOpacityVariable())
         return false;

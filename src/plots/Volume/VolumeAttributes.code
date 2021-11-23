@@ -63,16 +63,16 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
     if (opacityVariable != obj.opacityVariable)
         return true;
 
+    if (resampleType != obj.resampleType)
+        return true;
+
     if (resampleTarget != obj.resampleTarget)
         return true;
 
-    if (resampleFlag != obj.resampleFlag)
-        return true;
-
-    if (rendererType == VolumeAttributes::RayCasting ||
-        rendererType == VolumeAttributes::RayCastingSLIVR ||
-        rendererType == VolumeAttributes::RayCastingOSPRay ||
-        rendererType == VolumeAttributes::RayCastingIntegration)
+    if (rendererType == VolumeAttributes::Composite ||
+        rendererType == VolumeAttributes::SLIVR ||
+        rendererType == VolumeAttributes::Parallel ||
+        rendererType == VolumeAttributes::Integration)
     {
         // Trilinear requires ghost zone while Rasterization and KernelBased do not
         if ((sampling == Rasterization || sampling == KernelBased) && obj.sampling == Trilinear)
@@ -98,10 +98,10 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         // We're in hardware mode now but if we're transitioning to software
         // then we need to reexecute. Transferring between any of the hardware
         // modes does not require a reexecute.
-        if(obj.rendererType == VolumeAttributes::RayCasting ||
-           obj.rendererType == VolumeAttributes::RayCastingSLIVR ||
-           obj.rendererType == VolumeAttributes::RayCastingOSPRay ||
-           obj.rendererType == VolumeAttributes::RayCastingIntegration)
+        if(obj.rendererType == VolumeAttributes::Composite ||
+           obj.rendererType == VolumeAttributes::SLIVR ||
+           obj.rendererType == VolumeAttributes::Parallel ||
+           obj.rendererType == VolumeAttributes::Integration)
         {
             return true;
         }
