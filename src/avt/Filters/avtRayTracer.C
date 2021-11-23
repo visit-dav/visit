@@ -248,15 +248,15 @@ avtRayTracer::Execute(void)
 
     double scale[3] = {1,1,1};
     vtkMatrix4x4 *transform = vtkMatrix4x4::New();
-    avtWorldSpaceToImageSpaceTransform::CalculateTransform(view, transform,
+    avtWorldSpaceToImageSpaceTransform::CalculateTransform(viewInfo, transform,
                                                            scale, aspect);
     double newNearPlane, newFarPlane, oldNearPlane, oldFarPlane;
-    TightenClippingPlanes(view, transform, newNearPlane, newFarPlane);
-    oldNearPlane = view.nearPlane;  oldFarPlane  = view.farPlane;
-    view.nearPlane = newNearPlane;  view.farPlane  = newFarPlane;
+    TightenClippingPlanes(viewInfo, transform, newNearPlane, newFarPlane);
+    oldNearPlane = viewInfo.nearPlane;  oldFarPlane  = viewInfo.farPlane;
+    viewInfo.nearPlane = newNearPlane;  viewInfo.farPlane  = newFarPlane;
     transform->Delete();
 
-    avtWorldSpaceToImageSpaceTransform trans(view, aspect);
+    avtWorldSpaceToImageSpaceTransform trans(viewInfo, aspect);
     trans.SetInput(GetInput());
 
 
@@ -286,7 +286,7 @@ avtRayTracer::Execute(void)
     if (!kernelBasedSampling)
     {
         trans.SetPassThruRectilinearGrids(true);
-        extractor.SetRectilinearGridsAreInWorldSpace(true, view, aspect);
+        extractor.SetRectilinearGridsAreInWorldSpace(true, viewInfo, aspect);
     }
 
     debug5 << "Raytracing setup done! " << std::endl;
@@ -325,7 +325,7 @@ avtRayTracer::Execute(void)
     if (*opaqueImage != NULL)
     {
         rc.InsertOpaqueImage(opaqueImage);
-        bool convertToWBuffer = !view.orthographic;
+        bool convertToWBuffer = !viewInfo.orthographic;
         if (convertToWBuffer)
         {
             float *opaqueImageZB  = opaqueImage->GetImage().GetZBuffer();

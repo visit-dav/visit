@@ -196,15 +196,15 @@ avtSLIVRRayTracer::Execute()
 
     double scale[3] = {1,1,1};
     vtkMatrix4x4 *transform = vtkMatrix4x4::New();
-    avtWorldSpaceToImageSpaceTransform::CalculateTransform(view, transform,
+    avtWorldSpaceToImageSpaceTransform::CalculateTransform(viewInfo, transform,
                                                            scale, aspect);
     double newNearPlane, newFarPlane, oldNearPlane, oldFarPlane;
-    TightenClippingPlanes(view, transform, newNearPlane, newFarPlane);
-    oldNearPlane = view.nearPlane;  oldFarPlane  = view.farPlane;
-    view.nearPlane = newNearPlane;  view.farPlane  = newFarPlane;
+    TightenClippingPlanes(viewInfo, transform, newNearPlane, newFarPlane);
+    oldNearPlane = viewInfo.nearPlane;  oldFarPlane  = viewInfo.farPlane;
+    viewInfo.nearPlane = newNearPlane;  viewInfo.farPlane  = newFarPlane;
     transform->Delete();
 
-    avtWorldSpaceToImageSpaceTransform trans(view, aspect);
+    avtWorldSpaceToImageSpaceTransform trans(viewInfo, aspect);
     trans.SetInput(GetInput());
 
     //
@@ -237,34 +237,34 @@ avtSLIVRRayTracer::Execute()
     // Camera Settings
     //
     vtkCamera *sceneCam = vtkCamera::New();
-    sceneCam->SetPosition(view.camera[0],view.camera[1],view.camera[2]);
-    sceneCam->SetFocalPoint(view.focus[0],view.focus[1],view.focus[2]);
-    sceneCam->SetViewUp(view.viewUp[0],view.viewUp[1],view.viewUp[2]);
-    sceneCam->SetViewAngle(view.viewAngle);
+    sceneCam->SetPosition(viewInfo.camera[0],viewInfo.camera[1],viewInfo.camera[2]);
+    sceneCam->SetFocalPoint(viewInfo.focus[0],viewInfo.focus[1],viewInfo.focus[2]);
+    sceneCam->SetViewUp(viewInfo.viewUp[0],viewInfo.viewUp[1],viewInfo.viewUp[2]);
+    sceneCam->SetViewAngle(viewInfo.viewAngle);
     sceneCam->SetClippingRange(oldNearPlane, oldFarPlane);
-    if (view.orthographic)
+    if (viewInfo.orthographic)
         sceneCam->ParallelProjectionOn();
     else
         sceneCam->ParallelProjectionOff();
-    sceneCam->SetParallelScale(view.parallelScale);
+    sceneCam->SetParallelScale(viewInfo.parallelScale);
 
     debug5 << "RT View settings: " << endl;
-    debug5 << "camera: "       << view.camera[0]      << ", " << view.camera[1]     << ", " << view.camera[2] << std::endl;
-    debug5 << "focus: "     << view.focus[0]          << ", " << view.focus[1]      << ", " << view.focus[2] << std::endl;
-    debug5 << "viewUp: "    << view.viewUp[0]         << ", " << view.viewUp[1]     << ", " << view.viewUp[2] << std::endl;
-    debug5 << "viewAngle: "  << view.viewAngle  << std::endl;
-    debug5 << "eyeAngle: "  << view.eyeAngle  << std::endl;
-    debug5 << "parallelScale: "  << view.parallelScale  << std::endl;
-    debug5 << "setScale: "  << view.setScale  << std::endl;
-    debug5 << "nearPlane: " << view.nearPlane   << std::endl;
-    debug5 << "farPlane: " << view.farPlane     << std::endl;
-    debug5 << "imagePan[0]: " << view.imagePan[0]     << std::endl;     // this is a freaking fraction!!!
-    debug5 << "imagePan[1]: " << view.imagePan[1]     << std::endl;
-    debug5 << "imageZoom: " << view.imageZoom     << std::endl;
-    debug5 << "orthographic: " << view.orthographic     << std::endl;
-    debug5 << "shear[0]: " << view.shear[0]     << std::endl;
-    debug5 << "shear[1]: " << view.shear[1]     << std::endl;
-    debug5 << "shear[2]: " << view.shear[2]     << std::endl;
+    debug5 << "camera: "       << viewInfo.camera[0]      << ", " << viewInfo.camera[1]     << ", " << viewInfo.camera[2] << std::endl;
+    debug5 << "focus: "     << viewInfo.focus[0]          << ", " << viewInfo.focus[1]      << ", " << viewInfo.focus[2] << std::endl;
+    debug5 << "viewUp: "    << viewInfo.viewUp[0]         << ", " << viewInfo.viewUp[1]     << ", " << viewInfo.viewUp[2] << std::endl;
+    debug5 << "viewAngle: "  << viewInfo.viewAngle  << std::endl;
+    debug5 << "eyeAngle: "  << viewInfo.eyeAngle  << std::endl;
+    debug5 << "parallelScale: "  << viewInfo.parallelScale  << std::endl;
+    debug5 << "setScale: "  << viewInfo.setScale  << std::endl;
+    debug5 << "nearPlane: " << viewInfo.nearPlane   << std::endl;
+    debug5 << "farPlane: " << viewInfo.farPlane     << std::endl;
+    debug5 << "imagePan[0]: " << viewInfo.imagePan[0]     << std::endl;     // this is a freaking fraction!!!
+    debug5 << "imagePan[1]: " << viewInfo.imagePan[1]     << std::endl;
+    debug5 << "imageZoom: " << viewInfo.imageZoom     << std::endl;
+    debug5 << "orthographic: " << viewInfo.orthographic     << std::endl;
+    debug5 << "shear[0]: " << viewInfo.shear[0]     << std::endl;
+    debug5 << "shear[1]: " << viewInfo.shear[1]     << std::endl;
+    debug5 << "shear[2]: " << viewInfo.shear[2]     << std::endl;
     debug5 << "oldNearPlane: " << oldNearPlane  << std::endl;
     debug5 << "oldFarPlane: " <<oldFarPlane     << std::endl;
     debug5 << "aspect: " << aspect << std::endl << std::endl;
@@ -272,8 +272,8 @@ avtSLIVRRayTracer::Execute()
     double _clip[2];
     _clip[0]=oldNearPlane;  _clip[1]=oldFarPlane;
 
-    panPercentage[0] = view.imagePan[0] * view.imageZoom;
-    panPercentage[1] = view.imagePan[1] * view.imageZoom;
+    panPercentage[0] = viewInfo.imagePan[0] * viewInfo.imageZoom;
+    panPercentage[1] = viewInfo.imagePan[1] * viewInfo.imageZoom;
 
 
     // Scaling
@@ -286,10 +286,10 @@ avtSLIVRRayTracer::Execute()
     // Zoom and pan portions
     vtkMatrix4x4 *imageZoomAndPan = vtkMatrix4x4::New();
     imageZoomAndPan->Identity();
-    imageZoomAndPan->SetElement(0, 0, view.imageZoom);
-    imageZoomAndPan->SetElement(1, 1, view.imageZoom);
-    //imageZoomAndPan->SetElement(0, 3, 2*view.imagePan[0]*view.imageZoom);
-    //imageZoomAndPan->SetElement(1, 3, 2*view.imagePan[1]*view.imageZoom);
+    imageZoomAndPan->SetElement(0, 0, viewInfo.imageZoom);
+    imageZoomAndPan->SetElement(1, 1, viewInfo.imageZoom);
+    //imageZoomAndPan->SetElement(0, 3, 2*viewInfo.imagePan[0]*viewInfo.imageZoom);
+    //imageZoomAndPan->SetElement(1, 3, 2*viewInfo.imagePan[1]*viewInfo.imageZoom);
 
     // View
     vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
@@ -316,7 +316,7 @@ avtSLIVRRayTracer::Execute()
     // (https://fossies.org/dox/VTK-7.0.0/classvtkCamera.html#a77e5d3a6e753ae4068f9a3d91267d0eb)
     // So, the projection matrix from VTK is hijacked here and adjusted to be within -1 and 1 too
     // Same as in avtWorldSpaceToImageSpaceTransform::CalculatePerspectiveTransform
-    if (!view.orthographic)
+    if (!viewInfo.orthographic)
     {
         p = sceneCam->GetProjectionTransformMatrix(aspect,oldNearPlane, oldFarPlane);
         p->SetElement(2, 2, -(oldFarPlane+oldNearPlane)   / (oldFarPlane-oldNearPlane));
@@ -332,8 +332,8 @@ avtSLIVRRayTracer::Execute()
     // pan
     vtkMatrix4x4 *pantrans = vtkMatrix4x4::New();
     pantrans->Identity();
-    pantrans->SetElement(0, 3, 2*view.imagePan[0]);
-    pantrans->SetElement(1, 3, 2*view.imagePan[1]);
+    pantrans->SetElement(0, 3, 2*viewInfo.imagePan[0]);
+    pantrans->SetElement(1, 3, 2*viewInfo.imagePan[1]);
 
     vtkMatrix4x4::Multiply4x4(p,vm,pvm);
 
@@ -393,7 +393,7 @@ avtSLIVRRayTracer::Execute()
     // extractor to do the extraction in world space.
     //
     trans.SetPassThruRectilinearGrids(true);
-    extractor.SetRectilinearGridsAreInWorldSpace(true, view, aspect);
+    extractor.SetRectilinearGridsAreInWorldSpace(true, viewInfo, aspect);
 
     int timingVolToImg = 0;
     if (parallelOn)
@@ -571,11 +571,11 @@ avtSLIVRRayTracer::Execute()
                                 // Intersect inside with bounding box
 
                                 double ray[3], tMin, tMax;
-                                computeRay( view.camera, worldCoordinates, ray);
-                                if ( intersect(dbounds, ray, view.camera, tMin, tMax) )
+                                computeRay( viewInfo.camera, worldCoordinates, ray);
+                                if ( intersect(dbounds, ray, viewInfo.camera, tMin, tMax) )
                                 {
-                                    double tIntersect = std::min( (worldCoordinates[0]-view.camera[0])/ray[0],
-                                                        std::min( (worldCoordinates[1]-view.camera[1])/ray[1], (worldCoordinates[2]-view.camera[2])/ray[2] ) );
+                                    double tIntersect = std::min( (worldCoordinates[0]-viewInfo.camera[0])/ray[0],
+                                                        std::min( (worldCoordinates[1]-viewInfo.camera[1])/ray[1], (worldCoordinates[2]-viewInfo.camera[2])/ray[2] ) );
 
                                     if (tMin <= tIntersect)
                                     {
@@ -805,12 +805,12 @@ avtSLIVRRayTracer::Execute()
                             {
                                     // Intersect inside with bounding box
                                 double ray[3], tMin, tMax;
-                                computeRay( view.camera, worldCoordinates, ray);
-                                if ( intersect(dbounds, ray, view.camera, tMin, tMax) )
+                                computeRay( viewInfo.camera, worldCoordinates, ray);
+                                if ( intersect(dbounds, ray, viewInfo.camera, tMin, tMax) )
                                 {
-                                    double tIntersect = std::min( (worldCoordinates[0]-view.camera[0])/ray[0],
-                                                        std::min( (worldCoordinates[1]-view.camera[1])/ray[1], 
-                                                                  (worldCoordinates[2]-view.camera[2])/ray[2] ) );
+                                    double tIntersect = std::min( (worldCoordinates[0]-viewInfo.camera[0])/ray[0],
+                                                        std::min( (worldCoordinates[1]-viewInfo.camera[1])/ray[1], 
+                                                                  (worldCoordinates[2]-viewInfo.camera[2])/ray[2] ) );
 
                                     if (tMin <= tIntersect)
                                     {

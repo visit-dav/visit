@@ -97,9 +97,12 @@ class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
     void                  SetTransferFn(avtOpacityMap *_transferFn1D) {transferFn1D = _transferFn1D; };
     void                  SetTrilinear(bool t) {trilinearInterpolation = t; };
 
+    void                  SetActiveVarName( std::string name ) { activeVarName = name; };
+    void                  SetOpacityVarName( std::string name ) { opacityVarName = name; };
+    void                  SetGradientVarName( std::string name ) { gradientVarName = name; };
 
   protected:
-    avtViewInfo           view;
+    avtViewInfo           viewInfo;
 
     int                   screen[2];
     int                   samplesPerRay;
@@ -110,6 +113,9 @@ class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
     double                gradBG1[3];
     double                gradBG2[3];
     avtRayFunction       *rayfoo;
+    std::string           activeVarName{"default"};
+    std::string           opacityVarName{"default"};
+    std::string           gradientVarName{"default"};
     avtOpacityMap        *transferFn1D;
 
     avtImage_p            opaqueImage;
@@ -119,7 +125,7 @@ class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
     virtual avtContract_p ModifyContract(avtContract_p);
     static int            GetNumberOfDivisions(int, int, int);
     virtual bool          FilterUnderstandsTransformedRectMesh();
-    void                  TightenClippingPlanes(const avtViewInfo &view,
+    void                  TightenClippingPlanes(const avtViewInfo &viewInfo,
                                                 vtkMatrix4x4 *,
                                                 double &, double &);
 };
