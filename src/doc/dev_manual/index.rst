@@ -22,6 +22,7 @@ VisIt_ Developer Manual
     OpenGL
     CI
     ContributingHostProfiles
+    LaunchProcess
 
 .. Indices and tables
 .. ==================
