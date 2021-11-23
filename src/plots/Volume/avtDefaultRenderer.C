@@ -192,6 +192,31 @@ avtDefaultRenderer::Render(
         //                "vtkRectilinear grids with an implied transform can not be rendered.");
         // }
 
+        // There could be both a scalar and opacity data arrays.
+        vtkDataArray *dataArr    = volume.data.data;
+        vtkDataArray *opacityArr = volume.opacity.data;
+
+        if( opacityArr == dataArr )
+        {
+            nComponents = 1;
+        }
+        else
+        {
+            nComponents = 2;
+        }
+
+        double dataRange[2] = {0., 0.};
+        double opacityRange[2] = {0., 0.};
+        dataArr->GetRange( dataRange );
+        opacityArr->GetRange( opacityRange );
+
+        double dataScale    = 255.0 / (   dataRange[1] -    dataRange[0]);
+        double opacityScale = 255.0 / (opacityRange[1] - opacityRange[0]);
+
+        // Transfer the rgrid data to the image data
+        // and scale to the proper range.
+        useInterpolation = true;
+
         double bounds[6];
         rgrid->GetBounds(bounds);
 
@@ -207,58 +232,18 @@ avtDefaultRenderer::Render(
         double spacingZ = (rgrid->GetZCoordinates()->GetTuple1(1)-
                            rgrid->GetZCoordinates()->GetTuple1(0));
 
-        std::cerr << __LINE__ << " [Default Renderer] dims : "
-                  << dims[0] << "  " << dims[1] << "  "<< dims[2] << "  "
-                  << std::endl;
-
-        std::cerr << __LINE__ << " [Default Renderer] extent : "
-                  << extent[0] << "  " << extent[1] << "  "
-                  << extent[2] << "  " << extent[3] << "  "
-                  << extent[4] << "  " << extent[5] << "  "
-                  << std::endl;
-
-        std::cerr << __LINE__ << " [Default Renderer] bounds : "
-                  << bounds[0] << "  " << bounds[1] << "  "
-                  << bounds[2] << "  " << bounds[3] << "  "
-                  << bounds[4] << "  " << bounds[5] << "  "
-                  << std::endl;
-
-        std::cerr << __LINE__ << " [Default Renderer] spacing : "
-                  << spacingX << "  " << spacingX << "  "<< spacingX << "  "
-                  << std::endl;
-
         imageToRender = vtkImageData::New();
         imageToRender->SetDimensions(dims);
         imageToRender->SetExtent(extent);
         imageToRender->SetSpacing(spacingX, spacingY, spacingZ);
-        imageToRender->AllocateScalars(VTK_FLOAT, 2);
+
+        // The color and opacity data may differ so separate
+        // components which requires the IndependentComponents in the
+        // vtkVolumeProperties set to 'off'
+        imageToRender->AllocateScalars(VTK_UNSIGNED_CHAR, nComponents);
 
         // Set the origin to match the lower bounds of the grid
         imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
-
-        // There could be both a scalar and opacity data arrays. So get both.
-        vtkDataArray *dataArr    = volume.data.data;
-        vtkDataArray *opacityArr = volume.opacity.data;
-
-        double dataRange[2] = {0., 0.};
-        double opacityRange[2] = {0., 0.};
-        dataArr->GetRange( dataRange );
-        opacityArr->GetRange( opacityRange );
-
-        std::cerr << __LINE__ << " [Default Renderer] data range : "
-                  << dataRange[0] << "  " << dataRange[1] << "  "
-                  << std::endl;
-
-        std::cerr << __LINE__ << " [Default Renderer] opacity range : "
-                  << opacityRange[0] << "  " << opacityRange[1] << "  "
-                  << std::endl;
-
-        double dataScale    = 255.0 / (   dataRange[1] -    dataRange[0]);
-        double opacityScale = 255.0 / (opacityRange[1] - opacityRange[0]);
-
-        // Transfer the rgrid data to the image data
-        // and scale to the proper range.
-        useInterpolation = true;
 
         // VisIt populates empty space with the NO_DATA_VALUE.
         // This needs to map this to a value that the mapper accepts,
@@ -277,37 +262,36 @@ avtDefaultRenderer::Render(
                     {
                         // The color map is 0 -> 255. For no data values,
                         // assign a new value just out side of the map.
-                        imageToRender->SetScalarComponentFromFloat(x, y, z, 0, -1.0);
+                        imageToRender->SetScalarComponentFromDouble(x, y, z, 0, -1.0);
                         useInterpolation = false;
                     }
                     else
                     {
                         double val = (dataTuple - dataRange[0]) * dataScale;
-                        imageToRender->SetScalarComponentFromFloat(x, y, z, 0, val);
+                        imageToRender->SetScalarComponentFromDouble(x, y, z, 0, val);
                     }
 
-                    double opacityTuple = opacityArr->GetTuple1(ptId);
-                    if (opacityTuple <= NO_DATA_VALUE)
+                    if( nComponents == 2 )
                     {
-                        // The opacity map is 0 -> 255. For no data values,
-                        // assign a new value just out side of the map.
-                        imageToRender->SetScalarComponentFromFloat(x, y, z, 1, -1.0);
-                        useInterpolation = false;
-                    }
-                    else
-                    {
-                        double val = (opacityTuple - opacityRange[0]) * opacityScale;
-                        imageToRender->SetScalarComponentFromFloat(x, y, z, 1, val);
+                        double opacityTuple = opacityArr->GetTuple1(ptId);
+                        if (opacityTuple <= NO_DATA_VALUE)
+                        {
+                            // The opacity map is 0 -> 255. For no data values,
+                            // assign a new value just out side of the map.
+                            imageToRender->SetScalarComponentFromDouble(x, y, z, 1, -1.0);
+                            useInterpolation = false;
+                        }
+                        else
+                        {
+                            double val = (opacityTuple - opacityRange[0]) * opacityScale;
+                            imageToRender->SetScalarComponentFromDouble(x, y, z, 1, val);
+                        }
                     }
 
                     ptId++;
                 }
             }
         }
-
-        std::cerr << __LINE__ << " [Default Renderer] useInterpolation: "
-                  << useInterpolation << "  "
-                  << std::endl;
     }
 
     if( mapper == nullptr || lastMapper != props.atts.GetOsprayEnabledFlag())
@@ -328,13 +312,6 @@ avtDefaultRenderer::Render(
         mapper->SetScalarModeToUsePointData();
         mapper->SetBlendModeToComposite();
         resetColorMap = true;
-
-        double scalarRange[2];
-        mapper->GetInput()->GetScalarRange(scalarRange);
-        std::cerr << __LINE__ << " [Default Renderer] scalarRange: "
-                  << scalarRange[0] << "  "
-                  << scalarRange[1] << "  "
-                  << std::endl;
     }
 
     if (resetColorMap || oldAtts != props.atts)
@@ -351,10 +328,13 @@ avtDefaultRenderer::Render(
         unsigned char rgba[tableSize*4];
         props.atts.GetTransferFunction(rgba);
 
-        // To make the  NO_DATA_VALUEs fully translucent turn clamping
+        // To make the NO_DATA_VALUEs fully translucent turn clamping
         // off (opacity becomes 0.0)
+        transFunc->RemoveAllPoints();
         transFunc->SetScaleToLinear();
         transFunc->SetClamping(false);
+
+        opacity->RemoveAllPoints();
         opacity->SetClamping(false);
 
         double atten = props.atts.GetOpacityAttenuation();
@@ -386,28 +366,10 @@ avtDefaultRenderer::Render(
                                double(rgba[rgbIdx + 2]) * rgbaScale);
         opacity->AddPoint(tableSize, double(rgba[rgbIdx + 3]) * rgbaScale * atten);
 
-	// transFunc->PrintSelf( std::cerr, vtkIndent(2) );
-	
-        rgbIdx  = 4 * 64;
-        std::cerr << __LINE__ << " [Default Renderer] RGBA: " << 64 << "  "
-                  << double(rgba[rgbIdx  ]) * rgbaScale << "  "
-                  << double(rgba[rgbIdx+1]) * rgbaScale << "  "
-                  << double(rgba[rgbIdx+2]) * rgbaScale << "  "
-                  << double(rgba[rgbIdx+3]) * rgbaScale * atten << "  "
-                  << std::endl;
-
-        rgbIdx  = 4 * 128;
-        std::cerr << __LINE__ << " [Default Renderer] RGBA: " << 128 << "  "
-                  << double(rgba[rgbIdx  ]) * rgbaScale << "  "
-                  << double(rgba[rgbIdx+1]) * rgbaScale << "  "
-                  << double(rgba[rgbIdx+2]) * rgbaScale << "  "
-                  << double(rgba[rgbIdx+3]) * rgbaScale * atten << "  "
-                  << std::endl;
-
         // Set the volume properties.
         volumeProp->SetColor(transFunc);
         volumeProp->SetScalarOpacity(opacity);
-        volumeProp->IndependentComponentsOff();
+        volumeProp->SetIndependentComponents( nComponents == 1 );
         volumeProp->SetShade( props.atts.GetLightingFlag() );
 
         // Set ambient, diffuse, specular, and specular power (shininess).
@@ -462,9 +424,10 @@ avtDefaultRenderer::Render(
     if( props.atts.GetOsprayEnabledFlag() )
     {
         vtkOSPRayRendererNode::SetRendererType("pathtracer", VTKRen);
-        vtkOSPRayRendererNode::SetSamplesPerPixel(props.atts.GetOspraySpp(), VTKRen);
-        vtkOSPRayRendererNode::SetAmbientSamples (props.atts.GetOsprayAoSamples(), VTKRen);
+        vtkOSPRayRendererNode::SetSamplesPerPixel(props.atts.GetOspraySPP(), VTKRen);
+        vtkOSPRayRendererNode::SetAmbientSamples (props.atts.GetOsprayAOSamples(), VTKRen);
         vtkOSPRayRendererNode::SetMinContribution(props.atts.GetOsprayMinContribution(), VTKRen);
+        vtkOSPRayRendererNode::SetMaxContribution(props.atts.GetOsprayMaxContribution(), VTKRen);
     }
 
     mapper->Render(VTKRen, curVolume);

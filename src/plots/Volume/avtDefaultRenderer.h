@@ -61,6 +61,8 @@ class avtDefaultRenderer : public avtVolumeRendererImplementation
     bool                       useInterpolation{true};
 
     bool                       lastMapper{false};
+
+    int                        nComponents{1};
 };
 
 #endif
