@@ -3,12 +3,12 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtVisItVTKOSPRayDevice.C                           //
+//                       avtVisItVTKDevice.C                           //
 // ************************************************************************* //
 
-#include <avtVisItVTKOSPRayDevice.h>
+#include <avtVisItVTKDevice.h>
 #include <avtParallel.h>
-#include <avtVisItVTKCompositor.h>
+#include <avtICETCompositor.h>
 
 #include <DebugStream.h>
 #include <TimingsManager.h>
@@ -50,10 +50,10 @@
 
 #include <vector>
 
-const std::string avtVisItVTKOSPRayDevice::DEVICE_TYPE_STR{"ospray"};
+const std::string avtVisItVTKDevice::DEVICE_TYPE_STR{"vtk"};
 
 // ****************************************************************************
-//  Method: avtVisItVTKOSPRayDevice constructor
+//  Method: avtVisItVTKDevice constructor
 //
 //  Programmer: Allen R. Sanderson
 //  Creation:  30 November 2021
@@ -62,7 +62,7 @@ const std::string avtVisItVTKOSPRayDevice::DEVICE_TYPE_STR{"ospray"};
 //
 // ****************************************************************************
 
-avtVisItVTKOSPRayDevice::avtVisItVTKOSPRayDevice() : avtRayTracerBase(),
+avtVisItVTKDevice::avtVisItVTKDevice() : avtRayTracerBase(),
     m_dataType(DataType::GEOMETRY),
     m_lightList(),
     m_renderingAttribs(),
@@ -71,7 +71,7 @@ avtVisItVTKOSPRayDevice::avtVisItVTKOSPRayDevice() : avtRayTracerBase(),
 {}
 
 // ****************************************************************************
-//  Method: avtVisItVTKOSPRayDevice destructor
+//  Method: avtVisItVTKDevice destructor
 //
 //  Programmer: Allen R. Sanderson
 //  Creation:  30 November 2021
@@ -80,7 +80,7 @@ avtVisItVTKOSPRayDevice::avtVisItVTKOSPRayDevice() : avtRayTracerBase(),
 //
 // ****************************************************************************
 
-avtVisItVTKOSPRayDevice::~avtVisItVTKOSPRayDevice()
+avtVisItVTKDevice::~avtVisItVTKDevice()
 {
     if(imageToRender != nullptr)
         imageToRender->Delete();
@@ -91,7 +91,7 @@ avtVisItVTKOSPRayDevice::~avtVisItVTKOSPRayDevice()
 
 
 // ****************************************************************************
-//  Method: avtVisItVTKOSPRayDevice::SetMatProperties
+//  Method: avtVisItVTKDevice::SetMatProperties
 //
 //  Purpose:
 //      Set the volume material properties.
@@ -111,7 +111,7 @@ avtVisItVTKOSPRayDevice::~avtVisItVTKOSPRayDevice()
 // ****************************************************************************
 
 void
-avtVisItVTKOSPRayDevice::SetMatProperties(const double props[4])
+avtVisItVTKDevice::SetMatProperties(const double props[4])
 {
     if(!m_materialPropertiesPtr)
         m_materialPropertiesPtr.reset(new float[4]);
@@ -121,7 +121,7 @@ avtVisItVTKOSPRayDevice::SetMatProperties(const double props[4])
 }
 
 // ****************************************************************************
-//  Method: avtVisItVTKOSPRayDevice::SetViewDirection
+//  Method: avtVisItVTKDevice::SetViewDirection
 //
 //  Purpose:
 //      Set the camera view direction.
@@ -137,7 +137,7 @@ avtVisItVTKOSPRayDevice::SetMatProperties(const double props[4])
 // ****************************************************************************
 
 void
-avtVisItVTKOSPRayDevice::SetViewDirection(const double direction[3])
+avtVisItVTKDevice::SetViewDirection(const double direction[3])
 {
     if(!m_viewDirectionPtr)
         m_viewDirectionPtr.reset(new float[3]);
@@ -147,7 +147,7 @@ avtVisItVTKOSPRayDevice::SetViewDirection(const double direction[3])
 }
 
 // ****************************************************************************
-//  Method: avtVisItVTKOSPRayDevice::CreateCamera
+//  Method: avtVisItVTKDevice::CreateCamera
 //
 //  Purpose:
 //      The perspective camera implements a simple thin lens camera
@@ -169,7 +169,7 @@ avtVisItVTKOSPRayDevice::SetViewDirection(const double direction[3])
 // ****************************************************************************
 
 vtkCamera *
-avtVisItVTKOSPRayDevice::CreateCamera()
+avtVisItVTKDevice::CreateCamera()
 {
     vtkCamera *camera = vtkCamera::New();
     viewInfo.SetCameraFromView( camera );
@@ -178,7 +178,7 @@ avtVisItVTKOSPRayDevice::CreateCamera()
 }
 
 // ****************************************************************************
-//  Method: avtVisItVTKOSPRayDevice::CreateLights
+//  Method: avtVisItVTKDevice::CreateLights
 //
 //  Purpose:
 //      Create a vtkLightCollection with up to 8 vtkLight sources
@@ -198,7 +198,7 @@ avtVisItVTKOSPRayDevice::CreateCamera()
 // ****************************************************************************
 
 vtkLightCollection *
-avtVisItVTKOSPRayDevice::CreateLights()
+avtVisItVTKDevice::CreateLights()
 {
     int ambientCount = 0;
     ambientColor[0] = 0.0;
@@ -352,7 +352,7 @@ avtVisItVTKOSPRayDevice::CreateLights()
 }
 
 // ****************************************************************************
-//  Method: avtVisItVTKOSPRayDevice::CreateFinalImage
+//  Method: avtVisItVTKDevice::CreateFinalImage
 //
 //  Purpose:
 //      If serial, copy the VTK rendered frame into an avtImage to pass back
@@ -376,7 +376,7 @@ avtVisItVTKOSPRayDevice::CreateLights()
 // ****************************************************************************
 
 avtImage_p
-avtVisItVTKOSPRayDevice::CreateFinalImage(const void *colorBuffer,
+avtVisItVTKDevice::CreateFinalImage(const void *colorBuffer,
                                           const int width,
                                           const int height,
                                           const float zDepth)
@@ -394,8 +394,8 @@ avtVisItVTKOSPRayDevice::CreateFinalImage(const void *colorBuffer,
     bgColor[1] = float(background[1]) / 255.0f;
     bgColor[2] = float(background[2]) / 255.0f;
 
-    std::unique_ptr<avtVisItVTKCompositor>
-      compositor(new avtVisItVTKCompositor(zDepth, bgColor));
+    std::unique_ptr<avtICETCompositor>
+      compositor(new avtICETCompositor(zDepth, bgColor));
 
     compositor->Composite(colorBuffer,
                           finalImage->GetImage().GetRGBBuffer(),
@@ -420,10 +420,10 @@ avtVisItVTKOSPRayDevice::CreateFinalImage(const void *colorBuffer,
 }
 
 // ****************************************************************************
-//  Method: avtVisItVTKOSPRayDevice::Execute
+//  Method: avtVisItVTKDevice::Execute
 //
 //  Purpose:
-//      Executes the OSPRay Rendering backend.
+//      Executes the VTK Rendering backend.
 //      This means:
 //      - Put the input mesh through a transform so it is in camera space.
 //      - Get the sample points.
@@ -440,9 +440,9 @@ avtVisItVTKOSPRayDevice::CreateFinalImage(const void *colorBuffer,
 // ****************************************************************************
 
 void
-avtVisItVTKOSPRayDevice::Execute()
+avtVisItVTKDevice::Execute()
 {
-    StackTimer t0("VisItVTK::OSPRay Rendering");
+    StackTimer t0("VisItVTKDevice Rendering");
 
     const char *moduleName = GetDeviceType();
 
@@ -453,10 +453,10 @@ avtVisItVTKOSPRayDevice::Execute()
 }
 
 // ****************************************************************************
-//  Method: avtVisItVTKOSPRayDevice::ExecuteVolume
+//  Method: avtVisItVTKDevice::ExecuteVolume
 //
 //  Purpose:
-//      Executes Volume Rendering using the OSPRay Rendering backend.
+//      Executes Volume Rendering using the VTK Rendering backend.
 //
 //  Programmer: Allen R. Sanderson
 //  Creation:   30 November 2021
@@ -467,7 +467,7 @@ avtVisItVTKOSPRayDevice::Execute()
 #define NO_DATA_VALUE -1e+37
 
 void
-avtVisItVTKOSPRayDevice::ExecuteVolume()
+avtVisItVTKDevice::ExecuteVolume()
 {
     const int width  = screen[0];
     const int height = screen[1];
@@ -476,7 +476,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
     auto inputTree = GetInputDataTree(); // avtDataTree_p
     int nsets = 0;
     vtkDataSet **datasetPtrs = inputTree->GetAllLeaves(nsets);
-    debug5 << "[VisItVTK::OSPRAY] nsets: " << nsets << std::endl;
+    debug5 << "[VisItVTKDevice] nsets: " << nsets << std::endl;
 
     // GetDataExtents is a parallel call so do them regardless if
     // there is data or not. Otherwise MPI crashes.
@@ -496,7 +496,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         m_nComponents = 1;
     }
 
-    std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+    std::cerr << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " in  "
               << "nsets: " << nsets << "  "
               << "nComponents: " << m_nComponents << "  "
@@ -527,14 +527,9 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
                 m_renderingAttribs.resampleTargetVal != m_resampleTargetVal));
         }
     }
-    else
-    {
-        needImage = false;
-        resample  = false;
-    }
 
     if(resample)
-      std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+      std::cerr << __LINE__ << " [VisItVTKDevice] "
                 << "rank: "  << PAR_Rank() << "  "
                 << "need to resample"
                 << std::endl;
@@ -546,7 +541,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
     if(resample)
     {
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+        std::cerr << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << "  resampling"
                   << std::endl;
 
@@ -603,7 +598,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
     nsets = 0;
     datasetPtrs = inputTree->GetAllLeaves(nsets);
 
-    std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+    std::cerr << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " out "
               << "nsets: " << nsets << "  "
               << std::endl;
@@ -617,7 +612,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
     // rectilienar grid but the flag is already set so use it.
     if( needImage == false || nsets == 0 )
     {
-        debug5 << "[VisItVTK::OSPRay] Nothing to render, no data." << std::endl;
+        debug5 << "[VisItVTKDevice] Nothing to render, no data." << std::endl;
 
 #ifdef PARALLEL
         // So the parallel case can still work
@@ -634,7 +629,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
     // After resampling there should be only one rectilinear data set.
     if( nsets != 1 )
     {
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+        std::cerr << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " "
                   << "Too many datasets to render, skipping." << std::endl;
         EXCEPTION1(ImproperUseException, "Only one input dataset may be rendered.");
@@ -694,26 +689,26 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         double spacingZ = (rgrid->GetZCoordinates()->GetTuple1(1)-
                            rgrid->GetZCoordinates()->GetTuple1(0));
 
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+        std::cerr << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " dims : "
                   << dims[0] << "  " << dims[1] << "  "<< dims[2] << "  "
                   << std::endl;
 
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+        std::cerr << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " extent : "
                   << extent[0] << "  " << extent[1] << "  "
                   << extent[2] << "  " << extent[3] << "  "
                   << extent[4] << "  " << extent[5] << "  "
                   << std::endl;
 
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+        std::cerr << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " bounds : "
                   << bounds[0] << "  " << bounds[1] << "  "
                   << bounds[2] << "  " << bounds[3] << "  "
                   << bounds[4] << "  " << bounds[5] << "  "
                   << std::endl;
 
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+        std::cerr << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " spacing : "
                   << spacingX << "  " << spacingY << "  " << spacingZ << "  "
                   << std::endl;
@@ -733,12 +728,12 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
         // Set the origin to match the lower bounds of the grid
         imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
 
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+        std::cerr << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " data range : "
                   << dataRange[0] << "  " << dataRange[1] << "  "
                   << std::endl;
 
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+        std::cerr << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " opacity range : "
                   << opacityRange[0] << "  " << opacityRange[1] << "  "
                   << std::endl;
@@ -827,7 +822,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
             }
         }
 
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+        std::cerr << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank()
                   << " dataRange: "
                   << data_min << "  " << data_max << "  "
@@ -835,7 +830,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
                   << opacity_min << "  " << opacity_max << "  "
                   << std::endl;
 
-        std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+        std::cerr << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " useInterpolation: "
                   << m_useInterpolation << "  "
                   << std::endl;
@@ -856,9 +851,9 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
     // Create a new volume mapper if needed.
     if( volumeMapper == nullptr ||
-        m_lastMapper != m_renderingAttribs.OSPRayEnabled)
+        m_OSPRayEnabled != m_renderingAttribs.OSPRayEnabled)
     {
-        m_lastMapper = m_renderingAttribs.OSPRayEnabled;
+        m_OSPRayEnabled = m_renderingAttribs.OSPRayEnabled;
 
         if (volumeMapper != nullptr)
             volumeMapper->Delete();
@@ -926,7 +921,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
     // transFunc->PrintSelf( std::cerr, vtkIndent(2) );
     // opacity->PrintSelf( std::cerr, vtkIndent(2) );
 
-    std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+    std::cerr << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " RGBA: " << 0 << "  "
               << transferTable[0].R << "  "
               << transferTable[0].G << "  "
@@ -934,7 +929,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
               << transferTable[0].A << "  "
               << std::endl;
 
-    std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+    std::cerr << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " RGBA: " << 255 << "  "
               << transferTable[255].R << "  "
               << transferTable[255].G << "  "
@@ -957,7 +952,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
     volumeProperty->SetIndependentComponents( m_nComponents == 1 );
     volumeProperty->SetShade( m_renderingAttribs.lightingEnabled );
 
-    std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+    std::cerr << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " HasGradientOpacity: "
               << volumeProperty->HasGradientOpacity() << "  "
               << std::endl;
@@ -1001,7 +996,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
     volumeProperty->SetScalarOpacityUnitDistance(1, sampleDist);
 
-    std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+    std::cerr << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " sampleDist: "
               << sampleDist << "  "
               << std::endl;
@@ -1087,7 +1082,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
 
     // if( cc > 0 )
     // {
-    //     std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+    //     std::cerr << __LINE__ << " [VisItVTKDevice] "
     //               << "rank: "  << PAR_Rank() << " bad composting "
     //               << cc << "/" << aa << std::endl;
     // }
@@ -1135,7 +1130,7 @@ avtVisItVTKOSPRayDevice::ExecuteVolume()
     transform->MultiplyPoint(centroidPt, transPt);
     transform->Delete();
 
-    std::cerr << __LINE__ << " [VisItVTK::OSPRAY] "
+    std::cerr << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " Average z depth: "
               << transPt[2] << "  " << std::endl;
 

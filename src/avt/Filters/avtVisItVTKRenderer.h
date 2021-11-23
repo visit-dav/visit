@@ -21,10 +21,10 @@ namespace avt
 {
     namespace visit_vtk
     {
-        enum class DeviceType 
+        enum class DeviceType
         {
-            OSPRAY, // Intel OSPRay
-            NONE,   
+            VTK, // Including Intel OSPRay
+            NONE,
             UNKNOWN
         };
     }
@@ -55,7 +55,7 @@ public:
     static const char         *GetDeviceTypeStr();
 
     static DeviceType          GetDeviceType() { return m_deviceType; }
-    
+
     static void                WriteArrayToPPM(std::string, const float *, int, int);
 
 private:

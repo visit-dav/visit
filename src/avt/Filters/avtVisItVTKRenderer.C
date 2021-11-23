@@ -7,7 +7,7 @@
 // ************************************************************************* //
 
 #include <avtVisItVTKRenderer.h>
-#include <avtVisItVTKOSPRayDevice.h>
+#include <avtVisItVTKDevice.h>
 
 DeviceType avtVisItVTKRenderer::m_deviceType = DeviceType::NONE;
 std::unique_ptr<avtVisItVTKDevice> avtVisItVTKRenderer::m_devicePtr(nullptr);
@@ -16,15 +16,15 @@ std::unique_ptr<avtVisItVTKDevice> avtVisItVTKRenderer::m_devicePtr(nullptr);
 //  Method: avtVisItVTKRenderer::SetDeviceType
 //
 //  Purpose:
-//      Set the device type that this factory class will return when the 
-//      GetDevice method is called. Setting device type to NONE or UNKNOWN 
+//      Set the device type that this factory class will return when the
+//      GetDevice method is called. Setting device type to NONE or UNKNOWN
 //      will delete any memory previously allocated for the device.
 //
 //  Arguments:
-//      deviceType  An enum representing the VisItVTK rendering backend
-//      
-//  Throws a VisIt exception if the device type specified by deviceType is not 
-//  supported. 
+//      deviceType  An enum representing the VisIt VTK rendering backend
+//
+//  Throws a VisIt exception if the device type specified by deviceType is not
+//  supported.
 //
 //  Programmer: Kevin Griffin
 //  Creation:   February 22, 2021
@@ -32,33 +32,31 @@ std::unique_ptr<avtVisItVTKDevice> avtVisItVTKRenderer::m_devicePtr(nullptr);
 // ****************************************************************************
 
 void
-avtVisItVTKRenderer::SetDeviceType(const DeviceType deviceType) 
+avtVisItVTKRenderer::SetDeviceType(const DeviceType deviceType)
 {
     if(m_deviceType != deviceType)
     {
         m_deviceType = deviceType;
 
-        switch(deviceType) 
+        switch(deviceType)
         {
-            case DeviceType::OSPRAY:
-                #ifdef VISIT_OSPRAY
-                    m_devicePtr.reset(new avtVisItVTKOSPRayDevice());
-                #else
-                    // throw std::invalid_argument("OSPRay Device is not supported");
-                    EXCEPTION1(VisItException, "[VisItVTK] OSPRay backend is not supported");
-                #endif
+            case DeviceType::VTK:
+                m_devicePtr.reset(new avtVisItVTKDevice());
                 break;
-            case DeviceType::NONE: case DeviceType::UNKNOWN:
-                if(m_devicePtr) 
+
+            case DeviceType::NONE:
+            case DeviceType::UNKNOWN:
+                if(m_devicePtr)
                 {
-                    m_devicePtr.reset(nullptr);            
+                    m_devicePtr.reset(nullptr);
                 }
                 break;
+
             default:
                 char msg[50];
                 int retVal = snprintf(msg, 50, "[VisItVTK] Unsupported device type: %d", static_cast<int>(deviceType));
 
-                if(retVal > 0) 
+                if(retVal > 0)
                 {
                     EXCEPTION1(VisItException, msg);
                 }
@@ -74,7 +72,7 @@ avtVisItVTKRenderer::SetDeviceType(const DeviceType deviceType)
 //  Method: avtVisItVTKRenderer::GetDeviceTypeStr
 //
 //  Purpose:
-//      Return the VisItVTK backend device type as a string     
+//      Return the VisItVTK backend device type as a string
 //
 //  Programmer: Kevin Griffin
 //  Creation:   February 22, 2021
@@ -97,8 +95,8 @@ avtVisItVTKRenderer::GetDeviceTypeStr()
 //      VisItVTK backend device implementation. The pointer will need
 //      to be cast to the specific VisItVTK backend device.
 //
-//  Returns:  
-//      avtVisItVTKDevice pointer    
+//  Returns:
+//      avtVisItVTKDevice pointer
 //
 //  Programmer: Kevin Griffin
 //  Creation:   February 22, 2021
@@ -106,10 +104,10 @@ avtVisItVTKRenderer::GetDeviceTypeStr()
 // ****************************************************************************
 
 avtVisItVTKDevice  *
-avtVisItVTKRenderer::GetDevice() 
-{ 
-    if(m_devicePtr) 
-        return m_devicePtr.get(); 
+avtVisItVTKRenderer::GetDevice()
+{
+    if(m_devicePtr)
+        return m_devicePtr.get();
 
     return nullptr;
 }
@@ -140,7 +138,7 @@ avtVisItVTKRenderer::DeleteDevice()
 //
 //  Purpose:
 //
-//  Returns:      
+//  Returns:
 //
 //  Programmer: Kevin Griffin
 //  Creation:   February 22, 2021
@@ -148,14 +146,14 @@ avtVisItVTKRenderer::DeleteDevice()
 // ****************************************************************************
 
 void
-avtVisItVTKRenderer::WriteArrayToPPM(std::string filename, 
-				     const float * image, 
-				     int dimX, int dimY)
+avtVisItVTKRenderer::WriteArrayToPPM(std::string filename,
+                                     const float * image,
+                                     int dimX, int dimY)
 {
-    std::ofstream outputFile((filename + ".ppm").c_str(), 
+    std::ofstream outputFile((filename + ".ppm").c_str(),
                              std::ios::out | std::ios::binary);
 
-    outputFile <<  "P6\n" << dimX << "\n" << dimY << "\n" << 255 << "\n"; 
+    outputFile <<  "P6\n" << dimX << "\n" << dimY << "\n" << 255 << "\n";
 
     for (int y=dimY-1; y>=0; --y)
     {
@@ -169,7 +167,7 @@ avtVisItVTKRenderer::WriteArrayToPPM(std::string filename,
             color[2] = CLAMP(image[index + 2]*alpha, 0.0f, 1.0f) * 255;
             outputFile.write(color,3);
         }
-    } 
+    }
 
     outputFile.close();
 }

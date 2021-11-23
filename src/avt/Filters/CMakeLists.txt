@@ -70,6 +70,7 @@ avtFacelistFilter.C
 avtFeatureEdgesFilter.C
 avtGhostZoneAndFacelistFilter.C
 avtGhostZoneFilter.C
+avtICETCompositor.C
 avtImageCommunicator.C
 avtImageCompositer.C
 avtLinearTransformFilter.C
@@ -104,8 +105,7 @@ avtTimeLoopCollectorFilter.C
 avtTimeLoopFilter.C
 avtTransform.C
 avtValueImageCompositer.C
-avtVisItVTKOSPRayDevice.C
-avtVisItVTKCompositor.C
+avtVisItVTKDevice.C
 avtVisItVTKRenderer.C
 avtVertexExtractor.C
 avtVertexNormalsFilter.C

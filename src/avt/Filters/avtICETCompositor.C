@@ -3,10 +3,10 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtVisItVTKCompositor.C                                //
+//                       avtICETCompositor.C                                //
 // ************************************************************************* //
 
-#include <avtVisItVTKCompositor.h>
+#include <avtICETCompositor.h>
 #include <avtParallel.h>
 
 #include <DebugStream.h>
@@ -15,13 +15,13 @@
 #include <map>
 #include <vector>
 
-const void *avtVisItVTKCompositor::s_colorBuffer = nullptr;
-int avtVisItVTKCompositor::s_nColorChannels = 4;
-int avtVisItVTKCompositor::s_width = 0;
-int avtVisItVTKCompositor::s_height = 0;
+const void *avtICETCompositor::s_colorBuffer = nullptr;
+int avtICETCompositor::s_nColorChannels = 4;
+int avtICETCompositor::s_width = 0;
+int avtICETCompositor::s_height = 0;
 
 // ****************************************************************************
-//  Method: avtVisItVTKCompositor Default Constructor
+//  Method: avtICETCompositor Default Constructor
 //
 //  Programmer: Kevin Griffin
 //  Creation:   March 4, 2021
@@ -30,13 +30,13 @@ int avtVisItVTKCompositor::s_height = 0;
 //
 // ****************************************************************************
 
-avtVisItVTKCompositor::avtVisItVTKCompositor()
+avtICETCompositor::avtICETCompositor()
 {
-    avtVisItVTKCompositor(0);
+    avtICETCompositor(0);
 }
 
 // ****************************************************************************
-//  Method: avtVisItVTKCompositor Constructor
+//  Method: avtICETCompositor Constructor
 //
 //  Arguments:
 //      z       The average geometry z-depth
@@ -49,7 +49,7 @@ avtVisItVTKCompositor::avtVisItVTKCompositor()
 //
 // ****************************************************************************
 
-avtVisItVTKCompositor::avtVisItVTKCompositor(float z, float * bgColor) :
+avtICETCompositor::avtICETCompositor(float z, float * bgColor) :
   m_zDepth(z)
 {
     if( bgColor )
@@ -76,7 +76,7 @@ avtVisItVTKCompositor::avtVisItVTKCompositor(float z, float * bgColor) :
 //
 // ****************************************************************************
 
-avtVisItVTKCompositor::~avtVisItVTKCompositor()
+avtICETCompositor::~avtICETCompositor()
 {
     #if defined(PARALLEL) && defined(HAVE_ICET)
         icetDestroyContext(m_icetContext);
@@ -87,7 +87,7 @@ avtVisItVTKCompositor::~avtVisItVTKCompositor()
 #if defined(PARALLEL) && defined(HAVE_ICET)
 
 // ****************************************************************************
-//  Method: avtVisItVTKCompositor::InitIceT
+//  Method: avtICETCompositor::InitIceT
 //
 //  Purpose:
 //      Initialize the IceT state.
@@ -101,7 +101,7 @@ avtVisItVTKCompositor::~avtVisItVTKCompositor()
 // ****************************************************************************
 
 void
-avtVisItVTKCompositor::InitIceT(float depth)
+avtICETCompositor::InitIceT(float depth)
 {
     // Initialize IceT
     m_prevIceTContext = icetGetContext();
@@ -136,7 +136,7 @@ avtVisItVTKCompositor::InitIceT(float depth)
 }
 
 // ****************************************************************************
-//  Method: avtVisItVTKCompositor::GetProcessRanks
+//  Method: avtICETCompositor::GetProcessRanks
 //
 //  Purpose:
 //      Get the visibility order of the geometry assoiated with each process.
@@ -154,7 +154,7 @@ avtVisItVTKCompositor::InitIceT(float depth)
 // ****************************************************************************
 
 void
-avtVisItVTKCompositor::GetProcessRanks(float depth, const int mpiSize, IceTInt * const rankOrder)
+avtICETCompositor::GetProcessRanks(float depth, const int mpiSize, IceTInt * const rankOrder)
 {
     std::vector<float> allDepths(mpiSize);
     MPI_Allgather(&depth, 1, MPI_FLOAT, allDepths.data(), 1, MPI_FLOAT, VISIT_MPI_COMM);
@@ -177,7 +177,7 @@ avtVisItVTKCompositor::GetProcessRanks(float depth, const int mpiSize, IceTInt *
 }
 
 // ****************************************************************************
-//  Method: avtVisItVTKCompositor::IceTDrawCallback
+//  Method: avtICETCompositor::IceTDrawCallback
 //
 //  Purpose:
 //     Drawing callback used by IceT.
@@ -202,7 +202,7 @@ avtVisItVTKCompositor::GetProcessRanks(float depth, const int mpiSize, IceTInt *
 // ****************************************************************************
 
 void
-avtVisItVTKCompositor::IceTDrawCallback(const IceTDouble *projMatrix,
+avtICETCompositor::IceTDrawCallback(const IceTDouble *projMatrix,
                                         const IceTDouble *modelViewMatrix,
                                         const IceTFloat *bgColor,
                                         const IceTInt *readBackViewport,
@@ -226,7 +226,7 @@ avtVisItVTKCompositor::IceTDrawCallback(const IceTDouble *projMatrix,
 }
 
 // ****************************************************************************
-//  Method: avtVisItVTKCompositor::CompositeIceT
+//  Method: avtICETCompositor::CompositeIceT
 //
 //  Purpose:
 //      Renders and composites the final image using IceT.
@@ -242,7 +242,7 @@ avtVisItVTKCompositor::IceTDrawCallback(const IceTDouble *projMatrix,
 // ****************************************************************************
 
 void
-avtVisItVTKCompositor::CompositeIceT(void * const outBuffer,
+avtICETCompositor::CompositeIceT(void * const outBuffer,
                                      const int width,
                                      const int height)
 {
@@ -306,7 +306,7 @@ avtVisItVTKCompositor::CompositeIceT(void * const outBuffer,
 #endif
 
 // ****************************************************************************
-//  Method: avtVisItVTKCompositor::Composite
+//  Method: avtICETCompositor::Composite
 //
 //  Purpose:
 //      Render and composites the final image
@@ -324,7 +324,7 @@ avtVisItVTKCompositor::CompositeIceT(void * const outBuffer,
 // ****************************************************************************
 
 void
-avtVisItVTKCompositor::Composite(const void *colorBuffer,
+avtICETCompositor::Composite(const void *colorBuffer,
                                  void * const outBuffer,
                                  const int width,
                                  const int height,

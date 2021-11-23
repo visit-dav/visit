@@ -6,8 +6,8 @@
 //                           avtVisItVTKCompositor.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_VISIT_VTK_COMPOSITOR_H
-#define AVT_VISIT_VTK_COMPOSITOR_H
+#ifndef AVT_ICET_COMPOSITOR_H
+#define AVT_ICET_COMPOSITOR_H
 
 #include <avtImage.h>
 
@@ -18,12 +18,12 @@
     #include <IceTMPI.h>
 #endif
 
-class avtVisItVTKCompositor
+class avtICETCompositor
 {
 public:
-    avtVisItVTKCompositor();
-    avtVisItVTKCompositor(float zDepth, float * bg_color = nullptr);
-    ~avtVisItVTKCompositor();
+    avtICETCompositor();
+    avtICETCompositor(float zDepth, float * bg_color = nullptr);
+    ~avtICETCompositor();
 
     void            Composite(const void *, void * const, const int, const int, const int);
 private:
