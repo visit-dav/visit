@@ -26,8 +26,8 @@
 #   Hank Childs, Tue Mar 13 12:59:07 PDT 2012
 #   Move avtDatasetOnDemandFilter from Pipeline/AbstractFilters directory.
 #
-#   Kathleen Biagas, Tue May 28 17:02:23 MST 2013 
-#   Move avtTimeLoopFilter and avtTimeLoopCollectorFilter from 
+#   Kathleen Biagas, Tue May 28 17:02:23 MST 2013
+#   Move avtTimeLoopFilter and avtTimeLoopCollectorFilter from
 #   Pipeline/AbstractFilters directory.
 #
 #   Kevin Griffin, Mon Nov 3 12:41:11 PDT 2014
@@ -104,6 +104,9 @@ avtTimeLoopCollectorFilter.C
 avtTimeLoopFilter.C
 avtTransform.C
 avtValueImageCompositer.C
+avtVisItVTKOSPRayDevice.C
+avtVisItVTKCompositor.C
+avtVisItVTKRenderer.C
 avtVertexExtractor.C
 avtVertexNormalsFilter.C
 avtVoxelExtractor.C
@@ -124,30 +127,21 @@ IF(VISIT_SLIVR)
     ADD_DEFINITIONS(-DVISIT_SLIVR)
 ENDIF()
 
-IF(VISIT_OSPRAY)
-    LIST(APPEND AVTFILTERS_SOURCES
-         avtOSPRayCommon.C
-         avtOSPRayImageCompositor.C
-         avtOSPRayRayTracer.C
-         avtOSPRaySamplePointExtractor.C
-         avtOSPRayVoxelExtractor.C
-         )
-    IF(ICET_FOUND)
-        # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
-        # We need to link with OpenGL on Mac when we have IceT.
-        IF(APPLE)
-            SET(ICET_OPENGL ${OPENGL_gl_LIBRARY})
-        ENDIF(APPLE)
-        # Link icet libraries using absolute pathes
-        SET(ICET_FULLPATH_LIB ${ICET_OPENGL})
-        FOREACH(X ${ICET_LIB})
-            LIST(APPEND ICET_FULLPATH_LIB "${ICET_LIBRARY_DIR}/${X}")
-        ENDFOREACH()
-        # Other setups
-        INCLUDE_DIRECTORIES(${ICET_INCLUDE_DIR})
-        LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
-        ADD_DEFINITIONS(-DVISIT_OSPRAY_ICET)
-    ENDIF()
+IF(ICET_FOUND)
+    # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
+    # We need to link with OpenGL on Mac when we have IceT.
+    IF(APPLE)
+        SET(ICET_OPENGL ${OPENGL_gl_LIBRARY})
+    ENDIF(APPLE)
+    # Link icet libraries using absolute pathes
+    SET(ICET_FULLPATH_LIB ${ICET_OPENGL})
+    FOREACH(X ${ICET_LIB})
+        LIST(APPEND ICET_FULLPATH_LIB "${ICET_LIBRARY_DIR}/${X}")
+    ENDFOREACH()
+    # Other setups
+    INCLUDE_DIRECTORIES(${ICET_INCLUDE_DIR})
+    LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
+    ADD_DEFINITIONS(-DHAVE_ICET)
 ENDIF()
 
 INCLUDE_DIRECTORIES(
@@ -176,33 +170,23 @@ ${VTKh_INCLUDE_DIRS}
 ${VTKm_INCLUDE_DIRS}
 )
 
-if(VISIT_OSPRAY)
-    include_directories(${OSPRAY_INCLUDE_DIR})
-endif()
-
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtfilters_ser ${AVTFILTERS_SOURCES})
-TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts VTK::CommonMath VTK::CommonTransforms VTK::FiltersGeneral VTK::FiltersModeling)
-IF(VISIT_OSPRAY) 
-    TARGET_LINK_LIBRARIES(avtfilters_ser ${OSPRAY_LIBRARIES})
-    IF(ICET_FOUND)
-        TARGET_LINK_LIBRARIES(avtfilters_ser ${ICET_FULLPATH_LIB})
-    ENDIF()
-ENDIF() 
+TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts VTK::CommonMath VTK::CommonTransforms VTK::FiltersGeneral VTK::FiltersModeling VTK::IOXML VTK::RenderingRayTracing VTK::RenderingVolumeOpenGL2)
+IF(ICET_FOUND)
+    TARGET_LINK_LIBRARIES(avtfilters_ser ${ICET_FULLPATH_LIB})
+ENDIF()
 VISIT_INSTALL_TARGETS(avtfilters_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtfilters_par ${AVTFILTERS_SOURCES})
-    TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts VTK::CommonMath VTK::CommonTransforms VTK::FiltersGeneral VTK::FiltersModeling)
-    IF(VISIT_OSPRAY) 
-        TARGET_LINK_LIBRARIES(avtfilters_par ${OSPRAY_LIBRARIES})
-        IF(ICET_FOUND)
-            TARGET_LINK_LIBRARIES(avtfilters_par ${ICET_FULLPATH_LIB})
-        ENDIF()
+    TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts VTK::CommonMath VTK::CommonTransforms VTK::FiltersGeneral VTK::FiltersModeling VTK::IOXML VTK::RenderingRayTracing VTK::RenderingVolumeOpenGL2)
+    IF(ICET_FOUND)
+        TARGET_LINK_LIBRARIES(avtfilters_par ${ICET_FULLPATH_LIB})
     ENDIF()
     VISIT_INSTALL_TARGETS(avtfilters_par)
 ENDIF(VISIT_PARALLEL)
