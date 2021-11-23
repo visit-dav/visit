@@ -9,6 +9,8 @@ When running in client / server mode, a *VCL* is lauched on the login node on th
 When ssh tunneling is used with client / server, ssh port forwarding is used to forward ports from the login node on the server system to the client system.
 Ssh will only forward ports that originate on the server login node, so *Engines* that are launched in batch will connect to a bridge port from the *VCL*.
 
+When a process is launched, the process is launched and then the launching process listens on a port waiting for the launched process to connect in order to set up a communication socket.
+
 .. figure:: images/Launch-ProcessDiagram.png
 
    Block diagram of the VisIt processes in the Client / Server example
