@@ -28,7 +28,7 @@
 #include <avtView3D.h>
 #include <avtViewInfo.h>
 #include <avtVisItVTKRenderer.h>
-#include <avtVisItVTKOSPRayDevice.h>
+#include <avtVisItVTKDevice.h>
 
 #include <DebugStream.h>
 #include <InvalidDimensionsException.h>
@@ -262,40 +262,36 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
     atts.GetTransferFunction(vtf);
     avtOpacityMap om(256);
 
-#ifdef VISIT_SLIVR
-    if (atts.GetRendererType() == VolumeAttributes::SLIVR)
+    if (atts.GetRendererType() == VolumeAttributes::Serial ||
+	atts.GetRendererType() == VolumeAttributes::Parallel)
     {
-        // Set the opacity map. This modifies the opacities though.
-        om.SetTable(vtf, 256, atts.GetOpacityAttenuation() * 2.0 - 1.0,
-                    atts.GetRendererSamples());
-        om.SetTableFloat(vtf, 256, atts.GetOpacityAttenuation() * 2.0 - 1.0,
-                         atts.GetRendererSamples());
+	om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
     }
     else
-#endif
     {
-// #ifdef VISIT_OSPRAY
-//         if (atts.GetRendererType() == VolumeAttributes::Parallel)
-//         {
-//             // Set the opacity map. This modifies the opacities though.
-//             om.SetTable(vtf, 256, atts.GetOpacityAttenuation() * 2.0 - 1.0,
-//                         atts.GetRendererSamples());
-//             om.SetTableFloatNOC(vtf, 256,
-//                                 atts.GetOpacityAttenuation() * 2.0 - 1.0);
-//         }
-//         else
-// #endif
-        {
-            if (atts.GetRendererType() == VolumeAttributes::Composite &&
-                atts.GetSampling() == VolumeAttributes::Trilinear)
-              om.SetTable(vtf, 256, atts.GetOpacityAttenuation() * 2.0 - 1.0,
-                          atts.GetRendererSamples());
-            else
-            {
-                // Set the opacity map just using the transfer function.
-              om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
-            }
-        }
+	if (atts.GetRendererType() == VolumeAttributes::Composite &&
+	    atts.GetSampling()     == VolumeAttributes::Trilinear)
+	  om.SetTableComposite(vtf, 256,
+			       atts.GetOpacityAttenuation() * 2.0 - 1.0,
+			       atts.GetRendererSamples());
+	else
+	{
+#ifdef VISIT_SLIVR
+	    if (atts.GetRendererType() == VolumeAttributes::SLIVR)
+	    {
+	      // Set the opacity map with opacity correction. This modifies
+	      // the opacities though.
+	      om.SetTableComposite(vtf, 256,
+				   atts.GetOpacityAttenuation() * 2.0 - 1.0,
+				   atts.GetRendererSamples());
+	    }
+	    else
+#endif
+	    {
+	        // Set the opacity map just using the transfer function.
+	      om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
+	    }
+	}
     }
 
     double actualRange[2];
@@ -368,7 +364,7 @@ extern bool GetLogicalBounds(avtDataObject_p input,
 //  Method: avtVolumeFilter::RenderImageRayCasting
 //
 //  Purpose:
-//      Do SW rendering with SLIVR, OSPRay, or other.
+//      Do SW rendering with SLIVR, VTK/OSPRay, or other.
 //
 //  Programmer: Pascal Grosset
 //  Creation:
@@ -395,7 +391,7 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
 
     if (atts.GetRendererType() == VolumeAttributes::Parallel)
     {
-        avtVisItVTKRenderer::SetDeviceType(DeviceType::OSPRAY);
+        avtVisItVTKRenderer::SetDeviceType(DeviceType::VTK);
         avtVisItVTKDevice *device = avtVisItVTKRenderer::GetDevice();
 
         if(device != nullptr)
@@ -601,8 +597,8 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
 
     if (atts.GetRendererType() == VolumeAttributes::Parallel)
     {
-        avtVisItVTKOSPRayDevice *device =
-          dynamic_cast<avtVisItVTKOSPRayDevice *>(software);
+        avtVisItVTKDevice *device =
+          dynamic_cast<avtVisItVTKDevice *>(software);
 
         if (atts.GetResampleType() == VolumeAttributes::None)
             device->SetResampleType(0);
@@ -671,11 +667,21 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
     //
     // Free up some memory and clean up.
     //
-    #ifdef VISIT_OSPRAY
+    if (atts.GetRendererType() == VolumeAttributes::Parallel)
         avtVisItVTKRenderer::DeleteDevice();
-    #else
-        delete software;
-    #endif
+    else
+    {
+#ifdef VISIT_SLIVR
+        if (atts.GetRendererType() == VolumeAttributes::SLIVR)
+        {
+	    delete software;
+        }
+        else
+#endif
+        {
+            EXCEPTION1(VisItException, "Unknown render type.");
+        }
+    }
 
     avtRay::SetArbitrator(NULL);
     delete compositeRF;
