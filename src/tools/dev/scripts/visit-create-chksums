@@ -116,12 +116,13 @@ do
    $cmd visit$version2.linux-x86_64-centos8.tar.gz        >> $output
    $cmd visit$version2.linux-x86_64-debian9.tar.gz        >> $output
    $cmd visit$version2.linux-x86_64-debian10.tar.gz       >> $output
-   $cmd visit$version2.linux-x86_64-fedora27.tar.gz       >> $output
+   $cmd visit$version2.linux-x86_64-debian11.tar.gz       >> $output
+   $cmd visit$version2.linux-x86_64-fedora31.tar.gz       >> $output
    $cmd visit$version2.linux-x86_64-rhel7.tar.gz          >> $output
    $cmd visit$version2.linux-x86_64-rhel7-wmesa.tar.gz    >> $output
-   $cmd visit$version2.linux-x86_64-ubuntu16.tar.gz       >> $output
    $cmd visit$version2.linux-x86_64-ubuntu18.tar.gz       >> $output
-   $cmd visit$version2.linux-x86_64-ubuntu19.tar.gz       >> $output
+   $cmd visit$version2.linux-x86_64-ubuntu20.tar.gz       >> $output
+   $cmd visit$version2.linux-x86_64-ubuntu21.tar.gz       >> $output
    $cmd visit${version}_x64.exe                           >> $output
    $cmd visit-install$version2                            >> $output
 
