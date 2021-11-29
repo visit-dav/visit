@@ -113,8 +113,8 @@ avtVolumePlot : public avtVolumeDataPlot
 
   protected:
     VolumeAttributes                atts;
-    avtLowerResolutionVolumeFilter *volumeFilter;
-    avtVolumeFilter                *volumeImageFilter;
+    avtLowerResolutionVolumeFilter *lowResVolumeFilter;
+    avtVolumeFilter                *volumeFilter;
     avtGradientExpression          *gradientFilter;
     avtResampleFilter              *resampleFilter;
     avtShiftCenteringFilter        *shiftCentering;

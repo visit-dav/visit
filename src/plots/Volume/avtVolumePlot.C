@@ -12,7 +12,6 @@
 #include <math.h>
 
 #include <avtCallback.h>
-#include <avtCompactTreeFilter.h>
 #include <avtDatabaseMetaData.h>
 #include <avtGradientExpression.h>
 #include <avtVolumeRenderer.h>
@@ -74,12 +73,11 @@
 
 avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
 {
+    lowResVolumeFilter = NULL;
     volumeFilter = NULL;
-    volumeImageFilter = NULL;
     gradientFilter = NULL;
     resampleFilter = NULL;
     shiftCentering = NULL;
-    compactTree = NULL;
     renderer = avtVolumeRenderer::New();
 
     avtCustomRenderer_p cr;
@@ -137,16 +135,14 @@ avtVolumePlot::~avtVolumePlot()
     delete shiftCentering;
     delete avtLUT;
 
+    if (lowResVolumeFilter != NULL)
+        delete lowResVolumeFilter;
     if (volumeFilter != NULL)
         delete volumeFilter;
-    if (volumeImageFilter != NULL)
-        delete volumeImageFilter;
     if (gradientFilter != NULL)
         delete gradientFilter;
     if (resampleFilter != NULL)
         delete resampleFilter;
-    if (compactTree != NULL)
-        delete compactTree;
 
     renderer = NULL;
 
@@ -341,7 +337,7 @@ avtVolumePlot::SetLegendOpacities()
 int
 avtVolumePlot::GetNumberOfStagesForImageBasedPlot(const WindowAttributes &a) const
 {
-    return volumeImageFilter->GetNumberOfStages(a);
+    return volumeFilter->GetNumberOfStages(a);
 }
 
 // ****************************************************************************
@@ -361,10 +357,10 @@ avtVolumePlot::ImageExecute(avtImage_p input,
 {
     avtImage_p rv = input;
 
-    if (volumeImageFilter != NULL)
+    if (volumeFilter != NULL)
     {
-        volumeImageFilter->SetAttributes(atts);
-        rv = volumeImageFilter->RenderImage(input, window_atts);
+        volumeFilter->SetAttributes(atts);
+        rv = volumeFilter->RenderImage(input, window_atts);
     }
     else
     {
@@ -657,31 +653,27 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     //
     // Clean up any old filters.
     //
-    if (volumeFilter != NULL)
+    if (lowResVolumeFilter != NULL)
     {
-        delete volumeFilter;
-        volumeFilter = NULL;
+        delete lowResVolumeFilter;
+        lowResVolumeFilter = NULL;
     }
     if (gradientFilter != NULL)
     {
         delete gradientFilter;
         gradientFilter = NULL;
     }
-    if (volumeImageFilter != NULL)
+    if (volumeFilter != NULL)
     {
-        delete volumeImageFilter;
-        volumeImageFilter = NULL;
+        delete volumeFilter;
+        volumeFilter = NULL;
     }
     if (resampleFilter != NULL)
     {
         delete resampleFilter;
         resampleFilter = NULL;
     }
-    if (compactTree != NULL)
-    {
-        delete compactTree;
-        compactTree = NULL;
-    }
+
     avtDataObject_p dob = input;
 
     if (atts.GetRendererType() == VolumeAttributes::Composite ||
@@ -730,15 +722,17 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         }
 #endif
 
-        volumeImageFilter = new avtVolumeFilter();
-        volumeImageFilter->SetAttributes(atts);
-        volumeImageFilter->SetInput(dob);
-        dob = volumeImageFilter->GetOutput();
+        volumeFilter = new avtVolumeFilter();
+        volumeFilter->SetAttributes(atts);
+        volumeFilter->SetInput(dob);
+        dob = volumeFilter->GetOutput();
     }
-    else // Non ray casting pipeline
+    // Non ray casting pipeline
+    else //if (atts.GetRendererType() == VolumeAttributes::Serial)
+
     {
-        // User can force resampling - for the default everything is
-        // sampled on to a single grid regardless of the resample type.
+        // User can force resampling - for the serial renderer
+        // everything is sampled on to a single grid.
         if (DataMustBeResampled(input) ||
             atts.GetResampleType() != VolumeAttributes::None)
         {
@@ -748,7 +742,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             InternalResampleAttributes resampleAtts;
             resampleAtts.SetDistributedResample(false);
             resampleAtts.SetTargetVal(atts.GetResampleTarget());
-            resampleAtts.SetPrefersPowersOfTwo(atts.GetRendererType() == VolumeAttributes::Serial);
+            resampleAtts.SetPrefersPowersOfTwo(true);
             resampleAtts.SetUseTargetVal(true);
 
             resampleFilter = new avtResampleFilter(&resampleAtts);
@@ -759,10 +753,10 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
 
         // Apply a filter that will work on the combined data to make
         // histograms.
-        volumeFilter = new avtLowerResolutionVolumeFilter();
-        volumeFilter->SetAtts(&atts);
-        volumeFilter->SetInput(dob);
-        dob = volumeFilter->GetOutput();
+        lowResVolumeFilter = new avtLowerResolutionVolumeFilter();
+        lowResVolumeFilter->SetAtts(&atts);
+        lowResVolumeFilter->SetInput(dob);
+        dob = lowResVolumeFilter->GetOutput();
     }
 
     return dob;
@@ -894,9 +888,9 @@ avtVolumePlot::ReleaseData(void)
 {
     avtVolumeDataPlot::ReleaseData();
 
-    if (volumeImageFilter != NULL)
+    if (volumeFilter != NULL)
     {
-        volumeImageFilter->ReleaseData();
+        volumeFilter->ReleaseData();
     }
     if (shiftCentering != NULL)
     {
