@@ -760,23 +760,23 @@ protected:
 
     std::vector< VisWinColleague * >   colleagues;
 
-    VisWinBackground                  *windowBackground;
-    VisWinAxes                        *axes;
-    VisWinAxes3D                      *axes3D;
-    VisWinFrame                       *frame;
-    VisWinAxesArray                   *axesArray;
-    VisWinParallelAxes                *parallelAxes;
-    VisWinInteractions                *interactions;
-    VisWinLegends                     *legends;
-    VisWinLighting                    *lighting;
-    VisWinPlots                       *plots;
-    VisWinQuery                       *queries;
-    VisWinRendering                   *rendering;
-    VisWinTools                       *tools;
-    VisWinTriad                       *triad;
-    VisWinUserInfo                    *userInfo;
-    VisWinView                        *view;
-    VisWinAnnotations                 *annotations;
+    VisWinBackground                  *windowBackground {nullptr};
+    VisWinAxes                        *axes {nullptr};
+    VisWinAxes3D                      *axes3D {nullptr};
+    VisWinFrame                       *frame {nullptr};
+    VisWinAxesArray                   *axesArray {nullptr};
+    VisWinParallelAxes                *parallelAxes {nullptr};
+    VisWinInteractions                *interactions {nullptr};
+    VisWinLegends                     *legends {nullptr};
+    VisWinLighting                    *lighting {nullptr};
+    VisWinPlots                       *plots {nullptr};
+    VisWinQuery                       *queries {nullptr};
+    VisWinRendering                   *rendering {nullptr};
+    VisWinTools                       *tools {nullptr};
+    VisWinTriad                       *triad {nullptr};
+    VisWinUserInfo                    *userInfo {nullptr};
+    VisWinView                        *view {nullptr};
+    VisWinAnnotations                 *annotations {nullptr};
 
     AnnotationAttributes               annotationAtts;
     InteractorAttributes               interactorAtts;
@@ -810,21 +810,21 @@ protected:
     bool                               doAxisScaling;
     double                             axisScaling[3];
 
-    VisCallback                       *showMenuCallback;
-    void                              *showMenuCallbackData;
-    VisCallback                       *hideMenuCallback;
-    void                              *hideMenuCallbackData;
+    VisCallback                       *showMenuCallback {nullptr};
+    void                              *showMenuCallbackData {nullptr};
+    VisCallback                       *hideMenuCallback {nullptr};
+    void                              *hideMenuCallbackData {nullptr};
 
-    VisCallback                       *performPickCallback;
-    PICK_POINT_INFO                   *ppInfo;
+    VisCallback                       *performPickCallback {nullptr};
+    PICK_POINT_INFO                   *ppInfo {nullptr};
 
-    VisCallback                       *performLineoutCallback;
-    LINE_OUT_INFO                     *loInfo;
+    VisCallback                       *performLineoutCallback {nullptr};
+    LINE_OUT_INFO                     *loInfo {nullptr};
 
-    VisCallback                       *performViewChangedCallback;
-    void                              *performViewChangedCallbackData;
+    VisCallback                       *performViewChangedCallback {nullptr};
+    void                              *performViewChangedCallbackData {nullptr};
 
-    vtkCallbackCommand                *startRenderCallback;
+    vtkCallbackCommand                *startRenderCallback {nullptr};
 
                          VisWindow(bool);
     void                 Initialize(VisWinRendering *);
