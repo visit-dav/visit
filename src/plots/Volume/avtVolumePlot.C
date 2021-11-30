@@ -715,10 +715,6 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             // out, so it is still there when rendering.
             gradientFilter->GetOutput()->SetTransientStatus(false);
             dob = gradientFilter->GetOutput();
-
-            std::cerr << __LINE__ << "  " << __FILE__ << "  "
-                      << "Gradient " << gradvar << "  " << gradName
-                      << std::endl;
         }
 #endif
 
