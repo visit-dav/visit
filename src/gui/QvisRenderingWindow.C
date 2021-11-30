@@ -846,6 +846,7 @@ void
 QvisRenderingWindow::UpdateOptions(bool doAll)
 {
     QString tmp;
+    bool enabled;
     int itmp, itmp2;
 
     // Loop through all the attributes and do something for
@@ -898,10 +899,39 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->setChecked(renderAtts->GetNotifyForEachRender());
             renderNotifyToggle->blockSignals(false);
             break;
+        case RenderingAttributes::ID_depthPeeling:
+            enabled = renderAtts->GetDepthPeeling();
+            depthPeeling->blockSignals(true);
+            depthPeeling->setChecked(enabled);
+            depthPeeling->blockSignals(false);
+            occlusionRatioLabel->setEnabled(enabled);
+            occlusionRatio->setEnabled(enabled);
+            numberOfPeelsLabel->setEnabled(enabled);
+            numberOfPeels->setEnabled(enabled);
+            break;
+        case RenderingAttributes::ID_occlusionRatio:
+            tmp = DoubleToQString(renderAtts->GetOcclusionRatio());
+            occlusionRatio->blockSignals(true);
+            occlusionRatio->setText(tmp);
+            occlusionRatio->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_numberOfPeels:
+            tmp = IntToQString(renderAtts->GetNumberOfPeels());
+            numberOfPeels->blockSignals(true);
+            numberOfPeels->setText(tmp);
+            numberOfPeels->blockSignals(false);
+            break;
+
 #ifdef VISIT_OSPRAY
         case RenderingAttributes::ID_osprayRendering:
+            enabled = renderAtts->GetOsprayRendering();
             osprayGroup->blockSignals(true);
-            osprayGroup->setChecked(renderAtts->GetOsprayRendering());
+            osprayGroup->setChecked(enabled);
+            ospraySPPLabel->setEnabled(enabled);
+            ospraySPP->setEnabled(enabled);
+            osprayAOLabel->setEnabled(enabled);
+            osprayAO->setEnabled(enabled);
+            osprayShadowsToggle->setEnabled(enabled);
             osprayGroup->blockSignals(false);
             break;
         case RenderingAttributes::ID_ospraySPP:
