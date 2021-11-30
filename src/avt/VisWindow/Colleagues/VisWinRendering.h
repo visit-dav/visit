@@ -18,7 +18,7 @@
 #include <ColorAttribute.h>
 
 #ifdef VISIT_OSPRAY
-#include <vtkOSPRayPass.h>
+  #include <vtkOSPRayPass.h>
 #endif
 
 class vtkInteractorStyle;
@@ -331,13 +331,13 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     void                     SetOrderComposite(bool v) { orderComposite = v; }
     bool                     GetOrderComposite() const { return orderComposite; }
     void                     SetDepthCompositeThreads(size_t n) { depthCompositeThreads = n; }
-    size_t                   GetDepthCompositeThreads() const { return depthCompositeThreads; }
-    void                     SetAlphaCompositeThreads(size_t n) { alphaCompositeThreads = n; }
-    size_t                   GetAlphaCompositeThreads() const { return alphaCompositeThreads; }
-    void                     SetDepthCompositeBlocking(size_t n) { depthCompositeBlocking = n; }
-    size_t                   GetDepthCompositeBlocking() const { return depthCompositeBlocking; }
-    void                     SetAlphaCompositeBlocking(size_t n) { alphaCompositeBlocking = n; }
-    size_t                   GetAlphaCompositeBlocking() const { return alphaCompositeBlocking; }
+    int                      GetDepthCompositeThreads() const { return depthCompositeThreads; }
+    void                     SetAlphaCompositeThreads(int n) { alphaCompositeThreads = n; }
+    int                      GetAlphaCompositeThreads() const { return alphaCompositeThreads; }
+    void                     SetDepthCompositeBlocking(int n) { depthCompositeBlocking = n; }
+    int                      GetDepthCompositeBlocking() const { return depthCompositeBlocking; }
+    void                     SetAlphaCompositeBlocking(int n) { alphaCompositeBlocking = n; }
+    int                      GetAlphaCompositeBlocking() const { return alphaCompositeBlocking; }
 
     void                     EnableDepthPeeling();
     void                     DisableDepthPeeling();
@@ -412,9 +412,9 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                 bool ctrl, bool shift);
 
   protected:
-    vtkRenderer                  *canvas{nullptr};
-    vtkRenderer                  *background{nullptr};
-    vtkRenderer                  *foreground{nullptr};
+    vtkRenderer                  *canvas {nullptr};
+    vtkRenderer                  *background {nullptr};
+    vtkRenderer                  *foreground {nullptr};
     bool                          needsUpdate;
     bool                          realized;
     bool                          antialiasing;
@@ -427,26 +427,27 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     ColorAttribute                specularColor;
     bool                          colorTexturingFlag;
     bool                          orderComposite;
-    size_t                        depthCompositeThreads;
-    size_t                        depthCompositeBlocking;
-    size_t                        alphaCompositeThreads;
-    size_t                        alphaCompositeBlocking;
+    int                           depthCompositeThreads;
+    int                           depthCompositeBlocking;
+    int                           alphaCompositeThreads;
+    int                           alphaCompositeBlocking;
     bool                          depthPeeling;
     double                        occlusionRatio;
     int                           numberOfPeels;
     int                           multiSamples;
 #ifdef VISIT_OSPRAY
-    bool                          osprayRendering;
-    int                           ospraySPP;
-    int                           osprayAO;
-    bool                          osprayShadows;
-    bool                          viewIs3D;
+    bool                          osprayRendering {false};
+    int                           ospraySPP {1};
+    int                           osprayAO {0};
+    bool                          osprayShadows {false};
+    bool                          viewIs3D {true};
+    vtkOSPRayPass                *osprayPass {nullptr};
 #endif
 
-    void(*renderInfo)(void *);
-    void                         *renderInfoData;
+    void                          (*renderInfo)(void *);
+    void                         *renderInfoData {nullptr};
     void                          (*renderEvent)(void *,bool);
-    void                         *renderEventData;
+    void                         *renderEventData {nullptr};
     bool                          notifyForEachRender;
     bool                          inMotion;
 
@@ -480,11 +481,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     virtual void                  RealizeRenderWindow(void) = 0;
     virtual void                  RenderRenderWindow(void);
-
-#ifdef VISIT_OSPRAY
-    // OSPRay render pass
-    vtkOSPRayPass                *osprayPass{nullptr};
-#endif
 
 private:
     void                     SetRenderUpdate(bool _setRenderUpdate)
