@@ -666,14 +666,14 @@ public:
     bool GetAntialiasing() const;
     void SetOrderComposite(bool enabled);
     bool GetOrderComposite() const;
-    void   SetDepthCompositeThreads(size_t n);
-    size_t GetDepthCompositeThreads() const;
-    void   SetAlphaCompositeThreads(size_t n);
-    size_t GetAlphaCompositeThreads() const;
-    void   SetDepthCompositeBlocking(size_t n);
-    size_t GetDepthCompositeBlocking() const;
-    void   SetAlphaCompositeBlocking(size_t n);
-    size_t GetAlphaCompositeBlocking() const;
+    void SetDepthCompositeThreads(int n);
+    int  GetDepthCompositeThreads() const;
+    void SetAlphaCompositeThreads(int n);
+    int  GetAlphaCompositeThreads() const;
+    void SetDepthCompositeBlocking(int n);
+    int  GetDepthCompositeBlocking() const;
+    void SetAlphaCompositeBlocking(int n);
+    int  GetAlphaCompositeBlocking() const;
     void SetDepthPeeling(bool enabled);
     bool GetDepthPeeling() const;
     void SetOcclusionRatio(double val);
@@ -728,9 +728,9 @@ public:
     void SetOsprayRendering(bool);
     bool GetOsprayRendering() const;
     void SetOspraySPP(int);
-    int GetOspraySPP() const;
+    int  GetOspraySPP() const;
     void SetOsprayAO(int);
-    int GetOsprayAO() const;
+    int  GetOsprayAO() const;
     void SetOsprayShadows(bool);
     bool GetOsprayShadows() const;
 #endif
@@ -802,18 +802,18 @@ protected:
     static void PickFunctionSetSuccessFlag(void *, bool, const PickAttributes *);
     void HandlePick(void *ppi);
 
-    VisWindow           *visWindow;
-    ViewerPlotList      *plotList;
-    ViewerActionManager *actionMgr;
+    VisWindow           *visWindow {nullptr};
+    ViewerPlotList      *plotList {nullptr};
+    ViewerActionManager *actionMgr {nullptr};
 
-    ViewCurveAttributes     *curViewCurve;
-    View2DAttributes        *curView2D;
-    View3DAttributes        *curView3D;
-    ViewAxisArrayAttributes *curViewAxisArray;
-    AttributeSubjectMap     *viewCurveAtts;
-    AttributeSubjectMap     *view2DAtts;
-    AttributeSubjectMap     *view3DAtts;
-    AttributeSubjectMap     *viewAxisArrayAtts;
+    ViewCurveAttributes     *curViewCurve {nullptr};
+    View2DAttributes        *curView2D {nullptr};
+    View3DAttributes        *curView3D {nullptr};
+    ViewAxisArrayAttributes *curViewAxisArray {nullptr};
+    AttributeSubjectMap     *viewCurveAtts {nullptr};
+    AttributeSubjectMap     *view2DAtts {nullptr};
+    AttributeSubjectMap     *view3DAtts {nullptr};
+    AttributeSubjectMap     *viewAxisArrayAtts {nullptr};
 
     ExternalRenderRequestInfo lastExternalRenderRequest;
 
@@ -821,7 +821,7 @@ protected:
     static void           *renderEventFunctionData;
 
     void           (*pickFunction)(void *, bool, const PickAttributes *);
-    void           *pickFunctionData;
+    void           *pickFunctionData {nullptr};
 
     bool            isChangingScalableRenderingMode;
     bool            targetScalableRenderingMode;
