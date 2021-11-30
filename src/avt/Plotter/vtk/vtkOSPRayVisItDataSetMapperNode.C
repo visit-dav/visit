@@ -27,7 +27,9 @@
 vtkStandardNewMacro(vtkOSPRayVisItDataSetMapperNode);
 
 //------------------------------------------------------------------------------
-vtkOSPRayVisItDataSetMapperNode::vtkOSPRayVisItDataSetMapperNode() {}
+vtkOSPRayVisItDataSetMapperNode::vtkOSPRayVisItDataSetMapperNode()
+{
+}
 
 //------------------------------------------------------------------------------
 vtkOSPRayVisItDataSetMapperNode::~vtkOSPRayVisItDataSetMapperNode()
@@ -41,59 +43,67 @@ vtkOSPRayVisItDataSetMapperNode::~vtkOSPRayVisItDataSetMapperNode()
 //------------------------------------------------------------------------------
 void vtkOSPRayVisItDataSetMapperNode::Render(bool prepass)
 {
-  if (prepass)
-  {
-    // we use a lot of params from our parent
-    vtkOSPRayActorNode* aNode = vtkOSPRayActorNode::SafeDownCast(this->Parent);
-    vtkActor* act = vtkActor::SafeDownCast(aNode->GetRenderable());
-
-    if (act->GetVisibility() == false)
+    if (prepass)
     {
-      return;
-    }
+        // we use a lot of params from our parent
+        vtkOSPRayActorNode* aNode = vtkOSPRayActorNode::SafeDownCast(this->Parent);
+        vtkActor* act = vtkActor::SafeDownCast(aNode->GetRenderable());
 
-    vtkOSPRayRendererNode* orn =
-      static_cast<vtkOSPRayRendererNode*>(this->GetFirstAncestorOfType("vtkOSPRayRendererNode"));
-
-    // if there are no changes, just reuse last result
-    vtkMTimeType inTime = aNode->GetMTime();
-    if (this->RenderTime >= inTime)
-    {
-      this->RenderGeometricModels();
-      return;
-    }
-    this->RenderTime = inTime;
-    this->ClearGeometricModels();
-
-    vtkPolyData* poly = nullptr;
-    vtkVisItDataSetMapper* mapper = vtkVisItDataSetMapper::SafeDownCast(act->GetMapper());
-    if (mapper && mapper->GetNumberOfInputPorts() > 0)
-    {
-      if (mapper->GetInput()->GetDataObjectType() == VTK_POLY_DATA)
-      {
-        poly = (vtkPolyData*)(mapper->GetInput());
-      }
-      else
-      {
-        if (! this->GeometryExtractor)
+        if (act->GetVisibility() == false)
         {
-          this->GeometryExtractor = vtkDataSetSurfaceFilter::New();
+            return;
         }
-        this->GeometryExtractor->SetInputData(mapper->GetInput());
-        this->GeometryExtractor->Update();
-        poly = (vtkPolyData*)this->GeometryExtractor->GetOutput();
-      }
+
+        vtkOSPRayRendererNode* orn =
+            static_cast<vtkOSPRayRendererNode*>(this->GetFirstAncestorOfType("vtkOSPRayRendererNode"));
+
+        // if there are no changes, just reuse last result
+        vtkMTimeType inTime = aNode->GetMTime();
+        if (this->RenderTime >= inTime)
+        {
+            this->RenderGeometricModels();
+            return;
+        }
+
+        this->RenderTime = inTime;
+        this->ClearGeometricModels();
+
+        vtkPolyData* poly = nullptr;
+        vtkVisItDataSetMapper* mapper =
+            vtkVisItDataSetMapper::SafeDownCast(act->GetMapper());
+        
+        if (mapper && mapper->GetNumberOfInputPorts() > 0)
+        {
+            if (mapper->GetInput()->GetDataObjectType() == VTK_POLY_DATA)
+            {
+                poly = (vtkPolyData*)(mapper->GetInput());
+            }
+            else
+            {
+                if (! this->GeometryExtractor)
+                {
+                    this->GeometryExtractor = vtkDataSetSurfaceFilter::New();
+                }
+
+                this->GeometryExtractor->SetInputData(mapper->GetInput());
+                this->GeometryExtractor->Update();
+
+                poly = (vtkPolyData*)this->GeometryExtractor->GetOutput();
+            }
+        }
+
+        if (poly)
+        {
+            vtkProperty* property = act->GetProperty();
+            double ambient[3];
+            double diffuse[3];
+            property->GetAmbientColor(ambient);
+            property->GetDiffuseColor(diffuse);
+
+            this->ORenderPoly(orn->GetORenderer(), aNode, poly,
+                              ambient, diffuse, property->GetOpacity(), "");
+        }
+
+        this->RenderGeometricModels();
     }
-    if (poly)
-    {
-      vtkProperty* property = act->GetProperty();
-      double ambient[3];
-      double diffuse[3];
-      property->GetAmbientColor(ambient);
-      property->GetDiffuseColor(diffuse);
-      this->ORenderPoly(
-        orn->GetORenderer(), aNode, poly, ambient, diffuse, property->GetOpacity(), "");
-    }
-    this->RenderGeometricModels();
-  }
 }

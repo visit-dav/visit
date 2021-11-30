@@ -43,7 +43,7 @@ protected:
   vtkOSPRayVisItDataSetMapperNode();
   ~vtkOSPRayVisItDataSetMapperNode() override;
 
-  vtkDataSetSurfaceFilter *GeometryExtractor;
+  vtkDataSetSurfaceFilter *GeometryExtractor {nullptr};
 
 private:
   vtkOSPRayVisItDataSetMapperNode(const vtkOSPRayVisItDataSetMapperNode&) = delete;
