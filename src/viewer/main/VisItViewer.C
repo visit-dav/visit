@@ -88,7 +88,7 @@ VisItViewer::Initialize(int *argc, char ***argv)
         else if (strcmp((*argv)[i], "-ospray") == 0)
         {
             debug5 << "Viewer launching with OSPRay" << endl;
-            avtCallback::SetOSPRayMode(true);
+            avtCallback::SetUseOSPRay(true);
         }
 #endif
     }

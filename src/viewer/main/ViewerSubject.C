@@ -2616,7 +2616,9 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
 #ifdef VISIT_OSPRAY
         else if (strcmp(argv[i], "-ospray") == 0)
         {
-            avtCallback::SetOSPRayMode(true);
+            debug5 << "Viewer launching with OSPRay" << endl;
+            avtCallback::SetUseOSPRay(true);
+            GetViewerState()->GetRenderingAttributes()->SetOsprayRendering(true);
         }
 #endif
         else if (strcmp(argv[i], "-fullscreen") == 0)
