@@ -248,6 +248,12 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 #ifdef VISIT_OSPRAY
     bool                GetOsprayRendering()
                              { return ProxiedGetOsprayRendering(); };
+    int                 GetOspraySPP()
+                             { return ProxiedGetOspraySPP(); };
+    int                 GetOsprayAO()
+                             { return ProxiedGetOsprayAO(); };
+    bool                GetOsprayShadows()
+                             { return ProxiedGetOsprayShadows(); };
 #endif
 };
 
