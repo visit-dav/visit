@@ -47,10 +47,10 @@
 #endif
 
 #ifdef VISIT_OSPRAY
-#include <vtkOSPRayRendererNode.h>
-#include <vtkOSPRayPass.h>
-#include <vtkViewNodeFactory.h>
-#include <vtkVisItViewNodeFactory.h>
+  #include <vtkOSPRayRendererNode.h>
+  #include <vtkOSPRayPass.h>
+  #include <vtkViewNodeFactory.h>
+  #include <vtkVisItViewNodeFactory.h>
 #endif
 
 #include <limits>
