@@ -14,9 +14,6 @@
 #include <DebugStream.h>
 
 
-using std::string;
-
-
 WarningCallback               avtCallback::warningCallback = NULL;
 void                         *avtCallback::warningCallbackArgs = NULL;
 
@@ -293,7 +290,7 @@ avtCallback::RegisterGetDatabaseCallback(GetDatabaseCallback gdc,
 // ****************************************************************************
 
 ref_ptr<avtDatabase>
-avtCallback::GetDatabase(const string &filename, int time, const char *format)
+avtCallback::GetDatabase(const std::string &filename, int time, const char *format)
 {
     if (getDatabaseCallback == NULL)
     {

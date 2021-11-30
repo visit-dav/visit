@@ -109,9 +109,9 @@ class PIPELINE_API avtCallback
     static bool                  GetSoftwareRendering(void)
                                      { return swRendering; };
 #ifdef VISIT_OSPRAY
-    static void                  SetOSPRayMode(bool b)
+    static void                  SetUseOSPRay(bool b)
                                      { useOSPRay = b; }
-    static bool                  UseOSPRay(void)
+    static bool                  GetUseOSPRay(void)
                                      { return useOSPRay; }
 #endif
     static void                  RegisterGetDatabaseCallback(
