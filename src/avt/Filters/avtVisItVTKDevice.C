@@ -403,16 +403,15 @@ avtVisItVTKDevice::CreateFinalImage(const void *colorBuffer,
                           height,
                           nColorChannels);
 
-    if(PAR_Rank() == 0)
-    {
-      // vtkImageWriter* writer = vtkImageWriter::New();
-      vtkPNGWriter* writer = vtkPNGWriter::New();
+    // if(PAR_Rank() == 0)
+    // {
+    //   vtkPNGWriter* writer = vtkPNGWriter::New();
 
-      writer->SetInputData(finalImageData);
-      writer->SetFileName("finialImage.png");
-      writer->Write();
-      writer->Delete();
-    }
+    //   writer->SetInputData(finalImageData);
+    //   writer->SetFileName("finialImage.png");
+    //   writer->Write();
+    //   writer->Delete();
+    // }
 
     finalImageData->Delete();
 
@@ -486,7 +485,7 @@ avtVisItVTKDevice::ExecuteVolume()
     GetDataExtents(dataRange, activeVarName.c_str());
 
     // There could be separate scalar and opacity components.
-    if( opacityVarName != "default" && opacityVarName != activeVarName )
+    if( opacityVarName != "default" ) //&& opacityVarName != activeVarName )
     {
         m_nComponents = 2;
         GetDataExtents(opacityRange, opacityVarName.c_str());
@@ -504,7 +503,7 @@ avtVisItVTKDevice::ExecuteVolume()
 
     // Make some checks first to see if an image is needed. After that
     // check to see if the data first needs to be resampled.
-    bool needImage = false, resample = false;
+    bool needImage = false, mustResample = false;
 
     if( nsets >= 1 )
     {
@@ -520,26 +519,29 @@ avtVisItVTKDevice::ExecuteVolume()
             // If more than one data set or if the data is not on a
             // rectilinear grid or if the resampling has changed then
             // resample on to a single rectilinear grid.
-            resample =
+            mustResample =
               (nsets > 1 ||
-               datasetPtrs[ 0 ]->GetDataObjectType() != VTK_RECTILINEAR_GRID ||
-               (m_renderingAttribs.resampleType &&
-                m_renderingAttribs.resampleTargetVal != m_resampleTargetVal));
+               datasetPtrs[ 0 ]->GetDataObjectType() != VTK_RECTILINEAR_GRID);
         }
     }
 
-    if(resample)
+    if(mustResample)
       std::cerr << __LINE__ << " [VisItVTKDevice] "
                 << "rank: "  << PAR_Rank() << "  "
-                << "need to resample"
+                << "must resample"
                 << std::endl;
 
     // If one data set needs to resample the all will be resampled as
     // avtResampleFilter is a parallel call so do them regardless if
     // there is data or not. Otherwise MPI crashes.
-    resample = UnifyMaximumValue(resample);
+    mustResample = UnifyMaximumValue(mustResample);
 
-    if(resample)
+    // Check for a user resampling request, the same on all ranks.
+    bool userResample =
+      (m_renderingAttribs.resampleType &&
+       m_renderingAttribs.resampleTargetVal != m_resampleTargetVal);
+
+    if(mustResample || userResample)
     {
         std::cerr << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << "  resampling"
@@ -558,13 +560,21 @@ avtVisItVTKDevice::ExecuteVolume()
         // Resample the data - must be done by all ranks.
         InternalResampleAttributes resampleAtts;
 
-        // If the type is 0 there is no resampling. If the type is 1
-        // then resampl on to a single domain, the default. Otherwise
-        // resample in parallel.
-        if( m_renderingAttribs.resampleType == 2 )
-          resampleAtts.SetDistributedResample(true);
-        else if( m_renderingAttribs.resampleType == 3 )
-          resampleAtts.SetPerRankResample(true);
+        // User requested resampling. If the type is 1 then resample
+        // on to a single domain. Otherwise resample in parallel.
+        if( userResample )
+        {
+            if( m_renderingAttribs.resampleType == 2 )
+              resampleAtts.SetDistributedResample(true);
+            else if( m_renderingAttribs.resampleType == 3 )
+              resampleAtts.SetPerRankResample(true);
+        }
+        // Must resample but the user selected none so do a
+        // distributed resample.
+        else //if( mustResample )
+        {
+             resampleAtts.SetDistributedResample(true);
+        }
 
         resampleAtts.SetTargetVal(m_renderingAttribs.resampleTargetVal);
         resampleAtts.SetPrefersPowersOfTwo(true);
@@ -881,7 +891,7 @@ avtVisItVTKDevice::ExecuteVolume()
     // created each time so recreate them here.
 
     // Create the transfer function and the opacity mapping.
-    const RGBAF *transferTable = transferFn1D->GetTableFloat();
+    const RGBAF *transferTable = transferFn1D->GetTransferFunc();
     int tableSize = transferFn1D->GetNumberOfTableEntries();
 
     vtkColorTransferFunction* transFunc = vtkColorTransferFunction::New();
@@ -917,25 +927,6 @@ avtVisItVTKDevice::ExecuteVolume()
                                 transferTable[i].B);
         opacity->AddPoint( tableSize, transferTable[i].A  );
     }
-
-    // transFunc->PrintSelf( std::cerr, vtkIndent(2) );
-    // opacity->PrintSelf( std::cerr, vtkIndent(2) );
-
-    std::cerr << __LINE__ << " [VisItVTKDevice] "
-              << "rank: "  << PAR_Rank() << " RGBA: " << 0 << "  "
-              << transferTable[0].R << "  "
-              << transferTable[0].G << "  "
-              << transferTable[0].B << "  "
-              << transferTable[0].A << "  "
-              << std::endl;
-
-    std::cerr << __LINE__ << " [VisItVTKDevice] "
-              << "rank: "  << PAR_Rank() << " RGBA: " << 255 << "  "
-              << transferTable[255].R << "  "
-              << transferTable[255].G << "  "
-              << transferTable[255].B << "  "
-              << transferTable[255].A << "  "
-              << std::endl;
 
     // To make the NO_DATA_VALUEs fully translucent turn clamping
     // off (opacity becomes 0.0)
@@ -1061,50 +1052,54 @@ avtVisItVTKDevice::ExecuteVolume()
     unsigned char * renderedFrameBuffer =
         renderWin->GetRGBACharPixelData( 0, 0, width-1, height-1, 1 );
 
-    // int cc = 0, aa = 0;
-    // for( int i=0; i<width*height*4; i+=4 )
-    // {
-    //   double rval = double(renderedFrameBuffer[i+0]) / 255.0f;
-    //   double gval = double(renderedFrameBuffer[i+1]) / 255.0f;
-    //   double bval = double(renderedFrameBuffer[i+2]) / 255.0f;
-    //   double aval = double(renderedFrameBuffer[i+3]) / 255.0f;
-
-    //   if( aval > 0 )
-    //   {
-    //       ++aa;
-    //       if(rval > aval || gval > aval || bval > aval)
-    //       {
-    //           ++cc;
-    //       }
-    //   }
-    // }
-
-
-    // if( cc > 0 )
-    // {
-    //     std::cerr << __LINE__ << " [VisItVTKDevice] "
-    //               << "rank: "  << PAR_Rank() << " bad composting "
-    //               << cc << "/" << aa << std::endl;
-    // }
-
+    // Debugging check for bad alpha values
+    if( Level5() )
     {
-      vtkWindowToImageFilter* im = vtkWindowToImageFilter::New();
-      vtkPNGWriter* writer = vtkPNGWriter::New();
+        int cc = 0, aa = 0;
+        for( int i=0; i<width*height*4; i+=4 )
+        {
+            double rval = double(renderedFrameBuffer[i+0]) / 255.0f;
+            double gval = double(renderedFrameBuffer[i+1]) / 255.0f;
+            double bval = double(renderedFrameBuffer[i+2]) / 255.0f;
+            double aval = double(renderedFrameBuffer[i+3]) / 255.0f;
 
-      std::stringstream name;
-      if( PAR_Size() > 1 )
-          name << "renderWindow_" << PAR_Rank() << ".png";
-      else
-          name << "renderWindow.png";
+            if( aval > 0 )
+            {
+                ++aa;
+                if(rval > aval || gval > aval || bval > aval)
+                {
+                    ++cc;
+                }
+            }
+        }
 
-      im->SetInput(renderWin);
-      im->Update();
-      writer->SetInputConnection(im->GetOutputPort());
-      writer->SetFileName(name.str().c_str());
-      writer->Write();
-      writer->Delete();
-      im->Delete();
+
+        if( cc > 0 )
+        {
+            debug5 << __LINE__ << " [VisItVTKDevice] "
+                   << "rank: "  << PAR_Rank() << " bad alpha composting "
+                   << cc << "/" << aa << " are bad." << std::endl;
+        }
     }
+
+    // {
+    //   vtkWindowToImageFilter* im = vtkWindowToImageFilter::New();
+    //   vtkPNGWriter* writer = vtkPNGWriter::New();
+
+    //   std::stringstream name;
+    //   if( PAR_Size() > 1 )
+    //       name << "renderWindow_" << PAR_Rank() << ".png";
+    //   else
+    //       name << "renderWindow.png";
+
+    //   im->SetInput(renderWin);
+    //   im->Update();
+    //   writer->SetInputConnection(im->GetOutputPort());
+    //   writer->SetFileName(name.str().c_str());
+    //   writer->Write();
+    //   writer->Delete();
+    //   im->Delete();
+    // }
 
     // Get the z centroid value in image space of the grid. It is used
     // for the ordering of the compositing in ICET.

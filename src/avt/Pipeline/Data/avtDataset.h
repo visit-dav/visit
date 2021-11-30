@@ -162,12 +162,14 @@ class PIPELINE_API avtDataset : public avtDataObject
     virtual void             DebugDump(avtWebpage *, const char *);
 
     std::string              GetDatasetAsString();
+
+    avtDataTree_p           &GetDataTree() { return dataTree; };
+
   protected:
     avtDataTree_p            dataTree;
 
     void                     SetDataTree(avtDataTree_p);
     void                     SetDataTree(avtDataRepresentation &);
-    avtDataTree_p           &GetDataTree() { return dataTree; };
 
     virtual void             DerivedCopy(avtDataObject *);
     virtual void             DerivedMerge(avtDataObject *);
