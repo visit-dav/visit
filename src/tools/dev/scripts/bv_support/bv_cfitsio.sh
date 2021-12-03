@@ -92,10 +92,12 @@ function build_cfitsio
     info "Configuring CFITSIO . . ."
     cd $CFITSIO_BUILD_DIR || error "Can't cd to cfits IO build dir."
 
+    set -x
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
         ./configure \
         --prefix="$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH"
+    set +x
     if [[ $? != 0 ]] ; then
         warn "CFITSIO configure failed.  Giving up"
         return 1

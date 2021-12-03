@@ -1,6 +1,105 @@
 export LOG_FILE=${LOG_FILE:-"${0##*/}_log"}
 
 # *************************************************************************** #
+# Purpose: Flexible comparison function for version strings                   #
+#                                                                             #
+#   - Converts version string "4.101.3" to bash array (4 101 3)               #
+#   - Appends zeros to operand with fewer array members (4)==>(4 000 0)       #
+#   - Ensures appended zeros have same length as counterparts                 #
+#   - Prepends zeros to digit strings with fewer digits (4 9 3)==>(4 09 3)    #
+#   - Forms integer values from arrays (4 101 3)==>41013                      #
+#   - Compares integers using specified operator                              #
+#   - Sets status using test operator                                         #
+#                                                                             #
+# *************************************************************************** #
+function compare_version_strings
+{   
+    # default op is -lt and separator char is .
+    op=${3:-'-lt'}
+    sep=${4:-'.'}
+
+    # create array variables of digits from version string
+    vldigitarr=($(echo $1 | tr $sep ' '))
+    vrdigitarr=($(echo $2 | tr $sep ' '))
+
+    # append strings of zeros of equal length of missing digits
+    # "5"==>"0", "10"==>"00", "101"==>"000"
+    i=0
+    while [[ ${#vldigitarr[@]} -lt ${#vrdigitarr[@]} ]]; do
+        zeros=$(echo ${vrdigitarr[$i]} | tr '1234567890' '0000000000')
+        vldigitarr+=($zeros)
+        i=$((i+1))
+    done
+    while [[ ${#vrdigitarr[@]} -lt ${#vldigitarr[@]} ]]; do
+        zeros=$(echo ${vldigitarr[$i]} | tr '1234567890' '0000000000')
+        vrdigitarr+=($zeros)
+        i=$((i+1))
+    done
+
+    # prepend zeros to digit entries with fewer characters
+    i=0
+    while [[ $i -lt ${#vldigitarr[@]} ]]; do
+        vlndigits=$(echo ${vldigitarr[$i]} | wc -c)
+        vrndigits=$(echo ${vrdigitarr[$i]} | wc -c)
+        if [[ $vlndigits -lt $vrndigits ]]; then
+           ((vrndigits--))
+           zeros=$(printf '0%.0s' $(seq $vlndigits $vrndigits))
+           vldigitarr[$i]="${zeros}${vldigitarr[$i]}"
+        elif [[ $vrndigits -lt $vlndigits ]]; then
+           ((vlndigits--))
+           zeros=$(printf '0%.0s' $(seq $vrndigits $vlndigits))
+           vrdigitarr[$i]="${zeros}${vrdigitarr[$i]}"
+        fi
+        i=$((i+1))
+    done
+
+    # Turn arrays of digit strings into integers
+    # "4 10 3" ==> 4103
+    vlval=$(echo ${vldigitarr[@]} | tr -d ' ')
+    vrval=$(echo ${vrdigitarr[@]} | tr -d ' ')
+
+    test $vlval $op $vrval
+}
+
+function test_compare_version_strings
+{
+    # Test different operators
+    compare_version_strings 4.0.0 4.0.0 -eq
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.0.1 4.0.0 -gt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.0.0 4.0.1 -lt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.0.0 4.0.1 -ne
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test different sep chars
+    compare_version_strings 4-0-0 4-0-0 -eq -
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4%0%0 4%0%0 -eq %
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test implied zero digits
+    compare_version_strings 4.0.0 4 -eq
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4 4.0.0 -eq
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test digits that cross order of magnitude boundaries
+    compare_version_strings 4.9.3 4.10.3 -lt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.10.3 4.9.3 -gt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+    # Test some combinations
+    compare_version_strings 4.10 4.9.3 -gt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+    compare_version_strings 4.9.101.3.0 4.10.0.3 -lt
+    test $? -eq 0 || { echo "compare_version_strings is failing"; exit 1; }
+
+}
+
+# *************************************************************************** #
 # Function: errorFunc                                                         #
 #                                                                             #
 # Purpose: Error messages                                                     #
@@ -86,10 +185,10 @@ function error
     warn "$@"
     if test "${LOG_FILE}" != "/dev/tty" ; then
         warn "Error in build process.  See ${LOG_FILE} for more information."\
-             "If the error is unclear, please include ${LOG_FILE} in a "\
-             "message to the visit-users@ornl.gov list.  You will probably "\
+             "If the error is unclear, please include ${LOG_FILE} and contact "\
+             "the VisIt project via https://visit-help.llnl.gov. You may "\
              "need to compress the ${LOG_FILE} using a program like gzip "\
-             "so it will fit within the size limits for email attachments."
+             "so it will fit within the size limits for attachments."
         info "Log file full path: " `pwd`/${LOG_FILE}
     fi
     exit 1

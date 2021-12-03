@@ -1,3 +1,5 @@
+.. _volume_plot_head:
+
 Volume plot
 ~~~~~~~~~~~
 

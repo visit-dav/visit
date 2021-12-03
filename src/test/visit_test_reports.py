@@ -487,7 +487,7 @@ def main():
         smtp_svr  = sys.argv[4]
         if len(sys.argv)  == 6:
             errors_only = bool(sys.argv[5])
-        email_summary(res,"visit-developers@ornl.gov",
+        email_summary(res,"brugger1@llnl.gov",
                       recp_list,
                       smtp_svr,
                       errors_only)

@@ -93,9 +93,16 @@
     }
 
     // Draw the lines.
-    auto aPrim = vtk::TakeSmartPointer(input->GetLines()->NewIterator());
     vtkIdType npts;
     const vtkIdType *pts;
+    // We need to scale our coordinates by the devicePixelRatio, which takes
+    // the OSX retina display into account. From the docs:
+    //
+    //     "Common values are 1 for normal-dpi displays and 2 for high-dpi
+    //     'retina' displays."
+    //
+    int devicePixelRatio = privateInstance->widget->devicePixelRatio();
+    auto aPrim = vtk::TakeSmartPointer(input->GetLines()->NewIterator());
     for (aPrim->GoToFirstCell(); !aPrim->IsDoneWithTraversal(); aPrim->GoToNextCell(), cellNum++)
     { 
         aPrim->GetCurrentCell(npts,pts);
@@ -106,8 +113,8 @@
         }
         ftmp = p->GetPoint(pts[0]);
 
-        lastX = (int)(actorPos[0] + ftmp[0]);
-        lastY = (int)(actorPos[1] - ftmp[1]);
+        lastX = (int)(actorPos[0] + ftmp[0]) / devicePixelRatio;
+        lastY = (int)(actorPos[1] - ftmp[1]) / devicePixelRatio;
 
         for (j = 1; j < npts; j++) 
         {
@@ -117,8 +124,8 @@
                 rgba = c->GetPointer(4*pts[j]);
                 SET_FOREGROUND(rgba)
             }
-            X = (int)(actorPos[0] + ftmp[0]);
-            Y = (int)(actorPos[1] - ftmp[1]);
+            X = (int)(actorPos[0] + ftmp[0]) / devicePixelRatio;
+            Y = (int)(actorPos[1] - ftmp[1]) / devicePixelRatio;
 
             int delta = pixelDrawn + pixelSpaced;
             // Divide the two cases.

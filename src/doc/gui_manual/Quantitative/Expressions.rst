@@ -745,6 +745,11 @@ Cell Edge Normal Function: ``cell_edge_normal()`` :  ``cell_edge_normal(expr0)``
 Tensor Expressions
 """"""""""""""""""
 
+Often, using the tensor expression functions described here necessitates a detailed understanding of the actual numerical calculations VisIt_ uses in evaluating the expressions.
+Therefore, in many cases here, we provide collapsible sections that can be expanded to show the actual C++ source code VisIt_ is compiled with to compute a given tensor expression.
+The code displayed in these sections is derived from links to the actual source code files.
+So, the reader can be assured it is a faithful representation of the numerical operations VisIt_ is actually performing.
+
 .. _Contraction_Expression_Function:
 
 Contraction Function: ``contraction()`` : ``contraction(expr0)``
@@ -942,7 +947,7 @@ Array Expressions
 
 .. _Array_Compose_Expression_Function:
 
-Array Compose Function: ``array_compose()`` : ``array_compose(expr0, expr1, ..., exprN-1)``
+Array Compose Function: ``array_compose()`` : ``array_compose(expr1, expr2, ..., exprK)``
     Create a new *array* expression variable which is everywhere the array
     composition of its arguments, which all must be *scalar* type.
     An array mesh variable is useful when using the label plot or when
@@ -958,28 +963,21 @@ Array Compose Function: ``array_compose()`` : ``array_compose(expr0, expr1, ...,
 
 .. _Array_Compose_With_Bins_Expression_Function:
 
-Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compose_with_bins(expr0,...,exprN-1,b0,...bn-1 )``
-    This expression combines two related concepts. One is the array concept
-    where a group of individual scalar mesh variables are grouped into an array
-    variable. The other is a set of coordinate values (you can kinda think of
-    as bin boundaries), that should be used by VisIt_ for certain kinds of
-    operations involving the array variable. If there are N variables in the
-    array, ``expr0``, ``expr1``, and so on, there are N+1 coordinate values
-    (or bin boundaries), ``b0``, ``b1``. When such a variable is picked using
-    one of VisIt_'s pick operations, VisIt_ can display a bar-graph. Each bar in
-    the bar-graph has a height determined by the associated scalar mesh variable
-    (at the picked point) and a width determined by the associated
-    bin-boundaries.
+Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compose_with_bins(expr1,expr2,...,exprK,[b0,...bK+1])``
+    This expression combines two related concepts.
+    One is the array concept where a group of individual scalar mesh variables are grouped into an array variable.
+    The other is a set of *coordinate* values (interpreted as histogram bin boundaries), that will be used by VisIt_ for certain kinds of operations involving the array variable.
+    **Note** that the bin boundaries are specified as a single additional argument to the function as a *list* of values embedded in square brackets.
+    If there are ``K`` variables in the array, ``expr1, expr2,..., exprK``, there are K+1 coordinate values (or bin boundaries), ``[b0,b1,...,bK+1]``.
+    When such a variable is picked using one of VisIt_'s pick operations, VisIt_ can plot a **Histogram** plot.
+    Each bar in the **Histogram** plot has a height determined by the associated member of the array and a width determined by the associated bin-boundaries.
 
-    For example, suppose a user had an array variable, foo, composed of 5 scalar
-    mesh variables, ``a1``, ``a2``, ``a3``, ``a4``, and ``a5`` like so...
+    For example, suppose a user had an array variable, foo, composed of 5 scalar mesh variables, ``a1``, ``a2``, ``a3``, ``a4``, and ``a5`` like so...
 
-    ``array_compose_with_bins(a1,a2,a3,a4,a5,0,3.5,10.1,10.7,12,22)``
+    ``array_compose_with_bins(a1,a2,a3,a4,a5,[0,3.5,10.1,10.7,12,22])``
 
-    For any given point on a plot, when the user picked foo, there are 5 values
-    returned, the value of each of the 5 scalar variable members of foo. If the
-    user arranged for a pick to return a bar-graph of the variable using the
-    bin-boundaries, the result might look like…
+    For any given point on a plot, when the user picked foo, there are 5 values returned, the value of each of the 5 scalar variable members of foo.
+    If the user arranged for a pick to return a bar-graph of the variable using the bin-boundaries, the result might look like…
 
 .. _Array_compose_with_bins:
 

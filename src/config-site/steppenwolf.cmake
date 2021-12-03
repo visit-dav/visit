@@ -40,3 +40,7 @@ if(USE_REDUCED_BUILD) # this is just a var I create when I need it
   VISIT_OPTION_DEFAULT(VISIT_SELECTED_OPERATOR_PLUGINS "Slice;Lineout" TYPE STRING)
   
 endif()
+
+if(USE_DEBUG_VTK)
+  VISIT_OPTION_DEFAULT(VISIT_VTK_DIR C:/A_VisIt/TPForDebugging/vtk-debug/8.1.0)
+endif()

@@ -562,10 +562,12 @@ function build_h5part
     info "Invoking command to configure H5Part"
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
+    set -x
     sh -c "./configure ${WITHHDF5ARG} ${OPTIONAL} CXX=\"$CXX_COMPILER\" \
        CC=\"$C_COMPILER\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
        $FORTRANARGS $EXTRAARGS \
        --prefix=\"$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH\""
+    set +x
     if [[ $? != 0 ]] ; then
         warn "H5Part configure failed.  Giving up"
         return 1

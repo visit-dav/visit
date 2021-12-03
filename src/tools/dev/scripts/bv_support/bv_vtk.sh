@@ -76,12 +76,12 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-    export VTK_FILE=${VTK_FILE:-"vtk-master.tar.gz"}
-    export VTK_VERSION=${VTK_VERSION:-"master"}
-    export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.0"}
+    export VTK_FILE=${VTK_FILE:-"VTK-9.1.0.tar.gz"}
+    export VTK_VERSION=${VTK_VERSION:-"9.1.0"}
+    export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.1"}
     #export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
     #export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
-    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"vtk-master"}
+    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-9.1.0"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
     #export VTK_MD5_CHECKSUM="fa61cd36491d89a17edab18522bdda49"
     #export VTK_SHA256_CHECKSUM="6e269f07b64fb13774f5925161fb4e1f379f4e6a0131c8408c555f6b58ef3cb7"
@@ -144,56 +144,6 @@ function bv_vtk_dry_run
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
-
-function apply_vtkopengloptions_patch
-{
-  # patch vtk's vtkOpenGLOptions.cmake to allow specifying VTK_OPENGL_HAS_OSMESA
-  # and VTK_USE_X, otherwise vtkOSOpenGLRenderWindow isn't built and vtkglew
-  # doesn't link with OSMESA.
-
-   patch -p0 << \EOF
-*** CMake/vtkOpenGLOptions.cmake.orig
---- CMake/vtkOpenGLOptions.cmake
-***************
-*** 112,125 ****
-      "Please set to `OFF` any of these two.")
-  endif ()
-  
-! if (VTK_OPENGL_HAS_OSMESA AND VTK_CAN_DO_ONSCREEN)
-!   message(FATAL_ERROR
-!     "The `VTK_OPENGL_HAS_OSMESA` can't be set to `ON` if any of the following is true: "
-!     "the target platform is Windows, `VTK_USE_COCOA` is `ON`, or `VTK_USE_X` "
-!     "is `ON` or `VTK_USE_SDL2` is `ON`. OSMesa does not support on-screen "
-!     "rendering and VTK's OpenGL selection is at build time, so the current "
-!     "build configuration is not satisfiable.")
-! endif ()
-  
-  cmake_dependent_option(
-    VTK_USE_OPENGL_DELAYED_LOAD
---- 112,125 ----
-      "Please set to `OFF` any of these two.")
-  endif ()
-  
-! #if (VTK_OPENGL_HAS_OSMESA AND VTK_CAN_DO_ONSCREEN)
-! #  message(FATAL_ERROR
-! #    "The `VTK_OPENGL_HAS_OSMESA` can't be set to `ON` if any of the following is true: "
-! #    "the target platform is Windows, `VTK_USE_COCOA` is `ON`, or `VTK_USE_X` "
-! #    "is `ON` or `VTK_USE_SDL2` is `ON`. OSMesa does not support on-screen "
-! #    "rendering and VTK's OpenGL selection is at build time, so the current "
-! #    "build configuration is not satisfiable.")
-! #endif ()
-  
-  cmake_dependent_option(
-    VTK_USE_OPENGL_DELAYED_LOAD
-
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtk patch for vtkOpenGLOptions failed."
-      return 1
-    fi
-    return 0;
-}
 
 function apply_vtkopenfoamreader_header_patch
 {
@@ -503,72 +453,6 @@ function apply_vtkopenfoamreader_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
-}
-
-function apply_vtkprobeopenglversion_patch
-{
-  # patch vtk's Rendering/OpenGL2/CMakeLists.txt to avoid a link error
-  # with vtkProbeOpenGLVersion when OSMesa is turned on.
-  # This may not be the best thing to be doing!!
-
-   patch -p0 << \EOF
-*** Rendering/OpenGL2/CMakeLists.txt.orig	Tue Apr 20 16:38:32 2021
---- Rendering/OpenGL2/CMakeLists.txt	Tue Apr 20 16:38:57 2021
-***************
-*** 378,399 ****
-    vtk_module_link(VTK::RenderingOpenGL2 PUBLIC "-framework UIKit")
-  endif ()
-  
-! if (NOT ANDROID AND
-!     NOT APPLE_IOS AND
-!     NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten" AND
-!     NOT VTK_OPENGL_USE_GLES)
-!   set(probe_no_install)
-!   if (NOT _vtk_build_INSTALL_HEADERS)
-!     set(probe_no_install
-!       NO_INSTALL)
-!   endif ()
-!   vtk_module_add_executable(vtkProbeOpenGLVersion
-!     ${probe_no_install}
-!     vtkProbeOpenGLVersion.cxx)
-!   target_link_libraries(vtkProbeOpenGLVersion
-!     PRIVATE
-!       VTK::RenderingOpenGL2)
-!   vtk_module_autoinit(
-!     TARGETS vtkProbeOpenGLVersion
-!     MODULES VTK::RenderingOpenGL2)
-! endif ()
---- 378,399 ----
-    vtk_module_link(VTK::RenderingOpenGL2 PUBLIC "-framework UIKit")
-  endif ()
-  
-! #if (NOT ANDROID AND
-! #    NOT APPLE_IOS AND
-! #    NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten" AND
-! #    NOT VTK_OPENGL_USE_GLES)
-! #  set(probe_no_install)
-! #  if (NOT _vtk_build_INSTALL_HEADERS)
-! #    set(probe_no_install
-! #      NO_INSTALL)
-! #  endif ()
-! #  vtk_module_add_executable(vtkProbeOpenGLVersion
-! #    ${probe_no_install}
-! #    vtkProbeOpenGLVersion.cxx)
-! #  target_link_libraries(vtkProbeOpenGLVersion
-! #    PRIVATE
-! #      VTK::RenderingOpenGL2)
-! #  vtk_module_autoinit(
-! #    TARGETS vtkProbeOpenGLVersion
-! #    MODULES VTK::RenderingOpenGL2)
-! #endif ()
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtk patch for vtkProbeOpenGLVersion failed."
-      return 1
-    fi
-    return 0;
-
 }
 
 function apply_vtkopenglspheremapper_h_patch
@@ -902,545 +786,25 @@ EOF
     return 0;
 }
 
-function apply_vtkospray_patches
-{
-	count_patches=3
-    # patch vtkOSPRay files:
-
-    # 1) expose vtkViewNodeFactory via vtkOSPRayPass
-	current_patch=1
-    patch -p0 << \EOF
-*** Rendering/OSPRay/vtkOSPRayPass.h.original     2018-04-23 19:23:29.000000000 -0700
---- Rendering/OSPRay/vtkOSPRayPass.h  2018-04-30 21:31:49.911508591 -0700
-***************
-*** 48,53 ****
---- 48,54 ----
-  class vtkRenderPassCollection;
-  class vtkSequencePass;
-  class vtkVolumetricPass;
-+ class vtkViewNodeFactory;
-
-  class VTKRENDERINGOSPRAY_EXPORT vtkOSPRayPass : public vtkRenderPass
-  {
-***************
-*** 74,79 ****
---- 75,82 ----
-     */
-    virtual void RenderInternal(const vtkRenderState *s);
-
-+   virtual vtkViewNodeFactory* GetViewNodeFactory();
-+
-   protected:
-    /**
-     * Default constructor.
-*** Rendering/OSPRay/vtkOSPRayPass.cxx.original	2018-04-23 19:23:29.000000000 -0700
---- Rendering/OSPRay/vtkOSPRayPass.cxx	2018-04-30 21:31:49.907508611 -0700
-***************
-*** 273,275 ****
---- 273,280 ----
-      }
-    }
-  }
-+
-+ vtkViewNodeFactory* vtkOSPRayPass::GetViewNodeFactory()
-+ {
-+   return this->Internal->Factory;
-+ }
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "vtk patch ${current_patch}/${count_patches} for vtkOSPRayPass failed."
-        return 1
-    fi
-
-	# 2) enable vtkOSPRayFollowerNode
-	((current_patch++))
-	patch -p0 << \EOF
-*** Rendering/OSPRay/vtkOSPRayViewNodeFactory.cxx.original	2018-04-23 19:23:29.000000000 -0700
---- Rendering/OSPRay/vtkOSPRayViewNodeFactory.cxx	2018-05-07 19:43:23.902077745 -0700
-***************
-*** 19,24 ****
---- 19,25 ----
-  #include "vtkOSPRayAMRVolumeMapperNode.h"
-  #include "vtkOSPRayCameraNode.h"
-  #include "vtkOSPRayCompositePolyDataMapper2Node.h"
-+ #include "vtkOSPRayFollowerNode.h"
-  #include "vtkOSPRayLightNode.h"
-  #include "vtkOSPRayRendererNode.h"
-  #include "vtkOSPRayPolyDataMapperNode.h"
-***************
-*** 44,49 ****
---- 45,56 ----
-    return vn;
-  }
-
-+ vtkViewNode *fol_maker()
-+ {
-+   vtkOSPRayFollowerNode *vn = vtkOSPRayFollowerNode::New();
-+   return vn;
-+ }
-+
-  vtkViewNode *vol_maker()
-  {
-    return vtkOSPRayVolumeNode::New();
-***************
-*** 96,101 ****
---- 103,109 ----
-    this->RegisterOverride("vtkOpenGLRenderer", ren_maker);
-    this->RegisterOverride("vtkOpenGLActor", act_maker);
-    this->RegisterOverride("vtkPVLODActor", act_maker);
-+   this->RegisterOverride("vtkFollower", fol_maker);
-    this->RegisterOverride("vtkPVLODVolume", vol_maker);
-    this->RegisterOverride("vtkVolume", vol_maker);
-    this->RegisterOverride("vtkOpenGLCamera", cam_maker);
-*** Rendering/OSPRay/CMakeLists.txt.original	2018-04-23 19:23:28.000000000 -0700
---- Rendering/OSPRay/CMakeLists.txt	2018-04-23 21:07:41.269154859 -0700
-***************
-*** 7,12 ****
---- 7,13 ----
-    vtkOSPRayVolumeNode.cxx
-    vtkOSPRayCameraNode.cxx
-    vtkOSPRayCompositePolyDataMapper2Node.cxx
-+   vtkOSPRayFollowerNode.cxx
-    vtkOSPRayLightNode.cxx
-    vtkOSPRayMaterialHelpers.cxx
-    vtkOSPRayMaterialLibrary.cxx
-*** Rendering/OSPRay/vtkOSPRayFollowerNode.h.original	1969-12-31 16:00:00.000000000 -0800
---- Rendering/OSPRay/vtkOSPRayFollowerNode.h	2018-04-23 21:07:41.269154859 -0700
-***************
-*** 0 ****
---- 1,49 ----
-+ /*=========================================================================
-+
-+   Program:   Visualization Toolkit
-+   Module:    vtkOSPRayFollowerNode.h
-+
-+   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-+   All rights reserved.
-+   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-+
-+      This software is distributed WITHOUT ANY WARRANTY; without even
-+      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-+      PURPOSE.  See the above copyright notice for more information.
-+
-+ =========================================================================*/
-+ /**
-+  * @class   vtkOSPRayFollowerNode
-+  * @brief   links vtkFollower to OSPRay
-+  *
-+  * Translates vtkFollower state into OSPRay rendering calls
-+ */
-+
-+ #ifndef vtkOSPRayFollowerNode_h
-+ #define vtkOSPRayFollowerNode_h
-+
-+ #include "vtkOSPRayActorNode.h"
-+
-+ class VTKRENDERINGOSPRAY_EXPORT vtkOSPRayFollowerNode :
-+   public vtkOSPRayActorNode
-+ {
-+ public:
-+   static vtkOSPRayFollowerNode* New();
-+   vtkTypeMacro(vtkOSPRayFollowerNode, vtkOSPRayActorNode);
-+   void PrintSelf(ostream& os, vtkIndent indent) override;
-+
-+   /**
-+    * Overridden to take into account my renderables time, including
-+    * its associated camera
-+    */
-+   virtual vtkMTimeType GetMTime() override;
-+
-+ protected:
-+   vtkOSPRayFollowerNode();
-+   ~vtkOSPRayFollowerNode();
-+
-+ private:
-+   vtkOSPRayFollowerNode(const vtkOSPRayFollowerNode&) = delete;
-+   void operator=(const vtkOSPRayFollowerNode&) = delete;
-+ };
-+ #endif
-*** Rendering/OSPRay/vtkOSPRayFollowerNode.cxx.original	1969-12-31 16:00:00.000000000 -0800
---- Rendering/OSPRay/vtkOSPRayFollowerNode.cxx	2018-04-27 18:41:41.770557480 -0700
-***************
-*** 0 ****
---- 1,51 ----
-+ /*=========================================================================
-+
-+   Program:   Visualization Toolkit
-+   Module:    vtkOSPRayFollowerNode.cxx
-+
-+   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-+   All rights reserved.
-+   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-+
-+      This software is distributed WITHOUT ANY WARRANTY; without even
-+      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-+      PURPOSE.  See the above copyright notice for more information.
-+
-+ =========================================================================*/
-+ #include "vtkOSPRayFollowerNode.h"
-+ #include "vtkCamera.h"
-+ #include "vtkFollower.h"
-+ #include "vtkObjectFactory.h"
-+
-+ //============================================================================
-+ vtkStandardNewMacro(vtkOSPRayFollowerNode);
-+
-+ //----------------------------------------------------------------------------
-+ vtkOSPRayFollowerNode::vtkOSPRayFollowerNode()
-+ {
-+ }
-+
-+ //----------------------------------------------------------------------------
-+ vtkOSPRayFollowerNode::~vtkOSPRayFollowerNode()
-+ {
-+ }
-+
-+ //----------------------------------------------------------------------------
-+ void vtkOSPRayFollowerNode::PrintSelf(ostream& os, vtkIndent indent)
-+ {
-+   this->Superclass::PrintSelf(os, indent);
-+ }
-+
-+ //----------------------------------------------------------------------------
-+ vtkMTimeType vtkOSPRayFollowerNode::GetMTime()
-+ {
-+   vtkMTimeType mtime = this->Superclass::GetMTime();
-+   vtkCamera *cam = ((vtkFollower*)this->GetRenderable())->GetCamera();
-+
-+   if (cam->GetMTime() > mtime)
-+   {
-+     mtime = cam->GetMTime();
-+   }
-+
-+   return mtime;
-+ }
-*** Rendering/Core/vtkFollower.cxx.original	2017-12-22 10:33:25.000000000 -0600
---- Rendering/Core/vtkFollower.cxx	2018-06-14 13:35:08.481815058 -0500
-***************
-*** 156,161 ****
---- 156,165 ----
-      this->Transform->GetMatrix(this->Matrix);
-      this->MatrixMTime.Modified();
-      this->Transform->Pop();
-+
-+     // if we get to here it's pretty safe to assume
-+     // that our transform isn't an identity matrix
-+     this->IsIdentity = 0;
-    }
-  }
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "vtk patch $current_patch/$count_patches for vtkOSPRayFollowerNode failed."
-        return 1
-    fi
-
-	((current_patch++))
-    patch -p0 << \EOF
-*** Rendering/OSPRay/vtkOSPRayVolumeMapper.cxx.original	2018-04-23 15:32:58.538749914 -0400
---- Rendering/OSPRay/vtkOSPRayVolumeMapper.cxx	2018-04-23 15:34:58.399824907 -0400
-***************
-*** 72,77 ****
---- 72,79 ----
-    {
-      this->Init();
-    }
-+   vtkOSPRayRendererNode::SetSamplesPerPixel(vtkOSPRayRendererNode::GetSamplesPerPixel(ren), this->InternalRenderer);
-+   vtkOSPRayRendererNode::SetAmbientSamples(vtkOSPRayRendererNode::GetAmbientSamples(ren), this->InternalRenderer);
-    this->InternalRenderer->SetRenderWindow(ren->GetRenderWindow());
-    this->InternalRenderer->SetActiveCamera(ren->GetActiveCamera());
-    this->InternalRenderer->SetBackground(ren->GetBackground());
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "vtk patch $current_patch/$count_patches for vtkOSPRayVolumeMapper failed."
-        return 1
-    fi
-}
-
-function apply_vtkospraypolydatamappernode_patch
-{
-    # patch vtk's vtkOSPRayPolyDataMapperNode to handle vtkDataSets in
-    # addition to vtkPolyData.
-
-    patch -p0 << \EOF
-diff -c Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.h.original Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.h
-*** Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.h.original     Fri Dec 22 08:33:25 2017
---- Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.h      Fri Dec 28 15:56:33 2018
-***************
-*** 25,30 ****
---- 25,31 ----
-  #include "vtkRenderingOSPRayModule.h" // For export macro
-  #include "vtkPolyDataMapperNode.h"
-  
-+ class vtkDataSetSurfaceFilter;
-  class vtkOSPRayActorNode;
-  class vtkPolyData;
-  
-***************
-*** 61,66 ****
---- 62,69 ----
-    void CreateNewMeshes();
-    void AddMeshesToModel(void *arg);
-  
-+   vtkDataSetSurfaceFilter *GeometryExtractor;
-+ 
-  private:
-    vtkOSPRayPolyDataMapperNode(const vtkOSPRayPolyDataMapperNode&) = delete;
-    void operator=(const vtkOSPRayPolyDataMapperNode&) = delete;
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtk patch for vtkOSPRayPolyDataMapperNode failed."
-      return 1
-    fi
-
-    patch -p0 << \EOF
-diff -c Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.cxx.original Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.cxx
-*** Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.cxx.original   Fri Dec 22 08:33:25 2017
---- Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.cxx    Fri Dec 28 16:32:06 2018
-***************
-*** 19,24 ****
---- 19,25 ----
-  #include "vtkOSPRayMaterialHelpers.h"
-  #include "vtkOSPRayRendererNode.h"
-  #include "vtkDataArray.h"
-+ #include "vtkDataSetSurfaceFilter.h"
-  #include "vtkFloatArray.h"
-  #include "vtkImageData.h"
-  #include "vtkInformation.h"
-***************
-*** 738,749 ****
---- 739,755 ----
-  vtkOSPRayPolyDataMapperNode::vtkOSPRayPolyDataMapperNode()
-  {
-    this->OSPMeshes = nullptr;
-+   this->GeometryExtractor = nullptr;
-  }
-  
-  //----------------------------------------------------------------------------
-  vtkOSPRayPolyDataMapperNode::~vtkOSPRayPolyDataMapperNode()
-  {
-    delete (vtkosp::MyGeom*)this->OSPMeshes;
-+   if ( this->GeometryExtractor )
-+   {
-+     this->GeometryExtractor->Delete();
-+   }
-  }
-  
-  //----------------------------------------------------------------------------
-***************
-*** 1318,1324 ****
-      vtkMapper *mapper = act->GetMapper();
-      if (mapper)
-      {
-!       poly = (vtkPolyData*)(mapper->GetInput());
-      }
-      if (poly)
-      {
---- 1324,1343 ----
-      vtkMapper *mapper = act->GetMapper();
-      if (mapper)
-      {
-!       if (mapper->GetInput()->GetDataObjectType() == VTK_POLY_DATA)
-!       {
-!         poly = (vtkPolyData*)(mapper->GetInput());
-!       }
-!       else
-!       {
-!         if (! this->GeometryExtractor)
-!         {
-!           this->GeometryExtractor = vtkDataSetSurfaceFilter::New();
-!         }
-!         this->GeometryExtractor->SetInputData(mapper->GetInput());
-!         this->GeometryExtractor->Update();
-!         poly = (vtkPolyData*)this->GeometryExtractor->GetOutput();
-!       }
-      }
-      if (poly)
-      {
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtk patch for vtkOSPRayPolyDataMapperNode failed."
-      return 1
-    fi
-
-    return 0;
-}
-
-
-function apply_vtkospray_linking_patch
-{
-    # fix from kevin griffin
-    # patch to vtk linking issue noticed on macOS
-    patch -p0 << \EOF
-    diff -c Rendering/OSPRay/CMakeLists.txt.orig  Rendering/OSPRay/CMakeLists.txt
-    *** Rendering/OSPRay/CMakeLists.txt.orig	2019-05-21 15:15:50.000000000 -0700
-    --- Rendering/OSPRay/CMakeLists.txt	2019-05-21 15:16:07.000000000 -0700
-    ***************
-    *** 37,42 ****
-    --- 37,45 ----
-      vtk_module_library(vtkRenderingOSPRay ${Module_SRCS})
-  
-      target_link_libraries(${vtk-module} LINK_PUBLIC ${OSPRAY_LIBRARIES})
-    + # patch to solve linking issue noticed on macOS
-    + target_link_libraries(${vtk-module} LINK_PUBLIC vtkFiltersGeometry)
-    + 
-  
-      # OSPRay_Core uses MMTime which is in it's own special library.
-      if(WIN32)
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtk patch for ospray linking failed."
-      return 1
-    fi
-
-    return 0;
-}
-
-function apply_vtk_python3_python_args_patch
-{
-    # in python 3.7.5:
-    #  PyUnicode_AsUTF8 returns a const char *, which you cannot assign
-    #  to a char *. 
-    # Add cast to allow us to compile.
-    patch -p0 << \EOF
-    diff -c Wrapping/PythonCore/vtkPythonArgs.orig.cxx Wrapping/PythonCore/vtkPythonArgs.cxx
-*** Wrapping/PythonCore/vtkPythonArgs.cxx.orig	Mon Apr 19 15:00:19 2021
---- Wrapping/PythonCore/vtkPythonArgs.cxx	Mon Apr 19 15:00:44 2021
-***************
-*** 132,138 ****
-    else if (PyUnicode_Check(o))
-    {
-  #if PY_VERSION_HEX >= 0x03030000
-!     a = PyUnicode_AsUTF8(o);
-      return true;
-  #else
-      PyObject* s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
---- 132,138 ----
-    else if (PyUnicode_Check(o))
-    {
-  #if PY_VERSION_HEX >= 0x03030000
-!     a = (char*)PyUnicode_AsUTF8(o);
-      return true;
-  #else
-      PyObject* s = _PyUnicode_AsDefaultEncodedString(o, nullptr);
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtk patch for python3 vtkPythonArgs const issue failed."
-      return 1
-    fi
-
-    return 0;
-}
-
-
-function apply_vtk_planesource_patch
-{
-    # Fix use of ambiguous abs
-    patch -p0 << \EOF
-*** Filters/Sources/vtkPlaneSource.cxx.orig	Tue Apr 20 16:12:05 2021
---- Filters/Sources/vtkPlaneSource.cxx	Tue Apr 20 16:12:16 2021
-***************
-*** 24,29 ****
---- 24,30 ----
-  #include "vtkPoints.h"
-  #include "vtkPolyData.h"
-  #include "vtkTransform.h"
-+ #include <cmath>
-  
-  vtkStandardNewMacro(vtkPlaneSource);
-  
-***************
-*** 400,408 ****
-  }
-  
-  //------------------------------------------------------------------------------
-  void vtkPlaneSource::Rotate(double angle, double rotationAxis[3])
-  {
-!   if (abs(angle) < EPSILON)
-    {
-      return;
-    }
---- 401,410 ----
-  }
-  
-  //------------------------------------------------------------------------------
-+ 
-  void vtkPlaneSource::Rotate(double angle, double rotationAxis[3])
-  {
-!   if (std::abs(angle) < EPSILON)
-    {
-      return;
-    }
-
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtk patch for planesource failed."
-      return 1
-    fi
-
-    return 0;
-}
-
-
 function apply_vtk_patch
 {
-    apply_vtkprobeopenglversion_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
+    # this needs to be reworked for 9.1.0
+    #apply_vtkopenfoamreader_patch
+    #if [[ $? != 0 ]] ; then
+    #    return 1
+    #fi
 
-    apply_vtkopengloptions_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    apply_vtkopenfoamreader_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    # will have to test if these or versions thereof are still required
+    # this needs to be reworked for 9.1.0
     #apply_vtkopenglspheremapper_h_patch
     #if [[ $? != 0 ]] ; then
     #    return 1
     #fi
 
+    # this needs to be reworked for 9.1.0
     #apply_vtkopenglspheremapper_patch
     #if [[ $? != 0 ]] ; then
     #    return 1
     #fi
-
-    # Note: don't guard ospray patches by if ospray is selected 
-    # b/c subsequent calls to build_visit won't get a chance to patch
-    # given the if test logic used above
-    #apply_vtkospraypolydatamappernode_patch
-    #if [[ $? != 0 ]] ; then
-    #    return 1
-    #fi
-
-    #apply_vtkospray_patches
-    #if [[ $? != 0 ]] ; then
-    #    return 1
-    #fi
-
-    #apply_vtkospray_linking_patch
-    #if [[ $? != 0 ]] ; then
-    #    return 1
-    #fi
-
-    apply_vtk_python3_python_args_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
-
-    apply_vtk_planesource_patch
-    if [[ $? != 0 ]] ; then
-        return 1
-    fi
 
     return 0
 }
@@ -1662,14 +1026,10 @@ function build_vtk
 
             vopts="${vopts} -DVTK_WRAP_PYTHON:BOOL=true"
             vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
-            vopts="${vopts} -DPYTHON_EXECUTABLE:FILEPATH=${py}"
-            vopts="${vopts} -DPYTHON_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
-            vopts="${vopts} -DPYTHON_INCLUDE_DIR:PATH=${pyinc}"
-            vopts="${vopts} -DPYTHON_LIBRARY:FILEPATH=${pylib}"
-            if [[ "$DO_PYTHON2" == "no" ]]; then
-              vopts="${vopts} -DVTK_PYTHON_VERSION:STRING=3"
-            fi
-            #            vopts="${vopts} -DPYTHON_UTIL_LIBRARY:FILEPATH="
+            vopts="${vopts} -DPython3_EXECUTABLE:FILEPATH=${py}"
+            vopts="${vopts} -DPython3_EXTRA_LIBS:STRING=${VTK_PY_LIBS}"
+            vopts="${vopts} -DPython3_INCLUDE_DIR:PATH=${pyinc}"
+            vopts="${vopts} -DPython3_LIBRARY:FILEPATH=${pylib}"
         else
             warn "Forgetting python filters because we are doing a static build."
         fi
@@ -1677,11 +1037,11 @@ function build_vtk
 
 
     # Use OSPRay?
-    if [[ "$DO_OSPRAY" == "yes" ]] ; then
-        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:BOOL=ON"
-        vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}"
-        vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
-    fi
+    #if [[ "$DO_OSPRAY" == "yes" ]] ; then
+    #    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:BOOL=ON"
+    #    vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}"
+    #    vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
+    #fi
 
     # zlib support, use the one we build
     vopts="${vopts} -DVTK_MODULE_USE_EXTERNAL_VTK_zlib:BOOL=ON"

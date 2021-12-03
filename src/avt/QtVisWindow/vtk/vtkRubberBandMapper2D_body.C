@@ -7,11 +7,11 @@
     double *ftmp;
     int cellScalars = 0;
     int cellNum = 0;
-    int lastX, lastY, X, Y; 
+    int lastX, lastY, X, Y;
     int currSize = 1024;
     vtkDebugMacro (<< "vtkRubberBandMapper2D::RenderOverlay");
 
-    if ( input == NULL ) 
+    if ( input == NULL )
     {
         vtkErrorMacro(<< "No input!");
         CLEAN_UP();
@@ -20,7 +20,7 @@
     else
     {
         numPts = input->GetNumberOfPoints();
-    } 
+    }
 
     if (numPts == 0)
     {
@@ -28,7 +28,7 @@
         CLEAN_UP();
         return;
     }
-  
+
     if ( this->LookupTable == NULL )
     {
         this->CreateDefaultLookupTable();
@@ -38,8 +38,8 @@
     // if something has changed regenrate colors and display lists
     // if required
     //
-    if ( this->GetMTime() > this->BuildTime || 
-         input->GetMTime() > this->BuildTime || 
+    if ( this->GetMTime() > this->BuildTime ||
+         input->GetMTime() > this->BuildTime ||
          this->LookupTable->GetMTime() > this->BuildTime ||
          actor->GetProperty()->GetMTime() > this->BuildTime)
     {
@@ -47,9 +47,9 @@
         this->MapScalars(1.0);
         this->BuildTime.Modified();
     }
-  
+
     // Get the position of the text actor
-    int* actorPos = 
+    int* actorPos =
         actor->GetPositionCoordinate()->GetComputedLocalDisplayValue(viewport);
 
     // Transform the points, if necessary
@@ -88,7 +88,7 @@
         aPrim->GetCurrentCell(npts,pts);
         if (c) 
         {
-            if (cellScalars) 
+            if (cellScalars)
                 rgba = c->GetPointer(4*cellNum);
             else
                 rgba = c->GetPointer(4*pts[0]);
@@ -98,7 +98,7 @@
 
         RESIZE_POINT_ARRAY(points, npts, currSize);
 
-        for (j = 0; j < npts; j++) 
+        for (j = 0; j < npts; j++)
         {
             ftmp = p->GetPoint(pts[j]);
             STORE_POINT(points[j],
@@ -109,23 +109,31 @@
         DRAW_POLYGON(points, npts);
     }
 
+    //
     // Draw the lines.
+    // We need to scale our coordinates by the devicePixelRatio, which takes
+    // the OSX retina display into account. From the docs:
+    //
+    //     "Common values are 1 for normal-dpi displays and 2 for high-dpi
+    //     'retina' displays."
+    //
+    int devicePixelRatio = privateInstance->widget->devicePixelRatio();
     aPrim = vtk::TakeSmartPointer(input->GetLines()->NewIterator());
     for (aPrim->GoToFirstCell(); !aPrim->IsDoneWithTraversal(); aPrim->GoToNextCell(), cellNum++)
-    { 
+    {
         aPrim->GetCurrentCell(npts,pts);
-        if (c && cellScalars) 
+        if (c && cellScalars)
         {
             rgba = c->GetPointer(4*cellNum);
             SET_FOREGROUND(rgba);
         }
         ftmp = p->GetPoint(pts[0]);
 
-        lastX = (int)(actorPos[0] + ftmp[0]);
-        lastY = (int)(actorPos[1] - ftmp[1]);
+        lastX = (int)(actorPos[0] + ftmp[0]) / devicePixelRatio;
+        lastY = (int)(actorPos[1] - ftmp[1]) / devicePixelRatio;
         BEGIN_POLYLINE(lastX, lastY);
-        
-        for (j = 1; j < npts; j++) 
+
+        for (j = 1; j < npts; j++)
         {
             ftmp = p->GetPoint(pts[j]);
             if (c && !cellScalars)
@@ -133,15 +141,15 @@
                 rgba = c->GetPointer(4*pts[j]);
                 SET_FOREGROUND(rgba)
             }
-            X = (int)(actorPos[0] + ftmp[0]);
-            Y = (int)(actorPos[1] - ftmp[1]);
+            X = (int)(actorPos[0] + ftmp[0]) / devicePixelRatio;
+            Y = (int)(actorPos[1] - ftmp[1]) / devicePixelRatio;
 
             DRAW_XOR_LINE(lastX, lastY, X, Y);
 
             lastX = X;
             lastY = Y;
         }
-        
+
         END_POLYLINE();
     }
 

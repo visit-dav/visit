@@ -9,9 +9,9 @@ operator types that allow various operations to be performed on plot data.
 The standard operators perform data restriction operations like planar
 slicing, spherical slicing, and thresholding, as well as more sophisticated
 operations like peeling off mesh layers. All of VisIt's operators are plugins
-and new operators can be written to extend VisIt in new ways. See the
-`wiki <http://visitusers.org>`_ for more details on creating new operator 
-plugins or send an e-mail inquiry to visit-users@elist.ornl.gov.
+and new operators can be written to extend VisIt in new ways. For help
+creating new operator plugins contact us via our
+`getting help <https://visit-dav.github.io/visit-website/support/>`_ page.
 
 Managing operators
 ~~~~~~~~~~~~~~~~~~

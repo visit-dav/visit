@@ -2596,15 +2596,19 @@ ViewerEngineManagerImplementation::UpdateRemoveDuplicateNodes(const bool flag)
 //    Brad Whitlock, Thu Jul 24 22:18:34 EDT 2014
 //    Pass timeSuffix.
 //
+//    Kathleen Biagas, Fri Apr 23 2021
+//    New signature with return atts.
+//
 // ****************************************************************************
 
 bool
-ViewerEngineManagerImplementation::ExportDatabases(const EngineKey &ek, 
-    const intVector &ids, const ExportDBAttributes &expAtts, 
-    const std::string &timeSuffix)
+ViewerEngineManagerImplementation::ExportDatabases(const EngineKey &ek,
+    const intVector &ids, const ExportDBAttributes *expAtts,
+    const std::string &timeSuffix,
+    ExportDBAttributes &retAtts)
 {
     ENGINE_PROXY_RPC_BEGIN("ExportDatabase");
-    engine->GetEngineMethods()->ExportDatabases(ids, expAtts, timeSuffix);
+    engine->GetEngineMethods()->ExportDatabases(ids, expAtts, timeSuffix, retAtts);
     ENGINE_PROXY_RPC_END_NORESTART_RETHROW2;
 }
 

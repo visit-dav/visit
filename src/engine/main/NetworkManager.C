@@ -4797,15 +4797,24 @@ NetworkManager::GetDataBinning(const char *name)
 //    Brad Whitlock, Thu Jul 24 22:27:34 EDT 2014
 //    Pass timeSuffix.
 //
+//    Kathleen Biagas, Fri Apr 23 2021
+//    Change atts arg from 'const &' to * so that actual dir name can be
+//    returned in them.  If Dirname is '.', GetCWD to store instead.
+//
+//    Kathleen Biagas, Mon May 10 2021
+//    Move re-setting of Dirname when '.' to end of method, so it doesn't
+//    affect dirs stored internally in exported db's (like Silo). 
+//
 // ****************************************************************************
 
 void
-NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &atts,
+NetworkManager::ExportDatabases(const intVector &ids,
+    ExportDBAttributes *atts,
     const std::string &timeSuffix)
 {
     // Determine the filename and extension.
     std::string filename, ext;
-    const std::string &f = atts.GetFilename();
+    const std::string &f = atts->GetFilename();
     std::string::size_type idx = f.rfind(".");
     if(idx != std::string::npos)
     {
@@ -4826,11 +4835,11 @@ NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &
         for(size_t i = 0; i < ids.size(); ++i)
         {
             // Rig up a temporary ExportDBAttributes where we change the filename a little.
-            ExportDBAttributes eAtts(atts);
+            ExportDBAttributes eAtts(*atts);
             char plotid[4];
             snprintf(plotid, 4, "_%02d", int(i));
 
-            if(atts.GetAllTimes())
+            if(atts->GetAllTimes())
                 eAtts.SetFilename(filename + plotid + std::string("_") + timeSuffix + ext);
             else
                 eAtts.SetFilename(filename + plotid + ext);
@@ -4856,13 +4865,20 @@ NetworkManager::ExportDatabases(const intVector &ids, const ExportDBAttributes &
     }
     else if(!ids.empty())
     {
-        ExportDBAttributes eAtts(atts);
-        if(atts.GetAllTimes())
+        ExportDBAttributes eAtts(*atts);
+        if(atts->GetAllTimes())
             eAtts.SetFilename(filename + timeSuffix + ext);
         else
             eAtts.SetFilename(filename + ext);
         ExportSingleDatabase(ids[0], eAtts);
     }
+
+    if (atts->GetDirname() == ".")
+    {
+        // get the real path used for displaying back to user
+        atts->SetDirname(FileFunctions::GetCurrentWorkingDirectory());
+    }
+
 }
 
 // ****************************************************************************

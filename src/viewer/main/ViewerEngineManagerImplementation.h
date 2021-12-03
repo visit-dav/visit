@@ -302,6 +302,9 @@ class SelectionSummary;
 //    Kathleen Biagas, Mon Dec 22 10:14:22 PST 2014
 //    Added UpdateRemoveDuplicateNodes.
 //
+//    Kathleen Biagas, Fri Apr 23 2021
+//    ExportDatabases has new signature with return atts.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManagerImplementation : public ViewerServerManager,
@@ -418,8 +421,9 @@ public:
     bool CloneNetwork(const EngineKey &ek, int id, 
                       const QueryOverTimeAttributes *qatts);
     bool ExportDatabases(const EngineKey &ek, const intVector &ids,
-                         const ExportDBAttributes &expAtts, 
-                         const std::string &timeSuffix);
+                         const ExportDBAttributes *expAtts,
+                         const std::string &timeSuffix,
+                         ExportDBAttributes &retAtts);
     bool ConstructDataBinning(const EngineKey &ek, int id);
 
     bool CreateNamedSelection(const EngineKey &ek, int, const SelectionProperties &,

@@ -3,16 +3,15 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                                  Zoom3D.h                                   //
+//                                Zoom3D.h                                   //
 // ************************************************************************* //
 
 #ifndef ZOOM_3D_H
 #define ZOOM_3D_H
+
 #include <viswindow_exports.h>
 
-
 #include <ZoomInteractor.h>
-
 
 class VisWindowInteractorProxy;
 
@@ -71,12 +70,12 @@ class VISWINDOW_API Zoom3D : public ZoomInteractor
     void                ZoomCamera(void);
     void                ZoomCamera(const int x, const int y);
 
-    bool                altPressed;
-    bool                shiftPressed;
-    bool                shouldSpin;
-
     void                EnableSpinMode(void);
     void                DisableSpinMode(void);
+
+    bool                altPressed  {false};
+    bool                shiftPressed{false};
+    bool                shouldSpin  {false};
 };
 
 #endif

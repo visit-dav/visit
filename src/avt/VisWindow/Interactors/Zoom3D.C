@@ -30,6 +30,7 @@
 
 Zoom3D::Zoom3D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
 {
+    altPressed   = false;
     shiftPressed = false;
     shouldSpin = false;
 }
@@ -245,8 +246,8 @@ void
 Zoom3D::EndLeftButtonAction()
 {
     // We must issue the proper end state for either pan or rotate
-    // depending on whether the shift or ctrl button was pushed.  The
-    // shift left mouse pan action matches the Navigate2D/3D modes.
+    // depending on whether the alt, shift or ctrl button was pushed.
+    // The shift left mouse pan action matches the Navigate2D/3D modes.
     if (altPressed)
     {
         EndBoundingBox();

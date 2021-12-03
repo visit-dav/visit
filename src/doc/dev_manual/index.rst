@@ -7,6 +7,7 @@ VisIt_ Developer Manual
     :maxdepth: 1
     :numbered: 
 
+    GitHub
     StyleGuide
     pr_create
     pr_review
@@ -20,6 +21,8 @@ VisIt_ Developer Manual
     SiteReliabilityEngineering
     OpenGL
     CI
+    ContributingHostProfiles
+    LaunchProcess
 
 .. Indices and tables
 .. ==================

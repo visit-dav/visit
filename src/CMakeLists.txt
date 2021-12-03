@@ -474,6 +474,17 @@
 #    Kathleen Biagas, Thu Feb 18, 2021
 #    Added logic to support codesigning Windows releases.
 #
+#    Kathleen Biagas, Thu Apr 22, 2021
+#    Removed addition of tools/DataManualExamples/Simulations for static
+#    builds, the directory structure has changed and the examples are now
+#    in 'tools/data'.  'tools' and 'tools/data' are added unconditionally.
+#    'DataManualExamples' is dependent on VISIT_ENABLE_DATA_MANUAL_EXAMPLES
+#    being ON.
+#
+#    Eric Brugger, Wed May  5 08:31:16 PDT 2021
+#    Set VISIT_GIT_VERSION from the file GIT_VERSION if we are not in a
+#    git checkout.
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -852,7 +863,6 @@ IF (NOT WIN32)
   VISIT_3RDPARTY_VAR(OSMESA_DIR   "Path containing the OSMesa library's include and lib")
 ENDIF (NOT WIN32)
 VISIT_3RDPARTY_VAR(ICET_DIR   "Path containing the Ice-T library's include and lib")
-VISIT_3RDPARTY_VAR(TCMALLOC_DIR   "Path containing the tcmalloc library's include and lib")
 
 # Libraries some third-parties are dependent upon
 IF(WIN32)
@@ -1318,11 +1328,6 @@ IF(VISIT_PARALLEL)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindIceT.cmake)
 ENDIF(VISIT_PARALLEL)
 
-# Include TCMALLOC support if we can.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTCMALLOC.cmake)
-
-
-
 # dl and large file support.
 IF(CMAKE_HOST_UNIX)
   SET(DL_LIB dl)
@@ -1753,12 +1758,15 @@ ENDFUNCTION(MAC_NIB_INSTALL)
 
 #-----------------------------------------------------------------------------
 # Read the GIT version
+# If we are in a git repo, get the version using git, otherwise try the
+# file GIT_VERSION, which will be present in a source code tar file
+# created by visit-dist.
 #-----------------------------------------------------------------------------
 #dummy revision, in case commands fail
-SET(VISIT_GIT_VERSION "Unknown")
-    IF (EXISTS ${VISIT_SOURCE_DIR}/../.git)
-        # Only try and determine the version number if it looks like
-        # we're in a working copy (a .git directory should be present)
+set(VISIT_GIT_VERSION "Unknown")
+if (EXISTS ${VISIT_SOURCE_DIR}/../.git)
+    # Only try and determine the version number if it looks like
+    # we're in a working copy (a .git directory should be present)
     find_package(Git QUIET)
     if(Git_FOUND)
         # if we would prefer the full hash, remove --short in the command
@@ -1770,11 +1778,15 @@ SET(VISIT_GIT_VERSION "Unknown")
             ERROR_QUIET
             OUTPUT_STRIP_TRAILING_WHITESPACE)
         if(${found_it} EQUAL 0)
-            SET(VISIT_GIT_VERSION ${git_rev})
+            set(VISIT_GIT_VERSION ${git_rev})
         endif()
         unset(found_it)
         unset(git_rev)
     endif()
+else (EXISTS ${VISIT_SOURCE_DIR}/../.git)
+    if (EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
+        file(STRINGS ${VISIT_SOURCE_DIR}/GIT_VERSION VISIT_GIT_VERSION)
+    endif (EXISTS ${VISIT_SOURCE_DIR}/GIT_VERSION)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -2154,14 +2166,6 @@ ADD_SUBDIRECTORY(tools)
 IF(VISIT_STATIC)
     ADD_SUBDIRECTORY(engine/main)
     ADD_SUBDIRECTORY(sim/V2/static)
-
-    # Make it possible to build some sim examples since we've created the
-    # static sim library.
-    IF(NOT WIN32)
-        IF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-            ADD_SUBDIRECTORY(tools/DataManualExamples/Simulations)
-        ENDIF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-    ENDIF(NOT WIN32)
 
     IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
         ADD_SUBDIRECTORY(mdserver/main)

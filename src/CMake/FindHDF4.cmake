@@ -13,6 +13,9 @@
 #   Kathleen Biagas, Tue Mar 11 10:44:54 MST 2014
 #   Change how newer versions are handled.
 #
+#   Kathleen Biagas, Thu July 15, 2021
+#   Add HDF4_WIN32_DEFINES (used by xml2cmake to add preprocessor defines).
+#
 #****************************************************************************/
 
 # Use the HDF4_DIR hint from the config-site .cmake file 
@@ -25,6 +28,7 @@ if(WIN32)
   else()
       SET_UP_THIRD_PARTY(HDF4 lib include hdf mfhdf xdr)
   endif()
+  set(HDF4_WIN32_DEFINES "_HDFDLL_ _MFHDFLIB_ _HDFLIB_ INTEL86")
 else()
   SET_UP_THIRD_PARTY(HDF4 lib include mfhdf hdf)
 endif()

@@ -8,6 +8,7 @@
 #if !defined(_WIN32)
 #include <strings.h>
 #else
+#include <algorithm>
 #include <process.h> // for _getpid
 #endif
 #include <map>
@@ -163,8 +164,6 @@
 #include <PyWindowInformation.h>
 #include <PyavtDatabaseMetaData.h>
 #include <PyViewerRPC.h>
-
-#include <SeedMeAttributes.h>
 
 // Variant & MapNode Helpers:
 #include <PyVariant.h>
@@ -15034,30 +15033,6 @@ DeleteAnnotationObjectHelper(AnnotationObject *annot)
     return transferOwnership;
 }
 
-STATIC PyObject *
-visit_UpdateSeedMeStatus(PyObject *self, PyObject *args)
-{
-    ENSURE_VIEWER_EXISTS();
-
-    const char* col = 0;
-    const char *result = 0;
-    if (!PyArg_ParseTuple(args, "ss", &col, &result))
-    {
-        VisItErrorFunc("UpdateSeedMeStatus: Cannot parse response");
-        return NULL;
-    }
-
-    MUTEX_LOCK();
-    if(atoi(col) > 0)
-        GetViewerState()->GetSeedMeAttributes()->SetCollectionID(atoi(col));
-    GetViewerState()->GetSeedMeAttributes()->SetOperationResult(result);
-    GetViewerState()->GetSeedMeAttributes()->Notify();
-    MUTEX_UNLOCK();
-
-    // Return the success value.
-    return IntReturnValue(Synchronize());
-}
-
 // ****************************************************************************
 // Function: CreateAnnotationWrapper
 //
@@ -18295,7 +18270,6 @@ AddProxyMethods()
     AddMethod("GetNumPlots", visit_GetNumPlots, visit_GetNumPlots_doc);
     AddMethod("Argv", visit_Argv, NULL);
     AddMethod("UpdateMouseActions", visit_UpdateMouseActions, NULL);
-    AddMethod("UpdateSeedMeStatus", visit_UpdateSeedMeStatus, NULL);
 }
 
 // ****************************************************************************
@@ -18485,6 +18459,9 @@ AddExtensions()
 //   Brad Whitlock, Wed Jul 16 11:50:44 PDT 2014
 //   Add EngineProperties.
 //
+//   Kathleen Biagas, Fri Sep 10, 2021
+//   Add GlobalLineoutAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -18498,6 +18475,7 @@ InitializeExtensions()
     PyExpression_StartUp(0, 0);
     PyExpressionList_StartUp(GetViewerState()->GetExpressionList(), 0);
     PyGlobalAttributes_StartUp(GetViewerState()->GetGlobalAttributes(), 0);
+    PyGlobalLineoutAttributes_StartUp(GetViewerState()->GetGlobalLineoutAttributes(), 0);
     PyKeyframeAttributes_StartUp(GetViewerState()->GetKeyframeAttributes(), 0);
     PyLaunchProfile_StartUp(0, 0);
     PyMachineProfile_StartUp(0, 0);
@@ -19546,6 +19524,9 @@ cli_initvisit(int debugLevel, bool verbose,
 //   Cyrus Harrison, Wed Sep 30 07:53:17 PDT 2009
 //   Added book keeping to track execution stack of source files.
 //
+//   Kathleen Biagas, Tue Apr 20 2021 
+//   On Windows, convert fileName's backslashes to forward (Python 3 change).
+//
 // ****************************************************************************
 
 void
@@ -19557,9 +19538,13 @@ cli_runscript(const char *fileName)
         FILE *fp = fopen(fileName, "r");
         if(fp)
         {
+            std::string fn(fileName);
+#ifdef WIN32
+            std::replace(fn.begin(), fn.end(), '\\', '/');
+#endif
             // book keeping for source stack
             std::string pycmd  = "__visit_source_file__ = ";
-            pycmd += " os.path.abspath('" + std::string(fileName) + "')\n";
+            pycmd += " os.path.abspath('" + fn + "')\n";
             pycmd += "__visit_source_stack__.append(__visit_source_file__)\n";
             PyRun_SimpleString(pycmd.c_str());
 

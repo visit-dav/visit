@@ -10,6 +10,7 @@
 <body>
 
 <center><b><font size="6">VisIt 3.3 Release Notes</font></b></center>
+<center><b><font size="4">October, 2021</font></b></center>
 
 <p>Welcome to VisIt's release notes page. This page describes the important
 enhancements and bug-fixes that were added to this release.</p>
@@ -25,6 +26,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Configuration_changes">Configuration changes</a></li>
   <li><a href="#Build_features">Changes for build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
@@ -33,7 +35,16 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">General features added in version 3.3</font></b></p>
 <ul>
   <li>Updated the ORNL host file list to include only current machines.</li>
-  <li>General Feature 2</li>
+  <li>After a successful Export database, the informational message now contains the host and path to the export.</li>
+  <li>Attribute assignment (e.g. <code>cylinderAtts.point1=...</code> or <code>cylinderAtts.SetPoint1(...)</code>) operations were modified to catch and disallow nonsensical usage instead of silently falling back to default values and provide better error checkingand messaging. It is possible these changes may cause code that worked fine to now terminate with a Python exception. In such cases, the resulting error message should explain the cause of the failure and the changes required to fix it should be obvious and minimal.</li>
+  <li>A new function was added to the Python CLI named <code>apropos(regex)</code> similar in purpose to <a href="https://en.wikipedia.org/wiki/Apropos_(Unix)">Unix' apropos</a>. It makes finding the names of functions and objects much easier. It will return a list of the names of functions or objects where the regular expression matches either in the method name or in the documentation string for the method or in a stringified instance (objects only). All matching is case insensitive.</li>
+  <li>Default behavior of Python's <code>help(thing)</code> was adjusted slightly to first present what <code>help(thing)</code> would normally produce but then to also follow it up with output from <code>apropos(thing)</code> when that output is non-empty.<li>
+  <li>The French translation was updated thanks to <a href="https://github.com/cessenat">@cessenat</a>. We are still looking for volunteers for translations in other languages. If interested, please <a href="https://visit-dav.github.io/visit-website/support/">contact us</a>.</li>
+  <li>A new (beta) <a href="https://en.wikipedia.org/wiki/Names_given_to_the_Spanish_language">Castilian Spanish</a> translation was created thanks to <a href="https://github.com/cessenat">@cessenat</a> using auto-translation from English. It likely still requires review by someone who is fluent in Spanish and we would welcome any volunteers.</li>
+  <li>References to old email lists (@ornl.gov) throughout code and documentation were replaced with references to the help pages of the new website.</li>
+  <li>The <code>Pick</code> operator now has the option to include the Euclidean distance between the current and previous <code>Pick</code> in the GUI's output window. To enable this option, check the <code>Distance to previous</code> box. You should then see a new field in the tabular output display titled <code>Distance to previous</code>.</li>
+  <li>Support for <i>SeedMe</i> was removed since the service was retired.</li>
+  <li>A section was added to the <i>Developer Manual</i> describing process launching.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -46,15 +57,16 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="GUI_changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 3.3</font></b></p>
 <ul>
-  <li>GUI Change 1</li>
+  <li>Custom titles for Legend annotation objects can now be set.</li> 
   <li>GUI Change 2</li>
 </ul>
 
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 3.3</font></b></p>
 <ul>
-  <li>Reader Change 1<li>
-  <li>Reader Change 2<li>
+  <li>The Xolotl reader was updated to support phase-space.<li>
+  <li>SW4 reader was renamed as sw4img to fix static builds.<li>
+  <li>NASTRAN reader was adjusted to reduce verbosity of debugX outputs and handle DOS line endings.<li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -88,8 +100,16 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 3.3</font></b></p>
 <ul>
-  <li>Bug Fix 1</li>
-  <li>Bug Fix 2</li>
+  <li>Fixed bug where changing the 'Number format' for a Contour plot's legend would have no affect on the labels next to the tick marks.</li>
+  <li>Fixed a bug that prevented users from comparing particular VisIt Python objects in the CLI with non-VisIt types.</li>
+  <li>Fixed a crash with libsim when attempting to Export databases that have export options specified as enums.</li>
+</ul>
+
+<a name="Configuration_changes"></a>
+<p><b><font size="4">Configuration changes in version 3.3</font></b></p>
+<ul>
+  <li>Configuration Change 1</li>
+  <li>Configuration Change 2</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -102,11 +122,11 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.3</font></b></p>
 <ul>
-  <li>Developer Change 1</li>
+  <li>There is now a WIN32DEFINES xml tag for database plugins, used to specify preprocessor defines needed by a plugin on Windows. If the needed define comes from a thirdparty library, the Find module for that library should set a CMake var with those defines that the plugin could then use in the .xml file. See FindCGNS.cmake and CGNS.xml for an example.</li>
   <li>Developer Change 2</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes3.2.Z.html>3.2.Z</a>.</p>
+of VisIt: <a href=relnotes3.2.3.html>3.2.3</a>.</p>
 </body>
 </html>
