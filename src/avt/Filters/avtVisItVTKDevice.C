@@ -1053,7 +1053,7 @@ avtVisItVTKDevice::ExecuteVolume()
         renderWin->GetRGBACharPixelData( 0, 0, width-1, height-1, 1 );
 
     // Debugging check for bad alpha values
-    if( Level5() )
+    if( DebugStream::Level5() )
     {
         int cc = 0, aa = 0;
         for( int i=0; i<width*height*4; i+=4 )
