@@ -5,7 +5,7 @@
 #****************************************************************************
 # Modifications:
 #   Kathleen Biagas, Fri Mar 17 10:27:23 PDT 2017
-#   Set HAVE_NETKAR_PP if NEKTAR++_FOUND.
+#   Set HAVE_NEKTAR_PP if NEKTAR++_FOUND.
 #
 #****************************************************************************/
 
