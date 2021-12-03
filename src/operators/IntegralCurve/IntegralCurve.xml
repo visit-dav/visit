@@ -31,6 +31,7 @@
       </Enum>
       <Enum name="DataValue">
         Solid
+        Random
         SeedPointID
         Speed
         Vorticity
@@ -42,6 +43,7 @@
         ClosedCurve
         Difference
         Variable
+        VariableAtSeed
       </Enum>
       <Enum name="CleanupMethod">
         NoCleanup

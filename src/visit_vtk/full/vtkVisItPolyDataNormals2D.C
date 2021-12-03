@@ -108,7 +108,7 @@ vtkVisItPolyDataNormals2D::RequestData(vtkInformation *vtkNotUsed(request),
 void
 vtkVisItPolyDataNormals2D::ExecutePoint(
   vtkPolyData *input, vtkPolyData *output)
-{ 
+{
     int i;
 
     // Get all the input and output objects we'll need to reference
@@ -315,7 +315,7 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
         newNormalPtr[2] = (float)(normal[2]);
         newNormalPtr += 3;
     }
-        
+
     // The triangle strips come after the polys.  So add normals for them.
     numPrimitivesWithoutNormals = 0;
     numPrimitivesWithoutNormals += input->GetPolys()->GetNumberOfCells();

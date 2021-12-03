@@ -27,10 +27,10 @@ class     avtMixedVariable;
 
 
 // ****************************************************************************
-//  Struct: avtDatasetCollection
+//  Class: avtDatasetCollection
 //
 //  Purpose:
-//      This struct is only used by the avtGenericDatabase.  It is used to
+//      This class is only used by the avtGenericDatabase.  It is used to
 //      assemble intermediate results in an organized way.  It is only pulled
 //      off into its own file (as opposed to coupling it with the generic
 //      database code) in an attempt to clean up portions of the code.
@@ -49,7 +49,7 @@ class     avtMixedVariable;
 //    Added code for setting/getting Var and Vars2nd
 // ****************************************************************************
 
-struct DATABASE_API avtDatasetCollection
+class DATABASE_API avtDatasetCollection
 {
   public:
                                             avtDatasetCollection(int);

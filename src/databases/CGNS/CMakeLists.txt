@@ -53,9 +53,9 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 )
 
-IF(WIN32)
-  ADD_DEFINITIONS(-DUSE_DLL)
-ENDIF(WIN32)
+if(WIN32)
+    add_compile_definitions(${CGNS_WIN32_DEFINES})
+endif()
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${CGNS_LIBRARY_DIR} )
 

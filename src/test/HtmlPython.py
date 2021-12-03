@@ -59,12 +59,14 @@ class Parser:
         self.out.write('<html><body bgcolor="#e0e0e0"><head><title>%s</title></head><pre><font face="Lucida,Courier New">'%title)
         try:
             if (sys.version_info > (3, 0)):
-                tokenize.generate_tokens(text.readline)
+                tokens = tokenize.generate_tokens(text.readline)
+                for toktype,toktext,tok_start,tok_end,line in tokens:
+                    self.__call__(toktype,toktext,tok_start,tok_end,line)
             else:
                 tokenize.tokenize(text.readline,self)
         except tokenize.TokenError as ex:
-            msg = ex[0]
-            line = ex[1][0]
+            msg = ex.args[0]
+            line = ex.args[1][0]
             self.out.write("<h3>ERROR: %s</h3>%s\n" % (
                 msg, self.raw[self.lines[line]:]))
         self.out.write('</font></pre></body></html>')
@@ -116,3 +118,13 @@ class Parser:
 def ColorizePython(test_script ,result_dir,category, filename, filebase):
     source = open(test_script).read()
     Parser(source, open(pjoin(result_dir,"html",'%s_%s_py.html' % (category, filebase)), 'wt')).format(None, None, "%s/%s"%(category,filename))
+
+def LeadingSpaceToHtmlFormat(in_str):
+    """
+        Given an input string, replace all leading spaces with the
+        html equivalent, "&nbsp;".
+    """
+    html_space   = "&nbsp;"
+    lstripped    = in_str.lstrip()
+    num_leading  = len(in_str) - len(lstripped)
+    return html_space * num_leading + lstripped

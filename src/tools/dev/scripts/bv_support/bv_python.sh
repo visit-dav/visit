@@ -80,7 +80,16 @@ function python_set_vars_helper
     #remove any extra includes
     PYTHON_INCLUDE_PATH="${PYTHON_INCLUDE_PATH%%-I*}"
     PYTHON_INCLUDE_DIR="$PYTHON_INCLUDE_PATH"
-    PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
+    if [[ "$DO_PYTHON2" == "yes" ]] ; then
+        PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
+    else
+        PYTHON_VERSION_MINOR=`echo $PYTHON_VERSION | cut -d. -f2`
+        if [[ $PYTHON_VERSION_MINOR -ge 8 ]] ; then
+            PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs --embed`
+        else
+            PYTHON_LIBRARY=`"$PYTHON_CONFIG_COMMAND" --libs`
+        fi
+    fi
     #remove all other libraries except for python..
     PYTHON_LIBRARY=`echo $PYTHON_LIBRARY | sed "s/.*\(python[^ ]*\).*/\1/g"`
 
@@ -119,13 +128,32 @@ function python_set_vars_helper
 function bv_python_system_python
 {
     echo "Using system python"
-    TEST=`which python-config`
-    [ $? != 0 ] && error "System python-config not found, cannot configure python"
 
-    bv_python_enable
+    # this method uses 'which' to find the full path to system python and it's config command
+
+    if [[ $DO_PYTHON2 == "no" ]]; then
+        # prefer python3 
+        TEST=`which python3-config`
+        if [ $? == 0 ]
+        then 
+            PYTHON_COMMAND=`which python3`
+            PYTHON_CONFIG_COMMAND=$TEST
+        else
+            TEST=`which python-config`
+            [ $? != 0 ] && error "Neither system python3-config nor python-config found, cannot configure python"
+            PYTHON_COMMAND=`which python`
+            PYTHON_CONFIG_COMMAND=$TEST
+        fi
+    else
+        # only try python 2
+        TEST=`which python-config`
+        [ $? != 0 ] && error "System python-config found, cannot configure python"
+        PYTHON_COMMAND=`which python`
+        PYTHON_CONFIG_COMMAND=$TEST
+    fi
+
     USE_SYSTEM_PYTHON="yes"
-    PYTHON_COMMAND="python"
-    PYTHON_CONFIG_COMMAND="python-config"
+    bv_python_enable
     PYTHON_FILE=""
     python_set_vars_helper #set vars..
 }
@@ -154,16 +182,28 @@ function bv_python_alt_python_dir
 {
     echo "Using alternate python directory"
 
-    if [ -e "$1/bin/python-config" ]
-    then
-        PYTHON_COMMAND="$1/bin/python"
-        PYTHON_CONFIG_COMMAND="$1/bin/python-config"
-    elif [ -e "$1/bin/python3-config" ]
-    then
-        PYTHON_COMMAND="$1/bin/python3"
-        PYTHON_CONFIG_COMMAND="$1/bin/python3-config"
+    if [[ $DO_PYTHON2 == "no" ]]; then
+        # prefer python3
+        if [ -e "$1/bin/python3-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python3"
+            PYTHON_CONFIG_COMMAND="$1/bin/python3-config"
+        elif [ -e "$1/bin/python-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python"
+            PYTHON_CONFIG_COMMAND="$1/bin/python-config"
+        else
+            error "Python (python3-config or python-config) not found in $1"
+        fi
     else
-        error "Python not found in $1"
+        # only try python2
+        if [ -e "$1/bin/python-config" ]
+        then
+            PYTHON_COMMAND="$1/bin/python"
+            PYTHON_CONFIG_COMMAND="$1/bin/python-config"
+        else
+            error "Python (python-config) not found in $1"
+        fi
     fi
 
     bv_python_enable
@@ -176,8 +216,12 @@ function bv_python_alt_python_dir
 
 function bv_python_depends_on
 {
-    # we always need openssl b/c of requests.
-    echo "openssl zlib"
+     pydep=""
+     if [[ $USE_SYSTEM_PYTHON == "no" ]] ; then
+        # we always need openssl b/c of requests.
+        pydep="openssl zlib"
+     fi
+     echo $pydep
 }
 
 function bv_python_info
@@ -251,12 +295,6 @@ function bv_python_info
         export PYREQUESTS_MD5_CHECKSUM="ee28bee2de76e9198fc41e48f3a7dd47"
         export PYREQUESTS_SHA256_CHECKSUM="11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4"
     fi
-
-    export SEEDME_URL="https://seedme.org/sites/seedme.org/files/downloads/clients/"
-    export SEEDME_FILE="seedme-python-client-v1.2.4.zip"
-    export SEEDME_BUILD_DIR="seedme-python-client-v1.2.4"
-    export SEEDME_MD5_CHECKSUM="84960d455073fd2f51c31b7fcbc64d58"
-    export SEEDME_SHA256_CHECKSUM="71fb233d3b20e95ecd14db1d9cb5deefe775c6ac8bb0ab7604240df7f0e5c5f3"
 
     if [[ "$DO_PYTHON2" == "yes" ]] ; then
         export SETUPTOOLS_URL="https://pypi.python.org/packages/f7/94/eee867605a99ac113c4108534ad7c292ed48bf1d06dfe7b63daa51e49987/"
@@ -559,6 +597,92 @@ EOF
     return 0
 }
 
+function apply_python_macos11_configure_patch
+{
+    # These two patches come from python-3.7.12, to address build failures on MacOS11
+    info "Patching Python: applying configure patch for MacOS 11"
+    patch -f -p0 << \EOF
+*** configure.orig	Mon Mar  9 23:11:12 2020
+--- configure	Fri Sep  3 20:49:21 2021
+***************
+*** 3374,3380 ****
+    # has no effect, don't bother defining them
+    Darwin/[6789].*)
+      define_xopen_source=no;;
+!   Darwin/1[0-9].*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+--- 3374,3380 ----
+    # has no effect, don't bother defining them
+    Darwin/[6789].*)
+      define_xopen_source=no;;
+!   Darwin/[12][0-9].*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+***************
+*** 9251,9256 ****
+--- 9251,9259 ----
+      	ppc)
+      		MACOSX_DEFAULT_ARCH="ppc64"
+      		;;
++     	arm64)
++     		MACOSX_DEFAULT_ARCH="arm64"
++     		;;
+      	*)
+      		as_fn_error $? "Unexpected output of 'arch' on OSX" "$LINENO" 5
+      		;;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Python patch to configure for MacOS 11  failed."
+        return 1
+    fi
+
+    info "Patching Python: applying configure.ac patch for MacOS 11"
+    patch -f -p0 << \EOF
+*** configure.ac.orig	Mon Mar  9 23:11:12 2020
+--- configure.ac	Fri Sep  3 20:49:21 2021
+***************
+*** 490,496 ****
+    # has no effect, don't bother defining them
+    Darwin/@<:@6789@:>@.*)
+      define_xopen_source=no;;
+!   Darwin/1@<:@0-9@:>@.*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+--- 490,496 ----
+    # has no effect, don't bother defining them
+    Darwin/@<:@6789@:>@.*)
+      define_xopen_source=no;;
+!   Darwin/@<:@[12]@:>@@<:@0-9@:>@.*)
+      define_xopen_source=no;;
+    # On AIX 4 and 5.1, mbstate_t is defined only when _XOPEN_SOURCE == 500 but
+    # used in wcsnrtombs() and mbsnrtowcs() even if _XOPEN_SOURCE is not defined
+***************
+*** 2456,2461 ****
+--- 2456,2464 ----
+      	ppc)
+      		MACOSX_DEFAULT_ARCH="ppc64"
+      		;;
++     	arm64)
++     		MACOSX_DEFAULT_ARCH="arm64"
++     		;;
+      	*)
+      		AC_MSG_ERROR([Unexpected output of 'arch' on OSX])
+      		;;
+
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Python patch to configure.ac for MacOS 11 failed."
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_python_patch
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -569,39 +693,13 @@ function apply_python_patch
                 return 1
             fi
         fi
-    fi
 
-    return 0
-}
-
-function apply_python_seedme_patch
-{
-    info "Patching Python: fix setup.py in seedme."
-    patch -f -p0 << \EOF
-diff -c setup.py.orig setup.py
-*** setup.py.orig    Mon Feb  1 13:39:48 2021
---- setup.py         Mon Feb  1 13:40:03 2021
-***************
-*** 73,79 ****
-                     'interface as well as methods and api for '         +\
-                     'programmatic usage. It performs extensive sanity ' +\
-                     'checks input data and is kept upto date with '     +\
-!                    'REST api at SeedMe.org.',
-  
-  setup(name='seedme',
-        version="1.2.4",
---- 73,79 ----
-                     'interface as well as methods and api for '         +\
-                     'programmatic usage. It performs extensive sanity ' +\
-                     'checks input data and is kept upto date with '     +\
-!                    'REST api at SeedMe.org.'
-  
-  setup(name='seedme',
-        version="1.2.4",
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "Python patch for setup.py in seedme failed."
-        return 1
+        # shouldn't do any harm applying this
+        # on all mac versions
+        apply_python_macos11_configure_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
     return 0
@@ -687,14 +785,14 @@ function build_python
     PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${PY_ZLIB_LIB}"
     PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
 
-    info "Configuring Python : ./configure OPT=\"$PYTHON_OPT\" CXX=\"$cxxCompiler\" CC=\"$cCompiler\"" \
-         "LDFLAGS=\"$PYTHON_LDFLAGS\" CPPFLAGS=\"$PYTHON_CPPFLAGS\""\
-         "${PYTHON_SHARED} --prefix=\"$PYTHON_PREFIX_DIR\" --disable-ipv6"
+    info "Configuring Python"
+    set -x
     ./configure OPT="$PYTHON_OPT" CXX="$cxxCompiler" CC="$cCompiler" \
                 LDFLAGS="$PYTHON_LDFLAGS" \
                 CPPFLAGS="$PYTHON_CPPFLAGS" \
                 ${PYTHON_SHARED} \
                 --prefix="$PYTHON_PREFIX_DIR" --disable-ipv6
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "Python configure failed.  Giving up"
@@ -765,14 +863,12 @@ function build_pillow
     pushd $PILLOW_BUILD_DIR > /dev/null
 
     info "Building Pillow ...\n" \
-     "CC=${C_COMPILER} CXX=${CXX_COMPILER} " \
-     "  CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} LDFLAGS=${PYEXT_LDFLAGS} " \
-     "  ${PYTHON_COMMAND} ./setup.py build_ext --disable-jpeg install --prefix=${PYHOME}"
-
+    set -x
     CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS="${PYEXT_CFLAGS}" \
      CXXFLAGS="${PYEXT_CXXFLAGS}" \
      LDFLAGS="${PYEXT_LDFLAGS}" \
      ${PYTHON_COMMAND} ./setup.py build_ext --disable-jpeg install --prefix="${PYHOME}"
+    set +x
 
     if test $? -ne 0 ; then
         popd > /dev/null
@@ -986,64 +1082,6 @@ function build_requests
     fi
 
     info "Done with python requests module."
-    return 0
-}
-
-# *************************************************************************** #
-#                            Function 7.4, build_seedme                       #
-# *************************************************************************** #
-function build_seedme
-{
-    if ! test -f ${SEEDME_FILE} ; then
-        download_file ${SEEDME_FILE}
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${SEEDME_FILE}"
-            return 1
-        fi
-    fi
-    if ! test -d ${SEEDME_BUILD_DIR} ; then
-        info "Extracting seedme python module ..."
-        uncompress_untar ${SEEDME_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${SEEDME_FILE}"
-            return 1
-        fi
-    fi
-
-    #
-    # Apply patches
-    #
-    pushd $SEEDME_BUILD_DIR > /dev/null
-    apply_python_seedme_patch
-    if [[ $? != 0 ]] ; then
-        if [[ $untarred_python == 1 ]] ; then
-            warn "Giving up on seedme install."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
-        fi
-    fi
-
-    info "Installing seedme python module ..."
-    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install seedme module"
-        return 1
-    fi
-    popd > /dev/null
-
-    # installs into site-packages dir of VisIt's Python.
-    # Simply re-execute the python perms command.
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/python"
-        chgrp -R ${GROUP} "$VISITDIR/python"
-    fi
-
-    info "Done with seedme python module."
     return 0
 }
 
@@ -1883,14 +1921,6 @@ function bv_python_is_installed
         PY_OK=0
     fi
 
-    check_if_py_module_installed "seedme"
-    if [[ $? != 0 ]] ; then
-        if [[ $PY_CHECK_ECHO != 0 ]] ; then
-            info "python module seedme is not installed"
-        fi
-        PY_OK=0
-    fi
-    
     if [[ "$BUILD_SPHINX" == "yes" ]]; then
 
         check_if_py_module_installed "sphinx"
@@ -2015,15 +2045,6 @@ function bv_python_build
                     error "requests python module build failed. Bailing out."
                 fi
                 info "Done building the requests python module."
-            fi
-
-            check_if_py_module_installed "seedme"
-            if [[ $? != 0 ]] ; then
-                build_seedme
-                if [[ $? != 0 ]] ; then
-                    error "seedme python module build failed. Bailing out."
-                fi
-                info "Done building the seedme python module."
             fi
 
             if [[ "$BUILD_SPHINX" == "yes" ]]; then

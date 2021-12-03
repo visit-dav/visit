@@ -79,7 +79,6 @@ SET(VISIT_BIN_FILES
         time_annotation
         visit
         visit_composite
-        visit_plugin
         visit_transition
         visitconvert
         visitprotocol

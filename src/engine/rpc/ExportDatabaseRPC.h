@@ -24,6 +24,9 @@
 //    Allow more than one network.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Kathleen Biagas, Fri Apr 23 2021
+//    Added return atts, Pass pointer to atts instead of reference.
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API ExportDatabaseRPC : public BlockingRPC
@@ -35,25 +38,29 @@ class ENGINE_RPC_API ExportDatabaseRPC : public BlockingRPC
     virtual const std::string TypeName() const { return "ExportDatabaseRPC"; }
 
     // Invocation method
-    void operator()(const intVector &, const ExportDBAttributes &, const std::string &);
+    void operator()(const intVector &, const ExportDBAttributes *, const std::string &);
 
     // Property selection methods
     virtual void SelectAll();
 
     // Property setting methods
     void SetIDs(const intVector &ids);
-    void SetExportDBAtts(const ExportDBAttributes &);
+    void SetExportDBAtts(const ExportDBAttributes *);
     void SetTimeSuffix(const std::string &);
 
     // Property getting methods
     const intVector          &GetIDs() const;
-    const ExportDBAttributes &GetExportDBAtts() const;
+    ExportDBAttributes       *GetExportDBAtts();
     const std::string        &GetTimeSuffix() const;
+
+    ExportDBAttributes GetReturnAtts() const { return returnAtts; }
+
 
   private:
     intVector            ids;
     ExportDBAttributes   exportDBAtts; 
     std::string          timeSuffix;
+    ExportDBAttributes   returnAtts;
 };
 
 #endif

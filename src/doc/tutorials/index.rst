@@ -25,6 +25,7 @@ Contents:
     CCL
     RemoteUsage
     MakingMovies
+    MolecularDataFeatures
     
 
 .. Indices and tables

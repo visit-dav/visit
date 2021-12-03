@@ -904,7 +904,7 @@ EOF
 
 function apply_vtkospray_patches
 {
-	count_patches=3
+	count_patches=4
     # patch vtkOSPRay files:
 
     # 1) expose vtkViewNodeFactory via vtkOSPRayPass
@@ -1134,6 +1134,7 @@ EOF
         return 1
     fi
 
+	# 3) fix vtkOSPRayVolumeMapper
 	((current_patch++))
     patch -p0 << \EOF
 *** Rendering/OSPRay/vtkOSPRayVolumeMapper.cxx.original	2018-04-23 15:32:58.538749914 -0400
@@ -1152,6 +1153,28 @@ EOF
 EOF
     if [[ $? != 0 ]] ; then
         warn "vtk patch $current_patch/$count_patches for vtkOSPRayVolumeMapper failed."
+        return 1
+    fi
+
+	# 4) Add include string to vtkOSPRayMaterialHelpers.h for gcc 10.3.
+	((current_patch++))
+    patch -p0 << \EOF
+diff -c Rendering/OSPRay/vtkOSPRayMaterialHelpers.h.original Rendering/OSPRay/vtkOSPRayMaterialHelpers.h
+*** Rendering/OSPRay/vtkOSPRayMaterialHelpers.h.original	Mon Jul 26 16:14:55 2021
+--- Rendering/OSPRay/vtkOSPRayMaterialHelpers.h	Mon Jul 26 16:15:11 2021
+***************
+*** 33,38 ****
+--- 33,39 ----
+  
+  #include "ospray/ospray.h"
+  #include <map>
++ #include <string>
+  
+  class vtkImageData;
+  class vtkOSPRayRendererNode;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch $current_patch/$count_patches for vtkOSPRayMaterialHelpers."
         return 1
     fi
 }
@@ -1335,6 +1358,40 @@ EOF
     return 0;
 }
 
+function apply_vtk_compilerversioncheck_patch
+{
+    # Need to fix the REGEX so that version strings with 2digit major are matched correctly.
+    patch -p0 << \EOF
+diff -c CMake/VTKGenerateExportHeader.cmake.orig VTKGenerateExportHeader.cmake
+*** CMake/VTKGenerateExportHeader.cmake.orig	Wed Jun 30 18:30:42 2021
+--- CMake/VTKGenerateExportHeader.cmake	Wed Jun 30 18:31:06 2021
+***************
+*** 174,180 ****
+      execute_process(COMMAND ${CMAKE_C_COMPILER} --version
+        OUTPUT_VARIABLE _gcc_version_info
+        ERROR_VARIABLE _gcc_version_info)
+!     string(REGEX MATCH "[3-9]\\.[0-9]\\.[0-9]*"
+        _gcc_version "${_gcc_version_info}")
+      # gcc on mac just reports: "gcc (GCC) 3.3 20030304 ..." without the
+      # patch level, handle this here:
+--- 174,180 ----
+      execute_process(COMMAND ${CMAKE_C_COMPILER} --version
+        OUTPUT_VARIABLE _gcc_version_info
+        ERROR_VARIABLE _gcc_version_info)
+!     string(REGEX MATCH "[0-9]+\\.[0-9]+\\.[0-9]*"
+        _gcc_version "${_gcc_version_info}")
+      # gcc on mac just reports: "gcc (GCC) 3.3 20030304 ..." without the
+      # patch level, handle this here:
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for compiler version check failed."
+      return 1
+    fi
+
+    return 0;
+}
 
 function apply_vtk_planesource_patch
 {
@@ -1438,6 +1495,11 @@ function apply_vtk_patch
     fi
 
     apply_vtk_planesource_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtk_compilerversioncheck_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi

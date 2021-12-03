@@ -239,12 +239,12 @@ function build_boost
         # In order to ensure $FORTRANARGS is expanded to build the arguments to
         # configure, we wrap the invokation in 'sh -c "..."' syntax
         info "Invoking command to configure BOOST"
-        #        info  "./bootstrap.sh $build_libs \
-        #            --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
 
+        set -x
         sh -c "./bootstrap.sh $build_libs \
             --prefix=\"$VISITDIR/boost/$BOOST_VERSION/$VISITARCH\" "
 
+        set +x
         if [[ $? != 0 ]] ; then
             warn "BOOST configure failed.  Giving up"
             return 1

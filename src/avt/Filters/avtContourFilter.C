@@ -66,7 +66,7 @@ using std::string;
 //    Made the avtContourFilter initialize from the raw levels and
 //    create its own vtkContourFilter.
 //
-//    Kathleen Bonnell, Wed Feb 28 17:06:54 PST 2001 
+//    Kathleen Bonnell, Wed Feb 28 17:06:54 PST 2001
 //    Removed creation and filling of vtkContourFilter cf as it is now
 //    not needed until ExecuteDomainTree method.
 //
@@ -117,7 +117,7 @@ avtContourFilter::avtContourFilter(const ContourOpAttributes &a)
         isoValues = atts.GetContourPercent();
         nLevels = (int)isoValues.size();
     }
- 
+
     // We need to specify that we want a secondary variable as soon as
     // possible.
     if (strcmp(atts.GetVariable().c_str(), "default") != 0)
@@ -138,9 +138,9 @@ avtContourFilter::avtContourFilter(const ContourOpAttributes &a)
 //    Hank Childs, Fri Aug 18 15:53:57 PDT 2000
 //    Added deletion of cd2pd.
 //
-//    Kathleen Bonnell, Fri Feb 16 13:28:57 PST 2001 
-//    Added test for cf equal NULL, as cf only created now in Execute method, 
-//    and this object may be destructed before Execute method is called. 
+//    Kathleen Bonnell, Fri Feb 16 13:28:57 PST 2001
+//    Added test for cf equal NULL, as cf only created now in Execute method,
+//    and this object may be destructed before Execute method is called.
 //
 //    Hank Childs, Mon Apr 23 15:49:59 PDT 2001
 //    Destruct contour grid.
@@ -184,8 +184,8 @@ avtContourFilter::~avtContourFilter()
 //    Hank Childs, Mon Mar  1 07:56:53 PST 2004
 //    Give a better hint about what variable we are working on.
 //
-//    Kathleen Bonnell, Thu Mar 11 11:10:07 PST 2004 
-//    DataExtents now always have only 2 components. 
+//    Kathleen Bonnell, Thu Mar 11 11:10:07 PST 2004
+//    DataExtents now always have only 2 components.
 //
 //    Hank Childs, Wed Aug 11 08:53:57 PDT 2004
 //    Make sure that we request ghost zones.
@@ -237,7 +237,7 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
     const char *varname = NULL;
     if (atts.GetVariable() != "default")
         varname = atts.GetVariable().c_str();
-    else 
+    else
         varname = contract->GetDataRequest()->GetVariable();
 
     timeslice_index = contract->GetDataRequest()->GetTimestep();
@@ -251,7 +251,7 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
     //
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     bool skipGhost = false;
-    if (in_atts.ValidVariable(varname) && 
+    if (in_atts.ValidVariable(varname) &&
         in_atts.GetCentering(varname) == AVT_NODECENT)
         skipGhost = true;
     if (!skipGhost)
@@ -278,7 +278,7 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
         // must do static load balancing if we don't know what those extents
         // are.
         //
-        double extents[2] = { 0., 0. }; 
+        double extents[2] = { 0., 0. };
         stillNeedExtents = true;
         if (atts.GetMinFlag() && atts.GetMaxFlag())
             stillNeedExtents = false;  // wouldn't use them anyway
@@ -394,8 +394,8 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
 //    Hank Childs, Tue Sep  4 16:12:00 PDT 2001
 //    Reflect changes in interface for avtDataAttributes.
 //
-//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001 
-//    Added calls to CreateLabels and SetLabels. 
+//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001
+//    Added calls to CreateLabels and SetLabels.
 //
 //    Hank Childs, Wed Apr 17 09:01:33 PDT 2002
 //    Added call to base class' PreExecute.
@@ -407,8 +407,8 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
 //    Fix a bug from last night.  If the variable was not 'default' the test
 //    was incorrect.
 //
-//    Kathleen Bonnell, Thu Mar 11 11:10:07 PST 2004 
-//    DataExtents now always have only 2 components. 
+//    Kathleen Bonnell, Thu Mar 11 11:10:07 PST 2004
+//    DataExtents now always have only 2 components.
 //
 //    Hank Childs, Mon Aug 30 08:42:48 PDT 2004
 //    Initialize current_node and nnodes for better progress indicators.
@@ -423,7 +423,7 @@ avtContourFilter::PreExecute(void)
 {
     avtDatasetToDatasetFilter::PreExecute();
 
-    if (atts.GetVariable() == "default" && 
+    if (atts.GetVariable() == "default" &&
         GetInput()->GetInfo().GetAttributes().GetVariableName() == "<unknown>")
     {
         //
@@ -437,14 +437,14 @@ avtContourFilter::PreExecute(void)
 
     if (stillNeedExtents)
     {
-        double extents[2]; 
+        double extents[2];
         const char *varname = NULL;
         if (atts.GetVariable() != "default")
         {
             varname = atts.GetVariable().c_str();
         }
         GetDataExtents(extents, varname);
- 
+
         //
         // If we are dealing with the default variable, set the values for our
         // output.
@@ -505,7 +505,7 @@ avtContourFilter::PreExecute(void)
 avtDataTree_p
 avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 {
-    if (!in_dr) 
+    if (!in_dr)
     {
         return NULL;
     }
@@ -600,7 +600,7 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
     }
     else
     {
-        outDT = this->ExecuteDataTree_VTK(in_dr); 
+        outDT = this->ExecuteDataTree_VTK(in_dr);
     }
 
     return outDT;
@@ -633,7 +633,7 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 //    Hank Childs, Fri Oct 27 10:23:52 PDT 2000
 //    Added argument for domain number to match inherited interface.
 //
-//    Kathleen Bonnell, Fri Feb 16 13:28:57 PST 2001 
+//    Kathleen Bonnell, Fri Feb 16 13:28:57 PST 2001
 //    Renamed this method ExecuteDomainTree and made it return an
 //    avtDomainTree_p to reflect new inheritance.  Feed levels to
 //    the vtk filter one-by-one.
@@ -648,8 +648,8 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 //    Hank Childs, Sun Mar 25 12:24:17 PST 2001
 //    Account for new data object information interface.
 //
-//    Kathleen Bonnell, Tue Apr 10 11:35:39 PDT 2001 
-//    Renamed method ExecuteDataTree. 
+//    Kathleen Bonnell, Tue Apr 10 11:35:39 PDT 2001
+//    Renamed method ExecuteDataTree.
 //
 //    Hank Childs, Thu Apr 12 16:59:54 PDT 2001
 //    Made use of scalar tree if there was more than one isolevel.  Also use
@@ -657,16 +657,16 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 //
 //    Kathleen Bonnell, Tue Jun 12 14:34:02 PDT 2001
 //    Added preservation of ghost-cell data, if present.  Forced toBeContoured
-//    to be created from New() if cd2pd filter used. 
+//    to be created from New() if cd2pd filter used.
 //
-//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001 
+//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001
 //    Added string argument to match new interface, but this filter
 //    does not need the arg as it will set the labels itself.
 //
 //    Hank Childs, Wed Apr 17 15:11:27 PDT 2002
 //    Re-worked routine to account for multiple variables.  Also removed some
 //    hacks to get around VTK bugs.
-//    
+//
 //    Jeremy Meredith, Thu Jul 11 13:36:31 PDT 2002
 //    Added code to not interpolate avtOriginalCellNumbers to the nodes.
 //
@@ -674,8 +674,8 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 //    Better handling of cell variables -- only interpolate the cell variable
 //    we are going to contour by and no others.
 //
-//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
-//    Use NewInstance instead of MakeObject to match new vtk api. 
+//    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002
+//    Use NewInstance instead of MakeObject to match new vtk api.
 //
 //    Hank Childs, Mon May 12 20:01:50 PDT 2003
 //    Make sure an iso-level can actually contribute triangles before
@@ -694,9 +694,9 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 //    Instantiate cd2pd here inside this routine rather than using a data
 //    member.
 //
-//    Kathleen Bonnell, Tue May 16 09:57:29 PDT 2006 
+//    Kathleen Bonnell, Tue May 16 09:57:29 PDT 2006
 //    VTK pipeline changes: no more SetOutput method for filters, instead
-//    SetOutputData for the filter's Executive. 
+//    SetOutputData for the filter's Executive.
 //
 //    Gunther H. Weber, Wed May 30 16:41:15 PDT 2007
 //    Copy field data when generating isosurfaces. There are still problems
@@ -727,7 +727,7 @@ avtContourFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 //
 // ****************************************************************************
 
-avtDataTree_p 
+avtDataTree_p
 avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
 {
     //
@@ -739,7 +739,7 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
 
     int tt1 = visitTimer->StartTimer();
 
-    char *contourVar = (activeVariable != NULL ? activeVariable 
+    char *contourVar = (activeVariable != NULL ? activeVariable
                                                : pipelineVariable);
     if (isoValues.empty())
     {
@@ -752,9 +752,9 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
     //
     //  Creating these from ::New to pass through the cd2pd filter
     //  is a HACK - WORK-AROUND for a vtk Update/Whole-Extents error
-    //  message encountered when cd2pd->Update() is called.  Occurs 
+    //  message encountered when cd2pd->Update() is called.  Occurs
     //  only when Contour is used on multi-block data.
-    // 
+    //
     vtkDataSet *toBeContoured = (vtkDataSet *)in_ds->NewInstance();
 
     //
@@ -896,11 +896,11 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
     //
     avtDataTree_p outDT = NULL;
     if (shouldCreateLabels)
-    {   
+    {
         outDT = new avtDataTree((int)isoValues.size(), out_ds, domain, isoLabels);
     }
     else
-    {   
+    {
         outDT = new avtDataTree((int)isoValues.size(), out_ds, domain, label);
     }
 
@@ -909,7 +909,7 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
     //
     for (size_t i = 0; i < isoValues.size(); i++)
     {
-        if (out_ds[i] != NULL) 
+        if (out_ds[i] != NULL)
         {
             out_ds[i]->Delete();
         }
@@ -925,7 +925,7 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
 
     #ifndef VISIT_THREADS
     // TODO race to inc. This is part of the progress update.
-    // We can do an atomic incr, but I don't want the time hit 
+    // We can do an atomic incr, but I don't want the time hit
     // just for the progress update. Maybe a better way to do this.
     current_node++;
     #endif // VISIT_THREADS
@@ -1028,12 +1028,12 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
         // Add the result to the output.
         //
         if (shouldCreateLabels)
-        {   
+        {
             output[i] = new avtDataRepresentation(isoOut,
                 domain, isoLabels[i]);
         }
         else
-        {   
+        {
             output[i] = new avtDataRepresentation(isoOut,
                 domain, label);
         }
@@ -1066,7 +1066,7 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
 //    Hank Childs, Tue Sep  4 16:12:00 PDT 2001
 //    Reflect changes in interface for avtDataAttributes.
 //
-//    Hank Childs, Thu Oct 10 13:05:49 PDT 2002 
+//    Hank Childs, Thu Oct 10 13:05:49 PDT 2002
 //    Do not assume that output is node-centered.
 //
 //    Hank Childs, Thu Feb 26 09:05:34 PST 2004
@@ -1082,7 +1082,7 @@ avtContourFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
-   
+
     outAtts.SetTopologicalDimension(inAtts.GetTopologicalDimension()-1);
 
     const char *var_to_modify = NULL;
@@ -1118,15 +1118,15 @@ avtContourFilter::UpdateDataObjectInfo(void)
 //    min      The variable's minimum value.
 //    max      The variable's maximum value.
 //
-//  Programmer:   Kathleen Bonnell 
-//  Creation:     March 1, 2001 
+//  Programmer:   Kathleen Bonnell
+//  Creation:     March 1, 2001
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Mar 28 17:18:05 PST 2001
-//    Added arguments, and passed them to CreateNIsoValues and 
+//    Added arguments, and passed them to CreateNIsoValues and
 //    CreatePercentValues.
 //
-//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001 
+//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001
 //    Revised check for invalid min/max to test artificial limits
 //    set by user if applicable.
 //
@@ -1185,7 +1185,7 @@ avtContourFilter::SetIsoValues(double min, double max)
 //  Method: avtContourFilter::CreatePercentValues
 //
 //  Purpose:
-//    Creates N isoValues between min & max. 
+//    Creates N isoValues between min & max.
 //
 //  Arguments
 //    mn     The variables minimum value.
@@ -1198,14 +1198,14 @@ avtContourFilter::SetIsoValues(double min, double max)
 //    Kathleen Bonnell, Fri Mar  2 11:34:46 PST 2001
 //    Moved test for min equal max to SetIsoValues method.
 //
-//    Kathleen Bonnell, Tue Mar 27 15:27:50 PST 2001 
-//    Added arguments, and test for valid min/max before using log scale.  
+//    Kathleen Bonnell, Tue Mar 27 15:27:50 PST 2001
+//    Added arguments, and test for valid min/max before using log scale.
 //
-//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001 
-//    Revised to use artificial limits if user specified. 
+//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001
+//    Revised to use artificial limits if user specified.
 //
-//    Kathleen Bonnell, Wed Apr 25 14:28:22 PDT 2001 
-//    Reflect change in InvalidLimitsException signature. 
+//    Kathleen Bonnell, Wed Apr 25 14:28:22 PDT 2001
+//    Reflect change in InvalidLimitsException signature.
 //
 //    Hank Childs, Sun Jun 17 18:42:00 PDT 2001
 //    Moved function from avtContourPlot.
@@ -1216,9 +1216,9 @@ void
 avtContourFilter::CreatePercentValues(double mn, double mx)
 {
     double min, max;
-    // 
+    //
     // should we be using user-defined limits?
-    // 
+    //
     min = atts.GetMinFlag() ? atts.GetMin() : mn;
     max = atts.GetMaxFlag() ? atts.GetMax() : mx;
 
@@ -1226,7 +1226,7 @@ avtContourFilter::CreatePercentValues(double mn, double mx)
     {
        if (min <= 0. || max <= 0.)
        {
-           // if mn, mx from the var extents, user needs to specify 
+           // if mn, mx from the var extents, user needs to specify
            // limits > 0 in order to use log scaling.
            EXCEPTION1(InvalidLimitsException, true);
        }
@@ -1241,7 +1241,7 @@ avtContourFilter::CreatePercentValues(double mn, double mx)
        for (int i = 0; i < nLevels; i++)
            isoValues[i] = min + (isoValues[i] * delta) ;
     }
-    else 
+    else
     {
         for (int i = 0; i < nLevels; i++)
            isoValues[i] = pow( 10., min + (isoValues[i] * delta)) ;
@@ -1254,7 +1254,7 @@ avtContourFilter::CreatePercentValues(double mn, double mx)
 //  Method: avtContourFilter::CreateNIsoValues
 //
 //  Purpose:
-//    Creates N isoValues between min & max. 
+//    Creates N isoValues between min & max.
 //
 //  Arguments:
 //    min      The variables minimum value.
@@ -1267,24 +1267,24 @@ avtContourFilter::CreatePercentValues(double mn, double mx)
 //    Kathleen Bonnell, Fri Mar  2 11:34:46 PST 2001
 //    Moved test for min equal max to SetIsoValues method.
 //
-//    Kathleen Bonnell, Wed Mar 28 17:18:05 PST 2001 
-//    Added arguments and test for positive min & max values before using log. 
+//    Kathleen Bonnell, Wed Mar 28 17:18:05 PST 2001
+//    Added arguments and test for positive min & max values before using log.
 //
-//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001 
+//    Kathleen Bonnell, Tue Apr  3 08:56:47 PDT 2001
 //    Overhauled this method so that it more closely mimics the MeshTV method
 //    of creating isoValues, including using artificial limits as hi/lo value
-//    if user has requested them. 
+//    if user has requested them.
 //
 //    Hank Childs, Tue Apr 10 10:20:00 PDT 2001
 //    More graceful handling of nLevels == 1.
 //
-//    Kathleen Bonnell, Wed Apr 25 14:28:22 PDT 2001 
-//    Reflect change in InvalidLimitsException signature. 
+//    Kathleen Bonnell, Wed Apr 25 14:28:22 PDT 2001
+//    Reflect change in InvalidLimitsException signature.
 //
 //    Hank Childs, Sun Jun 17 18:42:00 PDT 2001
 //    Moved function from avtContourPlot.
 //
-//    Kathleen Bonnell, Tue Jan 20 17:38:37 PST 2004 
+//    Kathleen Bonnell, Tue Jan 20 17:38:37 PST 2004
 //    Fix problem with delta when lo > hi.
 //
 //    Eric Brugger, Mon Apr  5 15:35:27 PDT 2004
@@ -1292,7 +1292,7 @@ avtContourFilter::CreatePercentValues(double mn, double mx)
 //    of levels and the minimum and maximum.
 //
 //    Brad Whitlock, Mon Dec 19 17:17:05 PST 2005
-//    I changed the code so it conditionally applies the extrema offset 
+//    I changed the code so it conditionally applies the extrema offset
 //    because applying it when min/max were set made it impossible to get
 //    contours that go through the min/max values.
 //
@@ -1304,22 +1304,22 @@ avtContourFilter::CreateNIsoValues(double min, double max)
     double lo, hi, delta, extremaOffset;
     if (atts.GetMinFlag())
         lo = atts.GetMin();
-    else 
+    else
         lo = min;
     if (atts.GetMaxFlag())
         hi = atts.GetMax();
-    else 
+    else
         hi = max;
 
     if (logFlag)
     {
-        if (min <= 0.) 
+        if (min <= 0.)
         {
             if (!atts.GetMinFlag() || atts.GetMin() <= 0.)
             {
                 EXCEPTION1(InvalidLimitsException, true);
             }
-            else 
+            else
             {
                 lo = atts.GetMin();
             }
@@ -1351,7 +1351,7 @@ avtContourFilter::CreateNIsoValues(double min, double max)
     {
         if (lo < hi)
             delta = (hi - lo) / (nLevels - 1.);
-        else 
+        else
             delta = (lo - hi) / (nLevels - 1.);
     }
 
@@ -1360,7 +1360,7 @@ avtContourFilter::CreateNIsoValues(double min, double max)
         for (int i = 0; i < nLevels; ++i)
             isoValues.push_back(pow(10., lo + i * delta));
     }
-    else 
+    else
     {
         for (int i = 0; i < nLevels; ++i)
             isoValues.push_back(lo + i * delta);
@@ -1431,7 +1431,7 @@ avtContourFilter::CreateLabels()
 //    Fix additional memory bloat problems.
 //
 //    Hank Childs, Fri Mar  4 08:12:25 PST 2005
-//    Do not set outputs of filters to NULL, since this will prevent them 
+//    Do not set outputs of filters to NULL, since this will prevent them
 //    from re-executing correctly in DLB-mode.
 //
 //    Hank Childs, Sun Mar  6 08:18:53 PST 2005
@@ -1451,3 +1451,33 @@ avtContourFilter::ReleaseData(void)
     avtSIMODataTreeIterator::ReleaseData();
 }
 
+
+// ****************************************************************************
+//  Method: avtContourFilter::GetIsoValues
+//
+//  Purpose: Retrieve the actual iso values used for contouring.
+//
+//  Arguments:
+//    v      Storage for the isoValues being retrieved.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   July 14, 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtContourFilter::GetIsoValues(std::vector<double> &v)
+{
+    if (!v.empty())
+    {
+        v.clear();
+    }
+
+    v.reserve(isoValues.size());
+    for (size_t i = 0; i < isoValues.size(); i++)
+    {
+        v.push_back(isoValues[i]);
+    }
+}

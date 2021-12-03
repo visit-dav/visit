@@ -460,7 +460,7 @@ LineSamplerAttributes::ChannelIntegration_FromString(const std::string &s, LineS
 //
 
 static const char *ToroidalIntegration_strings[] = {
-"NoToroidalIntegration", "ToroidalTimeSample", "IntegrateToroidally"
+"NoToroidalIntegration", "SampleToroidally", "IntegrateToroidally"
 };
 
 std::string

@@ -195,7 +195,7 @@ based on the more abstract pattern used to create the filenames.
     OpenDatabase("/usr/local/visit/data/wave0000.silo") 
 
     # Opening a virtual database representing all wave*.silo files. 
-    OpenDatabase("/usr/local/visit/data/wave*.silo database.) 
+    OpenDatabase("/usr/local/visit/data/wave*.silo database") 
 
 Opening a remote database
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1010,6 +1010,9 @@ modify the legend.
     legend.drawLabels = legend.Labels
     # suppliedLabels must be strings, only valid when controlTicks is 0
     legend.suppliedLabels=("A", "B", "C", "D", "E")
+    # Give the legend a custom title
+    legend.useCustomTitle=1
+    legend.customTitle="my custom title"
     # Print the legend object so you can see the other properties
     # that you can set in order to modify the legend.
     print(legend)

@@ -155,6 +155,10 @@
 //    Removed VTKh and VTKm includes. Will be added via CXXFLAGS in .xml files
 //    by plugins requiring the includes. (See Slice operator for example).
 //
+//    Kathleen Biagas, Fri July 16, 2021
+//    Removed hard-coded database preprocessor defines. Now specified by
+//    WIN32DEFINES in .xml file and parsed like other DEFINES.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -1117,43 +1121,18 @@ class CMakeGeneratorPlugin : public Plugin
         if (!defs.empty())
             out << endl;
 
-        bool needWindowsDefines = false;
-        for (size_t i=0; i<libs.size() && !needWindowsDefines; i++)
+        // Pass Win32-only defines
+        if (!windefs.empty())
         {
-            if(libs[i].contains("BOXLIB"))
-                 needWindowsDefines = true;
-            else if(libs[i].contains("HDF4"))
-                 needWindowsDefines = true;
-            else if(libs[i].contains("FITS"))
-                 needWindowsDefines = true;
-            else if(libs[i].contains("NETCDF"))
-                 needWindowsDefines = true;
-            else if(libs[i].contains("CGNS"))
-                 needWindowsDefines = true;
-        }
-        if (needWindowsDefines)
-        {
-            out << "IF(WIN32)" << endl;
-            bool netcdfAdded = false;
-            for (size_t i=0; i<libs.size(); i++)
+            out << "if(WIN32)" << endl;
+            for (size_t i=0; i<windefs.size(); i++)
             {
-                if(libs[i].contains("BOXLIB"))
-                     out << "  ADD_DEFINITIONS(-DBL_FORT_USE_UPPERCASE)" << endl;
-                else if(libs[i].contains("HDF4"))
-                     out << "  ADD_DEFINITIONS(-D_HDFDLL_ -D_MFHDFLIB_ -D_HDFLIB_ -DINTEL86)" << endl;
-                else if(libs[i].contains("FITS"))
-                     out << "  ADD_DEFINITIONS(-D_HDF5USEDLL_)" << endl;
-                else if(libs[i].contains("NETCDF")&& !netcdfAdded)
-                {
-                     out << "  ADD_DEFINITIONS(-DDLL_NETCDF)" << endl;
-                     netcdfAdded = true;
-                }
-                else if(libs[i].contains("CGNS"))
-                     out << "  ADD_DEFINITIONS(-DUSE_DLL)" << endl;
+                out << "    add_compile_definitions(" << windefs[i] << ")" << endl;
             }
-            out << "ENDIF(WIN32)" << endl;
+            out << "endif()"<< endl;
             out << endl;
         }
+
         WriteCMake_ConditionalDefinitions(out);
 
         if(useFortran)

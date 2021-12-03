@@ -253,6 +253,14 @@
     <Field name="removeLabelTwins" label="removeLabelTwins" type="bool" access="protected">
       false
     </Field>
+    <Field name="previousPoint" label="previousPoint" type="doubleArray" length="3" internal="true">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="showDistanceToPrevious" label="showDistanceToPrevious" type="bool" internal="true">
+      false
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">
@@ -290,5 +298,8 @@
     </Include>
     <Include file="source" quoted="false">
       cstring
+    </Include>
+    <Include file="source" quoted="false">
+      FileFunctions.h
     </Include>
   </Attribute>

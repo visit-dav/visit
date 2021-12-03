@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd" []>
+<Xdmf Version="2.0">
+ <Domain>
+   <Grid Name="mesh" GridType="Uniform">
+     <Topology TopologyType="3DRectMesh" NumberOfElements="11 21 31"/>
+     <Geometry GeometryType="VXVYVZ">
+       <DataItem Dimensions="31" NumberType="Float" Precision="4" Format="HDF">
+        mesh.h5:/X_1D
+       </DataItem>
+       <DataItem Dimensions="21" NumberType="Float" Precision="4" Format="HDF">
+        mesh.h5:/Y_1D
+       </DataItem>
+       <DataItem Dimensions="11" NumberType="Float" Precision="4" Format="HDF">
+        mesh.h5:/Z_1D
+       </DataItem>
+     </Geometry>
+     <Attribute Name="Pressure" AttributeType="Scalar" Center="Cell">
+       <DataItem Dimensions="10 20 30" NumberType="UInt" Precision="4" Format="HDF">
+        mesh.h5:/Pressure
+       </DataItem>
+     </Attribute>
+     <Attribute Name="VelocityZ" AttributeType="Scalar" Center="Node">
+       <DataItem Dimensions="11 21 31" NumberType="Int" Precision="4" Format="HDF">
+        mesh.h5:/VelocityZ
+       </DataItem>
+     </Attribute>
+   </Grid>
+ </Domain>
+</Xdmf>
