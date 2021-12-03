@@ -226,10 +226,10 @@ ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkCommonColor
-vtkFiltersSources
-vtkInteractionStyle
-vtkRenderingOpenGL2
+VTK::CommonColor
+VTK::FiltersSources
+VTK::InteractionStyle
+VTK::RenderingVolumeOpenGL2
 ${OPENGL_LIBRARIES}
 ${ZLIB_LIBRARY}
 )
@@ -254,9 +254,10 @@ ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkCommonColor
-vtkFiltersSources
-vtkInteractionStyle
+VTK::CommonColor
+VTK::FiltersSources
+VTK::InteractionStyle
+VTK::RenderingVolumeOpenGL2
 ${OPENGL_LIBRARIES}
 ${ZLIB_LIBRARY}
 )
@@ -284,5 +285,5 @@ ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkGUISupportQt
+VTK::GUISupportQt
 )
