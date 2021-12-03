@@ -386,12 +386,48 @@ VolumeAttributes_SetOsprayEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayEnabledFlag in the object.
-    obj->data->SetOsprayEnabledFlag(ival != 0);
+    obj->data->SetOsprayEnabledFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -751,7 +787,7 @@ VolumeAttributes_SetOsprayAOTransparencyEnabledFlag(PyObject *self, PyObject *ar
     Py_XDECREF(packaged_args);
 
     // Set the osprayAOTransparencyEnabledFlag in the object.
-    obj->data->SetOsprayAOTransparencyEnabledFlag(ival != 0);
+    obj->data->SetOsprayAOTransparencyEnabledFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -811,7 +847,7 @@ VolumeAttributes_SetOspraySPP(PyObject *self, PyObject *args)
     Py_XDECREF(packaged_args);
 
     // Set the ospraySPP in the object.
-    obj->data->SetOspraySPP((int)ival);
+    obj->data->SetOspraySPP(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -871,7 +907,7 @@ VolumeAttributes_SetOsprayAOSamples(PyObject *self, PyObject *args)
     Py_XDECREF(packaged_args);
 
     // Set the osprayAOSamples in the object.
-    obj->data->SetOsprayAOSamples((int)ival);
+    obj->data->SetOsprayAOSamples(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -931,7 +967,7 @@ VolumeAttributes_SetOsprayAODistance(PyObject *self, PyObject *args)
     Py_XDECREF(packaged_args);
 
     // Set the osprayAODistance in the object.
-    obj->data->SetOsprayAODistance(dval);
+    obj->data->SetOsprayAODistance(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1010,12 +1046,48 @@ VolumeAttributes_SetOsprayMaxContribution(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the osprayMaxContribution in the object.
-    obj->data->SetOsprayMaxContribution(dval);
+    obj->data->SetOsprayMaxContribution(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1371,33 +1443,32 @@ VolumeAttributes_SetResampleType(PyObject *self, PyObject *args)
     }
 
     long val = PyLong_AsLong(args);
-    bool cval = bool(val);
+    int cval = int(val);
 
-    if (val == -1 && PyErr_Occurred())
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+
+    if (cval < 0 || cval >= 4)
     {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+        std::stringstream ss;
+        ss << "An invalid resampleType value was given." << std::endl;
+        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " None";
+        ss << ", SingleDomain";
+        ss << ", ParallelRedistribute";
+        ss << ", ParallelPerRank";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
     Py_XDECREF(packaged_args);
 
     // Set the resampleType in the object.
-    if(ival >= 0 && ival < 4)
-        obj->data->SetResampleType(VolumeAttributes::Resample(ival));
-    else
-    {
-        fprintf(stderr, "An invalid resampleType value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "None, SingleDomain, ParallelRedistribute, ParallelPerRank.");
-        return NULL;
-    }
+    obj->data->SetResampleType(VolumeAttributes::Resample(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1528,6 +1599,8 @@ VolumeAttributes_GetOpacityVariable(PyObject *self, PyObject *args)
 //    (list or tuple object) --  as long as it is numeric and has length
 //    of 256, will set the opacity values to the values in the list or tuple.
 //
+//    Mark C. Miller, Fri Jul 23 14:54:46 PDT 2021
+//    Handle args as a "wrapped" tuple or list
 // ****************************************************************************
 
 static PyObject *
@@ -2232,12 +2305,45 @@ VolumeAttributes_SetRendererType(PyObject *self, PyObject *args)
     // if we think the unpackaged args matches our needs
     if (PySequence_Check(args) && PySequence_Size(args) == 1)
     {
-        fprintf(stderr, "An invalid rendererType value was given. "
-                        "Valid values are in the range of [0,4]. "
-                        "You can also use the following names: "
-                        "Serial, Parallel, Composite, Integration, SLIVR"
-                        ".");
-        return NULL;
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 5)
+    {
+        std::stringstream ss;
+        ss << "An invalid rendererType value was given." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Serial";
+        ss << ", Parallel";
+        ss << ", Composite";
+        ss << ", Integration";
+        ss << ", SLIVR";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
     Py_XDECREF(packaged_args);
@@ -3168,9 +3274,9 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "osprayEnabledFlag") == 0)
-        obj = VolumeAttributes_SetOsprayEnabledFlag(self, tuple);
+        obj = VolumeAttributes_SetOsprayEnabledFlag(self, args);
     else if(strcmp(name, "osprayShadowsEnabledFlag") == 0)
-        obj = VolumeAttributes_SetOsprayShadowsEnabledFlag(self, tuple);
+        obj = VolumeAttributes_SetOsprayShadowsEnabledFlag(self, args);
     else if(strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
         obj = VolumeAttributes_SetOsprayUseGridAcceleratorFlag(self, args);
     else if(strcmp(name, "osprayPreIntegrationFlag") == 0)
@@ -3178,19 +3284,19 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "ospraySingleShadeFlag") == 0)
         obj = VolumeAttributes_SetOspraySingleShadeFlag(self, args);
     else if(strcmp(name, "osprayOneSidedLightingFlag") == 0)
-        obj = VolumeAttributes_SetOsprayOneSidedLightingFlag(self, tuple);
+        obj = VolumeAttributes_SetOsprayOneSidedLightingFlag(self, args);
     else if(strcmp(name, "osprayAOTransparencyEnabledFlag") == 0)
-        obj = VolumeAttributes_SetOsprayAOTransparencyEnabledFlag(self, tuple);
+        obj = VolumeAttributes_SetOsprayAOTransparencyEnabledFlag(self, args);
     else if(strcmp(name, "ospraySPP") == 0)
-        obj = VolumeAttributes_SetOspraySPP(self, tuple);
+        obj = VolumeAttributes_SetOspraySPP(self, args);
     else if(strcmp(name, "osprayAOSamples") == 0)
-        obj = VolumeAttributes_SetOsprayAOSamples(self, tuple);
+        obj = VolumeAttributes_SetOsprayAOSamples(self, args);
     else if(strcmp(name, "osprayAODistance") == 0)
-        obj = VolumeAttributes_SetOsprayAODistance(self, tuple);
+        obj = VolumeAttributes_SetOsprayAODistance(self, args);
     else if(strcmp(name, "osprayMinContribution") == 0)
-        obj = VolumeAttributes_SetOsprayMinContribution(self, tuple);
+        obj = VolumeAttributes_SetOsprayMinContribution(self, args);
     else if(strcmp(name, "osprayMaxContribution") == 0)
-        obj = VolumeAttributes_SetOsprayMaxContribution(self, tuple);
+        obj = VolumeAttributes_SetOsprayMaxContribution(self, args);
     else if(strcmp(name, "legendFlag") == 0)
         obj = VolumeAttributes_SetLegendFlag(self, args);
     else if(strcmp(name, "lightingFlag") == 0)
@@ -3202,13 +3308,13 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "opacityMode") == 0)
         obj = VolumeAttributes_SetOpacityMode(self, args);
     else if(strcmp(name, "opacityControlPoints") == 0)
-        obj = VolumeAttributes_SetOpacityControlPoints(self, tuple);
+        obj = VolumeAttributes_SetOpacityControlPoints(self, args);
     else if(strcmp(name, "resampleType") == 0)
-        obj = VolumeAttributes_SetResampleType(self, tuple);
+        obj = VolumeAttributes_SetResampleType(self, args);
     else if(strcmp(name, "resampleTarget") == 0)
         obj = VolumeAttributes_SetResampleTarget(self, args);
     else if(strcmp(name, "opacityVariable") == 0)
-        obj = VolumeAttributes_SetOpacityVariable(self, tuple);
+        obj = VolumeAttributes_SetOpacityVariable(self, args);
     else if(strcmp(name, "freeformOpacity") == 0)
         obj = VolumeAttributes_SetFreeformOpacity(self, args);
     else if(strcmp(name, "useColorVarMin") == 0)
