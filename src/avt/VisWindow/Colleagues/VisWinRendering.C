@@ -21,7 +21,6 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkSmartPointer.h>
-#include <vtkToolkits.h>
 #include <vtkUnsignedCharArray.h>
 
 #include <RenderingAttributes.h>
