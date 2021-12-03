@@ -86,11 +86,6 @@ ${ACCELERATE_FRAMEWORK_INCLUDE_DIR}
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${NEKTAR++_LIBRARY_DIR} ${NEKTAR++_LIBRARY_DIRS} ${NEKTAR++_TP_LIBRARY_DIRS} ${ACCELERATE_FRAMEWORK_LINK_FLAGS})
 
-#ADD_LIBRARY(avtivp ${AVTIVP_SOURCES})
-#TARGET_LINK_LIBRARIES(avtivp avtfilters avtmath visitcommon visit_vtk VTK::CommonCore VTK::FiltersCore ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES})
-#VISIT_INSTALL_TARGETS(avtivp)
-
-
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtivp_ser ${AVTIVP_SOURCES})
 TARGET_LINK_LIBRARIES(avtivp_ser avtfilters_ser lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts visitcommon VTK::CommonCore VTK::FiltersCore nek5000_interp ${NEKTAR++_LIB} ${NEKTAR++_LIBRARIES} ${NEKTAR++_TP_LIBRARIES})

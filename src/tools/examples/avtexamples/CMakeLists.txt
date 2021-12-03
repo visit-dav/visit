@@ -60,7 +60,6 @@ ${VISIT_SOURCE_DIR}/engine/main
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/vtkqt
-${VTK_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY}
@@ -226,10 +225,10 @@ ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkCommonColor
-vtkFiltersSources
-vtkInteractionStyle
-vtkRenderingOpenGL2
+VTK::CommonColor
+VTK::FiltersSources
+VTK::InteractionStyle
+VTK::RenderingOpenGL2
 ${OPENGL_LIBRARIES}
 ${ZLIB_LIBRARY}
 )
@@ -254,9 +253,9 @@ ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkCommonColor
-vtkFiltersSources
-vtkInteractionStyle
+VTK::CommonColor
+VTK::FiltersSources
+VTK::InteractionStyle
 ${OPENGL_LIBRARIES}
 ${ZLIB_LIBRARY}
 )
@@ -284,5 +283,5 @@ ${QT_QTGUI_LIBRARY}
 ${QT_QTOPENGL_LIBRARY}
 ${QT_QTNETWORK_LIBRARY}
 ${QT_QTCORE_LIBRARY}
-vtkGUISupportQt
+VTK::GUISupportQt
 )
