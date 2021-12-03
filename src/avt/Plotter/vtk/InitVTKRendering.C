@@ -153,9 +153,6 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 //    Carson Brownlee, Sun May  6 16:25:28 PDT 2012
 //    Add support for Manta.
 //
-//    Qi WU, Sat Jun 10 22:21:27 MST 2018
-//    Remove the old VISIT_OSPRAY configurations because they are too old. 
-//
 // ****************************************************************************
 
 void
