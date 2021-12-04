@@ -182,7 +182,6 @@ set(VISIT_DBIO_ONLY              @VISIT_DBIO_ONLY@)
 set(VISIT_PARALLEL               @VISIT_PARALLEL@)
 set(VISIT_JAVA                   @VISIT_JAVA@)
 set(VISIT_SLIVR                  @VISIT_SLIVR@)
-set(VISIT_OSPRAY                 @VISIT_OSPRAY@)
 
 # Set up VTK
 set(VTK_INCLUDE_DIRS ${VISIT_INCLUDE_DIR}@vtk_include_relative_path@)
