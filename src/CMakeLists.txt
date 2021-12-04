@@ -487,19 +487,23 @@
 #
 #****************************************************************************
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14 FATAL_ERROR)
 
-IF (COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 NEW)
-    cmake_policy(SET CMP0011 NEW)
+if(COMMAND cmake_policy)
+    # allow export_library_dependencies to be called
     cmake_policy(SET CMP0033 OLD)
-    cmake_policy(SET CMP0057 NEW)
-    cmake_policy(SET CMP0062 NEW)
-    IF(WIN32)
+    if(WIN32)
         # don't automatically link with qtmain
         cmake_policy(SET CMP0020 OLD)
-    ENDIF()
-ENDIF (COMMAND cmake_policy)
+        if(POLICY CMP0091) # introduced in cmake 3.15
+            # Tell CMake to always use /MD, even for debug builds.
+            # Done because prebuilt TP libraries are built with /MD and
+            # if debug build of VisIt uses /MDd there are runtime issues.
+            cmake_policy(SET CMP0091 NEW) # MSVC_RUNTIME_LIBRARY
+            set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+        endif()
+    endif()
+endif()
 
 #
 # Try to capture the initial set of cmake command line args passed by
@@ -589,7 +593,7 @@ FUNCTION(VISIT_OPTION_DEFAULT var)
   ENDIF(NOT "${default_base_val}" STREQUAL "${opt_ARGS}")
 ENDFUNCTION(VISIT_OPTION_DEFAULT var)
 
-SET(VTK_MINIMUM_VERSION "9.0.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
+SET(VTK_MINIMUM_VERSION "9.1.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
 
 SET(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++ that VisIt can use")
 
@@ -1315,12 +1319,12 @@ IF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS
 ENDIF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
 # Configure PySide Support
-if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
-                          AND NOT VISIT_DBIO_ONLY
-                          AND NOT VISIT_ENGINE_ONLY
-                          AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
-endif()
+#if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
+#                          AND NOT VISIT_DBIO_ONLY
+#                          AND NOT VISIT_ENGINE_ONLY
+#                          AND NOT VISIT_SERVER_COMPONENTS_ONLY)
+#    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
+#endif()
 
 # Include Ice-T support if we can.
 IF(VISIT_PARALLEL)

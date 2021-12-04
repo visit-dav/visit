@@ -9,7 +9,6 @@
 #
 #****************************************************************************
 
-cmake_minimum_required(VERSION 2.8)
 
 IF(WIN32)
     PROJECT(VISIT_TEST)

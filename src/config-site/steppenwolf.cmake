@@ -1,4 +1,5 @@
 # a windows 10 system
+set(VISIT_WINDOWS_DIR C:/A_VisIt/InvestigateVTK9/visit-deps/windowsbuild)
 
 include(${VISIT_SOURCE_DIR}/config-site/windows.cmake)
 
@@ -42,5 +43,5 @@ if(USE_REDUCED_BUILD) # this is just a var I create when I need it
 endif()
 
 if(USE_DEBUG_VTK)
-  VISIT_OPTION_DEFAULT(VISIT_VTK_DIR C:/A_VisIt/TPForDebugging/vtk-debug/8.1.0)
+  VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISIT_WINDOWS_DIR}/vtk-debug/9.1.0)
 endif()

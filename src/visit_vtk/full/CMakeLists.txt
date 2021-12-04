@@ -28,7 +28,7 @@
 #   vtk rendering libs.  Remove vtk rendering libs from linker.
 #
 #   Kathleen Biagas, Fri Jul 19 12:13:02 PDT 2019
-#   Added VTK::CommonExecutionModel, VTK::CommonMisc in support of building plugins
+#   Added vtkCommonExecutionModel, vtkCommonMisc in support of building plugins
 #   vs install on Windows. They are direct depencencies for this library,
 #   and CMake automagically pulls them in when compiling VisIt, even if not
 #   listed, but not when building the plugins.
