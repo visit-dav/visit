@@ -245,7 +245,7 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
                              { return ProxiedGetAverageExternalRenderingTime(); };
     void                DoNextExternalRenderAsVisualQueue(int w, int h, const double *c)
                              { ProxiedDoNextExternalRenderAsVisualQueue(w,h,c); };
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     bool                GetOsprayRendering()
                              { return ProxiedGetOsprayRendering(); };
     int                 GetOspraySPP()

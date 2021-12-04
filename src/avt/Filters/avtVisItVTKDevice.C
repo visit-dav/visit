@@ -34,7 +34,7 @@
 #include <vtkVolumeProperty.h>
 #include <vtkGPUVolumeRayCastMapper.h>
 #include <vtkSmartVolumeMapper.h>
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     #include <vtkOSPRayVolumeMapper.h>
     #include <vtkOSPRayRendererNode.h>
 #endif
@@ -869,7 +869,7 @@ avtVisItVTKDevice::ExecuteVolume()
             volumeMapper->Delete();
 
         // Create the volume mapper.
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
         if( m_renderingAttribs.OSPRayEnabled )
         {
             vtkOSPRayVolumeMapper * vm = vtkOSPRayVolumeMapper::New();
@@ -1015,7 +1015,7 @@ avtVisItVTKDevice::ExecuteVolume()
     renderer->SetActiveCamera( camera );
     renderer->SetLightCollection( lights );
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     if( m_renderingAttribs.OSPRayEnabled )
     {
         vtkOSPRayRendererNode::SetRendererType("pathtracer", renderer);

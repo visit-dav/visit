@@ -27,7 +27,7 @@ bool                          avtCallback::nowinMode = false;
 bool                          avtCallback::nowinInteractionMode = false;
 bool                          avtCallback::swRendering = false;
 bool                          avtCallback::safeMode = false;
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
 bool                          avtCallback::useOSPRay = false;
 #endif
 

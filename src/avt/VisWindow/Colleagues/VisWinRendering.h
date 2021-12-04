@@ -17,7 +17,7 @@
 #include <avtImageType.h>
 #include <ColorAttribute.h>
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
   #include <vtkOSPRayPass.h>
 #endif
 
@@ -377,7 +377,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                      GetCompactDomainsAutoThreshold() const
                                  { return compactDomainsAutoThreshold; }
     int                      SetCompactDomainsAutoThreshold(int val);
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     void                     SetOsprayRendering(bool enabled);
     bool                     GetOsprayRendering() const
                                  { return osprayRendering; };
@@ -435,7 +435,7 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     double                        occlusionRatio;
     int                           numberOfPeels;
     int                           multiSamples;
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     bool                          osprayRendering {false};
     int                           ospraySPP {1};
     int                           osprayAO {0};

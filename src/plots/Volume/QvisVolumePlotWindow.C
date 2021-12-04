@@ -1036,7 +1036,7 @@ void QvisVolumePlotWindow::EnableDefaultGroup()
     // defaultGroup->setVisible(true);
     // defaultOptions->setEnabled(true);
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     osprayGroup->setVisible(true);
     osprayGroup->setEnabled(true);
 #endif
@@ -1136,7 +1136,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     case VolumeAttributes::Parallel:
         resampleGroup->setVisible(true);
         resampleGroup->setEnabled(true);
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
         osprayGroup->setVisible(true);
         osprayGroup->setEnabled(true);
 #endif

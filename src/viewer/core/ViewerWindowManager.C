@@ -3591,7 +3591,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
                 ratts->GetColorTexturingFlag());
         }
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
         if (windows[index]->GetOsprayRendering() != ratts->GetOsprayRendering())
             windows[index]->SetOsprayRendering(ratts->GetOsprayRendering());
         if (windows[index]->GetOspraySPP() != ratts->GetOspraySPP())
@@ -5218,7 +5218,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         GetViewerState()->GetRenderingAttributes()->SetOcclusionRatio(win->GetOcclusionRatio());
         GetViewerState()->GetRenderingAttributes()->SetNumberOfPeels(win->GetNumberOfPeels());
         GetViewerState()->GetRenderingAttributes()->SetColorTexturingFlag(win->GetColorTexturingFlag());
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
         GetViewerState()->GetRenderingAttributes()->SetOsprayRendering(win->GetOsprayRendering());
         GetViewerState()->GetRenderingAttributes()->SetOspraySPP(win->GetOspraySPP());
         GetViewerState()->GetRenderingAttributes()->SetOsprayAO(win->GetOsprayAO());
@@ -8177,7 +8177,7 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetNumberOfPeels(GetViewerState()->GetRenderingAttributes()->GetNumberOfPeels());
     w->SetColorTexturingFlag(GetViewerState()->GetRenderingAttributes()->GetColorTexturingFlag());
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     w->SetOsprayRendering(GetViewerState()->GetRenderingAttributes()->GetOsprayRendering());
     w->SetOspraySPP(GetViewerState()->GetRenderingAttributes()->GetOspraySPP());
     w->SetOsprayAO(GetViewerState()->GetRenderingAttributes()->GetOsprayAO());

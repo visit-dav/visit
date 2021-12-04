@@ -84,7 +84,7 @@ VisItViewer::Initialize(int *argc, char ***argv)
         {
             nowin = true;
         }
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
         else if (strcmp((*argv)[i], "-ospray") == 0)
         {
             debug5 << "Viewer launching with OSPRay" << endl;

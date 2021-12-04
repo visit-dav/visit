@@ -143,7 +143,7 @@ void
 VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 {
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     if (osprayRendering && viewIs3D)
     {
         if (canvas->GetPass() == NULL)

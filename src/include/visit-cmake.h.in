@@ -71,6 +71,9 @@
 /* Define if you have the OSMESA */
 #cmakedefine HAVE_OSMESA
 
+/* Define if you have the OSPRay */
+#cmakedefine HAVE_OSPRAY
+
 /* Define if you have the EGL */
 #cmakedefine HAVE_EGL
 

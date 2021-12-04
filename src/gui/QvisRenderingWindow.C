@@ -557,7 +557,7 @@ QvisRenderingWindow::CreateAdvancedPage()
     advLayout->addWidget(colorTexturingToggle, row, 0, 1, 3);
     row++;
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     QFrame *line = new QFrame(advancedOptions);
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
@@ -922,7 +922,7 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             numberOfPeels->blockSignals(false);
             break;
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
         case RenderingAttributes::ID_osprayRendering:
             enabled = renderAtts->GetOsprayRendering();
             osprayGroup->blockSignals(true);
@@ -2294,7 +2294,7 @@ QvisRenderingWindow::GetCurrentValues()
 }
 
 
-//#ifdef VISIT_OSPRAY // Can not have an ifdef as moc will not pick it up
+//#ifdef HAVE_OSPRAY // Can not have an ifdef as moc will not pick it up
 // ****************************************************************************
 // Method: QvisRenderingWindow::osprayRenderingToggled
 //

@@ -224,7 +224,7 @@ class VISWINDOW_API VisWindowProtectionProxy
                             int w, int h, const double *c);
 
     void                ProxiedGetExtents(double ext[2]); // TODO: remove with VTK8.
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     bool                ProxiedGetOsprayRendering();
     int                 ProxiedGetOspraySPP();
     int                 ProxiedGetOsprayAO();

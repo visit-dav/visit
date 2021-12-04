@@ -283,7 +283,7 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(),
     plotList = new ViewerPlotList(this);
     plotList->SetAnimationAttributes(*GetViewerState()->GetAnimationAttributes());
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     // This call sets the base rendering attributes.
     if( avtCallback::GetUseOSPRay() )
     {
@@ -424,7 +424,7 @@ ViewerWindow::SetVisWindow(VisWindow *vw)
     ldata->callbackData = this;
     visWindow->SetLineoutCB(ViewerWindow::PerformLineoutCallback, ldata);
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     // This call sets the rendering attributes for this window.
     if( avtCallback::GetUseOSPRay() )
     {
@@ -2399,7 +2399,7 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetColorTexturingFlag(source->GetColorTexturingFlag());
     SetNotifyForEachRender(source->GetNotifyForEachRender());
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     SetOsprayRendering(source->GetOsprayRendering());
     SetOsprayShadows(source->GetOsprayShadows());
     SetOspraySPP(source->GetOspraySPP());
@@ -6510,7 +6510,7 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
     renderAtts.SetCompressionActivationMode(
         (RenderingAttributes::TriStateMode) compressionActivationMode);
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     renderAtts.SetOsprayRendering(GetOsprayRendering());
     renderAtts.SetOsprayShadows(GetOsprayShadows());
     renderAtts.SetOspraySPP(GetOspraySPP());
@@ -8509,7 +8509,7 @@ ViewerWindow::GetCompactDomainsAutoThreshold() const
     return visWindow->GetCompactDomainsAutoThreshold();
 }
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
 // ****************************************************************************
 // Method:  ViewerWindow::SetOsprayRendering
 //
@@ -8812,7 +8812,7 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("compactDomainsAutoThreshold", GetCompactDomainsAutoThreshold()));
         windowNode->AddNode(new DataNode("compactDomainsActivationMode", GetCompactDomainsActivationMode()));
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
         windowNode->AddNode(new DataNode("osprayRendering", GetOsprayRendering()));
         windowNode->AddNode(new DataNode("ospraySPP", GetOspraySPP()));
         windowNode->AddNode(new DataNode("osprayAO", GetOsprayAO()));
@@ -9278,7 +9278,7 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     if((node = windowNode->GetNode("compactDomainsAutoThreshold")) != 0)
         SetCompactDomainsAutoThreshold(node->AsInt());
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     if((node = windowNode->GetNode("osprayRendering")) != 0)
         SetOsprayRendering(node->AsBool());
     if((node = windowNode->GetNode("ospraySPP")) != 0)

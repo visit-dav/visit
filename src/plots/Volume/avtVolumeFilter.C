@@ -619,7 +619,7 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
         device->SetLighting(atts.GetLightingFlag());
         device->SetSamplingRate(atts.GetRendererSamples());
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
         device->SetOSPRayEnabled(atts.GetOsprayEnabledFlag());
 
         device->SetShadowsEnabled(atts.GetOsprayShadowsEnabledFlag());

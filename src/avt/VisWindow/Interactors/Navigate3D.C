@@ -94,7 +94,7 @@ Navigate3D::OnTimer(void)
         // Currently the SetWindowCenter called from avtViewInfo.C
         // does not get used in the vtkOSPRayCamerNode so instead pan
         // the camera rather than the image.
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
         PanCamera3D(Pos[0], Pos[1]);
 #else
         PanImage3D(Pos[0], Pos[1]);

@@ -299,7 +299,7 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     // used in the vtkOSPRayCamerNode so instead use the Zoom here and
     // in the Navigate3D.C and Zoom3D.C pan the camera rather than the
     // image.
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     vtkcam->Zoom(imageZoom);
 #else
     // ARS - commented as the results are not used.

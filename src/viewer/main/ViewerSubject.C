@@ -2613,7 +2613,7 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         {
             WindowMetrics::SetEmbeddedWindowState(true);
         }
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
         else if (strcmp(argv[i], "-ospray") == 0)
         {
             debug5 << "Viewer launching with OSPRay" << endl;

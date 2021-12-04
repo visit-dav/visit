@@ -6771,7 +6771,7 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
     renderState.handledCues = false;
     renderState.stereoType = -1;
 
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     //
     // Pass the OSPRay settings through so that the correct backend is
     // used when saving windows and such.

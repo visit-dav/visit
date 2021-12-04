@@ -24,10 +24,6 @@
 #   Kathleen Biagas, Wed Jan  8 14:19:28 PST 2014
 #   Add vtkAxesActor2D.
 #
-#   Kathleen Biagas, Tue Mar 15 08:26:33 MST 2016
-#   OSPRay is only required if requested (VISIT_OSPRAY is set to true/on).
-#   Change OSPRay messages type to STATUS.
-#
 #   Kathleen Biagas, Mon Jul 18 10:04:22 PDT 2016
 #   Remove SurfaceAndWireframeMapper, and specialized mappers for
 #   Structured/Rectilinear grids.
@@ -45,12 +41,6 @@
 #   Kathleen Biagas, Fri Jun  8 12:17:45 PDT 2018
 #   Remove vtkRenderingVolumeOpenGL2 from link line. Moved module init back
 #   into volume plot.
-#
-#   Qi WU, Sat Jun 10 22:21:27 MST 2018
-#   Remove the old VISIT_OSPRAY configurations because they are too old. 
-#   Additional Note: The FindOSPRay.cmake file is broken for a recent version
-#                    of OSPRay. We should use the built-inosprayConfig.cmake
-#                    file to find OSPRay instead.
 #
 #   Kathleen Biagas, Thu Sep 27 11:34:32 PDT 2018
 #   Install InitVTKRenderingConfig.h when VISIT_INSTALL_THIRD_PARTY true.
@@ -98,7 +88,7 @@ vtk/vtkVisItTextActor.C
 vtk/vtkVisItFullFrameMapper2D.C
 )
 
-if(VISIT_OSPRAY)
+if(OSPRAY_FOUND)
     list(APPEND AVTPLOTTER_VTK_SOURCES
          vtk/vtkOSPRayVisItDataSetMapperNode.C
          vtk/vtkOSPRayVisItCubeAxesActorNode.C

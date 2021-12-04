@@ -108,7 +108,7 @@ class PIPELINE_API avtCallback
                                      { swRendering = b; };
     static bool                  GetSoftwareRendering(void)
                                      { return swRendering; };
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     static void                  SetUseOSPRay(bool b)
                                      { useOSPRay = b; }
     static bool                  GetUseOSPRay(void)
@@ -154,7 +154,7 @@ class PIPELINE_API avtCallback
     static bool                  nowinMode;
     static bool                  nowinInteractionMode;
     static bool                  swRendering;
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     static bool                  useOSPRay;
 #endif
     static bool                  safeMode;

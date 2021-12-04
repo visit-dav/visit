@@ -2318,7 +2318,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
         {
             this->launchXServers = false;
         }
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
         else if (strcmp(argv[i], "-ospray") == 0)
         {
             debug5 << "Engine found OSPRay flag" << endl;

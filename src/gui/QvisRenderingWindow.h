@@ -150,7 +150,7 @@ private slots:
     void depthCueingStartChanged();
     void depthCueingEndChanged();
     void colorTexturingToggled(bool);
-//#ifdef VISIT_OSPRAY // Can not have an ifdef as moc will not pick it up
+//#ifdef HAVE_OSPRAY // Can not have an ifdef as moc will not pick it up
     void osprayRenderingToggled(bool);
     void ospraySPPChanged(int);
     void osprayAOChanged(int);
@@ -224,7 +224,7 @@ private:
     QLabel            *depthCueingEndLabel;
     QLineEdit         *depthCueingEndEdit;
     QCheckBox         *colorTexturingToggle;
-#ifdef VISIT_OSPRAY
+#ifdef HAVE_OSPRAY
     QGroupBox         *osprayGroup;
     QLabel            *ospraySPPLabel;
     QSpinBox          *ospraySPP;
