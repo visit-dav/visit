@@ -145,5 +145,6 @@
     </Include>
     <Include file="header" quoted="false">
       float.h
+      visit-config.h
     </Include>
   </Attribute>

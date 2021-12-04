@@ -4,7 +4,9 @@
 
 #ifndef QVIS_RENDERING_WINDOW_H
 #define QVIS_RENDERING_WINDOW_H
+
 #include <QvisPostableWindowSimpleObserver.h>
+#include <visit-config.h>
 #include <gui_exports.h>
 #include <GUIBase.h>
 

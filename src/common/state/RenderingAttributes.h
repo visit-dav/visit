@@ -9,7 +9,7 @@
 #include <AttributeSubject.h>
 
 #include <ColorAttribute.h>
-#include <float.h>
+#include <visit-config.h>
 
 // ****************************************************************************
 // Class: RenderingAttributes

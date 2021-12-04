@@ -8,13 +8,16 @@
 
 #ifndef VIS_WINDOW_PROTECTION_PROXY_H
 #define VIS_WINDOW_PROTECTION_PROXY_H
+
+#include <visit-config.h>
+
 #include <viswindow_exports.h>
-#include <vector>
 
 #include <VisWindowTypes.h>
 
 #include <avtActor.h>
 
+#include <vector>
 
 class     vtkRenderer;
 class     vtkPolyDataMapper2D;
