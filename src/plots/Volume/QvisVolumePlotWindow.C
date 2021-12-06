@@ -901,8 +901,7 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
     {
         resampleGroup = new QGroupBox(parent);
         resampleGroup->setTitle(tr("Resampling Options"));
-        // resampleGroup->setFlat(true);
-        // resampleGroup->setContentsMargins(0,0,0,0);
+
         QHBoxLayout *resampleLayout       = new QHBoxLayout(resampleGroup);
         resampleTargetWidget              = new QWidget();
         QHBoxLayout *resampleTargetLayout = new QHBoxLayout(resampleTargetWidget);
@@ -1439,6 +1438,7 @@ void QvisVolumePlotWindow::CreateOSPRayGroups(QWidget *parent, QLayout *pLayout)
     osprayLayout->addWidget( osprayToggle );
     osprayLayout->addWidget( osprayProperties );
 
+    // OSPRay attributes not yet availble via VTK.
     // osprayPropertiesLayout->addWidget(osprayShadowToggle,             0, 0);
     // osprayPropertiesLayout->addWidget(osprayUseGridAcceleratorToggle, 0, 2);
     // osprayPropertiesLayout->addWidget(osprayPreIntegrationToggle,     0, 5, 1, 5);
