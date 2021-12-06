@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtVisItVTKDevice.C                           //
+//                       avtVisItVTKDevice.C                                 //
 // ************************************************************************* //
 
 #include <avtVisItVTKDevice.h>
@@ -51,6 +51,10 @@
 #include <vector>
 
 const std::string avtVisItVTKDevice::DEVICE_TYPE_STR{"vtk"};
+
+//#define LOCAL_DEBUG std::cerr
+ #define LOCAL_DEBUG debug5
+
 
 // ****************************************************************************
 //  Method: avtVisItVTKDevice constructor
@@ -289,14 +293,6 @@ avtVisItVTKDevice::CreateLights()
                                    static_cast<double>(-lightAttributes.GetDirection()[1]),
                                    static_cast<double>(-lightAttributes.GetDirection()[2]));
 
-                //
-                // This next line is a work-around for a known VTK bug
-                // when switching to scene light from another light type.
-                // Can be removed when we switch to new VTK dated after
-                // 6Sep02.
-                //
-                light->SetTransformMatrix(NULL);
-
                 if (firstNonAmbientLight == nullptr)
                 {
                     firstNonAmbientLight = light;
@@ -387,7 +383,6 @@ avtVisItVTKDevice::CreateFinalImage(const void *colorBuffer,
         avtImageRepresentation::NewImage(width, height, nColorChannels);
 
     finalImage->GetImage().SetImageVTK(finalImageData);
-    // finalImage->GetImage() = imageData;
 
     float bgColor[3];
     bgColor[0] = float(background[0]) / 255.0f;
@@ -403,6 +398,7 @@ avtVisItVTKDevice::CreateFinalImage(const void *colorBuffer,
                           height,
                           nColorChannels);
 
+    // For debugging
     // if(PAR_Rank() == 0)
     // {
     //   vtkPNGWriter* writer = vtkPNGWriter::New();
@@ -448,7 +444,7 @@ avtVisItVTKDevice::Execute()
     if(m_dataType == DataType::VOLUME)
         ExecuteVolume();
     else
-        ; // TODO: Implement ExecuteSurface(); // Done as PseudoColotPlot
+        ; // TODO: Implement ExecuteSurface(); // Done as PseudoColorPlot
 }
 
 // ****************************************************************************
@@ -495,7 +491,7 @@ avtVisItVTKDevice::ExecuteVolume()
         m_nComponents = 1;
     }
 
-    std::cerr << __LINE__ << " [VisItVTKDevice] "
+    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " in  "
               << "nsets: " << nsets << "  "
               << "nComponents: " << m_nComponents << "  "
@@ -526,7 +522,7 @@ avtVisItVTKDevice::ExecuteVolume()
     }
 
     if(mustResample)
-      std::cerr << __LINE__ << " [VisItVTKDevice] "
+      LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                 << "rank: "  << PAR_Rank() << "  "
                 << "must resample"
                 << std::endl;
@@ -543,7 +539,7 @@ avtVisItVTKDevice::ExecuteVolume()
 
     if(mustResample || userResample)
     {
-        std::cerr << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << "  resampling"
                   << std::endl;
 
@@ -608,7 +604,7 @@ avtVisItVTKDevice::ExecuteVolume()
     nsets = 0;
     datasetPtrs = inputTree->GetAllLeaves(nsets);
 
-    std::cerr << __LINE__ << " [VisItVTKDevice] "
+    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " out "
               << "nsets: " << nsets << "  "
               << std::endl;
@@ -639,7 +635,7 @@ avtVisItVTKDevice::ExecuteVolume()
     // After resampling there should be only one rectilinear data set.
     if( nsets != 1 )
     {
-        std::cerr << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " "
                   << "Too many datasets to render, skipping." << std::endl;
         EXCEPTION1(ImproperUseException, "Only one input dataset may be rendered.");
@@ -677,6 +673,7 @@ avtVisItVTKDevice::ExecuteVolume()
         // There could be both a scalar and opacity data arrays.
         vtkDataArray *dataArr = in_ds->GetPointData()->GetScalars();
         vtkDataArray *opacityArr = nullptr;
+	// Might be useful - not sure yet???
         // vtkDataArray *gradientArr = nullptr;
 
         if( m_nComponents == 2 )
@@ -699,26 +696,26 @@ avtVisItVTKDevice::ExecuteVolume()
         double spacingZ = (rgrid->GetZCoordinates()->GetTuple1(1)-
                            rgrid->GetZCoordinates()->GetTuple1(0));
 
-        std::cerr << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " dims : "
                   << dims[0] << "  " << dims[1] << "  "<< dims[2] << "  "
                   << std::endl;
 
-        std::cerr << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " extent : "
                   << extent[0] << "  " << extent[1] << "  "
                   << extent[2] << "  " << extent[3] << "  "
                   << extent[4] << "  " << extent[5] << "  "
                   << std::endl;
 
-        std::cerr << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " bounds : "
                   << bounds[0] << "  " << bounds[1] << "  "
                   << bounds[2] << "  " << bounds[3] << "  "
                   << bounds[4] << "  " << bounds[5] << "  "
                   << std::endl;
 
-        std::cerr << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " spacing : "
                   << spacingX << "  " << spacingY << "  " << spacingZ << "  "
                   << std::endl;
@@ -738,12 +735,12 @@ avtVisItVTKDevice::ExecuteVolume()
         // Set the origin to match the lower bounds of the grid
         imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
 
-        std::cerr << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " data range : "
                   << dataRange[0] << "  " << dataRange[1] << "  "
                   << std::endl;
 
-        std::cerr << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " opacity range : "
                   << opacityRange[0] << "  " << opacityRange[1] << "  "
                   << std::endl;
@@ -832,7 +829,7 @@ avtVisItVTKDevice::ExecuteVolume()
             }
         }
 
-        std::cerr << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank()
                   << " dataRange: "
                   << data_min << "  " << data_max << "  "
@@ -840,23 +837,24 @@ avtVisItVTKDevice::ExecuteVolume()
                   << opacity_min << "  " << opacity_max << "  "
                   << std::endl;
 
-        std::cerr << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " useInterpolation: "
                   << m_useInterpolation << "  "
                   << std::endl;
 
-        {
-            vtkXMLImageDataWriter* writer = vtkXMLImageDataWriter::New();
+        // For debugging
+        // {
+        //     vtkXMLImageDataWriter* writer = vtkXMLImageDataWriter::New();
 
-            writer->SetInputData(imageToRender);
-            if( m_nComponents == 2 )
-              writer->SetFileName("Image_Large_2_Comps.vti");
-            else
-            writer->SetFileName("Image_Large_1_Comps.vti");
+        //     writer->SetInputData(imageToRender);
+        //     if( m_nComponents == 2 )
+        //       writer->SetFileName("Image_Large_2_Comps.vti");
+        //     else
+        //     writer->SetFileName("Image_Large_1_Comps.vti");
 
-            writer->Write();
-            writer->Delete();
-        }
+        //     writer->Write();
+        //     writer->Delete();
+        // }
     }
 
     // Create a new volume mapper if needed.
@@ -943,7 +941,7 @@ avtVisItVTKDevice::ExecuteVolume()
     volumeProperty->SetIndependentComponents( m_nComponents == 1 );
     volumeProperty->SetShade( m_renderingAttribs.lightingEnabled );
 
-    std::cerr << __LINE__ << " [VisItVTKDevice] "
+    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " HasGradientOpacity: "
               << volumeProperty->HasGradientOpacity() << "  "
               << std::endl;
@@ -987,7 +985,7 @@ avtVisItVTKDevice::ExecuteVolume()
 
     volumeProperty->SetScalarOpacityUnitDistance(1, sampleDist);
 
-    std::cerr << __LINE__ << " [VisItVTKDevice] "
+    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " sampleDist: "
               << sampleDist << "  "
               << std::endl;
@@ -1125,7 +1123,7 @@ avtVisItVTKDevice::ExecuteVolume()
     transform->MultiplyPoint(centroidPt, transPt);
     transform->Delete();
 
-    std::cerr << __LINE__ << " [VisItVTKDevice] "
+    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " Average z depth: "
               << transPt[2] << "  " << std::endl;
 
