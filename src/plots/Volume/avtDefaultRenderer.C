@@ -184,7 +184,8 @@ avtDefaultRenderer::Render(
                        "Only vtkRectilinearGrid may be rendered.");
         }
 
-        // Check for an implied transform.
+        // Check for an implied transform - can not be done with the
+        // current paradigm!!!!!!
         // avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
         // if (inatts.GetRectilinearGridHasTransform())
         // {
