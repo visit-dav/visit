@@ -800,8 +800,8 @@ bool avtResampleFilter::GetBounds(double bounds[6])
     bool is3D = true;
     if (atts.GetPerRankResample())
     {
-      avtDataset_p ds = GetTypedInput();
-      avtDatasetExaminer::GetSpatialExtents( ds, bounds );
+        avtDataset_p ds = GetTypedInput();
+        avtDatasetExaminer::GetSpatialExtents( ds, bounds );
     }
     else if (atts.GetUseBounds())
     {
