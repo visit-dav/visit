@@ -3,11 +3,13 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                           avtVisItVTKCompositor.h                         //
+//                           avtICETCompositor.h                             //
 // ************************************************************************* //
 
 #ifndef AVT_ICET_COMPOSITOR_H
 #define AVT_ICET_COMPOSITOR_H
+
+#include <filters_exports.h>
 
 #include <avtImage.h>
 
@@ -18,7 +20,7 @@
     #include <IceTMPI.h>
 #endif
 
-class avtICETCompositor
+class AVTFILTERS_API avtICETCompositor
 {
 public:
     avtICETCompositor();

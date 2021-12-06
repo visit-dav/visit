@@ -246,11 +246,6 @@ avtICETCompositor::CompositeIceT(void * const outBuffer,
                                      const int width,
                                      const int height)
 {
-    // const IceTFloat bgColor[4] =
-    // {
-    //     IceTFloat(0.0f), IceTFloat(0.0f), IceTFloat(0.0f), IceTFloat(0.0f)
-    // };
-
     IceTFloat bgColor[4];
     bgColor[0] = m_bgColor[0];
     bgColor[1] = m_bgColor[1];
@@ -272,14 +267,14 @@ avtICETCompositor::CompositeIceT(void * const outBuffer,
     int retVal = icetAddTile(0, 0, width, height, 0);
     if(retVal == -1)
     {
-        debug5 << "[VisItVTK::Compositor] IceT Error - tile could not be created" << std::endl;
+        debug5 << "[ICETCompositor] IceT Error - tile could not be created" << std::endl;
     }
 
     // Size of the image VisItVTK will generate
     icetPhysicalRenderSize(width, height);
 
-    // Composite
-    // All processes in the current IceT context must call this method for it to complete
+    // Composite - All processes in the current IceT context must call
+    // this method for it to complete
     IceTImage icetImage = icetDrawFrame(identity, identity, m_bgColor);
 
     if(PAR_Rank() == 0)
@@ -292,14 +287,14 @@ avtICETCompositor::CompositeIceT(void * const outBuffer,
             // Timing
             double totalTime;    // in seconds
             icetGetDoublev(ICET_RENDER_TIME, &totalTime);
-            debug5 << "[VisItVTK::Compositor] IceT Render Time = " << totalTime << std::endl;
+            debug5 << "[ICETCompositor] IceT Render Time = " << totalTime << std::endl;
 
             icetGetDoublev(ICET_TOTAL_DRAW_TIME, &totalTime);
-            debug5 << "[VisItVTK::Compositor] IceT Total Draw Time = " << totalTime << std::endl;
+            debug5 << "[ICETCompositor] IceT Total Draw Time = " << totalTime << std::endl;
         }
         else
         {
-            debug5 << "[VisItVTK::Compositor] IceT returned NULL image" << std::endl;
+            debug5 << "[ICETCompositor] IceT returned NULL image" << std::endl;
         }
     }
 }
@@ -335,20 +330,21 @@ avtICETCompositor::Composite(const void *colorBuffer,
     s_width = width;
     s_height = height;
 
-    debug5 << "[VisItVTK::Compositor] width = " << width << " height = " << height << std::endl;
+    debug5 << "[ICETCompositor] width = " << width << " height = " << height << std::endl;
 
 #if defined(PARALLEL) && defined(HAVE_ICET)
-    debug5 << "[VisItVTK::Compositor] Info - Compositing with IceT" << std::endl;
+    debug5 << "[ICETCompositor] Info - Compositing with IceT" << std::endl;
     CompositeIceT(outBuffer, height, width);
 #elif PARALLEL
     // TODO: custom compositing solution
 #else
-    debug5 << "[VisItVTK::Compositor] Info - Serial Compositing" << std::endl;
+    debug5 << "[ICETCompositor] Info - Serial Compositing" << std::endl;
     size_t bytesToCopy = width * height * nChan;
 
     if(colorBuffer != nullptr)
     {
         memcpy(outBuffer, colorBuffer, bytesToCopy);
+	// Debug code
         // avtVisItVTKRenderer::WriteArrayToPPM("test", renderedFrameBuffer, screen[0], screen[1]);
     }
     else
