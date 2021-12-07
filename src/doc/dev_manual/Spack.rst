@@ -4,20 +4,24 @@ Building with Spack
 Overview
 --------
 
-Spack is a multi-platform package manager that builds and installs multiple versions and configurations of software. It works on Linux, macOS, and many supercomputers. Spack is non-destructive: installing a new version of a package does not break existing installations, so many configurations of the same package can coexist.
+Spack is a multi-platform package manager that builds and installs multiple versions and configurations of software.
+It works on Linux, macOS, and many supercomputers.
+Spack is non-destructive: installing a new version of a package does not break existing installations, so many configurations of the same package can coexist.
 
-Spack offers a simple "spec" syntax that allows users to specify versions and configuration options. Package files are written in pure Python, and specs allow package authors to write a single script for many different builds of the same package. With Spack, you can build your software all the ways you want to.
+Spack offers a simple "spec" syntax that allows users to specify versions and configuration options.
+Package files are written in pure Python, and specs allow package authors to write a single script for many different builds of the same package.
+With Spack, you can build your software all the ways you want to.
 
 The complete documentation can be found `here <https://spack.readthedocs.io/en/latest/index.html>`__.
 
 The VisIt_ spack package
 ------------------------
 
-The spack package for VisIt_ currently only builds a subset of the libraries that build_visit builds.
+The spack package for VisIt_ currently only builds a subset of the libraries that ``build_visit`` builds.
 It builds the core libraries needed by VisIt_ and the following I/O libraries:
 
 * HDF5
-* Silo.
+* Silo
 
 The rest of the I/O libraries needed by the VisIt_ readers are currently not built.
 The expectation is that the list of I/O libraries built will grow over time.
@@ -291,8 +295,8 @@ Here are the ``compilers.yaml`` and ``packages.yaml`` files for ``spock.olcf.orn
 Debugging a spack package
 -------------------------
 
-When doing a spack install and the install fails, it will automatically keep the stage directory, which will allow you debug the failure.
-If you want to modify an otherwise successful install or explore the state of a successful install you can use the ``--keep-stage`` flag to the ``install`` command. ::
+When doing a spack install and the install fails, it will automatically keep the directory where it did the work, called the `stage` directory, which will allow you debug the failure.
+If you want to modify an otherwise successful install or explore the state of a successful install you can use the ``--keep-stage`` flag to the ``spack install`` command. ::
 
     spack install --keep-stage visit ^python+shared ^mesa+opengl
 
