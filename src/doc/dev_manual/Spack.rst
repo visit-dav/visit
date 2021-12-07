@@ -126,7 +126,11 @@ The VisIt_ repository at GitHub contains ``compilers.yaml`` and ``packages.yaml`
 
 Here are the ``compilers.yaml`` and ``packages.yaml`` files for ``spock.olcf.ornl.gov`` for VisIt_.
 
-``compilers.yaml`` ::
+``compilers.yaml``
+
+.. literalinclude:: ../../scripts/spack/configs/olcf/compilers.yaml
+
+abc. ::
 
     - compiler:
         spec: gcc@11.2.0
