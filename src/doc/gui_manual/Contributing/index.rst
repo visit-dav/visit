@@ -4,20 +4,22 @@ Contributing
 ============
 
 This is a short contributing guide on the VisIt_ project's use of `Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_ for documentation.
-All of VisIt_'s documentation is found in ``<root>/src/doc``.
+All of VisIt_'s documentation is found in ``<root>/src/doc`` where ``<root>`` is the top of the git repository.
 There are sub-directories there for the major sub-sections of the manual including the GUI, the Python CLI, the developer's manual and more.
-If you have `Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_ You can build the html manual locally using the command::
+If you have `Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_, you can build the html manual locally using the command::
 
     cd src/doc
     sphinx-build -b html . _build -a
 
-You can then browse the root of the manual by pointing your browser to :file:`./_build/index.html`.  The ``-a`` forces a re-build of everything.
+The ``-a`` forces a re-build of everything.
 Remove it when you are constantly revising and rebuilding.
+You can then browse the root of the manual by pointing your browser to :file:`./_build/index.html`.
 
-Your changes to any ``.rst`` files in :file:`<root>/src/doc` will go live `here <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/>`_ soon after you push them.
-If `RTD <https://readthedocs.org>`_ resources are busy, a rebuild of the docs may take as long as 15 minutes.
-If you are working on a branch and want to see your branch's docs rendered before your branch is merged *and* you yourself do not have access to the RTD account that controls this, you may ask another developer who does to *activate* your branch there.
-Once the branch is merged, the RTD rendering of it should be *deactivated*.
+Changes to any ``.rst`` files in :file:`<root>/src/doc` will go live `here <https://visit-sphinx-github-user-manual.readthedocs.io/en/develop/>`_ soon after they are merged to the ``develop`` branch. 
+If `ReadTheDocs (RTD) <https://readthedocs.org>`_ resources are busy, a rebuild of the docs may take as long as 15 minutes.
+If want to see your branch's changes on ReadTheDocs before it is merged, the branch must be *activated* on ReadTheDocs.
+If you yourself do not have access to the ReadTheDocs account, you may ask another developer who does to *activate* your branch there.
+Once the branch is merged, it should be *deactivated* on ReadTheDocs.
 
 Quick Reference
 ---------------
