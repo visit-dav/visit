@@ -20,7 +20,7 @@ Changes to any ``.rst`` files in :file:`<root>/src/doc` will go live `here <http
 If `ReadTheDocs (RTD) <https://readthedocs.org>`_ resources are busy, a rebuild of the docs may take as long as 15 minutes.
 If want to see your branch's changes on ReadTheDocs before it is merged, the branch must be *activated* on ReadTheDocs.
 If you yourself do not have access to the ReadTheDocs account, you may ask another developer who does to *activate* your branch there.
-Once the branch is merged, it should be *deactivated* on ReadTheDocs.
+If the branch is *activated* on ReadTheDocs, once it is merged, it should be *deactivated*.
 
 Quick Reference
 ---------------
