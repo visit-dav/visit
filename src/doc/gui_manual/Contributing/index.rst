@@ -6,7 +6,8 @@ Contributing
 This is a short contributing guide on the VisIt_ project's use of `Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_ for documentation.
 All of VisIt_'s documentation is found in ``<root>/src/doc`` where ``<root>`` is the top of the git repository.
 There are sub-directories there for the major sub-sections of the manual including the GUI, the Python CLI, the developer's manual and more.
-If you have `Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_, you can build the html manual locally using the command::
+If your build is configured to build the manuals, the command ``make manuals`` will build the manuals locally.
+Otherwise, if you have `Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_, you can try building the manuals locally using the command::
 
     cd src/doc
     sphinx-build -b html . _build -a
