@@ -29,6 +29,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Pick output of filename on Windows has been made consistent with output for linux: path is stripped off.</li>
   <li>Command recording for GlobalLineoutAttributes now works correctly.</li>
   <li>Fixed pick failure for Rectilinear grids when real zones are completely surrounded by ghost zones.</li>
+  <li>Fixed a bug where VisIt would hang when working with a AMR meshes and the number of active patches was less than the number of processors and the patches were not rectilinear.</li>
 </ul>
 
 <a name="Enhancements"></a>
