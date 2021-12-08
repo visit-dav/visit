@@ -18,4 +18,4 @@ the most simple case and moving then moving to more complex use cases.
     Common_Build_Scenarios
     BuildingOnWindows/index
     BuildingOnMac/index
-    <../dev_manual/Spack>
+    ../dev_manual/Spack
