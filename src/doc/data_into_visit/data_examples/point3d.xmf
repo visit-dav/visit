@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<!DOCTYPE Xdmf SYSTEM "Xdmf.dtd" []>
+<Xdmf Version="2.0">
+ <Domain>
+   <Grid Name="points" GridType="Uniform">
+     <Topology TopologyType="Polyvertex" Dimensions="7161" NodesPerElement="1">
+       <DataItem Format="HDF" Dimensions="7161" NumberType="Int">
+        mesh.h5:/Indexes
+       </DataItem>
+     </Topology>
+     <Geometry Type="XYZ">
+       <DataItem Format="HDF" Dimensions="7161 3" NumberType="Float">
+        mesh.h5:/XYZ
+       </DataItem>
+     </Geometry>
+     <Attribute Name="VelocityZ" AttributeType="Scalar" Center="Node">
+       <DataItem Format="HDF" Dimensions="7161" NumberType="Int">
+        mesh.h5:/VelocityZ
+       </DataItem>
+     </Attribute>
+   </Grid>
+ </Domain>
+</Xdmf>

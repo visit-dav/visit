@@ -18,10 +18,12 @@ VisIt_ Developer Manual
     CreateRelease
     MemoryLeaks
     Docker
+    Spack
     SiteReliabilityEngineering
     OpenGL
     CI
     ContributingHostProfiles
+    LaunchProcess
 
 .. Indices and tables
 .. ==================
