@@ -52,8 +52,8 @@
 
 const std::string avtVisItVTKDevice::DEVICE_TYPE_STR{"vtk"};
 
-//#define LOCAL_DEBUG std::cerr
- #define LOCAL_DEBUG debug5
+#define LOCAL_DEBUG std::cerr
+//#define LOCAL_DEBUG debug5
 
 
 // ****************************************************************************
@@ -86,11 +86,11 @@ avtVisItVTKDevice::avtVisItVTKDevice() : avtRayTracerBase(),
 
 avtVisItVTKDevice::~avtVisItVTKDevice()
 {
-    if(imageToRender != nullptr)
-        imageToRender->Delete();
+    if(m_imageToRender != nullptr)
+        m_imageToRender->Delete();
 
-    if(volumeMapper != nullptr)
-        volumeMapper->Delete();
+    if(m_volumeMapper != nullptr)
+        m_volumeMapper->Delete();
 }
 
 
@@ -205,13 +205,13 @@ vtkLightCollection *
 avtVisItVTKDevice::CreateLights()
 {
     int ambientCount = 0;
-    ambientColor[0] = 0.0;
-    ambientColor[1] = 0.0;
-    ambientColor[2] = 0.0;
+    m_ambientColor[0] = 0.0;
+    m_ambientColor[1] = 0.0;
+    m_ambientColor[2] = 0.0;
 
-    numLightsEnabled = 0;
-    ambientOn = false;
-    ambientCoefficient = 0.;
+    m_numLightsEnabled = 0;
+    m_ambientOn = false;
+    m_ambientCoefficient = 0.;
 
     vtkLight *firstNonAmbientLight = nullptr;
 
@@ -246,11 +246,11 @@ avtVisItVTKDevice::CreateLights()
 
                 if(lightAttributes.GetEnabledFlag())
                 {
-                    ambientColor[0] += lightAttributes.GetColor().Red()   * lightAttributes.GetBrightness();
-                    ambientColor[1] += lightAttributes.GetColor().Green() * lightAttributes.GetBrightness();
-                    ambientColor[2] += lightAttributes.GetColor().Blue()  * lightAttributes.GetBrightness();
-                    ambientCoefficient += lightAttributes.GetBrightness();
-                    ambientOn = true;
+                    m_ambientColor[0] += lightAttributes.GetColor().Red()   * lightAttributes.GetBrightness();
+                    m_ambientColor[1] += lightAttributes.GetColor().Green() * lightAttributes.GetBrightness();
+                    m_ambientColor[2] += lightAttributes.GetColor().Blue()  * lightAttributes.GetBrightness();
+                    m_ambientCoefficient += lightAttributes.GetBrightness();
+                    m_ambientOn = true;
                     ambientCount++;
                 }
 
@@ -274,7 +274,7 @@ avtVisItVTKDevice::CreateLights()
                 if (lightAttributes.GetEnabledFlag())
                 {
                     light->SwitchOn();
-                    numLightsEnabled++;
+                    m_numLightsEnabled++;
                 }
                 else
                 {
@@ -301,7 +301,7 @@ avtVisItVTKDevice::CreateLights()
                 if (lightAttributes.GetEnabledFlag())
                 {
                     light->SwitchOn();
-                    numLightsEnabled++;
+                    m_numLightsEnabled++;
                 }
                 else
                 {
@@ -316,13 +316,13 @@ avtVisItVTKDevice::CreateLights()
         lights->AddItem(light);
     }
 
-    if (ambientOn)
+    if (m_ambientOn)
     {
         //
         // Using an averaged ambientCoefficent for multiple ambient
         // lights yields a more pleasing visual result.
         //
-        ambientCoefficient /= (double) ambientCount;
+        m_ambientCoefficient /= (double) ambientCount;
         // FIXME - now done in ExecuteVolume
         // canvas->SetAmbient(ambientColor);
     }
@@ -332,7 +332,7 @@ avtVisItVTKDevice::CreateLights()
         // canvas->SetAmbient(1., 1., 1.);
     }
 
-    if (numLightsEnabled == 0 && firstNonAmbientLight != nullptr)
+    if (m_numLightsEnabled == 0 && firstNonAmbientLight != nullptr)
     {
         //
         //  Cannot leave all the lights OFF, because VTK will create a
@@ -479,12 +479,14 @@ avtVisItVTKDevice::ExecuteVolume()
     double opacityRange[2] = {0., 1.};
 
     GetDataExtents(dataRange, activeVarName.c_str());
+    UnifyMinMax(dataRange, 2);
 
     // There could be separate scalar and opacity components.
     if( opacityVarName != "default" ) //&& opacityVarName != activeVarName )
     {
         m_nComponents = 2;
         GetDataExtents(opacityRange, opacityVarName.c_str());
+	UnifyMinMax(opacityRange, 2);
     }
     else
     {
@@ -505,7 +507,7 @@ avtVisItVTKDevice::ExecuteVolume()
     {
         // If no image or the resampling has changed then a new image
         // is needed.
-        if(imageToRender == nullptr ||
+        if(m_imageToRender == nullptr ||
            m_resampleType != m_renderingAttribs.resampleType ||
            (m_renderingAttribs.resampleType &&
             m_renderingAttribs.resampleTargetVal != m_resampleTargetVal))
@@ -547,12 +549,6 @@ avtVisItVTKDevice::ExecuteVolume()
         // execute within this "Execute".  Start with the source.
         avtSourceFromAVTDataset termsrc(GetTypedInput());
 
-        if (resampleFilter != nullptr)
-        {
-          delete resampleFilter;
-          resampleFilter = nullptr;
-        }
-
         // Resample the data - must be done by all ranks.
         InternalResampleAttributes resampleAtts;
 
@@ -576,11 +572,17 @@ avtVisItVTKDevice::ExecuteVolume()
         resampleAtts.SetPrefersPowersOfTwo(true);
         resampleAtts.SetUseTargetVal(true);
 
-        avtResampleFilter *resampleFilter =
+        if (m_resampleFilter != nullptr)
+        {
+          delete m_resampleFilter;
+          m_resampleFilter = nullptr;
+        }
+
+        avtResampleFilter *m_resampleFilter =
             new avtResampleFilter(&resampleAtts);
 
-        resampleFilter->SetInput( termsrc.GetOutput() );
-        dob = resampleFilter->GetOutput();
+        m_resampleFilter->SetInput( termsrc.GetOutput() );
+        dob = m_resampleFilter->GetOutput();
         dob->Update(GetGeneralContract());
 
         // Store the target value so if resampling is turned on
@@ -720,20 +722,20 @@ avtVisItVTKDevice::ExecuteVolume()
                   << spacingX << "  " << spacingY << "  " << spacingZ << "  "
                   << std::endl;
 
-        if( imageToRender != nullptr )
-            imageToRender->Delete();
+        if( m_imageToRender != nullptr )
+            m_imageToRender->Delete();
 
-        imageToRender = vtkImageData::New();
-        imageToRender->SetDimensions(dims);
-        imageToRender->SetExtent(extent);
-        imageToRender->SetSpacing(spacingX, spacingY, spacingZ);
+        m_imageToRender = vtkImageData::New();
+        m_imageToRender->SetDimensions(dims);
+        m_imageToRender->SetExtent(extent);
+        m_imageToRender->SetSpacing(spacingX, spacingY, spacingZ);
         // The color and opacity data may be separate components which
         // requires the IndependentComponents in the
         // vtkVolumeProperties set to 'off'
-        imageToRender->AllocateScalars(VTK_UNSIGNED_CHAR, m_nComponents);
+        m_imageToRender->AllocateScalars(VTK_UNSIGNED_CHAR, m_nComponents);
 
         // Set the origin to match the lower bounds of the grid
-        imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
+        m_imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
 
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " data range : "
@@ -774,7 +776,7 @@ avtVisItVTKDevice::ExecuteVolume()
                     {
                         // The color map is 0 -> 255. For no data values,
                         // assign a new value just out side of the map.
-                        imageToRender->SetScalarComponentFromDouble(x, y, z, 0, -1.0);
+                        m_imageToRender->SetScalarComponentFromDouble(x, y, z, 0, -1.0);
                         m_useInterpolation = false;
                     }
                     else
@@ -784,7 +786,7 @@ avtVisItVTKDevice::ExecuteVolume()
                         if( val < 0   ) val = 0;
                         if( val > 255 ) val = 255;
 
-                        imageToRender->SetScalarComponentFromDouble(x, y, z, 0, val);
+                        m_imageToRender->SetScalarComponentFromDouble(x, y, z, 0, val);
                         if( data_min > val ) data_min = val;
                         if( data_max < val ) data_max = val;
                     }
@@ -796,7 +798,7 @@ avtVisItVTKDevice::ExecuteVolume()
                         {
                             // The opacity map is 0 -> 255. For no data values,
                             // assign a new value just out side of the map.
-                            imageToRender->SetScalarComponentFromDouble(x, y, z, 1, -1.0);
+                            m_imageToRender->SetScalarComponentFromDouble(x, y, z, 1, -1.0);
                             m_useInterpolation = false;
                         }
                         else
@@ -805,7 +807,7 @@ avtVisItVTKDevice::ExecuteVolume()
                             if( val < 0   ) val = 0;
                             if( val > 255 ) val = 255;
 
-                            imageToRender->SetScalarComponentFromDouble(x, y, z, 1, val);
+                            m_imageToRender->SetScalarComponentFromDouble(x, y, z, 1, val);
                             if( opacity_min > val ) opacity_min = val;
                             if( opacity_max < val ) opacity_max = val;
                         }
@@ -816,12 +818,12 @@ avtVisItVTKDevice::ExecuteVolume()
                     // {
                     //     // The opacity map is 0 -> 255. For no data values,
                     //     // assign a new value just out side of the map.
-                    //     imageToRender->SetScalarComponentFromDouble(x, y, z, 1, -1.0);
+                    //     m_imageToRender->SetScalarComponentFromDouble(x, y, z, 1, -1.0);
                     //     m_useInterpolation = false;
                     // }
                     // else
                     // {
-                    //     imageToRender->SetScalarComponentFromDouble(x, y, z, 1, val);
+                    //     m_imageToRender->SetScalarComponentFromDouble(x, y, z, 1, val);
                     // }
 
                     ptId++;
@@ -846,7 +848,7 @@ avtVisItVTKDevice::ExecuteVolume()
         // {
         //     vtkXMLImageDataWriter* writer = vtkXMLImageDataWriter::New();
 
-        //     writer->SetInputData(imageToRender);
+        //     writer->SetInputData(m_imageToRender);
         //     if( m_nComponents == 2 )
         //       writer->SetFileName("Image_Large_2_Comps.vti");
         //     else
@@ -858,31 +860,31 @@ avtVisItVTKDevice::ExecuteVolume()
     }
 
     // Create a new volume mapper if needed.
-    if( volumeMapper == nullptr ||
+    if( m_volumeMapper == nullptr ||
         m_OSPRayEnabled != m_renderingAttribs.OSPRayEnabled)
     {
         m_OSPRayEnabled = m_renderingAttribs.OSPRayEnabled;
 
-        if (volumeMapper != nullptr)
-            volumeMapper->Delete();
+        if (m_volumeMapper != nullptr)
+            m_volumeMapper->Delete();
 
         // Create the volume mapper.
 #ifdef HAVE_OSPRAY
         if( m_renderingAttribs.OSPRayEnabled )
         {
             vtkOSPRayVolumeMapper * vm = vtkOSPRayVolumeMapper::New();
-            volumeMapper = vm;
+            m_volumeMapper = vm;
         }
         else
 #endif
         {
             vtkGPUVolumeRayCastMapper * vm = vtkGPUVolumeRayCastMapper::New();
-            volumeMapper = vm;
+            m_volumeMapper = vm;
         }
 
-        volumeMapper->SetInputData(imageToRender);
-        volumeMapper->SetScalarModeToUsePointData();
-        volumeMapper->SetBlendModeToComposite();
+        m_volumeMapper->SetInputData(m_imageToRender);
+        m_volumeMapper->SetScalarModeToUsePointData();
+        m_volumeMapper->SetBlendModeToComposite();
     }
 
     // Upstream in avtVolumeFIlter an new color and opacity map are
@@ -978,7 +980,7 @@ avtVisItVTKDevice::ExecuteVolume()
     // value will result in an increased opacity intensity, while decreasing
     // this value will result in a decreased opacity intensity.
     double spacing[3];
-    imageToRender->GetSpacing(spacing);
+    m_imageToRender->GetSpacing(spacing);
     double sampleDistReference = 1.0 / 10.0;
     double averageSpacing = (spacing[0] + spacing[1] + spacing[2]) / 3.0;
     double sampleDist     = averageSpacing / sampleDistReference;
@@ -996,7 +998,7 @@ avtVisItVTKDevice::ExecuteVolume()
 
     // Set up the volume
     vtkVolume * volume = vtkVolume::New();
-    volume->SetMapper(volumeMapper);
+    volume->SetMapper(m_volumeMapper);
     volume->SetProperty(volumeProperty);
 
     // Create camera
@@ -1017,16 +1019,16 @@ avtVisItVTKDevice::ExecuteVolume()
     if( m_renderingAttribs.OSPRayEnabled )
     {
         vtkOSPRayRendererNode::SetRendererType("pathtracer", renderer);
-        vtkOSPRayRendererNode::SetSamplesPerPixel(m_renderingAttribs.samplesPerPixel, renderer);
-        vtkOSPRayRendererNode::SetAmbientSamples (m_renderingAttribs.aoSamples,       renderer);
-        vtkOSPRayRendererNode::SetMinContribution(m_renderingAttribs.minContribution, renderer);
-        vtkOSPRayRendererNode::SetMaxContribution(m_renderingAttribs.maxContribution, renderer);
+        vtkOSPRayRendererNode::SetSamplesPerPixel(m_renderingAttribs.OSPRaySamplesPerPixel, renderer);
+        vtkOSPRayRendererNode::SetAmbientSamples (m_renderingAttribs.OSPRayAOSamples,       renderer);
+        vtkOSPRayRendererNode::SetMinContribution(m_renderingAttribs.OSPRayMinContribution, renderer);
+        vtkOSPRayRendererNode::SetMaxContribution(m_renderingAttribs.OSPRayMaxContribution, renderer);
     }
 #endif
 
-    if (ambientOn)
+    if (m_ambientOn)
     {
-        renderer->SetAmbient(ambientColor);
+        renderer->SetAmbient(m_ambientColor);
     }
     else
     {
@@ -1113,7 +1115,7 @@ avtVisItVTKDevice::ExecuteVolume()
                                                            scale, aspect);
 
     double bounds[6];
-    imageToRender->GetBounds(bounds);
+    m_imageToRender->GetBounds(bounds);
     double centroidPt[4], transPt[4];
     centroidPt[0] = bounds[0] + (bounds[1] - bounds[0]) / 2.0f;
     centroidPt[1] = bounds[2] + (bounds[3] - bounds[2]) / 2.0f;

@@ -36,22 +36,23 @@ namespace avt
                                 resampleTargetVal{static_cast<int>(1e6)},
 
                                 lightingEnabled(false),
-                                shadowsEnabled(false),
 
                                 samplesPerRay(500),
                                 samplingRate(3.0f),
 
+                                // OSPRay attributes.
                                 OSPRayEnabled(false),
-                                useGridAccelerator(false),
-                                preIntegration(false),
-                                singleShade(false),
-                                oneSidedLighting(false),
-                                aoTransparencyEnabled(false),
-                                aoSamples(0),
-                                samplesPerPixel(1),
-                                aoDistance(100000.0f),
-                                minContribution(2.00f),
-                                maxContribution(0.01f) {}
+                                OSPRayShadowsEnabled(false),
+                                OSPRayUseGridAccelerator(false),
+                                OSPRayPreIntegration(false),
+                                OSPRaySingleShade(false),
+                                OSPRayOneSidedLighting(false),
+                                OSPRayAOTransparencyEnabled(false),
+                                OSPRayAOSamples(0),
+                                OSPRaySamplesPerPixel(1),
+                                OSPRayAODistance(100000.0f),
+                                OSPRayMinContribution(2.00f),
+                                OSPRayMaxContribution(0.01f) {}
 
             int     resampleType;
             int     resampleTargetVal;
@@ -62,24 +63,25 @@ namespace avt
             // Sampling rate for volumes
             float   samplingRate;
 
-	    bool    OSPRayEnabled;
+            // OSPRay attributes.
+            bool    OSPRayEnabled;
             // Whether to compute (hard) shadows
-            bool    shadowsEnabled;
-            bool    useGridAccelerator;
-            bool    preIntegration;
-            bool    singleShade;
-            bool    oneSidedLighting;
-            bool    aoTransparencyEnabled;
+            bool    OSPRayShadowsEnabled;
+            bool    OSPRayUseGridAccelerator;
+            bool    OSPRayPreIntegration;
+            bool    OSPRaySingleShade;
+            bool    OSPRayOneSidedLighting;
+            bool    OSPRayAOTransparencyEnabled;
             // Number of rays per sample to compute ambient occlusion
-            int     aoSamples;
+            int     OSPRayAOSamples;
             // Samples per pixel
-            int     samplesPerPixel;
+            int     OSPRaySamplesPerPixel;
             // Maximum distance to consider for ambient occlusion
-            float   aoDistance;
+            float   OSPRayAODistance;
             // Sample contributions below/above this value will be neglected
             // to speed up rendering.
-            float   minContribution;
-            float   maxContribution;
+            float   OSPRayMinContribution;
+            float   OSPRayMaxContribution;
 
             };
     }   // namespace visit_vtk
@@ -95,10 +97,14 @@ public:
                             avtVisItVTKDevice();
     virtual                 ~avtVisItVTKDevice();
 
-    virtual const char      *GetType() override         { return "avtVisItVTKDevice"; }
-    virtual const char      *GetDescription() override  { return "VisItVTK Back-end Device"; }
-    virtual const char      *GetDeviceType() override   { return DEVICE_TYPE_STR.c_str(); }
+    virtual const char      *GetType() override        { return "avtVisItVTKDevice"; }
+    virtual const char      *GetDescription() override { return "VisItVTK Back-end Device"; }
+    virtual const char      *GetDeviceType() override  { return DEVICE_TYPE_STR.c_str(); }
 
+    // avtRayTracerBase
+    virtual void          SetBackgroundMode(int mode) override {};
+    virtual void          SetGradientBackgroundColors(const double [3],
+                                                      const double [3]) override {};
      // VisIt options
     void SetRenderingType(const DataType dt)    { m_dataType = dt; }
 
@@ -119,18 +125,18 @@ public:
     void SetViewDirection(const double[3]);
 
     // OSPRay Options
-    void SetOSPRayEnabled(const bool b)         { m_renderingAttribs.OSPRayEnabled = b; }
-    void SetShadowsEnabled(const bool b)        { m_renderingAttribs.shadowsEnabled = b; }
-    void SetUseGridAccelerator(const bool b)    { m_renderingAttribs.useGridAccelerator = b; }
-    void SetPreIntegration(const bool b)        { m_renderingAttribs.preIntegration = b; }
-    void SetSingleShade(const bool b)           { m_renderingAttribs.singleShade = b; }
-    void SetOneSidedLighting(const bool b)      { m_renderingAttribs.oneSidedLighting = b; }
-    void SetAoTransparencyEnabled(const bool b) { m_renderingAttribs.aoTransparencyEnabled = b; }
-    void SetAoSamples(const int v)              { m_renderingAttribs.aoSamples = v; }
-    void SetSamplesPerPixel(const int v)        { m_renderingAttribs.samplesPerPixel = v; }
-    void SetAoDistance(const float v)           { m_renderingAttribs.aoDistance = v; }
-    void SetMinContribution(const float v)      { m_renderingAttribs.minContribution = v; }
-    void SetMaxContribution(const float v)      { m_renderingAttribs.maxContribution = v; }
+    void SetOSPRayEnabled(const bool b)               { m_renderingAttribs.OSPRayEnabled = b; }
+    void SetOSPRayShadowsEnabled(const bool b)        { m_renderingAttribs.OSPRayShadowsEnabled = b; }
+    void SetOSPRayUseGridAccelerator(const bool b)    { m_renderingAttribs.OSPRayUseGridAccelerator = b; }
+    void SetOSPRayPreIntegration(const bool b)        { m_renderingAttribs.OSPRayPreIntegration = b; }
+    void SetOSPRaySingleShade(const bool b)           { m_renderingAttribs.OSPRaySingleShade = b; }
+    void SetOSPRayOneSidedLighting(const bool b)      { m_renderingAttribs.OSPRayOneSidedLighting = b; }
+    void SetOSPRayAOTransparencyEnabled(const bool b) { m_renderingAttribs.OSPRayAOTransparencyEnabled = b; }
+    void SetOSPRayAOSamples(const int v)              { m_renderingAttribs.OSPRayAOSamples = v; }
+    void SetOSPRaySamplesPerPixel(const int v)        { m_renderingAttribs.OSPRaySamplesPerPixel = v; }
+    void SetOSPRayAODistance(const float v)           { m_renderingAttribs.OSPRayAODistance = v; }
+    void SetOSPRayMinContribution(const float v)      { m_renderingAttribs.OSPRayMinContribution = v; }
+    void SetOSPRayMaxContribution(const float v)      { m_renderingAttribs.OSPRayMaxContribution = v; }
 
 protected:
     virtual void                Execute(void) override;
@@ -163,17 +169,17 @@ protected:
     vtkCamera *          CreateCamera();
     vtkLightCollection * CreateLights();
 
-    int    numLightsEnabled{0};
-    bool   ambientOn{false};
-    double ambientCoefficient{0.0};
-    double ambientColor[3] = { 0., 0., 0.};
+    int    m_numLightsEnabled{0};
+    bool   m_ambientOn{false};
+    double m_ambientCoefficient{0.0};
+    double m_ambientColor[3] = { 0., 0., 0.};
 
-    avtResampleFilter * resampleFilter{nullptr};
+    avtResampleFilter * m_resampleFilter{nullptr};
 
-    vtkImageData* imageToRender{nullptr};
-    vtkVolumeMapper* volumeMapper{nullptr};
+    vtkImageData* m_imageToRender{nullptr};
+    vtkVolumeMapper* m_volumeMapper{nullptr};
 
-    static const std::string   DEVICE_TYPE_STR;
+    static const std::string DEVICE_TYPE_STR;
 };
 
 #endif
