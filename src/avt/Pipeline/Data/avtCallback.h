@@ -8,26 +8,24 @@
 
 #ifndef AVT_CALLBACK_H
 #define AVT_CALLBACK_H
+
 #include <pipeline_exports.h>
-
-
-#include <string>
 
 #include <avtDataObject.h>
 #include <avtDatabase.h>
+
 #include <GlobalAttributes.h>
+#include <WindowAttributes.h>
+#include <LightList.h>
+
+#include <string>
 
 class    AttributeSubject;
-
 
 typedef   void  (*WarningCallback)(void *, const char *);
 typedef   ref_ptr<avtDatabase> (*GetDatabaseCallback)(void *,
                                        const std::string &, int, const char *);
 typedef   void  (*ResetTimeoutCallback)(void *, int);
-
-
-#include <WindowAttributes.h>
-#include <LightList.h>
 
 
 // ****************************************************************************

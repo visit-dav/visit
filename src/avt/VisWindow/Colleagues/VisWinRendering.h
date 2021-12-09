@@ -8,6 +8,7 @@
 
 #ifndef VIS_WIN_RENDERING_H
 #define VIS_WIN_RENDERING_H
+
 #include <viswindow_exports.h>
 
 #include <VisWinColleague.h>

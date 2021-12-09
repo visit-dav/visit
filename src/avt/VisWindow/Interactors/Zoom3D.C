@@ -32,7 +32,7 @@ Zoom3D::Zoom3D(VisWindowInteractorProxy &v) : ZoomInteractor(v)
 {
     altPressed   = false;
     shiftPressed = false;
-    shouldSpin = false;
+    shouldSpin   = false;
 }
 
 

@@ -8,10 +8,8 @@
 
 #ifndef VIS_WINDOW_H
 #define VIS_WINDOW_H
+
 #include <viswindow_exports.h>
-
-
-#include <vector>
 
 #include <VisWindowColleagueProxy.h>
 #include <VisWindowInteractorProxy.h>
@@ -37,6 +35,8 @@
 #include <PickPointInfo.h>
 #include <LineoutInfo.h>
 #include <VisualCueInfo.h>
+
+#include <vector>
 
 class vtkCallbackCommand;
 class vtkRenderer;

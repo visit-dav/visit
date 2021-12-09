@@ -8,8 +8,8 @@
 
 #ifndef VIS_WINDOW_COLLEAGUE_PROXY_H
 #define VIS_WINDOW_COLLEAGUE_PROXY_H
-#include <viswindow_exports.h>
 
+#include <viswindow_exports.h>
 
 #include <VisWindowProtectionProxy.h>
 
