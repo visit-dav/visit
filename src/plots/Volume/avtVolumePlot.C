@@ -684,8 +684,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
 #ifdef ENGINE
         // The gradient calc for ray casting integration not needed,
         // but lighting flag may still be on
-        if ((atts.GetRendererType() == VolumeAttributes::Composite ||
-             atts.GetRendererType() == VolumeAttributes::Parallel) &&
+        if (atts.GetRendererType() == VolumeAttributes::Composite &&
             atts.GetLightingFlag())
         {
             char gradName[128], gradName2[128];

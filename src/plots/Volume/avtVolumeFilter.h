@@ -72,6 +72,11 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
 
     avtOpacityMap            CreateOpacityMap(double range[2]);
 
+    int                      GetRenderVariables( int  &primIndex,
+						 int  &opacIndex,
+						 int  &gradIndex,
+						 char *gradName );
+
     virtual void             Execute(void);
     virtual avtContract_p    ModifyContract(avtContract_p);
     virtual void             VerifyInput(void);
