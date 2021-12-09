@@ -8,6 +8,8 @@
 
 #include <avtViewInfo.h>
 
+#include <visit-config.h>
+
 #include <vtkCamera.h>
 
 
@@ -296,13 +298,13 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     vtkcam->SetFocalDisk(imageZoom);
 
     // Currently the SetWindowCenter and SetUserTransform do not get
-    // used in the vtkOSPRayCamerNode so instead use the Zoom here and
+    // used in the vtkOSPRayCameraNode so instead use the Zoom here and
     // in the Navigate3D.C and Zoom3D.C pan the camera rather than the
     // image.
 #ifdef HAVE_OSPRAY
     vtkcam->Zoom(imageZoom);
 #else
-    // ARS - commented as the results are not used.
+    // ARS - commented out as the results are not used.
     // double   imagePanCurrent[2];
     // vtkcam->GetWindowCenter(imagePanCurrent[0], imagePanCurrent[1]);
     vtkcam->SetWindowCenter(2.0*imagePan[0], 2.0*imagePan[1]);
