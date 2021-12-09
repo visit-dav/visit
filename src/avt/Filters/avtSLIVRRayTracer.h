@@ -67,9 +67,13 @@ class AVTFILTERS_API avtSLIVRRayTracer : public avtRayTracerBase
                           avtSLIVRRayTracer();
     virtual              ~avtSLIVRRayTracer();
 
-    virtual const char   *GetType(void) { return "avtSLIVRRayTracer"; };
-    virtual const char   *GetDescription(void) { return "SLIVR Ray tracing"; };
+    virtual const char   *GetType(void) override        { return "avtSLIVRRayTracer"; };
+    virtual const char   *GetDescription(void) override { return "SLIVR Ray tracing"; };
 
+    // avtRayTracerBase
+    virtual void          SetBackgroundMode(int mode) override {};
+    virtual void          SetGradientBackgroundColors(const double [3],
+                                                      const double [3]) override {};
 
     void                  blendImages(float *src, int dimsSrc[2], int posSrc[2], float *dst, int dimsDst[2], int posDst[2]);
     void                  SetLighting(bool l) {lighting = l; };
@@ -80,7 +84,7 @@ class AVTFILTERS_API avtSLIVRRayTracer : public avtRayTracerBase
 
   protected:
 
-    virtual void          Execute(void);
+    virtual void          Execute(void) override;
 
     avtSLIVRImageCompositor    imgComm;
     bool                  lighting;
@@ -93,7 +97,7 @@ class AVTFILTERS_API avtSLIVRRayTracer : public avtRayTracerBase
     void project3Dto2D(double _3Dextents[6], int width, int height,
                        vtkMatrix4x4 *_mvp, int _2DExtents[4],
                        double depthExtents[2]);
-    double project(double _worldCoordinates[3], int pos2D[2], 
+    double project(double _worldCoordinates[3], int pos2D[2],
                    int _width, int _height, vtkMatrix4x4 *_mvp);
     void unProject(int _x, int _y, float _z, double _worldCoordinates[3],
                    int _width, int _height, vtkMatrix4x4 *invModelViewProj);
@@ -103,7 +107,4 @@ class AVTFILTERS_API avtSLIVRRayTracer : public avtRayTracerBase
                    double &tMin, double &tMax);
 };
 
-
 #endif
-
-

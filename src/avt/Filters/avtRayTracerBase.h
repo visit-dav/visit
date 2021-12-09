@@ -85,9 +85,9 @@ class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
     void                  SetScreen(int, int);
     void                  SetSamplesPerRay(int);
     void                  SetBackgroundColor(const unsigned char [3]);
-    void                  SetBackgroundMode(int mode);
-    void                  SetGradientBackgroundColors(const double [3],
-                                                      const double [3]);
+    virtual void          SetBackgroundMode(int mode) = 0;
+    virtual void          SetGradientBackgroundColors(const double [3],
+                                                      const double [3]) = 0;
     int                   GetSamplesPerRay(void)  { return samplesPerRay; };
     const int            *GetScreen(void)         { return screen; };
 
@@ -108,10 +108,9 @@ class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
     int                   samplesPerRay;
     bool                  kernelBasedSampling;
     bool                  trilinearInterpolation;
-    int                   backgroundMode;
+
     unsigned char         background[3];
-    double                gradBG1[3];
-    double                gradBG2[3];
+
     avtRayFunction       *rayfoo;
     std::string           activeVarName{"default"};
     std::string           opacityVarName{"default"};
@@ -130,7 +129,4 @@ class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
                                                 double &, double &);
 };
 
-
 #endif
-
-

@@ -152,7 +152,7 @@ avtRayTracerBase::GetNumberOfStages(int screenX, int screenY, int screenZ)
 //  Modifications:
 //
 //    Hank Childs, Sat Sep 26 20:43:55 CDT 2009
-//    If we have more than 32 procs, then we have enough memory and don't need 
+//    If we have more than 32 procs, then we have enough memory and don't need
 //    to tile.
 //
 //    Kathleen Biagas, Wed Nov 18 2020
@@ -362,7 +362,7 @@ avtRayTracerBase::ReleaseData(void)
 //    And the two are no longer synonymous.
 //
 //    Hank Childs, Thu May 29 09:44:17 PDT 2008
-//    No longer remove domains that cannot contribute to final picture, 
+//    No longer remove domains that cannot contribute to final picture,
 //    because that decision is made here one time for many renders.  If you
 //    choose one set, it may change later for a different render.
 //
@@ -508,4 +508,3 @@ avtRayTracerBase::TightenClippingPlanes(const avtViewInfo &viewInfo,
     if (farthest < viewInfo.farPlane)
         newFarPlane = farthest;
 }
-

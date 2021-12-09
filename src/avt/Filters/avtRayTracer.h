@@ -65,21 +65,18 @@ class AVTFILTERS_API avtRayTracer : public avtRayTracerBase
                           avtRayTracer();
     virtual              ~avtRayTracer();
 
-    virtual const char   *GetType(void) { return "avtRayTracer"; };
-    virtual const char   *GetDescription(void) { return "Ray tracing"; };
+    virtual const char   *GetType(void) override { return "avtRayTracer"; };
+    virtual const char   *GetDescription(void) override { return "Ray tracing"; };
 
-    void                  SetBackgroundMode(int mode);
+    void                  SetBackgroundMode(int mode) override;
     void                  SetGradientBackgroundColors(const double [3],
-                                                      const double [3]);
+                                                      const double [3]) override;
   protected:
     int                   backgroundMode;
     double                gradBG1[3];
     double                gradBG2[3];
 
-    virtual void          Execute(void);
+    virtual void          Execute(void) override;
 };
 
-
 #endif
-
-
