@@ -460,7 +460,8 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
                     threshold->AllScalarsOff();
                 }
 
-                threshold->ThresholdBetween(curLowerBounds[curVarNum], curUpperBounds[curVarNum]);
+                threshold->SetLowerThreshold(curLowerBounds[curVarNum]);
+                threshold->SetUpperThreshold(curUpperBounds[curVarNum]);
                 
                 if (curOutDataSet->GetPointData()->GetArray(curVarName) != NULL)
                 {
@@ -847,7 +848,8 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
         threshold->AllScalarsOff();
     }
     
-    threshold->ThresholdBetween(1, 1);
+    threshold->SetLowerThreshold(1);
+    threshold->SetUpperThreshold(1);
     threshold->SetInputArrayToProcess(0, 0, 0, FIELD_ASSOC, keeperName);
     threshold->Update();
     
