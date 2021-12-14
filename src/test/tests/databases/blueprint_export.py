@@ -21,7 +21,7 @@ def Test(name):
     return
 
 def TestText(name):
-    print("Testing text file")
+    print("Testing text file {}".format(name))
 
 def set_view(case_name, view=None):
     if "2d" in case_name:
@@ -37,25 +37,207 @@ def silo_data_path(name):
 def test_name(case, i):
     return case + "_" + str(i) + "_"
 
-def flatten_test_case(case_name, vars):
-    OpenDatabase(silo_data_path(case_name))
-    AddPlot("Pseudocolor", "u")
-    DrawPlots()
-
-    # Set the export database attributes.
-    export_name = case_name + "_flatten"
-    export_dir  = export_name + ".csv"
+# Export DB as csv, return the folder name
+def create_csv_output(case_name):
+    export_name = case_name
     e = ExportDBAttributes()
     e.db_type = "Blueprint"
     e.filename = export_name
-    e.variables = vars
+    e.variables = ('mesh_coords', 'zc_mesh_coords')
     opts = GetExportOptions("Blueprint")
-    opts["Operation"] = "FlattenCSV"
+    opts["Operation"] = "Flatten_CSV"
     ExportDatabase(e, opts)
     time.sleep(1)
+    return export_name + ".csv"
+
+def define_mesh_expressions(mesh_name):
+    DefineScalarExpression("nid", "nodeid({})".format(mesh_name))
+    DefineScalarExpression("zid", "zoneid({})".format(mesh_name))
+    DefineScalarExpression("mesh_coords", "coords({})".format(mesh_name))
+    DefineScalarExpression("zc_mesh_coords", "recenter(mesh_coords, \"zonal\")")
+    return ("nid", "zid", "mesh_coords", "zc_mesh_coords")
+
+# 's' for structured 'r' for rectilinear
+def flatten_multi_2d_case(case):
+    case_name = "multi_rect2d.silo"
+    mesh_name = "mesh1"
+    export_name = case_name
+
+    # Use multi_rect3d to create all cases
+    OpenDatabase(silo_data_path(case_name))
+    AddPlot("Mesh", mesh_name)
+
+    # Define some mesh based variables
+    vars = define_mesh_expressions(mesh_name)
+
+    AddOperator("Resample")
+    ra = ResampleAttributes()
+    ra.samplesX = 5
+    ra.samplesY = 4
+    ra.is3D = 0
+    ra.distributedResample = 1
+    SetOperatorOptions(ra)
+
+    AddOperator("DeferExpression")
+    dea = DeferExpressionAttributes()
+    dea.exprs = vars
+    SetOperatorOptions(dea)
+
+    if case == 's':
+        AddOperator("Transform")
+        ta = TransformAttributes()
+        ta.doRotate = 1
+        # ta.rotateType = "Deg"
+        ta.rotateAmount = 0.00001
+        SetOperatorOptions(ta)
+        export_name = "structured_" + case_name
+
+    DrawPlots()
+
+    # Create csv file
+    export_dir = create_csv_output(export_name)
 
     DeleteAllPlots()
     CloseDatabase(silo_data_path(case_name))
+
+    # Test text
+    vert_file = os.path.join(export_dir, "vertex_data.csv")
+    elem_file = os.path.join(export_dir, "element_data.csv")
+    TestText(vert_file)
+    TestText(elem_file)
+
+def flatten_multi_2d_unstructured_case():
+    case_name = "ucd2d.silo"
+    mesh_name = "ucdmesh2d"
+    export_name = case_name
+
+    # Use multi_curv2d and remove cells
+    OpenDatabase(silo_data_path(case_name))
+    AddPlot("Mesh", mesh_name)
+
+    # Define some mesh based variables
+    vars = define_mesh_expressions(mesh_name)
+
+    AddOperator("Threshold")
+    ta = ThresholdAttributes()
+    ta.listedVarNames = ("zid",)
+    ta.lowerBounds = (8,)
+    ta.upperBounds = (11,)
+    SetOperatorOptions(ta)
+    export_name = case_name
+
+    AddOperator("DeferExpression")
+    dea = DeferExpressionAttributes()
+    dea.exprs = ("mesh_coords", "zc_mesh_coords")
+    SetOperatorOptions(dea)
+
+    DrawPlots()
+
+    # Create csv file
+    export_dir = create_csv_output(export_name)
+
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path(case_name))
+
+    # Test text
+    vert_file = os.path.join(export_dir, "vertex_data.csv")
+    elem_file = os.path.join(export_dir, "element_data.csv")
+    TestText(vert_file)
+    TestText(elem_file)
+
+# case = 'u' for unstructured, 'r' for rectilinear, 's' for structured
+def flatten_multi_3d_case(case):
+    case_name = "multi_rect3d.silo"
+    mesh_name = "mesh1"
+    export_name = case_name
+    # Use multi_rect3d to create all cases
+    OpenDatabase(silo_data_path(case_name))
+    AddPlot("Mesh", mesh_name)
+
+    # Define some mesh based variables
+    vars = define_mesh_expressions(mesh_name)
+
+    AddOperator("Resample")
+    ra = ResampleAttributes()
+    ra.samplesX = 5
+    ra.samplesY = 4
+    ra.samplesZ = 3
+    ra.distributedResample = 1
+    SetOperatorOptions(ra)
+
+    AddOperator("DeferExpression")
+    dea = DeferExpressionAttributes()
+    dea.exprs = vars
+    SetOperatorOptions(dea)
+
+    if case == 'u':
+        AddOperator("Threshold")
+        ta = ThresholdAttributes()
+        ta.listedVarNames = ("zid",)
+        ta.lowerBounds = (1,)
+        SetOperatorOptions(ta)
+        export_name = "unstructured_" + case_name
+    elif case == 's':
+        AddOperator("Transform")
+        ta = TransformAttributes()
+        ta.doRotate = 1
+        # ta.rotateType = "Deg"
+        ta.rotateAmount = 0.00001
+        SetOperatorOptions(ta)
+        export_name = "structured_" + case_name
+    # Do nothing for rectilinear
+
+    DrawPlots()
+
+    # Create csv file
+    export_dir = create_csv_output(export_name)
+
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path(case_name))
+
+    # Test text
+    vert_file = os.path.join(export_dir, "vertex_data.csv")
+    elem_file = os.path.join(export_dir, "element_data.csv")
+    TestText(vert_file)
+    TestText(elem_file)
+
+def flatten_noise():
+    case_name = "noise.silo"
+    mesh_name = "Mesh"
+    samples = (5, 4, 3)
+
+    OpenDatabase(silo_data_path(case_name))
+    AddPlot("Mesh", mesh_name)
+
+    # Expose coordinates as variables
+    vars = define_mesh_expressions(mesh_name)
+
+    # Resample
+    AddOperator("Resample")
+    ra = ResampleAttributes()
+    ra.samplesX = samples[0]
+    ra.samplesY = samples[1]
+    ra.samplesZ = samples[2]
+    SetOperatorOptions(ra)
+
+    AddOperator("DeferExpression")
+    dea = DeferExpressionAttributes()
+    dea.exprs = vars
+    SetOperatorOptions(dea)
+
+    DrawPlots()
+
+    # Create the CSV output
+    export_dir = create_csv_output(case_name)
+
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path(case_name))
+
+    # Test text
+    vert_file = os.path.join(export_dir, "vertex_data.csv")
+    elem_file = os.path.join(export_dir, "element_data.csv")
+    TestText(vert_file)
+    TestText(elem_file)
 
 def partition_test_case(case_name, targets, view=None):
     # Write the original dataset
@@ -109,7 +291,14 @@ def partition_test_case(case_name, targets, view=None):
 def test_flatten():
     TestSection("Blueprint flatten")
 
+    flatten_noise()
+    flatten_multi_3d_case('r')
+    flatten_multi_3d_case('s')
+    flatten_multi_3d_case('u')
 
+    flatten_multi_2d_case('r')
+    flatten_multi_2d_case('s')
+    flatten_multi_2d_unstructured_case()
 
 def test_partition():
     TestSection("Blueprint partition")
@@ -171,7 +360,8 @@ def test_partition():
 
 def main():
     RequiredDatabasePlugin("Blueprint")
-    test_partition()
+    # test_partition()
+    test_flatten()
 
 
 main()
