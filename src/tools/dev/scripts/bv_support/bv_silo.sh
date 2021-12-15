@@ -501,14 +501,7 @@ function build_silo
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
     fi 
 
-    info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        $FORTRANARGS \
-        --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
-        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
-        --enable-install-lite-headers --without-readline \
-        $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
-
+    set -x
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
     sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
@@ -518,6 +511,7 @@ function build_silo
         $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
         --enable-install-lite-headers --without-readline \
         $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "Silo configure failed.  Giving up"

@@ -1,0 +1,30 @@
+Target: xml2python
+Function: PyGlobalLineoutAttributes_GetLogString
+Declaration: std::string PyGlobalLineoutAttributes_GetLogString()
+Definition:
+std::string
+PyGlobalLineoutAttributes_GetLogString()
+{
+    std::string s("GlobalLineoutAtts = GetGlobalLineoutAttributes()\n");
+    if(currentAtts != 0)
+        s += PyGlobalLineoutAttributes_ToString(currentAtts, "GlobalLineoutAtts.");
+    return s;
+}
+
+Function: PyGlobalLineoutAttributes_CallLogRoutine
+Declaration: static void PyGlobalLineoutAttributes_CallLogRoutine(Subject *subj, void *data)
+Definition:
+static void
+PyGlobalLineoutAttributes_CallLogRoutine(Subject *subj, void *data)
+{
+    typedef void (*logCallback)(const std::string &);
+    logCallback cb = (logCallback)data;
+
+    if(cb != 0)
+    {
+        std::string s("GlobalLineoutAtts = GetGlobalLineoutAttributes()\n");
+        s += PyGlobalLineoutAttributes_ToString(currentAtts, "GlobalLineoutAtts.");
+        cb(s);
+    }
+}
+

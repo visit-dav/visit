@@ -372,17 +372,13 @@ function build_netcdf
     fi
     ZLIBARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
 
-    info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
-        CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-        FC=\"\" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
-        --disable-dap \
-        --prefix=\"$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH\""
-
+    set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 FC="" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
                 --disable-dap \
                 --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "NetCDF configure failed.  Giving up"

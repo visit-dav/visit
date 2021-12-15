@@ -3,10 +3,16 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <VTKPluginInfo.h>
+
 #include <avtVTKFileFormat.h>
-#include <avtSTMDFileFormatInterface.h>
-#include <avtGenericDatabase.h>
 #include <avtVTKOptions.h>
+
+#include <avtSTSDFileFormatInterface.h>
+#include <avtSTMDFileFormatInterface.h>
+#include <avtMTMDFileFormatInterface.h>
+#include <avtGenericDatabase.h>
+
+using std::string;
 
 VTKCommonPluginInfo::VTKCommonPluginInfo() : CommonDatabasePluginInfo(), VTKGeneralPluginInfo()
 {
@@ -52,15 +58,32 @@ VTKCommonPluginInfo::GetDatabaseType()
 //    I changed the code so it switches the interface based on how many domains
 //    are present in the 1st file.
 //
+//    Kathleen Biagas, Fri Augus 13, 2021
+//    Add MTMD for .pvd file types.
+//
 // ****************************************************************************
-
-#include <avtSTSDFileFormatInterface.h>
 
 avtDatabase *
 VTKCommonPluginInfo::SetupDatabase(const char *const *list,
                                    int nList, int nBlock)
 {
     avtDatabase *db = NULL;
+
+    string fn(list[0]);
+    size_t pos = fn.find_last_of('.');
+    string ext = fn.substr(pos+1);
+    if (ext == "pvd")
+    {
+        dbType = DB_TYPE_MTMD;
+
+        // Only using 1 timestepgroup
+        avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[1];
+        ffl[0] = new avtPVD_MTMDFileFormat(fn.c_str(), readOptions);
+        avtMTMDFileFormatInterface *inter = new avtMTMDFileFormatInterface(ffl, 1);
+        db = new avtGenericDatabase(inter);
+
+        return db;
+    }
 
     // Figure out how many domains there are in the 1st file.
     avtVTKFileReader *reader = new avtVTKFileReader(list[0], readOptions);

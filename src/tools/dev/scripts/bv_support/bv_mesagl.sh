@@ -207,6 +207,68 @@ EOF
         return 1
     fi
 
+    #
+    # Patch to increase the maximum image size in the llvmpipe
+    # driver to 16K x 16K.
+    #
+    patch -p0 << \EOF
+diff -c src/gallium/drivers/llvmpipe/lp_limits.h.orig src/gallium/drivers/llvmpipe/lp_limits.h
+*** src/gallium/drivers/llvmpipe/lp_limits.h.orig       Fri Jul 30 10:03:06 2021
+--- src/gallium/drivers/llvmpipe/lp_limits.h    Fri Jul 30 10:04:41 2021
+***************
+*** 44,50 ****
+   * Max texture sizes
+   */
+  #define LP_MAX_TEXTURE_SIZE (1 * 1024 * 1024 * 1024ULL)  /* 1GB for now */
+! #define LP_MAX_TEXTURE_2D_LEVELS 14  /* 8K x 8K for now */
+  #define LP_MAX_TEXTURE_3D_LEVELS 12  /* 2K x 2K x 2K for now */
+  #define LP_MAX_TEXTURE_CUBE_LEVELS 14  /* 8K x 8K for now */
+  #define LP_MAX_TEXTURE_ARRAY_LAYERS 512 /* 8K x 512 / 8K x 8K x 512 */
+--- 44,50 ----
+   * Max texture sizes
+   */
+  #define LP_MAX_TEXTURE_SIZE (1 * 1024 * 1024 * 1024ULL)  /* 1GB for now */
+! #define LP_MAX_TEXTURE_2D_LEVELS 15  /* 16K x 16K for now */
+  #define LP_MAX_TEXTURE_3D_LEVELS 12  /* 2K x 2K x 2K for now */
+  #define LP_MAX_TEXTURE_CUBE_LEVELS 14  /* 8K x 8K for now */
+  #define LP_MAX_TEXTURE_ARRAY_LAYERS 512 /* 8K x 512 / 8K x 8K x 512 */
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 4 failed."
+        return 1
+    fi
+
+    #
+    # Patch to increase the maximum scene temporary storage in the llvmpipe
+    # driver. This is required for large image sizes.
+    #
+    patch -p0 << \EOF
+diff -c src/gallium/drivers/llvmpipe/lp_scene.h.orig src/gallium/drivers/llvmpipe/lp_scene.h
+*** src/gallium/drivers/llvmpipe/lp_scene.h.orig        Fri Jul 30 12:11:39 2021
+--- src/gallium/drivers/llvmpipe/lp_scene.h     Fri Jul 30 12:11:49 2021
+***************
+*** 60,66 ****
+  
+  /* Scene temporary storage is clamped to this size:
+   */
+! #define LP_SCENE_MAX_SIZE (9*1024*1024)
+  
+  /* The maximum amount of texture storage referenced by a scene is
+   * clamped to this size:
+--- 60,66 ----
+  
+  /* Scene temporary storage is clamped to this size:
+   */
+! #define LP_SCENE_MAX_SIZE (64*1024*1024)
+  
+  /* The maximum amount of texture storage referenced by a scene is
+   * clamped to this size:
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "MesaGL patch 5 failed."
+        return 1
+    fi
+
     return 0;
 }
 
@@ -242,6 +304,15 @@ function build_mesagl
     fi
 
     #
+    # Handle case where python doesn't exist.
+    # The magic to determine if python exist comes from
+    # https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
+    #
+    if ! command -v python > /dev/null 2>&1 ; then
+        sed -i "s/python2.7/python3 python2.7/" configure.ac
+    fi
+
+    #
     # Build MESAGL.
     #
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
@@ -270,28 +341,7 @@ function build_mesagl
         fi
     fi
 
-    echo CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
-        CXX=${CXX_COMPILER} \
-        CFLAGS="${CFLAGS} ${C_OPT_FLAGS} ${mesa_c_opt_flags}" \
-        CC=${C_COMPILER} \
-        ./autogen.sh \
-        --prefix=${VISITDIR}/mesagl/${MESAGL_VERSION}/${VISITARCH} \
-        --with-platforms=x11 \
-        --disable-dri \
-        --disable-dri3 \
-        --disable-egl \
-        --disable-gbm \
-        --disable-gles1 \
-        --disable-gles2 \
-        --disable-xvmc \
-        --disable-vdpau \
-        --disable-va \
-        --enable-glx \
-        --enable-llvm \
-        --with-gallium-drivers=${MESAGL_GALLIUM_DRIVERS} \
-        --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
-        --disable-llvm-shared-libs \
-        --with-llvm-prefix=${VISIT_LLVM_DIR}
+    set -x
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
         CFLAGS="${CFLAGS} ${C_OPT_FLAGS} ${mesa_c_opt_flags}" \
@@ -314,6 +364,7 @@ function build_mesagl
         --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
         --disable-llvm-shared-libs \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
+    set +x
 
     if [[ $? != 0 ]] ; then
         warn "MesaGL configure failed.  Giving up"
