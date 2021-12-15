@@ -250,6 +250,9 @@
 //    Eric Brugger, Thu Jul  1 14:19:51 PDT 2021
 //    Changed the date on the splash screen to July 2021.
 //
+//    Eric Brugger, Wed Dec 15 09:48:55 PST 2021
+//    Changed the date on the splash screen to December 2021.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
@@ -370,7 +373,7 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 7;
+    int currentMonth = 12;
     lLayout->addWidget(new QLabel(versionText, this));
     lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2021", this));
 
