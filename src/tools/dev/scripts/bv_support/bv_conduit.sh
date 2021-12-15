@@ -62,6 +62,7 @@ function bv_conduit_host_profile
         echo "##" >> $HOSTCONF
         echo "## Conduit" >> $HOSTCONF
         echo "##" >> $HOSTCONF
+        echo "SETUP_APP_VERSION(CONDUIT $CONDUIT_VERSION)" >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR \${VISITHOME}/conduit/$CONDUIT_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
