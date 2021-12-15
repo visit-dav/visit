@@ -123,6 +123,9 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
 //
 //  Chris Laganella Thu Nov  4 15:15:06 EDT 2021
 //  Added support for blueprint mesh operations
+//
+//  Chris Laganella Wed Dec 15 17:57:09 EST 2021
+//  Add conditional compilation based on flatten/partition support
 // ****************************************************************************
 
 avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
@@ -132,6 +135,7 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
 
     m_op = BP_MESH_OP_NONE;
     m_target = 0;
+#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(options)
     {
         int op_val = options->GetEnum("Operation");
@@ -159,6 +163,7 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
             }
         }
     }
+#endif
 
     conduit::utils::set_info_handler(blueprint_writer_plugin_info_handler);
     conduit::utils::set_warning_handler(blueprint_writer_plugin_warning_handler);
@@ -591,6 +596,8 @@ avtBlueprintWriter::WriteMeshDomain(Node &mesh, int domain_id)
 //
 //  Chris Laganella Mon Nov  8 16:58:22 EST 2021
 //  Added BuildSelections call and surrounding logic
+//
+//  Chris Laganella Wed Dec 15 18:01:21 EST 2021
 // ****************************************************************************
 void
 avtBlueprintWriter::CloseFile(void)
@@ -598,6 +605,8 @@ avtBlueprintWriter::CloseFile(void)
 #ifdef PARALLEL
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called CloseFile().");
 #endif
+
+#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5)
     {
         conduit::Node opts, table;
@@ -674,6 +683,7 @@ avtBlueprintWriter::CloseFile(void)
             }
         }
     }
+#endif
 }
 
 // ****************************************************************************
