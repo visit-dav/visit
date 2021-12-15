@@ -1,27 +1,54 @@
+# ----------------------------------------------------------------------------
+#  MODES: serial parallel
+#  CLASSES: nightly
+#
+#  Test Case:  blueprint_export.py 
+#
+#  Tests:      Tests blueprint export features "partition" and "flatten".
+#
+#  Programmer: Christopher Laganella
+#  Date:       Tue Dec 14 12:35:16 EST 2021
+#
+#  Modifications:
+#
+# ----------------------------------------------------------------------------
+RequiredDatabasePlugin("Blueprint")
+
 import time
+import sys
 import os.path
 
-def Exit():
-    print("Exiting test...")
-    return
+# def Exit():
+#     print("Exiting test...")
+#     return
 
-def RequiredDatabasePlugin(name):
-    print("This test requires database plugin " + name)
-    return
+# def RequiredDatabasePlugin(name):
+#     print("This test requires database plugin " + name)
+#     return
 
-def TestSection(name):
-    print("---- " + name + " ----")
-    return
+# def TestSection(name):
+#     print("---- " + name + " ----")
+#     return
 
-def Test(name):
-    s = SaveWindowAttributes()
-    s.fileName = name
-    SetSaveWindowAttributes(s)
-    SaveWindow()
-    return
+# def Test(name):
+#     s = SaveWindowAttributes()
+#     s.fileName = name
+#     SetSaveWindowAttributes(s)
+#     SaveWindow()
+#     return
 
-def TestText(name):
-    print("Testing text file {}".format(name))
+# def TestText(name):
+#     print("Testing text file {}".format(name))
+
+# def silo_data_path(name):
+#     retval = os.path.join("/mnt/data/il/VisIt/VisItClass/data", name)
+#     # print(retval)
+#     return retval
+
+def load_text(file_name):
+    # print("Loading text from {}".format(os.path.abspath(file_name)), file=sys.stderr)
+    with open(file_name, 'r') as f:
+        return f.read()
 
 def set_view(case_name, view=None):
     if "2d" in case_name:
@@ -29,10 +56,6 @@ def set_view(case_name, view=None):
     else:
         SetView3D(view)
 
-def silo_data_path(name):
-    retval = os.path.join("/mnt/data/il/VisIt/VisItClass/data", name)
-    # print(retval)
-    return retval
 
 def test_name(case, i):
     return case + "_" + str(i) + "_"
@@ -49,6 +72,14 @@ def create_csv_output(case_name):
     ExportDatabase(e, opts)
     time.sleep(1)
     return export_name + ".csv"
+
+def test_csv_output(case_name):
+    vert_file = os.path.join(case_name, "vertex_data.csv")
+    elem_file = os.path.join(case_name, "element_data.csv")
+    vert_baseline = case_name + "-" + "vertex_data.csv"
+    elem_baseline = case_name + "-" + "element_data.csv"
+    TestText(vert_baseline, load_text(vert_file))
+    TestText(elem_baseline, load_text(elem_file))
 
 def define_mesh_expressions(mesh_name):
     DefineScalarExpression("nid", "nodeid({})".format(mesh_name))
@@ -101,10 +132,7 @@ def flatten_multi_2d_case(case):
     CloseDatabase(silo_data_path(case_name))
 
     # Test text
-    vert_file = os.path.join(export_dir, "vertex_data.csv")
-    elem_file = os.path.join(export_dir, "element_data.csv")
-    TestText(vert_file)
-    TestText(elem_file)
+    test_csv_output(export_dir)
 
 def flatten_multi_2d_unstructured_case():
     case_name = "ucd2d.silo"
@@ -140,10 +168,7 @@ def flatten_multi_2d_unstructured_case():
     CloseDatabase(silo_data_path(case_name))
 
     # Test text
-    vert_file = os.path.join(export_dir, "vertex_data.csv")
-    elem_file = os.path.join(export_dir, "element_data.csv")
-    TestText(vert_file)
-    TestText(elem_file)
+    test_csv_output(export_dir)
 
 # case = 'u' for unstructured, 'r' for rectilinear, 's' for structured
 def flatten_multi_3d_case(case):
@@ -196,10 +221,7 @@ def flatten_multi_3d_case(case):
     CloseDatabase(silo_data_path(case_name))
 
     # Test text
-    vert_file = os.path.join(export_dir, "vertex_data.csv")
-    elem_file = os.path.join(export_dir, "element_data.csv")
-    TestText(vert_file)
-    TestText(elem_file)
+    test_csv_output(export_dir)
 
 def flatten_noise():
     case_name = "noise.silo"
@@ -234,10 +256,7 @@ def flatten_noise():
     CloseDatabase(silo_data_path(case_name))
 
     # Test text
-    vert_file = os.path.join(export_dir, "vertex_data.csv")
-    elem_file = os.path.join(export_dir, "element_data.csv")
-    TestText(vert_file)
-    TestText(elem_file)
+    test_csv_output(export_dir)
 
 def partition_test_case(case_name, targets, view=None):
     # Write the original dataset
@@ -358,11 +377,6 @@ def test_partition():
     partition_test_case("multi_rect2d.silo",
         targets_2d)
 
-def main():
-    RequiredDatabasePlugin("Blueprint")
-    # test_partition()
-    test_flatten()
-
-
-main()
+test_partition()
+test_flatten()
 Exit()
