@@ -9794,6 +9794,11 @@ avtGenericDatabase::CreateGlobalNodes(avtDatasetCollection &ds,
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
 //
+//    Eric Brugger, Tue Dec  7 12:41:29 PST 2021
+//    Added logic to avoid a hang in parallel if only some processors had non
+//    rectilinear grids or the processors with domains had non rectilinear
+//    grids and others didn't have any grids.
+//
 // ****************************************************************************
 
 bool
@@ -9820,11 +9825,24 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
         return false;
     }
 
+    //
+    // If any of the grids on any of the processors are not rectilinear
+    // then return.
+    //
+    int non_rect = 0;
     for (int i = 0 ; i < ds.GetNDomains() ; i++)
     {
         if (ds.GetDataset(i, 0)->GetDataObjectType() != VTK_RECTILINEAR_GRID)
-            return false;
+            non_rect = 1;
     }
+#ifdef PARALLEL
+    int non_rect_global;
+    MPI_Allreduce(&non_rect, &non_rect_global, 1,
+                  MPI_INT, MPI_MAX, VISIT_MPI_COMM);
+    non_rect = non_rect_global;
+#endif
+    if (non_rect)
+        return false;
 
     avtStructuredDomainNesting *dn = (avtStructuredDomainNesting*)*vr;
 
