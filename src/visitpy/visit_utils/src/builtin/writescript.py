@@ -398,9 +398,10 @@ Example:
         set_annotation_objects(f, prefix)
 
     # If we were given a string, open that string as a file
+    mustCloseFile = False
     if isinstance(f, str):
         f = open(f, 'wt')
-        WriteScript.mustCloseFile = True
+        mustCloseFile = True
 
     # Define expressions
     f.write('# Define expressions\n')
@@ -438,7 +439,5 @@ Example:
     f.write('SetActiveWindow(GetGlobalAttributes().windows[%d])\n' % g.activeWindow)
     visit.SetActiveWindow(g.windows[g.activeWindow])
 
-    if hasattr(WriteScript, 'mustCloseFile'):
-        if WriteScript.mustCloseFile:
-            f.close()
-        delattr(WriteScript, 'mustCloseFile')
+    if mustCloseFile:
+        f.close()
