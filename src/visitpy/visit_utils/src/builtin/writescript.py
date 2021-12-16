@@ -42,7 +42,7 @@ Example:
            if line == '' or line[0] == '#':
                continue
            if '#' in line:
-               pos = string.find(line, "=")
+               pos = line.find("=")
                if '"' in line[pos+2:]:
                    f.write('%s.%s\n' % (name, line))
                else:
@@ -70,7 +70,7 @@ Example:
             if line == defaultlines[i]:
                 continue
             if '#' in line:
-                pos = string.find(line, "=")
+                pos = line.find("=")
                 if '"' in line[pos+2:]:
                     f.write('%s.%s\n' % (name, line))
                     wroteline = 1
