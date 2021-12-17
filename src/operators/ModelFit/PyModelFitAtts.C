@@ -1122,6 +1122,18 @@ PyModelFitAtts_getattr(PyObject *self, char *name)
     if(strcmp(name, "modelNums") == 0)
         return ModelFitAtts_GetModelNums(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyModelFitAtts_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyModelFitAtts_methods[i].ml_name),
+                PyString_FromString(PyModelFitAtts_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyModelFitAtts_methods, self, name);
 }
 

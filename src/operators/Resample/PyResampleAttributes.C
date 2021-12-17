@@ -1167,6 +1167,18 @@ PyResampleAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "cellCenteredOutput") == 0)
         return ResampleAttributes_GetCellCenteredOutput(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyResampleAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyResampleAttributes_methods[i].ml_name),
+                PyString_FromString(PyResampleAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyResampleAttributes_methods, self, name);
 }
 

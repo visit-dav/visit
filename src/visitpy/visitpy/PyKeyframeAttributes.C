@@ -283,6 +283,18 @@ PyKeyframeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "nFramesWasUserSet") == 0)
         return KeyframeAttributes_GetNFramesWasUserSet(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyKeyframeAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyKeyframeAttributes_methods[i].ml_name),
+                PyString_FromString(PyKeyframeAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyKeyframeAttributes_methods, self, name);
 }
 

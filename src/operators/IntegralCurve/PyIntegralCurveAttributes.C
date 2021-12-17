@@ -5702,6 +5702,18 @@ PyIntegralCurveAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "selection") == 0)
         return IntegralCurveAttributes_GetSelection(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyIntegralCurveAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyIntegralCurveAttributes_methods[i].ml_name),
+                PyString_FromString(PyIntegralCurveAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyIntegralCurveAttributes_methods, self, name);
 }
 

@@ -1033,6 +1033,18 @@ PySpreadsheetAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pastPickLetters") == 0)
         return SpreadsheetAttributes_GetPastPickLetters(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PySpreadsheetAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PySpreadsheetAttributes_methods[i].ml_name),
+                PyString_FromString(PySpreadsheetAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PySpreadsheetAttributes_methods, self, name);
 }
 
