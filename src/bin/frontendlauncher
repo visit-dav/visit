@@ -137,8 +137,7 @@ do
     if test "$have_lang" = "yes"; then
         lang=$arg
         export LANG="$lang"
-        shift 2
-        have_lang=no
+        break
     fi
     if test "$arg" = "-lang"; then
         have_lang=yes
