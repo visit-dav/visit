@@ -1185,6 +1185,18 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
                        "it from your script.\n");
         return PyInt_FromLong(0L);
     }
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyVectorAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyVectorAttributes_methods[i].ml_name),
+                PyString_FromString(PyVectorAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyVectorAttributes_methods, self, name);
 }
 
