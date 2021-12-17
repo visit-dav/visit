@@ -17,10 +17,11 @@
 #include <ref_ptr.h>
 
 class vtkDataSet;
+class vtkCellArray;
 
 struct avtInterpolationWeight
 {
-    vtkIdType i;    // point id 
+    vtkIdType i;    // point id
     double    w;    // point weight
 };
 
@@ -54,41 +55,39 @@ class IVP_API avtCellLocator
     virtual void    SetDataSet(vtkDataSet *ds);
     void            ReleaseDataSet();
 
-    virtual vtkIdType FindCell( const double pos[3], 
+    virtual vtkIdType FindCell( const double pos[3],
                                 avtInterpolationWeights* iw,
                                 bool ignoreGhostCells ) const = 0;
     static void     Destruct(void *);
 
   protected:
 
-    void CopyCell( vtkIdType cellid, vtkIdType* ids, 
+    void CopyCell( vtkIdType cellid, vtkIdType* ids,
                    double pts[][3] ) const;
 
     bool TestCell( vtkIdType id, const double pos[3],
                    avtInterpolationWeights* iw,
                    bool ignoreGhostCells ) const;
 
-    bool TestTet( vtkIdType id, const double pos[3], 
-                  avtInterpolationWeights* iw ) const; 
-    bool TestHex( vtkIdType id, const double pos[3], 
-                  avtInterpolationWeights* iw ) const; 
-    bool TestPrism( vtkIdType id, const double pos[3], 
+    bool TestTet( vtkIdType id, const double pos[3],
+                  avtInterpolationWeights* iw ) const;
+    bool TestHex( vtkIdType id, const double pos[3],
+                  avtInterpolationWeights* iw ) const;
+    bool TestPrism( vtkIdType id, const double pos[3],
                     avtInterpolationWeights* iw ) const;
-    bool TestVoxel( vtkIdType id, const double pos[3], 
+    bool TestVoxel( vtkIdType id, const double pos[3],
                     avtInterpolationWeights* iw ) const;
 
-    vtkDataSet*    dataSet;
-    vtkIdType*     cellIdxPtr;
-    vtkIdType*     cellLocPtr;
-    int*           strDimPtr;
+    vtkDataSet*    dataSet {nullptr};
+    vtkCellArray*  cellPtr {nullptr};
+    int*           strDimPtr {nullptr};
     bool           normal2D;
     bool           normal3D;
-    float*         fCoordPtr;
-    double*        dCoordPtr;
-    unsigned char* ghostPtr;
+    float*         fCoordPtr {nullptr};
+    double*        dCoordPtr {nullptr};
+    unsigned char* ghostPtr  {nullptr};
 };
 
 typedef ref_ptr<avtCellLocator> avtCellLocator_p;
 
 #endif
-
