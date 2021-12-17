@@ -55,6 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <DebugStream.h>
 #include <vectortypes.h>
 
+#include <algorithm>
 #include <climits>
 
 #define TOLERANCE 1e-10
@@ -65,7 +66,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       ((2.0*fabs((x1)-(x2))/(fabs(x1)+fabs(x2)+VSMALL) < TOLERANCE))
 
 #define MAX_DECADES 8
-static int nDecades;
 
 //------------------------------------------------------------------------------
 // Modifications:
@@ -110,6 +110,10 @@ vtkStandardNewMacro(vtkVisItAxisActor2D);
 //
 //    Brad Whitlock, Thu Sep 29 16:39:20 PDT 2011
 //    I made changes for VTK 5.8.
+//
+//    Eric Brugger, Fri Dec 17 09:34:23 PST 2021
+//    Move the logic to skip major tick marks when doing scientific
+//    notation from BuildAxis to ComputeLogTicks.
 //
 // **********************************************************************
 
@@ -195,7 +199,6 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->EndStringReverseOrientation = false;
 
   this->UseSeparateColors = false;
-  nDecades = 2;  
 }
 
 vtkVisItAxisActor2D::~vtkVisItAxisActor2D()
@@ -518,6 +521,10 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Eric Brugger, Thu Jun 14 09:02:39 PDT 2018
 //   Correct the title placement for vertical axes for the VTK8 upgrade.
 //
+//   Eric Brugger, Fri Dec 17 09:34:23 PST 2021
+//   Move the logic to skip major tick marks when doing scientific
+//   notation from BuildAxis to ComputeLogTicks.
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -723,7 +730,6 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       }
 
     labelCount = 0;
-    int skipCount = 0;
     for ( i=0; i < numLabels && labelCount < 200; i++)
       {
       if (!useMinorForLabels && ticksize[i] != 1.0)
@@ -734,12 +740,6 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         {
         continue;  // minor tick or gridline, should not be labeled.
         }
-      if (this->LogScale && nDecades > MAX_DECADES && (skipCount%2 == 0))
-        {
-        skipCount++;
-        continue; // too many decades, only label half of them
-        }
-      skipCount++; 
       val = proportion[i]*(outRange[1]-outRange[0]) + outRange[0];
 
       if (!this->LogScale)
@@ -820,7 +820,6 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       labelCount++;
       }
 
-    skipCount = 0; 
     for (i = 0, labelCount = 0; i < numLabels; i++)
       {
       if (!useMinorForLabels && ticksize[i] != 1.0)
@@ -831,12 +830,6 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         {
         continue;
         }
-      if (this->LogScale && nDecades > MAX_DECADES && (skipCount%2 == 0))
-        {
-        skipCount++;
-        continue;
-        }
-      skipCount++; 
       pts->GetPoint(2*i+1, xTick);
 
       double pos[2] = {xTick[0], xTick[1]};
@@ -1421,6 +1414,9 @@ vtkVisItAxisActor2D::GetMTime()
 //   first component was ever used.  Bad indexing into that array was causing 
 //   a crash. 
 //
+//   Eric Brugger, Fri Dec 17 09:34:23 PST 2021
+//   Rewrote the code that calculates the major and minor tick locations.
+//
 // ----------------------------------------------------------------------------
 
 void 
@@ -1450,157 +1446,70 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
   double v1 = pow(10., lv1);    /* original axis range */
   double v2 = pow(10., lv2);
 
-  nDecades = (int)lv2 - (int)lv1 + 1;
+  double va = ceil(lv1 - EPSILON);
+  double vb = floor(lv2 + EPSILON);
+  int n = vb - va + 1;
 
-  double dlv = fabs(lv1-lv2);
-  if (dlv > 1)
-    {
-    lv1 = floor(lv1);
-    lv2 = floor(lv2 + 0.01); 
-    }
-  double sp = v_trunc(log10(dlv));
-  if (sp < 0.1)
-      sp = 0.1; 
-  double va = sp*v_trunc(lv1/sp);
-  double vb = sp*v_trunc(lv2/sp);
-  if (v1 < v2)
-    {
-    if (va < lv1 - TOLERANCE)
-      {
-      va += sp;
-      }
-    if (vb > lv2 + TOLERANCE)
-      {
-      vb -= sp;
-      }
-    }
-  else 
-    {
-    if (va > lv1 + TOLERANCE)
-      {
-      va -= sp;
-      }
-    if (vb < lv2 - TOLERANCE)
-      {
-      vb += sp;
-      }
-    }
-  dlv = fabs(va-vb);
-  int n = (int)( 1.0 + dlv/sp + EPSILON);
-  if (n < 0 || n > 10000)
+  //
+  // Create at least one major tick mark.
+  //
+  n = std::max(n, 1);
+
+  //
+  // Do at most MAX_DECADES labels. The skip logic chooses exponents for
+  // the labels such that they are multiples of 3, 6, 9, 12, ...
+  //
+  int dn = 1 + (n - 1) / MAX_DECADES;
+  if (dn > 1)
   {
-    n = 10000;
+    dn = dn - dn % 3 + 3;
+    va = va - double(int(va) % dn);
+    n = vb - va + 1;
   }
 
-  va = pow(10., va);
-  vb = pow(10., vb);
-
-  double dx; 
-
-  int ilv1 = (int) log10(v1);
-  int ilv2 = (int) log10(v2);
-  int na = ilv2 - ilv1 + 1;
-  na = na > 2 ? na : 2;
-  int dexp;
-  if (na > 10) // axis_max_major_ticks
-    dexp = na/10;
-  else 
-    dexp = 1;
-  int rmnd = n -na;
-  int step = rmnd/na;
-  step = step < nDecades ? step : nDecades;
-  na = (na/dexp) + step*(na-1);
-
-  dx = (double) ilv1;
-  // exponentiate the spacings and remove anybody outside the range
-  if (na > 2)
-    {
-    double v1d = 0.9999*v1;
-    double v2d = 1.0001*v2;
-    double t = pow(10., dx);
-    if ((v1d <= t) && (t <= v2d))
-      {
-      double s = floor(log10(1.0000000001*t));
-      if (!(((s != 0.0) || (dx != 0.0)) && !CLOSETO_REL(s, dx)))
-        dx = t;
-      }
-    }
-  else
-    {
-      dx = pow(10., dx);
-    }
-
-  if (va > vb)
-    vb = dx;
-  else
-    va = dx;
-
-  if (va == 0) // cannot use va for Major Tick comps.
-    n = 0;
- 
-  n = (int)(n < (2.0 + EPSILON) ? 2 : n);
-
-  lv1 = sortedRange[0];
-  lv2 = sortedRange[1];
   doubleVector labelValue; 
   doubleVector majorValue; 
   doubleVector minorValue;
-  double v, decadeStart, decadeEnd, decadeRange;
+  double v, decadeStart;
 
-  // major tick values
-  if (va != 0.)
+  //
+  // Calculate the major tick mark locations.
+  //
+  for (int i = 0; i < n; i+=dn)
     {
-    labelValue.push_back(va);
-    majorValue.push_back(log10(va));
-    }
-  else
-    {
-    labelValue.push_back(0.1); // use a minimum Decade
-    majorValue.push_back(-1);
+    majorValue.push_back(va + double(i));
+    labelValue.push_back(pow(10., double(int(va) + i)));
     }
 
-  for (int i = 1; i < n; i++)
-    {
-    labelValue.push_back(labelValue[i-1]*10.);
-    majorValue.push_back(log10(labelValue[i]));
-    }
-
-  // minor tick values
+  //
+  // Calculate the minor tick mark locations.
+  //
   if (majorValue[0] > lv1) // may need some minor ticks before the first Major
     {
-    decadeStart = log10(labelValue[0]/10.);
-    decadeRange = majorValue[0] - decadeStart;
+    decadeStart = majorValue[0] - double(dn);
     for (int j = 1; j < 7; j++)
       {
-      v = decadeStart + log_value[j] * decadeRange;
+      v = decadeStart + log_value[j] * double(dn);
       if (v >= lv1 && v < majorValue[0])
         minorValue.push_back(v);
       }
     }
-  for (int i = 1; i < n; i++)
+  for (int i = 0; i < majorValue.size(); i++)
     {
-    decadeStart = majorValue[i-1];
-    decadeRange = majorValue[i] - decadeStart;
+    decadeStart = majorValue[i];
     for (int j = 1; j < 7; j++)
       {
-      v = decadeStart + log_value[j] * decadeRange;
+      v = decadeStart + log_value[j] * double(dn);
       if (v < lv2) // don't want to go past the end
         minorValue.push_back(v);
       else 
         break;
       }
     }
-  if (majorValue[n -1] < lv2)
-    {
-    decadeStart = majorValue[n -1];
-    decadeEnd = log10(labelValue[n -1]*10.);
-    decadeRange = decadeEnd - decadeStart;
-    for (int j = 1; j < 7; j++)
-      {
-      v = decadeStart + log_value[j] * decadeRange;
-      minorValue.push_back(v);
-      }
-    }
+
+  //
+  // Create the tick marks.
+  //
   double lvr = lv2 - lv1;
   numTicks = 0;
   double p;
