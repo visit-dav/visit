@@ -1626,7 +1626,14 @@ VisWinAxes::AdjustLabelFormatForLogScale(
     {
         int xAxisDigits = 0;
         if (min_x < 0.)
+        {
             xAxisDigits = int(fabs(ceil(min_x)));
+            //
+            // Add an extra digit if the range is within a decade.
+            //
+            if (ceil(min_x) == ceil(max_x))
+                xAxisDigits++;
+        }
 
         double sorted_minx = min_x < max_x ? min_x : max_x;
         double sorted_maxx = min_x > max_x ? min_x : max_x;
@@ -1642,7 +1649,14 @@ VisWinAxes::AdjustLabelFormatForLogScale(
     {
         int yAxisDigits = 0;
         if (min_y < 0.)
+        {
             yAxisDigits = int(fabs(ceil(min_y)));
+            //
+            // Add an extra digit if the range is within a decade.
+            //
+            if (ceil(min_y) == ceil(max_y))
+                yAxisDigits++;
+        }
 
         double sorted_miny = min_y < max_y ? min_y : max_y;
         double sorted_maxy = min_y > max_y ? min_y : max_y;
