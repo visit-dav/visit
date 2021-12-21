@@ -81,7 +81,7 @@
 #   Remove custom help target.
 #****************************************************************************
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
 
 IF(WIN32)
     PROJECT(VISIT_DATA)
