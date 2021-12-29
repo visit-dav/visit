@@ -52,8 +52,8 @@
 
 const std::string avtVisItVTKDevice::DEVICE_TYPE_STR{"vtk"};
 
-#define LOCAL_DEBUG std::cerr
-//#define LOCAL_DEBUG debug5
+// #define LOCAL_DEBUG std::cerr
+#define LOCAL_DEBUG debug5
 
 
 // ****************************************************************************
@@ -533,7 +533,8 @@ avtVisItVTKDevice::ExecuteVolume()
     // Check for a user resampling request, the same on all ranks.
     bool userResample =
       (m_renderingAttribs.resampleType &&
-       m_renderingAttribs.resampleTargetVal != m_resampleTargetVal);
+       (m_resampleType != m_renderingAttribs.resampleType ||
+        m_renderingAttribs.resampleTargetVal != m_resampleTargetVal));
 
     LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                 << "rank: "  << PAR_Rank() << "  ";
@@ -590,20 +591,12 @@ avtVisItVTKDevice::ExecuteVolume()
         m_resampleFilter->SetInput( termsrc.GetOutput() );
         dob = m_resampleFilter->GetOutput();
         dob->Update(GetGeneralContract());
-
-        // Store the target value so if resampling is turned on
-        // a change will trigger the resampling.
-        m_resampleTargetVal = m_renderingAttribs.resampleTargetVal;
-    }
-    else
-    {
-        // Reset the stored target value so if resampling is turned on
-        // it will happen.
-        m_resampleTargetVal = 0;
     }
 
-    // Store the resample type so to check for a state change.
-    m_resampleType = m_renderingAttribs.resampleType;
+    // Store the resample type and target value so to check for a
+    // state change.
+    m_resampleType      = m_renderingAttribs.resampleType;
+    m_resampleTargetVal = m_renderingAttribs.resampleTargetVal;
 
     // Get the data tree which may be the origina data or from the
     // resampled data.
@@ -885,9 +878,9 @@ avtVisItVTKDevice::ExecuteVolume()
             vtkOSPRayVolumeMapper * vm = vtkOSPRayVolumeMapper::New();
             m_volumeMapper = vm;
 
-	    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-			<< "rank: "  << PAR_Rank() << " OSPRay Volume Mapper "
-			<< std::endl;
+            LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+                        << "rank: "  << PAR_Rank() << " OSPRay Volume Mapper "
+                        << std::endl;
         }
         else
 #endif
@@ -895,9 +888,9 @@ avtVisItVTKDevice::ExecuteVolume()
             vtkGPUVolumeRayCastMapper * vm = vtkGPUVolumeRayCastMapper::New();
             m_volumeMapper = vm;
 
-	    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-			<< "rank: "  << PAR_Rank() << " GPU Volume Ray Cast Mapper "
-			<< std::endl;
+            LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+                        << "rank: "  << PAR_Rank() << " GPU Volume Ray Cast Mapper "
+                        << std::endl;
         }
 
         m_volumeMapper->SetInputData(m_imageToRender);
@@ -1037,9 +1030,9 @@ avtVisItVTKDevice::ExecuteVolume()
     if( m_renderingAttribs.OSPRayEnabled )
     {
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-		    << "rank: "  << PAR_Rank() << " RenderType: "
-		    << (m_renderingAttribs.OSPRayRenderType ? "PathTracer" : "SciVis") << "  "
-		    << std::endl;
+                    << "rank: "  << PAR_Rank() << " RenderType: "
+                    << (m_renderingAttribs.OSPRayRenderType ? "PathTracer" : "SciVis") << "  "
+                    << std::endl;
 
         if( m_renderingAttribs.OSPRayRenderType == 1 )
             vtkOSPRayRendererNode::SetRendererType("pathtracer", renderer);
