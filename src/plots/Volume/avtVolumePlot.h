@@ -113,18 +113,18 @@ avtVolumePlot : public avtVolumeDataPlot
 
   protected:
     VolumeAttributes                atts;
-    avtLowerResolutionVolumeFilter *lowResVolumeFilter;
-    avtVolumeFilter                *volumeFilter;
-    avtGradientExpression          *gradientFilter;
-    avtResampleFilter              *resampleFilter;
-    avtShiftCenteringFilter        *shiftCentering;
-    avtCompactTreeFilter           *compactTree;
-    avtVolumeRenderer_p             renderer;
-    avtUserDefinedMapper           *mapper;
-    avtLookupTable                 *avtLUT;
+    avtLowerResolutionVolumeFilter *lowResVolumeFilter {nullptr};
+    avtVolumeFilter                *volumeFilter {nullptr};
+    avtGradientExpression          *gradientFilter {nullptr};
+    avtResampleFilter              *resampleFilter {nullptr};
+    avtShiftCenteringFilter        *shiftCentering {nullptr};
+    avtCompactTreeFilter           *compactTree {nullptr};
+    avtVolumeRenderer_p             renderer {nullptr};
+    avtUserDefinedMapper           *mapper {nullptr};
+    avtLookupTable                 *avtLUT {nullptr};
 
-    avtVolumeVariableLegend        *varLegend;
-    avtLegend_p                     varLegendRefPtr;
+    avtVolumeVariableLegend        *varLegend {nullptr};
+    avtLegend_p                     varLegendRefPtr {nullptr};
 
     virtual avtMapperBase   *GetMapper(void);
     virtual avtDataObject_p  ApplyOperators(avtDataObject_p);

@@ -59,16 +59,14 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
 
     avtImage_p               RenderImage(avtImage_p, const WindowAttributes &);
     
-#if defined(VISIT_SLIVR) || defined(VISIT_OSPRAY)
     avtImage_p               RenderImageRayCasting(avtImage_p,
                                                    const WindowAttributes &);
-#endif
 
     int                      GetNumberOfStages(const WindowAttributes &);
 
   protected:
     VolumeAttributes         atts;
-    char                    *primaryVariable;
+    char                    *primaryVariable {nullptr};
 
     avtOpacityMap            CreateOpacityMap(double range[2]);
 
