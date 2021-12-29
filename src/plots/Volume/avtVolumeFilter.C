@@ -70,7 +70,7 @@ static void CreateViewInfoFromViewAttributes(avtViewInfo &,
 
 avtVolumeFilter::avtVolumeFilter()
 {
-    primaryVariable = NULL;
+    primaryVariable = nullptr;
 }
 
 
@@ -89,10 +89,17 @@ avtVolumeFilter::avtVolumeFilter()
 
 avtVolumeFilter::~avtVolumeFilter()
 {
-    if (primaryVariable != NULL)
+    if (primaryVariable != nullptr)
     {
         delete [] primaryVariable;
-        primaryVariable = NULL;
+        primaryVariable = nullptr;
+    }
+
+    // Only delete the VTK rendering device when the volume filter is
+    // deleted. Which happens when something upstream occurs.
+    if (atts.GetRendererType() == VolumeAttributes::Parallel)
+    {
+        avtVisItVTKRenderer::DeleteDevice();
     }
 }
 
@@ -399,8 +406,8 @@ avtVolumeFilter::GetRenderVariables( int &primIndex,
 
     for (int i = 0 ; i < vl.nvars ; i++)
     {
-        if ((strstr(vl.varnames[i].c_str(), "vtk") != NULL) &&
-            (strstr(vl.varnames[i].c_str(), "avt") != NULL))
+        if ((strstr(vl.varnames[i].c_str(), "vtk") != nullptr) &&
+            (strstr(vl.varnames[i].c_str(), "avt") != nullptr))
             continue;
 
         if (vl.varnames[i] == primaryVariable)
@@ -530,8 +537,13 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
 
     if (atts.GetRendererType() == VolumeAttributes::Parallel)
     {
-        avtVisItVTKRenderer::SetDeviceType(DeviceType::VTK);
         avtVisItVTKDevice *device = avtVisItVTKRenderer::GetDevice();
+
+        if( device == nullptr )
+        {
+            avtVisItVTKRenderer::SetDeviceType(DeviceType::VTK);
+            device = avtVisItVTKRenderer::GetDevice();
+        }
 
         if(device != nullptr)
         {
@@ -692,6 +704,7 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
 
 #ifdef HAVE_OSPRAY
         device->SetOSPRayEnabled(atts.GetOsprayEnabledFlag());
+        device->SetOSPRayRenderType(atts.GetOsprayRenderType());
 
         device->SetOSPRayShadowsEnabled(atts.GetOsprayShadowsEnabledFlag());
         device->SetOSPRayUseGridAccelerator(atts.GetOsprayUseGridAcceleratorFlag());
@@ -732,7 +745,13 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
     // Free up some memory and clean up.
     //
     if (atts.GetRendererType() == VolumeAttributes::Parallel)
-        avtVisItVTKRenderer::DeleteDevice();
+    {
+        // Only delete the VTK rendering device when the volume filter
+        // is deleted. The device which is static will hold the
+        // data - resampling on demand.
+
+        // avtVisItVTKRenderer::DeleteDevice();
+    }
     else
     {
 #ifdef VISIT_SLIVR
@@ -747,7 +766,7 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
         }
     }
 
-    avtRay::SetArbitrator(NULL);
+    avtRay::SetArbitrator(nullptr);
 
 #ifdef VISIT_SLIVR
     delete compositeRF;
@@ -1135,7 +1154,7 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     // Free up some memory and clean up.
     //
     delete software;
-    avtRay::SetArbitrator(NULL);
+    avtRay::SetArbitrator(nullptr);
 
     if( // atts.GetRendererType() == VolumeAttributes::Composite &&
        compositeRF != nullptr )
@@ -1317,9 +1336,9 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &viewAt
 avtContract_p
 avtVolumeFilter::ModifyContract(avtContract_p contract)
 {
-    avtContract_p newcontract = NULL;
+    avtContract_p newcontract = nullptr;
 
-    if (primaryVariable != NULL)
+    if (primaryVariable != nullptr)
     {
         delete [] primaryVariable;
     }
