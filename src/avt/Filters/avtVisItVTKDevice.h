@@ -42,6 +42,7 @@ namespace avt
 
                                 // OSPRay attributes.
                                 OSPRayEnabled(false),
+                                OSPRayRenderType(0),
                                 OSPRayShadowsEnabled(false),
                                 OSPRayUseGridAccelerator(false),
                                 OSPRayPreIntegration(false),
@@ -65,6 +66,7 @@ namespace avt
 
             // OSPRay attributes.
             bool    OSPRayEnabled;
+            int     OSPRayRenderType;
             // Whether to compute (hard) shadows
             bool    OSPRayShadowsEnabled;
             bool    OSPRayUseGridAccelerator;
@@ -126,6 +128,7 @@ public:
 
     // OSPRay Options
     void SetOSPRayEnabled(const bool b)               { m_renderingAttribs.OSPRayEnabled = b; }
+    void SetOSPRayRenderType(const int v)             { m_renderingAttribs.OSPRayRenderType = v; }
     void SetOSPRayShadowsEnabled(const bool b)        { m_renderingAttribs.OSPRayShadowsEnabled = b; }
     void SetOSPRayUseGridAccelerator(const bool b)    { m_renderingAttribs.OSPRayUseGridAccelerator = b; }
     void SetOSPRayPreIntegration(const bool b)        { m_renderingAttribs.OSPRayPreIntegration = b; }
@@ -155,13 +158,18 @@ protected:
     bool                        m_resetColorMap{true};
 
     bool                        m_OSPRayEnabled{false};
+    int                         m_OSPRayRenderType{0};
 
     int                         m_nComponents{1};
 
     int                         m_resampleType{0};
     int                         m_resampleTargetVal{0};
 
- private:
+    std::string                 m_activeVarName  {"default"};
+    std::string                 m_opacityVarName {"default"};
+    std::string                 m_gradientVarName{"default"};
+
+private:
     void                 ExecuteVolume();
     void                 ExecuteSurface();
     avtImage_p           CreateFinalImage(const void *, const int, const int, const float);

@@ -486,7 +486,7 @@ avtVisItVTKDevice::ExecuteVolume()
     {
         m_nComponents = 2;
         GetDataExtents(opacityRange, opacityVarName.c_str());
-	UnifyMinMax(opacityRange, 2);
+        UnifyMinMax(opacityRange, 2);
     }
     else
     {
@@ -510,7 +510,9 @@ avtVisItVTKDevice::ExecuteVolume()
         if(m_imageToRender == nullptr ||
            m_resampleType != m_renderingAttribs.resampleType ||
            (m_renderingAttribs.resampleType &&
-            m_renderingAttribs.resampleTargetVal != m_resampleTargetVal))
+            m_renderingAttribs.resampleTargetVal != m_resampleTargetVal) ||
+           m_activeVarName != activeVarName ||
+           m_opacityVarName != opacityVarName )
         {
             needImage = true;
 
@@ -523,12 +525,6 @@ avtVisItVTKDevice::ExecuteVolume()
         }
     }
 
-    if(mustResample)
-      LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-                << "rank: "  << PAR_Rank() << "  "
-                << "must resample"
-                << std::endl;
-
     // If one data set needs to resample the all will be resampled as
     // avtResampleFilter is a parallel call so do them regardless if
     // there is data or not. Otherwise MPI crashes.
@@ -538,6 +534,16 @@ avtVisItVTKDevice::ExecuteVolume()
     bool userResample =
       (m_renderingAttribs.resampleType &&
        m_renderingAttribs.resampleTargetVal != m_resampleTargetVal);
+
+    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+                << "rank: "  << PAR_Rank() << "  ";
+    if(mustResample)
+        LOCAL_DEBUG << "must resample  ";
+    if(userResample)
+        LOCAL_DEBUG << "user resample  ";
+    if(needImage)
+        LOCAL_DEBUG << "need Image  ";
+    LOCAL_DEBUG << std::endl;
 
     if(mustResample || userResample)
     {
@@ -618,7 +624,7 @@ avtVisItVTKDevice::ExecuteVolume()
     // the needImage flag is false as it is based on the original
     // input data. This step could also be done by examining the
     // rectilienar grid but the flag is already set so use it.
-    if( needImage == false || nsets == 0 )
+    if( nsets == 0 )
     {
         debug5 << "[VisItVTKDevice] Nothing to render, no data." << std::endl;
 
@@ -634,18 +640,18 @@ avtVisItVTKDevice::ExecuteVolume()
         return;
     }
 
-    // After resampling there should be only one rectilinear data set.
-    if( nsets != 1 )
-    {
-        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-                  << "rank: "  << PAR_Rank() << " "
-                  << "Too many datasets to render, skipping." << std::endl;
-        EXCEPTION1(ImproperUseException, "Only one input dataset may be rendered.");
-    }
-
     // Create a new image if needed.
     if( needImage )
     {
+        // After resampling there should be only one rectilinear data set.
+        if( nsets != 1 )
+        {
+            LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+                        << "rank: "  << PAR_Rank() << " "
+                        << "Too many datasets to render, skipping." << std::endl;
+            EXCEPTION1(ImproperUseException, "Only one input dataset may be rendered.");
+        }
+
         // Now to the business
         vtkDataSet* in_ds = datasetPtrs[ 0 ];
         vtkRectilinearGrid* rgrid = vtkRectilinearGrid::SafeDownCast( in_ds );
@@ -675,11 +681,15 @@ avtVisItVTKDevice::ExecuteVolume()
         // There could be both a scalar and opacity data arrays.
         vtkDataArray *dataArr = in_ds->GetPointData()->GetScalars();
         vtkDataArray *opacityArr = nullptr;
-	// Might be useful - not sure yet???
+        // Might be useful - not sure yet???
         // vtkDataArray *gradientArr = nullptr;
+
+        m_activeVarName = activeVarName;
 
         if( m_nComponents == 2 )
         {
+            m_opacityVarName = opacityVarName;
+
             opacityArr = in_ds->GetPointData()->GetScalars( opacityVarName.c_str() );
             if( opacityArr == nullptr )
             {
@@ -874,12 +884,20 @@ avtVisItVTKDevice::ExecuteVolume()
         {
             vtkOSPRayVolumeMapper * vm = vtkOSPRayVolumeMapper::New();
             m_volumeMapper = vm;
+
+	    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+			<< "rank: "  << PAR_Rank() << " OSPRay Volume Mapper "
+			<< std::endl;
         }
         else
 #endif
         {
             vtkGPUVolumeRayCastMapper * vm = vtkGPUVolumeRayCastMapper::New();
             m_volumeMapper = vm;
+
+	    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+			<< "rank: "  << PAR_Rank() << " GPU Volume Ray Cast Mapper "
+			<< std::endl;
         }
 
         m_volumeMapper->SetInputData(m_imageToRender);
@@ -1018,7 +1036,16 @@ avtVisItVTKDevice::ExecuteVolume()
 #ifdef HAVE_OSPRAY
     if( m_renderingAttribs.OSPRayEnabled )
     {
-        vtkOSPRayRendererNode::SetRendererType("pathtracer", renderer);
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+		    << "rank: "  << PAR_Rank() << " RenderType: "
+		    << (m_renderingAttribs.OSPRayRenderType ? "PathTracer" : "SciVis") << "  "
+		    << std::endl;
+
+        if( m_renderingAttribs.OSPRayRenderType == 1 )
+            vtkOSPRayRendererNode::SetRendererType("pathtracer", renderer);
+        else
+            vtkOSPRayRendererNode::SetRendererType("scivis", renderer);
+
         vtkOSPRayRendererNode::SetSamplesPerPixel(m_renderingAttribs.OSPRaySamplesPerPixel, renderer);
         vtkOSPRayRendererNode::SetAmbientSamples (m_renderingAttribs.OSPRayAOSamples,       renderer);
         vtkOSPRayRendererNode::SetMinContribution(m_renderingAttribs.OSPRayMinContribution, renderer);
