@@ -73,11 +73,11 @@
 
 avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
 {
-    lowResVolumeFilter = NULL;
-    volumeFilter = NULL;
-    gradientFilter = NULL;
-    resampleFilter = NULL;
-    shiftCentering = NULL;
+    lowResVolumeFilter = nullptr;
+    volumeFilter = nullptr;
+    gradientFilter = nullptr;
+    resampleFilter = nullptr;
+    shiftCentering = nullptr;
     renderer = avtVolumeRenderer::New();
 
     avtCustomRenderer_p cr;
@@ -135,16 +135,16 @@ avtVolumePlot::~avtVolumePlot()
     delete shiftCentering;
     delete avtLUT;
 
-    if (lowResVolumeFilter != NULL)
+    if (lowResVolumeFilter != nullptr)
         delete lowResVolumeFilter;
-    if (volumeFilter != NULL)
+    if (volumeFilter != nullptr)
         delete volumeFilter;
-    if (gradientFilter != NULL)
+    if (gradientFilter != nullptr)
         delete gradientFilter;
-    if (resampleFilter != NULL)
+    if (resampleFilter != nullptr)
         delete resampleFilter;
 
-    renderer = NULL;
+    renderer = nullptr;
 
     //
     // Do not delete the varLegend since it is being held by varLegendRefPtr.
@@ -260,7 +260,7 @@ avtVolumePlot::SetAtts(const AttributeGroup *a)
     SetLegendOpacities();
 
     double min = 0., max = 1.;
-    if (*(mapper->GetInput()) != NULL)
+    if (*(mapper->GetInput()) != nullptr)
         mapper->GetRange(min, max);
     if (atts.GetUseColorVarMin())
     {
@@ -357,7 +357,7 @@ avtVolumePlot::ImageExecute(avtImage_p input,
 {
     avtImage_p rv = input;
 
-    if (volumeFilter != NULL)
+    if (volumeFilter != nullptr)
     {
         volumeFilter->SetAttributes(atts);
         rv = volumeFilter->RenderImage(input, window_atts);
@@ -468,10 +468,10 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
     //
     // Clean up any old filters.
     //
-    if (shiftCentering != NULL)
+    if (shiftCentering != nullptr)
     {
         delete shiftCentering;
-        shiftCentering = NULL;
+        shiftCentering = nullptr;
     }
 
     //
@@ -505,7 +505,7 @@ bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth)
     debug5<<"datts->GetTimeIndex(): "<<datts.GetTimeIndex()<<endl;
     debug5<<"datts->GetCycle(): "<<datts.GetCycle()<<endl;
 
-    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), NULL);
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), nullptr);
     avtDatabaseMetaData *md = dbp->GetMetaData(datts.GetTimeIndex(), 1);
     std::string mesh = md->MeshForVar(datts.GetVariableName());
     const avtMeshMetaData *mmd = md->GetMesh(mesh);
@@ -566,7 +566,7 @@ bool DataMustBeResampled(avtDataObject_p input)
     const avtDataAttributes &datts = input->GetInfo().GetAttributes();
     std::string db = input->GetInfo().GetAttributes().GetFullDBName();
 
-    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), NULL);
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), nullptr);
     avtDatabaseMetaData *md = dbp->GetMetaData(datts.GetTimeIndex(), 1);
 
     try
@@ -653,25 +653,25 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     //
     // Clean up any old filters.
     //
-    if (lowResVolumeFilter != NULL)
+    if (lowResVolumeFilter != nullptr)
     {
         delete lowResVolumeFilter;
-        lowResVolumeFilter = NULL;
+        lowResVolumeFilter = nullptr;
     }
-    if (gradientFilter != NULL)
+    if (gradientFilter != nullptr)
     {
         delete gradientFilter;
-        gradientFilter = NULL;
+        gradientFilter = nullptr;
     }
-    if (volumeFilter != NULL)
+    if (volumeFilter != nullptr)
     {
         delete volumeFilter;
-        volumeFilter = NULL;
+        volumeFilter = nullptr;
     }
-    if (resampleFilter != NULL)
+    if (resampleFilter != nullptr)
     {
         delete resampleFilter;
-        resampleFilter = NULL;
+        resampleFilter = nullptr;
     }
 
     avtDataObject_p dob = input;
@@ -883,11 +883,11 @@ avtVolumePlot::ReleaseData(void)
 {
     avtVolumeDataPlot::ReleaseData();
 
-    if (volumeFilter != NULL)
+    if (volumeFilter != nullptr)
     {
         volumeFilter->ReleaseData();
     }
-    if (shiftCentering != NULL)
+    if (shiftCentering != nullptr)
     {
         shiftCentering->ReleaseData();
     }
