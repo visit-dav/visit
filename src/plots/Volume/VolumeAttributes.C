@@ -310,6 +310,43 @@ VolumeAttributes::LowGradientLightingReduction_FromString(const std::string &s, 
     return false;
 }
 
+//
+// Enum conversion methods for VolumeAttributes::OSPRayRenderType
+//
+
+static const char *OSPRayRenderType_strings[] = {
+"SciVis", "PathTracer"};
+
+std::string
+VolumeAttributes::OSPRayRenderType_ToString(VolumeAttributes::OSPRayRenderType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return OSPRayRenderType_strings[index];
+}
+
+std::string
+VolumeAttributes::OSPRayRenderType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return OSPRayRenderType_strings[index];
+}
+
+bool
+VolumeAttributes::OSPRayRenderType_FromString(const std::string &s, VolumeAttributes::OSPRayRenderType &val)
+{
+    val = VolumeAttributes::SciVis;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == OSPRayRenderType_strings[i])
+        {
+            val = (OSPRayRenderType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: VolumeAttributes::VolumeAttributes
 //
@@ -328,6 +365,7 @@ VolumeAttributes::LowGradientLightingReduction_FromString(const std::string &s, 
 void VolumeAttributes::Init()
 {
     osprayEnabledFlag = false;
+    osprayRenderType = SciVis;
     osprayShadowsEnabledFlag = false;
     osprayUseGridAcceleratorFlag = false;
     osprayPreIntegrationFlag = false;
@@ -395,6 +433,7 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
 {
 
     osprayEnabledFlag = obj.osprayEnabledFlag;
+    osprayRenderType = obj.osprayRenderType;
     osprayShadowsEnabledFlag = obj.osprayShadowsEnabledFlag;
     osprayUseGridAcceleratorFlag = obj.osprayUseGridAcceleratorFlag;
     osprayPreIntegrationFlag = obj.osprayPreIntegrationFlag;
@@ -611,6 +650,7 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
 
     // Create the return value
     return ((osprayEnabledFlag == obj.osprayEnabledFlag) &&
+            (osprayRenderType == obj.osprayRenderType) &&
             (osprayShadowsEnabledFlag == obj.osprayShadowsEnabledFlag) &&
             (osprayUseGridAcceleratorFlag == obj.osprayUseGridAcceleratorFlag) &&
             (osprayPreIntegrationFlag == obj.osprayPreIntegrationFlag) &&
@@ -797,6 +837,7 @@ void
 VolumeAttributes::SelectAll()
 {
     Select(ID_osprayEnabledFlag,               (void *)&osprayEnabledFlag);
+    Select(ID_osprayRenderType,                (void *)&osprayRenderType);
     Select(ID_osprayShadowsEnabledFlag,        (void *)&osprayShadowsEnabledFlag);
     Select(ID_osprayUseGridAcceleratorFlag,    (void *)&osprayUseGridAcceleratorFlag);
     Select(ID_osprayPreIntegrationFlag,        (void *)&osprayPreIntegrationFlag);
@@ -875,6 +916,12 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     {
         addToParent = true;
         node->AddNode(new DataNode("osprayEnabledFlag", osprayEnabledFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_osprayRenderType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayRenderType", OSPRayRenderType_ToString(osprayRenderType)));
     }
 
     if(completeSave || !FieldsEqual(ID_osprayShadowsEnabledFlag, &defaultObject))
@@ -1179,6 +1226,22 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("osprayEnabledFlag")) != 0)
         SetOsprayEnabledFlag(node->AsBool());
+    if((node = searchNode->GetNode("osprayRenderType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetOsprayRenderType(OSPRayRenderType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            OSPRayRenderType value;
+            if(OSPRayRenderType_FromString(node->AsString(), value))
+                SetOsprayRenderType(value);
+        }
+    }
     if((node = searchNode->GetNode("osprayShadowsEnabledFlag")) != 0)
         SetOsprayShadowsEnabledFlag(node->AsBool());
     if((node = searchNode->GetNode("osprayUseGridAcceleratorFlag")) != 0)
@@ -1389,6 +1452,13 @@ VolumeAttributes::SetOsprayEnabledFlag(bool osprayEnabledFlag_)
 {
     osprayEnabledFlag = osprayEnabledFlag_;
     Select(ID_osprayEnabledFlag, (void *)&osprayEnabledFlag);
+}
+
+void
+VolumeAttributes::SetOsprayRenderType(VolumeAttributes::OSPRayRenderType osprayRenderType_)
+{
+    osprayRenderType = osprayRenderType_;
+    Select(ID_osprayRenderType, (void *)&osprayRenderType);
 }
 
 void
@@ -1697,6 +1767,12 @@ bool
 VolumeAttributes::GetOsprayEnabledFlag() const
 {
     return osprayEnabledFlag;
+}
+
+VolumeAttributes::OSPRayRenderType
+VolumeAttributes::GetOsprayRenderType() const
+{
+    return OSPRayRenderType(osprayRenderType);
 }
 
 bool
@@ -2040,6 +2116,7 @@ VolumeAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_osprayEnabledFlag:               return "osprayEnabledFlag";
+    case ID_osprayRenderType:                return "osprayRenderType";
     case ID_osprayShadowsEnabledFlag:        return "osprayShadowsEnabledFlag";
     case ID_osprayUseGridAcceleratorFlag:    return "osprayUseGridAcceleratorFlag";
     case ID_osprayPreIntegrationFlag:        return "osprayPreIntegrationFlag";
@@ -2107,6 +2184,7 @@ VolumeAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_osprayEnabledFlag:               return FieldType_bool;
+    case ID_osprayRenderType:                return FieldType_enum;
     case ID_osprayShadowsEnabledFlag:        return FieldType_bool;
     case ID_osprayUseGridAcceleratorFlag:    return FieldType_bool;
     case ID_osprayPreIntegrationFlag:        return FieldType_bool;
@@ -2174,6 +2252,7 @@ VolumeAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_osprayEnabledFlag:               return "bool";
+    case ID_osprayRenderType:                return "enum";
     case ID_osprayShadowsEnabledFlag:        return "bool";
     case ID_osprayUseGridAcceleratorFlag:    return "bool";
     case ID_osprayPreIntegrationFlag:        return "bool";
@@ -2245,6 +2324,11 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_osprayEnabledFlag:
         {  // new scope
         retval = (osprayEnabledFlag == obj.osprayEnabledFlag);
+        }
+        break;
+    case ID_osprayRenderType:
+        {  // new scope
+        retval = (osprayRenderType == obj.osprayRenderType);
         }
         break;
     case ID_osprayShadowsEnabledFlag:

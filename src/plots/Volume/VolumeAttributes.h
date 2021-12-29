@@ -82,6 +82,11 @@ public:
         Higher,
         Highest
     };
+    enum OSPRayRenderType
+    {
+        SciVis,
+        PathTracer
+    };
 
     // These constructors are for objects of this class
     VolumeAttributes();
@@ -116,6 +121,7 @@ public:
 
     // Property setting methods
     void SetOsprayEnabledFlag(bool osprayEnabledFlag_);
+    void SetOsprayRenderType(OSPRayRenderType osprayRenderType_);
     void SetOsprayShadowsEnabledFlag(bool osprayShadowsEnabledFlag_);
     void SetOsprayUseGridAcceleratorFlag(bool osprayUseGridAcceleratorFlag_);
     void SetOsprayPreIntegrationFlag(bool osprayPreIntegrationFlag_);
@@ -161,6 +167,7 @@ public:
 
     // Property getting methods
     bool                           GetOsprayEnabledFlag() const;
+    OSPRayRenderType               GetOsprayRenderType() const;
     bool                           GetOsprayShadowsEnabledFlag() const;
     bool                           GetOsprayUseGridAcceleratorFlag() const;
     bool                           GetOsprayPreIntegrationFlag() const;
@@ -254,6 +261,11 @@ public:
 protected:
     static std::string LowGradientLightingReduction_ToString(int);
 public:
+    static std::string OSPRayRenderType_ToString(OSPRayRenderType);
+    static bool OSPRayRenderType_FromString(const std::string &, OSPRayRenderType &);
+protected:
+    static std::string OSPRayRenderType_ToString(int);
+public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -276,6 +288,7 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_osprayEnabledFlag = 0,
+        ID_osprayRenderType,
         ID_osprayShadowsEnabledFlag,
         ID_osprayUseGridAcceleratorFlag,
         ID_osprayPreIntegrationFlag,
@@ -323,6 +336,7 @@ public:
 
 private:
     bool                     osprayEnabledFlag;
+    int                      osprayRenderType;
     bool                     osprayShadowsEnabledFlag;
     bool                     osprayUseGridAcceleratorFlag;
     bool                     osprayPreIntegrationFlag;
@@ -370,6 +384,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bbbbbbbiidddbbafiaiisUbfbfbfbfbiiiidiifibdD"
+#define VOLUMEATTRIBUTES_TMFS "bibbbbbbiidddbbafiaiisUbfbfbfbfbiiiidiifibdD"
 
 #endif

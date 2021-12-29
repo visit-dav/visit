@@ -48,6 +48,21 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     else
         snprintf(tmpStr, 1000, "%sosprayEnabledFlag = 0\n", prefix);
     str += tmpStr;
+    const char *osprayRenderType_names = "SciVis, PathTracer";
+    switch (atts->GetOsprayRenderType())
+    {
+      case VolumeAttributes::SciVis:
+          snprintf(tmpStr, 1000, "%sosprayRenderType = %sSciVis  # %s\n", prefix, prefix, osprayRenderType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::PathTracer:
+          snprintf(tmpStr, 1000, "%sosprayRenderType = %sPathTracer  # %s\n", prefix, prefix, osprayRenderType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     if(atts->GetOsprayShadowsEnabledFlag())
         snprintf(tmpStr, 1000, "%sosprayShadowsEnabledFlag = 1\n", prefix);
     else
@@ -438,6 +453,72 @@ VolumeAttributes_GetOsprayEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetOsprayEnabledFlag()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_SetOsprayRenderType(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid osprayRenderType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " SciVis";
+        ss << ", PathTracer";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the osprayRenderType in the object.
+    obj->data->SetOsprayRenderType(VolumeAttributes::OSPRayRenderType(cval));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetOsprayRenderType(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOsprayRenderType()));
     return retval;
 }
 
@@ -3002,6 +3083,8 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"Notify", VolumeAttributes_Notify, METH_VARARGS},
     {"SetOsprayEnabledFlag", VolumeAttributes_SetOsprayEnabledFlag, METH_VARARGS},
     {"GetOsprayEnabledFlag", VolumeAttributes_GetOsprayEnabledFlag, METH_VARARGS},
+    {"SetOsprayRenderType", VolumeAttributes_SetOsprayRenderType, METH_VARARGS},
+    {"GetOsprayRenderType", VolumeAttributes_GetOsprayRenderType, METH_VARARGS},
     {"SetOsprayShadowsEnabledFlag", VolumeAttributes_SetOsprayShadowsEnabledFlag, METH_VARARGS},
     {"GetOsprayShadowsEnabledFlag", VolumeAttributes_GetOsprayShadowsEnabledFlag, METH_VARARGS},
     {"SetOsprayUseGridAcceleratorFlag", VolumeAttributes_SetOsprayUseGridAcceleratorFlag, METH_VARARGS},
@@ -3109,6 +3192,13 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "osprayEnabledFlag") == 0)
         return VolumeAttributes_GetOsprayEnabledFlag(self, NULL);
+    if(strcmp(name, "osprayRenderType") == 0)
+        return VolumeAttributes_GetOsprayRenderType(self, NULL);
+    if(strcmp(name, "SciVis") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::SciVis));
+    if(strcmp(name, "PathTracer") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::PathTracer));
+
     if(strcmp(name, "osprayShadowsEnabledFlag") == 0)
         return VolumeAttributes_GetOsprayShadowsEnabledFlag(self, NULL);
     if(strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
@@ -3275,6 +3365,8 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "osprayEnabledFlag") == 0)
         obj = VolumeAttributes_SetOsprayEnabledFlag(self, args);
+    else if(strcmp(name, "osprayRenderType") == 0)
+        obj = VolumeAttributes_SetOsprayRenderType(self, args);
     else if(strcmp(name, "osprayShadowsEnabledFlag") == 0)
         obj = VolumeAttributes_SetOsprayShadowsEnabledFlag(self, args);
     else if(strcmp(name, "osprayUseGridAcceleratorFlag") == 0)

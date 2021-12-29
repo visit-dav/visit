@@ -209,6 +209,7 @@ private slots:
     void setManyGuassians();
     // ospray options
     void osprayToggled(bool val);
+    void osprayRenderTypeChanged(int val);
     void osprayShadowToggled(bool val);
     void osprayUseGridAcceleratorToggled(bool val);
     void osprayPreIntegrationToggled(bool val);
@@ -270,7 +271,6 @@ private:
     QWidget                  *tfRendererOptions;
 
     // General widgets
-    QCheckBox                *osprayToggle;
     QCheckBox                *legendToggle;
     QCheckBox                *lightingToggle;
     QGroupBox                *methodsGroup;
@@ -330,7 +330,11 @@ private:
 
     //OSPRay group
     QGroupBox               *osprayGroup;
+    QCheckBox               *osprayToggle;
     QWidget                 *osprayProperties;
+    QWidget                 *osprayRenderTypesWidget;
+    QLabel                  *osprayRenderTypesLabel;
+    QComboBox               *osprayRenderTypesComboBox;
     QCheckBox               *osprayShadowToggle;
     QCheckBox               *osprayUseGridAcceleratorToggle;
     QCheckBox               *osprayPreIntegrationToggle;

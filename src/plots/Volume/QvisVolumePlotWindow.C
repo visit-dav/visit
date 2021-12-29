@@ -1316,6 +1316,19 @@ void QvisVolumePlotWindow::CreateOSPRayGroups(QWidget *parent, QLayout *pLayout)
     osprayProperties = new QWidget(osprayGroup);
     QGridLayout *osprayPropertiesLayout = new QGridLayout(osprayProperties);
 
+    // value: spp
+    osprayRenderTypesWidget = new QWidget(osprayGroup);
+    QHBoxLayout *renderTypeLayout  = new QHBoxLayout(osprayRenderTypesWidget);
+    osprayRenderTypesLabel  = new QLabel(tr("Render Type"), osprayRenderTypesWidget);
+    osprayRenderTypesComboBox = new QComboBox(osprayRenderTypesWidget);
+    osprayRenderTypesComboBox->addItem(tr("Sci Vis"));
+    osprayRenderTypesComboBox->addItem(tr("Path Tracer"));
+    connect(osprayRenderTypesComboBox, SIGNAL(activated(int)),
+            this, SLOT(osprayRenderTypeChanged(int)));
+    renderTypeLayout->addWidget(osprayRenderTypesLabel);
+    renderTypeLayout->addWidget(osprayRenderTypesComboBox, Qt::AlignLeft);
+    renderTypeLayout->addStretch(QSizePolicy::Maximum);
+
     // flag: shadow enabled
     osprayShadowToggle = new QCheckBox(tr("Shadow"), osprayGroup);
     connect(osprayShadowToggle, SIGNAL(toggled(bool)),
@@ -1456,12 +1469,11 @@ void QvisVolumePlotWindow::CreateOSPRayGroups(QWidget *parent, QLayout *pLayout)
     osprayAOTransparencyToggle->setVisible( false );
     osprayAODistanceWidget->setVisible( false );
 
-
-    osprayPropertiesLayout->addWidget(ospraySPPWidget,                0, 0, 1, 1, Qt::AlignRight);
-    osprayPropertiesLayout->addWidget(osprayAOSamplesWidget,          1, 0, 1, 1, Qt::AlignRight);
-    osprayPropertiesLayout->addWidget(osprayMinContributionWidget,    0, 1, 1, 2, Qt::AlignRight);
-    osprayPropertiesLayout->addWidget(osprayMaxContributionWidget,    1, 1, 1, 2, Qt::AlignRight);
-
+    osprayPropertiesLayout->addWidget(osprayRenderTypesWidget,        0, 0, 1, 1, Qt::AlignRight);
+    osprayPropertiesLayout->addWidget(ospraySPPWidget,                1, 0, 1, 1, Qt::AlignRight);
+    osprayPropertiesLayout->addWidget(osprayAOSamplesWidget,          2, 0, 1, 1, Qt::AlignRight);
+    osprayPropertiesLayout->addWidget(osprayMinContributionWidget,    1, 1, 1, 2, Qt::AlignRight);
+    osprayPropertiesLayout->addWidget(osprayMaxContributionWidget,    2, 1, 1, 2, Qt::AlignRight);
 }
 
 void QvisVolumePlotWindow::osprayToggled(bool val)
@@ -1469,6 +1481,27 @@ void QvisVolumePlotWindow::osprayToggled(bool val)
     volumeAtts->SetOsprayEnabledFlag(val);
     Apply();
 }
+void
+QvisVolumePlotWindow::osprayRenderTypeChanged(int val)
+{
+    switch (val)
+    {
+      case 0:
+        volumeAtts->SetOsprayRenderType(VolumeAttributes::SciVis);
+        break;
+      case 1:
+        volumeAtts->SetOsprayRenderType(VolumeAttributes::PathTracer);
+        break;
+      default:
+        EXCEPTION1(ImproperUseException,
+                   "The Volume plot received a signal for a osprayRender "
+                   "that it didn't understand");
+        break;
+    }
+
+    Apply();
+}
+
 void QvisVolumePlotWindow::osprayShadowToggled(bool val)
 {
     volumeAtts->SetOsprayShadowsEnabledFlag(val);
@@ -2051,6 +2084,19 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             matN->blockSignals(false);
             break;
 
+        case VolumeAttributes::ID_osprayRenderType:
+            osprayRenderTypesComboBox->blockSignals(true);
+
+            if (volumeAtts->GetOsprayRenderType() == VolumeAttributes::SciVis)
+            {
+                osprayRenderTypesComboBox->setCurrentIndex(0);
+            }
+            else if (volumeAtts->GetOsprayRenderType() == VolumeAttributes::PathTracer)
+            {
+                osprayRenderTypesComboBox->setCurrentIndex(1);
+            }
+            osprayRenderTypesComboBox->blockSignals(false);
+            break;
         case VolumeAttributes::ID_osprayShadowsEnabledFlag:
             osprayShadowToggle->blockSignals(true);
             osprayShadowToggle->setChecked(volumeAtts->GetOsprayShadowsEnabledFlag());

@@ -81,9 +81,16 @@
         Higher
         Highest
       </Enum>
+      <Enum name="OSPRayRenderType">
+        SciVis
+        PathTracer
+      </Enum>
       
       <Field name="osprayEnabledFlag" label="Enable OSPRay" type="bool">
         false
+      </Field>
+      <Field name="osprayRenderType" label="OSPRay Render Type" type="enum" subtype="OSPRayRenderType">
+        SciVis
       </Field>
       <Field name="osprayShadowsEnabledFlag" label="osprayShadowsEnabledFlag" type="bool">
         false
