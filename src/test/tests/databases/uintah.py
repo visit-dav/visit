@@ -50,6 +50,14 @@ def test_particle():
     ChangeActivePlotsVar("p.mass/1")
     Test("Particle_05")
 
+    PickAtts = GetPickAttributes()
+    PickAtts.variables = ("p.particleID/*")
+    SetPickAttributes(PickAtts)
+    SetQueryOutputToObject()
+    p = NodePick(0, 0)
+    id = p['p.particleID/*']
+    TestValueEQ("Particle ID", id, 281474976710656., 0)
+
 def main():
     test_particle()
 
