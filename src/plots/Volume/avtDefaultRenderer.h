@@ -60,7 +60,7 @@ class avtDefaultRenderer : public avtVolumeRendererImplementation
     bool                       resetColorMap{true};
     bool                       useInterpolation{true};
 
-    bool                       lastMapper{false};
+    bool                       OSPRayEnabled{false};
 
     int                        nComponents{1};
 };

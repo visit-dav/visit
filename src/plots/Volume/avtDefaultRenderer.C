@@ -155,6 +155,13 @@ avtDefaultRenderer::Render(
     const avtVolumeRendererImplementation::RenderProperties &props,
     const avtVolumeRendererImplementation::VolumeData &volume)
 {
+#ifndef HAVE_OSPRAY
+    if( props.atts.GetOsprayEnabledFlag() )
+    {
+        avtCallback::IssueWarning("Trying to use OSPRay when VTK was not built with OSPRay support. Default VTK renderering will be used.");
+    }
+#endif
+
     const char *mName = "avtDefaultRenderer::Render: ";
 
     if (VTKRen == nullptr)
@@ -295,19 +302,27 @@ avtDefaultRenderer::Render(
         }
     }
 
-    if( mapper == nullptr || lastMapper != props.atts.GetOsprayEnabledFlag())
+    if( mapper == nullptr || OSPRayEnabled != props.atts.GetOsprayEnabledFlag())
     {
-        lastMapper = props.atts.GetOsprayEnabledFlag();
+        OSPRayEnabled = props.atts.GetOsprayEnabledFlag();
 
         if (mapper != nullptr)
             mapper->Delete();
 
+#ifdef HAVE_OSPRAY
         if( props.atts.GetOsprayEnabledFlag())
+        {
             mapper = vtkOSPRayVolumeMapper::New();
-        else
-            mapper = vtkSmartVolumeMapper::New();
 
-        debug5 << mName << "Adding data to the SmartVolumeMapper" << endl;
+            debug5 << mName << "Adding data to the vtkOSPRayVolumeMapper" << endl;
+        }
+        else
+#endif
+        {
+          mapper = vtkSmartVolumeMapper::New();
+
+          debug5 << mName << "Adding data to the SmartVolumeMapper" << endl;
+        }
 
         mapper->SetInputData(imageToRender);
         mapper->SetScalarModeToUsePointData();
@@ -422,6 +437,7 @@ avtDefaultRenderer::Render(
         curVolume->SetProperty(volumeProp);
     }
 
+#ifdef HAVE_OSPRAY
     if( props.atts.GetOsprayEnabledFlag() )
     {
         vtkOSPRayRendererNode::SetRendererType("pathtracer", VTKRen);
@@ -430,6 +446,7 @@ avtDefaultRenderer::Render(
         vtkOSPRayRendererNode::SetMinContribution(props.atts.GetOsprayMinContribution(), VTKRen);
         vtkOSPRayRendererNode::SetMaxContribution(props.atts.GetOsprayMaxContribution(), VTKRen);
     }
+#endif
 
     mapper->Render(VTKRen, curVolume);
 }
