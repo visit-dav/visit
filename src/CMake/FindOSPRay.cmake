@@ -10,7 +10,16 @@
 # The libraries as of ospray 2.8
 SET(OSPRAY_LIBRARIES ospray
                      ospray_imgui
-                     ospray_module_ispc)
+                     ospray_module_ispc
+		     embree3
+		     openvkl
+		     openvkl_module_cpu_device
+		     openvkl_module_cpu_device_16
+		     openvkl_module_cpu_device_8
+		     openvkl_module_cpu_device_4
+		     rkcommon
+		     tbb
+		     tbbmalloc)
 
 If( EXISTS ${VISIT_OSPRAY_DIR} )
 
