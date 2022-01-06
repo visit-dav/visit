@@ -34,7 +34,7 @@ If( EXISTS ${VISIT_OSPRAY_DIR} )
         SET(LIB lib)
     ENDIF()
 
-    IF(EXISTS ${VISIT_OSPRAY_DIR}/${LIB}/cmake/ospray-${OSPRAY_VERSION}/OSPRAYConfig.cmake)
+    IF(EXISTS ${VISIT_OSPRAY_DIR}/${LIB}/cmake/ospray-${OSPRAY_VERSION}/osprayConfig.cmake)
         SET(OSPRAY_DIR ${VISIT_OSPRAY_DIR})
     ENDIF()
 
