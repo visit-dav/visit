@@ -43,5 +43,5 @@ if(USE_REDUCED_BUILD) # this is just a var I create when I need it
 endif()
 
 if(USE_DEBUG_VTK)
-  VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISIT_WINDOWS_DIR}/vtk-debug/9.1.0)
+  VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISIT_WINDOWS_DIR}/MSVC2017/vtk-debug/9.1.0)
 endif()

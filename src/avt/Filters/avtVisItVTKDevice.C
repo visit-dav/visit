@@ -15,6 +15,7 @@
 #include <StackTimer.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
+#include <avtCallback.h>
 #include <avtDatasetExaminer.h>
 #include <avtResampleFilter.h>
 #include <avtSourceFromAVTDataset.h>

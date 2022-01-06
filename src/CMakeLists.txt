@@ -939,11 +939,6 @@ VISIT_3RDPARTY_VAR(MOAB_DIR      "Path containing the MOAB library's include and
 VISIT_3RDPARTY_VAR(MOAB_MPI_DIR  "Path containing the parallel MOAB library's include and lib")
 
 VISIT_3RDPARTY_VAR(OSPRAY_DIR    "Path containing the OSPRay library's include and lib")
-VISIT_3RDPARTY_VAR(EMBREE_DIR    "Path containing the embree library's include and lib")
-VISIT_3RDPARTY_VAR(ISPC_DIR      "Path containing the ISPC library's include and lib")
-# Note by Qi
-# should we change TBB_ROOT to TBB_DIR ?
-VISIT_3RDPARTY_VAR(TBB_ROOT      "Path containing the TBB library's include and lib")
 
 #-----------------------------------------------------------------------------
 # Read the version
@@ -1230,15 +1225,27 @@ CHECK_INCLUDE_FILES (sys/stat.h  HAVE_SYS_STAT_H)
 CHECK_INCLUDE_FILES (unistd.h    HAVE_UNISTD_H)
 CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 
+# These need to come before VTK/Qt because they depend on it.
+
 # zlib
-# Needs to come before VTK/Qt because they depend on it.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
+
+#ospray
+if(VISIT_OSPRAY)
+    include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
+endif()
 
 # szip and jpeg
 IF(WIN32)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
 ENDIF(WIN32)
+
+# Configure Qt and Qwt support.
+IF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt.cmake)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindQwt.cmake)
+ENDIF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
 # Configure VTK support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
@@ -1258,7 +1265,6 @@ ELSE(VISIT_THREAD)
 ENDIF(VISIT_THREAD)
 
 
-include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
 
 
 #-----------------------------------------------------------------------------
@@ -1312,11 +1318,6 @@ if(VISIT_PYTHON_FILTERS)
 endif()
 
 
-# Configure Qt and Qwt support.
-IF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt.cmake)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindQwt.cmake)
-ENDIF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
 # Configure PySide Support
 #if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND

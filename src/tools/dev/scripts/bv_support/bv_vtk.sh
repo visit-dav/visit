@@ -48,6 +48,8 @@ function bv_vtk_depends_on
 
     if [[ "$DO_MESAGL" == "yes" ]]; then
         depends_on="${depends_on} mesagl glu"
+    elif [[ "$DO_OSMESA" == "yes" ]]; then
+        depends_on="${depends_on} osmesa"
     fi
 
     if [[ "$DO_OSPRAY" == "yes" ]]; then
@@ -79,8 +81,8 @@ function bv_vtk_info
     export VTK_FILE=${VTK_FILE:-"VTK-9.1.0.tar.gz"}
     export VTK_VERSION=${VTK_VERSION:-"9.1.0"}
     export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.1"}
-    #export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
-    #export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
+    export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
+    export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
     export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-9.1.0"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
     #export VTK_MD5_CHECKSUM="fa61cd36491d89a17edab18522bdda49"
@@ -786,6 +788,88 @@ EOF
     return 0;
 }
 
+function apply_vtkospray_patches
+{
+    count_patches=2
+    # patch vtkOSPRay files:
+
+    # 1) expose vtkViewNodeFactory via vtkOSPRayPass
+    current_patch=1
+    patch -p0 << \EOF
+*** Rendering/RayTracing/vtkOSPRayPass_orig.h	2021-04-29 17:14:23.000000000 -0600
+--- Rendering/RayTracing/vtkOSPRayPass.h	2021-04-29 17:16:08.000000000 -0600
+*************** class vtkOverlayPass;
+*** 50,55 ****
+--- 50,56 ----
+  class vtkRenderPassCollection;
+  class vtkSequencePass;
+  class vtkVolumetricPass;
++ class vtkViewNodeFactory;
+  
+  class VTKRENDERINGRAYTRACING_EXPORT vtkOSPRayPass : public vtkRenderPass
+  {
+*************** public:
+*** 76,81 ****
+--- 77,87 ----
+     */
+    virtual void RenderInternal(const vtkRenderState* s);
+  
++   /**
++    * Called by VisIt
++    */
++   virtual vtkViewNodeFactory* GetViewNodeFactory();
++ 
+    ///@{
+    /**
+     * Wrapper around ospray's init and shutdown that protect
+*** Rendering/RayTracing/vtkOSPRayPass_orig.cxx	2021-04-29 17:17:02.000000000 -0600
+--- Rendering/RayTracing/vtkOSPRayPass.cxx	2021-04-29 17:19:10.000000000 -0600
+*************** void vtkOSPRayPass::RenderInternal(const
+*** 430,435 ****
+--- 430,441 ----
+  }
+  
+  //------------------------------------------------------------------------------
++ vtkViewNodeFactory* vtkOSPRayPass::GetViewNodeFactory()
++ {
++   return this->Internal->Factory;
++ }
++ 
++ //------------------------------------------------------------------------------
+  bool vtkOSPRayPass::IsSupported()
+  {
+    static bool detected = false;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch ${current_patch}/${count_patches} for vtkOSPRayPass failed."
+        return 1
+    fi
+
+    # 2) Set the samples in the VolumeMapper
+    ((current_patch++))
+    patch -p0 << \EOF
+*** Rendering/RayTracing/vtkOSPRayVolumeMapper_orig.cxx	2021-05-03 09:40:09.000000000 -0600
+--- Rendering/RayTracing/vtkOSPRayVolumeMapper.cxx	2021-05-03 09:41:03.000000000 -0600
+*************** void vtkOSPRayVolumeMapper::Render(vtkRe
+*** 72,77 ****
+--- 72,81 ----
+    {
+      this->Init();
+    }
++   vtkOSPRayRendererNode::SetSamplesPerPixel(
++     vtkOSPRayRendererNode::GetSamplesPerPixel(ren), this->InternalRenderer);
++   vtkOSPRayRendererNode::SetAmbientSamples(
++     vtkOSPRayRendererNode::GetAmbientSamples(ren), this->InternalRenderer);
+    this->InternalRenderer->SetRenderWindow(ren->GetRenderWindow());
+    this->InternalRenderer->SetActiveCamera(ren->GetActiveCamera());
+    this->InternalRenderer->SetBackground(ren->GetBackground());
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch $current_patch/$count_patches for vtkOSPRayVolumeMapper failed."
+        return 1
+    fi
+}
+
 function apply_vtk_patch
 {
     # this needs to be reworked for 9.1.0
@@ -805,6 +889,11 @@ function apply_vtk_patch
     #if [[ $? != 0 ]] ; then
     #    return 1
     #fi
+
+    apply_vtkospray_patches
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
 
     return 0
 }
@@ -905,20 +994,33 @@ function build_vtk
     # Use Mesa as GL?
     if [[ "$DO_MESAGL" == "yes" ]] ; then
         vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
+        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
         vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
         vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
         # for now, until Mesa can be updated to a version that supports GLVND, set LEGACY preference
         vopts="${vopts} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
-        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-        vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
-        vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+        # Cannot build onscreen and offscreen this way anymore
+        #vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+        #vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
+        #vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
 
         if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
+                vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+                vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
+                vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
                 vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
             fi
         fi
+    elif [[ "$DO_OSMESA" == "yes" ]] ; then
+        vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH="
+        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING="
+        vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
+        vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH="
+        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+        vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${OSMESA_LIB}\""
+        vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${OSMESA_INCLUDE_DIR}"
+        vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
     fi
 
     # Add some extra arguments to the VTK cmake command line via the
@@ -1037,11 +1139,17 @@ function build_vtk
 
 
     # Use OSPRay?
-    #if [[ "$DO_OSPRAY" == "yes" ]] ; then
-    #    vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:BOOL=ON"
-    #    vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}"
-    #    vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
-    #fi
+    if [[ "$DO_OSPRAY" == "yes" ]] ; then
+        vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=YES"
+        if [[ -d ${OSPRAY_INSTALL_DIR}/ospray/lib ]] ; then
+            vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}/ospray/lib/cmake/ospray-${OSPRAY_VERSION}"
+        elif [[ -d ${OSPRAY_INSTALL_DIR}/ospray/lib64 ]] ; then
+            vopts="${vopts} -Dospray_DIR=${OSPRAY_INSTALL_DIR}/ospray/lib64/cmake/ospray-${OSPRAY_VERSION}"
+        else
+            warn "Disabling ospray because its lib dir couldn't be found"
+            vopts="${vopts} -DVTK_MODULE_ENABLE_VTK_RenderingRayTracing:STRING=NO"
+        fi
+    fi
 
     # zlib support, use the one we build
     vopts="${vopts} -DVTK_MODULE_USE_EXTERNAL_VTK_zlib:BOOL=ON"
@@ -1063,6 +1171,9 @@ function build_vtk
     # script that we invoke with bash which calls cmake with all of the properly
     # arguments. We are now using this strategy for all platforms.
     #
+    if [[ "$DO_MESAGL" == "yes" || "$DO_OSMESA" == "yes" ]] ; then
+        export LD_LIBRARY_PATH="${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+    fi
 
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh

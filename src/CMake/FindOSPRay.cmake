@@ -18,8 +18,13 @@ SET(OSPRAY_LIBRARIES ospray
 		     openvkl_module_cpu_device_8
 		     openvkl_module_cpu_device_4
 		     rkcommon
-		     tbb
 		     tbbmalloc)
+
+if(WIN32)
+    list(APPEND OSPRAY_LIBRARIES tbb12)
+else()
+    list(APPEND OSPRAY_LIBRARIES tbb)
+endif()
 
 If( EXISTS ${VISIT_OSPRAY_DIR} )
 
