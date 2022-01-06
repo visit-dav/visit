@@ -467,6 +467,13 @@ avtVisItVTKDevice::ExecuteVolume()
     const int width  = screen[0];
     const int height = screen[1];
 
+#ifndef HAVE_OSPRAY
+    if( m_renderingAttribs.OSPRayEnabled )
+    {
+        avtCallback::IssueWarning("Trying to use OSPRay when VTK was not built with OSPRay support. Default VTK renderering will be used.");
+    }
+#endif
+
     auto dob = GetInput();
     auto inputTree = GetInputDataTree(); // avtDataTree_p
     int nsets = 0;
@@ -538,12 +545,12 @@ avtVisItVTKDevice::ExecuteVolume()
 
     LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                 << "rank: "  << PAR_Rank() << "  ";
+    if(needImage)
+        LOCAL_DEBUG << "need Image  ";
     if(mustResample)
         LOCAL_DEBUG << "must resample  ";
     if(userResample)
         LOCAL_DEBUG << "user resample  ";
-    if(needImage)
-        LOCAL_DEBUG << "need Image  ";
     LOCAL_DEBUG << std::endl;
 
     if(mustResample || userResample)
