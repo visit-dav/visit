@@ -1231,7 +1231,7 @@ CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
 
 #ospray
-if(VISIT_OSPRAY)
+IF(EXISTS ${VISIT_OSPRAY_DIR})
     include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
 endif()
 
