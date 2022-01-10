@@ -726,6 +726,12 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     else //if (atts.GetRendererType() == VolumeAttributes::Serial)
 
     {
+        if( atts.GetResampleType() != VolumeAttributes::None &&
+            atts.GetResampleType() != VolumeAttributes::SingleDomain )
+        {
+            avtCallback::IssueWarning("Performing 'Serial Rendering' but a parallel resampling was selected. Single domain sampling will be performed.");
+        }
+
         // User can force resampling - for the serial renderer
         // everything is sampled on to a single grid.
         if (DataMustBeResampled(input) ||

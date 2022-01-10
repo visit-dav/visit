@@ -556,6 +556,13 @@ avtVisItVTKDevice::ExecuteVolume()
 
     if(mustResample || userResample)
     {
+        if( PAR_Size() == 1 &&
+            (m_renderingAttribs.resampleType == 2 ||
+             m_renderingAttribs.resampleType == 3) )
+        {
+            avtCallback::IssueWarning("Parallel resampling was selected but running in serial. Single domain sampling will be performed.");
+        }
+
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << "  resampling"
                   << std::endl;
@@ -568,7 +575,8 @@ avtVisItVTKDevice::ExecuteVolume()
         InternalResampleAttributes resampleAtts;
 
         // User requested resampling. If the type is 1 then resample
-        // on to a single domain. Otherwise resample in parallel.
+        // on to a single domain. Otherwise resample in parallel
+        // (ignored if running in serial).
         if( userResample )
         {
             if( m_renderingAttribs.resampleType == 2 )
