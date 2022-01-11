@@ -31,6 +31,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed pick failure for Rectilinear grids when real zones are completely surrounded by ghost zones.</li>
   <li>Fixed a bug where VisIt would hang when working with a AMR meshes and the number of active patches was less than the number of processors and the patches were not rectilinear.</li>
   <li>Fixed a bug where encoding an mpeg movie on an Ubuntu 21 system failed.</li>
+  <li>Fixed a bug in the Uintah reader where long64 data was read as zeroes. This primarily impacted particle ids.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -38,6 +39,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>The VTK reader has been expanded to support .pvd files.</li>
   <li>Updated the Los Alamos National Laboratory's Trinity host profile to no longer use the gateway.</li>
+  <li>Improved the setting of the tick marks and labels for log scaled axes for curve plots.</li>
 </ul>
 
 <a name="Dev_changes"></a>

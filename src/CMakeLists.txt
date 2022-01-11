@@ -487,19 +487,22 @@
 #
 #****************************************************************************
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-IF (COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 NEW)
-    cmake_policy(SET CMP0011 NEW)
+if(COMMAND cmake_policy)
     cmake_policy(SET CMP0033 OLD)
-    cmake_policy(SET CMP0057 NEW)
-    cmake_policy(SET CMP0062 NEW)
-    IF(WIN32)
+    if(WIN32)
         # don't automatically link with qtmain
         cmake_policy(SET CMP0020 OLD)
-    ENDIF()
-ENDIF (COMMAND cmake_policy)
+        if(POLICY CMP0091) # introduced in cmake 3.15
+            # Tell CMake to always use /MD, even for debug builds.
+            # Done because prebuilt TP libraries are built with /MD and
+            # if debug build of VisIt uses /MDd there are runtime issues.
+            cmake_policy(SET CMP0091 NEW) # MSVC_RUNTIME_LIBRARY
+            set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+        endif()
+    endif()
+endif()
 
 #
 # Try to capture the initial set of cmake command line args passed by
