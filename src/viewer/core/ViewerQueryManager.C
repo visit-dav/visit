@@ -4479,6 +4479,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
 //    Added the GyRadius Query.
 //
+//    Chris Laganella, Tue Jan 11 18:08:08 EST 2022
+//    Added the "Flatten" query.
+//
 // ****************************************************************************
 
 void
@@ -4618,6 +4621,7 @@ ViewerQueryManager::InitializeQueryList()
 
     GetViewerState()->GetQueryList()->AddQuery("Integral Curve Info", dq, misc_r, ic, 1, 0, qo);
     GetViewerState()->GetQueryList()->AddQuery("Line Sampler Info", dq, misc_r, lsi, 1, 0, qo);
+    GetViewerState()->GetQueryList()->AddQuery("Flatten", dq, vr, basic, 1, 0, qo);
     GetViewerState()->GetQueryList()->SelectAll();
 }
 
