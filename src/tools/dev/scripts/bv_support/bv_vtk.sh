@@ -788,6 +788,53 @@ EOF
     return 0;
 }
 
+function apply_libxmlversionheader_patch
+{
+  # patch vtk's libxml CMakeLists.txt so that xml_version.h is installed
+   patch -p0 << \EOF
+*** ThirdParty/libxml2/vtklibxml2/CMakeLists.txt.orig	Wed Jan 12 11:24:42 2022
+--- ThirdParty/libxml2/vtklibxml2/CMakeLists.txt	Wed Jan 12 11:25:57 2022
+***************
+*** 771,785 ****
+  endif ()
+  
+  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
+! if (FALSE) # XXX(kitware): mask installation rules
+! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
+! endif ()
+  
+  if(MSVC)
+  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
+! 	if (FALSE) # XXX(kitware): mask installation rules
+! 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlwin32version.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
+! 	endif ()
+  endif()
+  
+  if(LIBXML2_WITH_PYTHON)
+--- 771,785 ----
+  endif ()
+  
+  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
+! #if (FALSE) # XXX(kitware): mask installation rules
+! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml)
+! #endif ()
+  
+  if(MSVC)
+  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
+! 	#if (FALSE) # XXX(kitware): mask installation rules
+! 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlwin32version.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml)
+! 	#endif ()
+  endif()
+  
+  if(LIBXML2_WITH_PYTHON)
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for xml_version.h installation failed."
+        return 1
+    fi
+}
+
 function apply_vtk_patch
 {
     # this needs to be reworked for 9.1.0
@@ -807,6 +854,11 @@ function apply_vtk_patch
     #if [[ $? != 0 ]] ; then
     #    return 1
     #fi
+
+    apply_libxmlversionheader_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
 
     return 0
 }
