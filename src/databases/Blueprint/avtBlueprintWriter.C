@@ -291,7 +291,7 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
 
 // ****************************************************************************
-//  Method: avtBlueprintWriter::BuildSelections
+//  Method: BuildSelections
 //
 //  Purpose:
 //      Reads the avtGhostZones field and builds a "selections" node so that
@@ -304,9 +304,16 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //
 //  Modifications:
 //
+//  Chris Laganella Wed Jan 12 12:52:01 EST 2022
+//  I converted this from a static method of the avtBlueprintWriter class
+//  to a static function local to this file. I now conditionally compile
+//  the function based off partition/flatten support since it is only used
+//  by the partition operation.
+//
 // ****************************************************************************
-void
-avtBlueprintWriter::BuildSelections(Node &domains,
+#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
+static void
+BuildSelections(Node &domains,
                                     Node &selections)
 {
     selections.reset();
@@ -361,6 +368,7 @@ avtBlueprintWriter::BuildSelections(Node &domains,
     }
     BP_PLUGIN_INFO("Done building selections." << selections.schema().to_json());
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtBlueprintWriter::ChunkToBpMesh
