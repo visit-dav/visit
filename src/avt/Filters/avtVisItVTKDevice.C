@@ -491,7 +491,7 @@ avtVisItVTKDevice::ExecuteVolume()
     UnifyMinMax(dataRange, 2);
 
     // There could be separate scalar and opacity components.
-    if( opacityVarName != "default" ) //&& opacityVarName != activeVarName )
+    if( opacityVarName != "default" && opacityVarName != activeVarName )
     {
         m_nComponents = 2;
         GetDataExtents(opacityRange, opacityVarName.c_str());
@@ -688,25 +688,31 @@ avtVisItVTKDevice::ExecuteVolume()
         rgrid->GetDimensions(dims);
         rgrid->GetExtent(extent);
 
-        // There could be both a scalar and opacity data arrays.
-        vtkDataArray *dataArr = in_ds->GetPointData()->GetScalars();
-        vtkDataArray *opacityArr = nullptr;
-        // Might be useful - not sure yet???
-        // vtkDataArray *gradientArr = nullptr;
+        // Get the active variable scalar data array.
+        vtkDataArray *dataArr = in_ds->GetPointData()->GetScalars( activeVarName.c_str() );
+
+        if( dataArr == nullptr )
+        {
+            EXCEPTION1(InvalidVariableException, activeVarName);
+        }
 
         m_activeVarName = activeVarName;
 
+        // There could be an active variable and opacity scalar data array.
+        vtkDataArray *opacityArr = nullptr;
         if( m_nComponents == 2 )
         {
-            m_opacityVarName = opacityVarName;
-
             opacityArr = in_ds->GetPointData()->GetScalars( opacityVarName.c_str() );
             if( opacityArr == nullptr )
             {
                 EXCEPTION1(InvalidVariableException, opacityVarName);
             }
+
+            m_opacityVarName = opacityVarName;
         }
 
+        // Might be useful - not sure yet???
+        // vtkDataArray *gradientArr = nullptr;
         // if( gradientVarName != "default" )
         //   gradientArr = in_ds->GetPointData()->GetVectors( gradientVarName.c_str() );
 
