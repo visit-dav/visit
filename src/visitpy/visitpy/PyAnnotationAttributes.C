@@ -1555,6 +1555,18 @@ PyAnnotationAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "axesArray") == 0)
         return AnnotationAttributes_GetAxesArray(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyAnnotationAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyAnnotationAttributes_methods[i].ml_name),
+                PyString_FromString(PyAnnotationAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyAnnotationAttributes_methods, self, name);
 }
 

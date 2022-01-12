@@ -277,6 +277,18 @@ PyAxisAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "grid") == 0)
         return AxisAttributes_GetGrid(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyAxisAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyAxisAttributes_methods[i].ml_name),
+                PyString_FromString(PyAxisAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyAxisAttributes_methods, self, name);
 }
 

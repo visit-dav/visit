@@ -1514,6 +1514,18 @@ PyMetricThresholdAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "quad_upper") == 0)
         return MetricThresholdAttributes_GetQuad_upper(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyMetricThresholdAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyMetricThresholdAttributes_methods[i].ml_name),
+                PyString_FromString(PyMetricThresholdAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyMetricThresholdAttributes_methods, self, name);
 }
 

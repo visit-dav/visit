@@ -1165,6 +1165,18 @@ PyBoundaryAttributes_getattr(PyObject *self, char *name)
         DEPRECATED_MESSAGE("lineStyle");
         return PyInt_FromLong(0L);
     }
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyBoundaryAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyBoundaryAttributes_methods[i].ml_name),
+                PyString_FromString(PyBoundaryAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyBoundaryAttributes_methods, self, name);
 }
 

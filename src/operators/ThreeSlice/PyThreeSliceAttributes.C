@@ -346,6 +346,18 @@ PyThreeSliceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "interactive") == 0)
         return ThreeSliceAttributes_GetInteractive(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyThreeSliceAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyThreeSliceAttributes_methods[i].ml_name),
+                PyString_FromString(PyThreeSliceAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyThreeSliceAttributes_methods, self, name);
 }
 

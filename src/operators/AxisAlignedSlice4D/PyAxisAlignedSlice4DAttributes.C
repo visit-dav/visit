@@ -463,6 +463,18 @@ PyAxisAlignedSlice4DAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "L") == 0)
         return AxisAlignedSlice4DAttributes_GetL(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyAxisAlignedSlice4DAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyAxisAlignedSlice4DAttributes_methods[i].ml_name),
+                PyString_FromString(PyAxisAlignedSlice4DAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyAxisAlignedSlice4DAttributes_methods, self, name);
 }
 
