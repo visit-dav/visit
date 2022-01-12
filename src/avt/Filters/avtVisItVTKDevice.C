@@ -35,6 +35,7 @@
 #include <vtkVolumeProperty.h>
 #include <vtkGPUVolumeRayCastMapper.h>
 #include <vtkSmartVolumeMapper.h>
+
 #ifdef HAVE_OSPRAY
     #include <vtkOSPRayVolumeMapper.h>
     #include <vtkOSPRayRendererNode.h>
@@ -471,7 +472,7 @@ avtVisItVTKDevice::ExecuteVolume()
 #ifndef HAVE_OSPRAY
     if( m_renderingAttribs.OSPRayEnabled )
     {
-        avtCallback::IssueWarning("Trying to use OSPRay when VTK was not built with OSPRay support. Default VTK renderering will be used.");
+        avtCallback::IssueWarning("Trying to use OSPRay when VTK was not built with OSPRay support. The default VTK renderering will be used.");
     }
 #endif
 
