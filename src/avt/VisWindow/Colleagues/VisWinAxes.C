@@ -1602,6 +1602,11 @@ VisWinAxes::SetYUnits(const string &units, bool userSet)
 //   Kathleen Biagas, Wed Jan  8 13:42:30 PST 2014
 //   Utilize new vtkAxesActor2D.
 //
+//   Eric Brugger, Fri Dec 17 09:34:23 PST 2021
+//   Modify the logic so that no digits are displayed after the decimal
+//   point when using e notation. Fix the logic for specifying the number
+//   of digits after the decimal point when using f notation.
+//
 // ****************************************************************************
 
 void
@@ -1619,37 +1624,46 @@ VisWinAxes::AdjustLabelFormatForLogScale(
     //
     if (sm[0])
     {
-        double minx = pow(10., min_x);
-        double maxx = pow(10., max_x);
-        int xAxisDigits = Digits(minx, maxx);
+        int xAxisDigits = 0;
+        if (min_x < 0.)
+        {
+            xAxisDigits = int(fabs(ceil(min_x)));
+            //
+            // Add an extra digit if the range is within a decade.
+            //
+            if (ceil(min_x) == ceil(max_x))
+                xAxisDigits++;
+        }
+
+        double sorted_minx = min_x < max_x ? min_x : max_x;
+        double sorted_maxx = min_x > max_x ? min_x : max_x;
+
         char  format[16];
-
-        int ipow_minx = (int) ((floor(floor(min_x)/3.))*3);
-        int ipow_maxx = (int) ((floor(floor(max_x)/3.))*3);
-
-        int ipow_min = ipow_minx < ipow_maxx ? ipow_minx : ipow_maxx;
-        int ipow_max = ipow_minx > ipow_maxx ? ipow_minx : ipow_maxx;
-
-        if (ipow_min < -4 || ipow_max > 4)
-            snprintf(format, 16, "%%.%de", xAxisDigits);
+        if (sorted_minx <= -4 || sorted_maxx >= 4)
+            strncpy(format, "%5.0e", 16);
         else
             snprintf(format, 16, "%%.%df", xAxisDigits);
         axes->SetXLogLabelFormatString(format);
     }
     if (sm[1])
     {
-        double miny = pow(10., min_y);
-        double maxy = pow(10., max_y);
-        int yAxisDigits = Digits(miny, maxy);
+        int yAxisDigits = 0;
+        if (min_y < 0.)
+        {
+            yAxisDigits = int(fabs(ceil(min_y)));
+            //
+            // Add an extra digit if the range is within a decade.
+            //
+            if (ceil(min_y) == ceil(max_y))
+                yAxisDigits++;
+        }
+
+        double sorted_miny = min_y < max_y ? min_y : max_y;
+        double sorted_maxy = min_y > max_y ? min_y : max_y;
+
         char  format[16];
-
-        int ipow_miny = (int) ((floor(floor(min_y)/3.))*3);
-        int ipow_maxy = (int) ((floor(floor(max_y)/3.))*3);
-        int ipow_min = ipow_miny < ipow_maxy ? ipow_miny : ipow_maxy;
-        int ipow_max = ipow_miny > ipow_maxy ? ipow_miny : ipow_maxy;
-
-        if (ipow_min < -4 || ipow_max > 4)
-            snprintf(format, 16, "%%.%de", yAxisDigits);
+        if (sorted_miny <= -4 || sorted_maxy >= 4)
+            strncpy(format, "%5.0e", 16);
         else
             snprintf(format, 16, "%%.%df", yAxisDigits);
         axes->SetYLogLabelFormatString(format);
