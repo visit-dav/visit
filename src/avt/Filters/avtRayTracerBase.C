@@ -55,17 +55,6 @@ avtRayTracerBase::avtRayTracerBase()
     viewInfo.farPlane  = 30.;
     viewInfo.parallelScale = 10;
     viewInfo.orthographic = true;
-
-    rayfoo         = NULL;
-
-    opaqueImage    = NULL;
-
-    background[0]  = 255;
-    background[1]  = 255;
-    background[2]  = 255;
-
-    screen[0] = screen[1] = 400;
-    samplesPerRay  = 40;
 }
 
 

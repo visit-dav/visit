@@ -104,20 +104,20 @@ class AVTFILTERS_API avtRayTracerBase : public avtDatasetToImageFilter
   protected:
     avtViewInfo           viewInfo;
 
-    int                   screen[2];
-    int                   samplesPerRay;
-    bool                  kernelBasedSampling;
-    bool                  trilinearInterpolation;
+    int                   screen[2] = {400,400};
+    int                   samplesPerRay{40};
+    bool                  kernelBasedSampling{false};
+    bool                  trilinearInterpolation{false};
 
-    unsigned char         background[3];
+    unsigned char         background[3] = {255,255,255};
 
-    avtRayFunction       *rayfoo;
+    avtRayFunction       *rayfoo{nullptr};
     std::string           activeVarName{"default"};
     std::string           opacityVarName{"default"};
     std::string           gradientVarName{"default"};
-    avtOpacityMap        *transferFn1D;
+    avtOpacityMap        *transferFn1D{nullptr};
 
-    avtImage_p            opaqueImage;
+    avtImage_p            opaqueImage{nullptr};
 
     virtual void          Execute(void) = 0;
 
