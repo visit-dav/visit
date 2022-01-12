@@ -567,7 +567,7 @@ QvisRenderingWindow::CreateAdvancedPage()
     row += 2;
 
     // Create the OSPRay group box.
-    osprayGroup = new QGroupBox(tr("Ospray rendering"), advancedOptions);
+    osprayGroup = new QGroupBox(tr("OSPRay Rendering"), advancedOptions);
     osprayGroup->setCheckable(true);
     osprayGroup->setChecked(false);
     connect(osprayGroup, SIGNAL(toggled(bool)),
