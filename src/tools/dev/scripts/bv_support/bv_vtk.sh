@@ -48,6 +48,8 @@ function bv_vtk_depends_on
 
     if [[ "$DO_MESAGL" == "yes" ]]; then
         depends_on="${depends_on} mesagl glu"
+    elif [[ "$DO_OSMESA" == "yes" ]]; then
+        depends_on="${depends_on} osmesa"
     fi
 
     if [[ "$DO_OSPRAY" == "yes" ]]; then
@@ -79,8 +81,8 @@ function bv_vtk_info
     export VTK_FILE=${VTK_FILE:-"VTK-9.1.0.tar.gz"}
     export VTK_VERSION=${VTK_VERSION:-"9.1.0"}
     export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"9.1"}
-    #export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
-    #export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
+    export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
+    export VTK_URL=${VTK_URL:-"https://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
     export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-9.1.0"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
     #export VTK_MD5_CHECKSUM="fa61cd36491d89a17edab18522bdda49"
@@ -905,20 +907,30 @@ function build_vtk
     # Use Mesa as GL?
     if [[ "$DO_MESAGL" == "yes" ]] ; then
         vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
-        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
+        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING=${MESAGL_OPENGL_LIB}"
         vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
         vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH=${MESAGL_GLU_LIB}"
         # for now, until Mesa can be updated to a version that supports GLVND, set LEGACY preference
         vopts="${vopts} -DOpenGL_GL_PREFERENCE:STRING=LEGACY"
-        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-        vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
-        vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+        # Cannot build onscreen and offscreen this way anymore
+        #vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+        #vopts="${vopts} -DOSMESA_LIBRARY:STRING=${MESAGL_OSMESA_LIB}"
+        #vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
 
         if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
             if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
                 vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
             fi
         fi
+    elif [[ "$DO_OSMESA" == "yes" ]] ; then
+        vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH="
+        vopts="${vopts} -DOPENGL_gl_LIBRARY:STRING="
+        vopts="${vopts} -DOPENGL_opengl_LIBRARY:STRING="
+        vopts="${vopts} -DOPENGL_glu_LIBRARY:FILEPATH="
+        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+        vopts="${vopts} -DOSMESA_LIBRARY:STRING=\"${OSMESA_LIB}\""
+        vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${OSMESA_INCLUDE_DIR}"
+        vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
     fi
 
     # Add some extra arguments to the VTK cmake command line via the
@@ -1063,6 +1075,9 @@ function build_vtk
     # script that we invoke with bash which calls cmake with all of the properly
     # arguments. We are now using this strategy for all platforms.
     #
+    if [[ "$DO_MESAGL" == "yes" || "$DO_OSMESA" == "yes" ]] ; then
+        export LD_LIBRARY_PATH="${LLVM_LIB_DIR}:$LD_LIBRARY_PATH"
+    fi
 
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh

@@ -65,6 +65,9 @@ if(APPLE)
 endif()
 
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${VISIT_QT_DIR}/lib/cmake)
+# have experienced trouble with only CMAKE_PREFIX_PATH SET, so try this 
+# next line, too, but eventually need to work out which is the best way
+set(Qt5_DIR ${VISIT_QT_DIR}/lib/cmake)
 find_package (Qt5 REQUIRED ${visit_qt_modules})
 
 
