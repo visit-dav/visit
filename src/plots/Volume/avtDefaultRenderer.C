@@ -196,7 +196,7 @@ avtDefaultRenderer::Render(
         //                "vtkRectilinear grids with an implied transform can not be rendered.");
         // }
 
-        // There could be both a scalar and opacity data arrays.
+        // There could be an active variable and opacity scalar data array.
         vtkDataArray *dataArr    = volume.data.data;
         vtkDataArray *opacityArr = volume.opacity.data;
 
