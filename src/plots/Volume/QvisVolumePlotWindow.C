@@ -1035,10 +1035,8 @@ void QvisVolumePlotWindow::EnableDefaultGroup()
     // defaultGroup->setVisible(true);
     // defaultOptions->setEnabled(true);
 
-#ifdef HAVE_OSPRAY
     osprayGroup->setVisible(true);
     osprayGroup->setEnabled(true);
-#endif
 }
 
 void QvisVolumePlotWindow::UpdateSamplingGroup()
@@ -1075,7 +1073,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     sobelButton->setEnabled(true);
 
     //add sampling options to layout based on current settings
-    VolumeAttributes::Renderer renderer_type=volumeAtts->GetRendererType();
+    VolumeAttributes::Renderer renderer_type = volumeAtts->GetRendererType();
     switch (renderer_type)
     {
     case VolumeAttributes::Serial:
@@ -1084,7 +1082,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         centeredDiffButton->setEnabled(false);
         sobelButton->setEnabled(false);
         smoothDataToggle->setEnabled(false);
-        materialProperties->setEnabled(true);
+        materialProperties->setEnabled(volumeAtts->GetLightingFlag());
 
         methodsGroup->setVisible(false);
         centeredDiffButton->setEnabled(false);
@@ -1120,7 +1118,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     case VolumeAttributes::SLIVR:
         raycastingGroup->setVisible(true);
         UpdateLowGradientGroup(false);
-        materialProperties->setEnabled(true);
+        materialProperties->setEnabled(volumeAtts->GetLightingFlag());
         EnableSamplingMethods(false);
         samplesPerRayWidget->setEnabled(true);
         rendererSamplesWidget->setEnabled(true);
@@ -1135,10 +1133,9 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     case VolumeAttributes::Parallel:
         resampleGroup->setVisible(true);
         resampleGroup->setEnabled(true);
-#ifdef HAVE_OSPRAY
         osprayGroup->setVisible(true);
         osprayGroup->setEnabled(true);
-#endif
+
         // raycastingGroup->setVisible(true);
         EnableSamplingMethods(false);
         samplesPerRayWidget->setEnabled(true);
@@ -1151,7 +1148,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         centeredDiffButton->setEnabled(false);
         sobelButton->setEnabled(false);
         lightingToggle->setEnabled(true);
-        materialProperties->setEnabled(true);
+        materialProperties->setEnabled(volumeAtts->GetLightingFlag());
 
         lowGradientGroup->setVisible(false);
         UpdateLowGradientGroup(false);
@@ -1302,19 +1299,15 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 
 void QvisVolumePlotWindow::CreateOSPRayGroups(QWidget *parent, QLayout *pLayout)
 {
-    osprayGroup = new QGroupBox(parent);
-    osprayGroup->setTitle(tr("OSPRay Options"));
+    // flag: OSPRay enabled
+    osprayGroup = new QGroupBox(tr("OSPRay Rendering"), parent);
+    osprayGroup->setCheckable(true);
+    osprayGroup->setChecked(false);
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            this, SLOT(osprayToggled(bool)));
     pLayout->addWidget(osprayGroup);
 
-    QVBoxLayout *osprayLayout = new QVBoxLayout(osprayGroup);
-
-    // flag: OSPRay enabled
-    osprayToggle = new QCheckBox(tr("Enable OSPRay"), osprayGroup);
-    connect(osprayToggle, SIGNAL(toggled(bool)),
-            this, SLOT(osprayToggled(bool)));
-
-    osprayProperties = new QWidget(osprayGroup);
-    QGridLayout *osprayPropertiesLayout = new QGridLayout(osprayProperties);
+    QGridLayout *osprayLayout = new QGridLayout(osprayGroup);
 
     // value: spp
     osprayRenderTypesWidget = new QWidget(osprayGroup);
@@ -1447,19 +1440,32 @@ void QvisVolumePlotWindow::CreateOSPRayGroups(QWidget *parent, QLayout *pLayout)
     maxcontributionLayout->addWidget(osprayMaxContribution, Qt::AlignLeft);
     maxcontributionLayout->addStretch(QSizePolicy::Maximum);
 
-    // layout
-    osprayLayout->addWidget( osprayToggle );
-    osprayLayout->addWidget( osprayProperties );
+    size_t row = 0;
+
+#ifndef HAVE_OSPRAY
+    QLabel *osprayAvailableLabel = new QLabel(tr("OSPRay rendering is not available locally but may be remotely. "), osprayGroup);
+    osprayLayout->addWidget(osprayAvailableLabel,        row, 0, 1, 3, Qt::AlignLeft);
+    ++row;
+#endif
+
+    osprayLayout->addWidget(osprayRenderTypesWidget,     row, 0, 1, 1, Qt::AlignRight);
+    ++row;
+    osprayLayout->addWidget(ospraySPPWidget,             row, 0, 1, 1, Qt::AlignRight);
+    osprayLayout->addWidget(osprayMinContributionWidget, row, 1, 1, 2, Qt::AlignRight);
+    ++row;
+    osprayLayout->addWidget(osprayAOSamplesWidget,       row, 0, 1, 1, Qt::AlignRight);
+    osprayLayout->addWidget(osprayMaxContributionWidget, row, 1, 1, 2, Qt::AlignRight);
+    ++row;
 
     // OSPRay attributes not yet availble via VTK.
-    // osprayPropertiesLayout->addWidget(osprayShadowToggle,             0, 0);
-    // osprayPropertiesLayout->addWidget(osprayUseGridAcceleratorToggle, 0, 2);
-    // osprayPropertiesLayout->addWidget(osprayPreIntegrationToggle,     0, 5, 1, 5);
-    // osprayPropertiesLayout->addWidget(ospraySingleShadeToggle,        1, 0);
-    // osprayPropertiesLayout->addWidget(osprayOneSidedLightingToggle,   1, 2);
-    // osprayPropertiesLayout->addWidget(osprayAOTransparencyToggle,     1, 5, 1, 5);
+    // osprayLayout->addWidget(osprayShadowToggle,             0, 0);
+    // osprayLayout->addWidget(osprayUseGridAcceleratorToggle, 0, 2);
+    // osprayLayout->addWidget(osprayPreIntegrationToggle,     0, 5, 1, 5);
+    // osprayLayout->addWidget(ospraySingleShadeToggle,        1, 0);
+    // osprayLayout->addWidget(osprayOneSidedLightingToggle,   1, 2);
+    // osprayLayout->addWidget(osprayAOTransparencyToggle,     1, 5, 1, 5);
 
-    // osprayPropertiesLayout->addWidget(osprayAODistanceWidget,         3, 2, 1, 2);
+    // osprayLayout->addWidget(osprayAODistanceWidget,         3, 2, 1, 2);
 
     osprayShadowToggle->setVisible( false );
     osprayUseGridAcceleratorToggle->setVisible( false );
@@ -1468,12 +1474,6 @@ void QvisVolumePlotWindow::CreateOSPRayGroups(QWidget *parent, QLayout *pLayout)
     osprayOneSidedLightingToggle->setVisible( false );
     osprayAOTransparencyToggle->setVisible( false );
     osprayAODistanceWidget->setVisible( false );
-
-    osprayPropertiesLayout->addWidget(osprayRenderTypesWidget,        0, 0, 1, 1, Qt::AlignRight);
-    osprayPropertiesLayout->addWidget(ospraySPPWidget,                1, 0, 1, 1, Qt::AlignRight);
-    osprayPropertiesLayout->addWidget(osprayAOSamplesWidget,          2, 0, 1, 1, Qt::AlignRight);
-    osprayPropertiesLayout->addWidget(osprayMinContributionWidget,    1, 1, 1, 2, Qt::AlignRight);
-    osprayPropertiesLayout->addWidget(osprayMaxContributionWidget,    2, 1, 1, 2, Qt::AlignRight);
 }
 
 void QvisVolumePlotWindow::osprayToggled(bool val)
@@ -1768,24 +1768,10 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             legendToggle->blockSignals(false);
             break;
         case VolumeAttributes::ID_osprayEnabledFlag:
-            osprayToggle->blockSignals(true);
-            osprayToggle->setChecked(volumeAtts->GetOsprayEnabledFlag());
-            osprayToggle->blockSignals(false);
+            osprayGroup->blockSignals(true);
+            osprayGroup->setChecked(volumeAtts->GetOsprayEnabledFlag());
+            osprayGroup->blockSignals(false);
 
-            //
-            // Only enable the ospray properites when ospray
-            // is being used.
-            //
-            if (osprayToggle->isChecked() &&
-                !osprayProperties->isEnabled())
-            {
-                osprayProperties->setEnabled(true);
-            }
-            else if (!osprayToggle->isChecked() &&
-                osprayProperties->isEnabled())
-            {
-                osprayProperties->setEnabled(false);
-            }
             break;
         case VolumeAttributes::ID_lightingFlag:
             lightingToggle->blockSignals(true);
@@ -1799,7 +1785,11 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             if (lightingToggle->isChecked() &&
                 !materialProperties->isEnabled())
             {
-                materialProperties->setEnabled(true);
+                if( volumeAtts->GetRendererType() == VolumeAttributes::Composite)
+                    materialProperties->setEnabled(volumeAtts->GetSampling() ==
+                                                   VolumeAttributes::Trilinear);
+                else
+                    materialProperties->setEnabled(true);
             }
             else if (!lightingToggle->isChecked() &&
                 materialProperties->isEnabled())

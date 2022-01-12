@@ -81,7 +81,6 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
     virtual bool             FilterUnderstandsTransformedRectMesh();
 };
 
-
 #endif
 
 

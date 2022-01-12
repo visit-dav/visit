@@ -70,7 +70,6 @@ static void CreateViewInfoFromViewAttributes(avtViewInfo &,
 
 avtVolumeFilter::avtVolumeFilter()
 {
-    primaryVariable = nullptr;
 }
 
 

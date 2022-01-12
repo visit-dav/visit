@@ -73,11 +73,6 @@
 
 avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
 {
-    lowResVolumeFilter = nullptr;
-    volumeFilter = nullptr;
-    gradientFilter = nullptr;
-    resampleFilter = nullptr;
-    shiftCentering = nullptr;
     renderer = avtVolumeRenderer::New();
 
     avtCustomRenderer_p cr;
@@ -144,7 +139,7 @@ avtVolumePlot::~avtVolumePlot()
     if (resampleFilter != nullptr)
         delete resampleFilter;
 
-    renderer = nullptr;
+    renderer = nullptr; // Deleting the mapper deletes the renderer?????
 
     //
     // Do not delete the varLegend since it is being held by varLegendRefPtr.

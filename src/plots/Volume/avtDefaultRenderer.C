@@ -17,11 +17,15 @@
 #include <vtkPiecewiseFunction.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkRenderer.h>
+#include <vtkGPUVolumeRayCastMapper.h>
 #include <vtkSmartVolumeMapper.h>
 #include <vtkVolume.h>
 #include <vtkVolumeProperty.h>
-#include <vtkOSPRayVolumeMapper.h>
-#include <vtkOSPRayRendererNode.h>
+
+#ifdef HAVE_OSPRAY
+    #include <vtkOSPRayVolumeMapper.h>
+    #include <vtkOSPRayRendererNode.h>
+#endif
 
 #include <vtkGeometryFilter.h>
 #include <vtkPolyDataMapper.h>
@@ -52,18 +56,10 @@
 
 avtDefaultRenderer::avtDefaultRenderer()
 {
-    VTKRen           = nullptr;
-
-    curVolume        = vtkVolume::New();
-
-    imageToRender    = nullptr;
-    mapper           = nullptr;
-
-    volumeProp       = vtkVolumeProperty::New();
-    transFunc        = vtkColorTransferFunction::New();
-    opacity          = vtkPiecewiseFunction::New();
-
-    resetColorMap    = false;
+    transFunc  = vtkColorTransferFunction::New();
+    opacity    = vtkPiecewiseFunction::New();
+    volumeProp = vtkVolumeProperty::New();
+    curVolume  = vtkVolume::New();
 }
 
 
@@ -90,27 +86,27 @@ avtDefaultRenderer::~avtDefaultRenderer()
     {
         curVolume->Delete();
     }
+    if (volumeMapper != nullptr)
+    {
+        volumeMapper->Delete();
+    }
+    if (volumeProp != nullptr)
+    {
+        volumeProp->Delete();
+    }
 
     if (imageToRender != nullptr)
     {
         imageToRender->Delete();
     }
-    if (mapper != nullptr)
-    {
-        mapper->Delete();
-    }
 
-    if (volumeProp != nullptr)
+    if (opacity != nullptr)
     {
-        volumeProp->Delete();
+        opacity->Delete();
     }
     if (transFunc != nullptr)
     {
         transFunc->Delete();
-    }
-    if (opacity != nullptr)
-    {
-        opacity->Delete();
     }
 }
 
@@ -302,31 +298,31 @@ avtDefaultRenderer::Render(
         }
     }
 
-    if( mapper == nullptr || OSPRayEnabled != props.atts.GetOsprayEnabledFlag())
+    if( volumeMapper == nullptr || OSPRayEnabled != props.atts.GetOsprayEnabledFlag())
     {
         OSPRayEnabled = props.atts.GetOsprayEnabledFlag();
 
-        if (mapper != nullptr)
-            mapper->Delete();
+        if (volumeMapper != nullptr)
+            volumeMapper->Delete();
 
 #ifdef HAVE_OSPRAY
         if( props.atts.GetOsprayEnabledFlag())
         {
-            mapper = vtkOSPRayVolumeMapper::New();
+            volumeMapper = vtkOSPRayVolumeMapper::New();
 
             debug5 << mName << "Adding data to the vtkOSPRayVolumeMapper" << endl;
         }
         else
 #endif
         {
-          mapper = vtkSmartVolumeMapper::New();
+          volumeMapper = vtkGPUVolumeRayCastMapper::New();
 
           debug5 << mName << "Adding data to the SmartVolumeMapper" << endl;
         }
 
-        mapper->SetInputData(imageToRender);
-        mapper->SetScalarModeToUsePointData();
-        mapper->SetBlendModeToComposite();
+        volumeMapper->SetInputData(imageToRender);
+        volumeMapper->SetScalarModeToUsePointData();
+        volumeMapper->SetBlendModeToComposite();
         resetColorMap = true;
     }
 
@@ -433,14 +429,18 @@ avtDefaultRenderer::Render(
 
         volumeProp->SetScalarOpacityUnitDistance(1, sampleDist);
 
-        curVolume->SetMapper(mapper);
+        curVolume->SetMapper(volumeMapper);
         curVolume->SetProperty(volumeProp);
     }
 
 #ifdef HAVE_OSPRAY
     if( props.atts.GetOsprayEnabledFlag() )
     {
-        vtkOSPRayRendererNode::SetRendererType("pathtracer", VTKRen);
+        if( props.atts.GetOsprayRenderType() == 1 )
+            vtkOSPRayRendererNode::SetRendererType("pathtracer", VTKRen);
+        else
+            vtkOSPRayRendererNode::SetRendererType("scivis", VTKRen);
+
         vtkOSPRayRendererNode::SetSamplesPerPixel(props.atts.GetOspraySPP(), VTKRen);
         vtkOSPRayRendererNode::SetAmbientSamples (props.atts.GetOsprayAOSamples(), VTKRen);
         vtkOSPRayRendererNode::SetMinContribution(props.atts.GetOsprayMinContribution(), VTKRen);
@@ -448,5 +448,5 @@ avtDefaultRenderer::Render(
     }
 #endif
 
-    mapper->Render(VTKRen, curVolume);
+    volumeMapper->Render(VTKRen, curVolume);
 }

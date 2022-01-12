@@ -50,10 +50,10 @@ class avtDefaultRenderer : public avtVolumeRendererImplementation
 
     vtkColorTransferFunction  *transFunc    {nullptr};
     vtkPiecewiseFunction      *opacity      {nullptr};
-    vtkVolume                 *curVolume    {nullptr};
     vtkImageData              *imageToRender{nullptr};
     vtkVolumeProperty         *volumeProp   {nullptr};
-    vtkVolumeMapper           *mapper       {nullptr};
+    vtkVolumeMapper           *volumeMapper {nullptr};
+    vtkVolume                 *curVolume    {nullptr};
 
     VolumeAttributes           oldAtts;
 
