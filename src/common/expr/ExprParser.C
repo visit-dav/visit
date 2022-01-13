@@ -4,7 +4,7 @@
 
 #include <ExprParser.h>
 #include <ExprNode.h>
-#include <Token.h>
+#include <VisItToken.h>
 #include <SymbolSet.h>
 #include <Sequence.h>
 #include <Rule.h>
