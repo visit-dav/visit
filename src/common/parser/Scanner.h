@@ -10,7 +10,7 @@
 #include <visitstream.h>
 #include <string>
 
-#include "Token.h"
+#include "VisItToken.h"
 
 // ****************************************************************************
 //  Class:  Scanner
