@@ -89,11 +89,11 @@ MESSAGE(STATUS "Looking for Python")
 # Find the interpreter first
 if(PYTHON_DIR AND NOT PYTHON_EXECUTABLE)
     if(UNIX)
-        set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python)
-        # if this doesn't exist, we may be using python3, which
-        # in many variants only creates "python3" exe, not "python"
+        # look for python 3 first
+        set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python3)
+        # if this doesn't exist, look for python
         if(NOT EXISTS "${PYTHON_EXECUTABLE}")
-            set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python3)
+            set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python)
         endif()
     elseif(WIN32)
         set(PYTHON_EXECUTABLE ${PYTHON_DIR}/python.exe)
@@ -109,7 +109,7 @@ if(PYTHONINTERP_FOUND)
                         "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('VERSION'))"
                         OUTPUT_VARIABLE PYTHON_CONFIG_VERSION
                         ERROR_VARIABLE  ERROR_FINDING_PYTHON_VERSION)
-        MESSAGE(STATUS "PYTHON_CONFIG_VERSION $PYTHON_CONFIG_VERSION}")
+        MESSAGE(STATUS "PYTHON_CONFIG_VERSION ${PYTHON_CONFIG_VERSION}")
 
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
                                 "import sys;from distutils.sysconfig import get_python_inc;sys.stdout.write(get_python_inc())"
