@@ -47,9 +47,7 @@ if (VISIT_OSMESA_DIR AND NOT OSMESA_LIBRARY)
                  NO_DEFAULT_PATH)
     if (OSMESA_LIBRARY)
         set(OSMESA_FOUND true)
-        if (MESAGL_LIBRARY)
-            set(HAVE_OSMESA true CACHE BOOL "Have OSMesa library")
-        endif()
+        set(HAVE_OSMESA true CACHE BOOL "Have OSMesa library")
         get_filename_component(OSMESA_LIB ${OSMESA_LIBRARY} NAME)
         execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
                       ${VISIT_BINARY_DIR}/lib/osmesa

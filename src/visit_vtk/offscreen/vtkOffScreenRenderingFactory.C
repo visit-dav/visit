@@ -4,7 +4,7 @@
 
 #include "vtkOffScreenRenderingFactory.h"
 #include <visit-config.h>
-#if defined(HAVE_OSMESA)
+#if 0 //defined(HAVE_OSMESA)
   #include <vtkOSOpenGLRenderWindow.h>
   VTK_CREATE_CREATE_FUNCTION(vtkOSOpenGLRenderWindow);
 #endif
@@ -39,7 +39,7 @@ vtkOffScreenRenderingFactory::vtkOffScreenRenderingFactory()
     // OSMesa or EGL.
     //
 
-#if defined(HAVE_OSMESA)
+#if 0 //defined(HAVE_OSMESA)
     this->RegisterOverride("vtkXOpenGLRenderWindow",
                            "vtkOSOpenGLRenderWindow",
                            "Render Window Hijack Overrride",
@@ -62,7 +62,7 @@ vtkOffScreenRenderingFactory::vtkOffScreenRenderingFactory()
 void
 vtkOffScreenRenderingFactory::ForceOffScreen()
 {
-#if defined(HAVE_OSMESA)
+#if 0 // defined(HAVE_OSMESA)
     vtkOffScreenRenderingFactory *os_factory = vtkOffScreenRenderingFactory::New();
     vtkObjectFactory::RegisterFactory(os_factory);
     os_factory->Delete();
