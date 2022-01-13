@@ -186,7 +186,22 @@ Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
 }
 
 
-
+// ****************************************************************************
+//  Method: ConduitArrayToVTKDataArray
+//
+//  Purpose:
+//   Constructs a vtkDataArray from a Conduit mcarray.
+//
+//  Arguments:
+//   n:    Blueprint Field Values Node
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014 (?)
+//
+//  Modifications:
+//    Cyrus Harrison, Thu Jan 13 11:14:20 PST 2022
+//    Add support for unsigned long and unsigned long long.
+//
 // ****************************************************************************
 vtkDataArray *
 ConduitArrayToVTKDataArray(const conduit::Node &n)
@@ -251,6 +266,24 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
                                                                               ntuples,
                                                                               retval);
     }
+    else if (vals_dtype.is_unsigned_long())
+    {
+        retval = vtkUnsignedLongArray::New();
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_LONG>(n,
+                                                                               ncomps,
+                                                                               ntuples,
+                                                                               retval);
+    }
+#if CONDUIT_USE_LONG_LONG
+    else if (vals_dtype.id() == CONDUIT_NATIVE_UNSIGNED_LONG_LONG_ID)
+    {
+        retval = vtkUnsignedLongLongArray::New();
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_LONG_LONG>(n,
+                                                                                    ncomps,
+                                                                                    ntuples,
+                                                                                    retval);
+    }
+#endif
     else if (vals_dtype.is_char())
     {
         retval = vtkCharArray::New();
@@ -573,7 +606,7 @@ StructuredTopologyToVTKStructuredGrid(const Node &n_coords,
 //  Method: HomogeneousShapeTopologyToVTKCellArray
 //
 //  Purpose:
-//   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
+//   Constructs a vtkCell array from a Blueprint topology
 //
 //  Arguments:
 //   n_topo:    Blueprint Topology
