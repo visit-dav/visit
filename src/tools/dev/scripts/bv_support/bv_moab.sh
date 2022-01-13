@@ -159,19 +159,14 @@ function build_moab
         fi
 
         info "Configuring $bt moab . . ."
-        info ../configure CXX=\"$cf_cxx_compiler\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-            CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-            ${cf_prefix_arg} ${cf_mpi_arg} ${cf_common_args} ${cf_static_args} \
-            ${cf_hdf5_arg} ${cf_hdf5_ldflags_arg} \
-            ${cf_szip_arg} ${cf_zlib_arg}
-
+        set -x
         sh -c "../configure \
             CXX=\"$cf_cxx_compiler\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
             CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
             ${cf_prefix_arg} ${cf_mpi_arg} ${cf_common_args} ${cf_static_args} \
             ${cf_hdf5_arg} ${cf_hdf5_ldflags_arg} \
             ${cf_szip_arg} ${cf_zlib_arg}"
-
+        set +x
         if [[ $? != 0 ]] ; then
             warn "$bt MOAB configure failed.  Giving up"
             return 1

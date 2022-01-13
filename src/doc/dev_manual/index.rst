@@ -21,6 +21,7 @@ VisIt_ Developer Manual
     SiteReliabilityEngineering
     OpenGL
     CI
+    ContributingHostProfiles
 
 .. Indices and tables
 .. ==================

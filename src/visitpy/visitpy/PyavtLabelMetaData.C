@@ -108,6 +108,17 @@ PyavtLabelMetaData_getattr(PyObject *self, char *name)
 
     PyavtLabelMetaData_ExtendSetGetMethodTable();
 
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyavtLabelMetaData_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyavtLabelMetaData_methods[i].ml_name),
+                PyString_FromString(PyavtLabelMetaData_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyavtLabelMetaData_methods, self, name);
 }
 
