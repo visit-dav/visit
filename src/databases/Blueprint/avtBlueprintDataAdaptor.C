@@ -569,11 +569,26 @@ StructuredTopologyToVTKStructuredGrid(const Node &n_coords,
     return sgrid;
 }
 
-
+// ****************************************************************************
+//  Method: HomogeneousShapeTopologyToVTKCellArray
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
+//
+//  Arguments:
+//   n_topo:    Blueprint Topology
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014
+//
+//  Modifications:
+//    Chris Laganella, Thu Jan 13 11:07:26 PST 2022
+//    Fix bug where index array could be copied in interloop
+//
 // ****************************************************************************
 vtkCellArray *
 HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
-                                       int npts)
+                                       int /* npts -- UNUSED */)
 {
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
@@ -603,19 +618,20 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 
         int_array topo_conn;
         ida->SetNumberOfTuples(ncells * (csize + 1));
+
+        Node n_tmp;
+        if(n_topo["elements/connectivity"].dtype().is_int())
+        {
+            topo_conn = n_topo["elements/connectivity"].as_int_array();
+        }
+        else
+        {
+            n_topo["elements/connectivity"].to_int_array(n_tmp);
+            topo_conn = n_tmp.as_int_array();
+        }
+
         for (int i = 0 ; i < ncells; i++)
         {
-            Node n_tmp;
-            if(n_topo["elements/connectivity"].dtype().is_int())
-            {
-                topo_conn = n_topo["elements/connectivity"].as_int_array();
-            }
-            else
-            {
-                n_topo["elements/connectivity"].to_int_array(n_tmp);
-                topo_conn = n_tmp.as_int_array();
-            }
-
             ida->SetComponent((csize+1)*i, 0, csize);
             for (int j = 0; j < csize; j++)
             {
