@@ -186,7 +186,22 @@ Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
 }
 
 
-
+// ****************************************************************************
+//  Method: ConduitArrayToVTKDataArray
+//
+//  Purpose:
+//   Constructs a vtkDataArray from a Conduit mcarray.
+//
+//  Arguments:
+//   n:    Blueprint Field Values Node
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014 (?)
+//
+//  Modifications:
+//    Cyrus Harrison, Thu Jan 13 11:14:20 PST 2022
+//    Add support for unsigned long and unsigned long long.
+//
 // ****************************************************************************
 vtkDataArray *
 ConduitArrayToVTKDataArray(const conduit::Node &n)
@@ -251,6 +266,24 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
                                                                               ntuples,
                                                                               retval);
     }
+    else if (vals_dtype.is_unsigned_long())
+    {
+        retval = vtkUnsignedLongArray::New();
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_LONG>(n,
+                                                                               ncomps,
+                                                                               ntuples,
+                                                                               retval);
+    }
+#if CONDUIT_USE_LONG_LONG
+    else if (vals_dtype.id() == CONDUIT_NATIVE_UNSIGNED_LONG_LONG_ID)
+    {
+        retval = vtkUnsignedLongLongArray::New();
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_LONG_LONG>(n,
+                                                                                    ncomps,
+                                                                                    ntuples,
+                                                                                    retval);
+    }
+#endif
     else if (vals_dtype.is_char())
     {
         retval = vtkCharArray::New();
@@ -569,11 +602,26 @@ StructuredTopologyToVTKStructuredGrid(const Node &n_coords,
     return sgrid;
 }
 
-
+// ****************************************************************************
+//  Method: HomogeneousShapeTopologyToVTKCellArray
+//
+//  Purpose:
+//   Constructs a vtkCell array from a Blueprint topology
+//
+//  Arguments:
+//   n_topo:    Blueprint Topology
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014
+//
+//  Modifications:
+//    Chris Laganella, Thu Jan 13 11:07:26 PST 2022
+//    Fix bug where index array could be copied in interloop
+//
 // ****************************************************************************
 vtkCellArray *
 HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
-                                       int npts)
+                                       int /* npts -- UNUSED */)
 {
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
@@ -603,19 +651,20 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 
         int_array topo_conn;
         ida->SetNumberOfTuples(ncells * (csize + 1));
+
+        Node n_tmp;
+        if(n_topo["elements/connectivity"].dtype().is_int())
+        {
+            topo_conn = n_topo["elements/connectivity"].as_int_array();
+        }
+        else
+        {
+            n_topo["elements/connectivity"].to_int_array(n_tmp);
+            topo_conn = n_tmp.as_int_array();
+        }
+
         for (int i = 0 ; i < ncells; i++)
         {
-            Node n_tmp;
-            if(n_topo["elements/connectivity"].dtype().is_int())
-            {
-                topo_conn = n_topo["elements/connectivity"].as_int_array();
-            }
-            else
-            {
-                n_topo["elements/connectivity"].to_int_array(n_tmp);
-                topo_conn = n_tmp.as_int_array();
-            }
-
             ida->SetComponent((csize+1)*i, 0, csize);
             for (int j = 0; j < csize; j++)
             {
