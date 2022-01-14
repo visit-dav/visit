@@ -62,6 +62,9 @@
 #   Cyrus Harrison, Fri Apr 10 13:47:15 PDT 2020
 #   Python 3 Support.
 #
+#   Cyrus Harrison, Wed Aug 11 16:05:04 PDT 2021
+#   Robustify python lib detection logic 
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -86,11 +89,11 @@ MESSAGE(STATUS "Looking for Python")
 # Find the interpreter first
 if(PYTHON_DIR AND NOT PYTHON_EXECUTABLE)
     if(UNIX)
-        set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python)
-        # if this doesn't exist, we may be using python3, which
-        # in many variants only creates "python3" exe, not "python"
+        # look for python 3 first
+        set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python3)
+        # if this doesn't exist, look for python
         if(NOT EXISTS "${PYTHON_EXECUTABLE}")
-            set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python3)
+            set(PYTHON_EXECUTABLE ${PYTHON_DIR}/bin/python)
         endif()
     elseif(WIN32)
         set(PYTHON_EXECUTABLE ${PYTHON_DIR}/python.exe)
@@ -101,7 +104,13 @@ find_package(PythonInterp REQUIRED)
 if(PYTHONINTERP_FOUND)
         
         MESSAGE(STATUS "PYTHON_EXECUTABLE ${PYTHON_EXECUTABLE}")
-        
+
+        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+                        "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('VERSION'))"
+                        OUTPUT_VARIABLE PYTHON_CONFIG_VERSION
+                        ERROR_VARIABLE  ERROR_FINDING_PYTHON_VERSION)
+        MESSAGE(STATUS "PYTHON_CONFIG_VERSION ${PYTHON_CONFIG_VERSION}")
+
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
                                 "import sys;from distutils.sysconfig import get_python_inc;sys.stdout.write(get_python_inc())"
                         OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
@@ -122,20 +131,9 @@ if(PYTHONINTERP_FOUND)
             MESSAGE(FATAL_ERROR "Reported PYTHON_SITE_PACKAGES_DIR ${PYTHON_SITE_PACKAGES_DIR} does not exist!")
         endif()
 
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
-                                "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
-                        OUTPUT_VARIABLE PYTHON_LIB_DIR
-                        ERROR_VARIABLE ERROR_FINDING_LIB_DIR)
-        MESSAGE(STATUS "PYTHON_LIB_DIR ${PYTHON_LIB_DIR}")
-
-        # if we are on macOS or linux, expect PYTHON_LIB_DIR to exist
-        # windows logic does not need PYTHON_LIB_DIR
-        if(NOT WIN32 AND NOT EXISTS ${PYTHON_LIB_DIR})
-            MESSAGE(FATAL_ERROR "Reported PYTHON_LIB_DIR ${PYTHON_LIB_DIR} does not exist!")
-        endif()
-
+        
         # check if we need "-undefined dynamic_lookup" by inspecting LDSHARED flags
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
                                 "import sys;import sysconfig;sys.stdout.write(sysconfig.get_config_var('LDSHARED'))"
                         OUTPUT_VARIABLE PYTHON_LDSHARED_FLAGS
                         ERROR_VARIABLE ERROR_FINDING_PYTHON_LDSHARED_FLAGS)
@@ -150,45 +148,105 @@ if(PYTHONINTERP_FOUND)
             set(PYTHON_USE_UNDEFINED_DYNAMIC_LOOKUP_FLAG OFF)
         endif()
 
+        # our goal is to find the specific python lib, based on info
+        # we extract from distutils.sysconfig from the python executable
+        #
         # check for python libs differs for windows python installs
         if(NOT WIN32)
             # we may build a shared python module against a static python
             # check for both shared and static libs cases
 
-            # check for shared first
-            set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/libpython*${CMAKE_SHARED_LIBRARY_SUFFIX}")
-            FILE(GLOB PYTHON_GLOB_RESULT ${PYTHON_GLOB_TEST})
-            # then for static if shared is not found
-            if(NOT PYTHON_GLOB_RESULT)
-                set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/libpython*${CMAKE_STATIC_LIBRARY_SUFFIX}")
+            # combos to try:
+            # shared:
+            #  LIBDIR + LDLIBRARY
+            #  LIBPL + LDLIBRARY
+            # static:
+            #  LIBDIR + LIBRARY
+            #  LIBPL + LIBRARY
+
+            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+                                    "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBDIR'))"
+                            OUTPUT_VARIABLE PYTHON_CONFIG_LIBDIR
+                            ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBDIR)
+
+            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+                                    "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBPL'))"
+                            OUTPUT_VARIABLE PYTHON_CONFIG_LIBPL
+                            ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBPL)
+
+            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+                                    "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LDLIBRARY'))"
+                            OUTPUT_VARIABLE PYTHON_CONFIG_LDLIBRARY
+                            ERROR_VARIABLE  ERROR_FINDING_PYTHON_LDLIBRARY)
+
+            execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+                                    "import sys;from distutils.sysconfig import get_config_var; sys.stdout.write(get_config_var('LIBRARY'))"
+                            OUTPUT_VARIABLE PYTHON_CONFIG_LIBRARY
+                            ERROR_VARIABLE  ERROR_FINDING_PYTHON_LIBRARY)
+
+            message(STATUS "PYTHON_CONFIG_LIBDIR:     ${PYTHON_CONFIG_LIBDIR}")
+            message(STATUS "PYTHON_CONFIG_LIBPL:      ${PYTHON_CONFIG_LIBPL}")
+            message(STATUS "PYTHON_CONFIG_LDLIBRARY:  ${PYTHON_CONFIG_LDLIBRARY}")
+            message(STATUS "PYTHON_CONFIG_LIBRARY:    ${PYTHON_CONFIG_LIBRARY}")
+
+            set(PYTHON_LIBRARY "")
+            # look for shared libs first
+            # shared libdir + ldlibrary
+            if(NOT EXISTS ${PYTHON_LIBRARY})
+                if(IS_DIRECTORY ${PYTHON_CONFIG_LIBDIR})
+                    set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBDIR}/${PYTHON_CONFIG_LDLIBRARY}")
+                    message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
+                    if(EXISTS ${_PYTHON_LIBRARY_TEST})
+                        set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                    endif()
+                endif()
             endif()
-        else()
-            if(PYTHON_LIB_DIR)
-                set(PYTHON_GLOB_TEST "${PYTHON_LIB_DIR}/python*.lib")
-            else()
-                get_filename_component(PYTHON_ROOT_DIR ${PYTHON_EXECUTABLE} DIRECTORY)
-                set(PYTHON_GLOB_TEST "${PYTHON_ROOT_DIR}/libs/python*.lib")
+
+            # shared libpl + ldlibrary
+            if(NOT EXISTS ${PYTHON_LIBRARY})
+                if(IS_DIRECTORY ${PYTHON_CONFIG_LIBPL})
+                    set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBPL}/${PYTHON_CONFIG_LDLIBRARY}")
+                    message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
+                    if(EXISTS ${_PYTHON_LIBRARY_TEST})
+                        set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                    endif()
+                endif()
+            endif()
+
+            # static: libdir + library
+            if(NOT EXISTS ${PYTHON_LIBRARY})
+                if(IS_DIRECTORY ${PYTHON_CONFIG_LIBDIR})
+                    set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBDIR}/${PYTHON_CONFIG_LIBRARY}")
+                    message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
+                    if(EXISTS ${_PYTHON_LIBRARY_TEST})
+                        set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                    endif()
+                endif()
+            endif()
+
+            # static: libpl + library
+            if(NOT EXISTS ${PYTHON_LIBRARY})
+                if(IS_DIRECTORY ${PYTHON_CONFIG_LIBPL})
+                    set(_PYTHON_LIBRARY_TEST  "${PYTHON_CONFIG_LIBPL}/${PYTHON_CONFIG_LIBRARY}")
+                    message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
+                    if(EXISTS ${_PYTHON_LIBRARY_TEST})
+                        set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
+                    endif()
+                endif()
+            endif()
+        else() # windows 
+            get_filename_component(PYTHON_ROOT_DIR ${PYTHON_EXECUTABLE} DIRECTORY)
+            # Note: this assumes that two versions of python are not installed in the same dest dir
+            set(_PYTHON_LIBRARY_TEST  "${PYTHON_ROOT_DIR}/libs/python${PYTHON_CONFIG_VERSION}.lib")
+            message(STATUS "Checking for python library at: ${_PYTHON_LIBRARY_TEST}")
+            if(EXISTS ${_PYTHON_LIBRARY_TEST})
+                set(PYTHON_LIBRARY ${_PYTHON_LIBRARY_TEST})
             endif()
         endif()
 
-        FILE(GLOB PYTHON_GLOB_RESULT ${PYTHON_GLOB_TEST})
-
-        # make sure we found something
-        if(NOT PYTHON_GLOB_RESULT)
-            message(FATAL_ERROR "Failed to find main python library using pattern: ${PYTHON_GLOB_TEST}")
+        if(NOT EXISTS ${PYTHON_LIBRARY})
+            MESSAGE(FATAL_ERROR "Failed to find main library using PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
         endif()
-
-        if(NOT WIN32)
-            # life is ok on windows, but elsewhere
-            # the glob result might be a list due to symlinks, etc
-            # if it is a list, select the first entry as py lib
-            list(LENGTH PYTHON_GLOB_RESULT PYTHON_GLOB_RESULT_LEN)
-            if(${PYTHON_GLOB_RESULT_LEN} GREATER 1)
-                list(GET PYTHON_GLOB_RESULT 0 PYTHON_GLOB_RESULT)
-            endif()
-        endif()
-
-        get_filename_component(PYTHON_LIBRARY "${PYTHON_GLOB_RESULT}" ABSOLUTE)
 
         MESSAGE(STATUS "{PythonLibs from PythonInterp} using: PYTHON_LIBRARY=${PYTHON_LIBRARY}")
         find_package(PythonLibs)
@@ -201,7 +259,7 @@ endif()
 
 
 find_package_handle_standard_args(Python  DEFAULT_MSG
-                                  PYTHON_LIBRARIES PYTHON_INCLUDE_DIR)
+                                  PYTHON_LIBRARY PYTHON_INCLUDE_DIR)
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYTHONLIBS DEFAULT_MSG PYTHON_LIBRARIES PYTHON_INCLUDE_PATH)
