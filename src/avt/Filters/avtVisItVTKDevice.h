@@ -182,6 +182,8 @@ private:
     double m_ambientCoefficient{0.0};
     double m_ambientColor[3] = { 0., 0., 0.};
 
+    int    m_cellData{0};
+
     avtResampleFilter * m_resampleFilter{nullptr};
 
     vtkImageData* m_imageToRender{nullptr};
