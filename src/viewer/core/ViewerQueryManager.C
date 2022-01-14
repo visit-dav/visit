@@ -4621,7 +4621,7 @@ ViewerQueryManager::InitializeQueryList()
 
     GetViewerState()->GetQueryList()->AddQuery("Integral Curve Info", dq, misc_r, ic, 1, 0, qo);
     GetViewerState()->GetQueryList()->AddQuery("Line Sampler Info", dq, misc_r, lsi, 1, 0, qo);
-    GetViewerState()->GetQueryList()->AddQuery("Flatten", dq, vr, basic, 1, 0, qo);
+    GetViewerState()->GetQueryList()->AddQuery("Flatten", dq, vr, basic, 1, 0, qo, 0, 1);
     GetViewerState()->GetQueryList()->SelectAll();
 }
 

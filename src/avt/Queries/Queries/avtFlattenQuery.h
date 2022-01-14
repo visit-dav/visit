@@ -34,16 +34,34 @@ class QUERY_API avtFlattenQuery : public avtDatasetQuery
     virtual                  ~avtFlattenQuery();
 
 
-    virtual const char       *GetType(void)   { return "avtFlattenQuery"; };
+    virtual const char       *GetType(void)
+                              { return "avtFlattenQuery"; };
     virtual const char       *GetDescription(void)
-                                 { return "Provides flattened field data."; };
+                              { return "Provides flattened field data."; };
+
+    virtual void              SetInputParams(const MapNode &);
+    static void               GetDefaultInputParams(MapNode &);
+    virtual void              GetSecondaryVars(stringVector &);
+
+    virtual void              PerformQuery(QueryAttributes*);
 
   protected:
 
-    virtual void                    Execute(vtkDataSet *, const int);
-    virtual void                    VerifyInput(void);
-    virtual void                    PreExecute(void);
-    virtual void                    PostExecute(void);
+    virtual void              VerifyInput(void);
+    virtual void              PreExecute(void);
+    virtual void              Execute(vtkDataSet *, const int);
+    virtual void              Execute(avtDataTree_p);
+    virtual void              PostExecute(void);
+
+    static const int NODE_DATA;
+    static const int ZONE_DATA;
+    stringVector variables;
+    doubleVector nodeData;
+    doubleVector zoneData;
+    intVector    varTypes;
+    intVector    varNComps;
+    double fillValue;
+    double maxDataSize;
 };
 
 
