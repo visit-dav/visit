@@ -9610,12 +9610,6 @@ visit_GetFlattenOutput(PyObject *self, PyObject *args)
         }
     }
 
-    // If we've got no data, return None
-    if(!haveNodeData && !haveZoneData)
-    {
-        return Py_None;
-    }
-
     doubleVector &data = qa->GetResultsValue();
     PyObject *retval = PyDict_New();
     if(haveNodeData)
@@ -9640,6 +9634,7 @@ visit_GetFlattenOutput(PyObject *self, PyObject *args)
         Py_DecRef(wrappedNode);
     }
 
+    // If we've got no data then just return the empty dictionary
     return retval;
 }
 
@@ -18023,7 +18018,7 @@ AddProxyMethods()
                                                      visit_GetQueryOutputXML_doc);
     AddMethod("GetQueryOutputObject", visit_GetQueryOutputObject,
                                                      visit_GetQueryOutputObject_doc);
-    AddMethod("GetFlattenOutput", visit_GetFlattenOutput, visit_GetQueryOutputObject_doc);
+    AddMethod("GetFlattenOutput", visit_GetFlattenOutput, visit_GetQueryOutputObject_doc); // TODO: Provide doc for GetFlattenOutput!
     AddMethod("GetQueryParameters", visit_GetQueryParameters, visit_GetQueryParameters_doc);
     AddMethod("GetPlotInformation", visit_GetPlotInformation,
                                                      visit_GetPlotInformation_doc);
