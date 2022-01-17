@@ -44,6 +44,8 @@
 #  Cyrus Harrison, Fri Dec  6 14:51:33 PST 2019
 #  Add python code gen cmake targets for those objects that can be code-gend
 #
+#  Chris Laganella, Mon Jan 17 12:31:49 EST 2022
+#  Add common/PyTable.C
 #****************************************************************************
 
 #########################################################
@@ -237,6 +239,7 @@ common/Logging.C
 common/MethodDoc.C
 common/PySILRestrictionBase.C
 common/PySILRestriction.C
+common/PyTable.C
 common/ViewerRPCArguments.C
 common/ViewerRPCCallbacks.C
 common/visitmodule.C

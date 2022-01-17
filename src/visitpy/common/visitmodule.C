@@ -149,6 +149,7 @@
 #include <PySelectionList.h>
 #include <PySILRestrictionBase.h>
 #include <PySILRestriction.h>
+#include <PyTable.h>
 
 #include <PyLine3DObject.h>
 #include <PyText2DObject.h>
@@ -9559,140 +9560,6 @@ visit_GetQueryOutputObject(PyObject *self, PyObject *args)
     return PyMapNode_Wrap(node);
 }
 
-typedef struct {
-    void *buf;
-    char *format;
-    Py_ssize_t len;       // The size of the buffer
-    Py_ssize_t itemsize;  // The size of each element in the buffer
-    Py_ssize_t shape[2];
-    Py_ssize_t strides[2];
-    Py_ssize_t suboffsets[2];
-} visit_PyTableStruct;
-
-/* This is where we define the PyMyArray object structure */
-typedef struct {
-    PyObject_HEAD
-    /* Type-specific fields go below. */
-    visit_PyTableStruct table;
-} visit_PyTable;
-
-STATIC void
-visit_PyTableStruct_dealloc(visit_PyTableStruct *table)
-{
-    if(!table)
-    {
-        return;
-    }
-    free(table->buf);
-    memset(table, 0, sizeof(visit_PyTableStruct));
-}
-
-STATIC void
-visit_PyTableStruct_init(visit_PyTableStruct *table)
-{
-    if(table->buf)
-    {
-        visit_PyTableStruct_dealloc(table);
-    }
-    memset(table, 0, sizeof(visit_PyTableStruct));
-}
-
-/* this function is called when the object is deallocated */
-STATIC void
-visit_PyTable_dealloc(visit_PyTable *self)
-{
-    if(!self)
-    {
-        return;
-    }
-    visit_PyTableStruct_dealloc(&self->table);
-    Py_TYPE(self)->tp_free((PyObject*)self);
-}
-
-STATIC void
-visit_PyTable_init(visit_PyTable *self)
-{
-    if(self->table.buf)
-    {
-        visit_PyTableStruct_dealloc(&self->table);
-    }
-
-    visit_PyTableStruct_init(&self->table);
-}
-
-/* Here is the buffer interface function */
-static int
-visit_PyTable_getbuffer(PyObject *obj, Py_buffer *view, int)
-{
-    if (!view)
-    {
-        PyErr_SetString(PyExc_ValueError, "NULL view in getbuffer");
-        return -1;
-    }
-
-    visit_PyTable* self = (visit_PyTable*)obj;
-    memset(view, 0, sizeof(Py_buffer));
-    view->obj = (PyObject*)self;
-    view->buf = (void*)self->table.buf;
-    view->len = self->table.len;
-    view->itemsize = self->table.itemsize;
-    view->format = self->table.format;
-    view->ndim = 2;
-    view->shape = self->table.shape;
-    view->strides = self->table.strides;
-    view->suboffsets = NULL;
-
-    Py_INCREF(self);  // need to increase the reference count
-    return 0;
-}
-
-static PyBufferProcs visit_PyTable_as_buffer = {
-  // this definition is only compatible with Python 3.3 and above
-  (getbufferproc)visit_PyTable_getbuffer,
-  (releasebufferproc)0,  // we do not require any special release function
-};
-
-/* Here is the type structure: we put the above functions in the appropriate place
-   in order to actually define the Python object type */
-STATIC PyTypeObject visit_PyTableType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "visit.PyTable",              /* tp_name */
-    sizeof(visit_PyTable),        /* tp_basicsize */
-    0,                            /* tp_itemsize */
-    (destructor)visit_PyTable_dealloc,/* tp_dealloc */
-    0,                            /* tp_print */
-    0,                            /* tp_getattr */
-    0,                            /* tp_setattr */
-    0,                            /* tp_reserved */
-    0,                            /* tp_repr */
-    0,                            /* tp_as_number */
-    0,                            /* tp_as_sequence */
-    0,                            /* tp_as_mapping */
-    0,                            /* tp_hash  */
-    0,                            /* tp_call */
-    0,                            /* tp_str */
-    0,                            /* tp_getattro */
-    0,                            /* tp_setattro */
-    &visit_PyTable_as_buffer,     /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,           /* tp_flags */
-    "visit_PyTable object",       /* tp_doc */
-    0,                            /* tp_traverse */
-    0,                            /* tp_clear */
-    0,                            /* tp_richcompare */
-    0,                            /* tp_weaklistoffset */
-    0,                            /* tp_iter */
-    0,                            /* tp_iternext */
-    0,                            /* tp_methods */
-    0,                            /* tp_members */
-    0,                            /* tp_getset */
-    0,                            /* tp_base */
-    0,                            /* tp_dict */
-    0,                            /* tp_descr_get */
-    0,                            /* tp_descr_set */
-    0,                            /* tp_dictoffset */
-    (initproc)visit_PyTable_init, /* tp_init */
-};
-
 STATIC PyObject *
 visit_GetFlattenOutput(PyObject *self, PyObject *args)
 {
@@ -9704,10 +9571,6 @@ visit_GetFlattenOutput(PyObject *self, PyObject *args)
     // Check if this is the output of Flatten
     bool haveNodeData = node.HasEntry("nodeColumnNames");
     bool haveZoneData = node.HasEntry("zoneColumnNames");
-    if(!haveNodeData && !haveZoneData)
-    {
-        return Py_None;
-    }
 
     // Get the nodeData info
     long nodeTableShape[2] = {0, 0};
@@ -9727,7 +9590,7 @@ visit_GetFlattenOutput(PyObject *self, PyObject *args)
 
     // Get the zoneData info
     long zoneTableShape[2] = {0, 0};
-    long zoneTableOffset = -1;
+    long zoneTableOffset = 0;
     if(haveZoneData)
     {
         if(node.HasEntry("zoneTableShape"))
@@ -9747,47 +9610,34 @@ visit_GetFlattenOutput(PyObject *self, PyObject *args)
         }
     }
 
-    doubleVector &data = qa->GetResultsValue();
+    // If we've got no data, return None
+    if(!haveNodeData && !haveZoneData)
+    {
+        return Py_None;
+    }
 
+    doubleVector &data = qa->GetResultsValue();
     PyObject *retval = PyDict_New();
     if(haveNodeData)
     {
-        visit_PyTable *table = PyObject_New(visit_PyTable, &visit_PyTableType);
-        visit_PyTableStruct &nodeTable = table->table;
-        nodeTable.len = sizeof(double) * nodeTableShape[0] * nodeTableShape[1];
-        nodeTable.buf = malloc(nodeTable.len);
-        nodeTable.itemsize = sizeof(double);
-        nodeTable.format = "d";
-
-        memcpy(nodeTable.buf, data.data(), nodeTable.len);
-        nodeTable.shape[0] = nodeTableShape[0];
-        nodeTable.shape[1] = nodeTableShape[1];
-        nodeTable.strides[0] = sizeof(double) * nodeTableShape[1];
-        nodeTable.strides[1] = sizeof(double);
-
-        PyDict_SetItemString(retval, "nodeTable", (PyObject*)table);
+        PyObject *table = PyTable_Create(data.data(), nodeTableShape);
         PyObject *wrappedNode = PyMapNode_Wrap(node["nodeColumnNames"]);
-        PyDict_SetItemString(retval, "nodeColumnNames", );
-        std::cout << "node table ref count " << table->ob_base.ob_refcnt << std::endl;
+        PyDict_SetItemString(retval, "nodeTable", table);
+        PyDict_SetItemString(retval, "nodeColumnNames", wrappedNode);
+        // Remove the references held by this function.
+        Py_DecRef(table);
+        Py_DecRef(wrappedNode);
     }
 
     if(haveZoneData)
     {
-        visit_PyTable *table = PyObject_New(visit_PyTable, &visit_PyTableType);
-        visit_PyTableStruct &zoneTable = table->table;
-        zoneTable.len = sizeof(double) * zoneTableShape[0] * zoneTableShape[1];
-        zoneTable.buf = malloc(zoneTable.len);
-        zoneTable.itemsize = sizeof(double);
-        zoneTable.format = "d";
-
-        memcpy(zoneTable.buf, data.data() + zoneTableOffset, zoneTable.len);
-        zoneTable.shape[0] = zoneTableShape[0];
-        zoneTable.shape[1] = zoneTableShape[1];
-        zoneTable.strides[0] = sizeof(double) * nodeTableShape[1];
-        zoneTable.strides[1] = sizeof(double);
-
-        PyDict_SetItemString(retval, "zoneTable", (PyObject*)table);
-        PyDict_SetItemString(retval, "zoneColumnNames", PyMapNode_Wrap(node["zoneColumnNames"]));
+        PyObject *table = PyTable_Create(data.data() + zoneTableOffset, zoneTableShape);
+        PyObject *wrappedNode = PyMapNode_Wrap(node["zoneColumnNames"]);
+        PyDict_SetItemString(retval, "zoneTable", table);
+        PyDict_SetItemString(retval, "zoneColumnNames", wrappedNode);
+        // Remove the references held by this function.
+        Py_DecRef(table);
+        Py_DecRef(wrappedNode);
     }
 
     return retval;
