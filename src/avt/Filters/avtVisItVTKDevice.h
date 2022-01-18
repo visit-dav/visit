@@ -151,8 +151,8 @@ protected:
 
     RenderingAttribs            m_renderingAttribs;
 
-    std::unique_ptr<float[]>    m_materialPropertiesPtr;
-    std::unique_ptr<float[]>    m_viewDirectionPtr;
+    std::unique_ptr<float[]>    m_materialPropertiesPtr{nullptr};
+    std::unique_ptr<float[]>    m_viewDirectionPtr{nullptr};
 
     bool                        m_useInterpolation{true};
     bool                        m_resetColorMap{true};
