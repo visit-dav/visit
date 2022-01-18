@@ -54,8 +54,8 @@
 
 const std::string avtVisItVTKDevice::DEVICE_TYPE_STR{"vtk"};
 
-// #define LOCAL_DEBUG std::cerr
-#define LOCAL_DEBUG debug5
+#define LOCAL_DEBUG std::cerr
+// #define LOCAL_DEBUG debug5
 
 
 // ****************************************************************************
