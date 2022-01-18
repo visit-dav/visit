@@ -41,6 +41,9 @@
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
+#define LOCAL_DEBUG std::cerr
+// #define LOCAL_DEBUG debug5
+
 // ****************************************************************************
 //  Method: avtDefaultRenderer::avtDefaultRenderer
 //
@@ -169,14 +172,14 @@ avtDefaultRenderer::Render(
     // 2D data has no volume, so don't try to render.
     if (props.dataIs2D)
     {
-        debug5 << mName << "Cannot perform volume rendering on "
+        LOCAL_DEBUG << mName << "Cannot perform volume rendering on "
             << "2D data... returning";
         return;
     }
 
     if (imageToRender == nullptr)
     {
-        debug5 << mName << "Converting from rectilinear grid "
+        LOCAL_DEBUG << mName << "Converting from rectilinear grid "
             << "to image data";
 
         vtkRectilinearGrid* rgrid = vtkRectilinearGrid::SafeDownCast( volume.grid );
@@ -310,14 +313,14 @@ avtDefaultRenderer::Render(
         {
             volumeMapper = vtkOSPRayVolumeMapper::New();
 
-            debug5 << mName << "Adding data to the vtkOSPRayVolumeMapper" << endl;
+            LOCAL_DEBUG << mName << "Adding data to the vtkOSPRayVolumeMapper" << endl;
         }
         else
 #endif
         {
           volumeMapper = vtkGPUVolumeRayCastMapper::New();
 
-          debug5 << mName << "Adding data to the SmartVolumeMapper" << endl;
+          LOCAL_DEBUG << mName << "Adding data to the SmartVolumeMapper" << endl;
         }
 
         volumeMapper->SetInputData(imageToRender);
@@ -333,7 +336,7 @@ avtDefaultRenderer::Render(
         resetColorMap = false;
         oldAtts       = props.atts;
 
-        debug5 << mName << "Resetting color" << endl;
+        LOCAL_DEBUG << mName << "Resetting color" << endl;
 
         // Create the transfer function and the opacity mapping.
         constexpr int tableSize = 256;
@@ -387,7 +390,7 @@ avtDefaultRenderer::Render(
         // Set ambient, diffuse, specular, and specular power (shininess).
         const double *matProp = props.atts.GetMaterialProperties();
 
-        if (matProp != nullptr)
+        if (props.atts.GetLightingFlag() && matProp != nullptr)
         {
             volumeProp->SetAmbient(matProp[0]);
             volumeProp->SetDiffuse(matProp[1]);
