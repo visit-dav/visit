@@ -153,50 +153,50 @@ function apply_vtkopenfoamreader_header_patch
   # useful for VisIt's plugin.
 
    patch -p0 << \EOF
-*** IO/Geometry/vtkOpenFOAMReader.h.orig	Mon Apr 19 13:46:49 2021
---- IO/Geometry/vtkOpenFOAMReader.h	Mon Apr 19 13:50:25 2021
+*** IO/Geometry/vtkOpenFOAMReader.h.orig        Mon Apr 19 13:46:49 2021
+--- IO/Geometry/vtkOpenFOAMReader.h     Mon Apr 19 13:50:25 2021
 ***************
 *** 50,55 ****
 --- 50,60 ----
   #include "vtkIOGeometryModule.h" // For export macro
   #include "vtkMultiBlockDataSetAlgorithm.h"
-  
+
 + //added by LLNL
 + #include <map>
 + #include <vector>
 + //end added by LLNL
-+ 
++
   class vtkCollection;
   class vtkCharArray;
   class vtkDataArraySelection;
 ***************
 *** 350,355 ****
 --- 355,382 ----
-  
+
     friend class vtkOpenFOAMReaderPrivate;
-  
+
 +   // Added by LLNL
 +   vtkStdString GetCellArrayClassName(const char *name);
 +   vtkStdString GetPointArrayClassName(const char *name);
 +   vtkStdString GetLagrangianArrayClassName(const char *name);
-+ 
-+   int GetNumberOfCellZones() 
++
++   int GetNumberOfCellZones()
 +     { return static_cast<int>(this->CellZones.size()); }
 +   int GetNumberOfFaceZones()
 +     { return static_cast<int>(this->FaceZones.size()); }
 +   int GetNumberOfPointZones()
 +     { return static_cast<int>(this->PointZones.size()); }
-+ 
++
 +   vtkStdString GetCellZoneName(int);
 +   vtkStdString GetFaceZoneName(int);
 +   vtkStdString GetPointZoneName(int);
-+ 
++
 +   int GetCellArrayExists(const char *name);
 +   int GetPointArrayExists(const char *name);
 +   int GetLagrangianArrayExists(const char *name);
-+ 
++
 +   // end Added by LLNL
-+ 
++
   protected:
     // refresh flag
     bool Refresh;
@@ -205,17 +205,17 @@ function apply_vtkopenfoamreader_header_patch
 --- 452,467 ----
     // index of the active reader
     int CurrentReaderIndex;
-  
+
 +   // added by LLNL
 +   std::vector<vtkStdString> CellZones;
 +   std::vector<vtkStdString> FaceZones;
 +   std::vector<vtkStdString> PointZones;
-+ 
++
 +   std::map<vtkStdString, vtkStdString> CellArrayClassName;
 +   std::map<vtkStdString, vtkStdString> PointArrayClassName;
 +   std::map<vtkStdString, vtkStdString> LagrangianArrayClassName;
 +   // end added by LLNL
-+ 
++
     vtkOpenFOAMReader();
     ~vtkOpenFOAMReader() override;
     int RequestInformation(vtkInformation*, vtkInformationVector**, vtkInformationVector*) override;
@@ -235,8 +235,8 @@ function apply_vtkopenfoamreader_source_patch
   # useful for VisIt's plugin.
 
    patch -p0 << \EOF
-*** IO/Geometry/vtkOpenFOAMReader.cxx	Thu Apr  8 05:26:53 2021
---- IO/Geometry/vtkOpenFOAMReader.cxx	Tue Apr 20 16:35:35 2021
+*** IO/Geometry/vtkOpenFOAMReader.cxx   Thu Apr  8 05:26:53 2021
+--- IO/Geometry/vtkOpenFOAMReader.cxx   Tue Apr 20 16:35:35 2021
 ***************
 *** 5058,5063 ****
 --- 5058,5077 ----
@@ -256,7 +256,7 @@ function apply_vtkopenfoamreader_source_patch
 +           this->Parent->PointArrayClassName[io.GetObjectName()] = io.GetClassName();
 +       }
 +       // end added by LLNL
-+   
++
         io.Close();
       }
     }
@@ -265,7 +265,7 @@ function apply_vtkopenfoamreader_source_patch
 --- 5340,5389 ----
       }
     }
-  
+
 +   // added by LLNL
 +   if (this->Parent->GetReadZones())
 +   {
@@ -275,33 +275,33 @@ function apply_vtkopenfoamreader_source_patch
 +       this->Parent->PointZones.clear();
 +       vtkFoamDict &pointZoneDict = *dictPtr;
 +       int nPointZones = static_cast<int>(pointZoneDict.size());
-+ 
++
 +       for (int i = 0; i < nPointZones; i++)
 +       {
 +         this->Parent->PointZones.push_back(pointZoneDict[i]->GetKeyword().c_str());
 +       }
 +     }
-+ 
++
 +     dictPtr= this->GatherBlocks("faceZones", true);
 +     if (dictPtr!= NULL)
 +     {
 +       this->Parent->FaceZones.clear();
 +       vtkFoamDict &faceZoneDict = *dictPtr;
 +       int nFaceZones = static_cast<int>(faceZoneDict.size());
-+ 
++
 +       for (int i = 0; i < nFaceZones; i++)
 +       {
 +         this->Parent->FaceZones.push_back(faceZoneDict[i]->GetKeyword().c_str());
 +       }
 +     }
-+ 
++
 +     dictPtr= this->GatherBlocks("cellZones", true);
 +     if (dictPtr!= NULL)
 +     {
 +       this->Parent->CellZones.clear();
 +       vtkFoamDict &cellZoneDict = *dictPtr;
 +       int nCellZones = static_cast<int>(cellZoneDict.size());
-+ 
++
 +       for (int i = 0; i < nCellZones; i++)
 +       {
 +         this->Parent->CellZones.push_back(cellZoneDict[i]->GetKeyword().c_str());
@@ -309,7 +309,7 @@ function apply_vtkopenfoamreader_source_patch
 +     }
 +   }
 +   // end added by LLNL
-+ 
++
     // Add scalars and vectors to metadata
     vtkStdString timePath(this->CurrentTimePath());
     // do not do "RemoveAllArrays()" to accumulate array selections
@@ -319,9 +319,9 @@ function apply_vtkopenfoamreader_source_patch
       (static_cast<double>(this->Parent->CurrentReaderIndex) + amount) /
       static_cast<double>(this->Parent->NumberOfReaders));
   }
-+ 
++
 + // added by LLNL
-+ 
++
 + //-----------------------------------------------------------------------------
 + vtkStdString vtkOpenFOAMReader::GetCellArrayClassName(const char *name)
 + {
@@ -336,12 +336,12 @@ function apply_vtkopenfoamreader_source_patch
 +   {
 +     return itr->second;
 +   }
-+   else 
++   else
 +   {
 +     return ret;
 +   }
 + }
-+ 
++
 + //-----------------------------------------------------------------------------
 + vtkStdString vtkOpenFOAMReader::GetPointArrayClassName(const char *name)
 + {
@@ -356,12 +356,12 @@ function apply_vtkopenfoamreader_source_patch
 +   {
 +     return itr->second;
 +   }
-+   else 
++   else
 +   {
 +     return ret;
 +   }
 + }
-+ 
++
 + //-----------------------------------------------------------------------------
 + vtkStdString vtkOpenFOAMReader::GetLagrangianArrayClassName(const char *name)
 + {
@@ -376,30 +376,30 @@ function apply_vtkopenfoamreader_source_patch
 +   {
 +     return itr->second;
 +   }
-+   else 
++   else
 +   {
 +     return ret;
 +   }
 + }
-+ 
++
 + //-----------------------------------------------------------------------------
 + int vtkOpenFOAMReader::GetCellArrayExists(const char *name)
 + {
 +   return this->CellDataArraySelection->ArrayExists(name);
 + }
-+ 
++
 + //-----------------------------------------------------------------------------
 + int vtkOpenFOAMReader::GetPointArrayExists(const char *name)
 + {
 +   return this->PointDataArraySelection->ArrayExists(name);
 + }
-+ 
++
 + //-----------------------------------------------------------------------------
 + int vtkOpenFOAMReader::GetLagrangianArrayExists(const char *name)
 + {
 +   return this->LagrangianDataArraySelection->ArrayExists(name);
 + }
-+ 
++
 + //-----------------------------------------------------------------------------
 + vtkStdString vtkOpenFOAMReader::GetCellZoneName(const int index)
 + {
@@ -410,7 +410,7 @@ function apply_vtkopenfoamreader_source_patch
 +   }
 +   return ret;
 + }
-+ 
++
 + //-----------------------------------------------------------------------------
 + vtkStdString vtkOpenFOAMReader::GetFaceZoneName(const int index)
 + {
@@ -421,7 +421,7 @@ function apply_vtkopenfoamreader_source_patch
 +   }
 +   return ret;
 + }
-+ 
++
 + //-----------------------------------------------------------------------------
 + vtkStdString vtkOpenFOAMReader::GetPointZoneName(const int index)
 + {
@@ -432,9 +432,9 @@ function apply_vtkopenfoamreader_source_patch
 +   }
 +   return ret;
 + }
-+ 
++
 + // end added by LLNL
-+ 
++
 
 EOF
 
@@ -468,15 +468,15 @@ function apply_vtkopenglspheremapper_h_patch
 --- Rendering/OpenGL2/vtkOpenGLSphereMapper.h  2019-06-05 10:25:08.000000000 -0700
 ***************
 *** 94,105 ****
-  
+
     void RenderPieceDraw(vtkRenderer *ren, vtkActor *act) override;
-  
+
 -   virtual void CreateVBO(
 -     float * points, vtkIdType numPts,
 -     unsigned char *colors, int colorComponents,
 -     vtkIdType nc,
 -     float *sizes, vtkIdType ns, vtkRenderer *ren);
-- 
+-
     // used for transparency
     bool Invert;
     float Radius;
@@ -502,9 +502,9 @@ function apply_vtkopenglspheremapper_patch
 ***************
 *** 15,20 ****
 --- 15,21 ----
-  
+
   #include "vtkOpenGLHelper.h"
-  
+
 + #include "vtkDataArrayAccessor.h"
   #include "vtkFloatArray.h"
   #include "vtkMath.h"
@@ -513,7 +513,7 @@ function apply_vtkopenglspheremapper_patch
 *** 211,253 ****
     os << indent << "Radius: " << this->Radius << "\n";
   }
-  
+
 ! // internal function called by CreateVBO
 ! void vtkOpenGLSphereMapper::CreateVBO(
 !   float * points, vtkIdType numPts,
@@ -525,28 +525,28 @@ function apply_vtkopenglspheremapper_patch
 !   verts->SetNumberOfComponents(3);
 !   verts->SetNumberOfTuples(numPts*3);
 !   float *vPtr = static_cast<float *>(verts->GetVoidPointer(0));
-  
+
 !   vtkFloatArray *offsets = vtkFloatArray::New();
 !   offsets->SetNumberOfComponents(2);
 !   offsets->SetNumberOfTuples(numPts*3);
     float *oPtr = static_cast<float *>(offsets->GetVoidPointer(0));
-- 
+-
 -   vtkUnsignedCharArray *ucolors = vtkUnsignedCharArray::New();
 -   ucolors->SetNumberOfComponents(4);
 -   ucolors->SetNumberOfTuples(numPts*3);
     unsigned char *cPtr = static_cast<unsigned char *>(ucolors->GetVoidPointer(0));
-  
+
 !   float *pointPtr;
 !   unsigned char *colorPtr;
-  
+
     float cos30 = cos(vtkMath::RadiansFromDegrees(30.0));
-  
+
     for (vtkIdType i = 0; i < numPts; ++i)
     {
 !     pointPtr = points + i*3;
 !     colorPtr = (nc == numPts ? colors + i*colorComponents : colors);
 !     float radius = (ns == numPts ? sizes[i] : sizes[0]);
-  
+
       // Vertices
 !     *(vPtr++) = pointPtr[0];
 !     *(vPtr++) = pointPtr[1];
@@ -557,7 +557,7 @@ function apply_vtkopenglspheremapper_patch
 --- 212,250 ----
     os << indent << "Radius: " << this->Radius << "\n";
   }
-  
+
 ! // internal function called by BuildBufferObjects
 ! template <typename PtsArray, typename SizesArray>
 ! void vtkOpenGLSphereMapper_PrepareVBO(
@@ -566,27 +566,27 @@ function apply_vtkopenglspheremapper_patch
 !   vtkFloatArray *verts, vtkFloatArray *offsets, vtkUnsignedCharArray *ucolors)
   {
 !   vtkIdType numPts = points->GetNumberOfTuples();
-  
+
 !   float *vPtr = static_cast<float *>(verts->GetVoidPointer(0));
     float *oPtr = static_cast<float *>(offsets->GetVoidPointer(0));
     unsigned char *cPtr = static_cast<unsigned char *>(ucolors->GetVoidPointer(0));
-  
+
 !   vtkDataArrayAccessor<PtsArray> pointPtr(points);
 !   vtkDataArrayAccessor<SizesArray> sizes(sizesA);
-! 
+!
 !   float radius = sizes.Get(0, 0);
-!   
+!
 !   unsigned char *colorPtr = colors;
-  
+
     float cos30 = cos(vtkMath::RadiansFromDegrees(30.0));
-  
+
     for (vtkIdType i = 0; i < numPts; ++i)
     {
 !     if (nc == numPts)
 !         colorPtr = colors + i*colorComponents;
 !     if (ns == numPts)
 !         radius = sizes.Get(i, 0);
-  
+
       // Vertices
 !     *(vPtr++) = pointPtr.Get(i, 0);
 !     *(vPtr++) = pointPtr.Get(i, 1);
@@ -598,7 +598,7 @@ function apply_vtkopenglspheremapper_patch
 *** 255,263 ****
       *(oPtr++) = -2.0f*radius*cos30;
       *(oPtr++) = -radius;
-  
+
 !     *(vPtr++) = pointPtr[0];
 !     *(vPtr++) = pointPtr[1];
 !     *(vPtr++) = pointPtr[2];
@@ -608,7 +608,7 @@ function apply_vtkopenglspheremapper_patch
 --- 252,260 ----
       *(oPtr++) = -2.0f*radius*cos30;
       *(oPtr++) = -radius;
-  
+
 !     *(vPtr++) = pointPtr.Get(i, 0);
 !     *(vPtr++) = pointPtr.Get(i, 1);
 !     *(vPtr++) = pointPtr.Get(i, 2);
@@ -619,7 +619,7 @@ function apply_vtkopenglspheremapper_patch
 *** 265,273 ****
       *(oPtr++) = 2.0f*radius*cos30;
       *(oPtr++) = -radius;
-  
+
 !     *(vPtr++) = pointPtr[0];
 !     *(vPtr++) = pointPtr[1];
 !     *(vPtr++) = pointPtr[2];
@@ -629,7 +629,7 @@ function apply_vtkopenglspheremapper_patch
 --- 262,270 ----
       *(oPtr++) = 2.0f*radius*cos30;
       *(oPtr++) = -radius;
-  
+
 !     *(vPtr++) = pointPtr.Get(i, 0);
 !     *(vPtr++) = pointPtr.Get(i, 1);
 !     *(vPtr++) = pointPtr.Get(i, 2);
@@ -641,7 +641,7 @@ function apply_vtkopenglspheremapper_patch
       *(oPtr++) = 0.0f;
       *(oPtr++) = 2.0f*radius;
     }
-- 
+-
 -   this->VBOs->CacheDataArray("vertexMC", verts, ren, VTK_FLOAT);
 -   verts->Delete();
 -   this->VBOs->CacheDataArray("offsetMC", offsets, ren, VTK_FLOAT);
@@ -650,14 +650,14 @@ function apply_vtkopenglspheremapper_patch
 -   ucolors->Delete();
 -   VBOs->BuildAllVBOs(ren);
   }
-  
+
   //-------------------------------------------------------------------------
 --- 272,277 ----
 ***************
 *** 320,326 ****
     // then the scalars do not have to be regenerted.
     this->MapScalars(1.0);
-  
+
 !   vtkIdType numPts = poly->GetPoints()->GetNumberOfPoints();
     unsigned char *c;
     int cc;
@@ -665,9 +665,9 @@ function apply_vtkopenglspheremapper_patch
 --- 309,317 ----
     // then the scalars do not have to be regenerted.
     this->MapScalars(1.0);
-  
+
 !   vtkPoints *pts = poly->GetPoints();
-! 
+!
 !   vtkIdType numPts = pts->GetNumberOfPoints();
     unsigned char *c;
     int cc;
@@ -684,7 +684,7 @@ function apply_vtkopenglspheremapper_patch
       nc = 1;
 !     cc = 3;
     }
-  
+
 !   float *scales;
     vtkIdType ns = poly->GetPoints()->GetNumberOfPoints();
     if (this->ScaleArray != nullptr &&
@@ -698,7 +698,7 @@ function apply_vtkopenglspheremapper_patch
 !     scales = &this->Radius;
       ns = 1;
     }
-  
+
 !   // Iterate through all of the different types in the polydata, building OpenGLs
 !   // and IBOs as appropriate for each type.
 !   this->CreateVBO(
@@ -707,12 +707,12 @@ function apply_vtkopenglspheremapper_patch
 !     c, cc, nc,
 !     scales, ns,
 !     ren);
-  
+
     if (!this->Colors)
     {
       delete [] c;
     }
-  
+
     // create the IBO
     this->Primitives[PrimitivePoints].IBO->IndexCount = 0;
 --- 324,386 ----
@@ -728,7 +728,7 @@ function apply_vtkopenglspheremapper_patch
       nc = 1;
 !     cc = 4;
     }
-  
+
 !   vtkDataArray *scales = NULL;
     vtkIdType ns = poly->GetPoints()->GetNumberOfPoints();
     if (this->ScaleArray != nullptr &&
@@ -744,22 +744,22 @@ function apply_vtkopenglspheremapper_patch
 !     scales->SetTuple1(0, this->Radius);
       ns = 1;
     }
-  
+
 !   vtkFloatArray *verts = vtkFloatArray::New();
 !   verts->SetNumberOfComponents(3);
 !   verts->SetNumberOfTuples(numPts*3);
-! 
+!
 !   vtkFloatArray *offsets = vtkFloatArray::New();
 !   offsets->SetNumberOfComponents(2);
 !   offsets->SetNumberOfTuples(numPts*3);
-! 
+!
 !   vtkUnsignedCharArray *ucolors = vtkUnsignedCharArray::New();
 !   ucolors->SetNumberOfComponents(4);
 !   ucolors->SetNumberOfTuples(numPts*3);
-! 
+!
 !   vtkOpenGLSphereMapper_PrepareVBO(pts->GetData(), c, cc, nc, scales, ns,
 !                                    verts, offsets, ucolors);
-! 
+!
 !   this->VBOs->CacheDataArray("vertexMC", verts, ren, VTK_FLOAT);
 !   verts->Delete();
 !   this->VBOs->CacheDataArray("offsetMC", offsets, ren, VTK_FLOAT);
@@ -767,7 +767,7 @@ function apply_vtkopenglspheremapper_patch
 !   this->VBOs->CacheDataArray("scalarColor", ucolors, ren, VTK_UNSIGNED_CHAR);
 !   ucolors->Delete();
 !   this->VBOs->BuildAllVBOs(ren);
-  
+
     if (!this->Colors)
     {
       delete [] c;
@@ -776,7 +776,7 @@ function apply_vtkopenglspheremapper_patch
 +   {
 +     scales->Delete();
 +   }
-  
+
     // create the IBO
     this->Primitives[PrimitivePoints].IBO->IndexCount = 0;
 EOF
@@ -790,14 +790,14 @@ EOF
 
 function apply_vtkospray_patches
 {
-    count_patches=2
+    count_patches=3
     # patch vtkOSPRay files:
 
-    # 1) expose vtkViewNodeFactory via vtkOSPRayPass
+    # 1) expose vtkViewNodeFactory via vtkOSPRayPass.h
     current_patch=1
     patch -p0 << \EOF
-*** Rendering/RayTracing/vtkOSPRayPass_orig.h	2021-04-29 17:14:23.000000000 -0600
---- Rendering/RayTracing/vtkOSPRayPass.h	2021-04-29 17:16:08.000000000 -0600
+*** Rendering/RayTracing/vtkOSPRayPass_orig.h   2021-04-29 17:14:23.000000000 -0600
+--- Rendering/RayTracing/vtkOSPRayPass.h        2021-04-29 17:16:08.000000000 -0600
 *************** class vtkOverlayPass;
 *** 50,55 ****
 --- 50,56 ----
@@ -805,7 +805,7 @@ function apply_vtkospray_patches
   class vtkSequencePass;
   class vtkVolumetricPass;
 + class vtkViewNodeFactory;
-  
+
   class VTKRENDERINGRAYTRACING_EXPORT vtkOSPRayPass : public vtkRenderPass
   {
 *************** public:
@@ -813,43 +813,52 @@ function apply_vtkospray_patches
 --- 77,87 ----
      */
     virtual void RenderInternal(const vtkRenderState* s);
-  
+
 +   /**
 +    * Called by VisIt
 +    */
 +   virtual vtkViewNodeFactory* GetViewNodeFactory();
-+ 
++
     ///@{
     /**
      * Wrapper around ospray's init and shutdown that protect
-*** Rendering/RayTracing/vtkOSPRayPass_orig.cxx	2021-04-29 17:17:02.000000000 -0600
---- Rendering/RayTracing/vtkOSPRayPass.cxx	2021-04-29 17:19:10.000000000 -0600
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch ${current_patch}/${count_patches} for vtkOSPRayPass.h failed."
+        return 1
+    fi
+
+    # 2) expose vtkViewNodeFactory via vtkOSPRayPass.cxx
+    ((current_patch++))
+    patch -p0 << \EOF
+*** Rendering/RayTracing/vtkOSPRayPass_orig.cxx 2021-04-29 17:17:02.000000000 -0600
+--- Rendering/RayTracing/vtkOSPRayPass.cxx      2021-04-29 17:19:10.000000000 -0600
 *************** void vtkOSPRayPass::RenderInternal(const
 *** 430,435 ****
 --- 430,441 ----
   }
-  
+
   //------------------------------------------------------------------------------
 + vtkViewNodeFactory* vtkOSPRayPass::GetViewNodeFactory()
 + {
 +   return this->Internal->Factory;
 + }
-+ 
++
 + //------------------------------------------------------------------------------
   bool vtkOSPRayPass::IsSupported()
   {
     static bool detected = false;
 EOF
     if [[ $? != 0 ]] ; then
-        warn "vtk patch ${current_patch}/${count_patches} for vtkOSPRayPass failed."
+        warn "vtk patch ${current_patch}/${count_patches} for vtkOSPRayPass.cxx failed."
         return 1
     fi
 
-    # 2) Set the samples in the VolumeMapper
+    # 3) Set the samples in the VolumeMapper
     ((current_patch++))
     patch -p0 << \EOF
-*** Rendering/RayTracing/vtkOSPRayVolumeMapper_orig.cxx	2021-05-03 09:40:09.000000000 -0600
---- Rendering/RayTracing/vtkOSPRayVolumeMapper.cxx	2021-05-03 09:41:03.000000000 -0600
+*** Rendering/RayTracing/vtkOSPRayVolumeMapper_orig.cxx 2021-05-03 09:40:09.000000000 -0600
+--- Rendering/RayTracing/vtkOSPRayVolumeMapper.cxx      2021-05-03 09:41:03.000000000 -0600
 *************** void vtkOSPRayVolumeMapper::Render(vtkRe
 *** 72,77 ****
 --- 72,81 ----
@@ -865,7 +874,7 @@ EOF
     this->InternalRenderer->SetBackground(ren->GetBackground());
 EOF
     if [[ $? != 0 ]] ; then
-        warn "vtk patch $current_patch/$count_patches for vtkOSPRayVolumeMapper failed."
+        warn "vtk patch $current_patch/$count_patches for vtkOSPRayVolumeMapper.cxx failed."
         return 1
     fi
 }
