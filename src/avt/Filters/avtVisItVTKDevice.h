@@ -144,7 +144,7 @@ public:
 protected:
     virtual void                Execute(void) override;
 
-    DataType                    m_dataType;
+    DataType                    m_dataType{DataType::GEOMETRY};
 
     // VisIt has 8 lights that can be setup
     LightList                   m_lightList;
