@@ -2603,16 +2603,24 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
     if (opacityVariable != obj.opacityVariable)
         return true;
 
-    if (resampleType != obj.resampleType)
+    // Any change to the renderer type requires a reexecute.
+    if(rendererType != obj.rendererType)
         return true;
 
-    if (resampleTarget != obj.resampleTarget)
+    if (smoothData != obj.smoothData)
         return true;
 
-    if (rendererType == VolumeAttributes::Composite ||
-        rendererType == VolumeAttributes::SLIVR ||
-        rendererType == VolumeAttributes::Parallel ||
-        rendererType == VolumeAttributes::Integration)
+    if (scaling != obj.scaling)
+        return true;
+    if (scaling == VolumeAttributes::Skew && skewFactor != obj.skewFactor)
+        return true;
+
+//    if(rendererType == VolumeAttributes::Parallel ||
+//       rendererType == VolumeAttributes::Integration ||
+//       rendererType == VolumeAttributes::SLIVR)
+//    {
+//    } else
+    if(rendererType == VolumeAttributes::Composite)
     {
         // Trilinear requires ghost zone while Rasterization and KernelBased do not
         if ((sampling == Rasterization || sampling == KernelBased) && obj.sampling == Trilinear)
@@ -2621,32 +2629,15 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         if ((sampling == Trilinear) && (obj.sampling == KernelBased || obj.sampling == Rasterization))
             return true;
 
-        // We're in software mode. Any change to the renderer type requires
-        // a reexecute.
-        if(rendererType != obj.rendererType)
-            return true;
-
-        if (scaling != obj.scaling)
-            return true;
-        if (scaling == VolumeAttributes::Skew && skewFactor != obj.skewFactor)
-            return true;
-        if (lightingFlag != obj.lightingFlag)
+       if(lightingFlag != obj.lightingFlag)
             return true;
     }
-    else
+    else if(rendererType == VolumeAttributes::Serial)
     {
-        // We're in hardware mode now but if we're transitioning to software
-        // then we need to reexecute. Transferring between any of the hardware
-        // modes does not require a reexecute.
-        if(obj.rendererType == VolumeAttributes::Composite ||
-           obj.rendererType == VolumeAttributes::SLIVR ||
-           obj.rendererType == VolumeAttributes::Parallel ||
-           obj.rendererType == VolumeAttributes::Integration)
-        {
+        if(resampleType != obj.resampleType)
             return true;
-        }
-
-        // We need to reexecute on the engine for thse changes in HW mode.
+        if(resampleTarget != obj.resampleTarget)
+            return true;
 
         if(useColorVarMin != obj.useColorVarMin)
             return true;
@@ -2666,14 +2657,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
             return true;
         if(gradientType != obj.gradientType)
             return true;
-        if(scaling != obj.scaling)
-            return true;
-        if(skewFactor != obj.skewFactor)
-            return true;
     }
-
-    if (smoothData != obj.smoothData)
-        return true;
 
     return false;
 }
