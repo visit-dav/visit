@@ -69,12 +69,12 @@ const std::string avtVisItVTKDevice::DEVICE_TYPE_STR{"vtk"};
 // ****************************************************************************
 
 avtVisItVTKDevice::avtVisItVTKDevice() : avtRayTracerBase(),
-    m_dataType(DataType::GEOMETRY),
     m_lightList(),
-    m_renderingAttribs(),
-    m_materialPropertiesPtr(nullptr),
-    m_viewDirectionPtr(nullptr)
-{}
+    m_renderingAttribs()
+{
+    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+                << "Creating a new device." << std::endl;
+}
 
 // ****************************************************************************
 //  Method: avtVisItVTKDevice destructor
@@ -521,7 +521,8 @@ avtVisItVTKDevice::ExecuteVolume()
            (m_renderingAttribs.resampleType &&
             m_renderingAttribs.resampleTargetVal != m_resampleTargetVal) ||
            m_activeVarName != activeVarName ||
-           m_opacityVarName != opacityVarName )
+           (m_nComponents == 2 &&
+            m_opacityVarName != opacityVarName) )
         {
             needImage = true;
 
@@ -1061,10 +1062,13 @@ avtVisItVTKDevice::ExecuteVolume()
               << std::endl;
 
     // Set ambient, diffuse, specular, and specular power (shininess).
-    volumeProperty->SetAmbient      (m_materialPropertiesPtr[0]);
-    volumeProperty->SetDiffuse      (m_materialPropertiesPtr[1]);
-    volumeProperty->SetSpecular     (m_materialPropertiesPtr[2]);
-    volumeProperty->SetSpecularPower(m_materialPropertiesPtr[3]);
+    if( m_renderingAttribs.lightingEnabled )
+    {
+        volumeProperty->SetAmbient      (m_materialPropertiesPtr[0]);
+        volumeProperty->SetDiffuse      (m_materialPropertiesPtr[1]);
+        volumeProperty->SetSpecular     (m_materialPropertiesPtr[2]);
+        volumeProperty->SetSpecularPower(m_materialPropertiesPtr[3]);
+    }
 
     // If the dataset contains NO_DATA_VALUEs, interpolation will
     // not work correctly on the boundaries (between a real value
