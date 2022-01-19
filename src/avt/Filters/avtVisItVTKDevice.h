@@ -34,11 +34,21 @@ namespace avt
         {
             RenderingAttribs(): resampleType{0},
                                 resampleTargetVal{static_cast<int>(1e6)},
+                                resampleFlag(true),
 
                                 lightingEnabled(false),
 
                                 samplesPerRay(500),
                                 samplingRate(3.0f),
+
+                                useColorVarMin(false),
+                                colorVarMin(0.0),
+                                useColorVarMax(false),
+                                colorVarMax(1.0),
+                                useOpacityVarMin(false),
+                                opacityVarMin(0.0),
+                                useOpacityVarMax(false),
+                                opacityVarMax(1.0),
 
                                 // OSPRay attributes.
                                 OSPRayEnabled(false),
@@ -57,12 +67,22 @@ namespace avt
 
             int     resampleType;
             int     resampleTargetVal;
+            bool    resampleFlag;
 
             bool    lightingEnabled;
 
             int     samplesPerRay;
             // Sampling rate for volumes
             float   samplingRate;
+
+            bool    useColorVarMin;
+            float   colorVarMin;
+            bool    useColorVarMax;
+            float   colorVarMax;
+            bool    useOpacityVarMin;
+            float   opacityVarMin;
+            bool    useOpacityVarMax;
+            float   opacityVarMax;
 
             // OSPRay attributes.
             bool    OSPRayEnabled;
@@ -113,9 +133,19 @@ public:
     void SetLightInfo(const LightList& l)       { m_lightList = l; }
 
     void SetResampleType(const int v)           { m_renderingAttribs.resampleType = v; }
+    void SetResampleFlag(const bool v)          { m_renderingAttribs.resampleFlag = v; }
     void SetResampleTargetVal(const int v)      { m_renderingAttribs.resampleTargetVal = v; }
 
     void SetLighting(const bool b)              { m_renderingAttribs.lightingEnabled = b; }
+
+    void SetUseColorVarMin(const bool v)        { m_renderingAttribs.useColorVarMin = v; }
+    void SetColorVarMin(const float v)          { m_renderingAttribs.colorVarMin = v; }
+    void SetUseColorVarMax(const bool v)        { m_renderingAttribs.useColorVarMax = v; }
+    void SetColorVarMax(const float v)          { m_renderingAttribs.colorVarMax = v; }
+    void SetUseOpacityVarMin(const bool v)      { m_renderingAttribs.useOpacityVarMin = v; }
+    void SetOpacityVarMin(const float v)        { m_renderingAttribs.opacityVarMin = v; }
+    void SetUseOpacityVarMax(const bool v)      { m_renderingAttribs.useOpacityVarMax = v; }
+    void SetOpacityVarMax(const float v)        { m_renderingAttribs.opacityVarMax = v; }
 
     // Ray Casting Options
     void SetSamplingRate(const float v)         { m_renderingAttribs.samplingRate = v; }
@@ -164,6 +194,15 @@ protected:
 
     int                         m_resampleType{0};
     int                         m_resampleTargetVal{0};
+
+    bool                        m_useColorVarMin{false};
+    float                       m_colorVarMin{0.0};
+    bool                        m_useColorVarMax{false};
+    float                       m_colorVarMax{1.0};
+    bool                        m_useOpacityVarMin{false};
+    float                       m_opacityVarMin{0.0};
+    bool                        m_useOpacityVarMax{false};
+    float                       m_opacityVarMax{1.0};
 
     std::string                 m_activeVarName  {"default"};
     std::string                 m_opacityVarName {"default"};

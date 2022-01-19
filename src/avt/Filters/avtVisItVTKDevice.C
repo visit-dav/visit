@@ -224,6 +224,9 @@ avtVisItVTKDevice::CreateLights()
     {
         auto lightAttributes = m_lightList.GetLight(i);
 
+        if( lightAttributes.GetEnabledFlag() == false )
+            continue;
+
         vtkLight *light = vtkLight::New();
 
         // color
@@ -490,12 +493,22 @@ avtVisItVTKDevice::ExecuteVolume()
     GetDataExtents(dataRange, activeVarName.c_str());
     UnifyMinMax(dataRange, 2);
 
+    if( m_renderingAttribs.useColorVarMin )
+        dataRange[0] = m_renderingAttribs.colorVarMin;
+    if( m_renderingAttribs.useColorVarMax )
+        dataRange[1] = m_renderingAttribs.colorVarMax;
+
     // There could be separate scalar and opacity components.
     if( opacityVarName != "default" && opacityVarName != activeVarName )
     {
         m_nComponents = 2;
         GetDataExtents(opacityRange, opacityVarName.c_str());
         UnifyMinMax(opacityRange, 2);
+
+        if( m_renderingAttribs.useOpacityVarMin )
+            opacityRange[0] = m_renderingAttribs.opacityVarMin;
+        if( m_renderingAttribs.useOpacityVarMax )
+            opacityRange[1] = m_renderingAttribs.opacityVarMax;
     }
     else
     {
@@ -521,8 +534,23 @@ avtVisItVTKDevice::ExecuteVolume()
            (m_renderingAttribs.resampleType &&
             m_renderingAttribs.resampleTargetVal != m_resampleTargetVal) ||
            m_activeVarName != activeVarName ||
+
+           m_useColorVarMin != m_renderingAttribs.useColorVarMin ||
+           (m_renderingAttribs.useColorVarMin &&
+            m_colorVarMin != m_renderingAttribs.colorVarMin) ||
+           m_useColorVarMax != m_renderingAttribs.useColorVarMax ||
+           (m_renderingAttribs.useColorVarMax &&
+            m_colorVarMax != m_renderingAttribs.colorVarMax) ||
+
            (m_nComponents == 2 &&
-            m_opacityVarName != opacityVarName) )
+            (m_opacityVarName != opacityVarName ||
+             m_useOpacityVarMin != m_renderingAttribs.useOpacityVarMin ||
+             (m_renderingAttribs.useOpacityVarMin &&
+              m_opacityVarMin != m_renderingAttribs.opacityVarMin) ||
+             m_useOpacityVarMax != m_renderingAttribs.useOpacityVarMax ||
+             (m_renderingAttribs.useOpacityVarMax &&
+              m_opacityVarMax != m_renderingAttribs.opacityVarMax)))
+           )
         {
             needImage = true;
 
@@ -532,9 +560,10 @@ avtVisItVTKDevice::ExecuteVolume()
             mustResample =
               (nsets > 1 ||
                datasetPtrs[ 0 ]->GetDataObjectType() != VTK_RECTILINEAR_GRID ||
-               datasetPtrs[ 0 ]->GetPointData()->GetScalars() == nullptr ||
-               (m_nComponents == 2 &&
-                datasetPtrs[ 0 ]->GetPointData()->GetScalars( opacityVarName.c_str() ) == nullptr));
+               // datasetPtrs[ 0 ]->GetPointData()->GetScalars() == nullptr ||
+               // (m_nComponents == 2 &&
+               //  datasetPtrs[ 0 ]->GetPointData()->GetScalars( opacityVarName.c_str() ) == nullptr) ||
+               0);
         }
     }
 
@@ -551,13 +580,28 @@ avtVisItVTKDevice::ExecuteVolume()
 
     if( mustResample && !userResample )
     {
-        avtCallback::IssueWarning("No resampling was selected but "
-                                  "the data must be resampled because; "
-                                  "each rank has more than one data set and/or, "
-                                  "the data is not on a rectilinear grid and/or, "
-                                  "the data is cell centered data. "
-                                  "The data will be resampled and "
-                                  "redistributed to each rank.");
+        std::string msg("No resampling was selected but "
+                        "the data must be resampled because; "
+                        "each rank has more than one data set and/or, "
+                        "the data is not on a rectilinear grid and/or, "
+                        "the data is cell centered data. ");
+
+        if( m_renderingAttribs.resampleFlag )
+        {
+            msg += std::string("The data will be resampled and "
+                               "if running in parallel "
+                               "redistributed to each rank.");
+
+            avtCallback::IssueWarning(msg.c_str());
+        }
+        else
+        {
+            msg += std::string("The pipeline can be fixed by "
+                               "using the 'Resample' operator or "
+                               "checking 'Resample automatically'");
+
+            EXCEPTION1(ImproperUseException, msg.c_str());
+        }
     }
 
 
@@ -650,7 +694,9 @@ avtVisItVTKDevice::ExecuteVolume()
     // the needImage flag is false as it is based on the original
     // input data. This step could also be done by examining the
     // rectilienar grid but the flag is already set so use it.
-    if( nsets == 0 )
+    if( nsets == 0 ||
+        (PAR_Rank() != 0 &&
+         m_renderingAttribs.resampleType == 1) )
     {
         debug5 << "[VisItVTKDevice] Nothing to render, no data." << std::endl;
 
@@ -662,6 +708,12 @@ avtVisItVTKDevice::ExecuteVolume()
         if(PAR_Rank() == 0)
           SetOutput(finalImage);
 #endif
+
+        if( m_imageToRender != nullptr )
+        {
+            m_imageToRender->Delete();
+            m_imageToRender = nullptr;
+        }
 
         return;
     }
@@ -705,7 +757,7 @@ avtVisItVTKDevice::ExecuteVolume()
         rgrid->GetExtent(extent);
 
         // Get the active variable scalar data array.
-        vtkDataArray *dataArr = in_ds->GetPointData()->GetScalars( activeVarName.c_str() );
+        vtkDataArray *dataArr = in_ds->GetPointData()->GetScalars();
 
         if( dataArr )
         {
@@ -713,7 +765,7 @@ avtVisItVTKDevice::ExecuteVolume()
         }
         else
         {
-            dataArr = in_ds->GetCellData()->GetScalars( activeVarName.c_str() );
+            dataArr = in_ds->GetCellData()->GetScalars();
 
             if( dataArr == nullptr )
             {
@@ -721,7 +773,16 @@ avtVisItVTKDevice::ExecuteVolume()
             }
 
             m_cellData = true;
+
+            LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+                        << "rank: "  << PAR_Rank() << " expecting cell data "
+                        << std::endl;
         }
+
+        m_useColorVarMin = m_renderingAttribs.useColorVarMin;
+        m_colorVarMin    = m_renderingAttribs.colorVarMin;
+        m_useColorVarMax = m_renderingAttribs.useColorVarMax;
+        m_colorVarMax    = m_renderingAttribs.colorVarMax;
 
         m_activeVarName = activeVarName;
 
@@ -749,6 +810,11 @@ avtVisItVTKDevice::ExecuteVolume()
                     EXCEPTION1(InvalidVariableException, opacityVarName);
                 }
             }
+
+            m_useOpacityVarMin = m_renderingAttribs.useOpacityVarMin;
+            m_opacityVarMin    = m_renderingAttribs.opacityVarMin;
+            m_useOpacityVarMax = m_renderingAttribs.useOpacityVarMax;
+            m_opacityVarMax    = m_renderingAttribs.opacityVarMax;
 
             m_opacityVarName = opacityVarName;
         }
@@ -803,7 +869,7 @@ avtVisItVTKDevice::ExecuteVolume()
 
         // Allocate the new scalars
         vtkDataArray* scalars =
-            vtkDataArray::CreateDataArray(VTK_UNSIGNED_CHAR);
+            vtkDataArray::CreateDataArray(VTK_FLOAT);
         scalars->SetNumberOfComponents(m_nComponents);
         scalars->SetName("ImageScalars");
 
@@ -820,7 +886,7 @@ avtVisItVTKDevice::ExecuteVolume()
 
         scalars->Delete();
 
-        // m_imageToRender->AllocateScalars(VTK_UNSIGNED_CHAR, m_nComponents);
+        // m_imageToRender->AllocateScalars(VTK_FLOAT, m_nComponents);
 
         // Set the origin to match the lower bounds of the grid
         m_imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
@@ -830,10 +896,11 @@ avtVisItVTKDevice::ExecuteVolume()
                   << dataRange[0] << "  " << dataRange[1] << "  "
                   << std::endl;
 
-        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-                  << "rank: "  << PAR_Rank() << " opacity range : "
-                  << opacityRange[0] << "  " << opacityRange[1] << "  "
-                  << std::endl;
+        if( m_nComponents == 2 )
+            LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+                        << "rank: "  << PAR_Rank() << " opacity range : "
+                        << opacityRange[0] << "  " << opacityRange[1] << "  "
+                        << std::endl;
 
         // The values on the image must be scales to between 0 and 255.
         double dataScale    = 255.0f / (   dataRange[1] -    dataRange[0]);
@@ -846,6 +913,8 @@ avtVisItVTKDevice::ExecuteVolume()
 
         double opacity_min =  1e6;
         double opacity_max = -1e6;
+
+        m_useInterpolation = true;
 
         // VisIt populates empty space with the NO_DATA_VALUE.
         // This needs to map this to a value that the mapper accepts,
@@ -925,7 +994,6 @@ avtVisItVTKDevice::ExecuteVolume()
             }
         }
 
-
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                     << "rank: "  << PAR_Rank()
                     << " NumberOfTuples: "
@@ -937,10 +1005,11 @@ avtVisItVTKDevice::ExecuteVolume()
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                     << "rank: "  << PAR_Rank()
                     << " dataRange: "
-                    << data_min << "  " << data_max << "  "
-                    << " opacityRange: "
-                    << opacity_min << "  " << opacity_max << "  "
-                    << std::endl;
+                    << data_min << "  " << data_max << "  ";
+        if( m_nComponents == 2 )
+            LOCAL_DEBUG << " opacityRange: "
+                        << opacity_min << "  " << opacity_max << "  ";
+        LOCAL_DEBUG << std::endl;
 
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                     << "rank: "  << PAR_Rank() << " useInterpolation: "
@@ -995,10 +1064,15 @@ avtVisItVTKDevice::ExecuteVolume()
                         << std::endl;
         }
 
-        m_volumeMapper->SetInputData(m_imageToRender);
-        m_volumeMapper->SetScalarModeToUsePointData();
         m_volumeMapper->SetBlendModeToComposite();
     }
+
+    if( m_cellData )
+      m_volumeMapper->SetScalarModeToUseCellData();
+    else
+      m_volumeMapper->SetScalarModeToUsePointData();
+
+    m_volumeMapper->SetInputData(m_imageToRender);
 
     // Upstream in avtVolumeFIlter an new color and opacity map are
     // created each time so recreate them here.
@@ -1046,7 +1120,7 @@ avtVisItVTKDevice::ExecuteVolume()
     transFunc->SetScaleToLinear();
     transFunc->SetClamping(m_useInterpolation);
     opacity->SetClamping(m_useInterpolation);
-    // gradient->SetClamping(useInterpolation==true);
+    // gradient->SetClamping(m_useInterpolation);
 
     // Set the volume properties.
     vtkVolumeProperty * volumeProperty = vtkVolumeProperty::New();
@@ -1060,6 +1134,15 @@ avtVisItVTKDevice::ExecuteVolume()
               << "rank: "  << PAR_Rank() << " HasGradientOpacity: "
               << volumeProperty->HasGradientOpacity() << "  "
               << std::endl;
+
+    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+                << "rank: "  << PAR_Rank()
+                << " lightingEnabled: " << m_renderingAttribs.lightingEnabled << "  "
+                << m_materialPropertiesPtr[0] << "  "
+                << m_materialPropertiesPtr[1] << "  "
+                << m_materialPropertiesPtr[2] << "  "
+                << m_materialPropertiesPtr[3] << "  "
+                << std::endl;
 
     // Set ambient, diffuse, specular, and specular power (shininess).
     if( m_renderingAttribs.lightingEnabled )
@@ -1129,7 +1212,7 @@ avtVisItVTKDevice::ExecuteVolume()
     renderer->SetBackgroundAlpha(0.0f);
     renderer->AddViewProp(volume);
     renderer->SetActiveCamera( camera );
-    renderer->SetLightCollection( lights );
+    // renderer->SetLightCollection( lights );
 
 #ifdef HAVE_OSPRAY
     if( m_renderingAttribs.OSPRayEnabled )
@@ -1151,14 +1234,22 @@ avtVisItVTKDevice::ExecuteVolume()
     }
 #endif
 
-    if (m_ambientOn)
-    {
-        renderer->SetAmbient(m_ambientColor);
-    }
-    else
-    {
-        renderer->SetAmbient(1., 1., 1.);
-    }
+    // if (m_ambientOn)
+    // {
+    //     LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+    //                 << "rank: "  << PAR_Rank()
+    //                 << " ambientOn: " << m_ambientOn << "  "
+    //                 << m_ambientColor[0] << "  "
+    //                 << m_ambientColor[1] << "  "
+    //                 << m_ambientColor[2] << "  "
+    //                 << std::endl;
+
+    //     renderer->SetAmbient(m_ambientColor);
+    // }
+    // else
+    // {
+    //     renderer->SetAmbient(1., 1., 1.);
+    // }
 
     // Create an off screen render window.
     vtkRenderWindow* renderWin = vtkRenderWindow::New();
