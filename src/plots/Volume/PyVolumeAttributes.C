@@ -169,6 +169,11 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
 
     snprintf(tmpStr, 1000, "%sresampleTarget = %d\n", prefix, atts->GetResampleTarget());
     str += tmpStr;
+    if(atts->GetResampleFlag())
+        snprintf(tmpStr, 1000, "%sresampleFlag = 1\n", prefix);
+    else
+        snprintf(tmpStr, 1000, "%sresampleFlag = 0\n", prefix);
+    str += tmpStr;
     snprintf(tmpStr, 1000, "%sopacityVariable = \"%s\"\n", prefix, atts->GetOpacityVariable().c_str());
     str += tmpStr;
     {   const unsigned char *freeformOpacity = atts->GetFreeformOpacity();
@@ -1620,6 +1625,66 @@ VolumeAttributes_GetResampleTarget(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetResampleTarget()));
+    return retval;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_SetResampleFlag(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
+
+    // Set the resampleFlag in the object.
+    obj->data->SetResampleFlag(cval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VolumeAttributes_GetResampleFlag(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetResampleFlag()?1L:0L);
     return retval;
 }
 
@@ -3123,6 +3188,8 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetResampleType", VolumeAttributes_GetResampleType, METH_VARARGS},
     {"SetResampleTarget", VolumeAttributes_SetResampleTarget, METH_VARARGS},
     {"GetResampleTarget", VolumeAttributes_GetResampleTarget, METH_VARARGS},
+    {"SetResampleFlag", VolumeAttributes_SetResampleFlag, METH_VARARGS},
+    {"GetResampleFlag", VolumeAttributes_GetResampleFlag, METH_VARARGS},
     {"SetOpacityVariable", VolumeAttributes_SetOpacityVariable, METH_VARARGS},
     {"GetOpacityVariable", VolumeAttributes_GetOpacityVariable, METH_VARARGS},
     {"SetFreeformOpacity", VolumeAttributes_SetFreeformOpacity, METH_VARARGS},
@@ -3255,6 +3322,8 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "resampleTarget") == 0)
         return VolumeAttributes_GetResampleTarget(self, NULL);
+    if(strcmp(name, "resampleFlag") == 0)
+        return VolumeAttributes_GetResampleFlag(self, NULL);
     if(strcmp(name, "opacityVariable") == 0)
         return VolumeAttributes_GetOpacityVariable(self, NULL);
     if(strcmp(name, "freeformOpacity") == 0)
@@ -3405,6 +3474,8 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetResampleType(self, args);
     else if(strcmp(name, "resampleTarget") == 0)
         obj = VolumeAttributes_SetResampleTarget(self, args);
+    else if(strcmp(name, "resampleFlag") == 0)
+        obj = VolumeAttributes_SetResampleFlag(self, args);
     else if(strcmp(name, "opacityVariable") == 0)
         obj = VolumeAttributes_SetOpacityVariable(self, args);
     else if(strcmp(name, "freeformOpacity") == 0)

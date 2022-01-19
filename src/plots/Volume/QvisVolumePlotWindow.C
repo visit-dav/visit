@@ -925,11 +925,17 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         connect(resampleTypesComboBox, SIGNAL(activated(int)),
                 this, SLOT(resampleTypeChanged(int)));
 
+        resampleToggle = new QCheckBox(tr("If required auto-resample"), resampleGroup);
+        connect(resampleToggle, SIGNAL(toggled(bool)),
+                this, SLOT(resampleToggled(bool)));
+
         resampleLayout->addWidget(resampleTypesComboBox);
-        resampleLayout->addStretch(QSizePolicy::Maximum);
         resampleLayout->addWidget(resampleTargetWidget);
         resampleTargetLayout->addWidget(resampleTargetLabel,Qt::AlignRight);
         resampleTargetLayout->addWidget(resampleTarget,Qt::AlignLeft);
+        resampleLayout->addWidget(resampleToggle);
+        resampleLayout->addStretch(QSizePolicy::Maximum);
+
         resampleGroup->setVisible(false);
         pLayout->addWidget(resampleGroup);
     }
@@ -1911,6 +1917,10 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             resampleTarget->setValue(volumeAtts->GetResampleTarget());
             resampleTarget->blockSignals(false);
             break;
+        case VolumeAttributes::ID_resampleFlag:
+            resampleToggle->blockSignals(true);
+            resampleToggle->setChecked(volumeAtts->GetResampleFlag());
+            resampleToggle->blockSignals(false);
         case VolumeAttributes::ID_opacityVariable:
             opacityVariable->setText(volumeAtts->GetOpacityVariable().c_str());
             break;
@@ -3159,9 +3169,9 @@ QvisVolumePlotWindow::attenuationChanged(int opacity)
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::smoothDataToggled(bool)
+QvisVolumePlotWindow::smoothDataToggled(bool val)
 {
-    volumeAtts->SetSmoothData(!volumeAtts->GetSmoothData());
+    volumeAtts->SetSmoothData(val);
     SetUpdate(false);
     Apply();
 }
@@ -3182,9 +3192,9 @@ QvisVolumePlotWindow::smoothDataToggled(bool)
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::legendToggled(bool)
+QvisVolumePlotWindow::legendToggled(bool val)
 {
-    volumeAtts->SetLegendFlag(!volumeAtts->GetLegendFlag());
+    volumeAtts->SetLegendFlag(val);
     SetUpdate(false);
     Apply();
 }
@@ -3206,9 +3216,9 @@ QvisVolumePlotWindow::legendToggled(bool)
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::lightingToggled(bool)
+QvisVolumePlotWindow::lightingToggled(bool val)
 {
-    volumeAtts->SetLightingFlag(!volumeAtts->GetLightingFlag());
+    volumeAtts->SetLightingFlag(val);
     Apply();
 }
 
@@ -3328,9 +3338,9 @@ QvisVolumePlotWindow::limitsSelectChanged(int mode)
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::colorMinToggled(bool)
+QvisVolumePlotWindow::colorMinToggled(bool val)
 {
-    volumeAtts->SetUseColorVarMin(!volumeAtts->GetUseColorVarMin());
+    volumeAtts->SetUseColorVarMin(val);
     Apply();
 }
 
@@ -3374,9 +3384,9 @@ QvisVolumePlotWindow::colorMinProcessText()
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::colorMaxToggled(bool)
+QvisVolumePlotWindow::colorMaxToggled(bool val)
 {
-    volumeAtts->SetUseColorVarMax(!volumeAtts->GetUseColorVarMax());
+    volumeAtts->SetUseColorVarMax(val);
     Apply();
 }
 
@@ -3420,9 +3430,9 @@ QvisVolumePlotWindow::colorMaxProcessText()
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::opacityMinToggled(bool)
+QvisVolumePlotWindow::opacityMinToggled(bool val)
 {
-    volumeAtts->SetUseOpacityVarMin(!volumeAtts->GetUseOpacityVarMin());
+    volumeAtts->SetUseOpacityVarMin(val);
     Apply();
 }
 
@@ -3464,9 +3474,9 @@ QvisVolumePlotWindow::opacityMinProcessText()
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::opacityMaxToggled(bool)
+QvisVolumePlotWindow::opacityMaxToggled(bool val)
 {
-    volumeAtts->SetUseOpacityVarMax(!volumeAtts->GetUseOpacityVarMax());
+    volumeAtts->SetUseOpacityVarMax(val);
     Apply();
 }
 
@@ -3607,6 +3617,29 @@ void
 QvisVolumePlotWindow::resampleTargetChanged(int val)
 {
     volumeAtts->SetResampleTarget(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisVolumePlotWindow::resampleToggled
+//
+// Purpose:
+//   This is a Qt slot function that is called when the resample toggle is
+//   clicked.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 28 15:37:22 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Thu Feb 14 09:55:30 PDT 2002
+//   Prevented updates.
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::resampleToggled(bool val)
+{
+    volumeAtts->SetResampleFlag(val);
     Apply();
 }
 

@@ -141,6 +141,7 @@ public:
     void SetOpacityControlPoints(const GaussianControlPointList &opacityControlPoints_);
     void SetResampleType(Resample resampleType_);
     void SetResampleTarget(int resampleTarget_);
+    void SetResampleFlag(bool resampleFlag_);
     void SetOpacityVariable(const std::string &opacityVariable_);
     void SetFreeformOpacity(const unsigned char *freeformOpacity_);
     void SetUseColorVarMin(bool useColorVarMin_);
@@ -189,6 +190,7 @@ public:
           GaussianControlPointList &GetOpacityControlPoints();
     Resample                       GetResampleType() const;
     int                            GetResampleTarget() const;
+    bool                           GetResampleFlag() const;
     const std::string              &GetOpacityVariable() const;
           std::string              &GetOpacityVariable();
     const unsigned char            *GetFreeformOpacity() const;
@@ -308,6 +310,7 @@ public:
         ID_opacityControlPoints,
         ID_resampleType,
         ID_resampleTarget,
+        ID_resampleFlag,
         ID_opacityVariable,
         ID_freeformOpacity,
         ID_useColorVarMin,
@@ -356,6 +359,7 @@ private:
     GaussianControlPointList opacityControlPoints;
     int                      resampleType;
     int                      resampleTarget;
+    bool                     resampleFlag;
     std::string              opacityVariable;
     unsigned char            freeformOpacity[256];
     bool                     useColorVarMin;
@@ -384,6 +388,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bibbbbbbiidddbbafiaiisUbfbfbfbfbiiiidiifibdD"
+#define VOLUMEATTRIBUTES_TMFS "bibbbbbbiidddbbafiaiibsUbfbfbfbfbiiiidiifibdD"
 
 #endif

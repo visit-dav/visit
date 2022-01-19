@@ -186,6 +186,7 @@ private slots:
     void samplesPerRayChanged(int val);
     void rendererTypeChanged(int val);
     void resampleTypeChanged(int val);
+    void resampleToggled(bool val);
     void gradientTypeChanged(int val);
     void samplingTypeChanged(int val);
     void processSkewText();
@@ -299,6 +300,7 @@ private:
     QWidget                  *resampleTargetWidget;
     QLabel                   *resampleTargetLabel;
     QSpinBox                 *resampleTarget;
+    QCheckBox                *resampleToggle;
     QWidget                  *samplesPerRayWidget;
     QLabel                   *samplesPerRayLabel;
     QSpinBox                 *samplesPerRay;

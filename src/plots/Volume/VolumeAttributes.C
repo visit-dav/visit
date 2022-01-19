@@ -384,6 +384,7 @@ void VolumeAttributes::Init()
     opacityMode = FreeformMode;
     resampleType = None;
     resampleTarget = 1000000;
+    resampleFlag = true;
     for(int i = 0; i < 256; ++i)
         freeformOpacity[i] = (unsigned char)i;
     useColorVarMin = false;
@@ -453,6 +454,7 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
     opacityControlPoints = obj.opacityControlPoints;
     resampleType = obj.resampleType;
     resampleTarget = obj.resampleTarget;
+    resampleFlag = obj.resampleFlag;
     opacityVariable = obj.opacityVariable;
     for(int i = 0; i < 256; ++i)
         freeformOpacity[i] = obj.freeformOpacity[i];
@@ -670,6 +672,7 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (opacityControlPoints == obj.opacityControlPoints) &&
             (resampleType == obj.resampleType) &&
             (resampleTarget == obj.resampleTarget) &&
+            (resampleFlag == obj.resampleFlag) &&
             (opacityVariable == obj.opacityVariable) &&
             freeformOpacity_equal &&
             (useColorVarMin == obj.useColorVarMin) &&
@@ -857,6 +860,7 @@ VolumeAttributes::SelectAll()
     Select(ID_opacityControlPoints,            (void *)&opacityControlPoints);
     Select(ID_resampleType,                    (void *)&resampleType);
     Select(ID_resampleTarget,                  (void *)&resampleTarget);
+    Select(ID_resampleFlag,                    (void *)&resampleFlag);
     Select(ID_opacityVariable,                 (void *)&opacityVariable);
     Select(ID_freeformOpacity,                 (void *)freeformOpacity, 256);
     Select(ID_useColorVarMin,                  (void *)&useColorVarMin);
@@ -1048,6 +1052,12 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     {
         addToParent = true;
         node->AddNode(new DataNode("resampleTarget", resampleTarget));
+    }
+
+    if(completeSave || !FieldsEqual(ID_resampleFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("resampleFlag", resampleFlag));
     }
 
     if(completeSave || !FieldsEqual(ID_opacityVariable, &defaultObject))
@@ -1308,6 +1318,8 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("resampleTarget")) != 0)
         SetResampleTarget(node->AsInt());
+    if((node = searchNode->GetNode("resampleFlag")) != 0)
+        SetResampleFlag(node->AsBool());
     if((node = searchNode->GetNode("opacityVariable")) != 0)
         SetOpacityVariable(node->AsString());
     if((node = searchNode->GetNode("freeformOpacity")) != 0)
@@ -1592,6 +1604,13 @@ VolumeAttributes::SetResampleTarget(int resampleTarget_)
 {
     resampleTarget = resampleTarget_;
     Select(ID_resampleTarget, (void *)&resampleTarget);
+}
+
+void
+VolumeAttributes::SetResampleFlag(bool resampleFlag_)
+{
+    resampleFlag = resampleFlag_;
+    Select(ID_resampleFlag, (void *)&resampleFlag);
 }
 
 void
@@ -1901,6 +1920,12 @@ VolumeAttributes::GetResampleTarget() const
     return resampleTarget;
 }
 
+bool
+VolumeAttributes::GetResampleFlag() const
+{
+    return resampleFlag;
+}
+
 const std::string &
 VolumeAttributes::GetOpacityVariable() const
 {
@@ -2136,6 +2161,7 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_opacityControlPoints:            return "opacityControlPoints";
     case ID_resampleType:                    return "resampleType";
     case ID_resampleTarget:                  return "resampleTarget";
+    case ID_resampleFlag:                    return "resampleFlag";
     case ID_opacityVariable:                 return "opacityVariable";
     case ID_freeformOpacity:                 return "freeformOpacity";
     case ID_useColorVarMin:                  return "useColorVarMin";
@@ -2204,6 +2230,7 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_opacityControlPoints:            return FieldType_att;
     case ID_resampleType:                    return FieldType_enum;
     case ID_resampleTarget:                  return FieldType_int;
+    case ID_resampleFlag:                    return FieldType_bool;
     case ID_opacityVariable:                 return FieldType_variablename;
     case ID_freeformOpacity:                 return FieldType_ucharArray;
     case ID_useColorVarMin:                  return FieldType_bool;
@@ -2272,6 +2299,7 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_opacityControlPoints:            return "att";
     case ID_resampleType:                    return "enum";
     case ID_resampleTarget:                  return "int";
+    case ID_resampleFlag:                    return "bool";
     case ID_opacityVariable:                 return "variablename";
     case ID_freeformOpacity:                 return "ucharArray";
     case ID_useColorVarMin:                  return "bool";
@@ -2424,6 +2452,11 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_resampleTarget:
         {  // new scope
         retval = (resampleTarget == obj.resampleTarget);
+        }
+        break;
+    case ID_resampleFlag:
+        {  // new scope
+        retval = (resampleFlag == obj.resampleFlag);
         }
         break;
     case ID_opacityVariable:

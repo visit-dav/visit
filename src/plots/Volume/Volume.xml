@@ -147,6 +147,9 @@
       <Field name="resampleTarget" label="resampleTarget" type="int">
         1000000
       </Field>
+      <Field name="resampleFlag" label="resampleFlag" type="bool">
+        true
+      </Field>
       <Field name="opacityVariable" label="opacityVariable" type="variablename" vartypes="01000000000">
         default
       </Field>

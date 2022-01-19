@@ -27,7 +27,7 @@ import llnl.visit.GaussianControlPointList;
 
 public class VolumeAttributes extends AttributeSubject implements Plugin
 {
-    private static int VolumeAttributes_numAdditionalAtts = 44;
+    private static int VolumeAttributes_numAdditionalAtts = 45;
 
     // Enum values
     public final static int RENDERER_SERIAL = 0;
@@ -97,6 +97,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         opacityControlPoints = new GaussianControlPointList();
         resampleType = RESAMPLE_NONE;
         resampleTarget = 1000000;
+        resampleFlag = true;
         opacityVariable = new String("default");
         freeformOpacity = new byte[256];
         for(int i = 0; i < 256; ++i)
@@ -153,6 +154,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         opacityControlPoints = new GaussianControlPointList();
         resampleType = RESAMPLE_NONE;
         resampleTarget = 1000000;
+        resampleFlag = true;
         opacityVariable = new String("default");
         freeformOpacity = new byte[256];
         for(int i = 0; i < 256; ++i)
@@ -211,6 +213,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         opacityControlPoints = new GaussianControlPointList(obj.opacityControlPoints);
         resampleType = obj.resampleType;
         resampleTarget = obj.resampleTarget;
+        resampleFlag = obj.resampleFlag;
         opacityVariable = new String(obj.opacityVariable);
         freeformOpacity = new byte[256];
         for(i = 0; i < obj.freeformOpacity.length; ++i)
@@ -290,6 +293,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (opacityControlPoints.equals(obj.opacityControlPoints)) &&
                 (resampleType == obj.resampleType) &&
                 (resampleTarget == obj.resampleTarget) &&
+                (resampleFlag == obj.resampleFlag) &&
                 (opacityVariable.equals(obj.opacityVariable)) &&
                 freeformOpacity_equal &&
                 (useColorVarMin == obj.useColorVarMin) &&
@@ -445,137 +449,143 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(20);
     }
 
+    public void SetResampleFlag(boolean resampleFlag_)
+    {
+        resampleFlag = resampleFlag_;
+        Select(21);
+    }
+
     public void SetOpacityVariable(String opacityVariable_)
     {
         opacityVariable = opacityVariable_;
-        Select(21);
+        Select(22);
     }
 
     public void SetFreeformOpacity(byte[] freeformOpacity_)
     {
         for(int i = 0; i < 256; ++i)
              freeformOpacity[i] = freeformOpacity_[i];
-        Select(22);
+        Select(23);
     }
 
     public void SetUseColorVarMin(boolean useColorVarMin_)
     {
         useColorVarMin = useColorVarMin_;
-        Select(23);
+        Select(24);
     }
 
     public void SetColorVarMin(float colorVarMin_)
     {
         colorVarMin = colorVarMin_;
-        Select(24);
+        Select(25);
     }
 
     public void SetUseColorVarMax(boolean useColorVarMax_)
     {
         useColorVarMax = useColorVarMax_;
-        Select(25);
+        Select(26);
     }
 
     public void SetColorVarMax(float colorVarMax_)
     {
         colorVarMax = colorVarMax_;
-        Select(26);
+        Select(27);
     }
 
     public void SetUseOpacityVarMin(boolean useOpacityVarMin_)
     {
         useOpacityVarMin = useOpacityVarMin_;
-        Select(27);
+        Select(28);
     }
 
     public void SetOpacityVarMin(float opacityVarMin_)
     {
         opacityVarMin = opacityVarMin_;
-        Select(28);
+        Select(29);
     }
 
     public void SetUseOpacityVarMax(boolean useOpacityVarMax_)
     {
         useOpacityVarMax = useOpacityVarMax_;
-        Select(29);
+        Select(30);
     }
 
     public void SetOpacityVarMax(float opacityVarMax_)
     {
         opacityVarMax = opacityVarMax_;
-        Select(30);
+        Select(31);
     }
 
     public void SetSmoothData(boolean smoothData_)
     {
         smoothData = smoothData_;
-        Select(31);
+        Select(32);
     }
 
     public void SetSamplesPerRay(int samplesPerRay_)
     {
         samplesPerRay = samplesPerRay_;
-        Select(32);
+        Select(33);
     }
 
     public void SetRendererType(int rendererType_)
     {
         rendererType = rendererType_;
-        Select(33);
+        Select(34);
     }
 
     public void SetGradientType(int gradientType_)
     {
         gradientType = gradientType_;
-        Select(34);
+        Select(35);
     }
 
     public void SetScaling(int scaling_)
     {
         scaling = scaling_;
-        Select(35);
+        Select(36);
     }
 
     public void SetSkewFactor(double skewFactor_)
     {
         skewFactor = skewFactor_;
-        Select(36);
+        Select(37);
     }
 
     public void SetLimitsMode(int limitsMode_)
     {
         limitsMode = limitsMode_;
-        Select(37);
+        Select(38);
     }
 
     public void SetSampling(int sampling_)
     {
         sampling = sampling_;
-        Select(38);
+        Select(39);
     }
 
     public void SetRendererSamples(float rendererSamples_)
     {
         rendererSamples = rendererSamples_;
-        Select(39);
+        Select(40);
     }
 
     public void SetLowGradientLightingReduction(int lowGradientLightingReduction_)
     {
         lowGradientLightingReduction = lowGradientLightingReduction_;
-        Select(40);
+        Select(41);
     }
 
     public void SetLowGradientLightingClampFlag(boolean lowGradientLightingClampFlag_)
     {
         lowGradientLightingClampFlag = lowGradientLightingClampFlag_;
-        Select(41);
+        Select(42);
     }
 
     public void SetLowGradientLightingClampValue(double lowGradientLightingClampValue_)
     {
         lowGradientLightingClampValue = lowGradientLightingClampValue_;
-        Select(42);
+        Select(43);
     }
 
     public void SetMaterialProperties(double[] materialProperties_)
@@ -584,7 +594,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         materialProperties[1] = materialProperties_[1];
         materialProperties[2] = materialProperties_[2];
         materialProperties[3] = materialProperties_[3];
-        Select(43);
+        Select(44);
     }
 
     public void SetMaterialProperties(double e0, double e1, double e2, double e3)
@@ -593,7 +603,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         materialProperties[1] = e1;
         materialProperties[2] = e2;
         materialProperties[3] = e3;
-        Select(43);
+        Select(44);
     }
 
     // Property getting methods
@@ -618,6 +628,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public GaussianControlPointList GetOpacityControlPoints() { return opacityControlPoints; }
     public int                      GetResampleType() { return resampleType; }
     public int                      GetResampleTarget() { return resampleTarget; }
+    public boolean                  GetResampleFlag() { return resampleFlag; }
     public String                   GetOpacityVariable() { return opacityVariable; }
     public byte[]                   GetFreeformOpacity() { return freeformOpacity; }
     public boolean                  GetUseColorVarMin() { return useColorVarMin; }
@@ -688,50 +699,52 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(20, buf))
             buf.WriteInt(resampleTarget);
         if(WriteSelect(21, buf))
-            buf.WriteString(opacityVariable);
+            buf.WriteBool(resampleFlag);
         if(WriteSelect(22, buf))
-            buf.WriteByteArray(freeformOpacity, true);
+            buf.WriteString(opacityVariable);
         if(WriteSelect(23, buf))
-            buf.WriteBool(useColorVarMin);
+            buf.WriteByteArray(freeformOpacity, true);
         if(WriteSelect(24, buf))
-            buf.WriteFloat(colorVarMin);
+            buf.WriteBool(useColorVarMin);
         if(WriteSelect(25, buf))
-            buf.WriteBool(useColorVarMax);
+            buf.WriteFloat(colorVarMin);
         if(WriteSelect(26, buf))
-            buf.WriteFloat(colorVarMax);
+            buf.WriteBool(useColorVarMax);
         if(WriteSelect(27, buf))
-            buf.WriteBool(useOpacityVarMin);
+            buf.WriteFloat(colorVarMax);
         if(WriteSelect(28, buf))
-            buf.WriteFloat(opacityVarMin);
+            buf.WriteBool(useOpacityVarMin);
         if(WriteSelect(29, buf))
-            buf.WriteBool(useOpacityVarMax);
+            buf.WriteFloat(opacityVarMin);
         if(WriteSelect(30, buf))
-            buf.WriteFloat(opacityVarMax);
+            buf.WriteBool(useOpacityVarMax);
         if(WriteSelect(31, buf))
-            buf.WriteBool(smoothData);
+            buf.WriteFloat(opacityVarMax);
         if(WriteSelect(32, buf))
-            buf.WriteInt(samplesPerRay);
+            buf.WriteBool(smoothData);
         if(WriteSelect(33, buf))
-            buf.WriteInt(rendererType);
+            buf.WriteInt(samplesPerRay);
         if(WriteSelect(34, buf))
-            buf.WriteInt(gradientType);
+            buf.WriteInt(rendererType);
         if(WriteSelect(35, buf))
-            buf.WriteInt(scaling);
+            buf.WriteInt(gradientType);
         if(WriteSelect(36, buf))
-            buf.WriteDouble(skewFactor);
+            buf.WriteInt(scaling);
         if(WriteSelect(37, buf))
-            buf.WriteInt(limitsMode);
+            buf.WriteDouble(skewFactor);
         if(WriteSelect(38, buf))
-            buf.WriteInt(sampling);
+            buf.WriteInt(limitsMode);
         if(WriteSelect(39, buf))
-            buf.WriteFloat(rendererSamples);
+            buf.WriteInt(sampling);
         if(WriteSelect(40, buf))
-            buf.WriteInt(lowGradientLightingReduction);
+            buf.WriteFloat(rendererSamples);
         if(WriteSelect(41, buf))
-            buf.WriteBool(lowGradientLightingClampFlag);
+            buf.WriteInt(lowGradientLightingReduction);
         if(WriteSelect(42, buf))
-            buf.WriteDouble(lowGradientLightingClampValue);
+            buf.WriteBool(lowGradientLightingClampFlag);
         if(WriteSelect(43, buf))
+            buf.WriteDouble(lowGradientLightingClampValue);
+        if(WriteSelect(44, buf))
             buf.WriteDoubleArray(materialProperties);
     }
 
@@ -805,72 +818,75 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             SetResampleTarget(buf.ReadInt());
             break;
         case 21:
-            SetOpacityVariable(buf.ReadString());
+            SetResampleFlag(buf.ReadBool());
             break;
         case 22:
-            SetFreeformOpacity(buf.ReadByteArray());
+            SetOpacityVariable(buf.ReadString());
             break;
         case 23:
-            SetUseColorVarMin(buf.ReadBool());
+            SetFreeformOpacity(buf.ReadByteArray());
             break;
         case 24:
-            SetColorVarMin(buf.ReadFloat());
+            SetUseColorVarMin(buf.ReadBool());
             break;
         case 25:
-            SetUseColorVarMax(buf.ReadBool());
+            SetColorVarMin(buf.ReadFloat());
             break;
         case 26:
-            SetColorVarMax(buf.ReadFloat());
+            SetUseColorVarMax(buf.ReadBool());
             break;
         case 27:
-            SetUseOpacityVarMin(buf.ReadBool());
+            SetColorVarMax(buf.ReadFloat());
             break;
         case 28:
-            SetOpacityVarMin(buf.ReadFloat());
+            SetUseOpacityVarMin(buf.ReadBool());
             break;
         case 29:
-            SetUseOpacityVarMax(buf.ReadBool());
+            SetOpacityVarMin(buf.ReadFloat());
             break;
         case 30:
-            SetOpacityVarMax(buf.ReadFloat());
+            SetUseOpacityVarMax(buf.ReadBool());
             break;
         case 31:
-            SetSmoothData(buf.ReadBool());
+            SetOpacityVarMax(buf.ReadFloat());
             break;
         case 32:
-            SetSamplesPerRay(buf.ReadInt());
+            SetSmoothData(buf.ReadBool());
             break;
         case 33:
-            SetRendererType(buf.ReadInt());
+            SetSamplesPerRay(buf.ReadInt());
             break;
         case 34:
-            SetGradientType(buf.ReadInt());
+            SetRendererType(buf.ReadInt());
             break;
         case 35:
-            SetScaling(buf.ReadInt());
+            SetGradientType(buf.ReadInt());
             break;
         case 36:
-            SetSkewFactor(buf.ReadDouble());
+            SetScaling(buf.ReadInt());
             break;
         case 37:
-            SetLimitsMode(buf.ReadInt());
+            SetSkewFactor(buf.ReadDouble());
             break;
         case 38:
-            SetSampling(buf.ReadInt());
+            SetLimitsMode(buf.ReadInt());
             break;
         case 39:
-            SetRendererSamples(buf.ReadFloat());
+            SetSampling(buf.ReadInt());
             break;
         case 40:
-            SetLowGradientLightingReduction(buf.ReadInt());
+            SetRendererSamples(buf.ReadFloat());
             break;
         case 41:
-            SetLowGradientLightingClampFlag(buf.ReadBool());
+            SetLowGradientLightingReduction(buf.ReadInt());
             break;
         case 42:
-            SetLowGradientLightingClampValue(buf.ReadDouble());
+            SetLowGradientLightingClampFlag(buf.ReadBool());
             break;
         case 43:
+            SetLowGradientLightingClampValue(buf.ReadDouble());
+            break;
+        case 44:
             SetMaterialProperties(buf.ReadDoubleArray());
             break;
         }
@@ -921,6 +937,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "RESAMPLE_PARALLELPERRANK";
         str = str + "\n";
         str = str + intToString("resampleTarget", resampleTarget, indent) + "\n";
+        str = str + boolToString("resampleFlag", resampleFlag, indent) + "\n";
         str = str + stringToString("opacityVariable", opacityVariable, indent) + "\n";
         str = str + ucharArrayToString("freeformOpacity", freeformOpacity, indent) + "\n";
         str = str + boolToString("useColorVarMin", useColorVarMin, indent) + "\n";
@@ -1022,6 +1039,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private GaussianControlPointList opacityControlPoints;
     private int                      resampleType;
     private int                      resampleTarget;
+    private boolean                  resampleFlag;
     private String                   opacityVariable;
     private byte[]                   freeformOpacity;
     private boolean                  useColorVarMin;
