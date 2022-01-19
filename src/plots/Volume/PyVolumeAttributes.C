@@ -144,11 +144,11 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
         objPrefix += "opacityControlPoints.";
         str += PyGaussianControlPointList_ToString(&atts->GetOpacityControlPoints(), objPrefix.c_str());
     }
-    const char *resampleType_names = "NONE, SingleDomain, ParallelRedistribute, ParallelPerRank";
+    const char *resampleType_names = "OnlyIfRequired, SingleDomain, ParallelRedistribute, ParallelPerRank";
     switch (atts->GetResampleType())
     {
-      case VolumeAttributes::None:
-          snprintf(tmpStr, 1000, "%sresampleType = %sNONE  # %s\n", prefix, prefix, resampleType_names);
+      case VolumeAttributes::OnlyIfRequired:
+          snprintf(tmpStr, 1000, "%sresampleType = %sOnlyIfRequired  # %s\n", prefix, prefix, resampleType_names);
           str += tmpStr;
           break;
       case VolumeAttributes::SingleDomain:
@@ -169,11 +169,25 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
 
     snprintf(tmpStr, 1000, "%sresampleTarget = %d\n", prefix, atts->GetResampleTarget());
     str += tmpStr;
-    if(atts->GetResampleFlag())
-        snprintf(tmpStr, 1000, "%sresampleFlag = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%sresampleFlag = 0\n", prefix);
-    str += tmpStr;
+    const char *resampleCentering_names = "MaintainCentering, PointCentering, CellCentering";
+    switch (atts->GetResampleCentering())
+    {
+      case VolumeAttributes::MaintainCentering:
+          snprintf(tmpStr, 1000, "%sresampleCentering = %sMaintainCentering  # %s\n", prefix, prefix, resampleCentering_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::PointCentering:
+          snprintf(tmpStr, 1000, "%sresampleCentering = %sPointCentering  # %s\n", prefix, prefix, resampleCentering_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::CellCentering:
+          snprintf(tmpStr, 1000, "%sresampleCentering = %sCellCentering  # %s\n", prefix, prefix, resampleCentering_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     snprintf(tmpStr, 1000, "%sopacityVariable = \"%s\"\n", prefix, atts->GetOpacityVariable().c_str());
     str += tmpStr;
     {   const unsigned char *freeformOpacity = atts->GetFreeformOpacity();
@@ -1544,7 +1558,7 @@ VolumeAttributes_SetResampleType(PyObject *self, PyObject *args)
         ss << "An invalid resampleType value was given." << std::endl;
         ss << "Valid values are in the range [0,3]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << " None";
+        ss << " OnlyIfRequired";
         ss << ", SingleDomain";
         ss << ", ParallelRedistribute";
         ss << ", ParallelPerRank";
@@ -1554,7 +1568,7 @@ VolumeAttributes_SetResampleType(PyObject *self, PyObject *args)
     Py_XDECREF(packaged_args);
 
     // Set the resampleType in the object.
-    obj->data->SetResampleType(VolumeAttributes::Resample(cval));
+    obj->data->SetResampleType(VolumeAttributes::ResampleType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1629,7 +1643,7 @@ VolumeAttributes_GetResampleTarget(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetResampleFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetResampleCentering(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -1657,34 +1671,41 @@ VolumeAttributes_SetResampleFlag(PyObject *self, PyObject *args)
     }
 
     long val = PyLong_AsLong(args);
-    bool cval = bool(val);
+    int cval = int(val);
 
-    if (val == -1 && PyErr_Occurred())
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
     {
         Py_XDECREF(packaged_args);
         PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+
+    if (cval < 0 || cval >= 3)
     {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+        std::stringstream ss;
+        ss << "An invalid resampleCentering value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " MaintainCentering";
+        ss << ", PointCentering";
+        ss << ", CellCentering";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
     Py_XDECREF(packaged_args);
 
-    // Set the resampleFlag in the object.
-    obj->data->SetResampleFlag(cval);
+    // Set the resampleCentering in the object.
+    obj->data->SetResampleCentering(VolumeAttributes::ResampleCentering(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetResampleFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetResampleCentering(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetResampleFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetResampleCentering()));
     return retval;
 }
 
@@ -3188,8 +3209,8 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetResampleType", VolumeAttributes_GetResampleType, METH_VARARGS},
     {"SetResampleTarget", VolumeAttributes_SetResampleTarget, METH_VARARGS},
     {"GetResampleTarget", VolumeAttributes_GetResampleTarget, METH_VARARGS},
-    {"SetResampleFlag", VolumeAttributes_SetResampleFlag, METH_VARARGS},
-    {"GetResampleFlag", VolumeAttributes_GetResampleFlag, METH_VARARGS},
+    {"SetResampleCentering", VolumeAttributes_SetResampleCentering, METH_VARARGS},
+    {"GetResampleCentering", VolumeAttributes_GetResampleCentering, METH_VARARGS},
     {"SetOpacityVariable", VolumeAttributes_SetOpacityVariable, METH_VARARGS},
     {"GetOpacityVariable", VolumeAttributes_GetOpacityVariable, METH_VARARGS},
     {"SetFreeformOpacity", VolumeAttributes_SetFreeformOpacity, METH_VARARGS},
@@ -3309,10 +3330,8 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return VolumeAttributes_GetOpacityControlPoints(self, NULL);
     if(strcmp(name, "resampleType") == 0)
         return VolumeAttributes_GetResampleType(self, NULL);
-    if(strcmp(name, "None") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::None));
-    if(strcmp(name, "NONE") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::None));
+    if(strcmp(name, "OnlyIfRequired") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::OnlyIfRequired));
     if(strcmp(name, "SingleDomain") == 0)
         return PyInt_FromLong(long(VolumeAttributes::SingleDomain));
     if(strcmp(name, "ParallelRedistribute") == 0)
@@ -3322,8 +3341,15 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "resampleTarget") == 0)
         return VolumeAttributes_GetResampleTarget(self, NULL);
-    if(strcmp(name, "resampleFlag") == 0)
-        return VolumeAttributes_GetResampleFlag(self, NULL);
+    if(strcmp(name, "resampleCentering") == 0)
+        return VolumeAttributes_GetResampleCentering(self, NULL);
+    if(strcmp(name, "MaintainCentering") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::MaintainCentering));
+    if(strcmp(name, "PointCentering") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::PointCentering));
+    if(strcmp(name, "CellCentering") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::CellCentering));
+
     if(strcmp(name, "opacityVariable") == 0)
         return VolumeAttributes_GetOpacityVariable(self, NULL);
     if(strcmp(name, "freeformOpacity") == 0)
@@ -3474,8 +3500,8 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetResampleType(self, args);
     else if(strcmp(name, "resampleTarget") == 0)
         obj = VolumeAttributes_SetResampleTarget(self, args);
-    else if(strcmp(name, "resampleFlag") == 0)
-        obj = VolumeAttributes_SetResampleFlag(self, args);
+    else if(strcmp(name, "resampleCentering") == 0)
+        obj = VolumeAttributes_SetResampleCentering(self, args);
     else if(strcmp(name, "opacityVariable") == 0)
         obj = VolumeAttributes_SetOpacityVariable(self, args);
     else if(strcmp(name, "freeformOpacity") == 0)

@@ -36,12 +36,18 @@ public:
         Integration,
         SLIVR
     };
-    enum Resample
+    enum ResampleType
     {
-        None,
+        OnlyIfRequired,
         SingleDomain,
         ParallelRedistribute,
         ParallelPerRank
+    };
+    enum ResampleCentering
+    {
+        MaintainCentering,
+        PointCentering,
+        CellCentering
     };
     enum GradientType
     {
@@ -139,9 +145,9 @@ public:
     void SetOpacityAttenuation(float opacityAttenuation_);
     void SetOpacityMode(OpacityModes opacityMode_);
     void SetOpacityControlPoints(const GaussianControlPointList &opacityControlPoints_);
-    void SetResampleType(Resample resampleType_);
+    void SetResampleType(ResampleType resampleType_);
     void SetResampleTarget(int resampleTarget_);
-    void SetResampleFlag(bool resampleFlag_);
+    void SetResampleCentering(ResampleCentering resampleCentering_);
     void SetOpacityVariable(const std::string &opacityVariable_);
     void SetFreeformOpacity(const unsigned char *freeformOpacity_);
     void SetUseColorVarMin(bool useColorVarMin_);
@@ -188,9 +194,9 @@ public:
     OpacityModes                   GetOpacityMode() const;
     const GaussianControlPointList &GetOpacityControlPoints() const;
           GaussianControlPointList &GetOpacityControlPoints();
-    Resample                       GetResampleType() const;
+    ResampleType                   GetResampleType() const;
     int                            GetResampleTarget() const;
-    bool                           GetResampleFlag() const;
+    ResampleCentering              GetResampleCentering() const;
     const std::string              &GetOpacityVariable() const;
           std::string              &GetOpacityVariable();
     const unsigned char            *GetFreeformOpacity() const;
@@ -228,10 +234,15 @@ public:
 protected:
     static std::string Renderer_ToString(int);
 public:
-    static std::string Resample_ToString(Resample);
-    static bool Resample_FromString(const std::string &, Resample &);
+    static std::string ResampleType_ToString(ResampleType);
+    static bool ResampleType_FromString(const std::string &, ResampleType &);
 protected:
-    static std::string Resample_ToString(int);
+    static std::string ResampleType_ToString(int);
+public:
+    static std::string ResampleCentering_ToString(ResampleCentering);
+    static bool ResampleCentering_FromString(const std::string &, ResampleCentering &);
+protected:
+    static std::string ResampleCentering_ToString(int);
 public:
     static std::string GradientType_ToString(GradientType);
     static bool GradientType_FromString(const std::string &, GradientType &);
@@ -310,7 +321,7 @@ public:
         ID_opacityControlPoints,
         ID_resampleType,
         ID_resampleTarget,
-        ID_resampleFlag,
+        ID_resampleCentering,
         ID_opacityVariable,
         ID_freeformOpacity,
         ID_useColorVarMin,
@@ -359,7 +370,7 @@ private:
     GaussianControlPointList opacityControlPoints;
     int                      resampleType;
     int                      resampleTarget;
-    bool                     resampleFlag;
+    int                      resampleCentering;
     std::string              opacityVariable;
     unsigned char            freeformOpacity[256];
     bool                     useColorVarMin;
@@ -388,6 +399,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bibbbbbbiidddbbafiaiibsUbfbfbfbfbiiiidiifibdD"
+#define VOLUMEATTRIBUTES_TMFS "bibbbbbbiidddbbafiaiiisUbfbfbfbfbiiiidiifibdD"
 
 #endif

@@ -42,11 +42,16 @@
         Integration
         SLIVR
       </Enum>
-      <Enum name="Resample">
-        None
+      <Enum name="ResampleType">
+        OnlyIfRequired
         SingleDomain
         ParallelRedistribute
         ParallelPerRank
+      </Enum>
+      <Enum name="ResampleCentering">
+        MaintainCentering
+        PointCentering
+        CellCentering
       </Enum>
       <Enum name="GradientType">
         CenteredDifferences
@@ -141,14 +146,14 @@
       </Field>
       <Field name="opacityControlPoints" label="opacityControlPoints" type="att" subtype="GaussianControlPointList">
       </Field>
-      <Field name="resampleType" label="Resample Type" type="enum" subtype="Resample">
-        None
+      <Field name="resampleType" label="Resample Type" type="enum" subtype="ResampleType">
+        OnlyIfRequired
       </Field>
       <Field name="resampleTarget" label="resampleTarget" type="int">
         1000000
       </Field>
-      <Field name="resampleFlag" label="resampleFlag" type="bool">
-        true
+      <Field name="resampleCentering" label="Resample Centering" type="enum" subtype="ResampleCentering">
+        MaintainCentering
       </Field>
       <Field name="opacityVariable" label="opacityVariable" type="variablename" vartypes="01000000000">
         default

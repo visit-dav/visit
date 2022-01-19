@@ -182,11 +182,11 @@ private slots:
     void smoothDataToggled(bool val);
     void equalSpacingToggled(bool val);
     void alphaValuesChanged();
-    void resampleTargetChanged(int val);
     void samplesPerRayChanged(int val);
     void rendererTypeChanged(int val);
     void resampleTypeChanged(int val);
-    void resampleToggled(bool val);
+    void resampleTargetChanged(int val);
+    void resampleCenteringChanged(int val);
     void gradientTypeChanged(int val);
     void samplingTypeChanged(int val);
     void processSkewText();
@@ -283,7 +283,6 @@ private:
     QCheckBox                *softwareToggle;
     QCheckBox                *smoothDataToggle;
     QComboBox                *rendererTypesComboBox;
-    QComboBox                *resampleTypesComboBox;
     QButtonGroup             *gradientButtonGroup;
     QButtonGroup             *samplingButtonGroup;
     QWidget                  *samplingMethodWidget;
@@ -297,10 +296,10 @@ private:
     QRadioButton             *trilinearButton;
     QRadioButton             *centeredDiffButton;
     QRadioButton             *sobelButton;
+    QComboBox                *resampleTypesComboBox;
     QWidget                  *resampleTargetWidget;
-    QLabel                   *resampleTargetLabel;
     QSpinBox                 *resampleTarget;
-    QCheckBox                *resampleToggle;
+    QComboBox                *resampleCenteringComboBox;
     QWidget                  *samplesPerRayWidget;
     QLabel                   *samplesPerRayLabel;
     QSpinBox                 *samplesPerRay;

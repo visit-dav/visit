@@ -721,7 +721,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     else //if (atts.GetRendererType() == VolumeAttributes::Serial)
 
     {
-        if( atts.GetResampleType() != VolumeAttributes::None &&
+        if( atts.GetResampleType() != VolumeAttributes::OnlyIfRequired &&
             atts.GetResampleType() != VolumeAttributes::SingleDomain )
         {
             avtCallback::IssueWarning("Performing 'Serial Rendering' but a parallel resampling was selected. Single domain sampling will be performed.");
@@ -730,7 +730,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         // User can force resampling - for the serial renderer
         // everything is sampled on to a single grid.
         if (DataMustBeResampled(input) ||
-            atts.GetResampleType() != VolumeAttributes::None)
+            atts.GetResampleType() != VolumeAttributes::OnlyIfRequired)
         {
             //
             // Resample the data
@@ -832,14 +832,14 @@ avtVolumePlot::EnhanceSpecification(avtContract_p spec)
     std::string ov = atts.GetOpacityVariable();
     if (ov == "default")
     {
-      if(atts.GetResampleType() != VolumeAttributes::None)
+      if(atts.GetResampleType() != VolumeAttributes::OnlyIfRequired)
             return spec;
     }
     avtDataRequest_p ds = spec->GetDataRequest();
     std::string primaryVariable(ds->GetVariable());
     if (ov == primaryVariable)
     {
-        if(atts.GetResampleType() != VolumeAttributes::None)
+        if(atts.GetResampleType() != VolumeAttributes::OnlyIfRequired)
         {
             //
             // They didn't leave it as "default", but it is the same

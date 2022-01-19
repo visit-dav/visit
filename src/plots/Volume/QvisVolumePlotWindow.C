@@ -906,34 +906,46 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         resampleTargetWidget              = new QWidget();
         QHBoxLayout *resampleTargetLayout = new QHBoxLayout(resampleTargetWidget);
         resampleTargetLayout->setMargin(0);
-        resampleTargetLabel               = new QLabel(tr("Number of samples"),               resampleGroup);
 
+        QLabel *resampleTypesLabel =
+          new QLabel(tr("Resample:"), resampleGroup);
         resampleTypesComboBox = new QComboBox(resampleGroup);
-        resampleTypesComboBox->addItem(tr("None"));
+        resampleTypesComboBox->addItem(tr("Only if required"));
         resampleTypesComboBox->addItem(tr("Single Domain"));
         resampleTypesComboBox->addItem(tr("Parallel Redistribute"));
         resampleTypesComboBox->addItem(tr("Parallel Per Rank"));
+        connect(resampleTypesComboBox, SIGNAL(activated(int)),
+                this, SLOT(resampleTypeChanged(int)));
 
-        resampleTarget                  = new QSpinBox( resampleGroup);
+        QLabel *resampleTargetLabel =
+          new QLabel(tr("Number of samples"), resampleGroup);
+        resampleTarget      = new QSpinBox( resampleGroup);
         resampleTarget->setKeyboardTracking(false);
         resampleTarget->setMinimum(1000);
         resampleTarget->setMaximum(100000000);
         resampleTarget->setSingleStep(10000);
         resampleTargetLabel->setBuddy(resampleTarget);
-
         connect(resampleTarget, SIGNAL(valueChanged(int)),  this, SLOT(resampleTargetChanged(int)));
-        connect(resampleTypesComboBox, SIGNAL(activated(int)),
-                this, SLOT(resampleTypeChanged(int)));
 
-        resampleToggle = new QCheckBox(tr("If required auto-resample"), resampleGroup);
-        connect(resampleToggle, SIGNAL(toggled(bool)),
-                this, SLOT(resampleToggled(bool)));
+        QLabel *resampleCenteringLabel =
+          new QLabel(tr("Centering:"), resampleGroup);
+        resampleCenteringComboBox = new QComboBox(resampleGroup);
+        resampleCenteringComboBox->addItem(tr("Maintain"));
+        resampleCenteringComboBox->addItem(tr("Point"));
+        resampleCenteringComboBox->addItem(tr("Cell"));
+        connect(resampleCenteringComboBox, SIGNAL(activated(int)),
+                this, SLOT(resampleCenteringChanged(int)));
 
-        resampleLayout->addWidget(resampleTypesComboBox);
+        resampleLayout->addWidget(resampleTypesLabel, Qt::AlignRight);
+        resampleLayout->addWidget(resampleTypesComboBox, Qt::AlignLeft);
+
         resampleLayout->addWidget(resampleTargetWidget);
-        resampleTargetLayout->addWidget(resampleTargetLabel,Qt::AlignRight);
-        resampleTargetLayout->addWidget(resampleTarget,Qt::AlignLeft);
-        resampleLayout->addWidget(resampleToggle);
+        resampleTargetLayout->addWidget(resampleTargetLabel, Qt::AlignRight);
+        resampleTargetLayout->addWidget(resampleTarget, Qt::AlignLeft);
+
+        resampleTargetLayout->addWidget(resampleCenteringLabel, Qt::AlignRight);
+        resampleTargetLayout->addWidget(resampleCenteringComboBox, Qt::AlignLeft);
+
         resampleLayout->addStretch(QSizePolicy::Maximum);
 
         resampleGroup->setVisible(false);
@@ -1065,7 +1077,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
 
     //enable/disable resampleTarget
     resampleTargetWidget->setEnabled(volumeAtts->GetResampleType() !=
-                                     VolumeAttributes::None);
+                                     VolumeAttributes::OnlyIfRequired);
 
     //smooth data
     smoothDataToggle->setEnabled(true);
@@ -1912,15 +1924,6 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
         case VolumeAttributes::ID_opacityControlPoints:
             UpdateGaussianControlPoints();
             break;
-        case VolumeAttributes::ID_resampleTarget:
-            resampleTarget->blockSignals(true);
-            resampleTarget->setValue(volumeAtts->GetResampleTarget());
-            resampleTarget->blockSignals(false);
-            break;
-        case VolumeAttributes::ID_resampleFlag:
-            resampleToggle->blockSignals(true);
-            resampleToggle->setChecked(volumeAtts->GetResampleFlag());
-            resampleToggle->blockSignals(false);
         case VolumeAttributes::ID_opacityVariable:
             opacityVariable->setText(volumeAtts->GetOpacityVariable().c_str());
             break;
@@ -2010,7 +2013,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
         case VolumeAttributes::ID_resampleType:
             resampleTypesComboBox->blockSignals(true);
 
-            if (volumeAtts->GetResampleType() == VolumeAttributes::None)
+            if (volumeAtts->GetResampleType() == VolumeAttributes::OnlyIfRequired)
             {
                 resampleTypesComboBox->setCurrentIndex(0);
             }
@@ -2029,7 +2032,29 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             resampleTypesComboBox->blockSignals(false);
 
             resampleTargetWidget->setEnabled(volumeAtts->GetResampleType() !=
-                                             VolumeAttributes::None);
+                                             VolumeAttributes::OnlyIfRequired);
+            break;
+        case VolumeAttributes::ID_resampleTarget:
+            resampleTarget->blockSignals(true);
+            resampleTarget->setValue(volumeAtts->GetResampleTarget());
+            resampleTarget->blockSignals(false);
+            break;
+        case VolumeAttributes::ID_resampleCentering:
+            resampleCenteringComboBox->blockSignals(true);
+
+            if (volumeAtts->GetResampleCentering() == VolumeAttributes::MaintainCentering)
+            {
+                resampleCenteringComboBox->setCurrentIndex(0);
+            }
+            else if (volumeAtts->GetResampleCentering() == VolumeAttributes::PointCentering)
+            {
+                resampleCenteringComboBox->setCurrentIndex(1);
+            }
+            else if (volumeAtts->GetResampleCentering() == VolumeAttributes::CellCentering)
+            {
+                resampleCenteringComboBox->setCurrentIndex(2);
+            }
+            resampleCenteringComboBox->blockSignals(false);
             break;
         case VolumeAttributes::ID_gradientType:
             gradientButtonGroup->blockSignals(true);
@@ -3598,6 +3623,49 @@ QvisVolumePlotWindow::samplesPerRayChanged(int val)
 }
 
 // ****************************************************************************
+//  Method:  QvisVolumePlotWindow::resampleTypeChanged
+//
+//  Purpose:
+//    Update the resample type based on user input
+//
+//  Arguments:
+//    val        the new resample type
+//
+//  Programmer:  Allen R. Sanderson
+//  Creation:    October  2, 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::resampleTypeChanged(int val)
+{
+    switch (val)
+    {
+      case 0:
+        volumeAtts->SetResampleType(VolumeAttributes::OnlyIfRequired);
+        break;
+      case 1:
+        volumeAtts->SetResampleType(VolumeAttributes::SingleDomain);
+        break;
+      case 2:
+        volumeAtts->SetResampleType(VolumeAttributes::ParallelRedistribute);
+        break;
+      case 3:
+        volumeAtts->SetResampleType(VolumeAttributes::ParallelPerRank);
+        break;
+      default:
+        EXCEPTION1(ImproperUseException,
+                   "The Volume plot received a signal for a resample "
+                   "type that it didn't understand");
+        break;
+    }
+
+    Apply();
+}
+
+// ****************************************************************************
 // Method:  QvisVolumePlotWindow::resampleTargetProcessText
 //
 // Purpose:
@@ -3621,25 +3689,42 @@ QvisVolumePlotWindow::resampleTargetChanged(int val)
 }
 
 // ****************************************************************************
-// Method: QvisVolumePlotWindow::resampleToggled
+//  Method:  QvisVolumePlotWindow::resampleTypeChanged
 //
-// Purpose:
-//   This is a Qt slot function that is called when the resample toggle is
-//   clicked.
+//  Purpose:
+//    Update the resample type based on user input
 //
-// Programmer: Brad Whitlock
-// Creation:   Wed Mar 28 15:37:22 PST 2001
+//  Arguments:
+//    val        the new resample type
 //
-// Modifications:
-//   Brad Whitlock, Thu Feb 14 09:55:30 PDT 2002
-//   Prevented updates.
+//  Programmer:  Allen R. Sanderson
+//  Creation:    October  2, 2021
+//
+//  Modifications:
 //
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::resampleToggled(bool val)
+QvisVolumePlotWindow::resampleCenteringChanged(int val)
 {
-    volumeAtts->SetResampleFlag(val);
+    switch (val)
+    {
+      case 0:
+        volumeAtts->SetResampleCentering(VolumeAttributes::MaintainCentering);
+        break;
+      case 1:
+        volumeAtts->SetResampleCentering(VolumeAttributes::PointCentering);
+        break;
+      case 2:
+        volumeAtts->SetResampleCentering(VolumeAttributes::CellCentering);
+        break;
+      default:
+        EXCEPTION1(ImproperUseException,
+                   "The Volume plot received a signal for a resample "
+                   "centering that it didn't understand");
+        break;
+    }
+
     Apply();
 }
 
@@ -3804,49 +3889,6 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
       default:
         EXCEPTION1(ImproperUseException,
                    "The Volume plot received a signal for a renderer "
-                   "that it didn't understand");
-        break;
-    }
-
-    Apply();
-}
-
-// ****************************************************************************
-//  Method:  QvisVolumePlotWindow::resampleTypeChanged
-//
-//  Purpose:
-//    Update the resample type based on user input
-//
-//  Arguments:
-//    val        the new resample type
-//
-//  Programmer:  Allen R. Sanderson
-//  Creation:    October  2, 2021
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-QvisVolumePlotWindow::resampleTypeChanged(int val)
-{
-    switch (val)
-    {
-      case 0:
-        volumeAtts->SetResampleType(VolumeAttributes::None);
-        break;
-      case 1:
-        volumeAtts->SetResampleType(VolumeAttributes::SingleDomain);
-        break;
-      case 2:
-        volumeAtts->SetResampleType(VolumeAttributes::ParallelRedistribute);
-        break;
-      case 3:
-        volumeAtts->SetResampleType(VolumeAttributes::ParallelPerRank);
-        break;
-      default:
-        EXCEPTION1(ImproperUseException,
-                   "The Volume plot received a signal for a resample "
                    "that it didn't understand");
         break;
     }

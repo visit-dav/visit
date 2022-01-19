@@ -46,37 +46,75 @@ VolumeAttributes::Renderer_FromString(const std::string &s, VolumeAttributes::Re
 }
 
 //
-// Enum conversion methods for VolumeAttributes::Resample
+// Enum conversion methods for VolumeAttributes::ResampleType
 //
 
-static const char *Resample_strings[] = {
-"None", "SingleDomain", "ParallelRedistribute",
+static const char *ResampleType_strings[] = {
+"OnlyIfRequired", "SingleDomain", "ParallelRedistribute",
 "ParallelPerRank"};
 
 std::string
-VolumeAttributes::Resample_ToString(VolumeAttributes::Resample t)
+VolumeAttributes::ResampleType_ToString(VolumeAttributes::ResampleType t)
 {
     int index = int(t);
     if(index < 0 || index >= 4) index = 0;
-    return Resample_strings[index];
+    return ResampleType_strings[index];
 }
 
 std::string
-VolumeAttributes::Resample_ToString(int t)
+VolumeAttributes::ResampleType_ToString(int t)
 {
     int index = (t < 0 || t >= 4) ? 0 : t;
-    return Resample_strings[index];
+    return ResampleType_strings[index];
 }
 
 bool
-VolumeAttributes::Resample_FromString(const std::string &s, VolumeAttributes::Resample &val)
+VolumeAttributes::ResampleType_FromString(const std::string &s, VolumeAttributes::ResampleType &val)
 {
-    val = VolumeAttributes::None;
+    val = VolumeAttributes::OnlyIfRequired;
     for(int i = 0; i < 4; ++i)
     {
-        if(s == Resample_strings[i])
+        if(s == ResampleType_strings[i])
         {
-            val = (Resample)i;
+            val = (ResampleType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
+//
+// Enum conversion methods for VolumeAttributes::ResampleCentering
+//
+
+static const char *ResampleCentering_strings[] = {
+"MaintainCentering", "PointCentering", "CellCentering"
+};
+
+std::string
+VolumeAttributes::ResampleCentering_ToString(VolumeAttributes::ResampleCentering t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 3) index = 0;
+    return ResampleCentering_strings[index];
+}
+
+std::string
+VolumeAttributes::ResampleCentering_ToString(int t)
+{
+    int index = (t < 0 || t >= 3) ? 0 : t;
+    return ResampleCentering_strings[index];
+}
+
+bool
+VolumeAttributes::ResampleCentering_FromString(const std::string &s, VolumeAttributes::ResampleCentering &val)
+{
+    val = VolumeAttributes::MaintainCentering;
+    for(int i = 0; i < 3; ++i)
+    {
+        if(s == ResampleCentering_strings[i])
+        {
+            val = (ResampleCentering)i;
             return true;
         }
     }
@@ -382,9 +420,9 @@ void VolumeAttributes::Init()
     SetDefaultColorControlPoints();
     opacityAttenuation = 1;
     opacityMode = FreeformMode;
-    resampleType = None;
+    resampleType = OnlyIfRequired;
     resampleTarget = 1000000;
-    resampleFlag = true;
+    resampleCentering = MaintainCentering;
     for(int i = 0; i < 256; ++i)
         freeformOpacity[i] = (unsigned char)i;
     useColorVarMin = false;
@@ -454,7 +492,7 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
     opacityControlPoints = obj.opacityControlPoints;
     resampleType = obj.resampleType;
     resampleTarget = obj.resampleTarget;
-    resampleFlag = obj.resampleFlag;
+    resampleCentering = obj.resampleCentering;
     opacityVariable = obj.opacityVariable;
     for(int i = 0; i < 256; ++i)
         freeformOpacity[i] = obj.freeformOpacity[i];
@@ -672,7 +710,7 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (opacityControlPoints == obj.opacityControlPoints) &&
             (resampleType == obj.resampleType) &&
             (resampleTarget == obj.resampleTarget) &&
-            (resampleFlag == obj.resampleFlag) &&
+            (resampleCentering == obj.resampleCentering) &&
             (opacityVariable == obj.opacityVariable) &&
             freeformOpacity_equal &&
             (useColorVarMin == obj.useColorVarMin) &&
@@ -860,7 +898,7 @@ VolumeAttributes::SelectAll()
     Select(ID_opacityControlPoints,            (void *)&opacityControlPoints);
     Select(ID_resampleType,                    (void *)&resampleType);
     Select(ID_resampleTarget,                  (void *)&resampleTarget);
-    Select(ID_resampleFlag,                    (void *)&resampleFlag);
+    Select(ID_resampleCentering,               (void *)&resampleCentering);
     Select(ID_opacityVariable,                 (void *)&opacityVariable);
     Select(ID_freeformOpacity,                 (void *)freeformOpacity, 256);
     Select(ID_useColorVarMin,                  (void *)&useColorVarMin);
@@ -1045,7 +1083,7 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     if(completeSave || !FieldsEqual(ID_resampleType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("resampleType", Resample_ToString(resampleType)));
+        node->AddNode(new DataNode("resampleType", ResampleType_ToString(resampleType)));
     }
 
     if(completeSave || !FieldsEqual(ID_resampleTarget, &defaultObject))
@@ -1054,10 +1092,10 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("resampleTarget", resampleTarget));
     }
 
-    if(completeSave || !FieldsEqual(ID_resampleFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_resampleCentering, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("resampleFlag", resampleFlag));
+        node->AddNode(new DataNode("resampleCentering", ResampleCentering_ToString(resampleCentering)));
     }
 
     if(completeSave || !FieldsEqual(ID_opacityVariable, &defaultObject))
@@ -1307,19 +1345,33 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 4)
-                SetResampleType(Resample(ival));
+                SetResampleType(ResampleType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            Resample value;
-            if(Resample_FromString(node->AsString(), value))
+            ResampleType value;
+            if(ResampleType_FromString(node->AsString(), value))
                 SetResampleType(value);
         }
     }
     if((node = searchNode->GetNode("resampleTarget")) != 0)
         SetResampleTarget(node->AsInt());
-    if((node = searchNode->GetNode("resampleFlag")) != 0)
-        SetResampleFlag(node->AsBool());
+    if((node = searchNode->GetNode("resampleCentering")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 3)
+                SetResampleCentering(ResampleCentering(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ResampleCentering value;
+            if(ResampleCentering_FromString(node->AsString(), value))
+                SetResampleCentering(value);
+        }
+    }
     if((node = searchNode->GetNode("opacityVariable")) != 0)
         SetOpacityVariable(node->AsString());
     if((node = searchNode->GetNode("freeformOpacity")) != 0)
@@ -1593,7 +1645,7 @@ VolumeAttributes::SetOpacityControlPoints(const GaussianControlPointList &opacit
 }
 
 void
-VolumeAttributes::SetResampleType(VolumeAttributes::Resample resampleType_)
+VolumeAttributes::SetResampleType(VolumeAttributes::ResampleType resampleType_)
 {
     resampleType = resampleType_;
     Select(ID_resampleType, (void *)&resampleType);
@@ -1607,10 +1659,10 @@ VolumeAttributes::SetResampleTarget(int resampleTarget_)
 }
 
 void
-VolumeAttributes::SetResampleFlag(bool resampleFlag_)
+VolumeAttributes::SetResampleCentering(VolumeAttributes::ResampleCentering resampleCentering_)
 {
-    resampleFlag = resampleFlag_;
-    Select(ID_resampleFlag, (void *)&resampleFlag);
+    resampleCentering = resampleCentering_;
+    Select(ID_resampleCentering, (void *)&resampleCentering);
 }
 
 void
@@ -1908,10 +1960,10 @@ VolumeAttributes::GetOpacityControlPoints()
     return opacityControlPoints;
 }
 
-VolumeAttributes::Resample
+VolumeAttributes::ResampleType
 VolumeAttributes::GetResampleType() const
 {
-    return Resample(resampleType);
+    return ResampleType(resampleType);
 }
 
 int
@@ -1920,10 +1972,10 @@ VolumeAttributes::GetResampleTarget() const
     return resampleTarget;
 }
 
-bool
-VolumeAttributes::GetResampleFlag() const
+VolumeAttributes::ResampleCentering
+VolumeAttributes::GetResampleCentering() const
 {
-    return resampleFlag;
+    return ResampleCentering(resampleCentering);
 }
 
 const std::string &
@@ -2161,7 +2213,7 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_opacityControlPoints:            return "opacityControlPoints";
     case ID_resampleType:                    return "resampleType";
     case ID_resampleTarget:                  return "resampleTarget";
-    case ID_resampleFlag:                    return "resampleFlag";
+    case ID_resampleCentering:               return "resampleCentering";
     case ID_opacityVariable:                 return "opacityVariable";
     case ID_freeformOpacity:                 return "freeformOpacity";
     case ID_useColorVarMin:                  return "useColorVarMin";
@@ -2230,7 +2282,7 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_opacityControlPoints:            return FieldType_att;
     case ID_resampleType:                    return FieldType_enum;
     case ID_resampleTarget:                  return FieldType_int;
-    case ID_resampleFlag:                    return FieldType_bool;
+    case ID_resampleCentering:               return FieldType_enum;
     case ID_opacityVariable:                 return FieldType_variablename;
     case ID_freeformOpacity:                 return FieldType_ucharArray;
     case ID_useColorVarMin:                  return FieldType_bool;
@@ -2299,7 +2351,7 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_opacityControlPoints:            return "att";
     case ID_resampleType:                    return "enum";
     case ID_resampleTarget:                  return "int";
-    case ID_resampleFlag:                    return "bool";
+    case ID_resampleCentering:               return "enum";
     case ID_opacityVariable:                 return "variablename";
     case ID_freeformOpacity:                 return "ucharArray";
     case ID_useColorVarMin:                  return "bool";
@@ -2454,9 +2506,9 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (resampleTarget == obj.resampleTarget);
         }
         break;
-    case ID_resampleFlag:
+    case ID_resampleCentering:
         {  // new scope
-        retval = (resampleFlag == obj.resampleFlag);
+        retval = (resampleCentering == obj.resampleCentering);
         }
         break;
     case ID_opacityVariable:

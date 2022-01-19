@@ -682,34 +682,26 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
         avtVisItVTKDevice *device =
           dynamic_cast<avtVisItVTKDevice *>(software);
 
-        if (atts.GetResampleType() == VolumeAttributes::None)
-            device->SetResampleType(0);
-        else if (atts.GetResampleType() == VolumeAttributes::SingleDomain)
-            device->SetResampleType(1);
-        else if (atts.GetResampleType() == VolumeAttributes::ParallelRedistribute)
-            device->SetResampleType(2);
-        else if (atts.GetResampleType() == VolumeAttributes::ParallelPerRank)
-            device->SetResampleType(3);
-
+        device->SetResampleType     (atts.GetResampleType());
         device->SetResampleTargetVal(atts.GetResampleTarget());
-        device->SetResampleFlag(atts.GetResampleFlag());
+        device->SetResampleCentering(atts.GetResampleCentering());
 
         device->SetRenderingType(DataType::VOLUME);
 
         device->SetUseColorVarMin( atts.GetUseColorVarMin() );
-        device->SetColorVarMin( atts.GetColorVarMin() );
+        device->SetColorVarMin   ( atts.GetColorVarMin() );
         device->SetUseColorVarMax( atts.GetUseColorVarMax() );
-        device->SetColorVarMax( atts.GetColorVarMax() );
+        device->SetColorVarMax   ( atts.GetColorVarMax() );
         device->SetUseOpacityVarMin( atts.GetUseOpacityVarMin() );
-        device->SetOpacityVarMin( atts.GetOpacityVarMin() );
+        device->SetOpacityVarMin   ( atts.GetOpacityVarMin() );
         device->SetUseOpacityVarMax( atts.GetUseOpacityVarMax() );
-        device->SetOpacityVarMax( atts.GetOpacityVarMax() );
+        device->SetOpacityVarMax   ( atts.GetOpacityVarMax() );
 
-        device->SetLightInfo(window.GetLights());
-        device->SetMatProperties(materialPropArray);
-        device->SetViewDirection(viewDirection);
-        device->SetLighting(atts.GetLightingFlag());
-        device->SetSamplingRate(atts.GetRendererSamples());
+        device->SetLightInfo( window.GetLights() );
+        device->SetMatProperties( materialPropArray );
+        device->SetViewDirection( viewDirection );
+        device->SetLighting( atts.GetLightingFlag() );
+        device->SetSamplingRate( atts.GetRendererSamples() );
 
 #ifdef HAVE_OSPRAY
         device->SetOSPRayEnabled(atts.GetOsprayEnabledFlag());

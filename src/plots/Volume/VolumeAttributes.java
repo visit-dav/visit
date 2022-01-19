@@ -36,10 +36,14 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int RENDERER_INTEGRATION = 3;
     public final static int RENDERER_SLIVR = 4;
 
-    public final static int RESAMPLE_NONE = 0;
-    public final static int RESAMPLE_SINGLEDOMAIN = 1;
-    public final static int RESAMPLE_PARALLELREDISTRIBUTE = 2;
-    public final static int RESAMPLE_PARALLELPERRANK = 3;
+    public final static int RESAMPLETYPE_ONLYIFREQUIRED = 0;
+    public final static int RESAMPLETYPE_SINGLEDOMAIN = 1;
+    public final static int RESAMPLETYPE_PARALLELREDISTRIBUTE = 2;
+    public final static int RESAMPLETYPE_PARALLELPERRANK = 3;
+
+    public final static int RESAMPLECENTERING_MAINTAINCENTERING = 0;
+    public final static int RESAMPLECENTERING_POINTCENTERING = 1;
+    public final static int RESAMPLECENTERING_CELLCENTERING = 2;
 
     public final static int GRADIENTTYPE_CENTEREDDIFFERENCES = 0;
     public final static int GRADIENTTYPE_SOBELOPERATOR = 1;
@@ -95,9 +99,9 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         opacityAttenuation = 1f;
         opacityMode = OPACITYMODES_FREEFORMMODE;
         opacityControlPoints = new GaussianControlPointList();
-        resampleType = RESAMPLE_NONE;
+        resampleType = RESAMPLETYPE_ONLYIFREQUIRED;
         resampleTarget = 1000000;
-        resampleFlag = true;
+        resampleCentering = RESAMPLECENTERING_MAINTAINCENTERING;
         opacityVariable = new String("default");
         freeformOpacity = new byte[256];
         for(int i = 0; i < 256; ++i)
@@ -152,9 +156,9 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         opacityAttenuation = 1f;
         opacityMode = OPACITYMODES_FREEFORMMODE;
         opacityControlPoints = new GaussianControlPointList();
-        resampleType = RESAMPLE_NONE;
+        resampleType = RESAMPLETYPE_ONLYIFREQUIRED;
         resampleTarget = 1000000;
-        resampleFlag = true;
+        resampleCentering = RESAMPLECENTERING_MAINTAINCENTERING;
         opacityVariable = new String("default");
         freeformOpacity = new byte[256];
         for(int i = 0; i < 256; ++i)
@@ -213,7 +217,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         opacityControlPoints = new GaussianControlPointList(obj.opacityControlPoints);
         resampleType = obj.resampleType;
         resampleTarget = obj.resampleTarget;
-        resampleFlag = obj.resampleFlag;
+        resampleCentering = obj.resampleCentering;
         opacityVariable = new String(obj.opacityVariable);
         freeformOpacity = new byte[256];
         for(i = 0; i < obj.freeformOpacity.length; ++i)
@@ -293,7 +297,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
                 (opacityControlPoints.equals(obj.opacityControlPoints)) &&
                 (resampleType == obj.resampleType) &&
                 (resampleTarget == obj.resampleTarget) &&
-                (resampleFlag == obj.resampleFlag) &&
+                (resampleCentering == obj.resampleCentering) &&
                 (opacityVariable.equals(obj.opacityVariable)) &&
                 freeformOpacity_equal &&
                 (useColorVarMin == obj.useColorVarMin) &&
@@ -449,9 +453,9 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         Select(20);
     }
 
-    public void SetResampleFlag(boolean resampleFlag_)
+    public void SetResampleCentering(int resampleCentering_)
     {
-        resampleFlag = resampleFlag_;
+        resampleCentering = resampleCentering_;
         Select(21);
     }
 
@@ -628,7 +632,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public GaussianControlPointList GetOpacityControlPoints() { return opacityControlPoints; }
     public int                      GetResampleType() { return resampleType; }
     public int                      GetResampleTarget() { return resampleTarget; }
-    public boolean                  GetResampleFlag() { return resampleFlag; }
+    public int                      GetResampleCentering() { return resampleCentering; }
     public String                   GetOpacityVariable() { return opacityVariable; }
     public byte[]                   GetFreeformOpacity() { return freeformOpacity; }
     public boolean                  GetUseColorVarMin() { return useColorVarMin; }
@@ -699,7 +703,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(20, buf))
             buf.WriteInt(resampleTarget);
         if(WriteSelect(21, buf))
-            buf.WriteBool(resampleFlag);
+            buf.WriteInt(resampleCentering);
         if(WriteSelect(22, buf))
             buf.WriteString(opacityVariable);
         if(WriteSelect(23, buf))
@@ -818,7 +822,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             SetResampleTarget(buf.ReadInt());
             break;
         case 21:
-            SetResampleFlag(buf.ReadBool());
+            SetResampleCentering(buf.ReadInt());
             break;
         case 22:
             SetOpacityVariable(buf.ReadString());
@@ -927,17 +931,24 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + indent + "opacityControlPoints = {\n" + opacityControlPoints.toString(indent + "    ") + indent + "}\n";
         str = str + indent + "resampleType = ";
-        if(resampleType == RESAMPLE_NONE)
-            str = str + "RESAMPLE_NONE";
-        if(resampleType == RESAMPLE_SINGLEDOMAIN)
-            str = str + "RESAMPLE_SINGLEDOMAIN";
-        if(resampleType == RESAMPLE_PARALLELREDISTRIBUTE)
-            str = str + "RESAMPLE_PARALLELREDISTRIBUTE";
-        if(resampleType == RESAMPLE_PARALLELPERRANK)
-            str = str + "RESAMPLE_PARALLELPERRANK";
+        if(resampleType == RESAMPLETYPE_ONLYIFREQUIRED)
+            str = str + "RESAMPLETYPE_ONLYIFREQUIRED";
+        if(resampleType == RESAMPLETYPE_SINGLEDOMAIN)
+            str = str + "RESAMPLETYPE_SINGLEDOMAIN";
+        if(resampleType == RESAMPLETYPE_PARALLELREDISTRIBUTE)
+            str = str + "RESAMPLETYPE_PARALLELREDISTRIBUTE";
+        if(resampleType == RESAMPLETYPE_PARALLELPERRANK)
+            str = str + "RESAMPLETYPE_PARALLELPERRANK";
         str = str + "\n";
         str = str + intToString("resampleTarget", resampleTarget, indent) + "\n";
-        str = str + boolToString("resampleFlag", resampleFlag, indent) + "\n";
+        str = str + indent + "resampleCentering = ";
+        if(resampleCentering == RESAMPLECENTERING_MAINTAINCENTERING)
+            str = str + "RESAMPLECENTERING_MAINTAINCENTERING";
+        if(resampleCentering == RESAMPLECENTERING_POINTCENTERING)
+            str = str + "RESAMPLECENTERING_POINTCENTERING";
+        if(resampleCentering == RESAMPLECENTERING_CELLCENTERING)
+            str = str + "RESAMPLECENTERING_CELLCENTERING";
+        str = str + "\n";
         str = str + stringToString("opacityVariable", opacityVariable, indent) + "\n";
         str = str + ucharArrayToString("freeformOpacity", freeformOpacity, indent) + "\n";
         str = str + boolToString("useColorVarMin", useColorVarMin, indent) + "\n";
@@ -1039,7 +1050,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     private GaussianControlPointList opacityControlPoints;
     private int                      resampleType;
     private int                      resampleTarget;
-    private boolean                  resampleFlag;
+    private int                      resampleCentering;
     private String                   opacityVariable;
     private byte[]                   freeformOpacity;
     private boolean                  useColorVarMin;

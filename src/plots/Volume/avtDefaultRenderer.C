@@ -217,6 +217,16 @@ avtDefaultRenderer::Render(
         dataArr->GetRange( dataRange );
         opacityArr->GetRange( opacityRange );
 
+        if( props.atts.GetUseColorVarMin() )
+            dataRange[0] = props.atts.GetColorVarMin();
+        if( props.atts.GetUseColorVarMax() )
+            dataRange[1] = props.atts.GetColorVarMax();
+
+        if( props.atts.GetUseOpacityVarMin() )
+            opacityRange[0] = props.atts.GetOpacityVarMin();
+        if( props.atts.GetUseOpacityVarMax() )
+            opacityRange[1] = props.atts.GetOpacityVarMax();
+
         double dataScale    = 255.0 / (   dataRange[1] -    dataRange[0]);
         double opacityScale = 255.0 / (opacityRange[1] - opacityRange[0]);
 
@@ -275,6 +285,10 @@ avtDefaultRenderer::Render(
                     else
                     {
                         double val = (dataTuple - dataRange[0]) * dataScale;
+
+                        if( val < 0   ) val = 0;
+                        if( val > 255 ) val = 255;
+
                         imageToRender->SetScalarComponentFromDouble(x, y, z, 0, val);
                     }
 
@@ -291,6 +305,10 @@ avtDefaultRenderer::Render(
                         else
                         {
                             double val = (opacityTuple - opacityRange[0]) * opacityScale;
+
+                            if( val < 0   ) val = 0;
+                            if( val > 255 ) val = 255;
+
                             imageToRender->SetScalarComponentFromDouble(x, y, z, 1, val);
                         }
                     }
@@ -323,11 +341,12 @@ avtDefaultRenderer::Render(
           LOCAL_DEBUG << mName << "Adding data to the SmartVolumeMapper" << endl;
         }
 
-        volumeMapper->SetInputData(imageToRender);
-        volumeMapper->SetScalarModeToUsePointData();
         volumeMapper->SetBlendModeToComposite();
         resetColorMap = true;
     }
+
+    volumeMapper->SetInputData(imageToRender);
+    volumeMapper->SetScalarModeToUsePointData();
 
     if (resetColorMap || oldAtts != props.atts)
     {
