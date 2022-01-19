@@ -502,6 +502,15 @@ function build_silo
     fi 
 
     set -x
+
+    info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+        CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
+        $FORTRANARGS \
+        --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
+        $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG $WITH_HZIP_AND_FPZIP\
+        --enable-install-lite-headers --without-readline \
+        $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
+
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
     sh -c "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
