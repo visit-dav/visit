@@ -692,8 +692,18 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
             device->SetResampleType(3);
 
         device->SetResampleTargetVal(atts.GetResampleTarget());
+        device->SetResampleFlag(atts.GetResampleFlag());
 
         device->SetRenderingType(DataType::VOLUME);
+
+        device->SetUseColorVarMin( atts.GetUseColorVarMin() );
+        device->SetColorVarMin( atts.GetColorVarMin() );
+        device->SetUseColorVarMax( atts.GetUseColorVarMax() );
+        device->SetColorVarMax( atts.GetColorVarMax() );
+        device->SetUseOpacityVarMin( atts.GetUseOpacityVarMin() );
+        device->SetOpacityVarMin( atts.GetOpacityVarMin() );
+        device->SetUseOpacityVarMax( atts.GetUseOpacityVarMax() );
+        device->SetOpacityVarMax( atts.GetOpacityVarMax() );
 
         device->SetLightInfo(window.GetLights());
         device->SetMatProperties(materialPropArray);
