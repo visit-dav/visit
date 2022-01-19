@@ -247,7 +247,7 @@ avtDefaultRenderer::Render(
         // The color and opacity data may differ so separate
         // components which requires the IndependentComponents in the
         // vtkVolumeProperties set to 'off'
-        imageToRender->AllocateScalars(VTK_UNSIGNED_CHAR, nComponents);
+        imageToRender->AllocateScalars(VTK_FLOAT, nComponents);
 
         // Set the origin to match the lower bounds of the grid
         imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
