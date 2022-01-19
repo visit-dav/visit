@@ -34,40 +34,40 @@ namespace avt
         {
             RenderingAttribs(): resampleType{0},
                                 resampleTargetVal{static_cast<int>(1e6)},
-                                resampleFlag(true),
+                                resampleCentering{0},
 
-                                lightingEnabled(false),
+                                lightingEnabled{false},
 
-                                samplesPerRay(500),
-                                samplingRate(3.0f),
+                                samplesPerRay{500},
+                                samplingRate{3.0f},
 
-                                useColorVarMin(false),
-                                colorVarMin(0.0),
-                                useColorVarMax(false),
-                                colorVarMax(1.0),
-                                useOpacityVarMin(false),
-                                opacityVarMin(0.0),
-                                useOpacityVarMax(false),
-                                opacityVarMax(1.0),
+                                useColorVarMin{false},
+                                colorVarMin{0.0},
+                                useColorVarMax{false},
+                                colorVarMax{1.0},
+                                useOpacityVarMin{false},
+                                opacityVarMin{0.0},
+                                useOpacityVarMax{false},
+                                opacityVarMax{1.0},
 
                                 // OSPRay attributes.
-                                OSPRayEnabled(false),
-                                OSPRayRenderType(0),
-                                OSPRayShadowsEnabled(false),
-                                OSPRayUseGridAccelerator(false),
-                                OSPRayPreIntegration(false),
-                                OSPRaySingleShade(false),
-                                OSPRayOneSidedLighting(false),
-                                OSPRayAOTransparencyEnabled(false),
-                                OSPRayAOSamples(0),
-                                OSPRaySamplesPerPixel(1),
-                                OSPRayAODistance(100000.0f),
-                                OSPRayMinContribution(2.00f),
-                                OSPRayMaxContribution(0.01f) {}
+                                OSPRayEnabled{false},
+                                OSPRayRenderType{0},
+                                OSPRayShadowsEnabled{false},
+                                OSPRayUseGridAccelerator{false},
+                                OSPRayPreIntegration{false},
+                                OSPRaySingleShade{false},
+                                OSPRayOneSidedLighting{false},
+                                OSPRayAOTransparencyEnabled{false},
+                                OSPRayAOSamples{0},
+                                OSPRaySamplesPerPixel{1},
+                                OSPRayAODistance{100000.0f},
+                                OSPRayMinContribution{2.00f},
+                                OSPRayMaxContribution{0.01f} {}
 
             int     resampleType;
             int     resampleTargetVal;
-            bool    resampleFlag;
+            int     resampleCentering;
 
             bool    lightingEnabled;
 
@@ -133,8 +133,8 @@ public:
     void SetLightInfo(const LightList& l)       { m_lightList = l; }
 
     void SetResampleType(const int v)           { m_renderingAttribs.resampleType = v; }
-    void SetResampleFlag(const bool v)          { m_renderingAttribs.resampleFlag = v; }
     void SetResampleTargetVal(const int v)      { m_renderingAttribs.resampleTargetVal = v; }
+    void SetResampleCentering(const int v)      { m_renderingAttribs.resampleCentering = v; }
 
     void SetLighting(const bool b)              { m_renderingAttribs.lightingEnabled = b; }
 
@@ -194,6 +194,7 @@ protected:
 
     int                         m_resampleType{0};
     int                         m_resampleTargetVal{0};
+    int                         m_resampleCentering{0};
 
     bool                        m_useColorVarMin{false};
     float                       m_colorVarMin{0.0};
@@ -209,6 +210,27 @@ protected:
     std::string                 m_gradientVarName{"default"};
 
 private:
+    enum ResampleReason
+    {
+        NoResampling       = 0x0,
+        MutlipleDatasets   = 0x1,
+        NonRectilinearGrid = 0x2,
+        DifferentCentering = 0x4
+    };
+    enum ResampleType // Must match VolumeAttributes.h
+    {
+        OnlyIfRequired,
+        SingleDomain,
+        ParallelRedistribute,
+        ParallelPerRank
+    };
+    enum ResampleCentering // Must match VolumeAttributes.h
+    {
+        MaintainCentering,
+        PointCentering,
+        CellCentering
+    };
+
     void                 ExecuteVolume();
     void                 ExecuteSurface();
     avtImage_p           CreateFinalImage(const void *, const int, const int, const float);

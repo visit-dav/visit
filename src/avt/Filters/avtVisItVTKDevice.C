@@ -521,9 +521,18 @@ avtVisItVTKDevice::ExecuteVolume()
               << "nComponents: " << m_nComponents << "  "
               << std::endl;
 
+    // Check for a user resampling request, the same on all ranks.
+    bool userResample =
+      (m_renderingAttribs.resampleType &&
+       (m_resampleType != m_renderingAttribs.resampleType ||
+        m_renderingAttribs.resampleTargetVal != m_resampleTargetVal ||
+        m_renderingAttribs.resampleCentering != m_resampleCentering));
+
     // Make some checks first to see if an image is needed. After that
     // check to see if the data first needs to be resampled.
-    bool needImage = false, mustResample = false;
+    int  mustResample = NoResampling;
+    bool needImage = false;
+    bool dataCellCentering = false, opacityCellCentering = false;
 
     if( nsets >= 1 )
     {
@@ -532,7 +541,8 @@ avtVisItVTKDevice::ExecuteVolume()
         if(m_imageToRender == nullptr ||
            m_resampleType != m_renderingAttribs.resampleType ||
            (m_renderingAttribs.resampleType &&
-            m_renderingAttribs.resampleTargetVal != m_resampleTargetVal) ||
+            (m_renderingAttribs.resampleTargetVal != m_resampleTargetVal ||
+             m_renderingAttribs.resampleCentering != m_resampleCentering)) ||
            m_activeVarName != activeVarName ||
 
            m_useColorVarMin != m_renderingAttribs.useColorVarMin ||
@@ -552,58 +562,77 @@ avtVisItVTKDevice::ExecuteVolume()
               m_opacityVarMax != m_renderingAttribs.opacityVarMax)))
            )
         {
+            vtkDataSet* in_ds = datasetPtrs[ 0 ];
+
             needImage = true;
 
             // If more than one data set or if the data is not on a
-            // rectilinear grid or if the data is cell centered data
-            // then it must be resampled.
-            mustResample =
-              (nsets > 1 ||
-               datasetPtrs[ 0 ]->GetDataObjectType() != VTK_RECTILINEAR_GRID ||
-               // datasetPtrs[ 0 ]->GetPointData()->GetScalars() == nullptr ||
-               // (m_nComponents == 2 &&
-               //  datasetPtrs[ 0 ]->GetPointData()->GetScalars( opacityVarName.c_str() ) == nullptr) ||
-               0);
+            // rectilinear grid then resampling is required.
+            if( nsets > 1 )
+                mustResample |= MutlipleDatasets;
+            if( in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID )
+                mustResample |= NonRectilinearGrid;
+
+            // Check if the data centering matches the opacity
+            // centering. If different resampling is required.
+            if( in_ds->GetPointData()->GetScalars() != nullptr )
+                dataCellCentering = false;
+            else if( in_ds->GetCellData()->GetScalars() != nullptr )
+                dataCellCentering = true;
+
+            if( m_nComponents == 2 )
+            {
+                if( in_ds->GetPointData()->GetScalars( opacityVarName.c_str() ) != nullptr )
+                    opacityCellCentering = false;
+                else if( in_ds->GetCellData()->GetScalars( opacityVarName.c_str() ) != nullptr )
+                    opacityCellCentering = true;
+            }
+            else // if( m_nComponents == 1 )
+                opacityCellCentering = dataCellCentering;
+
+            if( dataCellCentering != opacityCellCentering )
+                mustResample |= DifferentCentering;
         }
     }
 
-    // If one data set needs to resample the all will be resampled as
-    // avtResampleFilter is a parallel call so do them regardless if
-    // there is data or not. Otherwise MPI crashes.
-    mustResample = UnifyMaximumValue(mustResample);
+    // If one data set needs to resample then all will be resampled as
+    // avtResampleFilter is a parallel call. Otherwise MPI crashes.
+    mustResample = UnifyBitwiseOrValue(mustResample);
 
-    // Check for a user resampling request, the same on all ranks.
-    bool userResample =
-      (m_renderingAttribs.resampleType &&
-       (m_resampleType != m_renderingAttribs.resampleType ||
-        m_renderingAttribs.resampleTargetVal != m_resampleTargetVal));
-
+    // If the data must be resampled and user did not request
+    // resampling. Toss a warning so the user knows the data has been
+    // resampled.
     if( mustResample && !userResample )
     {
-        std::string msg("No resampling was selected but "
-                        "the data must be resampled because; "
-                        "each rank has more than one data set and/or, "
-                        "the data is not on a rectilinear grid and/or, "
-                        "the data is cell centered data. ");
+        std::string msg("The data must be resampled because ");
 
-        if( m_renderingAttribs.resampleFlag )
+        if( mustResample & MutlipleDatasets )
         {
-            msg += std::string("The data will be resampled and "
-                               "if running in parallel "
-                               "redistributed to each rank.");
+            msg += "each rank has more than one data set";
 
-            avtCallback::IssueWarning(msg.c_str());
+            if( mustResample & (NonRectilinearGrid | DifferentCentering))
+                msg += " and, ";
         }
-        else
+
+        if( mustResample & NonRectilinearGrid )
         {
-            msg += std::string("The pipeline can be fixed by "
-                               "using the 'Resample' operator or "
-                               "checking 'Resample automatically'");
+            msg += "the data is not on a rectilinear grid";
 
-            EXCEPTION1(ImproperUseException, msg.c_str());
+            if( mustResample & DifferentCentering)
+                msg += " and, ";
         }
+
+        if( mustResample & DifferentCentering)
+        {
+            msg += "the data and opacity have different centering";
+        }
+
+        msg += ". The data and opacity have been resampled on to "
+            "a common rectilinear grid and if running in parallel "
+            "redistributed to each rank.";
+
+        avtCallback::IssueWarning(msg.c_str());
     }
-
 
     LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                 << "rank: "  << PAR_Rank() << " ";
@@ -618,15 +647,22 @@ avtVisItVTKDevice::ExecuteVolume()
     if(mustResample || userResample)
     {
         if( PAR_Size() == 1 &&
-            (m_renderingAttribs.resampleType == 2 ||
-             m_renderingAttribs.resampleType == 3) )
+            (m_renderingAttribs.resampleType == ParallelRedistribute ||
+             m_renderingAttribs.resampleType == ParallelPerRank) )
         {
             avtCallback::IssueWarning("Parallel resampling was selected but running in serial. Single domain sampling will be performed.");
         }
 
+        // If not maintaining the centering set it to the user option.
+        if( m_renderingAttribs.resampleCentering )
+            dataCellCentering =
+                m_renderingAttribs.resampleCentering == CellCentering;
+
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-                  << "rank: "  << PAR_Rank() << "  resampling"
-                  << std::endl;
+                    << "rank: "  << PAR_Rank()
+                    << (dataCellCentering ? "  cell " :  "  point ")
+                    << " centered resampling"
+                    << std::endl;
 
         // Create a dummy pipeline within the device so to force an
         // execute within this "Execute".  Start with the source.
@@ -640,13 +676,13 @@ avtVisItVTKDevice::ExecuteVolume()
         // (ignored if running in serial).
         if( userResample )
         {
-            if( m_renderingAttribs.resampleType == 2 )
+            if( m_renderingAttribs.resampleType == ParallelRedistribute )
               resampleAtts.SetDistributedResample(true);
-            else if( m_renderingAttribs.resampleType == 3 )
+            else if( m_renderingAttribs.resampleType == ParallelPerRank )
               resampleAtts.SetPerRankResample(true);
         }
-        // Must resample but the user selected none so do a
-        // distributed resample.
+        // Must resample but the user selected 'only if required' so
+        // do a distributed resample.
         else //if( mustResample )
         {
              resampleAtts.SetDistributedResample(true);
@@ -665,6 +701,7 @@ avtVisItVTKDevice::ExecuteVolume()
         avtResampleFilter *m_resampleFilter =
             new avtResampleFilter(&resampleAtts);
 
+        m_resampleFilter->MakeOutputCellCentered( dataCellCentering );
         m_resampleFilter->SetInput( termsrc.GetOutput() );
         dob = m_resampleFilter->GetOutput();
         dob->Update(GetGeneralContract());
@@ -674,6 +711,7 @@ avtVisItVTKDevice::ExecuteVolume()
     // state change.
     m_resampleType      = m_renderingAttribs.resampleType;
     m_resampleTargetVal = m_renderingAttribs.resampleTargetVal;
+    m_resampleCentering = m_renderingAttribs.resampleCentering;
 
     // Get the data tree which may be the origina data or from the
     // resampled data.
@@ -696,7 +734,7 @@ avtVisItVTKDevice::ExecuteVolume()
     // rectilienar grid but the flag is already set so use it.
     if( nsets == 0 ||
         (PAR_Rank() != 0 &&
-         m_renderingAttribs.resampleType == 1) )
+         m_renderingAttribs.resampleType == SingleDomain) )
     {
         debug5 << "[VisItVTKDevice] Nothing to render, no data." << std::endl;
 
@@ -793,7 +831,7 @@ avtVisItVTKDevice::ExecuteVolume()
             opacityArr = in_ds->GetPointData()->GetScalars( opacityVarName.c_str() );
             if( m_cellData && opacityArr )
             {
-                EXCEPTION1(ImproperUseException, "The opacity data does not have the same centering (point) as the primary data (cell).");
+                EXCEPTION1(ImproperUseException, "The opacity data does not have the same centering (point) as the primary data (cell). This expection can be fixed by resampling the data on to a common mesh.");
             }
 
             if( opacityArr == nullptr )
@@ -802,7 +840,7 @@ avtVisItVTKDevice::ExecuteVolume()
 
                 if( !m_cellData && opacityArr )
                 {
-                    EXCEPTION1(ImproperUseException, "The opacity data does not have the same centering (cell) as the primary data (point).");
+                    EXCEPTION1(ImproperUseException, "The opacity data does not have the same centering (cell) as the primary data (point). This expection can be fixed by resampling the data on to a common mesh.");
                 }
 
                 if( opacityArr == nullptr )
@@ -1045,7 +1083,6 @@ avtVisItVTKDevice::ExecuteVolume()
         if( m_renderingAttribs.OSPRayEnabled )
         {
             vtkOSPRayVolumeMapper * vm = vtkOSPRayVolumeMapper::New();
-            // vm->SetCellFlag(m_cellData);
             m_volumeMapper = vm;
 
             LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
@@ -1056,7 +1093,6 @@ avtVisItVTKDevice::ExecuteVolume()
 #endif
         {
             vtkGPUVolumeRayCastMapper * vm = vtkGPUVolumeRayCastMapper::New();
-            // vm->SetCellFlag(m_cellData);
             m_volumeMapper = vm;
 
             LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
