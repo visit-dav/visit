@@ -36,7 +36,10 @@ def sub_pipe(cmd):
     """
     Execute a shell command and return the result as string.
     """
-    proc = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+    proc = subprocess.Popen(cmd,
+                            shell=True,
+                            universal_newlines = True,
+                            stdout=subprocess.PIPE)
     res = proc.communicate()[0]
     return res.strip()
     
