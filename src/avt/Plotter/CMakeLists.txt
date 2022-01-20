@@ -168,8 +168,11 @@ ADD_LIBRARY(avtplotter_ser ${AVTPLOTTER_SOURCES})
 TARGET_LINK_LIBRARIES(avtplotter_ser 
     visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk 
     lightweight_visit_vtk VTK::CommonExecutionModel VTK::FiltersHybrid
-    VTK::RenderingCore VTK::RenderingFreeType VTK::RenderingOpenGL2 VTK::RenderingRayTracing
+    VTK::RenderingCore VTK::RenderingFreeType VTK::RenderingOpenGL2 
     ${OPENGL_LIBRARIES})
+if(TARGET VTK::RenderingRayTracing)
+    target_link_libraries(avtplotter_ser VTK::RenderingRayTracing)
+endif()
 VISIT_INSTALL_TARGETS(avtplotter_ser)
 
 #********************************* PARALLEL **********************************
@@ -178,8 +181,11 @@ IF(VISIT_PARALLEL)
     TARGET_LINK_LIBRARIES(avtplotter_par
         visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk
         lightweight_visit_vtk VTK::CommonExecutionModel VTK::FiltersHybrid
-        VTK::RenderingCore VTK::RenderingFreeType VTK::RenderingOpenGL2 VTK::RenderingRayTracing
+        VTK::RenderingCore VTK::RenderingFreeType VTK::RenderingOpenGL2
         ${OPENGL_LIBRARIES})
+    if(TARGET VTK::RenderingRayTracing)
+        target_link_libraries(avtplotter_par VTK::RenderingRayTracing)
+    endif()
     VISIT_INSTALL_TARGETS(avtplotter_par)
 ENDIF(VISIT_PARALLEL)
 

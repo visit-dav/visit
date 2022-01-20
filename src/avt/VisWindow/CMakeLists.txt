@@ -145,12 +145,18 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtviswindow_ser ${AVTVISWINDOW_SOURCES})
-TARGET_LINK_LIBRARIES(avtviswindow_ser visitcommon avtview avtmath avtplotter_ser visit_vtk lightweight_visit_vtk VTK::FiltersModeling VTK::ImagingCore VTK::InteractionStyle VTK::RenderingRayTracing ${OBJC_LIBS})
+TARGET_LINK_LIBRARIES(avtviswindow_ser visitcommon avtview avtmath avtplotter_ser visit_vtk lightweight_visit_vtk VTK::FiltersModeling VTK::ImagingCore VTK::InteractionStyle ${OBJC_LIBS})
+if(TARGET VTK::RenderingRayTracing)
+    target_link_libraries(avtviswindow_ser VTK::RenderingRayTracing)
+endif()
 VISIT_INSTALL_TARGETS(avtviswindow_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtviswindow_par ${AVTVISWINDOW_SOURCES})
-    TARGET_LINK_LIBRARIES(avtviswindow_par visitcommon avtview avtmath avtplotter_par visit_vtk lightweight_visit_vtk VTK::FiltersModeling VTK::ImagingCore VTK::InteractionStyle VTK::RenderingRayTracing ${OBJC_LIBS})
+    TARGET_LINK_LIBRARIES(avtviswindow_par visitcommon avtview avtmath avtplotter_par visit_vtk lightweight_visit_vtk VTK::FiltersModeling VTK::ImagingCore VTK::InteractionStyle ${OBJC_LIBS})
+    if(TARGET VTK::RenderingRayTracing)
+        target_link_libraries(avtviswindow_par VTK::RenderingRayTracing)
+    endif()
     VISIT_INSTALL_TARGETS(avtviswindow_par)
 ENDIF(VISIT_PARALLEL)

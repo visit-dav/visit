@@ -96,7 +96,7 @@ if(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     set(Qt5_DIR ${VISIT_QT_DIR}/lib/cmake/Qt5)
 endif()
 
-if(VISIT_OSPRAY)
+if(OSPRAY_FOUND)
     list(APPEND REQ_VTK_MODS RenderingRayTracing)
 endif()
 
