@@ -226,6 +226,8 @@
         0.000000
         15.000000
       </Field>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="GetTransferFunction" user="true" member="true">

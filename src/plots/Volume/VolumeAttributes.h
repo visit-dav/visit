@@ -287,6 +287,7 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
     bool ChangesRequireRecalculation(const VolumeAttributes &obj) const;
     void GetTransferFunction(unsigned char *rgba) const;
     void SetDefaultColorControlPoints();

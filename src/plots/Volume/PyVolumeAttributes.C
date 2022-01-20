@@ -3449,6 +3449,44 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "materialProperties") == 0)
         return VolumeAttributes_GetMaterialProperties(self, NULL);
 
+    // Try and handle legacy fields
+
+#define DEPRECATED_MESSAGE(type) \
+    PyErr_WarnFormat(NULL, 3, "%s is no longer a valid Volume attribute.\n" \
+                    "It's value is being ignored, " \
+                    "please remove it from your script.\n", type);
+
+#define NAME_CHANGE_MESSAGE(old, new) \
+    PyErr_WarnFormat(NULL, 3, "%s is no longer a valid Volume attribute.\n" \
+                    "It's name has been changed to %s, " \
+                    "please update your script.\n", old, new);
+
+    if (strcmp(name, "compactVariable") == 0)
+    {
+        DEPRECATED_MESSAGE("compactVariable");
+        return PyInt_FromLong(0L);
+    }
+
+    if (strcmp(name, "osprayAoTransparencyEnabledFlag") == 0)
+    {
+        NAME_CHANGE_MESSAGE("osprayAoTransparencyEnabledFlag",
+                            "osprayAOTransparencyEnabledFlag");
+        return PyInt_FromLong(0L);
+    }
+
+    if (strcmp(name, "osprayAoSamples") == 0)
+    {
+        NAME_CHANGE_MESSAGE("osprayAoSamples",
+                            "osprayAOSamples");
+        return PyInt_FromLong(0L);
+    }
+
+    if (strcmp(name, "osprayAoDistance") == 0)
+    {
+        NAME_CHANGE_MESSAGE("osprayAoDistance",
+                            "osprayAODistance");
+        return PyInt_FromLong(0L);
+    }
     return Py_FindMethod(PyVolumeAttributes_methods, self, name);
 }
 
@@ -3549,6 +3587,37 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "materialProperties") == 0)
         obj = VolumeAttributes_SetMaterialProperties(self, args);
 
+    // Try and handle legacy fields
+    if(obj == &NULL_PY_OBJ)
+    {
+        if(strcmp(name, "compactVariable") == 0)
+        {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+
+        if(strcmp(name, "osprayAoTransparencyEnabledFlag") == 0)
+        {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+
+        if(strcmp(name, "osprayAoSamples") == 0)
+        {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+
+        if(strcmp(name, "osprayAoDistance") == 0)
+        {
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 

@@ -2647,6 +2647,67 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
+// Method: VolumeAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Jeremy Meredith
+// Creation:   June 18, 2003
+//
+// ****************************************************************************
+void
+VolumeAttributes::ProcessOldVersions(DataNode *parentNode,
+                                       const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("VolumeAttributes");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.2.1"))
+    {
+        if (searchNode->GetNode("compactVariable") != nullptr)
+        {
+            searchNode->RemoveNode("compactVariable");
+        }
+
+        DataNode *dn = nullptr;
+        if ((dn = searchNode->GetNode("resampleFlag")) != nullptr)
+        {
+            int intVal = dn->AsInt();
+
+            VolumeAttributes::ResampleType val = (intVal ? OnlyIfRequired : SingleDomain);
+
+            searchNode->RemoveNode("resampleFlag");
+            searchNode->AddNode(new DataNode("resampleType",
+                                              ResampleType_ToString(val)));
+        }
+
+        dn = nullptr;
+        if ((dn = searchNode->GetNode("osprayAoTransparencyEnabledFlag")) != nullptr)
+        {
+            dn->SetKey("osprayAOTransparencyEnabledFlag");
+        }
+
+        dn = nullptr;
+        if ((dn = searchNode->GetNode("osprayAoSamples")) != nullptr)
+        {
+            dn->SetKey("osprayAOSamples");
+        }
+
+        dn = nullptr;
+        if ((dn = searchNode->GetNode("osprayAoDistance")) != nullptr)
+        {
+            dn->SetKey("osprayAODistance");
+        }
+    }
+}
+
+// ****************************************************************************
 //  Method:  VolumeAttributes::ChangesRequireRecalculation
 //
 //  Modifications:
