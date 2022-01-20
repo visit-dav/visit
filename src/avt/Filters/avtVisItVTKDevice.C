@@ -54,8 +54,8 @@
 
 const std::string avtVisItVTKDevice::DEVICE_TYPE_STR{"vtk"};
 
-// #define LOCAL_DEBUG std::cerr
-#define LOCAL_DEBUG debug5
+#define LOCAL_DEBUG std::cerr
+// #define LOCAL_DEBUG debug5
 
 
 // ****************************************************************************
@@ -595,6 +595,9 @@ avtVisItVTKDevice::ExecuteVolume()
         }
     }
 
+    dataCellCentering    = UnifyMaximumValue(dataCellCentering);
+    opacityCellCentering = UnifyMaximumValue(opacityCellCentering);
+
     // If one data set needs to resample then all will be resampled as
     // avtResampleFilter is a parallel call. Otherwise MPI crashes.
     mustResample = UnifyBitwiseOrValue(mustResample);
@@ -611,7 +614,7 @@ avtVisItVTKDevice::ExecuteVolume()
             msg += "each rank has more than one data set";
 
             if( mustResample & (NonRectilinearGrid | DifferentCentering))
-                msg += " and, ";
+                msg += ", and ";
         }
 
         if( mustResample & NonRectilinearGrid )
@@ -619,7 +622,7 @@ avtVisItVTKDevice::ExecuteVolume()
             msg += "the data is not on a rectilinear grid";
 
             if( mustResample & DifferentCentering)
-                msg += " and, ";
+                msg += ", and ";
         }
 
         if( mustResample & DifferentCentering)
@@ -659,9 +662,10 @@ avtVisItVTKDevice::ExecuteVolume()
                 m_renderingAttribs.resampleCentering == CellCentering;
 
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-                    << "rank: "  << PAR_Rank()
-                    << (dataCellCentering ? "  cell " :  "  point ")
-                    << " centered resampling"
+                    << "rank: "  << PAR_Rank() << "  "
+                    << "centering requested " << m_renderingAttribs.resampleCentering << "  doing "
+                    << (dataCellCentering ? "cell " :  "point ")
+                    << "centered resampling"
                     << std::endl;
 
         // Create a dummy pipeline within the device so to force an
