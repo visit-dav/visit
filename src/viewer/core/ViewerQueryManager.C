@@ -1233,7 +1233,7 @@ ViewerQueryManager::DatabaseQuery(const MapNode &in_queryParams)
             if (GetViewerEngineManager()->Query(engineKey, networkIds, &qa, qa))
             {
                 qa.SetVariables(vars);
-               *(GetViewerState()->GetQueryAttributes()) = qa;
+               *(GetViewerState()->GetQueryAttributes()) = std::move(qa);
                 GetViewerState()->GetQueryAttributes()->Notify();
                 if (!suppressQueryOutput)
                     GetViewerMessaging()->Message(qa.GetResultsMessage());

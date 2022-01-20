@@ -6,6 +6,28 @@
 #include <DataNode.h>
 #include <stdio.h>
 
+#include <DebugStream.h>
+#include <execinfo.h>
+
+#define PRINT_BACKTRACE(stream) \
+do { \
+    void *array[20]; \
+    char **strings; \
+    int size; \
+    size = backtrace(array, 20); \
+    strings = backtrace_symbols(array, size); \
+    if(strings) \
+    { \
+        stream << __PRETTY_FUNCTION__ << " called, backtrace:\n"; \
+        for(int i = 0; i < size; i++) \
+        { \
+            stream << "[" << i << "]: " << strings[i] << "\n"; \
+        } \
+        stream.flush(); \
+    } \
+    free(strings); \
+} while(0)
+
 //
 // Enum conversion methods for QueryAttributes::VarType
 //
@@ -104,6 +126,9 @@ void QueryAttributes::Copy(const QueryAttributes &obj)
     defaultName = obj.defaultName;
     defaultVars = obj.defaultVars;
 
+    PRINT_BACKTRACE(debug5);
+    std::cout << "Copied " << obj.resultsValue.size() << " doubles." << std::endl;
+
     QueryAttributes::SelectAll();
 }
 
@@ -173,6 +198,47 @@ QueryAttributes::QueryAttributes(const QueryAttributes &obj) :
     AttributeSubject(QueryAttributes::TypeMapFormatString)
 {
     QueryAttributes::Copy(obj);
+}
+
+QueryAttributes::QueryAttributes(QueryAttributes &&obj)
+    : AttributeSubject(QueryAttributes::TypeMapFormatString),
+    resultsMessage(std::move(obj.resultsMessage)),
+    resultsValue(std::move(obj.resultsValue)),
+    timeStep(obj.timeStep),
+    varTypes(std::move(obj.varTypes)),
+    pipeIndex(obj.pipeIndex),
+    xUnits(std::move(obj.xUnits)),
+    yUnits(std::move(obj.yUnits)),
+    floatFormat(std::move(obj.floatFormat)),
+    xmlResult(std::move(obj.xmlResult)),
+    suppressOutput(obj.suppressOutput),
+    queryInputParams(obj.queryInputParams),
+    defaultName(std::move(obj.defaultName)),
+    defaultVars(std::move(obj.defaultVars))
+{
+    PRINT_BACKTRACE(std::cout);
+    QueryAttributes::SelectAll();
+}
+
+QueryAttributes&
+QueryAttributes::operator=(QueryAttributes &&obj)
+{
+    PRINT_BACKTRACE(std::cout);
+    resultsMessage = std::move(obj.resultsMessage);
+    resultsValue = std::move(obj.resultsValue);
+    timeStep = obj.timeStep;
+    varTypes = std::move(obj.varTypes);
+    pipeIndex = obj.pipeIndex;
+    xUnits = std::move(obj.xUnits);
+    yUnits = std::move(obj.yUnits);
+    floatFormat = std::move(obj.floatFormat);
+    xmlResult = std::move(obj.xmlResult);
+    suppressOutput = obj.suppressOutput;
+    queryInputParams = obj.queryInputParams;
+    defaultName = std::move(obj.defaultName);
+    defaultVars = std::move(obj.defaultVars);
+    QueryAttributes::SelectAll();
+    return *this;
 }
 
 // ****************************************************************************

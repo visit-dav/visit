@@ -46,6 +46,7 @@ public:
     // These constructors are for objects of this class
     QueryAttributes();
     QueryAttributes(const QueryAttributes &obj);
+    QueryAttributes(QueryAttributes &&);
 protected:
     // These constructors are for objects derived from this class
     QueryAttributes(private_tmfs_t tmfs);
@@ -54,6 +55,7 @@ public:
     virtual ~QueryAttributes();
 
     virtual QueryAttributes& operator = (const QueryAttributes &obj);
+    virtual QueryAttributes& operator = (QueryAttributes&&);
     virtual bool operator == (const QueryAttributes &obj) const;
     virtual bool operator != (const QueryAttributes &obj) const;
 private:
