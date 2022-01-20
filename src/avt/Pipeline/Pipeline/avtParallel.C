@@ -1407,6 +1407,51 @@ CollectDoubleArraysOnRootProc(double *&receiveBuf, int *&receiveCounts,
 }
 
 // ****************************************************************************
+//  Function: CollectDoubleVectorsOnRank
+//
+//  Purpose:
+//      Same as above but works with C++ vector inputs.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Jan 18 17:28:13 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+CollectDoubleVectorsOnRank(std::vector<double> &recvBuf,
+                           std::vector<int> &recvCounts,
+                           const std::vector<double> &sendBuf,
+                           int root)
+{
+    globalContext.CollectDoubleVectorsOnRank(recvBuf, recvCounts,
+                                             sendBuf, root);
+}
+
+// ****************************************************************************
+//  Function: CollectDoubleVectorsOnRootProc
+//
+//  Purpose:
+//      Same as above but works with C++ vector inputs, convenience function
+//      that automatically uses root = 0. (I noticed this pattern with the
+//      other functions.)
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Jan 18 17:28:13 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+CollectDoubleVectorsOnRootProc(std::vector<double> &recvBuf,
+                              std::vector<int> &recvCounts,
+                              const std::vector<double> &sendBuf)
+{
+    globalContext.CollectDoubleVectorsOnRootProc(recvBuf, recvCounts,
+                                             sendBuf);
+}
+
+// ****************************************************************************
 //  Function: GetUniqueMessageTag
 //
 //  Purpose: Returns a suitable, unique message tag to be used in MPI_Send/Recv

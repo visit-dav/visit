@@ -21,8 +21,59 @@
 #include <array>
 #include <cstring>
 
+#include <execinfo.h>
+
+#define PRINT_BACKTRACE(stream) \
+do { \
+    void *array[20]; \
+    char **strings; \
+    int size; \
+    size = backtrace(array, 20); \
+    strings = backtrace_symbols(array, size); \
+    if(strings) \
+    { \
+        stream << __PRETTY_FUNCTION__ << " called, backtrace:\n"; \
+        for(int i = 0; i < size; i++) \
+        { \
+            stream << "[" << i << "]: " << strings[i] << "\n"; \
+        } \
+        stream.flush(); \
+    } \
+    free(strings); \
+} while(0)
+
 const int avtFlattenQuery::NODE_DATA = 0;
 const int avtFlattenQuery::ZONE_DATA = 1;
+
+// ****************************************************************************
+//  Function: combine_tables
+//
+//  Purpose:
+//      Helper function to combine node & zone tables.
+//
+//  Programmer:   Chris Laganella
+//  Creation:     Wed Jan 19 11:43:18 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+static void
+CombineTables(const doubleVector &nodeTable, const doubleVector &zoneTable,
+    doubleVector &out, double fillValue)
+{
+    const auto nodeSize = nodeTable.size();
+    const auto zoneSize = zoneTable.size();
+    out.resize(nodeSize + zoneSize, fillValue);
+    void *const zoneOut = out.data() + nodeSize;
+    if(nodeSize)
+    {
+        memcpy(out.data(), nodeTable.data(), nodeSize * sizeof(double));
+    }
+    if(zoneSize)
+    {
+        memcpy(zoneOut, zoneTable.data(), zoneSize * sizeof(double));
+    }
+}
 
 // ****************************************************************************
 //  Method: avtFlattenQuery::avtFlattenQuery
@@ -37,8 +88,7 @@ const int avtFlattenQuery::ZONE_DATA = 1;
 //
 // ****************************************************************************
 avtFlattenQuery::avtFlattenQuery()
-    : variables(), nodeData(), zoneData(), varTypes(),
-        varNComps(), fillValue(0.), maxDataSize(5.)
+    : variables(), outData(), fillValue(0.), maxDataSize(5.)
 {
     // Do nothing
 }
@@ -147,73 +197,6 @@ avtFlattenQuery::GetSecondaryVars(stringVector &outVars)
 }
 
 // ****************************************************************************
-//  Method: avtFlattenQuery::PerformQuery
-//
-//  Purpose:
-//
-//
-//  Programmer:   Chris Laganella
-//  Creation:     Tue Jan 11 17:26:14 EST 2022
-//
-//  Modifications:
-//
-// ****************************************************************************
-void
-avtFlattenQuery::PerformQuery(QueryAttributes *qA)
-{
-    Init();
-
-    UpdateProgress(0, 0);
-    //
-    // Allow derived types to apply any necessary filters.
-    //
-    avtDataObject_p dob = ApplyFilters(GetInput());
-
-    //
-    // Reset the input so that we have access to the data tree.
-    //
-    SetTypedInput(dob);
-
-    avtDataTree_p tree = GetInputDataTree();
-    int validInputTree = 0;
-    totalNodes = 0;
-
-    if (*tree != NULL && !tree->IsEmpty())
-    {
-        validInputTree = 1;
-        totalNodes = tree->GetNumberOfLeaves();
-    }
-    else
-    {
-        debug2 << "Query encountered EMPTY InputDataTree after ApplyFilters.  "
-               << "This may be a valid state if running parallel and there "
-               << "are more processors than domains." << endl;
-    }
-
-    bool hadError = false;
-    PreExecute();
-    TRY
-    {
-        Execute(tree);
-    }
-    CATCH2(VisItException, e)
-    {
-        debug1 << "Exception occurred in " << GetType() << endl
-             << "Going to keep going to prevent a parallel hang." << endl;
-        queryAtts.SetResultsMessage(e.Message());
-        hadError = true;
-    }
-    ENDTRY
-    PostExecute();
-
-    if (! ParallelizingOverTime())
-        validInputTree = UnifyMaximumValue(validInputTree);
-
-    UpdateProgress(1, 0);
-    *qA = queryAtts;
-}
-
-// ****************************************************************************
 //  Method: avtFlattenQuery::VerifyInput
 //
 //  Purpose:
@@ -246,10 +229,7 @@ avtFlattenQuery::VerifyInput(void)
 void
 avtFlattenQuery::PreExecute(void)
 {
-    nodeData.clear();
-    zoneData.clear();
-    varTypes.clear();
-    varNComps.clear();
+    outData.clear();
 }
 
 // ****************************************************************************
@@ -299,7 +279,7 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
         nblocks = 0;
     }
 
-    std::cout << "nblocks " << nblocks << std::endl;
+    debug5 << "nblocks " << nblocks << std::endl;
 
     // Determine how many columns / how big each domain is
     std::array<std::vector<vtkIdType>, 2> blockSizes;
@@ -308,40 +288,29 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
         vtkDataSet *block = datasets[i];
         blockSizes[NODE_DATA].push_back(block->GetNumberOfPoints());
         blockSizes[ZONE_DATA].push_back(block->GetNumberOfCells());
+    }
 
-        // Inspect block 0 for information about each variable of interest
-        if(i == 0)
-        {
-            vtkCellData  *cellData = block->GetCellData();
-            vtkPointData *pointData = block->GetPointData();
-            vtkIdType localNCol = 0;
-            for(const std::string &name : variables)
-            {
-                // First, figure out if this variable is node or zone based.
-                vtkDataArray *da = cellData->GetArray(name.c_str());
-                if(!da)
-                {
-                    da = pointData->GetArray(name.c_str());
-                    varTypes.push_back(NODE_DATA);
-                    if(!da)
-                    {
-                        debug1 << "Variable " << name
-                            << " does not exist on block 0 of rank "
-                            << PAR_Rank() << std::endl;
-                        varNComps.push_back(0);
-                        continue;
-                    }
-                }
-                else
-                {
-                    varTypes.push_back(ZONE_DATA);
-                }
 
-                // Next, check ncomps
-                const auto ncomp = da->GetNumberOfComponents();
-                varNComps.push_back(ncomp);
-            }
-        }
+    intVector varNComps;
+    intVector varTypes;
+    const auto &dataAtts = GetTypedInput()->GetInfo().GetAttributes();
+    vtkIdType localNCol = 0;
+    for(const std::string &name : variables)
+    {
+        avtCentering centering = AVT_NO_VARIABLE;
+        int nc = 0;
+        TRY
+            centering = dataAtts.GetCentering(name.c_str());
+            nc = dataAtts.GetVariableDimension(name.c_str());
+        CATCHALL
+            nc = 0;
+            centering = AVT_NO_VARIABLE;
+            debug1 << "The variable " << name
+                << " does not exist in the input data." << std::endl;
+        ENDTRY
+
+        varNComps.push_back(nc);
+        varTypes.push_back(centering == AVT_ZONECENT ? ZONE_DATA : NODE_DATA);
     }
 
     if(variables.size() != varTypes.size()
@@ -349,17 +318,6 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
     {
         std::cout << "NOT OKAY" << std::endl;
         return;
-    }
-
-    // TODO: Communicate info to all ranks
-    int haveInfo = 1;
-    for(const auto nc : varNComps)
-    {
-        if(nc == 0)
-        {
-            haveInfo = 0;
-            break;
-        }
     }
 
     // Build the output tables
@@ -386,30 +344,30 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
     tableSizes[NODE_DATA] *= tableNCol[NODE_DATA];
     tableSizes[ZONE_DATA] *= tableNCol[ZONE_DATA];
 
-    std::cout << "blockNodeSizes: [";
+    debug5 << "blockNodeSizes: [";
     for(const auto size : blockSizes[NODE_DATA])
     {
-        std::cout << " " << size;
+        debug5 << " " << size;
     }
-    std::cout << " ]" << std::endl;
+    debug5 << " ]" << std::endl;
 
-    std::cout << "blockZoneSizes: [";
+    debug5 << "blockZoneSizes: [";
     for(const auto size : blockSizes[ZONE_DATA])
     {
-        std::cout << " " << size;
+        debug5 << " " << size;
     }
-    std::cout << " ]" << std::endl;
+    debug5 << " ]" << std::endl;
 
-    std::cout << "tableSizes: [";
+    debug5 << "tableSizes: [";
     for(const auto size : tableSizes)
     {
-        std::cout << " " << size;
+        debug5 << " " << size;
     }
-    std::cout << " ]" << std::endl;
+    debug5 << " ]" << std::endl;
 
     std::array<vtkIdType, 2> blockOffsets{0, 0};
-    nodeData.resize(tableSizes[NODE_DATA], fillValue);
-    zoneData.resize(tableSizes[ZONE_DATA], fillValue);
+    doubleVector nodeData(tableSizes[NODE_DATA], fillValue);
+    doubleVector zoneData(tableSizes[ZONE_DATA], fillValue);
     for(int blockIdx = 0; blockIdx < nblocks; blockIdx++)
     {
         vtkDataSet *ds = datasets[blockIdx];
@@ -418,7 +376,7 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
             (vtkDataSetAttributes*)ds->GetCellData()
         };
 
-        std::cout << "Current block offsets: " << blockOffsets[0]
+        debug5 << "Current block offsets: " << blockOffsets[0]
             << " " << blockOffsets[1] << std::endl;
 
         // Copy data into table in row major form
@@ -428,8 +386,6 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
             const int type = varTypes[varIdx];
             const int nc = varNComps[varIdx];
             const int stride = tableNCol[type];
-            // std::cout << "type " << type << " nc " << nc
-            //     << " stride " << stride << std::endl;
             const vtkIdType N = blockSizes[type][blockIdx];
             vtkDataArray *da = dataAtts[varTypes[varIdx]]->GetArray(varName.c_str());
             doubleVector &out = (type == NODE_DATA) ? nodeData : zoneData;
@@ -438,7 +394,6 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
                 doubleVector tup;
                 tup.resize(nc);
                 vtkIdType outIdx = blockOffsets[type] + varOffsets[varIdx];
-                // std::cout << "starting index " << outIdx << std::endl;
                 for(vtkIdType i = 0; i < N; i++)
                 {
                     da->GetTuple(i, tup.data());
@@ -448,7 +403,6 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
                     }
                     outIdx += stride;
                 }
-                // std::cout << "outIdx after iterating " << outIdx << std::endl;
             }
         }
 
@@ -456,96 +410,127 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
         blockOffsets[NODE_DATA] += blockSizes[NODE_DATA][blockIdx] * tableNCol[NODE_DATA];
         blockOffsets[ZONE_DATA] += blockSizes[ZONE_DATA][blockIdx] * tableNCol[ZONE_DATA];
     }
+
+    if(PAR_Size() == 1)
+    {
+        CombineTables(nodeData, zoneData, outData, fillValue);
+        BuildOutputInfo(varNComps, varTypes, nodeData.size(), zoneData.size(), outInfo);
+    }
+    else
+    {
+        doubleVector globalNodeTable;
+        doubleVector globalZoneTable;
+
+        std::cout << "Rank " << PAR_Rank() << " contributing (node) " << nodeData.size() << std::endl;
+        std::cout << "Rank " << PAR_Rank() << " contributing (zone) " << zoneData.size() << std::endl;
+
+        std::vector<int> recvCounts;
+        CollectDoubleVectorsOnRank(globalNodeTable, recvCounts, nodeData, 0);
+        long nodeSize = 0;
+        for(const auto count : recvCounts) nodeSize += count;
+        recvCounts.clear();
+
+        CollectDoubleVectorsOnRank(globalZoneTable, recvCounts, zoneData, 0);
+        long zoneSize = 0;
+        for(const auto count : recvCounts) zoneSize += count;
+        recvCounts.clear();
+
+        if(PAR_Rank() == 0)
+        {
+            std::cout << "globalNode size " << nodeSize << std::endl;
+            std::cout << "globalZone size " << zoneSize << std::endl;
+            CombineTables(globalNodeTable, globalZoneTable, outData, fillValue);
+            BuildOutputInfo(varNComps, varTypes, nodeSize, zoneSize, outInfo);
+        }
+    }
 }
 
 // ****************************************************************************
-//  Method: avtFlattenQuery::PostExecute
+//  Method: avtFlattenQuery::SetOutputQueryAtts
 //
 //  Purpose:
 //
 //
 //  Programmer:   Chris Laganella
-//  Creation:     Tue Jan 11 17:26:14 EST 2022
+//  Creation:     Tue Jan 18 11:39:52 EST 2022
 //
 //  Modifications:
 //
 // ****************************************************************************
 void
-avtFlattenQuery::PostExecute(void)
+avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
 {
-    // TODO: Gather all vectors to rank 0
-    std::cout << "avtFlattenQuery::PostExecute()" << std::endl;
+    std::cout << "avtFlattenQuery::SetOutputQueryAtts" << std::endl;
+    if(hadError)
+    {
+        avtDatasetQuery::SetOutputQueryAtts(qA, hadError);
+        return;
+    }
 
     if(PAR_Rank() == 0)
     {
-        // Now combine results into one big buffer
-        doubleVector &out = queryAtts.GetResultsValue();
-        out.resize(nodeData.size() + zoneData.size());
-        void *zoneOut = out.data() + nodeData.size();
-        if(!nodeData.empty())
-        {
-            memcpy(out.data(), nodeData.data(), nodeData.size() * sizeof(double));
-        }
-        if(!zoneData.empty())
-        {
-            memcpy(zoneOut, zoneData.data(), zoneData.size() * sizeof(double));
-        }
-        std::cout << "Successfully copied into queryAtts!" << std::endl;
-        queryAtts.SelectResultsValue();
-
-        MapNode outInfo;
-        std::array<stringVector, 2> columnNames;
-        for(std::size_t i = 0; i < variables.size(); i++)
-        {
-            const std::string &name = variables[i];
-            const int nc = varNComps[i];
-            const int type = varTypes[i];
-            if(nc > 1)
-            {
-                for(int c = 0; c < nc; c++)
-                {
-                    columnNames[type].push_back(name + "/c"
-                        + std::to_string(c));
-                }
-            }
-            else
-            {
-                columnNames[type].push_back(name);
-            }
-        }
-        std::cout << "Built up the columnNames!" << std::endl;
-
-        if(!nodeData.empty())
-        {
-            outInfo["nodeColumnNames"] = columnNames[NODE_DATA];
-        }
-        if(!zoneData.empty())
-        {
-            outInfo["zoneColumnNames"] = columnNames[ZONE_DATA];
-        }
-
-        longVector shape(2, 0);
-        if(!nodeData.empty())
-        {
-            shape[1] = columnNames[NODE_DATA].size();
-            shape[0] = nodeData.size() / shape[1];
-            outInfo["nodeTableShape"] = shape;
-        }
-
-        if(!zoneData.empty())
-        {
-            shape[1] = columnNames[ZONE_DATA].size();
-            shape[0] = zoneData.size() / shape[1];
-            outInfo["zoneTableShape"] = shape;
-            outInfo["zoneTableOffset"] = (long)nodeData.size();
-        }
-
-        std::cout << "Built outInfo!" << std::endl;
-        queryAtts.SetXmlResult(outInfo.ToXML());
-        queryAtts.SetResultsMessage("Success!");
+        qA->SetXmlResult(outInfo.ToXML());
+        qA->SetResultsMessage("Success!");
+        qA->GetResultsValue().swap(outData);
+        qA->SelectResultsValue();
     }
-    nodeData.clear();
-    zoneData.clear();
-    varNComps.clear();
-    varTypes.clear();
+    std::cout << "avtFlattenQuery - Done." << std::endl;
+    PRINT_BACKTRACE(std::cout);
+}
+
+// ****************************************************************************
+//  Method: avtFlattenQuery::BuildOutputInfo
+//
+//  Purpose:
+//
+//
+//  Programmer:   Chris Laganella
+//  Creation:     Wed Jan 19 11:57:26 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtFlattenQuery::BuildOutputInfo(const intVector &varNComps, const intVector &varTypes,
+                                 const long nodeSize, const long zoneSize,
+                                 MapNode &outInfo)
+{
+    outInfo.Reset();
+    std::array<stringVector, 2> columnNames;
+    for(std::size_t i = 0; i < variables.size(); i++)
+    {
+        const std::string &name = variables[i];
+        const int nc = varNComps[i];
+        const int type = varTypes[i];
+        if(nc > 1)
+        {
+            for(int c = 0; c < nc; c++)
+            {
+                columnNames[type].push_back(name + "/c"
+                    + std::to_string(c));
+            }
+        }
+        else
+        {
+            columnNames[type].push_back(name);
+        }
+    }
+
+    longVector shape(2, 0);
+    if(nodeSize)
+    {
+        outInfo["nodeColumnNames"] = columnNames[NODE_DATA];
+        shape[1] = columnNames[NODE_DATA].size();
+        shape[0] = nodeSize / shape[1];
+        outInfo["nodeTableShape"] = shape;
+    }
+
+    if(zoneSize)
+    {
+        outInfo["zoneColumnNames"] = columnNames[ZONE_DATA];
+        shape[1] = columnNames[ZONE_DATA].size();
+        shape[0] = zoneSize / shape[1];
+        outInfo["zoneTableShape"] = shape;
+        outInfo["zoneTableOffset"] = nodeSize;
+    }
 }

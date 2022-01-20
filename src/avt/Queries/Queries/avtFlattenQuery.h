@@ -43,23 +43,24 @@ class QUERY_API avtFlattenQuery : public avtDatasetQuery
     static void               GetDefaultInputParams(MapNode &);
     virtual void              GetSecondaryVars(stringVector &);
 
-    virtual void              PerformQuery(QueryAttributes*);
-
   protected:
 
     virtual void              VerifyInput(void);
     virtual void              PreExecute(void);
     virtual void              Execute(vtkDataSet *, const int);
     virtual void              Execute(avtDataTree_p);
-    virtual void              PostExecute(void);
+    virtual void              SetOutputQueryAtts(QueryAttributes*, bool);
+    void                      BuildOutputInfo(const intVector &varNComps,
+                                              const intVector &varTypes,
+                                              const long nodeSize,
+                                              const long zoneSize,
+                                              MapNode &outInfo);
 
     static const int NODE_DATA;
     static const int ZONE_DATA;
+    MapNode outInfo;
     stringVector variables;
-    doubleVector nodeData;
-    doubleVector zoneData;
-    intVector    varTypes;
-    intVector    varNComps;
+    doubleVector outData;
     double fillValue;
     double maxDataSize;
 };
