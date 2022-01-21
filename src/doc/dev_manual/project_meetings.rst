@@ -8,7 +8,7 @@ Dialog at the end of the Tuesday meeting determines if the *special topics* meet
 Inclusive Moment
 ----------------
 To begin the first project meeting of each new month a contributor shares an inclusive moment.
-An inclusive moment is a Factoid, Resource, Event, Experience, etc. related to STEAM with the purpose of raising awareness, seeding deeper thinking and/or informing future action.
+An inclusive moment is a factoid, resource, event, experience, etc. related to STEAM with the purpose of raising awareness, seeding deeper thinking and/or informing future action.
 Example inclusive moments which are in scope include...
 
 * A short description of the book `"Black Software" <https://en.wikipedia.org/wiki/Black_Software>`_ and key take-aways to be learned from reading it.
@@ -30,6 +30,7 @@ Example Inclusive Minutes which are out of scope...
   * **Rationale**: not appropriate length.
 
 Whenever possible, we try to rotate responsibility to a different contributor each time.
+There are :download:`some slides <./framing_inclusive_minute_opt.pdf>` that explain the inclusive moment exercise in a little more detail.
 
 Round Robin Dialog
 ------------------
