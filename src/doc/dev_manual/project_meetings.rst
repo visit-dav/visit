@@ -3,7 +3,7 @@ Project Meetings
 
 Project meetings are held one hour per week currently on Tuesday afternoons.
 A second one hour *special topics* meeting is scheduled on all contributor's calendars but is used infrequently.
-Dialog at the end of the Tuesday meeting determines if the *special topics* meeting time is needed.
+Dialog at the end of the Tuesday project meeting determines if the *special topics* meeting time is needed.
 
 Inclusive Moment
 ----------------
