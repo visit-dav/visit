@@ -83,6 +83,12 @@ and locally. ::
 Apply the same changes to develop
 ---------------------------------
 
+Typically, the same changes applied to the release candidate then also need to be applied to `develop`.
+This is not always the case however.
+Some changes are made only for the release candidate and should never get applied to `develop`.
+If this is the case, make sure that the PR to the release candidate includes a comment, either in the initial PR comment or in a comment at the end of the conversation on the PR, that the work is not to be applied to `develop`.
+If the PR for the release candidate is already merged and closed, you can still add a comment indicating it should not be applied to `develop`.
+
 You will apply your changes from the 3.0RC to develop by creating a patch
 of your changes to the 3.0RC and applying them to a branch created off of
 develop. The easiest way to create the patch is immediately after you have
@@ -182,3 +188,5 @@ your changes into develop you can delete the branch at GitHub and locally. ::
 
 That's it. You have now made the exact same change to both the 3.0RC and
 develop.
+
+Once the PR to ``develop`` is merged, go back to the PR for the release candidate (it will probably be in a closed state but that is fine) and add a comment there indicating that the PR was also applied to develop and include the commit, from above, where it happened.
