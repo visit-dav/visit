@@ -11,20 +11,25 @@ To begin the first project meeting of each new month a contributor shares an inc
 An inclusive moment is a Factoid, Resource, Event, Experience, etc. related to STEAM with the purpose of raising awareness, seeding deeper thinking and/or informing future action.
 Example inclusive moments which are in scope include...
 
-  * A short description of the book `"Black Software" <https://en.wikipedia.org/wiki/Black_Software>`_ and key take-aways you learned from reading it.
-  * A reminder and reference that color choices in UI design impact color-blind users.
-  * Relaying a recent conversation with a colleague that feels Fortran programmers aren’t sufficiently supported in ECP.
+* A short description of the book `"Black Software" <https://en.wikipedia.org/wiki/Black_Software>`_ and key take-aways to be learned from reading it.
+* A reminder and reference explaining how color choices in UI design impact color-blind users.
+* Relaying a recent conversation with a colleague that feels Fortran programmers aren’t sufficiently supported in ECP.
   
 Example Inclusive Minutes which are out of scope...
 
-  * Sharing a recent personal negative interaction with a security official
-    * **Rationale**: not related to STEAM
-  * Playing the YouTube video “Equality, Diversity and Inclusion”
-    * **Rationale**: not appropriate length, not related to STEAM
-  * Playing 5 minutes of music created in a recent STEAM hack-a-thon
-    * **Rationale**: not appropriate length
+* Sharing a recent personal negative interaction with an airport security official
 
-Where possible, we try to rotate responsibility fto a different contributor each time.
+  * **Rationale**: not related to STEAM.
+  
+* Playing the YouTube video `“Wny Diversity Matters?” <https://youtu.be/lHStHPQUzkE>`_.
+
+  * **Rationale**: not appropriate length, not related to STEAM.
+  
+* Playing 5 minutes of music created in a recent STEAM hack-a-thon.
+
+  * **Rationale**: not appropriate length.
+
+Whenever possible, we try to rotate responsibility to a different contributor each time.
 
 Round Robin Dialog
 ------------------
@@ -37,13 +42,15 @@ New Issue Triage
 New issues are `triaged <https://www.bugsnag.com/blog/bug-triaging-best-practices>`_.
 New issues can be found through a browser using GitHub's `issue search feature <https://github.com/visit-dav/visit/issues?q=is%3Aissue+is%3Aopen+-label%3Areviewed>`_ and searching for issues missing the ``reviewed`` label. 
 During triage, issues are discussed in some detail to help determine `impact` (low, medium or high) and `likelihood` (low, medium or high) as well as other special considerations such as whether the issue is manifesting an outright `crash`, should be given higher `priority` or may represent `low hanging fruit` for a newer contributor.
-Some issue submissions require lengthy discussion and dialog to help refine into one (or more) actual bug fixes or enhancement requests.
+Some issue submissions require lengthy discussion and dialog to help refine into one (or more) specific bug fixes or enhancement requests.
 Such issues are converted to discussions and should be gathered together to be discussed in a *special topics* meeting.
 
 Unanswered Q&A Discussions
 --------------------------
-
-
+Discussion items that have yet to be answered are reviewed.
 
 Special Topics Meeting Topics/Agenda
 ------------------------------------
+We consider the need and interest in using the upcoming special topics meeting time.
+Sometimes, we opt to use this meeting time for further issue triage.
+Other times, we decide on some topic(s) to discuss and contributors may prepare some informal materials.
