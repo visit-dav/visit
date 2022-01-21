@@ -5,6 +5,27 @@ Project meetings are held one hour per week currently on Tuesday afternoons.
 A second one hour *special topics* meeting is scheduled on all contributor's calendars but is used infrequently.
 Dialog at the end of the Tuesday meeting determines if the *special topics* meeting time is needed.
 
+Inclusive Moment
+----------------
+To begin the first project meeting of each new month a contributor shares an inclusive moment.
+An inclusive moment is a Factoid, Resource, Event, Experience, etc. related to STEAM with the purpose of raising awareness, seeding deeper thinking and/or informing future action.
+Example inclusive moments which are in scope include...
+
+  * A short description of the book `"Black Software" <https://en.wikipedia.org/wiki/Black_Software>`_ and key take-aways you learned from reading it.
+  * A reminder and reference that color choices in UI design impact color-blind users.
+  * Relaying a recent conversation with a colleague that feels Fortran programmers aren’t sufficiently supported in ECP.
+  
+Example Inclusive Minutes which are out of scope...
+
+  * Sharing a recent personal negative interaction with a security official
+    * **Rationale**: not related to STEAM
+  * Playing the YouTube video “Equality, Diversity and Inclusion”
+    * **Rationale**: not appropriate length, not related to STEAM
+  * Playing 5 minutes of music created in a recent STEAM hack-a-thon
+    * **Rationale**: not appropriate length
+
+Where possible, we try to rotate responsibility fto a different contributor each time.
+
 Round Robin Dialog
 ------------------
 The meeting begins with round-robin remarks from contributors on key items from the preceding week's work.
@@ -19,3 +40,10 @@ During triage, issues are discussed in some detail to help determine `impact` (l
 Some issue submissions require lengthy discussion and dialog to help refine into one (or more) actual bug fixes or enhancement requests.
 Such issues are converted to discussions and should be gathered together to be discussed in a *special topics* meeting.
 
+Unanswered Q&A Discussions
+--------------------------
+
+
+
+Special Topics Meeting Topics/Agenda
+------------------------------------
