@@ -879,6 +879,41 @@ EOF
     fi
 }
 
+function apply_libxmlversionheader_patch
+{
+  # patch vtk's libxml CMakeLists.txt so that xmlversion header is installed.
+
+   patch -p0 << \EOF
+*** ThirdParty/libxml2/vtklibxml2/CMakeLists.txt.orig
+--- ThirdParty/libxml2/vtklibxml2/CMakeLists.txt
+***************
+*** 771,779 ****
+  endif ()
+  
+  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
+! if (FALSE) # XXX(kitware): mask installation rules
+! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
+! endif ()
+  
+  if(MSVC)
+        configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
+--- 771,779 ----
+  endif ()
+  
+  configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
+! #if (FALSE) # XXX(kitware): mask installation rules
+! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml)
+! #endif ()
+  
+  if(MSVC)
+        configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for xmlversion header installation failed."
+        return 1
+    fi
+}
+
 function apply_vtk_patch
 {
     # this needs to be reworked for 9.1.0
@@ -900,6 +935,11 @@ function apply_vtk_patch
     #fi
 
     apply_vtkospray_patches
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_libxmlversionheader_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
