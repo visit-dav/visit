@@ -20,9 +20,12 @@ Descriptions for the meaning of various labels to be applied to issues are provi
 Some issue submissions require lengthy discussion and dialog to help refine into one (or more) specific bug fixes or enhancement requests.
 Such issues are converted to discussions and should be gathered together to be discussed in a *special topics* meeting.
 
-Unanswered Q&A Discussions
---------------------------
-Discussion items that have yet to be answered are reviewed.
+Unanswered Q&A Discussion Triage
+--------------------------------
+Discussion items that have yet to be answered are triaged.
+Sometimes a new discussion will get converted to an issue.
+We don't currently use any labels for discussions but we have several discussion *categories* and we may re-categorize discussions to put them in the right category.
+We close any discussions which have been waiting for user response for more than 21 days.
 
 Special Topics Meeting Topics/Agenda
 ------------------------------------
