@@ -220,7 +220,43 @@ PyTable_Check(const PyObject *obj)
 }
 
 // ****************************************************************************
-//  Method: PyTable_Create
+//  Method: SetTypeFormat
+//
+//  Purpose:
+//      Templated helper function to properly set the format string.
+//
+//  Programmer:   Chris Laganella
+//  Creation:     Tue Jan 11 17:26:14 EST 2022
+//
+//  Modifications:
+// ****************************************************************************
+template<typename T>
+static void
+SetTypeFormat(char str[4])
+{
+    // Default value assumed by Python (unsigned bytes)
+    str[0] = 'B';
+    str[1] = '\0';
+}
+
+template<>
+void
+SetTypeFormat<float>(char str[4])
+{
+    str[0] = 'f';
+    str[1] = '\0';
+}
+
+template<>
+void
+SetTypeFormat<double>(char str[4])
+{
+    str[0] = 'd';
+    str[1] = '\0';
+}
+
+// ****************************************************************************
+//  Method: PyTable_CreateImpl
 //
 //  Purpose:
 //      Construct a PyTableObject using the given data and shape.
@@ -232,9 +268,14 @@ PyTable_Check(const PyObject *obj)
 //
 //  Modifications:
 //
+//  Chris Laganella, Fri Jan 21 16:02:36 EST 2022
+//  I turned this into a template function to so that a float version
+//  could be supported
 // ****************************************************************************
-PyObject* PyTable_Create(const double *data,
-                         const long *shape)
+template<typename T>
+static PyObject*
+PyTable_CreateImpl(const T *data,
+                   const long *shape)
 {
     PyTableObject *obj = PyObject_New(PyTableObject, &PyTableObjectType);
     if(!obj)
@@ -243,20 +284,56 @@ PyObject* PyTable_Create(const double *data,
     }
 
     PyTableData &table = obj->table;
-    table.len = sizeof(double) * shape[0] * shape[1];
+    table.len = sizeof(T) * shape[0] * shape[1];
     table.buff = malloc(table.len);
     if(!table.buff)
     {
         Py_DecRef((PyObject*)obj);
         return NULL;
     }
-    table.itemsize = sizeof(double);
-    table.format[0] = 'd'; table.format[1] = '\0';
+    table.itemsize = sizeof(T);
+
+    typedef typename std::remove_cv<T>::type ActualType;
+    SetTypeFormat<ActualType>(table.format);
 
     memcpy(table.buff, data, table.len);
     table.shape[0] = shape[0];
     table.shape[1] = shape[1];
-    table.strides[0] = sizeof(double) * shape[1];
-    table.strides[1] = sizeof(double);
+    table.strides[0] = sizeof(T) * shape[1];
+    table.strides[1] = sizeof(T);
     return (PyObject*)obj;
+}
+
+// ****************************************************************************
+//  Method: PyTable_Create
+//
+//  Purpose:
+//      Call the float version of PyTable_Create
+//
+//  Programmer:   Chris Laganella
+//  Creation:     Fri Jan 21 16:12:10 EST 2022
+//
+// ****************************************************************************
+PyObject*
+PyTable_Create(const float *data,
+               const long *shape)
+{
+    return PyTable_CreateImpl<float>(data, shape);
+}
+
+// ****************************************************************************
+//  Method: PyTable_Create
+//
+//  Purpose:
+//      Call the double version of PyTable_Create
+//
+//  Programmer:   Chris Laganella
+//  Creation:     Fri Jan 21 16:12:10 EST 2022
+//
+// ****************************************************************************
+PyObject*
+PyTable_Create(const double *data,
+               const long *shape)
+{
+    return PyTable_CreateImpl<double>(data, shape);
 }

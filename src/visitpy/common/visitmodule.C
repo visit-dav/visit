@@ -9610,8 +9610,21 @@ visit_GetFlattenOutput(PyObject *self, PyObject *args)
         }
     }
 
-    qa->Decompress();
-    doubleVector &data = qa->GetResultsValue();
+    unsigned long totalSize = 0;
+    if(node.HasEntry("totalSize"))
+    {
+        long temp = node["totalSize"].AsLong();
+        std::cout << "Temp = " << temp;
+        if(temp < 0)
+        {
+            temp = 0;
+        }
+        totalSize = static_cast<unsigned long>(temp);
+    }
+
+    floatVector data(totalSize);
+    std::cout << "about to decompress into " << data.size() << std::endl;
+    qa->Decompress(totalSize * sizeof(float), data.data());
     PyObject *retval = PyDict_New();
     if(haveNodeData)
     {
@@ -19008,7 +19021,7 @@ InitializeModule()
     TRY
     {
         int argc = 1;
-        char *argv[6];
+        char *argv[7];
         argv[0] = (char*)"cli";
 
         if(moduleDebugLevel > 0)
@@ -19026,12 +19039,14 @@ InitializeModule()
            if(strcmp(cli_argv[i], "-pid") == 0)
            {
                argv[argc++] = (char*)"-pid";
-               break;
            }
            if(strcmp(cli_argv[i], "-clobber_vlogs") == 0)
            {
                argv[argc++] = (char*)"-clobber_vlogs";
-               break;
+           }
+           if(strcmp(cli_argv[i], "-timings") == 0)
+           {
+               argv[argc++] = (char*)"-timings";
            }
         }
 

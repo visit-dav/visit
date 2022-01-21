@@ -116,100 +116,123 @@ QueryAttributes::SetResultsValues(const double *vals, const int numVals)
 }
 
 Function: Compress
-Declaration: void Compress();
+Declaration: void Compress(unsigned long inSize, const void *in);
 Definition:
 void
-QueryAttributes::Compress()
+QueryAttributes::Compress(unsigned long inSize, const void *in)
 {
-    if(!resultsValue.empty())
-    {
-        compressedResultsValue.clear();
-        int level = Z_DEFAULT_COMPRESSION;
-        z_stream s;
-        memset(&s, 0, sizeof(z_stream));
-        int zret = deflateInit(&s, level);
-        if(zret == Z_OK)
-        {
-            const unsigned long currentSize = resultsValue.size() * sizeof(double);
-            compressedResultsValue.resize(currentSize, 0);
-            s.avail_in = currentSize;
-            s.next_in = (Bytef*)resultsValue.data();
-            s.avail_out = currentSize;
-            s.next_out = compressedResultsValue.data();
-            zret = deflate(&s, Z_FINISH);
-            if(zret != Z_STREAM_ERROR)
-            {
-                const unsigned long compressedSize = currentSize - s.avail_out;
-                resultsValue.clear();
-                compressedResultsValue.resize(compressedSize);
-            }
-            deflateEnd(&s);
-        }
-    }
-}
+    compressedResults.clear();
 
-
-Function: Decompress
-Declaration: void Decompress();
-Definition:
-void
-QueryAttributes::Decompress()
-{
-    // Do nothing if there is no compressed data
-    if(compressedResultsValue.empty())
+    // No data to compress
+    if(inSize == 0 || in == nullptr)
     {
+        debug2 << "QueryAttributes::Compress called with the arguments "
+            << inSize << " and " << in << " resulting in a no-op."
+            << std::endl;
         return;
     }
 
+    const std::string timerString = "Compressing query results";
+    int t0 = visitTimer->StartTimer();
+#ifdef QA_NO_COMPRESSION
+    compressedResults.resize(inSize);
+    memcpy(compressedResults.data(), in, inSize);
+#else
+    // Use default compression
+    int level = Z_DEFAULT_COMPRESSION;
+    z_stream zStream;
+    memset(&zStream, 0, sizeof(z_stream));
+    int zret = deflateInit(&zStream, level);
+    if(zret != Z_OK)
+    {
+        // Throw an exception
+        std::cout << "ERROR! deflateInit was not Z_OK!" << std::endl;
+        return;
+    }
+
+    // Assume the inSize is enough to hold the compressed size
+    compressedResults.resize(inSize, 0);
+    zStream.avail_in = inSize;
+    zStream.next_in = (Bytef*)in;
+    zStream.avail_out = inSize;
+    zStream.next_out = compressedResults.data();
+    zret = deflate(&zStream, Z_FINISH);
+    if(zret != Z_STREAM_END)
+    {
+        // Throw an exception
+        std::cout << "ERROR! deflate was not able to complete deflation "
+            << "in one call! Code" << zret << "." << std::endl;
+        compressedResults.clear();
+        deflateEnd(&zStream);
+        visitTimer->StopTimer(t0, timerString);
+        return;
+    }
+    compressedResults.resize(inSize - zStream.avail_out);
+    deflateEnd(&zStream);
+#endif
+    visitTimer->StopTimer(t0, timerString);
+    debug5 << "Compressed " << inSize << " in to " << compressedResults.size()
+        << std::endl;
+}
+
+Function: Decompress
+Declaration: void Decompress(unsigned long outSize, void *out);
+Definition:
+void
+QueryAttributes::Decompress(unsigned long outSize, void *out)
+{
+    // Nothing to do.
+    if(outSize == 0 || out == nullptr)
+    {
+        debug2 << "QueryAttributes::Decompress called with the arguments "
+            << outSize << " and " << out << " resulting in a no-op."
+            << std::endl;
+        return;
+    }
+
+    if(compressedResults.empty())
+    {
+        // Throw an exception.
+        std::cout << "ERROR! compressedResults is empty!" << std::endl;
+        return;
+    }
+
+    const std::string timerString = "Decompressing query results";
+    int t0 = visitTimer->StartTimer();
+#ifdef QA_NO_COMPRESSION
+    memcpy(out, compressedResults.data(), outSize);
+#else
     // Initialize inflation
     z_stream zStream;
     memset(&zStream, 0, sizeof(z_stream));
     int zret = inflateInit(&zStream);
     if(zret != Z_OK)
     {
+        // Throw an exception
+        std::cout << "ERROR! inflateInit was not Z_OK!" << std::endl;
+        visitTimer->StopTimer(t0, timerString);
         return;
     }
 
-    // Guess inflated size
-    resultsValue.resize(compressedResultsValue.size());
-    unsigned long chunkSize = compressedResultsValue.size() * sizeof(double);
-    unsigned long totalBytes = 0;
-    zStream.next_in = compressedResultsValue.data();
-    zStream.avail_in = compressedResultsValue.size();
-    while(true)
+    // Inflate the data
+    zStream.avail_in = compressedResults.size();
+    zStream.next_in = compressedResults.data();
+    zStream.avail_out = outSize;
+    zStream.next_out = (Bytef*)out;
+    zret = inflate(&zStream, Z_FINISH);
+    if(zret != Z_STREAM_END)
     {
-        // Inflate a chunk
-        unsigned char *ptr = static_cast<unsigned char*>(
-            static_cast<void*>(resultsValue.data()));
-        zStream.avail_out = chunkSize;
-        zStream.next_out = ptr + totalBytes;
-        zret = inflate(&zStream, Z_NO_FLUSH);
-        if(zret != Z_OK && zret != Z_STREAM_END)
-        {
-            // ERROR
-            std::cout << "Failure " << zret << std::endl;
-            inflateEnd(&zStream);
-            resultsValue.clear();
-            return;
-        }
-
-        // Check if we are done
-        totalBytes += chunkSize - zStream.avail_out;
-        if(zStream.avail_out == 0)
-        {
-            break;
-        }
-        else
-        {
-            // Resize the vector
-            chunkSize = resultsValue.size() * sizeof(double);
-            resultsValue.resize(resultsValue.size() * 2);
-        }
+        // Throw an exception
+        std::cout << "ERROR! inflate was not able to complete inflation "
+            << "in one call! Code" << zret << "." << std::endl;
+        inflateEnd(&zStream);
+        visitTimer->StopTimer(t0, timerString);
+        return;
     }
+    compressedResults.clear();
     inflateEnd(&zStream);
-    compressedResultsValue.clear();
-
-    resultsValue.resize(totalBytes / sizeof(double));
+#endif
+    visitTimer->StopTimer(t0, timerString);
 }
 
 Function: Move Assignment

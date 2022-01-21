@@ -78,7 +78,7 @@ public:
     void SelectQueryInputParams();
     void SelectDefaultName();
     void SelectDefaultVars();
-    void SelectCompressedResultsValue();
+    void SelectCompressedResults();
 
     // Property setting methods
     void SetResultsMessage(const std::string &resultsMessage_);
@@ -94,7 +94,7 @@ public:
     void SetQueryInputParams(const MapNode &queryInputParams_);
     void SetDefaultName(const std::string &defaultName_);
     void SetDefaultVars(const stringVector &defaultVars_);
-    void SetCompressedResultsValue(const unsignedCharVector &compressedResultsValue_);
+    void SetCompressedResults(const unsignedCharVector &compressedResults_);
 
     // Property getting methods
     const std::string        &GetResultsMessage() const;
@@ -120,8 +120,8 @@ public:
           std::string        &GetDefaultName();
     const stringVector       &GetDefaultVars() const;
           stringVector       &GetDefaultVars();
-    const unsignedCharVector &GetCompressedResultsValue() const;
-          unsignedCharVector &GetCompressedResultsValue();
+    const unsignedCharVector &GetCompressedResults() const;
+          unsignedCharVector &GetCompressedResults();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -150,8 +150,8 @@ public:
     void PrintSelf(ostream &os);
     void SetResultsValue(const double);
     void SetResultsValues(const double*, const int);
-    void Compress();
-    void Decompress();
+    void Compress(unsigned long inSize, const void *in);
+    void Decompress(unsigned long outSize, void *out);
     QueryAttributes &operator=(QueryAttributes&&);
     QueryAttributes(QueryAttributes&&);
     void Move(QueryAttributes&&);
@@ -171,7 +171,7 @@ public:
         ID_queryInputParams,
         ID_defaultName,
         ID_defaultVars,
-        ID_compressedResultsValue,
+        ID_compressedResults,
         ID__LAST
     };
 
@@ -189,7 +189,7 @@ private:
     MapNode            queryInputParams;
     std::string        defaultName;
     stringVector       defaultVars;
-    unsignedCharVector compressedResultsValue;
+    unsignedCharVector compressedResults;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

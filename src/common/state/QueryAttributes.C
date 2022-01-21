@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <zlib.h>
 #include <cstring>
+#include <DebugStream.h>
+#include <TimingsManager.h>
 
 //
 // Enum conversion methods for QueryAttributes::VarType
@@ -105,7 +107,7 @@ void QueryAttributes::Copy(const QueryAttributes &obj)
     queryInputParams = obj.queryInputParams;
     defaultName = obj.defaultName;
     defaultVars = obj.defaultVars;
-    compressedResultsValue = obj.compressedResultsValue;
+    compressedResults = obj.compressedResults;
 
     QueryAttributes::SelectAll();
 }
@@ -276,7 +278,7 @@ QueryAttributes::operator == (const QueryAttributes &obj) const
             (queryInputParams == obj.queryInputParams) &&
             true /* can ignore defaultName */ &&
             true /* can ignore defaultVars */ &&
-            (compressedResultsValue == obj.compressedResultsValue));
+            (compressedResults == obj.compressedResults));
 }
 
 // ****************************************************************************
@@ -420,20 +422,20 @@ QueryAttributes::NewInstance(bool copy) const
 void
 QueryAttributes::SelectAll()
 {
-    Select(ID_resultsMessage,         (void *)&resultsMessage);
-    Select(ID_resultsValue,           (void *)&resultsValue);
-    Select(ID_timeStep,               (void *)&timeStep);
-    Select(ID_varTypes,               (void *)&varTypes);
-    Select(ID_pipeIndex,              (void *)&pipeIndex);
-    Select(ID_xUnits,                 (void *)&xUnits);
-    Select(ID_yUnits,                 (void *)&yUnits);
-    Select(ID_floatFormat,            (void *)&floatFormat);
-    Select(ID_xmlResult,              (void *)&xmlResult);
-    Select(ID_suppressOutput,         (void *)&suppressOutput);
-    Select(ID_queryInputParams,       (void *)&queryInputParams);
-    Select(ID_defaultName,            (void *)&defaultName);
-    Select(ID_defaultVars,            (void *)&defaultVars);
-    Select(ID_compressedResultsValue, (void *)&compressedResultsValue);
+    Select(ID_resultsMessage,    (void *)&resultsMessage);
+    Select(ID_resultsValue,      (void *)&resultsValue);
+    Select(ID_timeStep,          (void *)&timeStep);
+    Select(ID_varTypes,          (void *)&varTypes);
+    Select(ID_pipeIndex,         (void *)&pipeIndex);
+    Select(ID_xUnits,            (void *)&xUnits);
+    Select(ID_yUnits,            (void *)&yUnits);
+    Select(ID_floatFormat,       (void *)&floatFormat);
+    Select(ID_xmlResult,         (void *)&xmlResult);
+    Select(ID_suppressOutput,    (void *)&suppressOutput);
+    Select(ID_queryInputParams,  (void *)&queryInputParams);
+    Select(ID_defaultName,       (void *)&defaultName);
+    Select(ID_defaultVars,       (void *)&defaultVars);
+    Select(ID_compressedResults, (void *)&compressedResults);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -544,10 +546,10 @@ QueryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("defaultVars", defaultVars));
     }
 
-    if(completeSave || !FieldsEqual(ID_compressedResultsValue, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_compressedResults, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("compressedResultsValue", compressedResultsValue));
+        node->AddNode(new DataNode("compressedResults", compressedResults));
     }
 
 
@@ -612,8 +614,8 @@ QueryAttributes::SetFromNode(DataNode *parentNode)
         SetDefaultName(node->AsString());
     if((node = searchNode->GetNode("defaultVars")) != 0)
         SetDefaultVars(node->AsStringVector());
-    if((node = searchNode->GetNode("compressedResultsValue")) != 0)
-        SetCompressedResultsValue(node->AsUnsignedCharVector());
+    if((node = searchNode->GetNode("compressedResults")) != 0)
+        SetCompressedResults(node->AsUnsignedCharVector());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -712,10 +714,10 @@ QueryAttributes::SetDefaultVars(const stringVector &defaultVars_)
 }
 
 void
-QueryAttributes::SetCompressedResultsValue(const unsignedCharVector &compressedResultsValue_)
+QueryAttributes::SetCompressedResults(const unsignedCharVector &compressedResults_)
 {
-    compressedResultsValue = compressedResultsValue_;
-    Select(ID_compressedResultsValue, (void *)&compressedResultsValue);
+    compressedResults = compressedResults_;
+    Select(ID_compressedResults, (void *)&compressedResults);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -861,15 +863,15 @@ QueryAttributes::GetDefaultVars()
 }
 
 const unsignedCharVector &
-QueryAttributes::GetCompressedResultsValue() const
+QueryAttributes::GetCompressedResults() const
 {
-    return compressedResultsValue;
+    return compressedResults;
 }
 
 unsignedCharVector &
-QueryAttributes::GetCompressedResultsValue()
+QueryAttributes::GetCompressedResults()
 {
-    return compressedResultsValue;
+    return compressedResults;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -937,9 +939,9 @@ QueryAttributes::SelectDefaultVars()
 }
 
 void
-QueryAttributes::SelectCompressedResultsValue()
+QueryAttributes::SelectCompressedResults()
 {
-    Select(ID_compressedResultsValue, (void *)&compressedResultsValue);
+    Select(ID_compressedResults, (void *)&compressedResults);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -966,20 +968,20 @@ QueryAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_resultsMessage:         return "resultsMessage";
-    case ID_resultsValue:           return "resultsValue";
-    case ID_timeStep:               return "timeStep";
-    case ID_varTypes:               return "varTypes";
-    case ID_pipeIndex:              return "pipeIndex";
-    case ID_xUnits:                 return "xUnits";
-    case ID_yUnits:                 return "yUnits";
-    case ID_floatFormat:            return "floatFormat";
-    case ID_xmlResult:              return "xmlResult";
-    case ID_suppressOutput:         return "suppressOutput";
-    case ID_queryInputParams:       return "queryInputParams";
-    case ID_defaultName:            return "defaultName";
-    case ID_defaultVars:            return "defaultVars";
-    case ID_compressedResultsValue: return "compressedResultsValue";
+    case ID_resultsMessage:    return "resultsMessage";
+    case ID_resultsValue:      return "resultsValue";
+    case ID_timeStep:          return "timeStep";
+    case ID_varTypes:          return "varTypes";
+    case ID_pipeIndex:         return "pipeIndex";
+    case ID_xUnits:            return "xUnits";
+    case ID_yUnits:            return "yUnits";
+    case ID_floatFormat:       return "floatFormat";
+    case ID_xmlResult:         return "xmlResult";
+    case ID_suppressOutput:    return "suppressOutput";
+    case ID_queryInputParams:  return "queryInputParams";
+    case ID_defaultName:       return "defaultName";
+    case ID_defaultVars:       return "defaultVars";
+    case ID_compressedResults: return "compressedResults";
     default:  return "invalid index";
     }
 }
@@ -1004,20 +1006,20 @@ QueryAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_resultsMessage:         return FieldType_string;
-    case ID_resultsValue:           return FieldType_doubleVector;
-    case ID_timeStep:               return FieldType_int;
-    case ID_varTypes:               return FieldType_intVector;
-    case ID_pipeIndex:              return FieldType_int;
-    case ID_xUnits:                 return FieldType_string;
-    case ID_yUnits:                 return FieldType_string;
-    case ID_floatFormat:            return FieldType_string;
-    case ID_xmlResult:              return FieldType_string;
-    case ID_suppressOutput:         return FieldType_bool;
-    case ID_queryInputParams:       return FieldType_MapNode;
-    case ID_defaultName:            return FieldType_string;
-    case ID_defaultVars:            return FieldType_stringVector;
-    case ID_compressedResultsValue: return FieldType_ucharVector;
+    case ID_resultsMessage:    return FieldType_string;
+    case ID_resultsValue:      return FieldType_doubleVector;
+    case ID_timeStep:          return FieldType_int;
+    case ID_varTypes:          return FieldType_intVector;
+    case ID_pipeIndex:         return FieldType_int;
+    case ID_xUnits:            return FieldType_string;
+    case ID_yUnits:            return FieldType_string;
+    case ID_floatFormat:       return FieldType_string;
+    case ID_xmlResult:         return FieldType_string;
+    case ID_suppressOutput:    return FieldType_bool;
+    case ID_queryInputParams:  return FieldType_MapNode;
+    case ID_defaultName:       return FieldType_string;
+    case ID_defaultVars:       return FieldType_stringVector;
+    case ID_compressedResults: return FieldType_ucharVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1042,20 +1044,20 @@ QueryAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_resultsMessage:         return "string";
-    case ID_resultsValue:           return "doubleVector";
-    case ID_timeStep:               return "int";
-    case ID_varTypes:               return "intVector";
-    case ID_pipeIndex:              return "int";
-    case ID_xUnits:                 return "string";
-    case ID_yUnits:                 return "string";
-    case ID_floatFormat:            return "string";
-    case ID_xmlResult:              return "string";
-    case ID_suppressOutput:         return "bool";
-    case ID_queryInputParams:       return "MapNode";
-    case ID_defaultName:            return "string";
-    case ID_defaultVars:            return "stringVector";
-    case ID_compressedResultsValue: return "ucharVector";
+    case ID_resultsMessage:    return "string";
+    case ID_resultsValue:      return "doubleVector";
+    case ID_timeStep:          return "int";
+    case ID_varTypes:          return "intVector";
+    case ID_pipeIndex:         return "int";
+    case ID_xUnits:            return "string";
+    case ID_yUnits:            return "string";
+    case ID_floatFormat:       return "string";
+    case ID_xmlResult:         return "string";
+    case ID_suppressOutput:    return "bool";
+    case ID_queryInputParams:  return "MapNode";
+    case ID_defaultName:       return "string";
+    case ID_defaultVars:       return "stringVector";
+    case ID_compressedResults: return "ucharVector";
     default:  return "invalid index";
     }
 }
@@ -1147,9 +1149,9 @@ QueryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (defaultVars == obj.defaultVars);
         }
         break;
-    case ID_compressedResultsValue:
+    case ID_compressedResults:
         {  // new scope
-        retval = (compressedResultsValue == obj.compressedResultsValue);
+        retval = (compressedResults == obj.compressedResults);
         }
         break;
     default: retval = false;
@@ -1250,97 +1252,117 @@ QueryAttributes::SetResultsValues(const double *vals, const int numVals)
 }
 
 void
-QueryAttributes::Compress()
+QueryAttributes::Compress(unsigned long inSize, const void *in)
 {
-    if(!resultsValue.empty())
-    {
-        compressedResultsValue.clear();
-        int level = Z_DEFAULT_COMPRESSION;
-        z_stream s;
-        memset(&s, 0, sizeof(z_stream));
-        int zret = deflateInit(&s, level);
-        if(zret == Z_OK)
-        {
-            const unsigned long currentSize = resultsValue.size() * sizeof(double);
-            compressedResultsValue.resize(currentSize, 0);
-            s.avail_in = currentSize;
-            s.next_in = (Bytef*)resultsValue.data();
-            s.avail_out = currentSize;
-            s.next_out = compressedResultsValue.data();
-            zret = deflate(&s, Z_FINISH);
-            if(zret != Z_STREAM_ERROR)
-            {
-                const unsigned long compressedSize = currentSize - s.avail_out;
-                resultsValue.clear();
-                resultsValue.resize(1, 0.);
-                compressedResultsValue.resize(compressedSize);
-            }
-            deflateEnd(&s);
-        }
-    }
-}
+    compressedResults.clear();
 
-void
-QueryAttributes::Decompress()
-{
-    // Do nothing if there is no compressed data
-    if(compressedResultsValue.empty())
+    // No data to compress
+    if(inSize == 0 || in == nullptr)
     {
+        debug2 << "QueryAttributes::Compress called with the arguments "
+            << inSize << " and " << in << " resulting in a no-op."
+            << std::endl;
         return;
     }
 
-    std::cout << "Inflating " << compressedResultsValue.size() << "bytes." << std::endl;
+    const std::string timerString = "Compressing query results";
+    int t0 = visitTimer->StartTimer();
+#ifdef QA_NO_COMPRESSION
+    compressedResults.resize(inSize);
+    memcpy(compressedResults.data(), in, inSize);
+#else
+    // Use default compression
+    int level = Z_DEFAULT_COMPRESSION;
+    z_stream zStream;
+    memset(&zStream, 0, sizeof(z_stream));
+    int zret = deflateInit(&zStream, level);
+    if(zret != Z_OK)
+    {
+        // Throw an exception
+        std::cout << "ERROR! deflateInit was not Z_OK!" << std::endl;
+        return;
+    }
 
+    // Assume the inSize is enough to hold the compressed size
+    compressedResults.resize(inSize, 0);
+    zStream.avail_in = inSize;
+    zStream.next_in = (Bytef*)in;
+    zStream.avail_out = inSize;
+    zStream.next_out = compressedResults.data();
+    zret = deflate(&zStream, Z_FINISH);
+    if(zret != Z_STREAM_END)
+    {
+        // Throw an exception
+        std::cout << "ERROR! deflate was not able to complete deflation "
+            << "in one call! Code" << zret << "." << std::endl;
+        compressedResults.clear();
+        deflateEnd(&zStream);
+        visitTimer->StopTimer(t0, timerString);
+        return;
+    }
+    compressedResults.resize(inSize - zStream.avail_out);
+    deflateEnd(&zStream);
+#endif
+    visitTimer->StopTimer(t0, timerString);
+    debug5 << "Compressed " << inSize << " in to " << compressedResults.size()
+        << std::endl;
+}
+
+void
+QueryAttributes::Decompress(unsigned long outSize, void *out)
+{
+    // Nothing to do.
+    if(outSize == 0 || out == nullptr)
+    {
+        debug2 << "QueryAttributes::Decompress called with the arguments "
+            << outSize << " and " << out << " resulting in a no-op."
+            << std::endl;
+        return;
+    }
+
+    if(compressedResults.empty())
+    {
+        // Throw an exception.
+        std::cout << "ERROR! compressedResults is empty!" << std::endl;
+        return;
+    }
+
+    const std::string timerString = "Decompressing query results";
+    int t0 = visitTimer->StartTimer();
+#ifdef QA_NO_COMPRESSION
+    memcpy(out, compressedResults.data(), outSize);
+#else
     // Initialize inflation
     z_stream zStream;
     memset(&zStream, 0, sizeof(z_stream));
     int zret = inflateInit(&zStream);
     if(zret != Z_OK)
     {
+        // Throw an exception
+        std::cout << "ERROR! inflateInit was not Z_OK!" << std::endl;
+        visitTimer->StopTimer(t0, timerString);
         return;
     }
 
-    // Guess inflated size
-    resultsValue.resize(compressedResultsValue.size());
-    unsigned long chunkSize = compressedResultsValue.size() * sizeof(double);
-    unsigned long totalBytes = 0;
-    zStream.next_in = compressedResultsValue.data();
-    zStream.avail_in = compressedResultsValue.size();
-    while(true)
+    // Inflate the data
+    zStream.avail_in = compressedResults.size();
+    zStream.next_in = compressedResults.data();
+    zStream.avail_out = outSize;
+    zStream.next_out = (Bytef*)out;
+    zret = inflate(&zStream, Z_FINISH);
+    if(zret != Z_STREAM_END)
     {
-        // Inflate a chunk
-        unsigned char *ptr = static_cast<unsigned char*>(
-            static_cast<void*>(resultsValue.data()));
-        zStream.avail_out = chunkSize;
-        zStream.next_out = ptr + totalBytes;
-        zret = inflate(&zStream, Z_NO_FLUSH);
-
-        // Check if we are done
-        totalBytes += chunkSize - zStream.avail_out;
-        if(zret == Z_STREAM_END)
-        {
-            break;
-        }
-        else if(zret != Z_OK)
-        {
-            // ERROR
-            std::cout << "Failure " << zret << std::endl;
-            inflateEnd(&zStream);
-            resultsValue.clear();
-            return;
-        }
-        else
-        {
-            // Resize the vector
-            chunkSize = resultsValue.size() * sizeof(double);
-            resultsValue.resize(resultsValue.size() * 2);
-        }
+        // Throw an exception
+        std::cout << "ERROR! inflate was not able to complete inflation "
+            << "in one call! Code" << zret << "." << std::endl;
+        inflateEnd(&zStream);
+        visitTimer->StopTimer(t0, timerString);
+        return;
     }
+    compressedResults.clear();
     inflateEnd(&zStream);
-    compressedResultsValue.clear();
-
-    resultsValue.resize(totalBytes / sizeof(double));
-    std::cout << "Successfully inflated to " << totalBytes << "bytes." << std::endl;
+#endif
+    visitTimer->StopTimer(t0, timerString);
 }
 
 QueryAttributes &

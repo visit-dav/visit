@@ -2386,6 +2386,50 @@ avtParallelContext::CollectDoubleArraysOnRootProc(double *&receiveBuf, int *&rec
 }
 
 // ****************************************************************************
+//  Function: CollectFloatVectorsOnRank
+//
+//  Purpose:
+//      Same as above but works with C++ vector inputs.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Fri Jan 21 15:30:47 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtParallelContext::CollectFloatVectorsOnRootProc(
+                                    std::vector<float> &recvBuf,
+                                    std::vector<int> &recvCounts,
+                                    const std::vector<float> &sendBuf,
+                                    int root)
+{
+    const auto allocRecvBuf = [&recvBuf](int sz){
+        recvBuf.resize(sz);
+        return recvBuf.data();
+    };
+    const auto allocRecvCount = [&recvCounts](int sz) {
+        recvCounts.resize(sz);
+        return recvCounts.data();
+    };
+
+    // The template function takes references to pointers and manipulates them
+    //   this version of the function doesn't need those pointers returned out
+    float *rbTemp = recvBuf.data();
+    int *rcTemp = recvCounts.data();
+    int sendCount = static_cast<int>(sendBuf.size());
+
+    CollectArraysOnRank<float>(Rank(), Size(), rbTemp, rcTemp,
+                                sendBuf.data(), sendCount,
+#ifdef PARALLEL
+                                MPI_DOUBLE, this->GetCommunicator(),
+#endif
+                                root,
+                                allocRecvBuf,
+                                allocRecvCount);
+}
+
+// ****************************************************************************
 //  Function: CollectDoubleVectorsOnRank
 //
 //  Purpose:
@@ -2398,7 +2442,7 @@ avtParallelContext::CollectDoubleArraysOnRootProc(double *&receiveBuf, int *&rec
 //
 // ****************************************************************************
 void
-avtParallelContext::CollectDoubleVectorsOnRank(
+avtParallelContext::CollectDoubleVectorsOnRootProc(
                                     std::vector<double> &recvBuf,
                                     std::vector<int> &recvCounts,
                                     const std::vector<double> &sendBuf,
@@ -2427,29 +2471,6 @@ avtParallelContext::CollectDoubleVectorsOnRank(
                                 root,
                                 allocRecvBuf,
                                 allocRecvCount);
-}
-
-// ****************************************************************************
-//  Function: CollectDoubleVectorsOnRootProc
-//
-//  Purpose:
-//      Same as above but works with C++ vector inputs, convenience function
-//      that automatically uses root = 0. (I noticed this pattern with the
-//      other functions.)
-//
-//  Programmer: Chris Laganella
-//  Creation:   Tue Jan 18 17:26:16 EST 2022
-//
-//  Modifications:
-//
-// ****************************************************************************
-void
-avtParallelContext::CollectDoubleVectorsOnRootProc(
-                                    std::vector<double> &recvBuf,
-                                    std::vector<int> &recvCounts,
-                                    const std::vector<double> &sendBuf)
-{
-    CollectDoubleVectorsOnRank(recvBuf, recvCounts, sendBuf, 0);
 }
 
 // ****************************************************************************

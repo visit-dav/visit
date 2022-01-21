@@ -155,13 +155,14 @@ public:
     void    CollectIntArraysOnRank(int *&, int *&, int *, int, int root);
     void    CollectIntArraysOnRootProc(int *&, int *&, int *, int);
     void    CollectDoubleArraysOnRootProc(double *&, int *&, double *, int);
-    void    CollectDoubleVectorsOnRank(std::vector<double> &recvBuf,
+    void    CollectFloatVectorsOnRootProc(std::vector<float> &recvBuf,
+                                       std::vector<int> &recvCounts,
+                                       const std::vector<float> &sendBuf,
+                                       int root = 0);
+    void    CollectDoubleVectorsOnRootProc(std::vector<double> &recvBuf,
                                        std::vector<int> &recvCounts,
                                        const std::vector<double> &sendBuf,
-                                       int root);
-    void    CollectDoubleVectorsOnRootProc(std::vector<double> &recvBuf,
-                                           std::vector<int> &recvCounts,
-                                           const std::vector<double> &sendBuf);
+                                       int root = 0);
 
     int     GetUniqueMessageTag();
     void    GetUniqueMessageTags(int *tags, int ntags);

@@ -57,9 +57,10 @@ const int avtFlattenQuery::ZONE_DATA = 1;
 //  Modifications:
 //
 // ****************************************************************************
+template<typename T>
 static void
-CombineTables(const doubleVector &nodeTable, const doubleVector &zoneTable,
-    doubleVector &out, double fillValue)
+CombineTables(const std::vector<T> &nodeTable, const std::vector<T> &zoneTable,
+    std::vector<T> &out, double fillValue)
 {
     const auto nodeSize = nodeTable.size();
     const auto zoneSize = zoneTable.size();
@@ -67,11 +68,11 @@ CombineTables(const doubleVector &nodeTable, const doubleVector &zoneTable,
     void *const zoneOut = out.data() + nodeSize;
     if(nodeSize)
     {
-        memcpy(out.data(), nodeTable.data(), nodeSize * sizeof(double));
+        memcpy(out.data(), nodeTable.data(), nodeSize * sizeof(T));
     }
     if(zoneSize)
     {
-        memcpy(zoneOut, zoneTable.data(), zoneSize * sizeof(double));
+        memcpy(zoneOut, zoneTable.data(), zoneSize * sizeof(T));
     }
 }
 
@@ -366,8 +367,8 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
     debug5 << " ]" << std::endl;
 
     std::array<vtkIdType, 2> blockOffsets{0, 0};
-    doubleVector nodeData(tableSizes[NODE_DATA], fillValue);
-    doubleVector zoneData(tableSizes[ZONE_DATA], fillValue);
+    std::vector<floatType> nodeData(tableSizes[NODE_DATA], fillValue);
+    std::vector<floatType> zoneData(tableSizes[ZONE_DATA], fillValue);
     for(int blockIdx = 0; blockIdx < nblocks; blockIdx++)
     {
         vtkDataSet *ds = datasets[blockIdx];
@@ -388,7 +389,7 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
             const int stride = tableNCol[type];
             const vtkIdType N = blockSizes[type][blockIdx];
             vtkDataArray *da = dataAtts[varTypes[varIdx]]->GetArray(varName.c_str());
-            doubleVector &out = (type == NODE_DATA) ? nodeData : zoneData;
+            std::vector<floatType> &out = (type == NODE_DATA) ? nodeData : zoneData;
             if(da)
             {
                 doubleVector tup;
@@ -399,7 +400,7 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
                     da->GetTuple(i, tup.data());
                     for(vtkIdType c = 0; c < nc; c++)
                     {
-                        out[outIdx + c] = tup[c];
+                        out[outIdx + c] = (floatType)tup[c];
                     }
                     outIdx += stride;
                 }
@@ -418,19 +419,19 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
     }
     else
     {
-        doubleVector globalNodeTable;
-        doubleVector globalZoneTable;
+        std::vector<floatType> globalNodeTable;
+        std::vector<floatType> globalZoneTable;
 
         std::cout << "Rank " << PAR_Rank() << " contributing (node) " << nodeData.size() << std::endl;
         std::cout << "Rank " << PAR_Rank() << " contributing (zone) " << zoneData.size() << std::endl;
 
         std::vector<int> recvCounts;
-        CollectDoubleVectorsOnRank(globalNodeTable, recvCounts, nodeData, 0);
+        CollectFloatVectorsOnRootProc(globalNodeTable, recvCounts, nodeData, 0);
         long nodeSize = 0;
         for(const auto count : recvCounts) nodeSize += count;
         recvCounts.clear();
 
-        CollectDoubleVectorsOnRank(globalZoneTable, recvCounts, zoneData, 0);
+        CollectFloatVectorsOnRootProc(globalZoneTable, recvCounts, zoneData, 0);
         long zoneSize = 0;
         for(const auto count : recvCounts) zoneSize += count;
         recvCounts.clear();
@@ -469,10 +470,12 @@ avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
 
     if(PAR_Rank() == 0)
     {
+        outInfo["totalSize"] = static_cast<long>(outData.size());
+        outInfo["dataType"] = "double";
+        std::cout << outInfo.ToXML() << std::endl;
         qA->SetXmlResult(outInfo.ToXML());
         qA->SetResultsMessage("Success!");
-        qA->GetResultsValue().swap(outData);
-        qA->Compress();
+        qA->Compress(outData.size() * sizeof(float), outData.data());
         qA->SelectResultsValue();
     }
     std::cout << "avtFlattenQuery - Done." << std::endl;

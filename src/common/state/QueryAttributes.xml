@@ -44,7 +44,7 @@
     </Field>
     <Field name="defaultVars" label="defaultVars" type="stringVector" internal="true" ignoreeq="true" init="true">
     </Field>
-    <Field name="compressedResultsValue" label="compressedResultsValue" type="ucharVector" internal="true">
+    <Field name="compressedResults" label="compressedResults" type="ucharVector" internal="true">
     </Field>
     <Function name="SetVariables" user="true" member="true">
     </Function>
@@ -85,5 +85,11 @@
     </Include>
     <Include file="source" quoted="false">
       cstring
+    </Include>
+    <Include file="source" quoted="false">
+      DebugStream.h
+    </Include>
+    <Include file="source" quoted="false">
+      TimingsManager.h
     </Include>
   </Attribute>

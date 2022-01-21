@@ -56,11 +56,12 @@ class QUERY_API avtFlattenQuery : public avtDatasetQuery
                                               const long zoneSize,
                                               MapNode &outInfo);
 
+    using floatType = float;
     static const int NODE_DATA;
     static const int ZONE_DATA;
     MapNode outInfo;
     stringVector variables;
-    doubleVector outData;
+    std::vector<floatType> outData;
     double fillValue;
     double maxDataSize;
 };
