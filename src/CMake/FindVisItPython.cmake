@@ -65,6 +65,9 @@
 #   Cyrus Harrison, Wed Aug 11 16:05:04 PDT 2021
 #   Robustify python lib detection logic 
 #
+#   Cyrus Harrison, Wed Jan 19 10:06:17 PST 2022
+#   Install extra python front end scripts if they exist
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -436,6 +439,22 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
         STRING(SUBSTRING ${PYTHON_VERSION} 0 1 PYX)
         STRING(SUBSTRING ${PYTHON_VERSION} 0 3 PYX_X)
         THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python ${PYTHON_DIR}/bin/python${PYX} ${PYTHON_DIR}/bin/python${PYX_X})
+        THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python${PYX}-config ${PYTHON_DIR}/bin/python${PYX_X}-config)
+
+        # install extra python front end scripts if they exist
+        set(_py_extras ${PYTHON_DIR}/bin/pip${PYX}   # pip3
+                       ${PYTHON_DIR}/bin/pip${PYX_X} # pip3.Z
+                       ${PYTHON_DIR}/bin/pyvenv
+                       ${PYTHON_DIR}/bin/pyvenv-${PYX_X} # pyvenv-3.Z
+                       ${PYTHON_DIR}/bin/2to3
+                       ${PYTHON_DIR}/bin/2to3-${PYX_X}   #2to3-3.Z
+                       )
+
+       foreach(_py_extra ${_py_extras})
+           if(EXISTS ${_py_extra})
+               THIRD_PARTY_INSTALL_EXECUTABLE(${_py_extra})
+           endif()
+       endforeach()
 
         # Install the python modules
         # Exclude lib-tk files for now because the permissions are bad on davinci. BJW 12/17/2009
