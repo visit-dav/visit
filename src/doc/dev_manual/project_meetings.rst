@@ -42,7 +42,8 @@ New Issue Triage
 ----------------
 New issues are `triaged <https://www.bugsnag.com/blog/bug-triaging-best-practices>`_.
 New issues can be found through a browser using GitHub's `issue search feature <https://github.com/visit-dav/visit/issues?q=is%3Aissue+is%3Aopen+-label%3Areviewed>`_ and searching for issues missing the ``reviewed`` label. 
-During triage, issues are discussed in some detail to help determine ``impact`` (low, medium or high) and ``likelihood`` (low, medium or high) as well as other special considerations such as whether the issue is manifesting an outright ``crash``, should be given higher ``priority`` or may represent ``low hanging fruit`` for a newer contributor.
+During triage, issues are discussed in some detail to help refine meaning and determine ``impact`` (low, medium or high) and ``likelihood`` (low, medium or high) as well as other special considerations such as whether the issue is manifesting an outright ``crash``, should be given higher ``priority`` or may represent ``low hanging fruit`` (a small amount of work that will yield high dividends).
+Descriptions for the meaning of various labels to be applied to issues are provided on the `label description page <https://github.com/visit-dav/visit/labels>`_.
 Some issue submissions require lengthy discussion and dialog to help refine into one (or more) specific bug fixes or enhancement requests.
 Such issues are converted to discussions and should be gathered together to be discussed in a *special topics* meeting.
 
