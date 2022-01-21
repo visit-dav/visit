@@ -46,7 +46,6 @@ public:
     // These constructors are for objects of this class
     QueryAttributes();
     QueryAttributes(const QueryAttributes &obj);
-    QueryAttributes(QueryAttributes &&);
 protected:
     // These constructors are for objects derived from this class
     QueryAttributes(private_tmfs_t tmfs);
@@ -55,7 +54,6 @@ public:
     virtual ~QueryAttributes();
 
     virtual QueryAttributes& operator = (const QueryAttributes &obj);
-    virtual QueryAttributes& operator = (QueryAttributes&&);
     virtual bool operator == (const QueryAttributes &obj) const;
     virtual bool operator != (const QueryAttributes &obj) const;
 private:
@@ -80,6 +78,7 @@ public:
     void SelectQueryInputParams();
     void SelectDefaultName();
     void SelectDefaultVars();
+    void SelectCompressedResultsValue();
 
     // Property setting methods
     void SetResultsMessage(const std::string &resultsMessage_);
@@ -95,31 +94,34 @@ public:
     void SetQueryInputParams(const MapNode &queryInputParams_);
     void SetDefaultName(const std::string &defaultName_);
     void SetDefaultVars(const stringVector &defaultVars_);
+    void SetCompressedResultsValue(const unsignedCharVector &compressedResultsValue_);
 
     // Property getting methods
-    const std::string  &GetResultsMessage() const;
-          std::string  &GetResultsMessage();
-    const doubleVector &GetResultsValue() const;
-          doubleVector &GetResultsValue();
-    int                GetTimeStep() const;
-    const intVector    &GetVarTypes() const;
-          intVector    &GetVarTypes();
-    int                GetPipeIndex() const;
-    const std::string  &GetXUnits() const;
-          std::string  &GetXUnits();
-    const std::string  &GetYUnits() const;
-          std::string  &GetYUnits();
-    const std::string  &GetFloatFormat() const;
-          std::string  &GetFloatFormat();
-    const std::string  &GetXmlResult() const;
-          std::string  &GetXmlResult();
-    bool               GetSuppressOutput() const;
-    const MapNode      &GetQueryInputParams() const;
-          MapNode      &GetQueryInputParams();
-    const std::string  &GetDefaultName() const;
-          std::string  &GetDefaultName();
-    const stringVector &GetDefaultVars() const;
-          stringVector &GetDefaultVars();
+    const std::string        &GetResultsMessage() const;
+          std::string        &GetResultsMessage();
+    const doubleVector       &GetResultsValue() const;
+          doubleVector       &GetResultsValue();
+    int                      GetTimeStep() const;
+    const intVector          &GetVarTypes() const;
+          intVector          &GetVarTypes();
+    int                      GetPipeIndex() const;
+    const std::string        &GetXUnits() const;
+          std::string        &GetXUnits();
+    const std::string        &GetYUnits() const;
+          std::string        &GetYUnits();
+    const std::string        &GetFloatFormat() const;
+          std::string        &GetFloatFormat();
+    const std::string        &GetXmlResult() const;
+          std::string        &GetXmlResult();
+    bool                     GetSuppressOutput() const;
+    const MapNode            &GetQueryInputParams() const;
+          MapNode            &GetQueryInputParams();
+    const std::string        &GetDefaultName() const;
+          std::string        &GetDefaultName();
+    const stringVector       &GetDefaultVars() const;
+          stringVector       &GetDefaultVars();
+    const unsignedCharVector &GetCompressedResultsValue() const;
+          unsignedCharVector &GetCompressedResultsValue();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -148,6 +150,11 @@ public:
     void PrintSelf(ostream &os);
     void SetResultsValue(const double);
     void SetResultsValues(const double*, const int);
+    void Compress();
+    void Decompress();
+    QueryAttributes &operator=(QueryAttributes&&);
+    QueryAttributes(QueryAttributes&&);
+    void Move(QueryAttributes&&);
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -164,28 +171,30 @@ public:
         ID_queryInputParams,
         ID_defaultName,
         ID_defaultVars,
+        ID_compressedResultsValue,
         ID__LAST
     };
 
 private:
-    std::string  resultsMessage;
-    doubleVector resultsValue;
-    int          timeStep;
-    intVector    varTypes;
-    int          pipeIndex;
-    std::string  xUnits;
-    std::string  yUnits;
-    std::string  floatFormat;
-    std::string  xmlResult;
-    bool         suppressOutput;
-    MapNode      queryInputParams;
-    std::string  defaultName;
-    stringVector defaultVars;
+    std::string        resultsMessage;
+    doubleVector       resultsValue;
+    int                timeStep;
+    intVector          varTypes;
+    int                pipeIndex;
+    std::string        xUnits;
+    std::string        yUnits;
+    std::string        floatFormat;
+    std::string        xmlResult;
+    bool               suppressOutput;
+    MapNode            queryInputParams;
+    std::string        defaultName;
+    stringVector       defaultVars;
+    unsignedCharVector compressedResultsValue;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define QUERYATTRIBUTES_TMFS "sd*ii*issssbmss*"
+#define QUERYATTRIBUTES_TMFS "sd*ii*issssbmss*u*"
 
 #endif

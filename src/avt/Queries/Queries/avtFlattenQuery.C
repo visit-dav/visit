@@ -472,10 +472,11 @@ avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
         qA->SetXmlResult(outInfo.ToXML());
         qA->SetResultsMessage("Success!");
         qA->GetResultsValue().swap(outData);
+        qA->Compress();
         qA->SelectResultsValue();
     }
     std::cout << "avtFlattenQuery - Done." << std::endl;
-    PRINT_BACKTRACE(std::cout);
+    // PRINT_BACKTRACE(std::cout);
 }
 
 // ****************************************************************************

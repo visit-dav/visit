@@ -44,6 +44,8 @@
     </Field>
     <Field name="defaultVars" label="defaultVars" type="stringVector" internal="true" ignoreeq="true" init="true">
     </Field>
+    <Field name="compressedResultsValue" label="compressedResultsValue" type="ucharVector" internal="true">
+    </Field>
     <Function name="SetVariables" user="true" member="true">
     </Function>
     <Function name="GetName" user="true" member="true">
@@ -62,10 +64,26 @@
     </Function>
     <Function name="SetResultsValues" user="true" member="true">
     </Function>
+    <Function name="Compress" user="true" member="true">
+    </Function>
+    <Function name="Decompress" user="true" member="true">
+    </Function>
+    <Function name="Move Assignment" user="true" member="true">
+    </Function>
+    <Function name="Move Constructor" user="true" member="true" access="private">
+    </Function>
+    <Function name="Move" user="true" member="true">
+    </Function>
     <Include file="source" quoted="false">
       stdio.h
     </Include>
     <Include file="header" quoted="false">
       visitstream.h
+    </Include>
+    <Include file="source" quoted="false">
+      zlib.h
+    </Include>
+    <Include file="source" quoted="false">
+      cstring
     </Include>
   </Attribute>

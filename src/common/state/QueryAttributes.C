@@ -5,28 +5,8 @@
 #include <QueryAttributes.h>
 #include <DataNode.h>
 #include <stdio.h>
-
-#include <DebugStream.h>
-#include <execinfo.h>
-
-#define PRINT_BACKTRACE(stream) \
-do { \
-    void *array[20]; \
-    char **strings; \
-    int size; \
-    size = backtrace(array, 20); \
-    strings = backtrace_symbols(array, size); \
-    if(strings) \
-    { \
-        stream << __PRETTY_FUNCTION__ << " called, backtrace:\n"; \
-        for(int i = 0; i < size; i++) \
-        { \
-            stream << "[" << i << "]: " << strings[i] << "\n"; \
-        } \
-        stream.flush(); \
-    } \
-    free(strings); \
-} while(0)
+#include <zlib.h>
+#include <cstring>
 
 //
 // Enum conversion methods for QueryAttributes::VarType
@@ -125,9 +105,7 @@ void QueryAttributes::Copy(const QueryAttributes &obj)
     queryInputParams = obj.queryInputParams;
     defaultName = obj.defaultName;
     defaultVars = obj.defaultVars;
-
-    PRINT_BACKTRACE(debug5);
-    std::cout << "Copied " << obj.resultsValue.size() << " doubles." << std::endl;
+    compressedResultsValue = obj.compressedResultsValue;
 
     QueryAttributes::SelectAll();
 }
@@ -198,47 +176,6 @@ QueryAttributes::QueryAttributes(const QueryAttributes &obj) :
     AttributeSubject(QueryAttributes::TypeMapFormatString)
 {
     QueryAttributes::Copy(obj);
-}
-
-QueryAttributes::QueryAttributes(QueryAttributes &&obj)
-    : AttributeSubject(QueryAttributes::TypeMapFormatString),
-    resultsMessage(std::move(obj.resultsMessage)),
-    resultsValue(std::move(obj.resultsValue)),
-    timeStep(obj.timeStep),
-    varTypes(std::move(obj.varTypes)),
-    pipeIndex(obj.pipeIndex),
-    xUnits(std::move(obj.xUnits)),
-    yUnits(std::move(obj.yUnits)),
-    floatFormat(std::move(obj.floatFormat)),
-    xmlResult(std::move(obj.xmlResult)),
-    suppressOutput(obj.suppressOutput),
-    queryInputParams(obj.queryInputParams),
-    defaultName(std::move(obj.defaultName)),
-    defaultVars(std::move(obj.defaultVars))
-{
-    PRINT_BACKTRACE(std::cout);
-    QueryAttributes::SelectAll();
-}
-
-QueryAttributes&
-QueryAttributes::operator=(QueryAttributes &&obj)
-{
-    PRINT_BACKTRACE(std::cout);
-    resultsMessage = std::move(obj.resultsMessage);
-    resultsValue = std::move(obj.resultsValue);
-    timeStep = obj.timeStep;
-    varTypes = std::move(obj.varTypes);
-    pipeIndex = obj.pipeIndex;
-    xUnits = std::move(obj.xUnits);
-    yUnits = std::move(obj.yUnits);
-    floatFormat = std::move(obj.floatFormat);
-    xmlResult = std::move(obj.xmlResult);
-    suppressOutput = obj.suppressOutput;
-    queryInputParams = obj.queryInputParams;
-    defaultName = std::move(obj.defaultName);
-    defaultVars = std::move(obj.defaultVars);
-    QueryAttributes::SelectAll();
-    return *this;
 }
 
 // ****************************************************************************
@@ -338,7 +275,8 @@ QueryAttributes::operator == (const QueryAttributes &obj) const
             (suppressOutput == obj.suppressOutput) &&
             (queryInputParams == obj.queryInputParams) &&
             true /* can ignore defaultName */ &&
-            true /* can ignore defaultVars */);
+            true /* can ignore defaultVars */ &&
+            (compressedResultsValue == obj.compressedResultsValue));
 }
 
 // ****************************************************************************
@@ -482,19 +420,20 @@ QueryAttributes::NewInstance(bool copy) const
 void
 QueryAttributes::SelectAll()
 {
-    Select(ID_resultsMessage,   (void *)&resultsMessage);
-    Select(ID_resultsValue,     (void *)&resultsValue);
-    Select(ID_timeStep,         (void *)&timeStep);
-    Select(ID_varTypes,         (void *)&varTypes);
-    Select(ID_pipeIndex,        (void *)&pipeIndex);
-    Select(ID_xUnits,           (void *)&xUnits);
-    Select(ID_yUnits,           (void *)&yUnits);
-    Select(ID_floatFormat,      (void *)&floatFormat);
-    Select(ID_xmlResult,        (void *)&xmlResult);
-    Select(ID_suppressOutput,   (void *)&suppressOutput);
-    Select(ID_queryInputParams, (void *)&queryInputParams);
-    Select(ID_defaultName,      (void *)&defaultName);
-    Select(ID_defaultVars,      (void *)&defaultVars);
+    Select(ID_resultsMessage,         (void *)&resultsMessage);
+    Select(ID_resultsValue,           (void *)&resultsValue);
+    Select(ID_timeStep,               (void *)&timeStep);
+    Select(ID_varTypes,               (void *)&varTypes);
+    Select(ID_pipeIndex,              (void *)&pipeIndex);
+    Select(ID_xUnits,                 (void *)&xUnits);
+    Select(ID_yUnits,                 (void *)&yUnits);
+    Select(ID_floatFormat,            (void *)&floatFormat);
+    Select(ID_xmlResult,              (void *)&xmlResult);
+    Select(ID_suppressOutput,         (void *)&suppressOutput);
+    Select(ID_queryInputParams,       (void *)&queryInputParams);
+    Select(ID_defaultName,            (void *)&defaultName);
+    Select(ID_defaultVars,            (void *)&defaultVars);
+    Select(ID_compressedResultsValue, (void *)&compressedResultsValue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -605,6 +544,12 @@ QueryAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("defaultVars", defaultVars));
     }
 
+    if(completeSave || !FieldsEqual(ID_compressedResultsValue, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("compressedResultsValue", compressedResultsValue));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -667,6 +612,8 @@ QueryAttributes::SetFromNode(DataNode *parentNode)
         SetDefaultName(node->AsString());
     if((node = searchNode->GetNode("defaultVars")) != 0)
         SetDefaultVars(node->AsStringVector());
+    if((node = searchNode->GetNode("compressedResultsValue")) != 0)
+        SetCompressedResultsValue(node->AsUnsignedCharVector());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -762,6 +709,13 @@ QueryAttributes::SetDefaultVars(const stringVector &defaultVars_)
 {
     defaultVars = defaultVars_;
     Select(ID_defaultVars, (void *)&defaultVars);
+}
+
+void
+QueryAttributes::SetCompressedResultsValue(const unsignedCharVector &compressedResultsValue_)
+{
+    compressedResultsValue = compressedResultsValue_;
+    Select(ID_compressedResultsValue, (void *)&compressedResultsValue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -906,6 +860,18 @@ QueryAttributes::GetDefaultVars()
     return defaultVars;
 }
 
+const unsignedCharVector &
+QueryAttributes::GetCompressedResultsValue() const
+{
+    return compressedResultsValue;
+}
+
+unsignedCharVector &
+QueryAttributes::GetCompressedResultsValue()
+{
+    return compressedResultsValue;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -970,6 +936,12 @@ QueryAttributes::SelectDefaultVars()
     Select(ID_defaultVars, (void *)&defaultVars);
 }
 
+void
+QueryAttributes::SelectCompressedResultsValue()
+{
+    Select(ID_compressedResultsValue, (void *)&compressedResultsValue);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -994,19 +966,20 @@ QueryAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_resultsMessage:   return "resultsMessage";
-    case ID_resultsValue:     return "resultsValue";
-    case ID_timeStep:         return "timeStep";
-    case ID_varTypes:         return "varTypes";
-    case ID_pipeIndex:        return "pipeIndex";
-    case ID_xUnits:           return "xUnits";
-    case ID_yUnits:           return "yUnits";
-    case ID_floatFormat:      return "floatFormat";
-    case ID_xmlResult:        return "xmlResult";
-    case ID_suppressOutput:   return "suppressOutput";
-    case ID_queryInputParams: return "queryInputParams";
-    case ID_defaultName:      return "defaultName";
-    case ID_defaultVars:      return "defaultVars";
+    case ID_resultsMessage:         return "resultsMessage";
+    case ID_resultsValue:           return "resultsValue";
+    case ID_timeStep:               return "timeStep";
+    case ID_varTypes:               return "varTypes";
+    case ID_pipeIndex:              return "pipeIndex";
+    case ID_xUnits:                 return "xUnits";
+    case ID_yUnits:                 return "yUnits";
+    case ID_floatFormat:            return "floatFormat";
+    case ID_xmlResult:              return "xmlResult";
+    case ID_suppressOutput:         return "suppressOutput";
+    case ID_queryInputParams:       return "queryInputParams";
+    case ID_defaultName:            return "defaultName";
+    case ID_defaultVars:            return "defaultVars";
+    case ID_compressedResultsValue: return "compressedResultsValue";
     default:  return "invalid index";
     }
 }
@@ -1031,19 +1004,20 @@ QueryAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_resultsMessage:   return FieldType_string;
-    case ID_resultsValue:     return FieldType_doubleVector;
-    case ID_timeStep:         return FieldType_int;
-    case ID_varTypes:         return FieldType_intVector;
-    case ID_pipeIndex:        return FieldType_int;
-    case ID_xUnits:           return FieldType_string;
-    case ID_yUnits:           return FieldType_string;
-    case ID_floatFormat:      return FieldType_string;
-    case ID_xmlResult:        return FieldType_string;
-    case ID_suppressOutput:   return FieldType_bool;
-    case ID_queryInputParams: return FieldType_MapNode;
-    case ID_defaultName:      return FieldType_string;
-    case ID_defaultVars:      return FieldType_stringVector;
+    case ID_resultsMessage:         return FieldType_string;
+    case ID_resultsValue:           return FieldType_doubleVector;
+    case ID_timeStep:               return FieldType_int;
+    case ID_varTypes:               return FieldType_intVector;
+    case ID_pipeIndex:              return FieldType_int;
+    case ID_xUnits:                 return FieldType_string;
+    case ID_yUnits:                 return FieldType_string;
+    case ID_floatFormat:            return FieldType_string;
+    case ID_xmlResult:              return FieldType_string;
+    case ID_suppressOutput:         return FieldType_bool;
+    case ID_queryInputParams:       return FieldType_MapNode;
+    case ID_defaultName:            return FieldType_string;
+    case ID_defaultVars:            return FieldType_stringVector;
+    case ID_compressedResultsValue: return FieldType_ucharVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1068,19 +1042,20 @@ QueryAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_resultsMessage:   return "string";
-    case ID_resultsValue:     return "doubleVector";
-    case ID_timeStep:         return "int";
-    case ID_varTypes:         return "intVector";
-    case ID_pipeIndex:        return "int";
-    case ID_xUnits:           return "string";
-    case ID_yUnits:           return "string";
-    case ID_floatFormat:      return "string";
-    case ID_xmlResult:        return "string";
-    case ID_suppressOutput:   return "bool";
-    case ID_queryInputParams: return "MapNode";
-    case ID_defaultName:      return "string";
-    case ID_defaultVars:      return "stringVector";
+    case ID_resultsMessage:         return "string";
+    case ID_resultsValue:           return "doubleVector";
+    case ID_timeStep:               return "int";
+    case ID_varTypes:               return "intVector";
+    case ID_pipeIndex:              return "int";
+    case ID_xUnits:                 return "string";
+    case ID_yUnits:                 return "string";
+    case ID_floatFormat:            return "string";
+    case ID_xmlResult:              return "string";
+    case ID_suppressOutput:         return "bool";
+    case ID_queryInputParams:       return "MapNode";
+    case ID_defaultName:            return "string";
+    case ID_defaultVars:            return "stringVector";
+    case ID_compressedResultsValue: return "ucharVector";
     default:  return "invalid index";
     }
 }
@@ -1170,6 +1145,11 @@ QueryAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_defaultVars:
         {  // new scope
         retval = (defaultVars == obj.defaultVars);
+        }
+        break;
+    case ID_compressedResultsValue:
+        {  // new scope
+        retval = (compressedResultsValue == obj.compressedResultsValue);
         }
         break;
     default: retval = false;
@@ -1267,5 +1247,131 @@ QueryAttributes::SetResultsValues(const double *vals, const int numVals)
     resultsValue.clear();
     for (i = 0; i < numVals; ++i)
         resultsValue.push_back(vals[i]);
+}
+
+void
+QueryAttributes::Compress()
+{
+    if(!resultsValue.empty())
+    {
+        compressedResultsValue.clear();
+        int level = Z_DEFAULT_COMPRESSION;
+        z_stream s;
+        memset(&s, 0, sizeof(z_stream));
+        int zret = deflateInit(&s, level);
+        if(zret == Z_OK)
+        {
+            const unsigned long currentSize = resultsValue.size() * sizeof(double);
+            compressedResultsValue.resize(currentSize, 0);
+            s.avail_in = currentSize;
+            s.next_in = (Bytef*)resultsValue.data();
+            s.avail_out = currentSize;
+            s.next_out = compressedResultsValue.data();
+            zret = deflate(&s, Z_FINISH);
+            if(zret != Z_STREAM_ERROR)
+            {
+                const unsigned long compressedSize = currentSize - s.avail_out;
+                resultsValue.clear();
+                resultsValue.resize(1, 0.);
+                compressedResultsValue.resize(compressedSize);
+            }
+            deflateEnd(&s);
+        }
+    }
+}
+
+void
+QueryAttributes::Decompress()
+{
+    // Do nothing if there is no compressed data
+    if(compressedResultsValue.empty())
+    {
+        return;
+    }
+
+    std::cout << "Inflating " << compressedResultsValue.size() << "bytes." << std::endl;
+
+    // Initialize inflation
+    z_stream zStream;
+    memset(&zStream, 0, sizeof(z_stream));
+    int zret = inflateInit(&zStream);
+    if(zret != Z_OK)
+    {
+        return;
+    }
+
+    // Guess inflated size
+    resultsValue.resize(compressedResultsValue.size());
+    unsigned long chunkSize = compressedResultsValue.size() * sizeof(double);
+    unsigned long totalBytes = 0;
+    zStream.next_in = compressedResultsValue.data();
+    zStream.avail_in = compressedResultsValue.size();
+    while(true)
+    {
+        // Inflate a chunk
+        unsigned char *ptr = static_cast<unsigned char*>(
+            static_cast<void*>(resultsValue.data()));
+        zStream.avail_out = chunkSize;
+        zStream.next_out = ptr + totalBytes;
+        zret = inflate(&zStream, Z_NO_FLUSH);
+
+        // Check if we are done
+        totalBytes += chunkSize - zStream.avail_out;
+        if(zret == Z_STREAM_END)
+        {
+            break;
+        }
+        else if(zret != Z_OK)
+        {
+            // ERROR
+            std::cout << "Failure " << zret << std::endl;
+            inflateEnd(&zStream);
+            resultsValue.clear();
+            return;
+        }
+        else
+        {
+            // Resize the vector
+            chunkSize = resultsValue.size() * sizeof(double);
+            resultsValue.resize(resultsValue.size() * 2);
+        }
+    }
+    inflateEnd(&zStream);
+    compressedResultsValue.clear();
+
+    resultsValue.resize(totalBytes / sizeof(double));
+    std::cout << "Successfully inflated to " << totalBytes << "bytes." << std::endl;
+}
+
+QueryAttributes &
+QueryAttributes::operator=(QueryAttributes &&obj)
+{
+    Move(std::move(obj));
+    return *this;
+}
+
+QueryAttributes::QueryAttributes(QueryAttributes &&obj)
+    : AttributeSubject(QueryAttributes::TypeMapFormatString)
+{
+    Move(std::move(obj));
+}
+
+void
+QueryAttributes::Move(QueryAttributes &&obj)
+{
+    resultsMessage = std::move(obj.resultsMessage);
+    resultsValue = std::move(obj.resultsValue);
+    timeStep = obj.timeStep;
+    varTypes = std::move(obj.varTypes);
+    pipeIndex = obj.pipeIndex;
+    xUnits = std::move(obj.xUnits);
+    yUnits = std::move(obj.yUnits);
+    floatFormat = std::move(obj.floatFormat);
+    xmlResult = std::move(obj.xmlResult);
+    suppressOutput = obj.suppressOutput;
+    queryInputParams = obj.queryInputParams;
+    defaultName = std::move(obj.defaultName);
+    defaultVars = std::move(obj.defaultVars);
+    compressedResultsValue = std::move(obj.compressedResultsValue);
 }
 

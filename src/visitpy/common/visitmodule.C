@@ -9610,6 +9610,7 @@ visit_GetFlattenOutput(PyObject *self, PyObject *args)
         }
     }
 
+    qa->Decompress();
     doubleVector &data = qa->GetResultsValue();
     PyObject *retval = PyDict_New();
     if(haveNodeData)

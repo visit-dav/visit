@@ -115,3 +115,141 @@ QueryAttributes::SetResultsValues(const double *vals, const int numVals)
         resultsValue.push_back(vals[i]);
 }
 
+Function: Compress
+Declaration: void Compress();
+Definition:
+void
+QueryAttributes::Compress()
+{
+    if(!resultsValue.empty())
+    {
+        compressedResultsValue.clear();
+        int level = Z_DEFAULT_COMPRESSION;
+        z_stream s;
+        memset(&s, 0, sizeof(z_stream));
+        int zret = deflateInit(&s, level);
+        if(zret == Z_OK)
+        {
+            const unsigned long currentSize = resultsValue.size() * sizeof(double);
+            compressedResultsValue.resize(currentSize, 0);
+            s.avail_in = currentSize;
+            s.next_in = (Bytef*)resultsValue.data();
+            s.avail_out = currentSize;
+            s.next_out = compressedResultsValue.data();
+            zret = deflate(&s, Z_FINISH);
+            if(zret != Z_STREAM_ERROR)
+            {
+                const unsigned long compressedSize = currentSize - s.avail_out;
+                resultsValue.clear();
+                compressedResultsValue.resize(compressedSize);
+            }
+            deflateEnd(&s);
+        }
+    }
+}
+
+
+Function: Decompress
+Declaration: void Decompress();
+Definition:
+void
+QueryAttributes::Decompress()
+{
+    // Do nothing if there is no compressed data
+    if(compressedResultsValue.empty())
+    {
+        return;
+    }
+
+    // Initialize inflation
+    z_stream zStream;
+    memset(&zStream, 0, sizeof(z_stream));
+    int zret = inflateInit(&zStream);
+    if(zret != Z_OK)
+    {
+        return;
+    }
+
+    // Guess inflated size
+    resultsValue.resize(compressedResultsValue.size());
+    unsigned long chunkSize = compressedResultsValue.size() * sizeof(double);
+    unsigned long totalBytes = 0;
+    zStream.next_in = compressedResultsValue.data();
+    zStream.avail_in = compressedResultsValue.size();
+    while(true)
+    {
+        // Inflate a chunk
+        unsigned char *ptr = static_cast<unsigned char*>(
+            static_cast<void*>(resultsValue.data()));
+        zStream.avail_out = chunkSize;
+        zStream.next_out = ptr + totalBytes;
+        zret = inflate(&zStream, Z_NO_FLUSH);
+        if(zret != Z_OK && zret != Z_STREAM_END)
+        {
+            // ERROR
+            std::cout << "Failure " << zret << std::endl;
+            inflateEnd(&zStream);
+            resultsValue.clear();
+            return;
+        }
+
+        // Check if we are done
+        totalBytes += chunkSize - zStream.avail_out;
+        if(zStream.avail_out == 0)
+        {
+            break;
+        }
+        else
+        {
+            // Resize the vector
+            chunkSize = resultsValue.size() * sizeof(double);
+            resultsValue.resize(resultsValue.size() * 2);
+        }
+    }
+    inflateEnd(&zStream);
+    compressedResultsValue.clear();
+
+    resultsValue.resize(totalBytes / sizeof(double));
+}
+
+Function: Move Assignment
+Declaration: QueryAttributes &operator=(QueryAttributes&&);
+Definition:
+QueryAttributes &
+QueryAttributes::operator=(QueryAttributes &&obj)
+{
+    Move(std::move(obj));
+    return *this;
+}
+
+Function: Move Constructor
+Declaration: QueryAttributes(QueryAttributes&&);
+Definition:
+QueryAttributes::QueryAttributes(QueryAttributes &&obj)
+    : AttributeSubject(QueryAttributes::TypeMapFormatString)
+{
+    Move(std::move(obj));
+}
+
+Function: Move
+Declaration: void Move(QueryAttributes&&);
+Definition:
+void
+QueryAttributes::Move(QueryAttributes &&obj)
+{
+    resultsMessage = std::move(obj.resultsMessage);
+    resultsValue = std::move(obj.resultsValue);
+    timeStep = obj.timeStep;
+    varTypes = std::move(obj.varTypes);
+    pipeIndex = obj.pipeIndex;
+    xUnits = std::move(obj.xUnits);
+    yUnits = std::move(obj.yUnits);
+    floatFormat = std::move(obj.floatFormat);
+    xmlResult = std::move(obj.xmlResult);
+    suppressOutput = obj.suppressOutput;
+    queryInputParams = obj.queryInputParams;
+    defaultName = std::move(obj.defaultName);
+    defaultVars = std::move(obj.defaultVars);
+    compressedResultsValue = std::move(obj.compressedResultsValue);
+}
+
