@@ -36,7 +36,6 @@
 #include <QvisColorTableButton.h>
 
 #include <VolumeAttributes.h>
-#include <VolumeRLEFunctions.h>
 #include <ColorControlPoint.h>
 #include <GaussianControlPoint.h>
 #include <ViewerProxy.h>

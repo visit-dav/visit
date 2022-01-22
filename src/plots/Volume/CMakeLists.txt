@@ -28,7 +28,6 @@ SET(LIBV_SOURCES
 VolumeViewerEnginePluginInfo.C
 VolumeViewerPluginInfo.C
 avtVolumePlot.C
-VolumeRLEFunctions.C
 avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
@@ -39,7 +38,6 @@ SET(LIBE_SOURCES
 VolumeViewerEnginePluginInfo.C
 VolumeEnginePluginInfo.C
 avtVolumePlot.C
-VolumeRLEFunctions.C
 avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
