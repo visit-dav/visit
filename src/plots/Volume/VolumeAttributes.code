@@ -98,6 +98,8 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
             return true;
         if(resampleTarget != obj.resampleTarget)
             return true;
+        if(resampleCentering != obj.resampleCentering)
+            return true;
 
         if(useColorVarMin != obj.useColorVarMin)
             return true;
