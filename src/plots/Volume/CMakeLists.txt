@@ -28,12 +28,10 @@ SET(LIBV_SOURCES
 VolumeViewerEnginePluginInfo.C
 VolumeViewerPluginInfo.C
 avtVolumePlot.C
-VolumeFunctions.C
 VolumeRLEFunctions.C
 avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
-avtDefaultRenderer.C
 ${COMMON_SOURCES}
 )
 
@@ -41,12 +39,10 @@ SET(LIBE_SOURCES
 VolumeViewerEnginePluginInfo.C
 VolumeEnginePluginInfo.C
 avtVolumePlot.C
-VolumeFunctions.C
 VolumeRLEFunctions.C
 avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
-avtDefaultRenderer.C
 ${COMMON_SOURCES}
 )
 

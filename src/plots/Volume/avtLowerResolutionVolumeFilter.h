@@ -41,15 +41,19 @@ class avtLowerResolutionVolumeFilter : public avtPluginDataTreeIterator
                                   { return "Scaling data, creating histograms"; };
   protected:
     VolumeAttributes         atts;
-    float                   *hist;
-    int                      hist_size;
+    float                   *hist{nullptr};
+    int                      hist_size{256};
 
+    void                     LogTransform(vtkDataArray *linear,
+                                          vtkDataArray *log);
+    void                     SkewTransform(vtkDataArray *linear,
+                                           vtkDataArray *log);
     void                     CalculateHistograms(vtkDataSet *ds);
+
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void             PostExecute();
     virtual bool             FilterUnderstandsTransformedRectMesh();
 };
-
 
 #endif
 

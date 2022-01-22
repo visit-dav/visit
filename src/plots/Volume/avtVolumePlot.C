@@ -248,8 +248,10 @@ void
 avtVolumePlot::SetAtts(const AttributeGroup *a)
 {
     renderer->SetAtts(a);
+
     needsRecalculation =
         atts.ChangesRequireRecalculation(*(const VolumeAttributes*)a);
+
     atts = *(const VolumeAttributes*)a;
 
     SetLegendOpacities();
@@ -257,15 +259,19 @@ avtVolumePlot::SetAtts(const AttributeGroup *a)
     double min = 0., max = 1.;
     if (*(mapper->GetInput()) != nullptr)
         mapper->GetRange(min, max);
+
     if (atts.GetUseColorVarMin())
     {
         min = atts.GetColorVarMin();
     }
+
     if (atts.GetUseColorVarMax())
     {
         max = atts.GetColorVarMax();
     }
+
     varLegend->SetRange(min, max);
+
     if (atts.GetScaling() == VolumeAttributes::Linear)
         varLegend->SetScaling(0);
     else if (atts.GetScaling() == VolumeAttributes::Log)
@@ -628,7 +634,6 @@ bool DataMustBeResampled(avtDataObject_p input)
 //    do it).  This will allow for the volume plot to work on variables
 //    that are created mid-pipeline.
 //
-//
 //    Cyrus Harrison, Tue Mar 12 16:30:45 PDT 2013
 //    Don't calc gradient for raycasting integration, lighting isn't applied
 //    for this case.
@@ -717,10 +722,12 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         volumeFilter->SetInput(dob);
         dob = volumeFilter->GetOutput();
     }
-    // Non ray casting pipeline
+    // Serial rendering
     else //if (atts.GetRendererType() == VolumeAttributes::Serial)
 
     {
+        const avtDataAttributes &datts = input->GetInfo().GetAttributes();
+
         if( atts.GetResampleType() != VolumeAttributes::OnlyIfRequired &&
             atts.GetResampleType() != VolumeAttributes::SingleDomain )
         {
@@ -741,8 +748,23 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             resampleAtts.SetPrefersPowersOfTwo(true);
             resampleAtts.SetUseTargetVal(true);
 
+            bool dataCellCentering = false;
+            if( atts.GetResampleCentering() )
+            {
+                dataCellCentering =
+                    atts.GetResampleCentering() == VolumeAttributes::CellCentering;
+            }
+            else
+            {
+                avtCallback::IssueWarning("Resampling but 'Maintain' centering "
+                    "was selected. For serial rendering 'Point' or 'Cell' "
+                    "centering should explicity be set. Defaulting to 'Point' "
+                    "centering.");
+            }
+
             resampleFilter = new avtResampleFilter(&resampleAtts);
             resampleFilter->SetInput(input);
+            resampleFilter->MakeOutputCellCentered( dataCellCentering );
 
             dob = resampleFilter->GetOutput();
         }
@@ -832,7 +854,7 @@ avtVolumePlot::EnhanceSpecification(avtContract_p spec)
     std::string ov = atts.GetOpacityVariable();
     if (ov == "default")
     {
-      if(atts.GetResampleType() != VolumeAttributes::OnlyIfRequired)
+        if(atts.GetResampleType() != VolumeAttributes::OnlyIfRequired)
             return spec;
     }
     avtDataRequest_p ds = spec->GetDataRequest();
@@ -921,9 +943,11 @@ avtVolumePlot::Equivalent(const AttributeGroup *a)
     // different is okay!
     if (atts.GetResampleType() != objAtts->GetResampleType())
         return false;
-    if (atts.GetOpacityVariable() != objAtts->GetOpacityVariable())
-        return false;
     if (atts.GetResampleTarget() != objAtts->GetResampleTarget())
+        return false;
+    if (atts.GetResampleCentering() != objAtts->GetResampleCentering())
+        return false;
+    if (atts.GetOpacityVariable() != objAtts->GetOpacityVariable())
         return false;
     return true;
 }
