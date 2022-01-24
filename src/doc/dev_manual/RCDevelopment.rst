@@ -83,11 +83,13 @@ and locally. ::
 Apply the same changes to develop
 ---------------------------------
 
-Typically, the same changes applied to the release candidate then also need to be applied to ``develop``.
+Typically, the same changes applied to the release candidate also need to be applied to ``develop``.
 This is not always the case however.
 Some changes are made only for the release candidate and should never get applied to ``develop``.
-If this is the case, make sure that the PR to the release candidate includes a comment, either in the initial PR comment or in a comment at the end of the conversation on the PR, that the work is not to be applied to ``develop``.
-If the PR for the release candidate is already merged and closed, you can still add a comment indicating it should not be applied to ``develop``.
+Our practice is to require the *last* comment in every pull request to the release candidate to include a remark indicating either that the PR was not applied to ``develop`` or that the PR was applied to ``develop`` along with the commit in which it was applied to ``develop``.
+Typically, the PR for the release candidate has already been closed when this comment needs to be added.
+This is fine.
+Developers can still add this comment to a PR when it is in a closed state.
 
 You will apply your changes from the 3.0RC to develop by creating a patch
 of your changes to the 3.0RC and applying them to a branch created off of
