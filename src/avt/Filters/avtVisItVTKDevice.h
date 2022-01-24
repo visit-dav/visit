@@ -210,7 +210,7 @@ protected:
     std::string                 m_gradientVarName{"default"};
 
 private:
-    enum ResampleReason
+    enum ResampleReason // Must match avtVolumePLot.h
     {
         NoResampling       = 0x0,
         MutlipleDatasets   = 0x1,
