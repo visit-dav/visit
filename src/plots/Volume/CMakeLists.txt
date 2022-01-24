@@ -96,6 +96,11 @@ ADD_LIBRARY(IVolumePlot ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IVolumePlot visitcommon)
 SET(INSTALLTARGETS IVolumePlot)
 
+set(vol_autoinits VTK::RenderingVolumeOpenGL2)
+if(TARGET VTK::RenderingRayTracing)
+    list(APPEND vol_autoinits VTK::RenderingRayTracing)
+endif()
+
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     QT_WRAP_CPP(GVolumePlot LIBG_SOURCES ${LIBG_MOC_SOURCES})
     ADD_LIBRARY(GVolumePlot ${LIBG_SOURCES})
@@ -103,11 +108,10 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 
     ADD_LIBRARY(VVolumePlot ${LIBV_SOURCES})
     TARGET_LINK_LIBRARIES(VVolumePlot visitcommon viewer VTK::RenderingVolumeOpenGL2)
-    vtk_module_autoinit(TARGETS VVolumePlot MODULES VTK::RenderingVolumeOpenGL2)
     if(TARGET  VTK::RenderingRayTracing )
         target_link_libraries(VVolumePlot VTK::RenderingRayTracing)
-        vtk_module_autoinit(TARGETS VVolumePlot MODULES VTK::RenderingRayTracing)
     endif()
+    vtk_module_autoinit(TARGETS VVolumePlot MODULES ${vol_autoinits})
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GVolumePlot VVolumePlot)
 
@@ -136,11 +140,10 @@ ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_D
 
 ADD_LIBRARY(EVolumePlot_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtplotter_ser avtpipeline_ser avtexpressions_ser VTK::RenderingVolumeOpenGL2)
-vtk_module_autoinit(TARGETS EVolumePlot_ser MODULES VTK::RenderingVolumeOpenGL2)
 if(TARGET  VTK::RenderingRayTracing)
     target_link_libraries(EVolumePlot_ser VTK::RenderingRayTracing)
-    vtk_module_autoinit(TARGETS EVolumePlot_ser MODULES VTK::RenderingRayTracing)
 endif()
+vtk_module_autoinit(TARGETS EVolumePlot_ser MODULES ${vol_autoinits})
 
 SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_ser)
 ADD_TARGET_DEFINITIONS(EVolumePlot_ser ENGINE)
@@ -148,15 +151,16 @@ ADD_TARGET_DEFINITIONS(EVolumePlot_ser ENGINE)
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVolumePlot_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtplotter_par avtpipeline_par avtexpressions_par VTK::RenderingVolumeOpenGL2)
-    vtk_module_autoinit(TARGETS EVolumePlot_par MODULES VTK::RenderingVolumeOpenGL2)
     if(TARGET  VTK::RenderingRayTracing)
         target_link_libraries(EVolumePlot_par VTK::RenderingRayTracing)
-        vtk_module_autoinit(TARGETS EVolumePlot_par MODULES VTK::RenderingRayTracing)
     endif()
+    vtk_module_autoinit(TARGETS EVolumePlot_par MODULES ${vol_autoinits})
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_par)
     ADD_TARGET_DEFINITIONS(EVolumePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)
+
+unset(vol_autoinits)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
 VISIT_PLUGIN_TARGET_RTOD(plots ${INSTALLTARGETS})
