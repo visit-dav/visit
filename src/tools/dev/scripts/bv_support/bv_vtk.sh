@@ -795,7 +795,7 @@ function apply_libxmlversionheader_patch
 *** ThirdParty/libxml2/vtklibxml2/CMakeLists.txt.orig	Wed Jan 12 11:24:42 2022
 --- ThirdParty/libxml2/vtklibxml2/CMakeLists.txt	Wed Jan 12 11:25:57 2022
 ***************
-*** 771,785 ****
+*** 771,779 ****
   endif ()
   
   configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
@@ -805,28 +805,16 @@ function apply_libxmlversionheader_patch
   
   if(MSVC)
   	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
-! 	if (FALSE) # XXX(kitware): mask installation rules
-! 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlwin32version.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml COMPONENT development)
-! 	endif ()
-  endif()
-  
-  if(LIBXML2_WITH_PYTHON)
---- 771,785 ----
+--- 771,779 ----
   endif ()
   
   configure_file(include/libxml/xmlversion.h.in include/libxml/xmlversion.h)
 ! #if (FALSE) # XXX(kitware): mask installation rules
-! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml)
+! install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/libxml/xmlversion.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml)
 ! #endif ()
   
   if(MSVC)
   	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
-! 	#if (FALSE) # XXX(kitware): mask installation rules
-! 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libxml/xmlwin32version.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxml2/libxml)
-! 	#endif ()
-  endif()
-  
-  if(LIBXML2_WITH_PYTHON)
 
 EOF
     if [[ $? != 0 ]] ; then
