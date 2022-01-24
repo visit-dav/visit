@@ -112,6 +112,14 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual bool        ManagesOwnTransparency(void);
 
   protected:
+    enum ResampleReason // Must match avtVolumePLot.h
+    {
+        NoResampling       = 0x0,
+        MutlipleDatasets   = 0x1,
+        NonRectilinearGrid = 0x2,
+        DifferentCentering = 0x4
+    };
+
     VolumeAttributes                atts;
     avtLowerResolutionVolumeFilter *lowResVolumeFilter {nullptr};
     avtVolumeFilter                *volumeFilter {nullptr};
@@ -133,6 +141,8 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual avtLegend_p      GetLegend(void) { return varLegendRefPtr; };
     void                     SetLegendOpacities();
     virtual avtContract_p    EnhanceSpecification(avtContract_p);
+
+    int                      DataMustBeResampled(avtDataObject_p);
 };
 
 #endif

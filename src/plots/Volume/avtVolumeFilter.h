@@ -34,7 +34,7 @@ class     WindowAttributes;
 //    Hank Childs, Wed Nov 24 16:21:39 PST 2004
 //    Changed inheritance hierarchy.  This filter now simply does software
 //    volume rendering and is used by the volume plot.  It is the interface
-//    from the volume plot to the ray tracer.  Also removed many support 
+//    from the volume plot to the ray tracer.  Also removed many support
 //    methods that are no longer necessary since this filter doesn't switch
 //    between multiple modes.
 //
@@ -58,7 +58,7 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
                                   { return "Volume rendering"; };
 
     avtImage_p               RenderImage(avtImage_p, const WindowAttributes &);
-    
+
     avtImage_p               RenderImageRayCasting(avtImage_p,
                                                    const WindowAttributes &);
 
@@ -71,9 +71,13 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
     avtOpacityMap            CreateOpacityMap(double range[2]);
 
     int                      GetRenderVariables( int  &primIndex,
-						 int  &opacIndex,
-						 int  &gradIndex,
-						 char *gradName );
+                                                 int  &opacIndex,
+                                                 int  &gradIndex,
+                                                 char *gradName );
+    bool                     GetLogicalBounds(avtDataObject_p input,
+                                              int &width,
+                                              int &height,
+                                              int &depth);
 
     virtual void             Execute(void);
     virtual avtContract_p    ModifyContract(avtContract_p);
@@ -82,5 +86,3 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
 };
 
 #endif
-
-

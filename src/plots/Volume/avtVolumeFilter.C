@@ -15,6 +15,7 @@
 
 #include <avtCommonDataFunctions.h>
 #include <avtCompositeRF.h>
+#include <avtDatabaseMetaData.h>
 #include <avtDatasetExaminer.h>
 #include <avtFlatLighting.h>
 #include <avtIntegrationRF.h>
@@ -211,8 +212,8 @@ avtVolumeFilter::Execute(void)
                                               numvals_in))
 
     {
-      debug1 << "CalculateHistogram failed for "
-             << primaryVariable << std::endl;
+        debug1 << "CalculateHistogram failed for "
+               << primaryVariable << std::endl;
     }
 
     // Get the global histograms acrosss all ranks.
@@ -363,9 +364,42 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
     return om;
 }
 
-extern bool GetLogicalBounds(avtDataObject_p input,
-                             int &width,int &height, int &depth);
+// ****************************************************************************
+//  Method: GetLogicalBounds
+//
+//  Purpose:
+//      Added for no resampling for VTK_RECTILINEAR_GRID data of more
+//      than 1 leaf.
+//
+// ****************************************************************************
 
+bool
+avtVolumeFilter::GetLogicalBounds(avtDataObject_p input,
+                                  int &width,int &height, int &depth)
+{
+    const avtDataAttributes &datts = input->GetInfo().GetAttributes();
+    std::string db = input->GetInfo().GetAttributes().GetFullDBName();
+
+    debug5<<"datts->GetTime(): "<<datts.GetTime()<<endl;
+    debug5<<"datts->GetTimeIndex(): "<<datts.GetTimeIndex()<<endl;
+    debug5<<"datts->GetCycle(): "<<datts.GetCycle()<<endl;
+
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), nullptr);
+    avtDatabaseMetaData *md = dbp->GetMetaData(datts.GetTimeIndex(), 1);
+    std::string mesh = md->MeshForVar(datts.GetVariableName());
+    const avtMeshMetaData *mmd = md->GetMesh(mesh);
+
+    if (mmd->hasLogicalBounds == true)
+    {
+        width=mmd->logicalBounds[0];
+        height=mmd->logicalBounds[1];
+        depth=mmd->logicalBounds[2];
+
+        return true;
+    }
+
+    return false;
+}
 
 // ****************************************************************************
 //  Method: avtVolumeFilter::GetRenderVariables

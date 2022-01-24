@@ -436,23 +436,8 @@ avtVolumePlot::GetMapper(void)
 //
 //  Modifications:
 //
-//    Jeremy Meredith, Fri Apr  6 10:56:18 PDT 2001
-//    Made it use a 50k target point value so we are guaranteed square voxels.
-//
-//    Hank Childs, Fri Jun 15 09:16:54 PDT 2001
-//    Use more general data objects as input and output.
-//
-//    Jeremy Meredith, Tue Nov 13 11:45:10 PST 2001
-//    Added setting of target value from the plot attributes.
-//
-//    Hank Childs, Tue Nov 20 17:45:22 PST 2001
-//    Add volume filter as an implied operator.
-//
 //    Hank Childs, Fri Feb  8 19:35:50 PST 2002
 //    Add shift centering as an implied operator.
-//
-//    Hank Childs, Wed Nov 24 17:03:44 PST 2004
-//    No longer apply the volume filter as an operator.
 //
 //    Sean Ahern, Wed Sep 10 13:25:54 EDT 2008
 //    For ease of code reading and maintenance, I forced the
@@ -488,41 +473,6 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
     return dob;
 }
 
-
-// ****************************************************************************
-//  Method: GetLogicalBounds
-//
-//  Purpose:
-//      Added for no resampling for VTK_RECTILINEAR_GRID data of more than 1 leaf
-//
-// ****************************************************************************
-
-bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth)
-{
-    const avtDataAttributes &datts = input->GetInfo().GetAttributes();
-    std::string db = input->GetInfo().GetAttributes().GetFullDBName();
-
-    debug5<<"datts->GetTime(): "<<datts.GetTime()<<endl;
-    debug5<<"datts->GetTimeIndex(): "<<datts.GetTimeIndex()<<endl;
-    debug5<<"datts->GetCycle(): "<<datts.GetCycle()<<endl;
-
-    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), nullptr);
-    avtDatabaseMetaData *md = dbp->GetMetaData(datts.GetTimeIndex(), 1);
-    std::string mesh = md->MeshForVar(datts.GetVariableName());
-    const avtMeshMetaData *mmd = md->GetMesh(mesh);
-
-    if (mmd->hasLogicalBounds == true)
-    {
-        width=mmd->logicalBounds[0];
-        height=mmd->logicalBounds[1];
-        depth=mmd->logicalBounds[2];
-
-        return true;
-    }
-
-    return false;
-}
-
 // ****************************************************************************
 //  Method: avtVolumePlot::DataMustBeResampled
 //
@@ -552,16 +502,20 @@ bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth)
 //
 // ****************************************************************************
 
-bool DataMustBeResampled(avtDataObject_p input)
+int
+avtVolumePlot::DataMustBeResampled(avtDataObject_p input)
 {
+    int resampling = NoResampling;
+
     //
-    // Unless we have a single domain rectilinear mesh,
-    // we must resample.
+    // Unless the input data is a single domain rectilinear mesh,
+    // with both the color and opacity data having the same centering,
+    // the data must be resampled.
     //
     avtMeshType mt = input->GetInfo().GetAttributes().GetMeshType();
     if (mt != AVT_RECTILINEAR_MESH)
     {
-        return true;
+        resampling |= NonRectilinearGrid;
     }
 
     const avtDataAttributes &datts = input->GetInfo().GetAttributes();
@@ -577,8 +531,7 @@ bool DataMustBeResampled(avtDataObject_p input)
          // onto a single domain.
          //
          if (md->GetNDomains(datts.GetVariableName()) > 1)
-             return true;
-         return false;
+             resampling |= MutlipleDatasets;
     }
     catch(...)
     {
@@ -586,8 +539,37 @@ bool DataMustBeResampled(avtDataObject_p input)
         // We don't know how many domains we have... resample to
         // be safe.
         //
-        return true;
+        resampling |= MutlipleDatasets;
     }
+
+    // If the opacity variable is different from the avtice variable
+    // check the centering.
+    std::string  activeVariable = input->GetInfo().GetAttributes().GetVariableName();
+    std::string opacityVariable = atts.GetOpacityVariable();
+
+    if( opacityVariable != "default" && opacityVariable != activeVariable )
+    {
+        if (input->GetInfo().GetAttributes().ValidVariable( activeVariable.c_str()) &&
+            input->GetInfo().GetAttributes().ValidVariable(opacityVariable.c_str()))
+        {
+            if(input->GetInfo().GetAttributes().GetCentering( activeVariable.c_str()) !=
+               input->GetInfo().GetAttributes().GetCentering(opacityVariable.c_str()))
+            resampling |= DifferentCentering;
+        }
+        else
+        {
+            std::string msg("Could not determine the variable centering for ");
+
+            msg += activeVariable +" and/or " +
+                opacityVariable + " so resampling.";
+
+            avtCallback::IssueWarning(msg.c_str());
+
+            resampling |= DifferentCentering;
+        }
+    }
+
+    return resampling;
 }
 
 // ****************************************************************************
@@ -682,8 +664,8 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         atts.GetRendererType() == VolumeAttributes::Parallel)
     {
 #ifdef ENGINE
-        // The gradient calc for ray casting integration not needed,
-        // but lighting flag may still be on
+        // The gradient calc for ray casting compostie is needed when
+        // the lighting flag.
         if (atts.GetRendererType() == VolumeAttributes::Composite &&
             atts.GetLightingFlag())
         {
@@ -724,9 +706,14 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     }
     // Serial rendering
     else //if (atts.GetRendererType() == VolumeAttributes::Serial)
-
     {
         const avtDataAttributes &datts = input->GetInfo().GetAttributes();
+
+	// Only check for required resampling if there is no user
+	// resampling.
+        int userResample = atts.GetResampleType();
+        int mustResample =
+            userResample ? NoResampling : DataMustBeResampled(input);
 
         if( atts.GetResampleType() != VolumeAttributes::OnlyIfRequired &&
             atts.GetResampleType() != VolumeAttributes::SingleDomain )
@@ -734,11 +721,64 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             avtCallback::IssueWarning("Performing 'Serial Rendering' but a parallel resampling was selected. Single domain sampling will be performed.");
         }
 
+        // If the data must be resampled and user did not request
+        // resampling report a warning so the user knows the data has
+        // been resampled.
+        if( mustResample && !userResample )
+        {
+            std::string msg("The data must be resampled because ");
+
+            if( mustResample & MutlipleDatasets )
+            {
+                msg += "each rank has more than one data set";
+
+                if( mustResample & (NonRectilinearGrid | DifferentCentering))
+                  msg += ", and ";
+            }
+
+            if( mustResample & NonRectilinearGrid )
+            {
+                msg += "the data is not on a rectilinear grid";
+
+                if( mustResample & DifferentCentering)
+                  msg += ", and ";
+            }
+
+            if( mustResample & DifferentCentering)
+            {
+                msg += "the data and opacity have different centering";
+            }
+
+            msg += ". The data and if needed the opacity have been resampled "
+	        "on to a single rectilinear grid.";
+
+            avtCallback::IssueWarning(msg.c_str());
+        }
+
         // User can force resampling - for the serial renderer
         // everything is sampled on to a single grid.
-        if (DataMustBeResampled(input) ||
-            atts.GetResampleType() != VolumeAttributes::OnlyIfRequired)
+        if ( mustResample || userResample )
         {
+            // If the user selected a specific centering use
+            // it. Otherwise use the centering from the color data.
+            bool dataCellCentering = false;
+
+            if( atts.GetResampleCentering() )
+            {
+                dataCellCentering =
+                    atts.GetResampleCentering() == VolumeAttributes::CellCentering;
+            }
+            else
+            {
+                std::string activeVariable =
+                    input->GetInfo().GetAttributes().GetVariableName();
+
+                if (input->GetInfo().GetAttributes().ValidVariable( activeVariable.c_str()))
+                {
+                    dataCellCentering = (input->GetInfo().GetAttributes().GetCentering( activeVariable.c_str()) == AVT_ZONECENT);
+                }
+            }
+
             //
             // Resample the data
             //
@@ -747,20 +787,6 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             resampleAtts.SetTargetVal(atts.GetResampleTarget());
             resampleAtts.SetPrefersPowersOfTwo(true);
             resampleAtts.SetUseTargetVal(true);
-
-            bool dataCellCentering = false;
-            if( atts.GetResampleCentering() )
-            {
-                dataCellCentering =
-                    atts.GetResampleCentering() == VolumeAttributes::CellCentering;
-            }
-            else
-            {
-                avtCallback::IssueWarning("Resampling but 'Maintain' centering "
-                    "was selected. For serial rendering 'Point' or 'Cell' "
-                    "centering should explicity be set. Defaulting to 'Point' "
-                    "centering.");
-            }
 
             resampleFilter = new avtResampleFilter(&resampleAtts);
             resampleFilter->SetInput(input);

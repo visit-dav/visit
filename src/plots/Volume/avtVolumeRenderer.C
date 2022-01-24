@@ -157,8 +157,7 @@ avtVolumeRenderer::SetAtts(const AttributeGroup *a)
 //  Method:  avtVolumeRenderer::Render
 //
 //  Purpose:
-//    Set up things necessary to call the renderer implentation.  Make a new
-//    implementation object if things have changed.
+//    Does the actual rendering.
 //
 //  Arguments:
 //    ds         The dataset to render

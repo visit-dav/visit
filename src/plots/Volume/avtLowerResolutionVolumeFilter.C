@@ -72,8 +72,7 @@ avtLowerResolutionVolumeFilter::~avtLowerResolutionVolumeFilter()
 void
 avtLowerResolutionVolumeFilter::SetAtts(const AttributeGroup *a)
 {
-    VolumeAttributes *v = (VolumeAttributes *)a;
-    atts = *v;
+    atts = *(const VolumeAttributes*)a;
 }
 
 // ****************************************************************************
@@ -282,7 +281,7 @@ avtLowerResolutionVolumeFilter::CalculateHistograms(vtkDataSet *ds)
 
         hist[scalar_index] += 1.0;
 
-        if(hist[scalar_index] > hist_max)
+        if(hist_max < hist[scalar_index])
             hist_max = hist[scalar_index];
     }
 
@@ -307,16 +306,13 @@ avtLowerResolutionVolumeFilter::CalculateHistograms(vtkDataSet *ds)
 //
 // Returns:    The output data representation.
 //
-// Note:       This filter assumes that there will only be 1 domain. This is
-//             fine because we call it after the resample filter.
+// Note:       This filter assumes that there will only be 1 domain. Which
+//             is fine because it is called after the resample filter.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Dec 18 14:13:43 PST 2008
 //
 // Modifications:
-//   Brad Whitlock, Mon Aug 20 16:31:01 PDT 2012
-//   Get the color variable by passing nullptr into VolumeGetScalar.
-//
 //   Eric Brugger, Tue Aug 19 14:06:17 PDT 2014
 //   Modified the class to work with avtDataRepresentation.
 //
@@ -327,15 +323,14 @@ avtLowerResolutionVolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
     StackTimer t("avtLowerResolutionVolumeFilter::ExecuteData");
 
-    //
     // Get the VTK data set.
-    //
     vtkDataSet *ds = in_dr->GetDataVTK();
     vtkDataSet *rv = ds;
 
-    // If we're not doing linear scaling then we have to create a copy dataset
-    // whose scalars are transformed by the appropriate scaling rule.
-    if(atts.GetScaling() != VolumeAttributes::Linear)
+    // If preforming Log or Skew scaling create a copy of the dataset
+    // with scalars that are transformed by the appropriate scaling rule.
+    if (atts.GetScaling() == VolumeAttributes::Log ||
+	atts.GetScaling() == VolumeAttributes::Skew)
     {
         // Get the array that is being "scaling".
         bool cellData = false;
@@ -354,8 +349,8 @@ avtLowerResolutionVolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
             cellData = true;
         }
 
-        // Create a dataset copy and a new data array that we can store
-        // the transformed values in.
+        // Create a dataset copy and a new data array so that the
+        // transformed values can be stored in it.
         rv = ds->NewInstance();
         rv->ShallowCopy(ds);
 
@@ -363,7 +358,7 @@ avtLowerResolutionVolumeFilter::ExecuteData(avtDataRepresentation *in_dr)
         dest->SetNumberOfTuples(src->GetNumberOfTuples());
         dest->SetName(src->GetName());
 
-        // Transform the data.
+        // Transform the scalar data.
         if (atts.GetScaling() == VolumeAttributes::Log)
         {
             TRY
@@ -425,11 +420,11 @@ avtLowerResolutionVolumeFilter::PostExecute()
     if(hist == 0)
         return;
 
-    floatVector        h1;
+    floatVector h1;
     h1.reserve(hist_size);
+
     for(int i = 0; i < hist_size; ++i)
         h1.push_back(hist[i]);
-
 
     MapNode vhist;
     vhist["histogram_size"] = hist_size;
