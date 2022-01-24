@@ -9,7 +9,7 @@
 #  Modifications:
 #
 # ----------------------------------------------------------------------------
-RequiredDatabasePlugin("Xdmf")
+RequiredDatabasePlugin("Uintah")
 
 def test_particle():
     TestSection("Particle data")
