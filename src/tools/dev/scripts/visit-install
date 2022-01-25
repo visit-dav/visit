@@ -424,6 +424,11 @@
 #
 #    Mark C. Miller, Sat Aug 28 10:07:41 PDT 2021
 #    Removed all refs to visit_plugin
+#
+#    Eric Brugger, Tue Jan 25 09:53:25 PST 2022
+#    I added qtviswinExample, qtvtkExample and qvtkopenglExample to
+#    the bin directory.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -1259,7 +1264,7 @@ rm -rf distribution
 #
 # Make the symbolic links for the programs
 #
-programs="curv3dprep makemili_driver mcurvit mpeg2encode surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
+programs="curv3dprep makemili_driver mcurvit mpeg2encode qtviswinExample qtvtkExample qvtkopenglExample surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
 
 cd "$dir"/bin
 for prog in $programs; do
