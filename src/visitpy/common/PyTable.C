@@ -8,9 +8,25 @@
 
 #include <PyTable.h>
 
+// VisIt includes
+#include <DebugStream.h>
+#include <QueryAttributes.h>
 #include <Py2and3Support.h>
+#include <PyMapNode.h>
 
+// std includes
+#include <array>
 #include <iostream>
+#include <string>
+
+// For shared memory access
+#ifndef WIN32
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#endif
 
 static const char *visit_PyTable_doc =
 "PyTable\n"
@@ -42,6 +58,7 @@ struct PyTableData
     Py_ssize_t shape[2];
     Py_ssize_t strides[2];
     char format[4];
+    bool isMemMapped;
 };
 
 // ****************************************************************************
@@ -82,6 +99,16 @@ PyTableData_dealloc(PyTableData *table)
     {
         return;
     }
+
+#ifndef WIN32
+    if(table->isMemMapped)
+    {
+        munmap(table->buff, table->len);
+        debug5 << "Unmapped " << table->buff << std::endl;
+        table->buff = nullptr;
+    }
+#endif
+    // no-op on nullptr
     free(table->buff);
 }
 
@@ -274,8 +301,9 @@ SetTypeFormat<double>(char str[4])
 // ****************************************************************************
 template<typename T>
 static PyObject*
-PyTable_CreateImpl(const T *data,
-                   const long *shape)
+PyTable_CreateImpl(T *data,
+                   const unsigned long *shape,
+                   bool isMemMapped = false)
 {
     PyTableObject *obj = PyObject_New(PyTableObject, &PyTableObjectType);
     if(!obj)
@@ -285,22 +313,33 @@ PyTable_CreateImpl(const T *data,
 
     PyTableData &table = obj->table;
     table.len = sizeof(T) * shape[0] * shape[1];
-    table.buff = malloc(table.len);
-    if(!table.buff)
+    if(!isMemMapped)
     {
-        Py_DecRef((PyObject*)obj);
-        return NULL;
+        table.buff = malloc(table.len);
+        if(!table.buff)
+        {
+            Py_DecRef((PyObject*)obj);
+            return NULL;
+        }
     }
     table.itemsize = sizeof(T);
 
     typedef typename std::remove_cv<T>::type ActualType;
     SetTypeFormat<ActualType>(table.format);
 
-    memcpy(table.buff, data, table.len);
+    if(!isMemMapped)
+    {
+        memcpy(table.buff, data, table.len);
+    }
+    else
+    {
+        table.buff = data;
+    }
     table.shape[0] = shape[0];
     table.shape[1] = shape[1];
     table.strides[0] = sizeof(T) * shape[1];
     table.strides[1] = sizeof(T);
+    table.isMemMapped = isMemMapped;
     return (PyObject*)obj;
 }
 
@@ -315,8 +354,8 @@ PyTable_CreateImpl(const T *data,
 //
 // ****************************************************************************
 PyObject*
-PyTable_Create(const float *data,
-               const long *shape)
+PyTable_Create(float *data,
+               const unsigned long *shape)
 {
     return PyTable_CreateImpl<float>(data, shape);
 }
@@ -332,8 +371,259 @@ PyTable_Create(const float *data,
 //
 // ****************************************************************************
 PyObject*
-PyTable_Create(const double *data,
-               const long *shape)
+PyTable_Create(double *data,
+               const unsigned long *shape)
 {
     return PyTable_CreateImpl<double>(data, shape);
+}
+
+// ****************************************************************************
+// Function: LoadFromSharedMemory
+//
+// Purpose:
+//   Memory maps the node and zone tables from the given shared memory object.
+//   The node table pointer is returned through outPtrs[0] and zone table
+//   through outPtrs[1].
+//
+// Programmer: Chris Laganella
+// Creation:   Tue Jan 25 16:25:44 EST 2022
+//
+// ****************************************************************************
+static void
+LoadFromSharedMemory(const std::string &shmName,
+                     const std::array<bool, 2> &haveData,
+                     const std::array<unsigned long, 2> &sizes,
+                     const std::array<unsigned long, 2> &offsets,
+                     const unsigned int elemSize,
+                     std::array<void*, 2> &outPtrs)
+{
+    outPtrs[0] = outPtrs[1] = nullptr;
+#ifndef WIN32
+    debug5 << "Loading flatten data from shared memory." << std::endl;
+    int fd = shm_open(shmName.c_str(), O_RDONLY, 0);
+    if(fd == -1)
+    {
+        debug1 << "Error opening shared memory block with the name "
+            << shmName << std::endl;
+        return;
+    }
+
+    for(int i = 0; i < 2; i++)
+    {
+        // If we dont have data skip
+        if(!haveData[i])
+        {
+            continue;
+        }
+
+        outPtrs[i] = mmap(NULL, sizes[i] * elemSize, PROT_READ | PROT_WRITE,
+                            MAP_PRIVATE, fd, offsets[i] * elemSize);
+        if(outPtrs[i] == NULL || outPtrs[i] == MAP_FAILED)
+        {
+            debug1 << "Failed to mmap the shared memory block.\n"
+                << "Error string: " << strerror(errno) << std::endl;
+            outPtrs[i] = nullptr;
+        }
+    }
+
+    // Always unlink / close the shared memory block
+    shm_unlink(shmName.c_str());
+    close(fd);
+#endif
+}
+
+// ****************************************************************************
+// Function: LoadFlattenOutputData
+//
+// Purpose:
+//   Helper function for creating return value for GetFlattenOutput.
+//   Supports float or double results from Flatten.
+//
+//
+// Programmer: Chris Laganella
+// Creation:   Mon Jan 24 18:06:10 EST 2022
+//
+// ****************************************************************************
+template<typename FloatType>
+static PyObject *
+LoadFlattenOutputData(QueryAttributes &qa,
+                            const MapNode &node)
+{
+    // Check if this is the output of Flatten
+    bool haveNodeData = node.HasEntry("nodeColumnNames");
+    bool haveZoneData = node.HasEntry("zoneColumnNames");
+
+    // Get the nodeData info
+    unsigned long nodeTableShape[2] = {0, 0};
+    if(haveNodeData)
+    {
+        if(node.HasEntry("nodeTableShape"))
+        {
+            auto &temp = node.GetEntry("nodeTableShape")->AsLongVector();
+            nodeTableShape[0] = (temp[0] < 0) ? 0 : temp[0];
+            nodeTableShape[1] = (temp[1] < 0) ? 0 : temp[1];
+        }
+        else
+        {
+            haveNodeData = false;
+        }
+    }
+
+    // Get the zoneData info
+    unsigned long zoneTableShape[2] = {0, 0};
+    unsigned long zoneTableOffset = 0;
+    if(haveZoneData)
+    {
+        if(node.HasEntry("zoneTableShape"))
+        {
+            auto &temp = node.GetEntry("zoneTableShape")->AsLongVector();
+            zoneTableShape[0] = (temp[0] < 0) ? 0 : temp[0];
+            zoneTableShape[1] = (temp[1] < 0) ? 0 : temp[1];
+        }
+        else
+        {
+            haveZoneData = false;
+        }
+
+        if(node.HasEntry("zoneTableOffset"))
+        {
+            long temp = node.GetEntry("zoneTableOffset")->AsLong();
+            zoneTableOffset = (temp < 0) ? 0 : temp;
+        }
+    }
+
+    unsigned long totalSize = 0;
+    if(node.HasEntry("totalSize"))
+    {
+        long temp = node.GetEntry("totalSize")->AsLong();
+        if(temp < 0)
+        {
+            temp = 0;
+        }
+        totalSize = static_cast<unsigned long>(temp);
+    }
+
+    bool useShm = false;
+    std::string shmName("");
+    if(node.HasEntry("useSharedMemory"))
+    {
+        useShm = (bool)node.GetEntry("useSharedMemory")->AsInt();
+        if(useShm)
+        {
+            if(node.HasEntry("sharedMemoryName"))
+            {
+                shmName = node.GetEntry("sharedMemoryName")->AsString();
+            }
+            else
+            {
+                debug1 << "useSharedMemory set to true but no entry for"
+                    << "sharedMemoryName exist. Cannot build flatten output."
+                    << std::endl;
+                useShm = false;
+                haveNodeData = false;
+                haveZoneData = false;
+            }
+        }
+    }
+
+    const unsigned long buffSize = totalSize * sizeof(FloatType);
+    std::vector<FloatType> tempData;
+    std::array<void*, 2> dataPtrs = {nullptr, nullptr};
+    if(useShm)
+    {
+        const std::array<bool, 2> haveData = {haveNodeData, haveZoneData};
+        const std::array<unsigned long, 2> sizes = {
+            nodeTableShape[0]*nodeTableShape[1],
+            zoneTableShape[0]*zoneTableShape[1]
+        };
+        const std::array<unsigned long, 2> offsets = {0, zoneTableOffset};
+        LoadFromSharedMemory(shmName, haveData, sizes, offsets,
+                                sizeof(FloatType), dataPtrs);
+        haveNodeData = (dataPtrs[0] != nullptr);
+        haveZoneData = (dataPtrs[1] != nullptr);
+    }
+    else
+    {
+        tempData.resize(totalSize);
+        TRY
+            qa.Decompress(buffSize, tempData.data());
+            dataPtrs[0] = (haveNodeData) ? tempData.data() : nullptr;
+            dataPtrs[1] = (haveZoneData) ? tempData.data() + zoneTableOffset
+                                         : nullptr;
+        CATCHALL
+            debug1 << "Could not load results value from queryattributes."
+                << std::endl;
+            haveNodeData = false;
+            haveZoneData = false;
+            dataPtrs[0] = dataPtrs[1] = nullptr;
+        ENDTRY
+    }
+
+    PyObject *retval = PyDict_New();
+    if(haveNodeData)
+    {
+        FloatType *data = (FloatType*)dataPtrs[0];
+        PyObject *table = PyTable_CreateImpl<FloatType>(data, nodeTableShape, useShm);
+        PyObject *wrappedNode = PyMapNode_Wrap(*node.GetEntry("nodeColumnNames"));
+        PyDict_SetItemString(retval, "nodeTable", table);
+        PyDict_SetItemString(retval, "nodeColumnNames", wrappedNode);
+        // Remove the references held by this function.
+        Py_DecRef(table);
+        Py_DecRef(wrappedNode);
+    }
+
+    if(haveZoneData)
+    {
+        FloatType *data = (FloatType*)dataPtrs[1];
+        PyObject *table = PyTable_CreateImpl<FloatType>(data, zoneTableShape, useShm);
+        PyObject *wrappedNode = PyMapNode_Wrap(*node.GetEntry("zoneColumnNames"));
+        PyDict_SetItemString(retval, "zoneTable", table);
+        PyDict_SetItemString(retval, "zoneColumnNames", wrappedNode);
+        // Remove the references held by this function.
+        Py_DecRef(table);
+        Py_DecRef(wrappedNode);
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: PyTable_CreateFromFlattenOutput
+//
+//  Purpose:
+//      Create the return value of visit_GetFlattenOutput.
+//
+//  Programmer:   Chris Laganella
+//  Creation:     Tue Jan 25 16:04:30 EST 2022
+//
+// ****************************************************************************
+PyObject*
+PyTable_CreateFromFlattenOutput(QueryAttributes &qa)
+{
+    const MapNode node(XMLNode(qa.GetXmlResult()));
+    std::string dataType("");
+    if(node.HasEntry("dataType"))
+    {
+        const MapNode *dt = node.GetEntry("dataType");
+        if(dt->Type() == MapNode::STRING_TYPE)
+        {
+            dataType = dt->AsString();
+        }
+    }
+
+    PyObject *retval = Py_None;
+    if(dataType == "float")
+    {
+        retval = LoadFlattenOutputData<float>(qa, node);
+    }
+    else if(dataType == "double")
+    {
+        retval = LoadFlattenOutputData<double>(qa, node);
+    }
+    else
+    {
+        retval = PyDict_New();
+    }
+
+    return retval;
 }

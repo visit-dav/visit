@@ -15,11 +15,14 @@
 #
 #
 ###############################################################################
-
 try:
     import visit
 except:
     pass
+
+from itertools import starmap
+from pydoc import plain
+import sys
 
 def flatten(vars):
     """flatten(vars) -> dict
@@ -45,7 +48,12 @@ Returns:
     """
     flattenOpts = dict()
     flattenOpts["vars"] = vars
-    flattenOpts["useSharedMemory"] = 1
+
+    if (sys.platform.startswith('linux')
+            or sys.platform.startswith('darwin')):
+
+        if visit.GetPlotList().GetPlots(0).GetDatabaseName().startswith('localhost'):
+            flattenOpts["useSharedMemory"] = 1
 
     visit.Query("Flatten", flattenOpts)
     return visit.GetFlattenOutput()

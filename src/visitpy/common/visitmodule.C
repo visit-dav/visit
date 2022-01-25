@@ -30,15 +30,6 @@
 #endif
 #endif
 
-// For shared memory access
-#ifndef WIN32
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-#endif
-
 #include <visitmodulehelpers.h>
 #include <Connection.h>
 #include <Observer.h>
@@ -9573,168 +9564,6 @@ visit_GetQueryOutputObject(PyObject *self, PyObject *args)
 // Function: visit_GetQueryOutputObject
 //
 // Purpose:
-//   Helper function for creating return value for visit_GetFlattenOutput.
-//   Supports float or double results from Flatten.
-//
-//
-// Programmer: Chris Laganella
-// Creation:   Mon Jan 24 18:06:10 EST 2022
-//
-// ****************************************************************************
-template<typename FloatType>
-static PyObject *
-visit_LoadFlattenOutputData(QueryAttributes *qa, MapNode &node)
-{
-    // Check if this is the output of Flatten
-    bool haveNodeData = node.HasEntry("nodeColumnNames");
-    bool haveZoneData = node.HasEntry("zoneColumnNames");
-
-    // Get the nodeData info
-    long nodeTableShape[2] = {0, 0};
-    if(haveNodeData)
-    {
-        if(node.HasEntry("nodeTableShape"))
-        {
-            auto &temp = node["nodeTableShape"].AsLongVector();
-            nodeTableShape[0] = temp[0];
-            nodeTableShape[1] = temp[1];
-        }
-        else
-        {
-            haveNodeData = false;
-        }
-    }
-
-    // Get the zoneData info
-    long zoneTableShape[2] = {0, 0};
-    long zoneTableOffset = 0;
-    if(haveZoneData)
-    {
-        if(node.HasEntry("zoneTableShape"))
-        {
-            auto &temp = node["zoneTableShape"].AsLongVector();
-            zoneTableShape[0] = temp[0];
-            zoneTableShape[1] = temp[1];
-        }
-        else
-        {
-            haveZoneData = false;
-        }
-
-        if(node.HasEntry("zoneTableOffset"))
-        {
-            zoneTableOffset = node["zoneTableOffset"].AsLong();
-        }
-    }
-
-    unsigned long totalSize = 0;
-    if(node.HasEntry("totalSize"))
-    {
-        long temp = node["totalSize"].AsLong();
-        if(temp < 0)
-        {
-            temp = 0;
-        }
-        totalSize = static_cast<unsigned long>(temp);
-    }
-
-    bool useShm = false;
-    std::string shmName("");
-    if(node.HasEntry("useSharedMemory"))
-    {
-        useShm = (bool)node["useSharedMemory"].AsInt();
-        if(useShm)
-        {
-            if(node.HasEntry("sharedMemoryName"))
-            {
-                shmName = node["sharedMemoryName"].AsString();
-            }
-            else
-            {
-                debug1 << "useSharedMemory set to true but no entry for"
-                    << "sharedMemoryName exist. Cannot build flatten output."
-                    << std::endl;
-                useShm = false;
-                haveNodeData = false;
-                haveZoneData = false;
-            }
-        }
-    }
-
-    const unsigned long buffSize = totalSize * sizeof(FloatType);
-    std::vector<FloatType> data(totalSize);
-    if(useShm)
-    {
-#ifndef WIN32
-        int fd = shm_open(shmName.c_str(), O_RDONLY, 0);
-        if(fd == -1)
-        {
-            debug1 << "Error opening shared memory block with the name "
-                << shmName << std::endl;
-            haveNodeData = false;
-            haveZoneData = false;
-        }
-        else
-        {
-
-            void *const buff = mmap(NULL, buffSize, PROT_READ,
-                                    MAP_PRIVATE, fd, 0);
-            if(buff == NULL || buff == MAP_FAILED)
-            {
-                debug1 << "Failed to mmap the shared memory block.\n"
-                    << "Error string: " << strerror(errno) << std::endl;
-                haveNodeData = false;
-                haveZoneData = false;
-            }
-            else
-            {
-                memcpy(data.data(), buff, buffSize);
-                munmap(buff, buffSize);
-            }
-            // Always unlink / close
-            shm_unlink(shmName.c_str());
-            close(fd);
-        }
-#else
-        haveNodeData = false;
-        haveZoneData = false;
-#endif
-    }
-    else
-    {
-        qa->Decompress(buffSize, data.data());
-    }
-
-    PyObject *retval = PyDict_New();
-    if(haveNodeData)
-    {
-        PyObject *table = PyTable_Create(data.data(), nodeTableShape);
-        PyObject *wrappedNode = PyMapNode_Wrap(node["nodeColumnNames"]);
-        PyDict_SetItemString(retval, "nodeTable", table);
-        PyDict_SetItemString(retval, "nodeColumnNames", wrappedNode);
-        // Remove the references held by this function.
-        Py_DecRef(table);
-        Py_DecRef(wrappedNode);
-    }
-
-    if(haveZoneData)
-    {
-        PyObject *table = PyTable_Create(data.data() + zoneTableOffset, zoneTableShape);
-        PyObject *wrappedNode = PyMapNode_Wrap(node["zoneColumnNames"]);
-        PyDict_SetItemString(retval, "zoneTable", table);
-        PyDict_SetItemString(retval, "zoneColumnNames", wrappedNode);
-        // Remove the references held by this function.
-        Py_DecRef(table);
-        Py_DecRef(wrappedNode);
-    }
-
-    return retval;
-}
-
-// ****************************************************************************
-// Function: visit_GetQueryOutputObject
-//
-// Purpose:
 //   Inspects the current QueryAttributes to verify they contain the results
 //   of a FlattenQuery then returns the proper Python dictionary for the data.
 //
@@ -9742,6 +9571,9 @@ visit_LoadFlattenOutputData(QueryAttributes *qa, MapNode &node)
 // Programmer: Chris Laganella
 // Creation:   Mon Jan 24 18:06:10 EST 2022
 //
+// Modifications:
+// Chris Laganella, Tue Jan 25 16:05:19 EST 2022
+// I moved all the logic to PyTable.C
 // ****************************************************************************
 STATIC PyObject *
 visit_GetFlattenOutput(PyObject *self, PyObject *args)
@@ -9749,32 +9581,16 @@ visit_GetFlattenOutput(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
 
     QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
-    MapNode node(XMLNode(qa->GetXmlResult()));
 
-    std::string dataType("");
-    if(node.HasEntry("dataType"))
+    PyObject *retval = nullptr;
+    if(qa)
     {
-        MapNode *dt = node.GetEntry("dataType");
-        if(dt->Type() == MapNode::STRING_TYPE)
-        {
-            dataType = dt->AsString();
-        }
-    }
-
-    PyObject *retval = Py_None;
-    if(dataType == "float")
-    {
-        retval = visit_LoadFlattenOutputData<float>(qa, node);
-    }
-    else if(dataType == "double")
-    {
-        retval = visit_LoadFlattenOutputData<double>(qa, node);
+        retval = PyTable_CreateFromFlattenOutput(*qa);
     }
     else
     {
         retval = PyDict_New();
     }
-
     return retval;
 }
 
