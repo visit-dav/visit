@@ -23,7 +23,7 @@
 #
 # ----------------------------------------------------------------------------
 
-RequriedDatabasePlugin("OpenFOAM")
+RequiredDatabasePlugin("OpenFOAM")
 
 def OrigTests():
     OpenDatabase(data_path("OpenFOAM_test_data/bubbleColumn/system/controlDict"))
