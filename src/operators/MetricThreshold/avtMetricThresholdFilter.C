@@ -15,7 +15,6 @@
 #include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkThreshold.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtCallback.h> 

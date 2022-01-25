@@ -334,7 +334,9 @@ avtMissingDataFilter::ExecuteData(avtDataRepresentation *in_dr)
                     // Do threshold and keep all cells with value == 0.
                     vtkThreshold *thres = vtkThreshold::New();
                     thres->SetInputData(input2);
-                    thres->ThresholdBetween(-0.5, 0.5);
+                    thres->SetLowerThreshold(-0.5);
+                    thres->SetUpperThreshold(0.5);
+                    thres->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
                     if(centering == AVT_ZONECENT)
                     {
                         thres->SetInputArrayToProcess(0, 0, 0, 

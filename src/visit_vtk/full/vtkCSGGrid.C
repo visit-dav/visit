@@ -3025,7 +3025,8 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
     // Threshold out the cells for this region
     vtkThreshold *threshold = vtkThreshold::New();
     threshold->SetInputData(rv);
-    threshold->ThresholdByUpper(0.5);
+    threshold->SetUpperThreshold(0.5);
+    threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_UPPER);
     threshold->Update();
     rv = threshold->GetOutput();
     rv->Register(0);
