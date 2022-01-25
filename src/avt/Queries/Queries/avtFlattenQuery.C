@@ -30,29 +30,6 @@
 #include <errno.h>
 #endif
 
-// TODO: Remove this
-#include <execinfo.h>
-
-// TODO: Remove this
-#define PRINT_BACKTRACE(stream) \
-do { \
-    void *array[20]; \
-    char **strings; \
-    int size; \
-    size = backtrace(array, 20); \
-    strings = backtrace_symbols(array, size); \
-    if(strings) \
-    { \
-        stream << __PRETTY_FUNCTION__ << " called, backtrace:\n"; \
-        for(int i = 0; i < size; i++) \
-        { \
-            stream << "[" << i << "]: " << strings[i] << "\n"; \
-        } \
-        stream.flush(); \
-    } \
-    free(strings); \
-} while(0)
-
 const int avtFlattenQuery::NODE_DATA = 0;
 const int avtFlattenQuery::ZONE_DATA = 1;
 
@@ -163,7 +140,6 @@ avtFlattenQuery::SetInputParams(const MapNode &params)
     if(params.HasEntry("useSharedMemory"))
     {
         const MapNode *useShm = params.GetEntry("useSharedMemory");
-        std::cout << "Hello " << useShm->AsInt() << std::endl;
         if(useShm->Type() == MapNode::INT_TYPE)
         {
             useSharedMemory = useShm->AsInt();
@@ -283,8 +259,8 @@ avtFlattenQuery::PreExecute(void)
 void
 avtFlattenQuery::Execute(vtkDataSet *ds, const int chunk)
 {
-    // Unused
-    std::cout << "avtFlattenQuery::Execute(vtkDataSet*, const int)" << std::endl;
+    debug1 << "avtFlattenQuery::Execute(vtkDataSet*, const int), "
+        << "this function should never have been invoked!" << std::endl;
 }
 
 // ****************************************************************************
@@ -302,8 +278,7 @@ avtFlattenQuery::Execute(vtkDataSet *ds, const int chunk)
 void
 avtFlattenQuery::Execute(avtDataTree_p dataTree)
 {
-    std::cout << "avtFlattenQuery::Execute(avtDataTree_p)" << std::endl;
-
+    debug5 << "avtFlattenQuery::Execute(avtDataTree_p)" << std::endl;
     int nblocks = 0;
     vtkDataSet **datasets = (dataTree)
         ? dataTree->GetAllLeaves(nblocks)
@@ -352,7 +327,10 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
     if(variables.size() != varTypes.size()
         || variables.size() != varNComps.size())
     {
-        std::cout << "NOT OKAY" << std::endl;
+        // TODO: Handle this? This should never happen, cannot throw because
+        //  collective operations happen in parallel later (also can't return).
+        debug1 << "variables.size(), varTypes.size() and varNComps.size() are "
+            << "not equal! Cannot continue executing avtFlattenQuery." << std::endl;
         return;
     }
 
@@ -457,8 +435,8 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
         std::vector<floatType> globalNodeTable;
         std::vector<floatType> globalZoneTable;
 
-        std::cout << "Rank " << PAR_Rank() << " contributing (node) " << nodeData.size() << std::endl;
-        std::cout << "Rank " << PAR_Rank() << " contributing (zone) " << zoneData.size() << std::endl;
+        debug5 << "Rank " << PAR_Rank() << " contributing (node) " << nodeData.size() << std::endl;
+        debug5 << "Rank " << PAR_Rank() << " contributing (zone) " << zoneData.size() << std::endl;
 
         std::vector<int> recvCounts;
         CollectFloatVectorsOnRootProc(globalNodeTable, recvCounts, nodeData, 0);
@@ -473,8 +451,8 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
 
         if(PAR_Rank() == 0)
         {
-            std::cout << "globalNode size " << nodeSize << std::endl;
-            std::cout << "globalZone size " << zoneSize << std::endl;
+            debug5 << "globalNode size " << nodeSize << std::endl;
+            debug5 << "globalZone size " << zoneSize << std::endl;
             CombineTables(globalNodeTable, globalZoneTable, outData, fillValue);
             BuildOutputInfo(varNComps, varTypes, nodeSize, zoneSize, outInfo);
         }
@@ -496,7 +474,6 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
 void
 avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
 {
-    std::cout << "avtFlattenQuery::SetOutputQueryAtts" << std::endl;
     if(hadError)
     {
         avtDatasetQuery::SetOutputQueryAtts(qA, hadError);
@@ -505,7 +482,7 @@ avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
 
     if(PAR_Rank() == 0)
     {
-        std::cout << outInfo.ToXML() << std::endl;
+        debug5 << "avtFlattenQuery XML output:\n" << outInfo.ToXML() << std::endl;
         qA->SetXmlResult(outInfo.ToXML());
         qA->SetResultsMessage("Success!");
         if(useSharedMemory)
@@ -517,8 +494,6 @@ avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
             qA->Compress(outData.size() * sizeof(float), outData.data());
         }
     }
-    std::cout << "avtFlattenQuery - Done." << std::endl;
-    // PRINT_BACKTRACE(std::cout);
 }
 
 // ****************************************************************************
