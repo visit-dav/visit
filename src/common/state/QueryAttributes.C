@@ -1394,6 +1394,6 @@ QueryAttributes::Move(QueryAttributes &&obj)
     queryInputParams = obj.queryInputParams;
     defaultName = std::move(obj.defaultName);
     defaultVars = std::move(obj.defaultVars);
-    compressedResultsValue = std::move(obj.compressedResultsValue);
+    compressedResults = std::move(obj.compressedResults);
 }
 

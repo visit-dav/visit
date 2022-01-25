@@ -12,6 +12,7 @@
 #include <avtParallel.h>
 #include <DebugStream.h>
 #include <QueryArgumentException.h>
+#include <UnexpectedValueException.h>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -21,8 +22,18 @@
 #include <array>
 #include <cstring>
 
+#ifndef WIN32
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#endif
+
+// TODO: Remove this
 #include <execinfo.h>
 
+// TODO: Remove this
 #define PRINT_BACKTRACE(stream) \
 do { \
     void *array[20]; \
@@ -89,7 +100,8 @@ CombineTables(const std::vector<T> &nodeTable, const std::vector<T> &zoneTable,
 //
 // ****************************************************************************
 avtFlattenQuery::avtFlattenQuery()
-    : variables(), outData(), fillValue(0.), maxDataSize(5.)
+    : outInfo(), variables(), outData(), sharedMemoryName("avtFlattenQuery"),
+        fillValue(0.), maxDataSize(5.), useSharedMemory(false)
 {
     // Do nothing
 }
@@ -147,6 +159,27 @@ avtFlattenQuery::SetInputParams(const MapNode &params)
         }
     }
 
+#ifndef WIN32
+    if(params.HasEntry("useSharedMemory"))
+    {
+        const MapNode *useShm = params.GetEntry("useSharedMemory");
+        std::cout << "Hello " << useShm->AsInt() << std::endl;
+        if(useShm->Type() == MapNode::INT_TYPE)
+        {
+            useSharedMemory = useShm->AsInt();
+        }
+
+        if(useSharedMemory)
+        {
+            const MapNode *shmName = params.GetEntry("sharedMemoryName");
+            if(shmName && shmName->Type() == MapNode::STRING_TYPE)
+            {
+                sharedMemoryName = shmName->AsString();
+            }
+        }
+    }
+#endif
+
     if(variables.empty())
     {
         EXCEPTION1(QueryArgumentException, "vars");
@@ -173,6 +206,8 @@ avtFlattenQuery::GetDefaultInputParams(MapNode &params)
     params["vars"] = vars;
 
     params["fillValue"] = 0.;
+    params["useSharedMemory"] = 0;
+    params["sharedMemoryName"] = "avtFlattenQuery";
 }
 
 // ****************************************************************************
@@ -470,13 +505,17 @@ avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
 
     if(PAR_Rank() == 0)
     {
-        outInfo["totalSize"] = static_cast<long>(outData.size());
-        outInfo["dataType"] = "double";
         std::cout << outInfo.ToXML() << std::endl;
         qA->SetXmlResult(outInfo.ToXML());
         qA->SetResultsMessage("Success!");
-        qA->Compress(outData.size() * sizeof(float), outData.data());
-        qA->SelectResultsValue();
+        if(useSharedMemory)
+        {
+            WriteSharedMemory();
+        }
+        else
+        {
+            qA->Compress(outData.size() * sizeof(float), outData.data());
+        }
     }
     std::cout << "avtFlattenQuery - Done." << std::endl;
     // PRINT_BACKTRACE(std::cout);
@@ -537,4 +576,71 @@ avtFlattenQuery::BuildOutputInfo(const intVector &varNComps, const intVector &va
         outInfo["zoneTableShape"] = shape;
         outInfo["zoneTableOffset"] = nodeSize;
     }
+
+    outInfo["totalSize"] = static_cast<long>(outData.size());
+    if(std::is_same<float, floatType>::value)
+    {
+        outInfo["dataType"] = "float";
+    }
+    else
+    {
+        outInfo["dataType"] = "double";
+    }
+
+    outInfo["useSharedMemory"] = useSharedMemory;
+    if(useSharedMemory)
+    {
+        outInfo["sharedMemoryName"] = sharedMemoryName;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtFlattenQuery::WriteSharedMemory
+//
+//  Purpose:
+//      Write the results of the flatten query to shared memory.
+//
+//
+//  Programmer:   Chris Laganella
+//  Creation:     Wed Jan 19 11:57:26 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtFlattenQuery::WriteSharedMemory() const
+{
+#ifndef WIN32
+    int fd = shm_open(sharedMemoryName.c_str(),
+                        O_CREAT | O_RDWR | O_EXCL,
+                        S_IREAD | S_IWRITE);
+    if(fd == -1)
+    {
+        debug1 << "Error opening shared memory block with the name "
+            << sharedMemoryName << std::endl;
+        return;
+    }
+
+    const unsigned long shmSize = outData.size() * sizeof(floatType);
+    int err = ftruncate(fd, shmSize);
+    if(err == -1)
+    {
+        debug1 << "Could not truncate shared memory block to size "
+            << shmSize << "." << std::endl;
+        close(fd);
+        return;
+    }
+
+    void *const buff = mmap(NULL, shmSize, PROT_WRITE, MAP_SHARED, fd, 0);
+    if(buff == NULL || buff == MAP_FAILED)
+    {
+        debug1 << "Failed to mmap the shared memory block." << std::endl;
+        close(fd);
+        return;
+    }
+
+    memcpy(buff, outData.data(), shmSize);
+    munmap(buff, shmSize);
+    close(fd);
+#endif
 }

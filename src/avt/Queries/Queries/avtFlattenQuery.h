@@ -55,6 +55,7 @@ class QUERY_API avtFlattenQuery : public avtDatasetQuery
                                               const long nodeSize,
                                               const long zoneSize,
                                               MapNode &outInfo);
+    void                      WriteSharedMemory() const;
 
     using floatType = float;
     static const int NODE_DATA;
@@ -62,8 +63,10 @@ class QUERY_API avtFlattenQuery : public avtDatasetQuery
     MapNode outInfo;
     stringVector variables;
     std::vector<floatType> outData;
+    std::string sharedMemoryName;
     double fillValue;
     double maxDataSize;
+    int useSharedMemory;
 };
 
 

@@ -45,6 +45,7 @@ Returns:
     """
     flattenOpts = dict()
     flattenOpts["vars"] = vars
+    flattenOpts["useSharedMemory"] = 1
 
     visit.Query("Flatten", flattenOpts)
     return visit.GetFlattenOutput()

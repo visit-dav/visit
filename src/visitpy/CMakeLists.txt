@@ -46,6 +46,9 @@
 #
 #  Chris Laganella, Mon Jan 17 12:31:49 EST 2022
 #  Add common/PyTable.C
+#
+#  Chris Laganella, Mon Jan 24 18:12:20 EST 2022
+#  Link the cli to "rt" on non windows platforms.
 #****************************************************************************
 
 #########################################################
@@ -404,7 +407,7 @@ ${PYTHON_LIBRARIES}
 ${CMAKE_THREAD_LIBS}
 )
 IF(NOT WIN32)
-    TARGET_LINK_LIBRARIES(cli dl)
+    TARGET_LINK_LIBRARIES(cli dl rt)
     IF(NOT APPLE)
         IF(NOT AIX)
             # Is this a Python companion libary? We need it for unresolved openpty/forkpty
