@@ -26,6 +26,8 @@ class avtResampleFilter;
 class vtkImageData;
 class vtkVolumeMapper;
 
+#define MAX_LIGHTS 8
+
 namespace avt
 {
     namespace visit_vtk
@@ -130,7 +132,7 @@ public:
      // VisIt options
     void SetRenderingType(const DataType dt)    { m_dataType = dt; }
 
-    void SetLightInfo(const LightList& l)       { m_lightList = l; }
+    void SetLightList(const LightList& l)       { m_lightList = l; }
 
     void SetResampleType(const int v)           { m_renderingAttribs.resampleType = v; }
     void SetResampleTargetVal(const int v)      { m_renderingAttribs.resampleTargetVal = v; }
@@ -184,6 +186,8 @@ protected:
     std::unique_ptr<float[]>    m_materialPropertiesPtr{nullptr};
     std::unique_ptr<float[]>    m_viewDirectionPtr{nullptr};
 
+    bool                        m_imageOnThisRank{false};
+    bool                        m_needResampledData{false};
     bool                        m_useInterpolation{true};
     bool                        m_resetColorMap{true};
 
@@ -215,7 +219,8 @@ private:
         NoResampling       = 0x0,
         MutlipleDatasets   = 0x1,
         NonRectilinearGrid = 0x2,
-        DifferentCentering = 0x4
+        DifferentCentering = 0x4,
+        AttributesChanged  = 0x8
     };
     enum ResampleType // Must match VolumeAttributes.h
     {
