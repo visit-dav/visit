@@ -472,6 +472,7 @@ avtResampleFilter::ResampleInput(void)
     int numArrays = realVars;
     if (doKernel)
         numArrays++;
+
     vtkDataArray **vars = new vtkDataArray*[numArrays];
     for (i = 0 ; i < numArrays ; i++)
     {
@@ -530,7 +531,10 @@ avtResampleFilter::ResampleInput(void)
         }
     }
 
-    if ((doDistributedResample || doPerRankResample || PAR_Rank() == 0) &&
+    if ((PAR_Rank() == 0 ||       // Always have data on Rank 0.
+         doDistributedResample || // All ranks should have data.
+         (doPerRankResample &&    // Not all ranks will have data.
+          avtDatasetExaminer::HasData(ds))) &&
         (height_end <= height))
     {
         vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth,
