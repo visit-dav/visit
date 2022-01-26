@@ -730,7 +730,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
 
             if( mustResample & MutlipleDatasets )
             {
-                msg += "each rank has more than one data set";
+                msg += "each rank has more than one domain";
 
                 if( mustResample & (NonRectilinearGrid | DifferentCentering))
                   msg += ", and ";

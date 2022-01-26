@@ -441,7 +441,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
             }
         }
 
-        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
                     << " useInterpolation: "
                     << useInterpolation << "  "
                     << std::endl;
@@ -460,7 +460,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
         {
             volumeMapper = vtkOSPRayVolumeMapper::New();
 
-            LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+            LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
                         << " OSPRay Volume Mapper "
                         << std::endl;
         }
@@ -469,7 +469,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
         {
             volumeMapper = vtkGPUVolumeRayCastMapper::New();
 
-            LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+            LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
                         << " GPU Volume Ray Cast Mapper "
                         << std::endl;
         }
@@ -582,7 +582,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
         double spacing[3];
         imageToRender->GetSpacing(spacing);
 
-        double sampleDistReference = 1.0/10.0;
+        double sampleDistReference = 1.0 / 10.0;
         double averageSpacing = (spacing[0] + spacing[1] + spacing[2]) / 3.0;
         double sampleDist     = averageSpacing / sampleDistReference;
 
@@ -595,7 +595,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 #ifdef HAVE_OSPRAY
     if( atts.GetOsprayEnabledFlag() )
     {
-        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+        LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
                     << " RenderType: "
                     << (atts.GetOsprayRenderType() ? "PathTracer" : "SciVis") << "  "
                     << std::endl;

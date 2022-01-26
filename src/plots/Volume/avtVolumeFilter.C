@@ -286,17 +286,17 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
 #ifdef VISIT_SLIVR
             if (atts.GetRendererType() == VolumeAttributes::SLIVR)
             {
-              // Set the opacity map with opacity correction. This modifies
-              // the opacities though.
-              om.SetTableComposite(vtf, 256,
-                                   atts.GetOpacityAttenuation() * 2.0 - 1.0,
-                                   atts.GetRendererSamples());
+                // Set the opacity map with opacity correction. This
+                // modifies the opacities though.
+                om.SetTableComposite(vtf, 256,
+                                     atts.GetOpacityAttenuation() * 2.0 - 1.0,
+                                     atts.GetRendererSamples());
             }
             else
 #endif
             {
                 // Set the opacity map just using the transfer function.
-              om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
+                om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
             }
         }
     }
@@ -731,7 +731,7 @@ avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
         device->SetUseOpacityVarMax( atts.GetUseOpacityVarMax() );
         device->SetOpacityVarMax   ( atts.GetOpacityVarMax() );
 
-        device->SetLightInfo( window.GetLights() );
+        device->SetLightList( window.GetLights() );
         device->SetMatProperties( materialPropArray );
         device->SetViewDirection( viewDirection );
         device->SetLighting( atts.GetLightingFlag() );
