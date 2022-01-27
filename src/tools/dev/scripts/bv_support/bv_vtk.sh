@@ -823,6 +823,44 @@ EOF
     fi
 }
 
+function apply_vtkRectilinearGridReader_patch
+{
+  # patch vtkRectilinearGridReader.cxx, per this issue:
+  # https://gitlab.kitware.com/vtk/vtk/-/issues/18447
+   patch -p0 << \EOF
+*** IO/Legacy/vtkRectilinearGridReader.cxx.orig	Thu Jan 27 10:55:12 2022
+--- IO/Legacy/vtkRectilinearGridReader.cxx	Thu Jan 27 11:01:04 2022
+***************
+*** 95,101 ****
+          break;
+        }
+  
+!       if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
+        {
+          int dim[3];
+          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+--- 95,108 ----
+          break;
+        }
+  
+!       // Have to read field data because it may be binary.
+!       if (!strncmp(this->LowerCase(line), "field", 5))
+!       {
+!         vtkFieldData* fd = this->ReadFieldData();
+!         fd->Delete();
+!       }
+! 
+!       else if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
+        {
+          int dim[3];
+          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for vtkRectilinearGridReader.cxx failed."
+        return 1
+    fi
+}
+
 function apply_vtk_patch
 {
     # this needs to be reworked for 9.1.0
@@ -844,6 +882,11 @@ function apply_vtk_patch
     #fi
 
     apply_libxmlversionheader_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtkRectilinearGridReader_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
