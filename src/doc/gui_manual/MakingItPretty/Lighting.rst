@@ -119,13 +119,15 @@ lights have no direction.
 Light color and brightness
 """"""""""""""""""""""""""
 
-VisIt allows lights to have color as well as brightness. Colored lighting
-can produce interesting effects that may be desirable for presentations.
-To change the light color, click on the light **Color** button and select
-a new color from the **Color** menu. Once a color is picked, you can also
-set the brightness for the light. The brightness is essentially a knob
-that allows you to dim the light. If the brightness is set completely to
-the right then the light will have exactly the color that was picked for
-it. If the brightness is not set to full intensity then the light will be
-dimmer. You can set the brightness by adjusting the **Brightness** slider
-in the **Lighting Window**.
+VisIt_ enables the user to vary lights both in color and in brightness.
+
+.. danger:
+When plotted surface colors are used to convey important information such as the magnitude of a variable or type of material, colored lighting has the potential to profoundly skew the surface colors and should be used with great care.
+Nonetheless, colored lighting can produce interesting effects that may be desirable for purposes aiming towards photorealism.
+
+To change the light color, click on the light **Color** button and select a new color from the **Color** menu.
+Once a color is picked, you can also set the brightness for the light.
+The brightness is essentially a knob that allows you to dim the light.
+If the brightness is set completely to the right then the light will have exactly the color that was picked for it.
+If the brightness is not set to full intensity then the light will be dimmer.
+You can set the brightness by adjusting the **Brightness** slider in the **Lighting Window**.
