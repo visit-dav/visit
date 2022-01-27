@@ -929,9 +929,9 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         QLabel *resampleCenteringLabel =
           new QLabel(tr("Centering:"), resampleGroup);
         resampleCenteringComboBox = new QComboBox(resampleGroup);
-        resampleCenteringComboBox->addItem(tr("Maintain"));
-        resampleCenteringComboBox->addItem(tr("Point"));
-        resampleCenteringComboBox->addItem(tr("Cell"));
+        resampleCenteringComboBox->addItem(tr("Native"));
+        resampleCenteringComboBox->addItem(tr("Nodal"));
+        resampleCenteringComboBox->addItem(tr("Zonal"));
         connect(resampleCenteringComboBox, SIGNAL(activated(int)),
                 this, SLOT(resampleCenteringChanged(int)));
 
@@ -2041,15 +2041,15 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
         case VolumeAttributes::ID_resampleCentering:
             resampleCenteringComboBox->blockSignals(true);
 
-            if (volumeAtts->GetResampleCentering() == VolumeAttributes::MaintainCentering)
+            if (volumeAtts->GetResampleCentering() == VolumeAttributes::NativeCentering)
             {
                 resampleCenteringComboBox->setCurrentIndex(0);
             }
-            else if (volumeAtts->GetResampleCentering() == VolumeAttributes::PointCentering)
+            else if (volumeAtts->GetResampleCentering() == VolumeAttributes::NodalCentering)
             {
                 resampleCenteringComboBox->setCurrentIndex(1);
             }
-            else if (volumeAtts->GetResampleCentering() == VolumeAttributes::CellCentering)
+            else if (volumeAtts->GetResampleCentering() == VolumeAttributes::ZonalCentering)
             {
                 resampleCenteringComboBox->setCurrentIndex(2);
             }
@@ -3709,13 +3709,13 @@ QvisVolumePlotWindow::resampleCenteringChanged(int val)
     switch (val)
     {
       case 0:
-        volumeAtts->SetResampleCentering(VolumeAttributes::MaintainCentering);
+        volumeAtts->SetResampleCentering(VolumeAttributes::NativeCentering);
         break;
       case 1:
-        volumeAtts->SetResampleCentering(VolumeAttributes::PointCentering);
+        volumeAtts->SetResampleCentering(VolumeAttributes::NodalCentering);
         break;
       case 2:
-        volumeAtts->SetResampleCentering(VolumeAttributes::CellCentering);
+        volumeAtts->SetResampleCentering(VolumeAttributes::ZonalCentering);
         break;
       default:
         EXCEPTION1(ImproperUseException,

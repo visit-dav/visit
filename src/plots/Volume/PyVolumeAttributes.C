@@ -169,19 +169,19 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
 
     snprintf(tmpStr, 1000, "%sresampleTarget = %d\n", prefix, atts->GetResampleTarget());
     str += tmpStr;
-    const char *resampleCentering_names = "MaintainCentering, PointCentering, CellCentering";
+    const char *resampleCentering_names = "NativeCentering, NodalCentering, ZonalCentering";
     switch (atts->GetResampleCentering())
     {
-      case VolumeAttributes::MaintainCentering:
-          snprintf(tmpStr, 1000, "%sresampleCentering = %sMaintainCentering  # %s\n", prefix, prefix, resampleCentering_names);
+      case VolumeAttributes::NativeCentering:
+          snprintf(tmpStr, 1000, "%sresampleCentering = %sNativeCentering  # %s\n", prefix, prefix, resampleCentering_names);
           str += tmpStr;
           break;
-      case VolumeAttributes::PointCentering:
-          snprintf(tmpStr, 1000, "%sresampleCentering = %sPointCentering  # %s\n", prefix, prefix, resampleCentering_names);
+      case VolumeAttributes::NodalCentering:
+          snprintf(tmpStr, 1000, "%sresampleCentering = %sNodalCentering  # %s\n", prefix, prefix, resampleCentering_names);
           str += tmpStr;
           break;
-      case VolumeAttributes::CellCentering:
-          snprintf(tmpStr, 1000, "%sresampleCentering = %sCellCentering  # %s\n", prefix, prefix, resampleCentering_names);
+      case VolumeAttributes::ZonalCentering:
+          snprintf(tmpStr, 1000, "%sresampleCentering = %sZonalCentering  # %s\n", prefix, prefix, resampleCentering_names);
           str += tmpStr;
           break;
       default:
@@ -1686,9 +1686,9 @@ VolumeAttributes_SetResampleCentering(PyObject *self, PyObject *args)
         ss << "An invalid resampleCentering value was given." << std::endl;
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
-        ss << " MaintainCentering";
-        ss << ", PointCentering";
-        ss << ", CellCentering";
+        ss << " NativeCentering";
+        ss << ", NodalCentering";
+        ss << ", ZonalCentering";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3343,12 +3343,12 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return VolumeAttributes_GetResampleTarget(self, NULL);
     if(strcmp(name, "resampleCentering") == 0)
         return VolumeAttributes_GetResampleCentering(self, NULL);
-    if(strcmp(name, "MaintainCentering") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::MaintainCentering));
-    if(strcmp(name, "PointCentering") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::PointCentering));
-    if(strcmp(name, "CellCentering") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::CellCentering));
+    if(strcmp(name, "NativeCentering") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::NativeCentering));
+    if(strcmp(name, "NodalCentering") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::NodalCentering));
+    if(strcmp(name, "ZonalCentering") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::ZonalCentering));
 
     if(strcmp(name, "opacityVariable") == 0)
         return VolumeAttributes_GetOpacityVariable(self, NULL);

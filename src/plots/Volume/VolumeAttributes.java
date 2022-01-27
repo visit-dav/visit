@@ -41,9 +41,9 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int RESAMPLETYPE_PARALLELREDISTRIBUTE = 2;
     public final static int RESAMPLETYPE_PARALLELPERRANK = 3;
 
-    public final static int RESAMPLECENTERING_MAINTAINCENTERING = 0;
-    public final static int RESAMPLECENTERING_POINTCENTERING = 1;
-    public final static int RESAMPLECENTERING_CELLCENTERING = 2;
+    public final static int RESAMPLECENTERING_NATIVECENTERING = 0;
+    public final static int RESAMPLECENTERING_NODALCENTERING = 1;
+    public final static int RESAMPLECENTERING_ZONALCENTERING = 2;
 
     public final static int GRADIENTTYPE_CENTEREDDIFFERENCES = 0;
     public final static int GRADIENTTYPE_SOBELOPERATOR = 1;
@@ -101,7 +101,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         opacityControlPoints = new GaussianControlPointList();
         resampleType = RESAMPLETYPE_ONLYIFREQUIRED;
         resampleTarget = 1000000;
-        resampleCentering = RESAMPLECENTERING_MAINTAINCENTERING;
+        resampleCentering = RESAMPLECENTERING_NATIVECENTERING;
         opacityVariable = new String("default");
         freeformOpacity = new byte[256];
         for(int i = 0; i < 256; ++i)
@@ -158,7 +158,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         opacityControlPoints = new GaussianControlPointList();
         resampleType = RESAMPLETYPE_ONLYIFREQUIRED;
         resampleTarget = 1000000;
-        resampleCentering = RESAMPLECENTERING_MAINTAINCENTERING;
+        resampleCentering = RESAMPLECENTERING_NATIVECENTERING;
         opacityVariable = new String("default");
         freeformOpacity = new byte[256];
         for(int i = 0; i < 256; ++i)
@@ -942,12 +942,12 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + intToString("resampleTarget", resampleTarget, indent) + "\n";
         str = str + indent + "resampleCentering = ";
-        if(resampleCentering == RESAMPLECENTERING_MAINTAINCENTERING)
-            str = str + "RESAMPLECENTERING_MAINTAINCENTERING";
-        if(resampleCentering == RESAMPLECENTERING_POINTCENTERING)
-            str = str + "RESAMPLECENTERING_POINTCENTERING";
-        if(resampleCentering == RESAMPLECENTERING_CELLCENTERING)
-            str = str + "RESAMPLECENTERING_CELLCENTERING";
+        if(resampleCentering == RESAMPLECENTERING_NATIVECENTERING)
+            str = str + "RESAMPLECENTERING_NATIVECENTERING";
+        if(resampleCentering == RESAMPLECENTERING_NODALCENTERING)
+            str = str + "RESAMPLECENTERING_NODALCENTERING";
+        if(resampleCentering == RESAMPLECENTERING_ZONALCENTERING)
+            str = str + "RESAMPLECENTERING_ZONALCENTERING";
         str = str + "\n";
         str = str + stringToString("opacityVariable", opacityVariable, indent) + "\n";
         str = str + ucharArrayToString("freeformOpacity", freeformOpacity, indent) + "\n";

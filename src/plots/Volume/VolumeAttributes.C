@@ -88,7 +88,7 @@ VolumeAttributes::ResampleType_FromString(const std::string &s, VolumeAttributes
 //
 
 static const char *ResampleCentering_strings[] = {
-"MaintainCentering", "PointCentering", "CellCentering"
+"NativeCentering", "NodalCentering", "ZonalCentering"
 };
 
 std::string
@@ -109,7 +109,7 @@ VolumeAttributes::ResampleCentering_ToString(int t)
 bool
 VolumeAttributes::ResampleCentering_FromString(const std::string &s, VolumeAttributes::ResampleCentering &val)
 {
-    val = VolumeAttributes::MaintainCentering;
+    val = VolumeAttributes::NativeCentering;
     for(int i = 0; i < 3; ++i)
     {
         if(s == ResampleCentering_strings[i])
@@ -422,7 +422,7 @@ void VolumeAttributes::Init()
     opacityMode = FreeformMode;
     resampleType = OnlyIfRequired;
     resampleTarget = 1000000;
-    resampleCentering = MaintainCentering;
+    resampleCentering = NativeCentering;
     for(int i = 0; i < 256; ++i)
         freeformOpacity[i] = (unsigned char)i;
     useColorVarMin = false;

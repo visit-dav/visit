@@ -766,7 +766,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             if( atts.GetResampleCentering() )
             {
                 dataCellCentering =
-                    atts.GetResampleCentering() == VolumeAttributes::CellCentering;
+                    atts.GetResampleCentering() == VolumeAttributes::ZonalCentering;
             }
             else
             {

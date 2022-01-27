@@ -45,9 +45,9 @@ public:
     };
     enum ResampleCentering
     {
-        MaintainCentering,
-        PointCentering,
-        CellCentering
+        NativeCentering,
+        NodalCentering,
+        ZonalCentering
     };
     enum GradientType
     {

@@ -765,7 +765,7 @@ avtVisItVTKDevice::ExecuteVolume()
         // it. Otherwise use the centering from the color data.
         if( m_renderingAttribs.resampleCentering )
             dataCellCentering =
-                m_renderingAttribs.resampleCentering == CellCentering;
+                m_renderingAttribs.resampleCentering == ZonalCentering;
 
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                     << "rank: "  << PAR_Rank() << "  "

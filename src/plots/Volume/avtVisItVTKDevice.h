@@ -231,9 +231,9 @@ private:
     };
     enum ResampleCentering // Must match VolumeAttributes.h
     {
-        MaintainCentering,
+        NativeCentering,
         PointCentering,
-        CellCentering
+        ZonalCentering
     };
 
     void                 ExecuteVolume();

@@ -49,9 +49,9 @@
         ParallelPerRank
       </Enum>
       <Enum name="ResampleCentering">
-        MaintainCentering
-        PointCentering
-        CellCentering
+        NativeCentering
+        NodalCentering
+        ZonalCentering
       </Enum>
       <Enum name="GradientType">
         CenteredDifferences
@@ -153,7 +153,7 @@
         1000000
       </Field>
       <Field name="resampleCentering" label="Resample Centering" type="enum" subtype="ResampleCentering">
-        MaintainCentering
+        NativeCentering
       </Field>
       <Field name="opacityVariable" label="opacityVariable" type="variablename" vartypes="01000000000">
         default
