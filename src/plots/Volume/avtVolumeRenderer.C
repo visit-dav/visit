@@ -47,8 +47,8 @@
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-#define LOCAL_DEBUG std::cerr
-// #define LOCAL_DEBUG debug5
+// #define LOCAL_DEBUG std::cerr
+#define LOCAL_DEBUG debug5
 
 // ****************************************************************************
 //  Constructor:  avtVolumeRenderer::avtVolumeRenderer
