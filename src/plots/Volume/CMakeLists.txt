@@ -31,6 +31,9 @@ avtVolumePlot.C
 avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
+avtVisItVTKDevice.C
+avtVisItVTKRenderer.C
+avtICETCompositor.C
 ${COMMON_SOURCES}
 )
 
@@ -41,9 +44,29 @@ avtVolumePlot.C
 avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
+avtVisItVTKDevice.C
+avtVisItVTKRenderer.C
+avtICETCompositor.C
 ${COMMON_SOURCES}
 )
 
+
+IF(ICET_FOUND)
+    # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
+    # We need to link with OpenGL on Mac when we have IceT.
+    IF(APPLE)
+        SET(ICET_OPENGL ${OPENGL_gl_LIBRARY})
+    ENDIF(APPLE)
+    # Link icet libraries using absolute pathes
+    SET(ICET_FULLPATH_LIB ${ICET_OPENGL})
+    FOREACH(X ${ICET_LIB})
+        LIST(APPEND ICET_FULLPATH_LIB "${ICET_LIBRARY_DIR}/${X}")
+    ENDFOREACH()
+    # Other setups
+    INCLUDE_DIRECTORIES(${ICET_INCLUDE_DIR})
+    LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
+    ADD_DEFINITIONS(-DHAVE_ICET)
+ENDIF()
 
 IF(VISIT_PYTHON_SCRIPTING)
     SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} ${VISIT_INCLUDE_DIR}/visitpy/common ${VISIT_INCLUDE_DIR}/visitpy/visitpy)
@@ -143,17 +166,22 @@ TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtplotter_ser avtpipeline_ser
 if(TARGET  VTK::RenderingRayTracing)
     target_link_libraries(EVolumePlot_ser VTK::RenderingRayTracing)
 endif()
+IF(ICET_FOUND)
+    TARGET_LINK_LIBRARIES(EVolumePlot_ser ${ICET_FULLPATH_LIB})
+ENDIF()
 vtk_module_autoinit(TARGETS EVolumePlot_ser MODULES ${vol_autoinits})
 
 SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_ser)
 ADD_TARGET_DEFINITIONS(EVolumePlot_ser ENGINE)
-
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVolumePlot_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtplotter_par avtpipeline_par avtexpressions_par VTK::RenderingVolumeOpenGL2)
     if(TARGET  VTK::RenderingRayTracing)
         target_link_libraries(EVolumePlot_par VTK::RenderingRayTracing)
     endif()
+    IF(ICET_FOUND)
+	TARGET_LINK_LIBRARIES(EVolumePlot_par ${ICET_FULLPATH_LIB})
+    ENDIF()
     vtk_module_autoinit(TARGETS EVolumePlot_par MODULES ${vol_autoinits})
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_par)
@@ -165,4 +193,3 @@ unset(vol_autoinits)
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
 VISIT_PLUGIN_TARGET_RTOD(plots ${INSTALLTARGETS})
 VISIT_PLUGIN_TARGET_FOLDER(plots Volume ${INSTALLTARGETS})
-
