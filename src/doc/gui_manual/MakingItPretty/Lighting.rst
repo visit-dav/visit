@@ -121,7 +121,7 @@ Light color and brightness
 
 VisIt_ enables the user to vary lights both in color and in brightness.
 
-.. danger:
+.. danger::
 When plotted surface colors are used to convey important information such as the magnitude of a variable or type of material, colored lighting has the potential to profoundly skew the surface colors and should be used with great care.
 Nonetheless, colored lighting can produce interesting effects that may be desirable for purposes aiming towards photorealism.
 
