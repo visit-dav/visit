@@ -2637,7 +2637,7 @@ avtFLASHFileFormat::ReadParticleAttributes()
         // dimension if the grid exists.
         if (strcmp(member_name, "particle_x")==0 && dimension < 1)
             dimension = 1;
-        if (strcmp(member_name, "particle_t")==0 && dimension < 2)
+        if (strcmp(member_name, "particle_y")==0 && dimension < 2)
             dimension = 2;
         if (strcmp(member_name, "particle_z")==0 && dimension < 3)
             dimension = 3;
