@@ -20,6 +20,7 @@
 #include <vtkPointData.h>
 
 #include <array>
+#include <cstdint>
 #include <cstring>
 
 #ifndef WIN32
@@ -34,7 +35,7 @@ const int avtFlattenQuery::NODE_DATA = 0;
 const int avtFlattenQuery::ZONE_DATA = 1;
 
 // ****************************************************************************
-//  Function: combine_tables
+//  Function: CombineTables
 //
 //  Purpose:
 //      Helper function to combine node & zone tables.
@@ -65,6 +66,32 @@ CombineTables(const std::vector<T> &nodeTable, const std::vector<T> &zoneTable,
 }
 
 // ****************************************************************************
+//  Function: CollectVectors
+//
+//  Purpose:
+//      Helper function to invoke the proper CollectVectors MPI call
+//
+//  Programmer:   Chris Laganella
+//  Creation:     Thu Jan 27 11:24:30 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+static void
+CollectVectors(std::vector<float> &globalTable, std::vector<int> &recvCounts,
+    const std::vector<float> &localTable)
+{
+    CollectFloatVectorsOnRootProc(globalTable, recvCounts, localTable);
+}
+
+static void
+CollectVectors(std::vector<double> &globalTable, std::vector<int> &recvCounts,
+    const std::vector<double> &localTable)
+{
+    CollectDoubleVectorsOnRootProc(globalTable, recvCounts, localTable);
+}
+
+// ****************************************************************************
 //  Method: avtFlattenQuery::avtFlattenQuery
 //
 //  Purpose:
@@ -78,7 +105,7 @@ CombineTables(const std::vector<T> &nodeTable, const std::vector<T> &zoneTable,
 // ****************************************************************************
 avtFlattenQuery::avtFlattenQuery()
     : outInfo(), variables(), outData(), sharedMemoryName("avtFlattenQuery"),
-        fillValue(0.), maxDataSize(5.), useSharedMemory(false)
+        fillValue(0.), maxDataSize(1.024), useSharedMemory(false)
 {
     // Do nothing
 }
@@ -342,6 +369,8 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
         const int type = varTypes[i];
         varOffsets.push_back(tableNCol[type]);
         tableNCol[type] += varNComps[i];
+        debug5 << variables[i] << ": ncomps " << varNComps[i]
+            << ", centering " << varTypes[i] << std::endl;
     }
 
     // Sum up block sizes for both NODE_DATA and ZONE_DATA
@@ -439,12 +468,12 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
         debug5 << "Rank " << PAR_Rank() << " contributing (zone) " << zoneData.size() << std::endl;
 
         std::vector<int> recvCounts;
-        CollectFloatVectorsOnRootProc(globalNodeTable, recvCounts, nodeData, 0);
+        CollectVectors(globalNodeTable, recvCounts, nodeData);
         long nodeSize = 0;
         for(const auto count : recvCounts) nodeSize += count;
         recvCounts.clear();
 
-        CollectFloatVectorsOnRootProc(globalZoneTable, recvCounts, zoneData, 0);
+        CollectVectors(globalZoneTable, recvCounts, zoneData);
         long zoneSize = 0;
         for(const auto count : recvCounts) zoneSize += count;
         recvCounts.clear();
@@ -482,6 +511,7 @@ avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
 
     if(PAR_Rank() == 0)
     {
+        const double sizeInGigaBytes = (outData.size() * sizeof(floatType)) / (double)1e9;
         debug5 << "avtFlattenQuery XML output:\n" << outInfo.ToXML() << std::endl;
         qA->SetXmlResult(outInfo.ToXML());
         qA->SetResultsMessage("Success!");
@@ -489,9 +519,19 @@ avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
         {
             WriteSharedMemory();
         }
+        else if(sizeInGigaBytes > maxDataSize)
+        {
+            std::stringstream s;
+            s << "ERROR: Data too large to transport via query attributes ("
+                << sizeInGigaBytes << "GB). You can override the limit by"
+                << " overriding the parameter 'maxDataSize' with a (double)"
+                << " size repesented in Gigabytes. (Default value = 1.024)";
+            qA->SetResultsMessage(s.str());
+            debug1 << s.str() << std::endl;
+        }
         else
         {
-            qA->Compress(outData.size() * sizeof(float), outData.data());
+            qA->Compress(outData.size() * sizeof(floatType), outData.data());
         }
     }
 }

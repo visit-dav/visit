@@ -2422,7 +2422,7 @@ avtParallelContext::CollectFloatVectorsOnRootProc(
     CollectArraysOnRank<float>(Rank(), Size(), rbTemp, rcTemp,
                                 sendBuf.data(), sendCount,
 #ifdef PARALLEL
-                                MPI_DOUBLE, this->GetCommunicator(),
+                                MPI_FLOAT, this->GetCommunicator(),
 #endif
                                 root,
                                 allocRecvBuf,
