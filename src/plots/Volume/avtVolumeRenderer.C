@@ -177,7 +177,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
     const char *mName = "avtVolumeRenderer::Render: ";
 
 #ifndef HAVE_OSPRAY
-    if( atts.GetOsprayEnabledFlag() )
+    if( atts.GetOSPRayEnabledFlag() )
     {
         avtCallback::IssueWarning("Trying to use OSPRay when VTK was not built with OSPRay support. Default VTK renderering will be used.");
     }
@@ -191,10 +191,10 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 
     if( in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID )
     {
-	EXCEPTION1(ImproperUseException,
-		   "Only a vtkRectilinearGrid can be rendered.");
+        EXCEPTION1(ImproperUseException,
+                   "Only a vtkRectilinearGrid can be rendered.");
     }
-    
+
     // Check for an implied transform - can not be done with the
     // current paradigm!!!!!!
     // avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
@@ -212,7 +212,15 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
     else if( in_ds->GetCellData()->GetScalars() )
         activeVarName = in_ds->GetCellData()->GetScalars()->GetName();
 
-    if( opacityVarName != "default" && opacityVarName != activeVarName )
+    if( opacityVarName == activeVarName )
+    {
+        if(m_atts.GetUseOpacityVarMin() || m_atts.GetUseOpacityVarMax())
+            avtCallback::IssueWarning("The opacity variable is the same as "
+                                      "the primary variable. Ignoring any "
+                                      "min/max setting.");
+        m_nComponents = 1;
+    }
+    else if( opacityVarName != "default" )
     {
         m_nComponents = 2;
     }
@@ -220,43 +228,43 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
     {
         m_nComponents = 1;
     }
-      
+
     // Create a new image if needed.
     if( m_imageToRender == nullptr ||
 
-	// Color variable change or min/max change. The active var
+        // Color variable change or min/max change. The active var
         // name triggers needing an image on the first pass.
         m_activeVarName != activeVarName ||
-	m_useColorVarMin != m_atts.GetUseColorVarMin() ||
-	(m_atts.GetUseColorVarMin() &&
-	 m_colorVarMin != m_atts.GetColorVarMin()) ||
-	m_useColorVarMax != m_atts.GetUseColorVarMax() ||
-	(m_atts.GetUseColorVarMax() &&
-	 m_colorVarMax != m_atts.GetColorVarMax()) ||
-	
-	// Opacity variable change or min/max change.
-	(m_nComponents == 2 &&
-	 (m_opacityVarName != m_atts.GetOpacityVariable() ||
-	  m_useOpacityVarMin != m_atts.GetUseOpacityVarMin() ||
-	  (m_atts.GetUseOpacityVarMin() &&
-	   m_opacityVarMin != m_atts.GetOpacityVarMin()) ||
-	  m_useOpacityVarMax != m_atts.GetUseOpacityVarMax() ||
-	  (m_atts.GetUseOpacityVarMax() &&
-	   m_opacityVarMax != m_atts.GetOpacityVarMax()))) )
+        m_useColorVarMin != m_atts.GetUseColorVarMin() ||
+        (m_atts.GetUseColorVarMin() &&
+         m_colorVarMin != m_atts.GetColorVarMin()) ||
+        m_useColorVarMax != m_atts.GetUseColorVarMax() ||
+        (m_atts.GetUseColorVarMax() &&
+         m_colorVarMax != m_atts.GetColorVarMax()) ||
+
+        // Opacity variable change or min/max change.
+        (m_nComponents == 2 &&
+         (m_opacityVarName != m_atts.GetOpacityVariable() ||
+          m_useOpacityVarMin != m_atts.GetUseOpacityVarMin() ||
+          (m_atts.GetUseOpacityVarMin() &&
+           m_opacityVarMin != m_atts.GetOpacityVarMin()) ||
+          m_useOpacityVarMax != m_atts.GetUseOpacityVarMax() ||
+          (m_atts.GetUseOpacityVarMax() &&
+           m_opacityVarMax != m_atts.GetOpacityVarMax()))) )
     {
         // Store the color variable values so to check for a state change.
         m_activeVarName  = activeVarName;
-	m_useColorVarMin = m_atts.GetUseColorVarMin();
-	m_colorVarMin    = m_atts.GetColorVarMin();
-	m_useColorVarMax = m_atts.GetUseColorVarMax();
-	m_colorVarMax    = m_atts.GetColorVarMax();
-	
-	// Store the opacity variable values so to check for a state change.
-	m_opacityVarName   = m_atts.GetOpacityVariable();
-	m_useOpacityVarMin = m_atts.GetUseOpacityVarMin();
-	m_opacityVarMin    = m_atts.GetOpacityVarMin();
-	m_useOpacityVarMax = m_atts.GetUseOpacityVarMax();
-	m_opacityVarMax    = m_atts.GetOpacityVarMax();
+        m_useColorVarMin = m_atts.GetUseColorVarMin();
+        m_colorVarMin    = m_atts.GetColorVarMin();
+        m_useColorVarMax = m_atts.GetUseColorVarMax();
+        m_colorVarMax    = m_atts.GetColorVarMax();
+
+        // Store the opacity variable values so to check for a state change.
+        m_opacityVarName   = m_atts.GetOpacityVariable();
+        m_useOpacityVarMin = m_atts.GetUseOpacityVarMin();
+        m_opacityVarMin    = m_atts.GetOpacityVarMin();
+        m_useOpacityVarMax = m_atts.GetUseOpacityVarMax();
+        m_opacityVarMax    = m_atts.GetOpacityVarMax();
 
         LOCAL_DEBUG << mName << "Converting from rectilinear grid "
                     << "to image data" << std::endl;
@@ -293,7 +301,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 
             if( dataArr == nullptr )
             {
-	        EXCEPTION1(InvalidVariableException, "");
+                EXCEPTION1(InvalidVariableException, "");
             }
 
             m_cellData = true;
@@ -421,11 +429,11 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
         double dataScale    = 255.0 / (   dataRange[1] -    dataRange[0]);
         double opacityScale = 255.0 / (opacityRange[1] - opacityRange[0]);
 
-	if( dataRange[1] <= dataRange[0])
-	    dataScale = 0;
+        if( dataRange[1] <= dataRange[0])
+            dataScale = 0;
 
-	if( opacityRange[1] <= opacityRange[0])
-	    opacityScale = 0;
+        if( opacityRange[1] <= opacityRange[0])
+            opacityScale = 0;
 
         // Transfer the rgrid data to the image data
         // and scale to the proper range.
@@ -495,16 +503,16 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 
     // Create a new volume mapper if needed.
     if( m_volumeMapper == nullptr ||
-        m_OSPRayEnabled != m_atts.GetOsprayEnabledFlag())
+        m_OSPRayEnabled != m_atts.GetOSPRayEnabledFlag())
     {
-        m_OSPRayEnabled = m_atts.GetOsprayEnabledFlag();
+        m_OSPRayEnabled = m_atts.GetOSPRayEnabledFlag();
 
         if (m_volumeMapper != nullptr)
             m_volumeMapper->Delete();
 
         // Create the volume mapper.
 #ifdef HAVE_OSPRAY
-        if( m_atts.GetOsprayEnabledFlag())
+        if( m_atts.GetOSPRayEnabledFlag())
         {
             m_volumeMapper = vtkOSPRayVolumeMapper::New();
 
@@ -563,9 +571,9 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
         {
             int rgbIdx  = 4 * i;
             m_transFunc->AddRGBPoint(i,
-				     double(rgba[rgbIdx    ]) * rgbaScale,
-				     double(rgba[rgbIdx + 1]) * rgbaScale,
-				     double(rgba[rgbIdx + 2]) * rgbaScale);
+                                     double(rgba[rgbIdx    ]) * rgbaScale,
+                                     double(rgba[rgbIdx + 1]) * rgbaScale,
+                                     double(rgba[rgbIdx + 2]) * rgbaScale);
             m_opacity->AddPoint(i, double(rgba[rgbIdx + 3]) * rgbaScale * atten);
         }
 
@@ -573,16 +581,16 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
         // clamping is turned off. So add some padding on the ends of
         // the mapping functions.
         m_transFunc->AddRGBPoint(-1,
-				 double(rgba[0]) * rgbaScale,
-				 double(rgba[1]) * rgbaScale,
-				 double(rgba[2]) * rgbaScale);
+                                 double(rgba[0]) * rgbaScale,
+                                 double(rgba[1]) * rgbaScale,
+                                 double(rgba[2]) * rgbaScale);
         m_opacity->AddPoint(-1, double(rgba[3]) * rgbaScale * atten);
 
         int rgbIdx = (tableSize-1) * 4;
         m_transFunc->AddRGBPoint(tableSize,
-				 double(rgba[rgbIdx    ]) * rgbaScale,
-				 double(rgba[rgbIdx + 1]) * rgbaScale,
-				 double(rgba[rgbIdx + 2]) * rgbaScale);
+                                 double(rgba[rgbIdx    ]) * rgbaScale,
+                                 double(rgba[rgbIdx + 1]) * rgbaScale,
+                                 double(rgba[rgbIdx + 2]) * rgbaScale);
         m_opacity->AddPoint(tableSize, double(rgba[rgbIdx + 3]) * rgbaScale * atten);
 
         // Set the volume properties.
@@ -596,6 +604,14 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 
         if (m_atts.GetLightingFlag() && matProp != nullptr)
         {
+            LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
+                        << " lightingEnabled: " << m_atts.GetLightingFlag() << "  "
+                        << matProp[0] << "  "
+                        << matProp[1] << "  "
+                        << matProp[2] << "  "
+                        << matProp[3] << "  "
+                        << std::endl;
+
             m_volumeProp->SetAmbient(matProp[0]);
             m_volumeProp->SetDiffuse(matProp[1]);
             m_volumeProp->SetSpecular(matProp[2]);
@@ -641,22 +657,22 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
     }
 
 #ifdef HAVE_OSPRAY
-    if( m_atts.GetOsprayEnabledFlag() )
+    if( m_atts.GetOSPRayEnabledFlag() )
     {
         LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
                     << " RenderType: "
-                    << (m_atts.GetOsprayRenderType() ? "PathTracer" : "SciVis") << "  "
+                    << (m_atts.GetOSPRayRenderType() ? "PathTracer" : "SciVis") << "  "
                     << std::endl;
 
-        if( m_atts.GetOsprayRenderType() == 1 )
+        if( m_atts.GetOSPRayRenderType() == 1 )
             vtkOSPRayRendererNode::SetRendererType("pathtracer", VTKRen);
         else
             vtkOSPRayRendererNode::SetRendererType("scivis", VTKRen);
 
-        vtkOSPRayRendererNode::SetSamplesPerPixel(m_atts.GetOspraySPP(), VTKRen);
-        vtkOSPRayRendererNode::SetAmbientSamples (m_atts.GetOsprayAOSamples(), VTKRen);
-        vtkOSPRayRendererNode::SetMinContribution(m_atts.GetOsprayMinContribution(), VTKRen);
-        vtkOSPRayRendererNode::SetMaxContribution(m_atts.GetOsprayMaxContribution(), VTKRen);
+        vtkOSPRayRendererNode::SetSamplesPerPixel(m_atts.GetOSPRaySPP(), VTKRen);
+        vtkOSPRayRendererNode::SetAmbientSamples (m_atts.GetOSPRayAOSamples(), VTKRen);
+        vtkOSPRayRendererNode::SetMinContribution(m_atts.GetOSPRayMinContribution(), VTKRen);
+        vtkOSPRayRendererNode::SetMaxContribution(m_atts.GetOSPRayMaxContribution(), VTKRen);
     }
 #endif
 

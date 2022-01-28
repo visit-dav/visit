@@ -69,8 +69,7 @@ const std::string avtVisItVTKDevice::DEVICE_TYPE_STR{"vtk"};
 // ****************************************************************************
 
 avtVisItVTKDevice::avtVisItVTKDevice() : avtRayTracerBase(),
-    m_lightList(),
-    m_renderingAttribs()
+    m_lightList()
 {
     LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                 << "Creating a new device." << std::endl;
@@ -97,33 +96,30 @@ avtVisItVTKDevice::~avtVisItVTKDevice()
 
 
 // ****************************************************************************
-//  Method: avtVisItVTKDevice::SetMatProperties
+//  Method:  avtVisItVTKDevice::SetAtts
 //
 //  Purpose:
-//      Set the volume material properties.
+//    Set the attributes
 //
 //  Arguments:
-//      props   material properties where:
-//          props[0] = ambient
-//          props[1] = diffuse
-//          props[2] = specular
-//          props[3] = shininess
+//    a       : the new attributes
 //
 //  Programmer: Allen R. Sanderson
-//  Creation:   30 November 2021
+//  Creation:  30 November 2021
 //
 //  Modifications:
 //
 // ****************************************************************************
 
 void
-avtVisItVTKDevice::SetMatProperties(const double props[4])
+avtVisItVTKDevice::SetAtts(const AttributeGroup *a)
 {
-    if(!m_materialPropertiesPtr)
-        m_materialPropertiesPtr.reset(new float[4]);
+    const VolumeAttributes *newAtts = (const VolumeAttributes*)a;
 
-    for(int i=0; i<4; i++)
-        m_materialPropertiesPtr[i] = static_cast<float>(props[i]);
+    if (*newAtts == m_atts)
+        return;
+
+    m_atts = *(const VolumeAttributes*) a;
 }
 
 // ****************************************************************************
@@ -460,7 +456,7 @@ void
 avtVisItVTKDevice::ExecuteVolume()
 {
 #ifndef HAVE_OSPRAY
-    if( m_renderingAttribs.OSPRayEnabled )
+    if( m_atts.GetOSPRayEnabledFlag(() )
     {
         avtCallback::IssueWarning("Trying to use OSPRay when VTK was not built with OSPRay support. The default VTK renderering will be used.");
     }
@@ -485,7 +481,16 @@ avtVisItVTKDevice::ExecuteVolume()
     UnifyMinMax(dataRange, 2);
 
     // There could be separate scalar and opacity components.
-    if( opacityVarName != "default" && opacityVarName != activeVarName )
+    if( opacityVarName == activeVarName )
+    {
+        if(m_atts.GetUseOpacityVarMin() ||
+           m_atts.GetUseOpacityVarMax())
+            avtCallback::IssueWarning("The opacity variable is the same as "
+                                      "the primary variable. Ignoring any "
+                                      "min/max setting.");
+        m_nComponents = 1;
+    }
+    else if( opacityVarName != "default" )
     {
         m_nComponents = 2;
         GetDataExtents(opacityRange, opacityVarName.c_str());
@@ -557,36 +562,36 @@ avtVisItVTKDevice::ExecuteVolume()
         // Color variable change or min/max change. The active var
         // name triggers needing an image on the first pass.
         m_activeVarName != activeVarName ||
-        m_useColorVarMin != m_renderingAttribs.useColorVarMin ||
-        (m_renderingAttribs.useColorVarMin &&
-         m_colorVarMin != m_renderingAttribs.colorVarMin) ||
-        m_useColorVarMax != m_renderingAttribs.useColorVarMax ||
-        (m_renderingAttribs.useColorVarMax &&
-         m_colorVarMax != m_renderingAttribs.colorVarMax) ||
+        m_useColorVarMin != m_atts.GetUseColorVarMin() ||
+        (m_atts.GetUseColorVarMin() &&
+         m_colorVarMin != m_atts.GetColorVarMin()) ||
+        m_useColorVarMax != m_atts.GetUseColorVarMax() ||
+        (m_atts.GetUseColorVarMax() &&
+         m_colorVarMax != m_atts.GetColorVarMax()) ||
 
         // Opacity variable change or min/max change.
         (m_nComponents == 2 &&
          (m_opacityVarName != opacityVarName ||
-          m_useOpacityVarMin != m_renderingAttribs.useOpacityVarMin ||
-          (m_renderingAttribs.useOpacityVarMin &&
-           m_opacityVarMin != m_renderingAttribs.opacityVarMin) ||
-          m_useOpacityVarMax != m_renderingAttribs.useOpacityVarMax ||
-          (m_renderingAttribs.useOpacityVarMax &&
-           m_opacityVarMax != m_renderingAttribs.opacityVarMax))) )
+          m_useOpacityVarMin != m_atts.GetUseOpacityVarMin() ||
+          (m_atts.GetUseOpacityVarMin() &&
+           m_opacityVarMin != m_atts.GetOpacityVarMin()) ||
+          m_useOpacityVarMax != m_atts.GetUseOpacityVarMax() ||
+          (m_atts.GetUseOpacityVarMax() &&
+           m_opacityVarMax != m_atts.GetOpacityVarMax()))) )
     {
         // Store the color variable values so to check for a state change.
         m_activeVarName  = activeVarName;
-        m_useColorVarMin = m_renderingAttribs.useColorVarMin;
-        m_colorVarMin    = m_renderingAttribs.colorVarMin;
-        m_useColorVarMax = m_renderingAttribs.useColorVarMax;
-        m_colorVarMax    = m_renderingAttribs.colorVarMax;
+        m_useColorVarMin = m_atts.GetUseColorVarMin();
+        m_colorVarMin    = m_atts.GetColorVarMin();
+        m_useColorVarMax = m_atts.GetUseColorVarMax();
+        m_colorVarMax    = m_atts.GetColorVarMax();
 
         // Store the opacity variable values so to check for a state change.
         m_opacityVarName   = opacityVarName;
-        m_useOpacityVarMin = m_renderingAttribs.useOpacityVarMin;
-        m_opacityVarMin    = m_renderingAttribs.opacityVarMin;
-        m_useOpacityVarMax = m_renderingAttribs.useOpacityVarMax;
-        m_opacityVarMax    = m_renderingAttribs.opacityVarMax;
+        m_useOpacityVarMin = m_atts.GetUseOpacityVarMin();
+        m_opacityVarMin    = m_atts.GetOpacityVarMin();
+        m_useOpacityVarMax = m_atts.GetUseOpacityVarMax();
+        m_opacityVarMax    = m_atts.GetOpacityVarMax();
 
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                     << "rank: "  << PAR_Rank() << " "
@@ -664,18 +669,18 @@ avtVisItVTKDevice::ExecuteVolume()
         //   gradientArr = in_ds->GetPointData()->GetVectors( gradientVarName.c_str() );
 
         // If needed adjust the colar var range
-        if( m_renderingAttribs.useColorVarMin )
-            dataRange[0] = m_renderingAttribs.colorVarMin;
-        if( m_renderingAttribs.useColorVarMax )
-            dataRange[1] = m_renderingAttribs.colorVarMax;
+        if( m_atts.GetUseColorVarMin() )
+            dataRange[0] = m_atts.GetColorVarMin();
+        if( m_atts.GetUseColorVarMax() )
+            dataRange[1] = m_atts.GetColorVarMax();
 
         // If needed adjust the opacity var range
         if( m_nComponents == 2 )
         {
-            if( m_renderingAttribs.useOpacityVarMin )
-                opacityRange[0] = m_renderingAttribs.opacityVarMin;
-            if( m_renderingAttribs.useOpacityVarMax )
-                opacityRange[1] = m_renderingAttribs.opacityVarMax;
+            if( m_atts.GetUseOpacityVarMin() )
+                opacityRange[0] = m_atts.GetOpacityVarMin();
+            if( m_atts.GetUseOpacityVarMax() )
+                opacityRange[1] = m_atts.GetOpacityVarMax();
         }
 
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
@@ -861,16 +866,16 @@ avtVisItVTKDevice::ExecuteVolume()
 
     // Create a new volume mapper if needed.
     if( m_volumeMapper == nullptr ||
-        m_OSPRayEnabled != m_renderingAttribs.OSPRayEnabled)
+        m_OSPRayEnabled != m_atts.GetOSPRayEnabledFlag())
     {
-        m_OSPRayEnabled = m_renderingAttribs.OSPRayEnabled;
+        m_OSPRayEnabled = m_atts.GetOSPRayEnabledFlag();
 
         if (m_volumeMapper != nullptr)
             m_volumeMapper->Delete();
 
         // Create the volume mapper.
 #ifdef HAVE_OSPRAY
-        if( m_renderingAttribs.OSPRayEnabled )
+        if( m_atts.GetOSPRayEnabledFlag() )
         {
             m_volumeMapper = vtkOSPRayVolumeMapper::New();
 
@@ -951,7 +956,7 @@ avtVisItVTKDevice::ExecuteVolume()
     volumeProperty->SetScalarOpacity(opacity);
     // volumeProperty->SetGradientOpacity(gradient);
     volumeProperty->SetIndependentComponents( m_nComponents == 1 );
-    volumeProperty->SetShade( m_renderingAttribs.lightingEnabled );
+    volumeProperty->SetShade( m_atts.GetLightingFlag() );
 
     LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
               << "rank: "  << PAR_Rank() << " HasGradientOpacity: "
@@ -959,21 +964,23 @@ avtVisItVTKDevice::ExecuteVolume()
               << std::endl;
 
     // Set ambient, diffuse, specular, and specular power (shininess).
-    if( m_renderingAttribs.lightingEnabled )
+    const double *matProp = m_atts.GetMaterialProperties();
+
+    if (m_atts.GetLightingFlag() && matProp != nullptr)
     {
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-		    << "rank: "  << PAR_Rank()
-		    << " lightingEnabled: " << m_renderingAttribs.lightingEnabled << "  "
-		    << m_materialPropertiesPtr[0] << "  "
-		    << m_materialPropertiesPtr[1] << "  "
-		    << m_materialPropertiesPtr[2] << "  "
-		    << m_materialPropertiesPtr[3] << "  "
-		    << std::endl;
+                    << "rank: "  << PAR_Rank()
+                    << " lightingEnabled: " << m_atts.GetLightingFlag() << "  "
+                    << matProp[0] << "  "
+                    << matProp[1] << "  "
+                    << matProp[2] << "  "
+                    << matProp[3] << "  "
+                    << std::endl;
 
-        volumeProperty->SetAmbient      (m_materialPropertiesPtr[0]);
-        volumeProperty->SetDiffuse      (m_materialPropertiesPtr[1]);
-        volumeProperty->SetSpecular     (m_materialPropertiesPtr[2]);
-        volumeProperty->SetSpecularPower(m_materialPropertiesPtr[3]);
+        volumeProperty->SetAmbient(matProp[0]);
+        volumeProperty->SetDiffuse(matProp[1]);
+        volumeProperty->SetSpecular(matProp[2]);
+        volumeProperty->SetSpecularPower(matProp[3]);
     }
 
     // If the dataset contains NO_DATA_VALUEs, interpolation will
@@ -1039,22 +1046,22 @@ avtVisItVTKDevice::ExecuteVolume()
     // renderer->SetLightCollection( lights );
 
 #ifdef HAVE_OSPRAY
-    if( m_renderingAttribs.OSPRayEnabled )
+    if( m_atts.GetOSPRayEnabledFlag() )
     {
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                     << "rank: "  << PAR_Rank() << " RenderType: "
-                    << (m_renderingAttribs.OSPRayRenderType ? "PathTracer" : "SciVis") << "  "
+                    << (m_atts.GetOSPRayRenderType() ? "PathTracer" : "SciVis") << "  "
                     << std::endl;
 
-        if( m_renderingAttribs.OSPRayRenderType == 1 )
+        if( m_atts.GetOSPRayRenderType() == 1 )
             vtkOSPRayRendererNode::SetRendererType("pathtracer", renderer);
         else
             vtkOSPRayRendererNode::SetRendererType("scivis", renderer);
 
-        vtkOSPRayRendererNode::SetSamplesPerPixel(m_renderingAttribs.OSPRaySamplesPerPixel, renderer);
-        vtkOSPRayRendererNode::SetAmbientSamples (m_renderingAttribs.OSPRayAOSamples,       renderer);
-        vtkOSPRayRendererNode::SetMinContribution(m_renderingAttribs.OSPRayMinContribution, renderer);
-        vtkOSPRayRendererNode::SetMaxContribution(m_renderingAttribs.OSPRayMaxContribution, renderer);
+        vtkOSPRayRendererNode::SetSamplesPerPixel(m_atts.GetOSPRaySPP(), renderer);
+        vtkOSPRayRendererNode::SetAmbientSamples (m_atts.GetOSPRayAOSamples(),       renderer);
+        vtkOSPRayRendererNode::SetMinContribution(m_atts.GetOSPRayMinContribution(), renderer);
+        vtkOSPRayRendererNode::SetMaxContribution(m_atts.GetOSPRayMaxContribution(), renderer);
     }
 #endif
 

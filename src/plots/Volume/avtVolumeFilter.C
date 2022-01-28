@@ -28,7 +28,6 @@
 #include <avtSourceFromAVTDataset.h>
 #include <avtView3D.h>
 #include <avtViewInfo.h>
-#include <avtVisItVTKRenderer.h>
 #include <avtVisItVTKDevice.h>
 
 #include <DebugStream.h>
@@ -94,11 +93,10 @@ avtVolumeFilter::~avtVolumeFilter()
         primaryVariable = nullptr;
     }
 
-    // Only delete the VTK rendering device when the volume filter is
-    // deleted. Which happens when something upstream occurs.
-    if (atts.GetRendererType() == VolumeAttributes::Parallel)
+    if (VisItVTKRenderer != nullptr)
     {
-        avtVisItVTKRenderer::DeleteDevice();
+        delete VisItVTKRenderer;
+        VisItVTKRenderer = nullptr;
     }
 }
 
@@ -955,35 +953,28 @@ avtVolumeFilter::RenderImageVTK(avtImage_p opaque_image,
     //
     // Set up the volume renderer.
     //
-    avtVisItVTKDevice *device = avtVisItVTKRenderer::GetDevice();
-
-    if( device == nullptr )
+    if( VisItVTKRenderer == nullptr )
     {
-        avtVisItVTKRenderer::SetDeviceType(DeviceType::VTK);
-        device = avtVisItVTKRenderer::GetDevice();
+        VisItVTKRenderer = new avtVisItVTKDevice;
     }
 
-    if( device == nullptr )
-    {
-        EXCEPTION1(VisItException, "[VisIt VTK Device] Device type not set or set to unknown.");
-    }
-
-    device->SetInput(termsrc.GetOutput());
-    device->InsertOpaqueImage(opaque_image);
+    VisItVTKRenderer->SetInput(termsrc.GetOutput());
+    VisItVTKRenderer->SetAtts(&atts);
+    VisItVTKRenderer->InsertOpaqueImage(opaque_image);
 
     const int *size = window.GetSize();
-    device->SetScreen(size[0], size[1]);
+    VisItVTKRenderer->SetScreen(size[0], size[1]);
 
     //
     // Set the volume renderer's background color and mode from the
     // window attributes.
     //
-    device->SetBackgroundColor(window.GetBackground());
-    device->SetBackgroundMode(window.GetBackgroundMode());
-    device->SetGradientBackgroundColors(window.GetGradBG1(), window.GetGradBG2());
+    VisItVTKRenderer->SetBackgroundColor(window.GetBackground());
+    VisItVTKRenderer->SetBackgroundMode(window.GetBackgroundMode());
+    VisItVTKRenderer->SetGradientBackgroundColors(window.GetGradBG1(), window.GetGradBG2());
 
-    device->SetActiveVarName( primaryVariable );
-    device->SetOpacityVarName( atts.GetOpacityVariable() );
+    VisItVTKRenderer->SetActiveVarName( primaryVariable );
+    VisItVTKRenderer->SetOpacityVarName( atts.GetOpacityVariable() );
     // software->SetGradientVarName( gradName );
 
     //
@@ -992,7 +983,7 @@ avtVolumeFilter::RenderImageVTK(avtImage_p opaque_image,
     double range[2] = {0., 0.};
     avtOpacityMap om(CreateOpacityMap(range));
     om.ComputeVisibleRange();
-    device->SetTransferFn(&om);
+    VisItVTKRenderer->SetTransferFn(&om);
 
     debug5 << "Min visible scalar range: " << om.GetMinVisibleScalar() << " "
            << "Max visible scalar range: " << om.GetMaxVisibleScalar()
@@ -1004,58 +995,15 @@ avtVolumeFilter::RenderImageVTK(avtImage_p opaque_image,
     const View3DAttributes &viewAtts = window.GetView3D();
     avtViewInfo viewInfo;
     CreateViewInfoFromViewAttributes(viewInfo, viewAtts);
-    device->SetView(viewInfo);
+    VisItVTKRenderer->SetView(viewInfo);
 
-    //
-    // Set up lighting and material properties
-    //
-    double *matProp = atts.GetMaterialProperties();
-    double materialPropArray[4];
-    materialPropArray[0] = matProp[0];
-    materialPropArray[1] = matProp[1];
-    materialPropArray[2] = matProp[2];
-    materialPropArray[3] = matProp[3];
-
-    // Specific to VTK
-    device->SetRenderingType(DataType::VOLUME);
-
-    device->SetResampleType     (atts.GetResampleType());
-    device->SetResampleTargetVal(atts.GetResampleTarget());
-    device->SetResampleCentering(atts.GetResampleCentering());
-
-    device->SetUseColorVarMin( atts.GetUseColorVarMin() );
-    device->SetColorVarMin   ( atts.GetColorVarMin() );
-    device->SetUseColorVarMax( atts.GetUseColorVarMax() );
-    device->SetColorVarMax   ( atts.GetColorVarMax() );
-    device->SetUseOpacityVarMin( atts.GetUseOpacityVarMin() );
-    device->SetOpacityVarMin   ( atts.GetOpacityVarMin() );
-    device->SetUseOpacityVarMax( atts.GetUseOpacityVarMax() );
-    device->SetOpacityVarMax   ( atts.GetOpacityVarMax() );
-
-    device->SetLightList( window.GetLights() );
-    device->SetMatProperties( materialPropArray );
-    device->SetLighting( atts.GetLightingFlag() );
-
-    // Specific to OSPRay
-    device->SetOSPRayEnabled(atts.GetOsprayEnabledFlag());
-    device->SetOSPRayRenderType(atts.GetOsprayRenderType());
-
-    device->SetOSPRayShadowsEnabled(atts.GetOsprayShadowsEnabledFlag());
-    device->SetOSPRayUseGridAccelerator(atts.GetOsprayUseGridAcceleratorFlag());
-    device->SetOSPRayPreIntegration(atts.GetOsprayPreIntegrationFlag());
-    device->SetOSPRaySingleShade(atts.GetOspraySingleShadeFlag());
-    device->SetOSPRayOneSidedLighting(atts.GetOsprayOneSidedLightingFlag());
-    device->SetOSPRayAOTransparencyEnabled(atts.GetOsprayAOTransparencyEnabledFlag());
-    device->SetOSPRaySamplesPerPixel(atts.GetOspraySPP());
-    device->SetOSPRayAOSamples(atts.GetOsprayAOSamples());
-    device->SetOSPRayAODistance(static_cast<float>(atts.GetOsprayAODistance()));
-    device->SetOSPRayMinContribution(static_cast<float>(atts.GetOsprayMinContribution()));
-    device->SetOSPRayMaxContribution(static_cast<float>(atts.GetOsprayMaxContribution()));
+    // Specific to teh VisItVTKRenderer
+    VisItVTKRenderer->SetRenderingType(DataType::VOLUME);
 
     //
     // Do the funny business to force an update.
     //
-    avtDataObject_p dob = device->GetOutput();
+    avtDataObject_p dob = VisItVTKRenderer->GetOutput();
     dob->Update(GetGeneralContract());
 
     avtRay::SetArbitrator(nullptr);
@@ -1209,7 +1157,6 @@ avtVolumeFilter::RenderImageSLIVR(avtImage_p opaque_image,
     software->SetViewDirection(viewDirection);
     software->SetLighting(atts.GetLightingFlag());
     software->SetLightDirection(tempLightDir);
-    software->SetMatProperties(materialPropArray);
 
     //
     // Do the funny business to force an update.

@@ -88,7 +88,7 @@ public:
         Higher,
         Highest
     };
-    enum OSPRayRenderType
+    enum OSPRayRenderTypes
     {
         SciVis,
         PathTracer
@@ -126,19 +126,19 @@ public:
     void SelectMaterialProperties();
 
     // Property setting methods
-    void SetOsprayEnabledFlag(bool osprayEnabledFlag_);
-    void SetOsprayRenderType(OSPRayRenderType osprayRenderType_);
-    void SetOsprayShadowsEnabledFlag(bool osprayShadowsEnabledFlag_);
-    void SetOsprayUseGridAcceleratorFlag(bool osprayUseGridAcceleratorFlag_);
-    void SetOsprayPreIntegrationFlag(bool osprayPreIntegrationFlag_);
-    void SetOspraySingleShadeFlag(bool ospraySingleShadeFlag_);
-    void SetOsprayOneSidedLightingFlag(bool osprayOneSidedLightingFlag_);
-    void SetOsprayAOTransparencyEnabledFlag(bool osprayAOTransparencyEnabledFlag_);
-    void SetOspraySPP(int ospraySPP_);
-    void SetOsprayAOSamples(int osprayAOSamples_);
-    void SetOsprayAODistance(double osprayAODistance_);
-    void SetOsprayMinContribution(double osprayMinContribution_);
-    void SetOsprayMaxContribution(double osprayMaxContribution_);
+    void SetOSPRayEnabledFlag(bool OSPRayEnabledFlag_);
+    void SetOSPRayRenderType(OSPRayRenderTypes OSPRayRenderType_);
+    void SetOSPRayShadowsEnabledFlag(bool OSPRayShadowsEnabledFlag_);
+    void SetOSPRayUseGridAcceleratorFlag(bool OSPRayUseGridAcceleratorFlag_);
+    void SetOSPRayPreIntegrationFlag(bool OSPRayPreIntegrationFlag_);
+    void SetOSPRaySingleShadeFlag(bool OSPRaySingleShadeFlag_);
+    void SetOSPRayOneSidedLightingFlag(bool OSPRayOneSidedLightingFlag_);
+    void SetOSPRayAOTransparencyEnabledFlag(bool OSPRayAOTransparencyEnabledFlag_);
+    void SetOSPRaySPP(int OSPRaySPP_);
+    void SetOSPRayAOSamples(int OSPRayAOSamples_);
+    void SetOSPRayAODistance(double OSPRayAODistance_);
+    void SetOSPRayMinContribution(double OSPRayMinContribution_);
+    void SetOSPRayMaxContribution(double OSPRayMaxContribution_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetColorControlPoints(const ColorControlPointList &colorControlPoints_);
@@ -173,19 +173,19 @@ public:
     void SetMaterialProperties(const double *materialProperties_);
 
     // Property getting methods
-    bool                           GetOsprayEnabledFlag() const;
-    OSPRayRenderType               GetOsprayRenderType() const;
-    bool                           GetOsprayShadowsEnabledFlag() const;
-    bool                           GetOsprayUseGridAcceleratorFlag() const;
-    bool                           GetOsprayPreIntegrationFlag() const;
-    bool                           GetOspraySingleShadeFlag() const;
-    bool                           GetOsprayOneSidedLightingFlag() const;
-    bool                           GetOsprayAOTransparencyEnabledFlag() const;
-    int                            GetOspraySPP() const;
-    int                            GetOsprayAOSamples() const;
-    double                         GetOsprayAODistance() const;
-    double                         GetOsprayMinContribution() const;
-    double                         GetOsprayMaxContribution() const;
+    bool                           GetOSPRayEnabledFlag() const;
+    OSPRayRenderTypes              GetOSPRayRenderType() const;
+    bool                           GetOSPRayShadowsEnabledFlag() const;
+    bool                           GetOSPRayUseGridAcceleratorFlag() const;
+    bool                           GetOSPRayPreIntegrationFlag() const;
+    bool                           GetOSPRaySingleShadeFlag() const;
+    bool                           GetOSPRayOneSidedLightingFlag() const;
+    bool                           GetOSPRayAOTransparencyEnabledFlag() const;
+    int                            GetOSPRaySPP() const;
+    int                            GetOSPRayAOSamples() const;
+    double                         GetOSPRayAODistance() const;
+    double                         GetOSPRayMinContribution() const;
+    double                         GetOSPRayMaxContribution() const;
     bool                           GetLegendFlag() const;
     bool                           GetLightingFlag() const;
     const ColorControlPointList    &GetColorControlPoints() const;
@@ -274,10 +274,10 @@ public:
 protected:
     static std::string LowGradientLightingReduction_ToString(int);
 public:
-    static std::string OSPRayRenderType_ToString(OSPRayRenderType);
-    static bool OSPRayRenderType_FromString(const std::string &, OSPRayRenderType &);
+    static std::string OSPRayRenderTypes_ToString(OSPRayRenderTypes);
+    static bool OSPRayRenderTypes_FromString(const std::string &, OSPRayRenderTypes &);
 protected:
-    static std::string OSPRayRenderType_ToString(int);
+    static std::string OSPRayRenderTypes_ToString(int);
 public:
 
     // Keyframing methods
@@ -301,19 +301,19 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_osprayEnabledFlag = 0,
-        ID_osprayRenderType,
-        ID_osprayShadowsEnabledFlag,
-        ID_osprayUseGridAcceleratorFlag,
-        ID_osprayPreIntegrationFlag,
-        ID_ospraySingleShadeFlag,
-        ID_osprayOneSidedLightingFlag,
-        ID_osprayAOTransparencyEnabledFlag,
-        ID_ospraySPP,
-        ID_osprayAOSamples,
-        ID_osprayAODistance,
-        ID_osprayMinContribution,
-        ID_osprayMaxContribution,
+        ID_OSPRayEnabledFlag = 0,
+        ID_OSPRayRenderType,
+        ID_OSPRayShadowsEnabledFlag,
+        ID_OSPRayUseGridAcceleratorFlag,
+        ID_OSPRayPreIntegrationFlag,
+        ID_OSPRaySingleShadeFlag,
+        ID_OSPRayOneSidedLightingFlag,
+        ID_OSPRayAOTransparencyEnabledFlag,
+        ID_OSPRaySPP,
+        ID_OSPRayAOSamples,
+        ID_OSPRayAODistance,
+        ID_OSPRayMinContribution,
+        ID_OSPRayMaxContribution,
         ID_legendFlag,
         ID_lightingFlag,
         ID_colorControlPoints,
@@ -350,19 +350,19 @@ public:
     };
 
 private:
-    bool                     osprayEnabledFlag;
-    int                      osprayRenderType;
-    bool                     osprayShadowsEnabledFlag;
-    bool                     osprayUseGridAcceleratorFlag;
-    bool                     osprayPreIntegrationFlag;
-    bool                     ospraySingleShadeFlag;
-    bool                     osprayOneSidedLightingFlag;
-    bool                     osprayAOTransparencyEnabledFlag;
-    int                      ospraySPP;
-    int                      osprayAOSamples;
-    double                   osprayAODistance;
-    double                   osprayMinContribution;
-    double                   osprayMaxContribution;
+    bool                     OSPRayEnabledFlag;
+    int                      OSPRayRenderType;
+    bool                     OSPRayShadowsEnabledFlag;
+    bool                     OSPRayUseGridAcceleratorFlag;
+    bool                     OSPRayPreIntegrationFlag;
+    bool                     OSPRaySingleShadeFlag;
+    bool                     OSPRayOneSidedLightingFlag;
+    bool                     OSPRayAOTransparencyEnabledFlag;
+    int                      OSPRaySPP;
+    int                      OSPRayAOSamples;
+    double                   OSPRayAODistance;
+    double                   OSPRayMinContribution;
+    double                   OSPRayMaxContribution;
     bool                     legendFlag;
     bool                     lightingFlag;
     ColorControlPointList    colorControlPoints;

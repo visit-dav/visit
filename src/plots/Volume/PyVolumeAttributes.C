@@ -43,65 +43,65 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     std::string str;
     char tmpStr[1000];
 
-    if(atts->GetOsprayEnabledFlag())
-        snprintf(tmpStr, 1000, "%sosprayEnabledFlag = 1\n", prefix);
+    if(atts->GetOSPRayEnabledFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayEnabledFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sosprayEnabledFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRayEnabledFlag = 0\n", prefix);
     str += tmpStr;
-    const char *osprayRenderType_names = "SciVis, PathTracer";
-    switch (atts->GetOsprayRenderType())
+    const char *OSPRayRenderType_names = "SciVis, PathTracer";
+    switch (atts->GetOSPRayRenderType())
     {
       case VolumeAttributes::SciVis:
-          snprintf(tmpStr, 1000, "%sosprayRenderType = %sSciVis  # %s\n", prefix, prefix, osprayRenderType_names);
+          snprintf(tmpStr, 1000, "%sOSPRayRenderType = %sSciVis  # %s\n", prefix, prefix, OSPRayRenderType_names);
           str += tmpStr;
           break;
       case VolumeAttributes::PathTracer:
-          snprintf(tmpStr, 1000, "%sosprayRenderType = %sPathTracer  # %s\n", prefix, prefix, osprayRenderType_names);
+          snprintf(tmpStr, 1000, "%sOSPRayRenderType = %sPathTracer  # %s\n", prefix, prefix, OSPRayRenderType_names);
           str += tmpStr;
           break;
       default:
           break;
     }
 
-    if(atts->GetOsprayShadowsEnabledFlag())
-        snprintf(tmpStr, 1000, "%sosprayShadowsEnabledFlag = 1\n", prefix);
+    if(atts->GetOSPRayShadowsEnabledFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayShadowsEnabledFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sosprayShadowsEnabledFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRayShadowsEnabledFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetOsprayUseGridAcceleratorFlag())
-        snprintf(tmpStr, 1000, "%sosprayUseGridAcceleratorFlag = 1\n", prefix);
+    if(atts->GetOSPRayUseGridAcceleratorFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayUseGridAcceleratorFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sosprayUseGridAcceleratorFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRayUseGridAcceleratorFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetOsprayPreIntegrationFlag())
-        snprintf(tmpStr, 1000, "%sosprayPreIntegrationFlag = 1\n", prefix);
+    if(atts->GetOSPRayPreIntegrationFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayPreIntegrationFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sosprayPreIntegrationFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRayPreIntegrationFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetOspraySingleShadeFlag())
-        snprintf(tmpStr, 1000, "%sospraySingleShadeFlag = 1\n", prefix);
+    if(atts->GetOSPRaySingleShadeFlag())
+        snprintf(tmpStr, 1000, "%sOSPRaySingleShadeFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sospraySingleShadeFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRaySingleShadeFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetOsprayOneSidedLightingFlag())
-        snprintf(tmpStr, 1000, "%sosprayOneSidedLightingFlag = 1\n", prefix);
+    if(atts->GetOSPRayOneSidedLightingFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayOneSidedLightingFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sosprayOneSidedLightingFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRayOneSidedLightingFlag = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetOsprayAOTransparencyEnabledFlag())
-        snprintf(tmpStr, 1000, "%sosprayAOTransparencyEnabledFlag = 1\n", prefix);
+    if(atts->GetOSPRayAOTransparencyEnabledFlag())
+        snprintf(tmpStr, 1000, "%sOSPRayAOTransparencyEnabledFlag = 1\n", prefix);
     else
-        snprintf(tmpStr, 1000, "%sosprayAOTransparencyEnabledFlag = 0\n", prefix);
+        snprintf(tmpStr, 1000, "%sOSPRayAOTransparencyEnabledFlag = 0\n", prefix);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sospraySPP = %d\n", prefix, atts->GetOspraySPP());
+    snprintf(tmpStr, 1000, "%sOSPRaySPP = %d\n", prefix, atts->GetOSPRaySPP());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sosprayAOSamples = %d\n", prefix, atts->GetOsprayAOSamples());
+    snprintf(tmpStr, 1000, "%sOSPRayAOSamples = %d\n", prefix, atts->GetOSPRayAOSamples());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sosprayAODistance = %g\n", prefix, atts->GetOsprayAODistance());
+    snprintf(tmpStr, 1000, "%sOSPRayAODistance = %g\n", prefix, atts->GetOSPRayAODistance());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sosprayMinContribution = %g\n", prefix, atts->GetOsprayMinContribution());
+    snprintf(tmpStr, 1000, "%sOSPRayMinContribution = %g\n", prefix, atts->GetOSPRayMinContribution());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sosprayMaxContribution = %g\n", prefix, atts->GetOsprayMaxContribution());
+    snprintf(tmpStr, 1000, "%sOSPRayMaxContribution = %g\n", prefix, atts->GetOSPRayMaxContribution());
     str += tmpStr;
     if(atts->GetLegendFlag())
         snprintf(tmpStr, 1000, "%slegendFlag = 1\n", prefix);
@@ -416,7 +416,7 @@ VolumeAttributes_Notify(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayEnabledFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -460,23 +460,23 @@ VolumeAttributes_SetOsprayEnabledFlag(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayEnabledFlag in the object.
-    obj->data->SetOsprayEnabledFlag(cval);
+    // Set the OSPRayEnabledFlag in the object.
+    obj->data->SetOSPRayEnabledFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayEnabledFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayEnabledFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayEnabledFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayRenderType(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayRenderType(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -516,7 +516,7 @@ VolumeAttributes_SetOsprayRenderType(PyObject *self, PyObject *args)
     if (cval < 0 || cval >= 2)
     {
         std::stringstream ss;
-        ss << "An invalid osprayRenderType value was given." << std::endl;
+        ss << "An invalid OSPRayRenderType value was given." << std::endl;
         ss << "Valid values are in the range [0,1]." << std::endl;
         ss << "You can also use the following symbolic names:";
         ss << " SciVis";
@@ -526,23 +526,23 @@ VolumeAttributes_SetOsprayRenderType(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayRenderType in the object.
-    obj->data->SetOsprayRenderType(VolumeAttributes::OSPRayRenderType(cval));
+    // Set the OSPRayRenderType in the object.
+    obj->data->SetOSPRayRenderType(VolumeAttributes::OSPRayRenderTypes(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayRenderType(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayRenderType(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetOsprayRenderType()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOSPRayRenderType()));
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayShadowsEnabledFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayShadowsEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -586,23 +586,23 @@ VolumeAttributes_SetOsprayShadowsEnabledFlag(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayShadowsEnabledFlag in the object.
-    obj->data->SetOsprayShadowsEnabledFlag(cval);
+    // Set the OSPRayShadowsEnabledFlag in the object.
+    obj->data->SetOSPRayShadowsEnabledFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayShadowsEnabledFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayShadowsEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayShadowsEnabledFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayShadowsEnabledFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -646,23 +646,23 @@ VolumeAttributes_SetOsprayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayUseGridAcceleratorFlag in the object.
-    obj->data->SetOsprayUseGridAcceleratorFlag(cval);
+    // Set the OSPRayUseGridAcceleratorFlag in the object.
+    obj->data->SetOSPRayUseGridAcceleratorFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayUseGridAcceleratorFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayUseGridAcceleratorFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayUseGridAcceleratorFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayPreIntegrationFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayPreIntegrationFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -706,23 +706,23 @@ VolumeAttributes_SetOsprayPreIntegrationFlag(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayPreIntegrationFlag in the object.
-    obj->data->SetOsprayPreIntegrationFlag(cval);
+    // Set the OSPRayPreIntegrationFlag in the object.
+    obj->data->SetOSPRayPreIntegrationFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayPreIntegrationFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayPreIntegrationFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayPreIntegrationFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayPreIntegrationFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOspraySingleShadeFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRaySingleShadeFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -766,23 +766,23 @@ VolumeAttributes_SetOspraySingleShadeFlag(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the ospraySingleShadeFlag in the object.
-    obj->data->SetOspraySingleShadeFlag(cval);
+    // Set the OSPRaySingleShadeFlag in the object.
+    obj->data->SetOSPRaySingleShadeFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOspraySingleShadeFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRaySingleShadeFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOspraySingleShadeFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRaySingleShadeFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayOneSidedLightingFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayOneSidedLightingFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -826,23 +826,23 @@ VolumeAttributes_SetOsprayOneSidedLightingFlag(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayOneSidedLightingFlag in the object.
-    obj->data->SetOsprayOneSidedLightingFlag(cval);
+    // Set the OSPRayOneSidedLightingFlag in the object.
+    obj->data->SetOSPRayOneSidedLightingFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayOneSidedLightingFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayOneSidedLightingFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayOneSidedLightingFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayOneSidedLightingFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayAOTransparencyEnabledFlag(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayAOTransparencyEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -886,23 +886,23 @@ VolumeAttributes_SetOsprayAOTransparencyEnabledFlag(PyObject *self, PyObject *ar
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayAOTransparencyEnabledFlag in the object.
-    obj->data->SetOsprayAOTransparencyEnabledFlag(cval);
+    // Set the OSPRayAOTransparencyEnabledFlag in the object.
+    obj->data->SetOSPRayAOTransparencyEnabledFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayAOTransparencyEnabledFlag(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayAOTransparencyEnabledFlag(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetOsprayAOTransparencyEnabledFlag()?1L:0L);
+    PyObject *retval = PyInt_FromLong(obj->data->GetOSPRayAOTransparencyEnabledFlag()?1L:0L);
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOspraySPP(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRaySPP(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -946,23 +946,23 @@ VolumeAttributes_SetOspraySPP(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the ospraySPP in the object.
-    obj->data->SetOspraySPP(cval);
+    // Set the OSPRaySPP in the object.
+    obj->data->SetOSPRaySPP(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOspraySPP(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRaySPP(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetOspraySPP()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOSPRaySPP()));
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayAOSamples(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayAOSamples(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -1006,23 +1006,23 @@ VolumeAttributes_SetOsprayAOSamples(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayAOSamples in the object.
-    obj->data->SetOsprayAOSamples(cval);
+    // Set the OSPRayAOSamples in the object.
+    obj->data->SetOSPRayAOSamples(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayAOSamples(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayAOSamples(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetOsprayAOSamples()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOSPRayAOSamples()));
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayAODistance(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayAODistance(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -1066,23 +1066,23 @@ VolumeAttributes_SetOsprayAODistance(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayAODistance in the object.
-    obj->data->SetOsprayAODistance(cval);
+    // Set the OSPRayAODistance in the object.
+    obj->data->SetOSPRayAODistance(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayAODistance(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayAODistance(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetOsprayAODistance());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOSPRayAODistance());
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayMinContribution(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayMinContribution(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -1126,23 +1126,23 @@ VolumeAttributes_SetOsprayMinContribution(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayMinContribution in the object.
-    obj->data->SetOsprayMinContribution(cval);
+    // Set the OSPRayMinContribution in the object.
+    obj->data->SetOSPRayMinContribution(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayMinContribution(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayMinContribution(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetOsprayMinContribution());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOSPRayMinContribution());
     return retval;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_SetOsprayMaxContribution(PyObject *self, PyObject *args)
+VolumeAttributes_SetOSPRayMaxContribution(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
@@ -1186,18 +1186,18 @@ VolumeAttributes_SetOsprayMaxContribution(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the osprayMaxContribution in the object.
-    obj->data->SetOsprayMaxContribution(cval);
+    // Set the OSPRayMaxContribution in the object.
+    obj->data->SetOSPRayMaxContribution(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-VolumeAttributes_GetOsprayMaxContribution(PyObject *self, PyObject *args)
+VolumeAttributes_GetOSPRayMaxContribution(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(obj->data->GetOsprayMaxContribution());
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOSPRayMaxContribution());
     return retval;
 }
 
@@ -3167,32 +3167,32 @@ VolumeAttributes_GetMaterialProperties(PyObject *self, PyObject *args)
 
 PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"Notify", VolumeAttributes_Notify, METH_VARARGS},
-    {"SetOsprayEnabledFlag", VolumeAttributes_SetOsprayEnabledFlag, METH_VARARGS},
-    {"GetOsprayEnabledFlag", VolumeAttributes_GetOsprayEnabledFlag, METH_VARARGS},
-    {"SetOsprayRenderType", VolumeAttributes_SetOsprayRenderType, METH_VARARGS},
-    {"GetOsprayRenderType", VolumeAttributes_GetOsprayRenderType, METH_VARARGS},
-    {"SetOsprayShadowsEnabledFlag", VolumeAttributes_SetOsprayShadowsEnabledFlag, METH_VARARGS},
-    {"GetOsprayShadowsEnabledFlag", VolumeAttributes_GetOsprayShadowsEnabledFlag, METH_VARARGS},
-    {"SetOsprayUseGridAcceleratorFlag", VolumeAttributes_SetOsprayUseGridAcceleratorFlag, METH_VARARGS},
-    {"GetOsprayUseGridAcceleratorFlag", VolumeAttributes_GetOsprayUseGridAcceleratorFlag, METH_VARARGS},
-    {"SetOsprayPreIntegrationFlag", VolumeAttributes_SetOsprayPreIntegrationFlag, METH_VARARGS},
-    {"GetOsprayPreIntegrationFlag", VolumeAttributes_GetOsprayPreIntegrationFlag, METH_VARARGS},
-    {"SetOspraySingleShadeFlag", VolumeAttributes_SetOspraySingleShadeFlag, METH_VARARGS},
-    {"GetOspraySingleShadeFlag", VolumeAttributes_GetOspraySingleShadeFlag, METH_VARARGS},
-    {"SetOsprayOneSidedLightingFlag", VolumeAttributes_SetOsprayOneSidedLightingFlag, METH_VARARGS},
-    {"GetOsprayOneSidedLightingFlag", VolumeAttributes_GetOsprayOneSidedLightingFlag, METH_VARARGS},
-    {"SetOsprayAOTransparencyEnabledFlag", VolumeAttributes_SetOsprayAOTransparencyEnabledFlag, METH_VARARGS},
-    {"GetOsprayAOTransparencyEnabledFlag", VolumeAttributes_GetOsprayAOTransparencyEnabledFlag, METH_VARARGS},
-    {"SetOspraySPP", VolumeAttributes_SetOspraySPP, METH_VARARGS},
-    {"GetOspraySPP", VolumeAttributes_GetOspraySPP, METH_VARARGS},
-    {"SetOsprayAOSamples", VolumeAttributes_SetOsprayAOSamples, METH_VARARGS},
-    {"GetOsprayAOSamples", VolumeAttributes_GetOsprayAOSamples, METH_VARARGS},
-    {"SetOsprayAODistance", VolumeAttributes_SetOsprayAODistance, METH_VARARGS},
-    {"GetOsprayAODistance", VolumeAttributes_GetOsprayAODistance, METH_VARARGS},
-    {"SetOsprayMinContribution", VolumeAttributes_SetOsprayMinContribution, METH_VARARGS},
-    {"GetOsprayMinContribution", VolumeAttributes_GetOsprayMinContribution, METH_VARARGS},
-    {"SetOsprayMaxContribution", VolumeAttributes_SetOsprayMaxContribution, METH_VARARGS},
-    {"GetOsprayMaxContribution", VolumeAttributes_GetOsprayMaxContribution, METH_VARARGS},
+    {"SetOSPRayEnabledFlag", VolumeAttributes_SetOSPRayEnabledFlag, METH_VARARGS},
+    {"GetOSPRayEnabledFlag", VolumeAttributes_GetOSPRayEnabledFlag, METH_VARARGS},
+    {"SetOSPRayRenderType", VolumeAttributes_SetOSPRayRenderType, METH_VARARGS},
+    {"GetOSPRayRenderType", VolumeAttributes_GetOSPRayRenderType, METH_VARARGS},
+    {"SetOSPRayShadowsEnabledFlag", VolumeAttributes_SetOSPRayShadowsEnabledFlag, METH_VARARGS},
+    {"GetOSPRayShadowsEnabledFlag", VolumeAttributes_GetOSPRayShadowsEnabledFlag, METH_VARARGS},
+    {"SetOSPRayUseGridAcceleratorFlag", VolumeAttributes_SetOSPRayUseGridAcceleratorFlag, METH_VARARGS},
+    {"GetOSPRayUseGridAcceleratorFlag", VolumeAttributes_GetOSPRayUseGridAcceleratorFlag, METH_VARARGS},
+    {"SetOSPRayPreIntegrationFlag", VolumeAttributes_SetOSPRayPreIntegrationFlag, METH_VARARGS},
+    {"GetOSPRayPreIntegrationFlag", VolumeAttributes_GetOSPRayPreIntegrationFlag, METH_VARARGS},
+    {"SetOSPRaySingleShadeFlag", VolumeAttributes_SetOSPRaySingleShadeFlag, METH_VARARGS},
+    {"GetOSPRaySingleShadeFlag", VolumeAttributes_GetOSPRaySingleShadeFlag, METH_VARARGS},
+    {"SetOSPRayOneSidedLightingFlag", VolumeAttributes_SetOSPRayOneSidedLightingFlag, METH_VARARGS},
+    {"GetOSPRayOneSidedLightingFlag", VolumeAttributes_GetOSPRayOneSidedLightingFlag, METH_VARARGS},
+    {"SetOSPRayAOTransparencyEnabledFlag", VolumeAttributes_SetOSPRayAOTransparencyEnabledFlag, METH_VARARGS},
+    {"GetOSPRayAOTransparencyEnabledFlag", VolumeAttributes_GetOSPRayAOTransparencyEnabledFlag, METH_VARARGS},
+    {"SetOSPRaySPP", VolumeAttributes_SetOSPRaySPP, METH_VARARGS},
+    {"GetOSPRaySPP", VolumeAttributes_GetOSPRaySPP, METH_VARARGS},
+    {"SetOSPRayAOSamples", VolumeAttributes_SetOSPRayAOSamples, METH_VARARGS},
+    {"GetOSPRayAOSamples", VolumeAttributes_GetOSPRayAOSamples, METH_VARARGS},
+    {"SetOSPRayAODistance", VolumeAttributes_SetOSPRayAODistance, METH_VARARGS},
+    {"GetOSPRayAODistance", VolumeAttributes_GetOSPRayAODistance, METH_VARARGS},
+    {"SetOSPRayMinContribution", VolumeAttributes_SetOSPRayMinContribution, METH_VARARGS},
+    {"GetOSPRayMinContribution", VolumeAttributes_GetOSPRayMinContribution, METH_VARARGS},
+    {"SetOSPRayMaxContribution", VolumeAttributes_SetOSPRayMaxContribution, METH_VARARGS},
+    {"GetOSPRayMaxContribution", VolumeAttributes_GetOSPRayMaxContribution, METH_VARARGS},
     {"SetLegendFlag", VolumeAttributes_SetLegendFlag, METH_VARARGS},
     {"GetLegendFlag", VolumeAttributes_GetLegendFlag, METH_VARARGS},
     {"SetLightingFlag", VolumeAttributes_SetLightingFlag, METH_VARARGS},
@@ -3278,37 +3278,37 @@ static PyObject *VolumeAttributes_richcompare(PyObject *self, PyObject *other, i
 PyObject *
 PyVolumeAttributes_getattr(PyObject *self, char *name)
 {
-    if(strcmp(name, "osprayEnabledFlag") == 0)
-        return VolumeAttributes_GetOsprayEnabledFlag(self, NULL);
-    if(strcmp(name, "osprayRenderType") == 0)
-        return VolumeAttributes_GetOsprayRenderType(self, NULL);
+    if(strcmp(name, "OSPRayEnabledFlag") == 0)
+        return VolumeAttributes_GetOSPRayEnabledFlag(self, NULL);
+    if(strcmp(name, "OSPRayRenderType") == 0)
+        return VolumeAttributes_GetOSPRayRenderType(self, NULL);
     if(strcmp(name, "SciVis") == 0)
         return PyInt_FromLong(long(VolumeAttributes::SciVis));
     if(strcmp(name, "PathTracer") == 0)
         return PyInt_FromLong(long(VolumeAttributes::PathTracer));
 
-    if(strcmp(name, "osprayShadowsEnabledFlag") == 0)
-        return VolumeAttributes_GetOsprayShadowsEnabledFlag(self, NULL);
-    if(strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
-        return VolumeAttributes_GetOsprayUseGridAcceleratorFlag(self, NULL);
-    if(strcmp(name, "osprayPreIntegrationFlag") == 0)
-        return VolumeAttributes_GetOsprayPreIntegrationFlag(self, NULL);
-    if(strcmp(name, "ospraySingleShadeFlag") == 0)
-        return VolumeAttributes_GetOspraySingleShadeFlag(self, NULL);
-    if(strcmp(name, "osprayOneSidedLightingFlag") == 0)
-        return VolumeAttributes_GetOsprayOneSidedLightingFlag(self, NULL);
-    if(strcmp(name, "osprayAOTransparencyEnabledFlag") == 0)
-        return VolumeAttributes_GetOsprayAOTransparencyEnabledFlag(self, NULL);
-    if(strcmp(name, "ospraySPP") == 0)
-        return VolumeAttributes_GetOspraySPP(self, NULL);
-    if(strcmp(name, "osprayAOSamples") == 0)
-        return VolumeAttributes_GetOsprayAOSamples(self, NULL);
-    if(strcmp(name, "osprayAODistance") == 0)
-        return VolumeAttributes_GetOsprayAODistance(self, NULL);
-    if(strcmp(name, "osprayMinContribution") == 0)
-        return VolumeAttributes_GetOsprayMinContribution(self, NULL);
-    if(strcmp(name, "osprayMaxContribution") == 0)
-        return VolumeAttributes_GetOsprayMaxContribution(self, NULL);
+    if(strcmp(name, "OSPRayShadowsEnabledFlag") == 0)
+        return VolumeAttributes_GetOSPRayShadowsEnabledFlag(self, NULL);
+    if(strcmp(name, "OSPRayUseGridAcceleratorFlag") == 0)
+        return VolumeAttributes_GetOSPRayUseGridAcceleratorFlag(self, NULL);
+    if(strcmp(name, "OSPRayPreIntegrationFlag") == 0)
+        return VolumeAttributes_GetOSPRayPreIntegrationFlag(self, NULL);
+    if(strcmp(name, "OSPRaySingleShadeFlag") == 0)
+        return VolumeAttributes_GetOSPRaySingleShadeFlag(self, NULL);
+    if(strcmp(name, "OSPRayOneSidedLightingFlag") == 0)
+        return VolumeAttributes_GetOSPRayOneSidedLightingFlag(self, NULL);
+    if(strcmp(name, "OSPRayAOTransparencyEnabledFlag") == 0)
+        return VolumeAttributes_GetOSPRayAOTransparencyEnabledFlag(self, NULL);
+    if(strcmp(name, "OSPRaySPP") == 0)
+        return VolumeAttributes_GetOSPRaySPP(self, NULL);
+    if(strcmp(name, "OSPRayAOSamples") == 0)
+        return VolumeAttributes_GetOSPRayAOSamples(self, NULL);
+    if(strcmp(name, "OSPRayAODistance") == 0)
+        return VolumeAttributes_GetOSPRayAODistance(self, NULL);
+    if(strcmp(name, "OSPRayMinContribution") == 0)
+        return VolumeAttributes_GetOSPRayMinContribution(self, NULL);
+    if(strcmp(name, "OSPRayMaxContribution") == 0)
+        return VolumeAttributes_GetOSPRayMaxContribution(self, NULL);
     if(strcmp(name, "legendFlag") == 0)
         return VolumeAttributes_GetLegendFlag(self, NULL);
     if(strcmp(name, "lightingFlag") == 0)
@@ -3496,32 +3496,32 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
 
-    if(strcmp(name, "osprayEnabledFlag") == 0)
-        obj = VolumeAttributes_SetOsprayEnabledFlag(self, args);
-    else if(strcmp(name, "osprayRenderType") == 0)
-        obj = VolumeAttributes_SetOsprayRenderType(self, args);
-    else if(strcmp(name, "osprayShadowsEnabledFlag") == 0)
-        obj = VolumeAttributes_SetOsprayShadowsEnabledFlag(self, args);
-    else if(strcmp(name, "osprayUseGridAcceleratorFlag") == 0)
-        obj = VolumeAttributes_SetOsprayUseGridAcceleratorFlag(self, args);
-    else if(strcmp(name, "osprayPreIntegrationFlag") == 0)
-        obj = VolumeAttributes_SetOsprayPreIntegrationFlag(self, args);
-    else if(strcmp(name, "ospraySingleShadeFlag") == 0)
-        obj = VolumeAttributes_SetOspraySingleShadeFlag(self, args);
-    else if(strcmp(name, "osprayOneSidedLightingFlag") == 0)
-        obj = VolumeAttributes_SetOsprayOneSidedLightingFlag(self, args);
-    else if(strcmp(name, "osprayAOTransparencyEnabledFlag") == 0)
-        obj = VolumeAttributes_SetOsprayAOTransparencyEnabledFlag(self, args);
-    else if(strcmp(name, "ospraySPP") == 0)
-        obj = VolumeAttributes_SetOspraySPP(self, args);
-    else if(strcmp(name, "osprayAOSamples") == 0)
-        obj = VolumeAttributes_SetOsprayAOSamples(self, args);
-    else if(strcmp(name, "osprayAODistance") == 0)
-        obj = VolumeAttributes_SetOsprayAODistance(self, args);
-    else if(strcmp(name, "osprayMinContribution") == 0)
-        obj = VolumeAttributes_SetOsprayMinContribution(self, args);
-    else if(strcmp(name, "osprayMaxContribution") == 0)
-        obj = VolumeAttributes_SetOsprayMaxContribution(self, args);
+    if(strcmp(name, "OSPRayEnabledFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayEnabledFlag(self, args);
+    else if(strcmp(name, "OSPRayRenderType") == 0)
+        obj = VolumeAttributes_SetOSPRayRenderType(self, args);
+    else if(strcmp(name, "OSPRayShadowsEnabledFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayShadowsEnabledFlag(self, args);
+    else if(strcmp(name, "OSPRayUseGridAcceleratorFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayUseGridAcceleratorFlag(self, args);
+    else if(strcmp(name, "OSPRayPreIntegrationFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayPreIntegrationFlag(self, args);
+    else if(strcmp(name, "OSPRaySingleShadeFlag") == 0)
+        obj = VolumeAttributes_SetOSPRaySingleShadeFlag(self, args);
+    else if(strcmp(name, "OSPRayOneSidedLightingFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayOneSidedLightingFlag(self, args);
+    else if(strcmp(name, "OSPRayAOTransparencyEnabledFlag") == 0)
+        obj = VolumeAttributes_SetOSPRayAOTransparencyEnabledFlag(self, args);
+    else if(strcmp(name, "OSPRaySPP") == 0)
+        obj = VolumeAttributes_SetOSPRaySPP(self, args);
+    else if(strcmp(name, "OSPRayAOSamples") == 0)
+        obj = VolumeAttributes_SetOSPRayAOSamples(self, args);
+    else if(strcmp(name, "OSPRayAODistance") == 0)
+        obj = VolumeAttributes_SetOSPRayAODistance(self, args);
+    else if(strcmp(name, "OSPRayMinContribution") == 0)
+        obj = VolumeAttributes_SetOSPRayMinContribution(self, args);
+    else if(strcmp(name, "OSPRayMaxContribution") == 0)
+        obj = VolumeAttributes_SetOSPRayMaxContribution(self, args);
     else if(strcmp(name, "legendFlag") == 0)
         obj = VolumeAttributes_SetLegendFlag(self, args);
     else if(strcmp(name, "lightingFlag") == 0)

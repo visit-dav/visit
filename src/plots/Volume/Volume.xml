@@ -86,48 +86,48 @@
         Higher
         Highest
       </Enum>
-      <Enum name="OSPRayRenderType">
+      <Enum name="OSPRayRenderTypes">
         SciVis
         PathTracer
       </Enum>
       
-      <Field name="osprayEnabledFlag" label="Enable OSPRay" type="bool">
+      <Field name="OSPRayEnabledFlag" label="Enable OSPRay" type="bool">
         false
       </Field>
-      <Field name="osprayRenderType" label="OSPRay Render Type" type="enum" subtype="OSPRayRenderType">
+      <Field name="OSPRayRenderType" label="OSPRay Render Type" type="enum" subtype="OSPRayRenderTypes">
         SciVis
       </Field>
-      <Field name="osprayShadowsEnabledFlag" label="osprayShadowsEnabledFlag" type="bool">
+      <Field name="OSPRayShadowsEnabledFlag" label="OSPRayShadowsEnabledFlag" type="bool">
         false
       </Field>
-      <Field name="osprayUseGridAcceleratorFlag" label="osprayUseGridAcceleratorFlag" type="bool">
+      <Field name="OSPRayUseGridAcceleratorFlag" label="OSPRayUseGridAcceleratorFlag" type="bool">
         false
       </Field>
-      <Field name="osprayPreIntegrationFlag" label="osprayPreIntegrationFlag" type="bool">
+      <Field name="OSPRayPreIntegrationFlag" label="OSPRayPreIntegrationFlag" type="bool">
         false
       </Field>
-      <Field name="ospraySingleShadeFlag" label="ospraySingleShadeFlag" type="bool">
+      <Field name="OSPRaySingleShadeFlag" label="OSPRaySingleShadeFlag" type="bool">
         false
       </Field>
-      <Field name="osprayOneSidedLightingFlag" label="osprayOneSidedLightingFlag" type="bool">
+      <Field name="OSPRayOneSidedLightingFlag" label="OSPRayOneSidedLightingFlag" type="bool">
         false
       </Field>
-      <Field name="osprayAOTransparencyEnabledFlag" label="osprayAOTransparencyEnabledFlag" type="bool">
+      <Field name="OSPRayAOTransparencyEnabledFlag" label="OSPRayAOTransparencyEnabledFlag" type="bool">
         false
       </Field>
-      <Field name="ospraySPP" label="ospraySPP" type="int">
+      <Field name="OSPRaySPP" label="OSPRaySPP" type="int">
         1
       </Field>
-      <Field name="osprayAOSamples" label="osprayAOSamples" type="int">
+      <Field name="OSPRayAOSamples" label="OSPRayAOSamples" type="int">
         0
       </Field>
-      <Field name="osprayAODistance" label="osprayAODistance" type="double">
+      <Field name="OSPRayAODistance" label="OSPRayAODistance" type="double">
         100000.0
       </Field>
-      <Field name="osprayMinContribution" label="osprayMinContribution" type="double">
+      <Field name="OSPRayMinContribution" label="OSPRayMinContribution" type="double">
         0.001
       </Field>      
-      <Field name="osprayMaxContribution" label="osprayMaxContribution" type="double">
+      <Field name="OSPRayMaxContribution" label="OSPRayMaxContribution" type="double">
         2.0
       </Field>      
       <Field name="legendFlag" label="legendFlag" type="bool">

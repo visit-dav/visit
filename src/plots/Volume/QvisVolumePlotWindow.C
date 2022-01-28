@@ -1495,7 +1495,7 @@ void QvisVolumePlotWindow::CreateOSPRayGroups(QWidget *parent, QLayout *pLayout)
 
 void QvisVolumePlotWindow::osprayToggled(bool val)
 {
-    volumeAtts->SetOsprayEnabledFlag(val);
+    volumeAtts->SetOSPRayEnabledFlag(val);
     Apply();
 }
 void
@@ -1504,10 +1504,10 @@ QvisVolumePlotWindow::osprayRenderTypeChanged(int val)
     switch (val)
     {
       case 0:
-        volumeAtts->SetOsprayRenderType(VolumeAttributes::SciVis);
+        volumeAtts->SetOSPRayRenderType(VolumeAttributes::SciVis);
         break;
       case 1:
-        volumeAtts->SetOsprayRenderType(VolumeAttributes::PathTracer);
+        volumeAtts->SetOSPRayRenderType(VolumeAttributes::PathTracer);
         break;
       default:
         EXCEPTION1(ImproperUseException,
@@ -1521,57 +1521,57 @@ QvisVolumePlotWindow::osprayRenderTypeChanged(int val)
 
 void QvisVolumePlotWindow::osprayShadowToggled(bool val)
 {
-    volumeAtts->SetOsprayShadowsEnabledFlag(val);
+    volumeAtts->SetOSPRayShadowsEnabledFlag(val);
     Apply();
 }
 void QvisVolumePlotWindow::osprayUseGridAcceleratorToggled(bool val)
 {
-    volumeAtts->SetOsprayUseGridAcceleratorFlag(val);
+    volumeAtts->SetOSPRayUseGridAcceleratorFlag(val);
     Apply();
 }
 void QvisVolumePlotWindow::osprayPreIntegrationToggled(bool val)
 {
-    volumeAtts->SetOsprayPreIntegrationFlag(val);
+    volumeAtts->SetOSPRayPreIntegrationFlag(val);
     Apply();
 }
 void QvisVolumePlotWindow::ospraySingleShadeToggled(bool val)
 {
-    volumeAtts->SetOspraySingleShadeFlag(val);
+    volumeAtts->SetOSPRaySingleShadeFlag(val);
     Apply();
 }
 void QvisVolumePlotWindow::osprayOneSidedLightingToggled(bool val)
 {
-    volumeAtts->SetOsprayOneSidedLightingFlag(val);
+    volumeAtts->SetOSPRayOneSidedLightingFlag(val);
     Apply();
 };
 void QvisVolumePlotWindow::osprayAOTransparencyToggled(bool val)
 {
-    volumeAtts->SetOsprayAOTransparencyEnabledFlag(val);
+    volumeAtts->SetOSPRayAOTransparencyEnabledFlag(val);
     Apply();
 };
 void QvisVolumePlotWindow::ospraySPPChanged(int val)
 {
-    volumeAtts->SetOspraySPP(val);
+    volumeAtts->SetOSPRaySPP(val);
     Apply();
 }
 void QvisVolumePlotWindow::osprayAOSamplesChanged(int val)
 {
-    volumeAtts->SetOsprayAOSamples(val);
+    volumeAtts->SetOSPRayAOSamples(val);
     Apply();
 }
 void QvisVolumePlotWindow::osprayAODistanceChanged(double val)
 {
-    volumeAtts->SetOsprayAODistance(val);
+    volumeAtts->SetOSPRayAODistance(val);
     Apply();
 }
 void QvisVolumePlotWindow::osprayMinContributionChanged(double val)
 {
-    volumeAtts->SetOsprayMinContribution(val);
+    volumeAtts->SetOSPRayMinContribution(val);
     Apply();
 }
 void QvisVolumePlotWindow::osprayMaxContributionChanged(double val)
 {
-    volumeAtts->SetOsprayMaxContribution(val);
+    volumeAtts->SetOSPRayMaxContribution(val);
     Apply();
 }
 
@@ -1784,9 +1784,9 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             legendToggle->setChecked(volumeAtts->GetLegendFlag());
             legendToggle->blockSignals(false);
             break;
-        case VolumeAttributes::ID_osprayEnabledFlag:
+        case VolumeAttributes::ID_OSPRayEnabledFlag:
             osprayGroup->blockSignals(true);
-            osprayGroup->setChecked(volumeAtts->GetOsprayEnabledFlag());
+            osprayGroup->setChecked(volumeAtts->GetOSPRayEnabledFlag());
             osprayGroup->blockSignals(false);
 
             break;
@@ -2108,73 +2108,73 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             matN->blockSignals(false);
             break;
 
-        case VolumeAttributes::ID_osprayRenderType:
+        case VolumeAttributes::ID_OSPRayRenderType:
             osprayRenderTypesComboBox->blockSignals(true);
 
-            if (volumeAtts->GetOsprayRenderType() == VolumeAttributes::SciVis)
+            if (volumeAtts->GetOSPRayRenderType() == VolumeAttributes::SciVis)
             {
                 osprayRenderTypesComboBox->setCurrentIndex(0);
             }
-            else if (volumeAtts->GetOsprayRenderType() == VolumeAttributes::PathTracer)
+            else if (volumeAtts->GetOSPRayRenderType() == VolumeAttributes::PathTracer)
             {
                 osprayRenderTypesComboBox->setCurrentIndex(1);
             }
             osprayRenderTypesComboBox->blockSignals(false);
             break;
-        case VolumeAttributes::ID_osprayShadowsEnabledFlag:
+        case VolumeAttributes::ID_OSPRayShadowsEnabledFlag:
             osprayShadowToggle->blockSignals(true);
-            osprayShadowToggle->setChecked(volumeAtts->GetOsprayShadowsEnabledFlag());
+            osprayShadowToggle->setChecked(volumeAtts->GetOSPRayShadowsEnabledFlag());
             osprayShadowToggle->blockSignals(false);
             break;
-        case VolumeAttributes::ID_osprayUseGridAcceleratorFlag:
+        case VolumeAttributes::ID_OSPRayUseGridAcceleratorFlag:
             osprayUseGridAcceleratorToggle->blockSignals(true);
-            osprayUseGridAcceleratorToggle->setChecked(volumeAtts->GetOsprayUseGridAcceleratorFlag());
+            osprayUseGridAcceleratorToggle->setChecked(volumeAtts->GetOSPRayUseGridAcceleratorFlag());
             osprayUseGridAcceleratorToggle->blockSignals(false);
             break;
-        case VolumeAttributes::ID_osprayPreIntegrationFlag:
+        case VolumeAttributes::ID_OSPRayPreIntegrationFlag:
             osprayPreIntegrationToggle->blockSignals(true);
-            osprayPreIntegrationToggle->setChecked(volumeAtts->GetOsprayPreIntegrationFlag());
+            osprayPreIntegrationToggle->setChecked(volumeAtts->GetOSPRayPreIntegrationFlag());
             osprayPreIntegrationToggle->blockSignals(false);
             break;
-        case VolumeAttributes::ID_ospraySingleShadeFlag:
+        case VolumeAttributes::ID_OSPRaySingleShadeFlag:
             ospraySingleShadeToggle->blockSignals(true);
-            ospraySingleShadeToggle->setChecked(volumeAtts->GetOspraySingleShadeFlag());
+            ospraySingleShadeToggle->setChecked(volumeAtts->GetOSPRaySingleShadeFlag());
             ospraySingleShadeToggle->blockSignals(false);
             break;
-        case VolumeAttributes::ID_osprayOneSidedLightingFlag:
+        case VolumeAttributes::ID_OSPRayOneSidedLightingFlag:
             osprayOneSidedLightingToggle->blockSignals(true);
-            osprayOneSidedLightingToggle->setChecked(volumeAtts->GetOsprayOneSidedLightingFlag());
+            osprayOneSidedLightingToggle->setChecked(volumeAtts->GetOSPRayOneSidedLightingFlag());
             osprayOneSidedLightingToggle->blockSignals(false);
             break;
-        case VolumeAttributes::ID_osprayAOTransparencyEnabledFlag:
+        case VolumeAttributes::ID_OSPRayAOTransparencyEnabledFlag:
             osprayAOTransparencyToggle->blockSignals(true);
-            osprayAOTransparencyToggle->setChecked(volumeAtts->GetOsprayAOTransparencyEnabledFlag());
+            osprayAOTransparencyToggle->setChecked(volumeAtts->GetOSPRayAOTransparencyEnabledFlag());
             osprayAOTransparencyToggle->blockSignals(false);
             break;
 
-        case VolumeAttributes::ID_ospraySPP:
+        case VolumeAttributes::ID_OSPRaySPP:
             ospraySPP->blockSignals(true);
-            ospraySPP->setValue(volumeAtts->GetOspraySPP());
+            ospraySPP->setValue(volumeAtts->GetOSPRaySPP());
             ospraySPP->blockSignals(false);
             break;
-        case VolumeAttributes::ID_osprayAODistance:
+        case VolumeAttributes::ID_OSPRayAODistance:
             osprayAODistance->blockSignals(true);
-            osprayAODistance->setValue(volumeAtts->GetOsprayAODistance());
+            osprayAODistance->setValue(volumeAtts->GetOSPRayAODistance());
             osprayAODistance->blockSignals(false);
             break;
-        case VolumeAttributes::ID_osprayAOSamples:
+        case VolumeAttributes::ID_OSPRayAOSamples:
             osprayAOSamples->blockSignals(true);
-            osprayAOSamples->setValue(volumeAtts->GetOsprayAOSamples());
+            osprayAOSamples->setValue(volumeAtts->GetOSPRayAOSamples());
             osprayAOSamples->blockSignals(false);
             break;
-        case VolumeAttributes::ID_osprayMinContribution:
+        case VolumeAttributes::ID_OSPRayMinContribution:
             osprayMinContribution->blockSignals(true);
-            osprayMinContribution->setValue(volumeAtts->GetOsprayMinContribution());
+            osprayMinContribution->setValue(volumeAtts->GetOSPRayMinContribution());
             osprayMinContribution->blockSignals(false);
             break;
-        case VolumeAttributes::ID_osprayMaxContribution:
+        case VolumeAttributes::ID_OSPRayMaxContribution:
             osprayMaxContribution->blockSignals(true);
-            osprayMaxContribution->setValue(volumeAtts->GetOsprayMaxContribution());
+            osprayMaxContribution->setValue(volumeAtts->GetOSPRayMaxContribution());
             osprayMaxContribution->blockSignals(false);
             break;
         }

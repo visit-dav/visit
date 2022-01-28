@@ -72,27 +72,27 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int LOWGRADIENTLIGHTINGREDUCTION_HIGHER = 6;
     public final static int LOWGRADIENTLIGHTINGREDUCTION_HIGHEST = 7;
 
-    public final static int OSPRAYRENDERTYPE_SCIVIS = 0;
-    public final static int OSPRAYRENDERTYPE_PATHTRACER = 1;
+    public final static int OSPRAYRENDERTYPES_SCIVIS = 0;
+    public final static int OSPRAYRENDERTYPES_PATHTRACER = 1;
 
 
     public VolumeAttributes()
     {
         super(VolumeAttributes_numAdditionalAtts);
 
-        osprayEnabledFlag = false;
-        osprayRenderType = OSPRAYRENDERTYPE_SCIVIS;
-        osprayShadowsEnabledFlag = false;
-        osprayUseGridAcceleratorFlag = false;
-        osprayPreIntegrationFlag = false;
-        ospraySingleShadeFlag = false;
-        osprayOneSidedLightingFlag = false;
-        osprayAOTransparencyEnabledFlag = false;
-        ospraySPP = 1;
-        osprayAOSamples = 0;
-        osprayAODistance = 100000;
-        osprayMinContribution = 0.001;
-        osprayMaxContribution = 2;
+        OSPRayEnabledFlag = false;
+        OSPRayRenderType = OSPRAYRENDERTYPES_SCIVIS;
+        OSPRayShadowsEnabledFlag = false;
+        OSPRayUseGridAcceleratorFlag = false;
+        OSPRayPreIntegrationFlag = false;
+        OSPRaySingleShadeFlag = false;
+        OSPRayOneSidedLightingFlag = false;
+        OSPRayAOTransparencyEnabledFlag = false;
+        OSPRaySPP = 1;
+        OSPRayAOSamples = 0;
+        OSPRayAODistance = 100000;
+        OSPRayMinContribution = 0.001;
+        OSPRayMaxContribution = 2;
         legendFlag = true;
         lightingFlag = true;
         colorControlPoints = new ColorControlPointList();
@@ -137,19 +137,19 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     {
         super(VolumeAttributes_numAdditionalAtts + nMoreFields);
 
-        osprayEnabledFlag = false;
-        osprayRenderType = OSPRAYRENDERTYPE_SCIVIS;
-        osprayShadowsEnabledFlag = false;
-        osprayUseGridAcceleratorFlag = false;
-        osprayPreIntegrationFlag = false;
-        ospraySingleShadeFlag = false;
-        osprayOneSidedLightingFlag = false;
-        osprayAOTransparencyEnabledFlag = false;
-        ospraySPP = 1;
-        osprayAOSamples = 0;
-        osprayAODistance = 100000;
-        osprayMinContribution = 0.001;
-        osprayMaxContribution = 2;
+        OSPRayEnabledFlag = false;
+        OSPRayRenderType = OSPRAYRENDERTYPES_SCIVIS;
+        OSPRayShadowsEnabledFlag = false;
+        OSPRayUseGridAcceleratorFlag = false;
+        OSPRayPreIntegrationFlag = false;
+        OSPRaySingleShadeFlag = false;
+        OSPRayOneSidedLightingFlag = false;
+        OSPRayAOTransparencyEnabledFlag = false;
+        OSPRaySPP = 1;
+        OSPRayAOSamples = 0;
+        OSPRayAODistance = 100000;
+        OSPRayMinContribution = 0.001;
+        OSPRayMaxContribution = 2;
         legendFlag = true;
         lightingFlag = true;
         colorControlPoints = new ColorControlPointList();
@@ -196,19 +196,19 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
 
         int i;
 
-        osprayEnabledFlag = obj.osprayEnabledFlag;
-        osprayRenderType = obj.osprayRenderType;
-        osprayShadowsEnabledFlag = obj.osprayShadowsEnabledFlag;
-        osprayUseGridAcceleratorFlag = obj.osprayUseGridAcceleratorFlag;
-        osprayPreIntegrationFlag = obj.osprayPreIntegrationFlag;
-        ospraySingleShadeFlag = obj.ospraySingleShadeFlag;
-        osprayOneSidedLightingFlag = obj.osprayOneSidedLightingFlag;
-        osprayAOTransparencyEnabledFlag = obj.osprayAOTransparencyEnabledFlag;
-        ospraySPP = obj.ospraySPP;
-        osprayAOSamples = obj.osprayAOSamples;
-        osprayAODistance = obj.osprayAODistance;
-        osprayMinContribution = obj.osprayMinContribution;
-        osprayMaxContribution = obj.osprayMaxContribution;
+        OSPRayEnabledFlag = obj.OSPRayEnabledFlag;
+        OSPRayRenderType = obj.OSPRayRenderType;
+        OSPRayShadowsEnabledFlag = obj.OSPRayShadowsEnabledFlag;
+        OSPRayUseGridAcceleratorFlag = obj.OSPRayUseGridAcceleratorFlag;
+        OSPRayPreIntegrationFlag = obj.OSPRayPreIntegrationFlag;
+        OSPRaySingleShadeFlag = obj.OSPRaySingleShadeFlag;
+        OSPRayOneSidedLightingFlag = obj.OSPRayOneSidedLightingFlag;
+        OSPRayAOTransparencyEnabledFlag = obj.OSPRayAOTransparencyEnabledFlag;
+        OSPRaySPP = obj.OSPRaySPP;
+        OSPRayAOSamples = obj.OSPRayAOSamples;
+        OSPRayAODistance = obj.OSPRayAODistance;
+        OSPRayMinContribution = obj.OSPRayMinContribution;
+        OSPRayMaxContribution = obj.OSPRayMaxContribution;
         legendFlag = obj.legendFlag;
         lightingFlag = obj.lightingFlag;
         colorControlPoints = new ColorControlPointList(obj.colorControlPoints);
@@ -276,19 +276,19 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             materialProperties_equal = (materialProperties[i] == obj.materialProperties[i]);
 
         // Create the return value
-        return ((osprayEnabledFlag == obj.osprayEnabledFlag) &&
-                (osprayRenderType == obj.osprayRenderType) &&
-                (osprayShadowsEnabledFlag == obj.osprayShadowsEnabledFlag) &&
-                (osprayUseGridAcceleratorFlag == obj.osprayUseGridAcceleratorFlag) &&
-                (osprayPreIntegrationFlag == obj.osprayPreIntegrationFlag) &&
-                (ospraySingleShadeFlag == obj.ospraySingleShadeFlag) &&
-                (osprayOneSidedLightingFlag == obj.osprayOneSidedLightingFlag) &&
-                (osprayAOTransparencyEnabledFlag == obj.osprayAOTransparencyEnabledFlag) &&
-                (ospraySPP == obj.ospraySPP) &&
-                (osprayAOSamples == obj.osprayAOSamples) &&
-                (osprayAODistance == obj.osprayAODistance) &&
-                (osprayMinContribution == obj.osprayMinContribution) &&
-                (osprayMaxContribution == obj.osprayMaxContribution) &&
+        return ((OSPRayEnabledFlag == obj.OSPRayEnabledFlag) &&
+                (OSPRayRenderType == obj.OSPRayRenderType) &&
+                (OSPRayShadowsEnabledFlag == obj.OSPRayShadowsEnabledFlag) &&
+                (OSPRayUseGridAcceleratorFlag == obj.OSPRayUseGridAcceleratorFlag) &&
+                (OSPRayPreIntegrationFlag == obj.OSPRayPreIntegrationFlag) &&
+                (OSPRaySingleShadeFlag == obj.OSPRaySingleShadeFlag) &&
+                (OSPRayOneSidedLightingFlag == obj.OSPRayOneSidedLightingFlag) &&
+                (OSPRayAOTransparencyEnabledFlag == obj.OSPRayAOTransparencyEnabledFlag) &&
+                (OSPRaySPP == obj.OSPRaySPP) &&
+                (OSPRayAOSamples == obj.OSPRayAOSamples) &&
+                (OSPRayAODistance == obj.OSPRayAODistance) &&
+                (OSPRayMinContribution == obj.OSPRayMinContribution) &&
+                (OSPRayMaxContribution == obj.OSPRayMaxContribution) &&
                 (legendFlag == obj.legendFlag) &&
                 (lightingFlag == obj.lightingFlag) &&
                 (colorControlPoints.equals(obj.colorControlPoints)) &&
@@ -327,81 +327,81 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public String GetVersion() { return "1.1"; }
 
     // Property setting methods
-    public void SetOsprayEnabledFlag(boolean osprayEnabledFlag_)
+    public void SetOSPRayEnabledFlag(boolean OSPRayEnabledFlag_)
     {
-        osprayEnabledFlag = osprayEnabledFlag_;
+        OSPRayEnabledFlag = OSPRayEnabledFlag_;
         Select(0);
     }
 
-    public void SetOsprayRenderType(int osprayRenderType_)
+    public void SetOSPRayRenderType(int OSPRayRenderType_)
     {
-        osprayRenderType = osprayRenderType_;
+        OSPRayRenderType = OSPRayRenderType_;
         Select(1);
     }
 
-    public void SetOsprayShadowsEnabledFlag(boolean osprayShadowsEnabledFlag_)
+    public void SetOSPRayShadowsEnabledFlag(boolean OSPRayShadowsEnabledFlag_)
     {
-        osprayShadowsEnabledFlag = osprayShadowsEnabledFlag_;
+        OSPRayShadowsEnabledFlag = OSPRayShadowsEnabledFlag_;
         Select(2);
     }
 
-    public void SetOsprayUseGridAcceleratorFlag(boolean osprayUseGridAcceleratorFlag_)
+    public void SetOSPRayUseGridAcceleratorFlag(boolean OSPRayUseGridAcceleratorFlag_)
     {
-        osprayUseGridAcceleratorFlag = osprayUseGridAcceleratorFlag_;
+        OSPRayUseGridAcceleratorFlag = OSPRayUseGridAcceleratorFlag_;
         Select(3);
     }
 
-    public void SetOsprayPreIntegrationFlag(boolean osprayPreIntegrationFlag_)
+    public void SetOSPRayPreIntegrationFlag(boolean OSPRayPreIntegrationFlag_)
     {
-        osprayPreIntegrationFlag = osprayPreIntegrationFlag_;
+        OSPRayPreIntegrationFlag = OSPRayPreIntegrationFlag_;
         Select(4);
     }
 
-    public void SetOspraySingleShadeFlag(boolean ospraySingleShadeFlag_)
+    public void SetOSPRaySingleShadeFlag(boolean OSPRaySingleShadeFlag_)
     {
-        ospraySingleShadeFlag = ospraySingleShadeFlag_;
+        OSPRaySingleShadeFlag = OSPRaySingleShadeFlag_;
         Select(5);
     }
 
-    public void SetOsprayOneSidedLightingFlag(boolean osprayOneSidedLightingFlag_)
+    public void SetOSPRayOneSidedLightingFlag(boolean OSPRayOneSidedLightingFlag_)
     {
-        osprayOneSidedLightingFlag = osprayOneSidedLightingFlag_;
+        OSPRayOneSidedLightingFlag = OSPRayOneSidedLightingFlag_;
         Select(6);
     }
 
-    public void SetOsprayAOTransparencyEnabledFlag(boolean osprayAOTransparencyEnabledFlag_)
+    public void SetOSPRayAOTransparencyEnabledFlag(boolean OSPRayAOTransparencyEnabledFlag_)
     {
-        osprayAOTransparencyEnabledFlag = osprayAOTransparencyEnabledFlag_;
+        OSPRayAOTransparencyEnabledFlag = OSPRayAOTransparencyEnabledFlag_;
         Select(7);
     }
 
-    public void SetOspraySPP(int ospraySPP_)
+    public void SetOSPRaySPP(int OSPRaySPP_)
     {
-        ospraySPP = ospraySPP_;
+        OSPRaySPP = OSPRaySPP_;
         Select(8);
     }
 
-    public void SetOsprayAOSamples(int osprayAOSamples_)
+    public void SetOSPRayAOSamples(int OSPRayAOSamples_)
     {
-        osprayAOSamples = osprayAOSamples_;
+        OSPRayAOSamples = OSPRayAOSamples_;
         Select(9);
     }
 
-    public void SetOsprayAODistance(double osprayAODistance_)
+    public void SetOSPRayAODistance(double OSPRayAODistance_)
     {
-        osprayAODistance = osprayAODistance_;
+        OSPRayAODistance = OSPRayAODistance_;
         Select(10);
     }
 
-    public void SetOsprayMinContribution(double osprayMinContribution_)
+    public void SetOSPRayMinContribution(double OSPRayMinContribution_)
     {
-        osprayMinContribution = osprayMinContribution_;
+        OSPRayMinContribution = OSPRayMinContribution_;
         Select(11);
     }
 
-    public void SetOsprayMaxContribution(double osprayMaxContribution_)
+    public void SetOSPRayMaxContribution(double OSPRayMaxContribution_)
     {
-        osprayMaxContribution = osprayMaxContribution_;
+        OSPRayMaxContribution = OSPRayMaxContribution_;
         Select(12);
     }
 
@@ -611,19 +611,19 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     }
 
     // Property getting methods
-    public boolean                  GetOsprayEnabledFlag() { return osprayEnabledFlag; }
-    public int                      GetOsprayRenderType() { return osprayRenderType; }
-    public boolean                  GetOsprayShadowsEnabledFlag() { return osprayShadowsEnabledFlag; }
-    public boolean                  GetOsprayUseGridAcceleratorFlag() { return osprayUseGridAcceleratorFlag; }
-    public boolean                  GetOsprayPreIntegrationFlag() { return osprayPreIntegrationFlag; }
-    public boolean                  GetOspraySingleShadeFlag() { return ospraySingleShadeFlag; }
-    public boolean                  GetOsprayOneSidedLightingFlag() { return osprayOneSidedLightingFlag; }
-    public boolean                  GetOsprayAOTransparencyEnabledFlag() { return osprayAOTransparencyEnabledFlag; }
-    public int                      GetOspraySPP() { return ospraySPP; }
-    public int                      GetOsprayAOSamples() { return osprayAOSamples; }
-    public double                   GetOsprayAODistance() { return osprayAODistance; }
-    public double                   GetOsprayMinContribution() { return osprayMinContribution; }
-    public double                   GetOsprayMaxContribution() { return osprayMaxContribution; }
+    public boolean                  GetOSPRayEnabledFlag() { return OSPRayEnabledFlag; }
+    public int                      GetOSPRayRenderType() { return OSPRayRenderType; }
+    public boolean                  GetOSPRayShadowsEnabledFlag() { return OSPRayShadowsEnabledFlag; }
+    public boolean                  GetOSPRayUseGridAcceleratorFlag() { return OSPRayUseGridAcceleratorFlag; }
+    public boolean                  GetOSPRayPreIntegrationFlag() { return OSPRayPreIntegrationFlag; }
+    public boolean                  GetOSPRaySingleShadeFlag() { return OSPRaySingleShadeFlag; }
+    public boolean                  GetOSPRayOneSidedLightingFlag() { return OSPRayOneSidedLightingFlag; }
+    public boolean                  GetOSPRayAOTransparencyEnabledFlag() { return OSPRayAOTransparencyEnabledFlag; }
+    public int                      GetOSPRaySPP() { return OSPRaySPP; }
+    public int                      GetOSPRayAOSamples() { return OSPRayAOSamples; }
+    public double                   GetOSPRayAODistance() { return OSPRayAODistance; }
+    public double                   GetOSPRayMinContribution() { return OSPRayMinContribution; }
+    public double                   GetOSPRayMaxContribution() { return OSPRayMaxContribution; }
     public boolean                  GetLegendFlag() { return legendFlag; }
     public boolean                  GetLightingFlag() { return lightingFlag; }
     public ColorControlPointList    GetColorControlPoints() { return colorControlPoints; }
@@ -661,31 +661,31 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public void WriteAtts(CommunicationBuffer buf)
     {
         if(WriteSelect(0, buf))
-            buf.WriteBool(osprayEnabledFlag);
+            buf.WriteBool(OSPRayEnabledFlag);
         if(WriteSelect(1, buf))
-            buf.WriteInt(osprayRenderType);
+            buf.WriteInt(OSPRayRenderType);
         if(WriteSelect(2, buf))
-            buf.WriteBool(osprayShadowsEnabledFlag);
+            buf.WriteBool(OSPRayShadowsEnabledFlag);
         if(WriteSelect(3, buf))
-            buf.WriteBool(osprayUseGridAcceleratorFlag);
+            buf.WriteBool(OSPRayUseGridAcceleratorFlag);
         if(WriteSelect(4, buf))
-            buf.WriteBool(osprayPreIntegrationFlag);
+            buf.WriteBool(OSPRayPreIntegrationFlag);
         if(WriteSelect(5, buf))
-            buf.WriteBool(ospraySingleShadeFlag);
+            buf.WriteBool(OSPRaySingleShadeFlag);
         if(WriteSelect(6, buf))
-            buf.WriteBool(osprayOneSidedLightingFlag);
+            buf.WriteBool(OSPRayOneSidedLightingFlag);
         if(WriteSelect(7, buf))
-            buf.WriteBool(osprayAOTransparencyEnabledFlag);
+            buf.WriteBool(OSPRayAOTransparencyEnabledFlag);
         if(WriteSelect(8, buf))
-            buf.WriteInt(ospraySPP);
+            buf.WriteInt(OSPRaySPP);
         if(WriteSelect(9, buf))
-            buf.WriteInt(osprayAOSamples);
+            buf.WriteInt(OSPRayAOSamples);
         if(WriteSelect(10, buf))
-            buf.WriteDouble(osprayAODistance);
+            buf.WriteDouble(OSPRayAODistance);
         if(WriteSelect(11, buf))
-            buf.WriteDouble(osprayMinContribution);
+            buf.WriteDouble(OSPRayMinContribution);
         if(WriteSelect(12, buf))
-            buf.WriteDouble(osprayMaxContribution);
+            buf.WriteDouble(OSPRayMaxContribution);
         if(WriteSelect(13, buf))
             buf.WriteBool(legendFlag);
         if(WriteSelect(14, buf))
@@ -757,43 +757,43 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
         switch(index)
         {
         case 0:
-            SetOsprayEnabledFlag(buf.ReadBool());
+            SetOSPRayEnabledFlag(buf.ReadBool());
             break;
         case 1:
-            SetOsprayRenderType(buf.ReadInt());
+            SetOSPRayRenderType(buf.ReadInt());
             break;
         case 2:
-            SetOsprayShadowsEnabledFlag(buf.ReadBool());
+            SetOSPRayShadowsEnabledFlag(buf.ReadBool());
             break;
         case 3:
-            SetOsprayUseGridAcceleratorFlag(buf.ReadBool());
+            SetOSPRayUseGridAcceleratorFlag(buf.ReadBool());
             break;
         case 4:
-            SetOsprayPreIntegrationFlag(buf.ReadBool());
+            SetOSPRayPreIntegrationFlag(buf.ReadBool());
             break;
         case 5:
-            SetOspraySingleShadeFlag(buf.ReadBool());
+            SetOSPRaySingleShadeFlag(buf.ReadBool());
             break;
         case 6:
-            SetOsprayOneSidedLightingFlag(buf.ReadBool());
+            SetOSPRayOneSidedLightingFlag(buf.ReadBool());
             break;
         case 7:
-            SetOsprayAOTransparencyEnabledFlag(buf.ReadBool());
+            SetOSPRayAOTransparencyEnabledFlag(buf.ReadBool());
             break;
         case 8:
-            SetOspraySPP(buf.ReadInt());
+            SetOSPRaySPP(buf.ReadInt());
             break;
         case 9:
-            SetOsprayAOSamples(buf.ReadInt());
+            SetOSPRayAOSamples(buf.ReadInt());
             break;
         case 10:
-            SetOsprayAODistance(buf.ReadDouble());
+            SetOSPRayAODistance(buf.ReadDouble());
             break;
         case 11:
-            SetOsprayMinContribution(buf.ReadDouble());
+            SetOSPRayMinContribution(buf.ReadDouble());
             break;
         case 12:
-            SetOsprayMaxContribution(buf.ReadDouble());
+            SetOSPRayMaxContribution(buf.ReadDouble());
             break;
         case 13:
             SetLegendFlag(buf.ReadBool());
@@ -899,24 +899,24 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public String toString(String indent)
     {
         String str = new String();
-        str = str + boolToString("osprayEnabledFlag", osprayEnabledFlag, indent) + "\n";
-        str = str + indent + "osprayRenderType = ";
-        if(osprayRenderType == OSPRAYRENDERTYPE_SCIVIS)
-            str = str + "OSPRAYRENDERTYPE_SCIVIS";
-        if(osprayRenderType == OSPRAYRENDERTYPE_PATHTRACER)
-            str = str + "OSPRAYRENDERTYPE_PATHTRACER";
+        str = str + boolToString("OSPRayEnabledFlag", OSPRayEnabledFlag, indent) + "\n";
+        str = str + indent + "OSPRayRenderType = ";
+        if(OSPRayRenderType == OSPRAYRENDERTYPES_SCIVIS)
+            str = str + "OSPRAYRENDERTYPES_SCIVIS";
+        if(OSPRayRenderType == OSPRAYRENDERTYPES_PATHTRACER)
+            str = str + "OSPRAYRENDERTYPES_PATHTRACER";
         str = str + "\n";
-        str = str + boolToString("osprayShadowsEnabledFlag", osprayShadowsEnabledFlag, indent) + "\n";
-        str = str + boolToString("osprayUseGridAcceleratorFlag", osprayUseGridAcceleratorFlag, indent) + "\n";
-        str = str + boolToString("osprayPreIntegrationFlag", osprayPreIntegrationFlag, indent) + "\n";
-        str = str + boolToString("ospraySingleShadeFlag", ospraySingleShadeFlag, indent) + "\n";
-        str = str + boolToString("osprayOneSidedLightingFlag", osprayOneSidedLightingFlag, indent) + "\n";
-        str = str + boolToString("osprayAOTransparencyEnabledFlag", osprayAOTransparencyEnabledFlag, indent) + "\n";
-        str = str + intToString("ospraySPP", ospraySPP, indent) + "\n";
-        str = str + intToString("osprayAOSamples", osprayAOSamples, indent) + "\n";
-        str = str + doubleToString("osprayAODistance", osprayAODistance, indent) + "\n";
-        str = str + doubleToString("osprayMinContribution", osprayMinContribution, indent) + "\n";
-        str = str + doubleToString("osprayMaxContribution", osprayMaxContribution, indent) + "\n";
+        str = str + boolToString("OSPRayShadowsEnabledFlag", OSPRayShadowsEnabledFlag, indent) + "\n";
+        str = str + boolToString("OSPRayUseGridAcceleratorFlag", OSPRayUseGridAcceleratorFlag, indent) + "\n";
+        str = str + boolToString("OSPRayPreIntegrationFlag", OSPRayPreIntegrationFlag, indent) + "\n";
+        str = str + boolToString("OSPRaySingleShadeFlag", OSPRaySingleShadeFlag, indent) + "\n";
+        str = str + boolToString("OSPRayOneSidedLightingFlag", OSPRayOneSidedLightingFlag, indent) + "\n";
+        str = str + boolToString("OSPRayAOTransparencyEnabledFlag", OSPRayAOTransparencyEnabledFlag, indent) + "\n";
+        str = str + intToString("OSPRaySPP", OSPRaySPP, indent) + "\n";
+        str = str + intToString("OSPRayAOSamples", OSPRayAOSamples, indent) + "\n";
+        str = str + doubleToString("OSPRayAODistance", OSPRayAODistance, indent) + "\n";
+        str = str + doubleToString("OSPRayMinContribution", OSPRayMinContribution, indent) + "\n";
+        str = str + doubleToString("OSPRayMaxContribution", OSPRayMaxContribution, indent) + "\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
         str = str + boolToString("lightingFlag", lightingFlag, indent) + "\n";
         str = str + indent + "colorControlPoints = {\n" + colorControlPoints.toString(indent + "    ") + indent + "}\n";
@@ -1029,19 +1029,19 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
 
 
     // Attributes
-    private boolean                  osprayEnabledFlag;
-    private int                      osprayRenderType;
-    private boolean                  osprayShadowsEnabledFlag;
-    private boolean                  osprayUseGridAcceleratorFlag;
-    private boolean                  osprayPreIntegrationFlag;
-    private boolean                  ospraySingleShadeFlag;
-    private boolean                  osprayOneSidedLightingFlag;
-    private boolean                  osprayAOTransparencyEnabledFlag;
-    private int                      ospraySPP;
-    private int                      osprayAOSamples;
-    private double                   osprayAODistance;
-    private double                   osprayMinContribution;
-    private double                   osprayMaxContribution;
+    private boolean                  OSPRayEnabledFlag;
+    private int                      OSPRayRenderType;
+    private boolean                  OSPRayShadowsEnabledFlag;
+    private boolean                  OSPRayUseGridAcceleratorFlag;
+    private boolean                  OSPRayPreIntegrationFlag;
+    private boolean                  OSPRaySingleShadeFlag;
+    private boolean                  OSPRayOneSidedLightingFlag;
+    private boolean                  OSPRayAOTransparencyEnabledFlag;
+    private int                      OSPRaySPP;
+    private int                      OSPRayAOSamples;
+    private double                   OSPRayAODistance;
+    private double                   OSPRayMinContribution;
+    private double                   OSPRayMaxContribution;
     private boolean                  legendFlag;
     private boolean                  lightingFlag;
     private ColorControlPointList    colorControlPoints;

@@ -349,36 +349,36 @@ VolumeAttributes::LowGradientLightingReduction_FromString(const std::string &s, 
 }
 
 //
-// Enum conversion methods for VolumeAttributes::OSPRayRenderType
+// Enum conversion methods for VolumeAttributes::OSPRayRenderTypes
 //
 
-static const char *OSPRayRenderType_strings[] = {
+static const char *OSPRayRenderTypes_strings[] = {
 "SciVis", "PathTracer"};
 
 std::string
-VolumeAttributes::OSPRayRenderType_ToString(VolumeAttributes::OSPRayRenderType t)
+VolumeAttributes::OSPRayRenderTypes_ToString(VolumeAttributes::OSPRayRenderTypes t)
 {
     int index = int(t);
     if(index < 0 || index >= 2) index = 0;
-    return OSPRayRenderType_strings[index];
+    return OSPRayRenderTypes_strings[index];
 }
 
 std::string
-VolumeAttributes::OSPRayRenderType_ToString(int t)
+VolumeAttributes::OSPRayRenderTypes_ToString(int t)
 {
     int index = (t < 0 || t >= 2) ? 0 : t;
-    return OSPRayRenderType_strings[index];
+    return OSPRayRenderTypes_strings[index];
 }
 
 bool
-VolumeAttributes::OSPRayRenderType_FromString(const std::string &s, VolumeAttributes::OSPRayRenderType &val)
+VolumeAttributes::OSPRayRenderTypes_FromString(const std::string &s, VolumeAttributes::OSPRayRenderTypes &val)
 {
     val = VolumeAttributes::SciVis;
     for(int i = 0; i < 2; ++i)
     {
-        if(s == OSPRayRenderType_strings[i])
+        if(s == OSPRayRenderTypes_strings[i])
         {
-            val = (OSPRayRenderType)i;
+            val = (OSPRayRenderTypes)i;
             return true;
         }
     }
@@ -402,19 +402,19 @@ VolumeAttributes::OSPRayRenderType_FromString(const std::string &s, VolumeAttrib
 
 void VolumeAttributes::Init()
 {
-    osprayEnabledFlag = false;
-    osprayRenderType = SciVis;
-    osprayShadowsEnabledFlag = false;
-    osprayUseGridAcceleratorFlag = false;
-    osprayPreIntegrationFlag = false;
-    ospraySingleShadeFlag = false;
-    osprayOneSidedLightingFlag = false;
-    osprayAOTransparencyEnabledFlag = false;
-    ospraySPP = 1;
-    osprayAOSamples = 0;
-    osprayAODistance = 100000;
-    osprayMinContribution = 0.001;
-    osprayMaxContribution = 2;
+    OSPRayEnabledFlag = false;
+    OSPRayRenderType = SciVis;
+    OSPRayShadowsEnabledFlag = false;
+    OSPRayUseGridAcceleratorFlag = false;
+    OSPRayPreIntegrationFlag = false;
+    OSPRaySingleShadeFlag = false;
+    OSPRayOneSidedLightingFlag = false;
+    OSPRayAOTransparencyEnabledFlag = false;
+    OSPRaySPP = 1;
+    OSPRayAOSamples = 0;
+    OSPRayAODistance = 100000;
+    OSPRayMinContribution = 0.001;
+    OSPRayMaxContribution = 2;
     legendFlag = true;
     lightingFlag = true;
     SetDefaultColorControlPoints();
@@ -471,19 +471,19 @@ void VolumeAttributes::Init()
 void VolumeAttributes::Copy(const VolumeAttributes &obj)
 {
 
-    osprayEnabledFlag = obj.osprayEnabledFlag;
-    osprayRenderType = obj.osprayRenderType;
-    osprayShadowsEnabledFlag = obj.osprayShadowsEnabledFlag;
-    osprayUseGridAcceleratorFlag = obj.osprayUseGridAcceleratorFlag;
-    osprayPreIntegrationFlag = obj.osprayPreIntegrationFlag;
-    ospraySingleShadeFlag = obj.ospraySingleShadeFlag;
-    osprayOneSidedLightingFlag = obj.osprayOneSidedLightingFlag;
-    osprayAOTransparencyEnabledFlag = obj.osprayAOTransparencyEnabledFlag;
-    ospraySPP = obj.ospraySPP;
-    osprayAOSamples = obj.osprayAOSamples;
-    osprayAODistance = obj.osprayAODistance;
-    osprayMinContribution = obj.osprayMinContribution;
-    osprayMaxContribution = obj.osprayMaxContribution;
+    OSPRayEnabledFlag = obj.OSPRayEnabledFlag;
+    OSPRayRenderType = obj.OSPRayRenderType;
+    OSPRayShadowsEnabledFlag = obj.OSPRayShadowsEnabledFlag;
+    OSPRayUseGridAcceleratorFlag = obj.OSPRayUseGridAcceleratorFlag;
+    OSPRayPreIntegrationFlag = obj.OSPRayPreIntegrationFlag;
+    OSPRaySingleShadeFlag = obj.OSPRaySingleShadeFlag;
+    OSPRayOneSidedLightingFlag = obj.OSPRayOneSidedLightingFlag;
+    OSPRayAOTransparencyEnabledFlag = obj.OSPRayAOTransparencyEnabledFlag;
+    OSPRaySPP = obj.OSPRaySPP;
+    OSPRayAOSamples = obj.OSPRayAOSamples;
+    OSPRayAODistance = obj.OSPRayAODistance;
+    OSPRayMinContribution = obj.OSPRayMinContribution;
+    OSPRayMaxContribution = obj.OSPRayMaxContribution;
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
     colorControlPoints = obj.colorControlPoints;
@@ -689,19 +689,19 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
         materialProperties_equal = (materialProperties[i] == obj.materialProperties[i]);
 
     // Create the return value
-    return ((osprayEnabledFlag == obj.osprayEnabledFlag) &&
-            (osprayRenderType == obj.osprayRenderType) &&
-            (osprayShadowsEnabledFlag == obj.osprayShadowsEnabledFlag) &&
-            (osprayUseGridAcceleratorFlag == obj.osprayUseGridAcceleratorFlag) &&
-            (osprayPreIntegrationFlag == obj.osprayPreIntegrationFlag) &&
-            (ospraySingleShadeFlag == obj.ospraySingleShadeFlag) &&
-            (osprayOneSidedLightingFlag == obj.osprayOneSidedLightingFlag) &&
-            (osprayAOTransparencyEnabledFlag == obj.osprayAOTransparencyEnabledFlag) &&
-            (ospraySPP == obj.ospraySPP) &&
-            (osprayAOSamples == obj.osprayAOSamples) &&
-            (osprayAODistance == obj.osprayAODistance) &&
-            (osprayMinContribution == obj.osprayMinContribution) &&
-            (osprayMaxContribution == obj.osprayMaxContribution) &&
+    return ((OSPRayEnabledFlag == obj.OSPRayEnabledFlag) &&
+            (OSPRayRenderType == obj.OSPRayRenderType) &&
+            (OSPRayShadowsEnabledFlag == obj.OSPRayShadowsEnabledFlag) &&
+            (OSPRayUseGridAcceleratorFlag == obj.OSPRayUseGridAcceleratorFlag) &&
+            (OSPRayPreIntegrationFlag == obj.OSPRayPreIntegrationFlag) &&
+            (OSPRaySingleShadeFlag == obj.OSPRaySingleShadeFlag) &&
+            (OSPRayOneSidedLightingFlag == obj.OSPRayOneSidedLightingFlag) &&
+            (OSPRayAOTransparencyEnabledFlag == obj.OSPRayAOTransparencyEnabledFlag) &&
+            (OSPRaySPP == obj.OSPRaySPP) &&
+            (OSPRayAOSamples == obj.OSPRayAOSamples) &&
+            (OSPRayAODistance == obj.OSPRayAODistance) &&
+            (OSPRayMinContribution == obj.OSPRayMinContribution) &&
+            (OSPRayMaxContribution == obj.OSPRayMaxContribution) &&
             (legendFlag == obj.legendFlag) &&
             (lightingFlag == obj.lightingFlag) &&
             (colorControlPoints == obj.colorControlPoints) &&
@@ -877,19 +877,19 @@ VolumeAttributes::NewInstance(bool copy) const
 void
 VolumeAttributes::SelectAll()
 {
-    Select(ID_osprayEnabledFlag,               (void *)&osprayEnabledFlag);
-    Select(ID_osprayRenderType,                (void *)&osprayRenderType);
-    Select(ID_osprayShadowsEnabledFlag,        (void *)&osprayShadowsEnabledFlag);
-    Select(ID_osprayUseGridAcceleratorFlag,    (void *)&osprayUseGridAcceleratorFlag);
-    Select(ID_osprayPreIntegrationFlag,        (void *)&osprayPreIntegrationFlag);
-    Select(ID_ospraySingleShadeFlag,           (void *)&ospraySingleShadeFlag);
-    Select(ID_osprayOneSidedLightingFlag,      (void *)&osprayOneSidedLightingFlag);
-    Select(ID_osprayAOTransparencyEnabledFlag, (void *)&osprayAOTransparencyEnabledFlag);
-    Select(ID_ospraySPP,                       (void *)&ospraySPP);
-    Select(ID_osprayAOSamples,                 (void *)&osprayAOSamples);
-    Select(ID_osprayAODistance,                (void *)&osprayAODistance);
-    Select(ID_osprayMinContribution,           (void *)&osprayMinContribution);
-    Select(ID_osprayMaxContribution,           (void *)&osprayMaxContribution);
+    Select(ID_OSPRayEnabledFlag,               (void *)&OSPRayEnabledFlag);
+    Select(ID_OSPRayRenderType,                (void *)&OSPRayRenderType);
+    Select(ID_OSPRayShadowsEnabledFlag,        (void *)&OSPRayShadowsEnabledFlag);
+    Select(ID_OSPRayUseGridAcceleratorFlag,    (void *)&OSPRayUseGridAcceleratorFlag);
+    Select(ID_OSPRayPreIntegrationFlag,        (void *)&OSPRayPreIntegrationFlag);
+    Select(ID_OSPRaySingleShadeFlag,           (void *)&OSPRaySingleShadeFlag);
+    Select(ID_OSPRayOneSidedLightingFlag,      (void *)&OSPRayOneSidedLightingFlag);
+    Select(ID_OSPRayAOTransparencyEnabledFlag, (void *)&OSPRayAOTransparencyEnabledFlag);
+    Select(ID_OSPRaySPP,                       (void *)&OSPRaySPP);
+    Select(ID_OSPRayAOSamples,                 (void *)&OSPRayAOSamples);
+    Select(ID_OSPRayAODistance,                (void *)&OSPRayAODistance);
+    Select(ID_OSPRayMinContribution,           (void *)&OSPRayMinContribution);
+    Select(ID_OSPRayMaxContribution,           (void *)&OSPRayMaxContribution);
     Select(ID_legendFlag,                      (void *)&legendFlag);
     Select(ID_lightingFlag,                    (void *)&lightingFlag);
     Select(ID_colorControlPoints,              (void *)&colorControlPoints);
@@ -954,82 +954,82 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     // Create a node for VolumeAttributes.
     DataNode *node = new DataNode("VolumeAttributes");
 
-    if(completeSave || !FieldsEqual(ID_osprayEnabledFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRayEnabledFlag, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("osprayEnabledFlag", osprayEnabledFlag));
+        node->AddNode(new DataNode("OSPRayEnabledFlag", OSPRayEnabledFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_osprayRenderType, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRayRenderType, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("osprayRenderType", OSPRayRenderType_ToString(osprayRenderType)));
+        node->AddNode(new DataNode("OSPRayRenderType", OSPRayRenderTypes_ToString(OSPRayRenderType)));
     }
 
-    if(completeSave || !FieldsEqual(ID_osprayShadowsEnabledFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRayShadowsEnabledFlag, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("osprayShadowsEnabledFlag", osprayShadowsEnabledFlag));
+        node->AddNode(new DataNode("OSPRayShadowsEnabledFlag", OSPRayShadowsEnabledFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_osprayUseGridAcceleratorFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRayUseGridAcceleratorFlag, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("osprayUseGridAcceleratorFlag", osprayUseGridAcceleratorFlag));
+        node->AddNode(new DataNode("OSPRayUseGridAcceleratorFlag", OSPRayUseGridAcceleratorFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_osprayPreIntegrationFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRayPreIntegrationFlag, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("osprayPreIntegrationFlag", osprayPreIntegrationFlag));
+        node->AddNode(new DataNode("OSPRayPreIntegrationFlag", OSPRayPreIntegrationFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_ospraySingleShadeFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRaySingleShadeFlag, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("ospraySingleShadeFlag", ospraySingleShadeFlag));
+        node->AddNode(new DataNode("OSPRaySingleShadeFlag", OSPRaySingleShadeFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_osprayOneSidedLightingFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRayOneSidedLightingFlag, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("osprayOneSidedLightingFlag", osprayOneSidedLightingFlag));
+        node->AddNode(new DataNode("OSPRayOneSidedLightingFlag", OSPRayOneSidedLightingFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_osprayAOTransparencyEnabledFlag, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRayAOTransparencyEnabledFlag, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("osprayAOTransparencyEnabledFlag", osprayAOTransparencyEnabledFlag));
+        node->AddNode(new DataNode("OSPRayAOTransparencyEnabledFlag", OSPRayAOTransparencyEnabledFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_ospraySPP, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRaySPP, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("ospraySPP", ospraySPP));
+        node->AddNode(new DataNode("OSPRaySPP", OSPRaySPP));
     }
 
-    if(completeSave || !FieldsEqual(ID_osprayAOSamples, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRayAOSamples, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("osprayAOSamples", osprayAOSamples));
+        node->AddNode(new DataNode("OSPRayAOSamples", OSPRayAOSamples));
     }
 
-    if(completeSave || !FieldsEqual(ID_osprayAODistance, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRayAODistance, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("osprayAODistance", osprayAODistance));
+        node->AddNode(new DataNode("OSPRayAODistance", OSPRayAODistance));
     }
 
-    if(completeSave || !FieldsEqual(ID_osprayMinContribution, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRayMinContribution, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("osprayMinContribution", osprayMinContribution));
+        node->AddNode(new DataNode("OSPRayMinContribution", OSPRayMinContribution));
     }
 
-    if(completeSave || !FieldsEqual(ID_osprayMaxContribution, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_OSPRayMaxContribution, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("osprayMaxContribution", osprayMaxContribution));
+        node->AddNode(new DataNode("OSPRayMaxContribution", OSPRayMaxContribution));
     }
 
     if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
@@ -1272,46 +1272,46 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
-    if((node = searchNode->GetNode("osprayEnabledFlag")) != 0)
-        SetOsprayEnabledFlag(node->AsBool());
-    if((node = searchNode->GetNode("osprayRenderType")) != 0)
+    if((node = searchNode->GetNode("OSPRayEnabledFlag")) != 0)
+        SetOSPRayEnabledFlag(node->AsBool());
+    if((node = searchNode->GetNode("OSPRayRenderType")) != 0)
     {
         // Allow enums to be int or string in the config file
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
             if(ival >= 0 && ival < 2)
-                SetOsprayRenderType(OSPRayRenderType(ival));
+                SetOSPRayRenderType(OSPRayRenderTypes(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
         {
-            OSPRayRenderType value;
-            if(OSPRayRenderType_FromString(node->AsString(), value))
-                SetOsprayRenderType(value);
+            OSPRayRenderTypes value;
+            if(OSPRayRenderTypes_FromString(node->AsString(), value))
+                SetOSPRayRenderType(value);
         }
     }
-    if((node = searchNode->GetNode("osprayShadowsEnabledFlag")) != 0)
-        SetOsprayShadowsEnabledFlag(node->AsBool());
-    if((node = searchNode->GetNode("osprayUseGridAcceleratorFlag")) != 0)
-        SetOsprayUseGridAcceleratorFlag(node->AsBool());
-    if((node = searchNode->GetNode("osprayPreIntegrationFlag")) != 0)
-        SetOsprayPreIntegrationFlag(node->AsBool());
-    if((node = searchNode->GetNode("ospraySingleShadeFlag")) != 0)
-        SetOspraySingleShadeFlag(node->AsBool());
-    if((node = searchNode->GetNode("osprayOneSidedLightingFlag")) != 0)
-        SetOsprayOneSidedLightingFlag(node->AsBool());
-    if((node = searchNode->GetNode("osprayAOTransparencyEnabledFlag")) != 0)
-        SetOsprayAOTransparencyEnabledFlag(node->AsBool());
-    if((node = searchNode->GetNode("ospraySPP")) != 0)
-        SetOspraySPP(node->AsInt());
-    if((node = searchNode->GetNode("osprayAOSamples")) != 0)
-        SetOsprayAOSamples(node->AsInt());
-    if((node = searchNode->GetNode("osprayAODistance")) != 0)
-        SetOsprayAODistance(node->AsDouble());
-    if((node = searchNode->GetNode("osprayMinContribution")) != 0)
-        SetOsprayMinContribution(node->AsDouble());
-    if((node = searchNode->GetNode("osprayMaxContribution")) != 0)
-        SetOsprayMaxContribution(node->AsDouble());
+    if((node = searchNode->GetNode("OSPRayShadowsEnabledFlag")) != 0)
+        SetOSPRayShadowsEnabledFlag(node->AsBool());
+    if((node = searchNode->GetNode("OSPRayUseGridAcceleratorFlag")) != 0)
+        SetOSPRayUseGridAcceleratorFlag(node->AsBool());
+    if((node = searchNode->GetNode("OSPRayPreIntegrationFlag")) != 0)
+        SetOSPRayPreIntegrationFlag(node->AsBool());
+    if((node = searchNode->GetNode("OSPRaySingleShadeFlag")) != 0)
+        SetOSPRaySingleShadeFlag(node->AsBool());
+    if((node = searchNode->GetNode("OSPRayOneSidedLightingFlag")) != 0)
+        SetOSPRayOneSidedLightingFlag(node->AsBool());
+    if((node = searchNode->GetNode("OSPRayAOTransparencyEnabledFlag")) != 0)
+        SetOSPRayAOTransparencyEnabledFlag(node->AsBool());
+    if((node = searchNode->GetNode("OSPRaySPP")) != 0)
+        SetOSPRaySPP(node->AsInt());
+    if((node = searchNode->GetNode("OSPRayAOSamples")) != 0)
+        SetOSPRayAOSamples(node->AsInt());
+    if((node = searchNode->GetNode("OSPRayAODistance")) != 0)
+        SetOSPRayAODistance(node->AsDouble());
+    if((node = searchNode->GetNode("OSPRayMinContribution")) != 0)
+        SetOSPRayMinContribution(node->AsDouble());
+    if((node = searchNode->GetNode("OSPRayMaxContribution")) != 0)
+        SetOSPRayMaxContribution(node->AsDouble());
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("lightingFlag")) != 0)
@@ -1512,94 +1512,94 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-VolumeAttributes::SetOsprayEnabledFlag(bool osprayEnabledFlag_)
+VolumeAttributes::SetOSPRayEnabledFlag(bool OSPRayEnabledFlag_)
 {
-    osprayEnabledFlag = osprayEnabledFlag_;
-    Select(ID_osprayEnabledFlag, (void *)&osprayEnabledFlag);
+    OSPRayEnabledFlag = OSPRayEnabledFlag_;
+    Select(ID_OSPRayEnabledFlag, (void *)&OSPRayEnabledFlag);
 }
 
 void
-VolumeAttributes::SetOsprayRenderType(VolumeAttributes::OSPRayRenderType osprayRenderType_)
+VolumeAttributes::SetOSPRayRenderType(VolumeAttributes::OSPRayRenderTypes OSPRayRenderType_)
 {
-    osprayRenderType = osprayRenderType_;
-    Select(ID_osprayRenderType, (void *)&osprayRenderType);
+    OSPRayRenderType = OSPRayRenderType_;
+    Select(ID_OSPRayRenderType, (void *)&OSPRayRenderType);
 }
 
 void
-VolumeAttributes::SetOsprayShadowsEnabledFlag(bool osprayShadowsEnabledFlag_)
+VolumeAttributes::SetOSPRayShadowsEnabledFlag(bool OSPRayShadowsEnabledFlag_)
 {
-    osprayShadowsEnabledFlag = osprayShadowsEnabledFlag_;
-    Select(ID_osprayShadowsEnabledFlag, (void *)&osprayShadowsEnabledFlag);
+    OSPRayShadowsEnabledFlag = OSPRayShadowsEnabledFlag_;
+    Select(ID_OSPRayShadowsEnabledFlag, (void *)&OSPRayShadowsEnabledFlag);
 }
 
 void
-VolumeAttributes::SetOsprayUseGridAcceleratorFlag(bool osprayUseGridAcceleratorFlag_)
+VolumeAttributes::SetOSPRayUseGridAcceleratorFlag(bool OSPRayUseGridAcceleratorFlag_)
 {
-    osprayUseGridAcceleratorFlag = osprayUseGridAcceleratorFlag_;
-    Select(ID_osprayUseGridAcceleratorFlag, (void *)&osprayUseGridAcceleratorFlag);
+    OSPRayUseGridAcceleratorFlag = OSPRayUseGridAcceleratorFlag_;
+    Select(ID_OSPRayUseGridAcceleratorFlag, (void *)&OSPRayUseGridAcceleratorFlag);
 }
 
 void
-VolumeAttributes::SetOsprayPreIntegrationFlag(bool osprayPreIntegrationFlag_)
+VolumeAttributes::SetOSPRayPreIntegrationFlag(bool OSPRayPreIntegrationFlag_)
 {
-    osprayPreIntegrationFlag = osprayPreIntegrationFlag_;
-    Select(ID_osprayPreIntegrationFlag, (void *)&osprayPreIntegrationFlag);
+    OSPRayPreIntegrationFlag = OSPRayPreIntegrationFlag_;
+    Select(ID_OSPRayPreIntegrationFlag, (void *)&OSPRayPreIntegrationFlag);
 }
 
 void
-VolumeAttributes::SetOspraySingleShadeFlag(bool ospraySingleShadeFlag_)
+VolumeAttributes::SetOSPRaySingleShadeFlag(bool OSPRaySingleShadeFlag_)
 {
-    ospraySingleShadeFlag = ospraySingleShadeFlag_;
-    Select(ID_ospraySingleShadeFlag, (void *)&ospraySingleShadeFlag);
+    OSPRaySingleShadeFlag = OSPRaySingleShadeFlag_;
+    Select(ID_OSPRaySingleShadeFlag, (void *)&OSPRaySingleShadeFlag);
 }
 
 void
-VolumeAttributes::SetOsprayOneSidedLightingFlag(bool osprayOneSidedLightingFlag_)
+VolumeAttributes::SetOSPRayOneSidedLightingFlag(bool OSPRayOneSidedLightingFlag_)
 {
-    osprayOneSidedLightingFlag = osprayOneSidedLightingFlag_;
-    Select(ID_osprayOneSidedLightingFlag, (void *)&osprayOneSidedLightingFlag);
+    OSPRayOneSidedLightingFlag = OSPRayOneSidedLightingFlag_;
+    Select(ID_OSPRayOneSidedLightingFlag, (void *)&OSPRayOneSidedLightingFlag);
 }
 
 void
-VolumeAttributes::SetOsprayAOTransparencyEnabledFlag(bool osprayAOTransparencyEnabledFlag_)
+VolumeAttributes::SetOSPRayAOTransparencyEnabledFlag(bool OSPRayAOTransparencyEnabledFlag_)
 {
-    osprayAOTransparencyEnabledFlag = osprayAOTransparencyEnabledFlag_;
-    Select(ID_osprayAOTransparencyEnabledFlag, (void *)&osprayAOTransparencyEnabledFlag);
+    OSPRayAOTransparencyEnabledFlag = OSPRayAOTransparencyEnabledFlag_;
+    Select(ID_OSPRayAOTransparencyEnabledFlag, (void *)&OSPRayAOTransparencyEnabledFlag);
 }
 
 void
-VolumeAttributes::SetOspraySPP(int ospraySPP_)
+VolumeAttributes::SetOSPRaySPP(int OSPRaySPP_)
 {
-    ospraySPP = ospraySPP_;
-    Select(ID_ospraySPP, (void *)&ospraySPP);
+    OSPRaySPP = OSPRaySPP_;
+    Select(ID_OSPRaySPP, (void *)&OSPRaySPP);
 }
 
 void
-VolumeAttributes::SetOsprayAOSamples(int osprayAOSamples_)
+VolumeAttributes::SetOSPRayAOSamples(int OSPRayAOSamples_)
 {
-    osprayAOSamples = osprayAOSamples_;
-    Select(ID_osprayAOSamples, (void *)&osprayAOSamples);
+    OSPRayAOSamples = OSPRayAOSamples_;
+    Select(ID_OSPRayAOSamples, (void *)&OSPRayAOSamples);
 }
 
 void
-VolumeAttributes::SetOsprayAODistance(double osprayAODistance_)
+VolumeAttributes::SetOSPRayAODistance(double OSPRayAODistance_)
 {
-    osprayAODistance = osprayAODistance_;
-    Select(ID_osprayAODistance, (void *)&osprayAODistance);
+    OSPRayAODistance = OSPRayAODistance_;
+    Select(ID_OSPRayAODistance, (void *)&OSPRayAODistance);
 }
 
 void
-VolumeAttributes::SetOsprayMinContribution(double osprayMinContribution_)
+VolumeAttributes::SetOSPRayMinContribution(double OSPRayMinContribution_)
 {
-    osprayMinContribution = osprayMinContribution_;
-    Select(ID_osprayMinContribution, (void *)&osprayMinContribution);
+    OSPRayMinContribution = OSPRayMinContribution_;
+    Select(ID_OSPRayMinContribution, (void *)&OSPRayMinContribution);
 }
 
 void
-VolumeAttributes::SetOsprayMaxContribution(double osprayMaxContribution_)
+VolumeAttributes::SetOSPRayMaxContribution(double OSPRayMaxContribution_)
 {
-    osprayMaxContribution = osprayMaxContribution_;
-    Select(ID_osprayMaxContribution, (void *)&osprayMaxContribution);
+    OSPRayMaxContribution = OSPRayMaxContribution_;
+    Select(ID_OSPRayMaxContribution, (void *)&OSPRayMaxContribution);
 }
 
 void
@@ -1835,81 +1835,81 @@ VolumeAttributes::SetMaterialProperties(const double *materialProperties_)
 ///////////////////////////////////////////////////////////////////////////////
 
 bool
-VolumeAttributes::GetOsprayEnabledFlag() const
+VolumeAttributes::GetOSPRayEnabledFlag() const
 {
-    return osprayEnabledFlag;
+    return OSPRayEnabledFlag;
 }
 
-VolumeAttributes::OSPRayRenderType
-VolumeAttributes::GetOsprayRenderType() const
+VolumeAttributes::OSPRayRenderTypes
+VolumeAttributes::GetOSPRayRenderType() const
 {
-    return OSPRayRenderType(osprayRenderType);
-}
-
-bool
-VolumeAttributes::GetOsprayShadowsEnabledFlag() const
-{
-    return osprayShadowsEnabledFlag;
+    return OSPRayRenderTypes(OSPRayRenderType);
 }
 
 bool
-VolumeAttributes::GetOsprayUseGridAcceleratorFlag() const
+VolumeAttributes::GetOSPRayShadowsEnabledFlag() const
 {
-    return osprayUseGridAcceleratorFlag;
+    return OSPRayShadowsEnabledFlag;
 }
 
 bool
-VolumeAttributes::GetOsprayPreIntegrationFlag() const
+VolumeAttributes::GetOSPRayUseGridAcceleratorFlag() const
 {
-    return osprayPreIntegrationFlag;
+    return OSPRayUseGridAcceleratorFlag;
 }
 
 bool
-VolumeAttributes::GetOspraySingleShadeFlag() const
+VolumeAttributes::GetOSPRayPreIntegrationFlag() const
 {
-    return ospraySingleShadeFlag;
+    return OSPRayPreIntegrationFlag;
 }
 
 bool
-VolumeAttributes::GetOsprayOneSidedLightingFlag() const
+VolumeAttributes::GetOSPRaySingleShadeFlag() const
 {
-    return osprayOneSidedLightingFlag;
+    return OSPRaySingleShadeFlag;
 }
 
 bool
-VolumeAttributes::GetOsprayAOTransparencyEnabledFlag() const
+VolumeAttributes::GetOSPRayOneSidedLightingFlag() const
 {
-    return osprayAOTransparencyEnabledFlag;
+    return OSPRayOneSidedLightingFlag;
+}
+
+bool
+VolumeAttributes::GetOSPRayAOTransparencyEnabledFlag() const
+{
+    return OSPRayAOTransparencyEnabledFlag;
 }
 
 int
-VolumeAttributes::GetOspraySPP() const
+VolumeAttributes::GetOSPRaySPP() const
 {
-    return ospraySPP;
+    return OSPRaySPP;
 }
 
 int
-VolumeAttributes::GetOsprayAOSamples() const
+VolumeAttributes::GetOSPRayAOSamples() const
 {
-    return osprayAOSamples;
+    return OSPRayAOSamples;
 }
 
 double
-VolumeAttributes::GetOsprayAODistance() const
+VolumeAttributes::GetOSPRayAODistance() const
 {
-    return osprayAODistance;
+    return OSPRayAODistance;
 }
 
 double
-VolumeAttributes::GetOsprayMinContribution() const
+VolumeAttributes::GetOSPRayMinContribution() const
 {
-    return osprayMinContribution;
+    return OSPRayMinContribution;
 }
 
 double
-VolumeAttributes::GetOsprayMaxContribution() const
+VolumeAttributes::GetOSPRayMaxContribution() const
 {
-    return osprayMaxContribution;
+    return OSPRayMaxContribution;
 }
 
 bool
@@ -2192,19 +2192,19 @@ VolumeAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_osprayEnabledFlag:               return "osprayEnabledFlag";
-    case ID_osprayRenderType:                return "osprayRenderType";
-    case ID_osprayShadowsEnabledFlag:        return "osprayShadowsEnabledFlag";
-    case ID_osprayUseGridAcceleratorFlag:    return "osprayUseGridAcceleratorFlag";
-    case ID_osprayPreIntegrationFlag:        return "osprayPreIntegrationFlag";
-    case ID_ospraySingleShadeFlag:           return "ospraySingleShadeFlag";
-    case ID_osprayOneSidedLightingFlag:      return "osprayOneSidedLightingFlag";
-    case ID_osprayAOTransparencyEnabledFlag: return "osprayAOTransparencyEnabledFlag";
-    case ID_ospraySPP:                       return "ospraySPP";
-    case ID_osprayAOSamples:                 return "osprayAOSamples";
-    case ID_osprayAODistance:                return "osprayAODistance";
-    case ID_osprayMinContribution:           return "osprayMinContribution";
-    case ID_osprayMaxContribution:           return "osprayMaxContribution";
+    case ID_OSPRayEnabledFlag:               return "OSPRayEnabledFlag";
+    case ID_OSPRayRenderType:                return "OSPRayRenderType";
+    case ID_OSPRayShadowsEnabledFlag:        return "OSPRayShadowsEnabledFlag";
+    case ID_OSPRayUseGridAcceleratorFlag:    return "OSPRayUseGridAcceleratorFlag";
+    case ID_OSPRayPreIntegrationFlag:        return "OSPRayPreIntegrationFlag";
+    case ID_OSPRaySingleShadeFlag:           return "OSPRaySingleShadeFlag";
+    case ID_OSPRayOneSidedLightingFlag:      return "OSPRayOneSidedLightingFlag";
+    case ID_OSPRayAOTransparencyEnabledFlag: return "OSPRayAOTransparencyEnabledFlag";
+    case ID_OSPRaySPP:                       return "OSPRaySPP";
+    case ID_OSPRayAOSamples:                 return "OSPRayAOSamples";
+    case ID_OSPRayAODistance:                return "OSPRayAODistance";
+    case ID_OSPRayMinContribution:           return "OSPRayMinContribution";
+    case ID_OSPRayMaxContribution:           return "OSPRayMaxContribution";
     case ID_legendFlag:                      return "legendFlag";
     case ID_lightingFlag:                    return "lightingFlag";
     case ID_colorControlPoints:              return "colorControlPoints";
@@ -2261,19 +2261,19 @@ VolumeAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_osprayEnabledFlag:               return FieldType_bool;
-    case ID_osprayRenderType:                return FieldType_enum;
-    case ID_osprayShadowsEnabledFlag:        return FieldType_bool;
-    case ID_osprayUseGridAcceleratorFlag:    return FieldType_bool;
-    case ID_osprayPreIntegrationFlag:        return FieldType_bool;
-    case ID_ospraySingleShadeFlag:           return FieldType_bool;
-    case ID_osprayOneSidedLightingFlag:      return FieldType_bool;
-    case ID_osprayAOTransparencyEnabledFlag: return FieldType_bool;
-    case ID_ospraySPP:                       return FieldType_int;
-    case ID_osprayAOSamples:                 return FieldType_int;
-    case ID_osprayAODistance:                return FieldType_double;
-    case ID_osprayMinContribution:           return FieldType_double;
-    case ID_osprayMaxContribution:           return FieldType_double;
+    case ID_OSPRayEnabledFlag:               return FieldType_bool;
+    case ID_OSPRayRenderType:                return FieldType_enum;
+    case ID_OSPRayShadowsEnabledFlag:        return FieldType_bool;
+    case ID_OSPRayUseGridAcceleratorFlag:    return FieldType_bool;
+    case ID_OSPRayPreIntegrationFlag:        return FieldType_bool;
+    case ID_OSPRaySingleShadeFlag:           return FieldType_bool;
+    case ID_OSPRayOneSidedLightingFlag:      return FieldType_bool;
+    case ID_OSPRayAOTransparencyEnabledFlag: return FieldType_bool;
+    case ID_OSPRaySPP:                       return FieldType_int;
+    case ID_OSPRayAOSamples:                 return FieldType_int;
+    case ID_OSPRayAODistance:                return FieldType_double;
+    case ID_OSPRayMinContribution:           return FieldType_double;
+    case ID_OSPRayMaxContribution:           return FieldType_double;
     case ID_legendFlag:                      return FieldType_bool;
     case ID_lightingFlag:                    return FieldType_bool;
     case ID_colorControlPoints:              return FieldType_att;
@@ -2330,19 +2330,19 @@ VolumeAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_osprayEnabledFlag:               return "bool";
-    case ID_osprayRenderType:                return "enum";
-    case ID_osprayShadowsEnabledFlag:        return "bool";
-    case ID_osprayUseGridAcceleratorFlag:    return "bool";
-    case ID_osprayPreIntegrationFlag:        return "bool";
-    case ID_ospraySingleShadeFlag:           return "bool";
-    case ID_osprayOneSidedLightingFlag:      return "bool";
-    case ID_osprayAOTransparencyEnabledFlag: return "bool";
-    case ID_ospraySPP:                       return "int";
-    case ID_osprayAOSamples:                 return "int";
-    case ID_osprayAODistance:                return "double";
-    case ID_osprayMinContribution:           return "double";
-    case ID_osprayMaxContribution:           return "double";
+    case ID_OSPRayEnabledFlag:               return "bool";
+    case ID_OSPRayRenderType:                return "enum";
+    case ID_OSPRayShadowsEnabledFlag:        return "bool";
+    case ID_OSPRayUseGridAcceleratorFlag:    return "bool";
+    case ID_OSPRayPreIntegrationFlag:        return "bool";
+    case ID_OSPRaySingleShadeFlag:           return "bool";
+    case ID_OSPRayOneSidedLightingFlag:      return "bool";
+    case ID_OSPRayAOTransparencyEnabledFlag: return "bool";
+    case ID_OSPRaySPP:                       return "int";
+    case ID_OSPRayAOSamples:                 return "int";
+    case ID_OSPRayAODistance:                return "double";
+    case ID_OSPRayMinContribution:           return "double";
+    case ID_OSPRayMaxContribution:           return "double";
     case ID_legendFlag:                      return "bool";
     case ID_lightingFlag:                    return "bool";
     case ID_colorControlPoints:              return "att";
@@ -2401,69 +2401,69 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
-    case ID_osprayEnabledFlag:
+    case ID_OSPRayEnabledFlag:
         {  // new scope
-        retval = (osprayEnabledFlag == obj.osprayEnabledFlag);
+        retval = (OSPRayEnabledFlag == obj.OSPRayEnabledFlag);
         }
         break;
-    case ID_osprayRenderType:
+    case ID_OSPRayRenderType:
         {  // new scope
-        retval = (osprayRenderType == obj.osprayRenderType);
+        retval = (OSPRayRenderType == obj.OSPRayRenderType);
         }
         break;
-    case ID_osprayShadowsEnabledFlag:
+    case ID_OSPRayShadowsEnabledFlag:
         {  // new scope
-        retval = (osprayShadowsEnabledFlag == obj.osprayShadowsEnabledFlag);
+        retval = (OSPRayShadowsEnabledFlag == obj.OSPRayShadowsEnabledFlag);
         }
         break;
-    case ID_osprayUseGridAcceleratorFlag:
+    case ID_OSPRayUseGridAcceleratorFlag:
         {  // new scope
-        retval = (osprayUseGridAcceleratorFlag == obj.osprayUseGridAcceleratorFlag);
+        retval = (OSPRayUseGridAcceleratorFlag == obj.OSPRayUseGridAcceleratorFlag);
         }
         break;
-    case ID_osprayPreIntegrationFlag:
+    case ID_OSPRayPreIntegrationFlag:
         {  // new scope
-        retval = (osprayPreIntegrationFlag == obj.osprayPreIntegrationFlag);
+        retval = (OSPRayPreIntegrationFlag == obj.OSPRayPreIntegrationFlag);
         }
         break;
-    case ID_ospraySingleShadeFlag:
+    case ID_OSPRaySingleShadeFlag:
         {  // new scope
-        retval = (ospraySingleShadeFlag == obj.ospraySingleShadeFlag);
+        retval = (OSPRaySingleShadeFlag == obj.OSPRaySingleShadeFlag);
         }
         break;
-    case ID_osprayOneSidedLightingFlag:
+    case ID_OSPRayOneSidedLightingFlag:
         {  // new scope
-        retval = (osprayOneSidedLightingFlag == obj.osprayOneSidedLightingFlag);
+        retval = (OSPRayOneSidedLightingFlag == obj.OSPRayOneSidedLightingFlag);
         }
         break;
-    case ID_osprayAOTransparencyEnabledFlag:
+    case ID_OSPRayAOTransparencyEnabledFlag:
         {  // new scope
-        retval = (osprayAOTransparencyEnabledFlag == obj.osprayAOTransparencyEnabledFlag);
+        retval = (OSPRayAOTransparencyEnabledFlag == obj.OSPRayAOTransparencyEnabledFlag);
         }
         break;
-    case ID_ospraySPP:
+    case ID_OSPRaySPP:
         {  // new scope
-        retval = (ospraySPP == obj.ospraySPP);
+        retval = (OSPRaySPP == obj.OSPRaySPP);
         }
         break;
-    case ID_osprayAOSamples:
+    case ID_OSPRayAOSamples:
         {  // new scope
-        retval = (osprayAOSamples == obj.osprayAOSamples);
+        retval = (OSPRayAOSamples == obj.OSPRayAOSamples);
         }
         break;
-    case ID_osprayAODistance:
+    case ID_OSPRayAODistance:
         {  // new scope
-        retval = (osprayAODistance == obj.osprayAODistance);
+        retval = (OSPRayAODistance == obj.OSPRayAODistance);
         }
         break;
-    case ID_osprayMinContribution:
+    case ID_OSPRayMinContribution:
         {  // new scope
-        retval = (osprayMinContribution == obj.osprayMinContribution);
+        retval = (OSPRayMinContribution == obj.OSPRayMinContribution);
         }
         break;
-    case ID_osprayMaxContribution:
+    case ID_OSPRayMaxContribution:
         {  // new scope
-        retval = (osprayMaxContribution == obj.osprayMaxContribution);
+        retval = (OSPRayMaxContribution == obj.OSPRayMaxContribution);
         }
         break;
     case ID_legendFlag:

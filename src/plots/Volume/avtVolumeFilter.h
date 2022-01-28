@@ -16,7 +16,8 @@
 #include <avtImage.h>
 #include <avtOpacityMap.h>
 
-class     WindowAttributes;
+class WindowAttributes;
+class avtVisItVTKDevice;
 
 
 // ****************************************************************************
@@ -41,9 +42,6 @@ class     WindowAttributes;
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
-//    Qi WU, Wed Jun 20 2018
-//    Added support for ospray volume rendering filter
-//
 // ****************************************************************************
 
 class avtVolumeFilter : public avtDatasetToDatasetFilter
@@ -59,18 +57,14 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
 
     avtImage_p               RenderImage(avtImage_p, const WindowAttributes &);
 
-    avtImage_p               RenderImageVTK(avtImage_p,
-                                            const WindowAttributes &);
-
-    avtImage_p               RenderImageSLIVR(avtImage_p,
-                                              const WindowAttributes &);
-
     int                      GetNumberOfStages(const WindowAttributes &);
 
   protected:
     VolumeAttributes         atts;
     char                    *primaryVariable {nullptr};
 
+    avtVisItVTKDevice       *VisItVTKRenderer {nullptr};
+      
     avtOpacityMap            CreateOpacityMap(double range[2]);
 
     int                      GetRenderVariables( int  &primIndex,
@@ -81,6 +75,12 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
                                               int &width,
                                               int &height,
                                               int &depth);
+
+    avtImage_p               RenderImageVTK(avtImage_p,
+                                            const WindowAttributes &);
+
+    avtImage_p               RenderImageSLIVR(avtImage_p,
+                                              const WindowAttributes &);
 
     virtual void             Execute(void);
     virtual avtContract_p    ModifyContract(avtContract_p);
