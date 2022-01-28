@@ -19,7 +19,6 @@
 
 #include <memory>
 
-#include <filters_exports.h>
 #include <LightList.h>
 
 class vtkImageData;
@@ -107,7 +106,7 @@ using DataType = avt::visit_vtk::DataType;
 using RendererType = avt::visit_vtk::RendererType;
 using RenderingAttribs = avt::visit_vtk::RenderingAttribs;
 
-class AVTFILTERS_API avtVisItVTKDevice : public avtVisItVTKDeviceBase, public avtRayTracerBase
+class avtVisItVTKDevice : public avtVisItVTKDeviceBase, public avtRayTracerBase
 {
 public:
                             avtVisItVTKDevice();

@@ -9,8 +9,6 @@
 #ifndef AVT_VISIT_VTK_RENDERER_H
 #define AVT_VISIT_VTK_RENDERER_H
 
-#include <filters_exports.h>
-
 #include <avtVisItVTKDevice.h>
 
 #include <memory>
@@ -46,7 +44,7 @@ using DeviceType = avt::visit_vtk::DeviceType;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtVisItVTKRenderer
+class avtVisItVTKRenderer
 {
 public:
     static avtVisItVTKDevice  *GetDevice();
