@@ -2761,12 +2761,17 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
     if (scaling == VolumeAttributes::Skew && skewFactor != obj.skewFactor)
         return true;
 
-//    if(rendererType == VolumeAttributes::Parallel ||
-//       rendererType == VolumeAttributes::Integration ||
-//       rendererType == VolumeAttributes::SLIVR)
-//    {
-//    } else
-    if(rendererType == VolumeAttributes::Composite)
+    if(rendererType == VolumeAttributes::Serial ||
+       rendererType == VolumeAttributes::Parallel)
+    {
+        if(resampleType != obj.resampleType)
+            return true;
+        if(resampleTarget != obj.resampleTarget)
+            return true;
+        if(resampleCentering != obj.resampleCentering)
+            return true;
+    }
+    else if(rendererType == VolumeAttributes::Composite)
     {
         // Trilinear requires ghost zone while Rasterization and KernelBased do not
         if ((sampling == Rasterization || sampling == KernelBased) && obj.sampling == Trilinear)
@@ -2778,34 +2783,10 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
        if(lightingFlag != obj.lightingFlag)
             return true;
     }
-    else if(rendererType == VolumeAttributes::Serial)
-    {
-        if(resampleType != obj.resampleType)
-            return true;
-        if(resampleTarget != obj.resampleTarget)
-            return true;
-        if(resampleCentering != obj.resampleCentering)
-            return true;
-
-        if(useColorVarMin != obj.useColorVarMin)
-            return true;
-        if(colorVarMin != obj.colorVarMin)
-            return true;
-        if(useColorVarMax != obj.useColorVarMax)
-            return true;
-        if(colorVarMax != obj.colorVarMax)
-            return true;
-        if(useOpacityVarMin != obj.useOpacityVarMin)
-            return true;
-        if(opacityVarMin != obj.opacityVarMin)
-            return true;
-        if(useOpacityVarMax != obj.useOpacityVarMax)
-            return true;
-        if(opacityVarMax != obj.opacityVarMax)
-            return true;
-        if(gradientType != obj.gradientType)
-            return true;
-    }
+//    else if(rendererType == VolumeAttributes::Integration ||
+//            rendererType == VolumeAttributes::SLIVR)
+//    {
+//    }
 
     return false;
 }
