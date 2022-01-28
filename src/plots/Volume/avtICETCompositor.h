@@ -9,8 +9,6 @@
 #ifndef AVT_ICET_COMPOSITOR_H
 #define AVT_ICET_COMPOSITOR_H
 
-#include <filters_exports.h>
-
 #include <avtImage.h>
 
 #include <vtkImageData.h>
@@ -20,7 +18,7 @@
     #include <IceTMPI.h>
 #endif
 
-class AVTFILTERS_API avtICETCompositor
+class avtICETCompositor
 {
 public:
     avtICETCompositor();
