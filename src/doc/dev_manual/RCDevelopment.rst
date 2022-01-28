@@ -192,3 +192,8 @@ That's it. You have now made the exact same change to both the 3.0RC and
 develop.
 
 Once the PR to ``develop`` is merged, go back to the PR for the release candidate (it will probably be in a closed state but that is fine) and add a comment there indicating that the PR was also applied to develop and include the commit, from above, where it happened.
+
+Lastly, sometimes changes worth including in the release candidate nonetheless get done *first* on ``develop``.
+When this happens, we need to `backport <https://en.wikipedia.org/wiki/Backporting>`_ the changes to the release candidate.
+A procedure similar to what is described above can be followed except the roles of ``develop`` and release candidate branches are reversed.
+In addition, once the changes are backported to the release candidate, go back to the PR for ``develop`` (it will probably be in a closed state but that is fine) and add a comment there indicating that the changes were also *backported* to the release candidate and include the commit.
