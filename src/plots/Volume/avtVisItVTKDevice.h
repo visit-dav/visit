@@ -22,7 +22,6 @@
 #include <filters_exports.h>
 #include <LightList.h>
 
-class avtResampleFilter;
 class vtkImageData;
 class vtkVolumeMapper;
 
@@ -39,9 +38,6 @@ namespace avt
                                 resampleCentering{0},
 
                                 lightingEnabled{false},
-
-                                samplesPerRay{500},
-                                samplingRate{3.0f},
 
                                 useColorVarMin{false},
                                 colorVarMin{0.0},
@@ -72,10 +68,6 @@ namespace avt
             int     resampleCentering;
 
             bool    lightingEnabled;
-
-            int     samplesPerRay;
-            // Sampling rate for volumes
-            float   samplingRate;
 
             bool    useColorVarMin;
             float   colorVarMin;
@@ -149,14 +141,8 @@ public:
     void SetUseOpacityVarMax(const bool v)      { m_renderingAttribs.useOpacityVarMax = v; }
     void SetOpacityVarMax(const float v)        { m_renderingAttribs.opacityVarMax = v; }
 
-    // Ray Casting Options
-    void SetSamplingRate(const float v)         { m_renderingAttribs.samplingRate = v; }
-    // Maximum ray recursion depth
-    void SetSamplesPerRay(const int v)          { m_renderingAttribs.samplesPerRay = v; }
-
     // Lighting and Material Properties
     void SetMatProperties(const double[4]);
-    void SetViewDirection(const double[3]);
 
     // OSPRay Options
     void SetOSPRayEnabled(const bool b)               { m_renderingAttribs.OSPRayEnabled = b; }
@@ -184,10 +170,20 @@ protected:
     RenderingAttribs            m_renderingAttribs;
 
     std::unique_ptr<float[]>    m_materialPropertiesPtr{nullptr};
-    std::unique_ptr<float[]>    m_viewDirectionPtr{nullptr};
 
-    bool                        m_imageOnThisRank{false};
-    bool                        m_needResampledData{false};
+private:
+    void                 ExecuteVolume();
+    void                 ExecuteSurface();
+    avtImage_p           CreateFinalImage(const void *, const int, const int, const float);
+
+    vtkCamera *          CreateCamera();
+    vtkLightCollection * CreateLights();
+
+    int    m_numLightsEnabled{0};
+    bool   m_ambientOn{false};
+    double m_ambientCoefficient{0.0};
+    double m_ambientColor[3] = { 0., 0., 0.};
+
     bool                        m_useInterpolation{true};
     bool                        m_resetColorMap{true};
 
@@ -195,10 +191,7 @@ protected:
     int                         m_OSPRayRenderType{0};
 
     int                         m_nComponents{1};
-
-    int                         m_resampleType{0};
-    int                         m_resampleTargetVal{0};
-    int                         m_resampleCentering{0};
+    int                         m_cellData{0};
 
     bool                        m_useColorVarMin{false};
     float                       m_colorVarMin{0.0};
@@ -212,45 +205,6 @@ protected:
     std::string                 m_activeVarName  {"default"};
     std::string                 m_opacityVarName {"default"};
     std::string                 m_gradientVarName{"default"};
-
-private:
-    enum ResampleReason // Must match avtVolumePLot.h
-    {
-        NoResampling       = 0x0,
-        MutlipleDatasets   = 0x1,
-        NonRectilinearGrid = 0x2,
-        DifferentCentering = 0x4,
-        AttributesChanged  = 0x8
-    };
-    enum ResampleType // Must match VolumeAttributes.h
-    {
-        OnlyIfRequired,
-        SingleDomain,
-        ParallelRedistribute,
-        ParallelPerRank
-    };
-    enum ResampleCentering // Must match VolumeAttributes.h
-    {
-        NativeCentering,
-        PointCentering,
-        ZonalCentering
-    };
-
-    void                 ExecuteVolume();
-    void                 ExecuteSurface();
-    avtImage_p           CreateFinalImage(const void *, const int, const int, const float);
-
-    vtkCamera *          CreateCamera();
-    vtkLightCollection * CreateLights();
-
-    int    m_numLightsEnabled{0};
-    bool   m_ambientOn{false};
-    double m_ambientCoefficient{0.0};
-    double m_ambientColor[3] = { 0., 0., 0.};
-
-    int    m_cellData{0};
-
-    avtResampleFilter * m_resampleFilter{nullptr};
 
     vtkImageData* m_imageToRender{nullptr};
     vtkVolumeMapper* m_volumeMapper{nullptr};

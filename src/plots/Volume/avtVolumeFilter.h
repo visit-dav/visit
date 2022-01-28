@@ -59,8 +59,11 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
 
     avtImage_p               RenderImage(avtImage_p, const WindowAttributes &);
 
-    avtImage_p               RenderImageRayCasting(avtImage_p,
-                                                   const WindowAttributes &);
+    avtImage_p               RenderImageVTK(avtImage_p,
+                                            const WindowAttributes &);
+
+    avtImage_p               RenderImageSLIVR(avtImage_p,
+                                              const WindowAttributes &);
 
     int                      GetNumberOfStages(const WindowAttributes &);
 

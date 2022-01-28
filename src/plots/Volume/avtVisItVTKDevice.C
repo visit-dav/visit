@@ -18,7 +18,6 @@
 #include <avtCallback.h>
 #include <avtDatasetExaminer.h>
 #include <avtLightList.h>
-#include <avtResampleFilter.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtWorldSpaceToImageSpaceTransform.h>
 
@@ -55,8 +54,8 @@
 
 const std::string avtVisItVTKDevice::DEVICE_TYPE_STR{"vtk"};
 
-//#define LOCAL_DEBUG std::cerr
-#define LOCAL_DEBUG debug5
+#define LOCAL_DEBUG std::cerr
+// #define LOCAL_DEBUG debug5
 
 
 // ****************************************************************************
@@ -125,32 +124,6 @@ avtVisItVTKDevice::SetMatProperties(const double props[4])
 
     for(int i=0; i<4; i++)
         m_materialPropertiesPtr[i] = static_cast<float>(props[i]);
-}
-
-// ****************************************************************************
-//  Method: avtVisItVTKDevice::SetViewDirection
-//
-//  Purpose:
-//      Set the camera view direction.
-//
-//  Arguments:
-//      direction   view direction
-//
-//  Programmer: Allen R. Sanderson
-//  Creation:   30 November 2021
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtVisItVTKDevice::SetViewDirection(const double direction[3])
-{
-    if(!m_viewDirectionPtr)
-        m_viewDirectionPtr.reset(new float[3]);
-
-    for(int i=0; i<3; i++)
-        m_viewDirectionPtr[i] = static_cast<float>(direction[i]);
 }
 
 // ****************************************************************************
@@ -486,9 +459,6 @@ avtVisItVTKDevice::Execute()
 void
 avtVisItVTKDevice::ExecuteVolume()
 {
-    const int width  = screen[0];
-    const int height = screen[1];
-
 #ifndef HAVE_OSPRAY
     if( m_renderingAttribs.OSPRayEnabled )
     {
@@ -496,6 +466,10 @@ avtVisItVTKDevice::ExecuteVolume()
     }
 #endif
 
+    const int width  = screen[0];
+    const int height = screen[1];
+
+    // Get the input data.
     auto dob = GetInput();
     auto inputTree = GetInputDataTree(); // avtDataTree_p
     int nsets = 0;
@@ -510,370 +484,31 @@ avtVisItVTKDevice::ExecuteVolume()
     GetDataExtents(dataRange, activeVarName.c_str());
     UnifyMinMax(dataRange, 2);
 
-    if( m_renderingAttribs.useColorVarMin )
-        dataRange[0] = m_renderingAttribs.colorVarMin;
-    if( m_renderingAttribs.useColorVarMax )
-        dataRange[1] = m_renderingAttribs.colorVarMax;
-
     // There could be separate scalar and opacity components.
     if( opacityVarName != "default" && opacityVarName != activeVarName )
     {
         m_nComponents = 2;
         GetDataExtents(opacityRange, opacityVarName.c_str());
         UnifyMinMax(opacityRange, 2);
-
-        if( m_renderingAttribs.useOpacityVarMin )
-            opacityRange[0] = m_renderingAttribs.opacityVarMin;
-        if( m_renderingAttribs.useOpacityVarMax )
-            opacityRange[1] = m_renderingAttribs.opacityVarMax;
     }
     else
     {
         m_nComponents = 1;
     }
 
-    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-              << "rank: "  << PAR_Rank() << " in  "
-              << "nsets: " << nsets << "  "
-              << "nComponents: " << m_nComponents << "  "
-              << std::endl;
-
-    // Flags to make sure the data and opacity have the same
-    // centering. Used when checking for required resampling.
-    bool dataCellCentering = false, opacityCellCentering = false;
-
-    // If there is input data get the centering and check if
-    // resampling is required.
-    if( nsets >= 1 )
-    {
-        vtkDataSet* in_ds = datasetPtrs[ 0 ];
-
-        // Get the data centering.
-        if( in_ds->GetPointData()->GetScalars() != nullptr )
-            dataCellCentering = false;
-        else if( in_ds->GetCellData()->GetScalars() != nullptr )
-            dataCellCentering = true;
-    }
-
-    // Check for a user resampling request, it is the same on all ranks.
-    bool userResample =
-      (m_renderingAttribs.resampleType &&
-       (m_resampleType != m_renderingAttribs.resampleType ||
-        m_renderingAttribs.resampleTargetVal != m_resampleTargetVal ||
-        m_renderingAttribs.resampleCentering != m_resampleCentering));
-
-    // If there is user resampling then a new image is needed.
-    bool needImage = userResample;
-
-    // Check to see if the data must be resampled.
-    int mustResample = NoResampling;
-
-    // Only check if not doing user resampling.
-    if( !userResample )
-    {
-        // If the resampling has changed, or if
-        // the color/opacity variable/min/max has changed then a new
-        // image is needed.
-        if(
-            // Resampling change
-            m_resampleType != m_renderingAttribs.resampleType ||
-            (m_renderingAttribs.resampleType &&
-             (m_renderingAttribs.resampleTargetVal != m_resampleTargetVal ||
-              m_renderingAttribs.resampleCentering != m_resampleCentering)) ||
-
-            // Color variable change or min/max change. The active var
-            // name triggers needing an image on the first pass.
-            m_activeVarName != activeVarName ||
-            m_useColorVarMin != m_renderingAttribs.useColorVarMin ||
-            (m_renderingAttribs.useColorVarMin &&
-             m_colorVarMin != m_renderingAttribs.colorVarMin) ||
-            m_useColorVarMax != m_renderingAttribs.useColorVarMax ||
-            (m_renderingAttribs.useColorVarMax &&
-             m_colorVarMax != m_renderingAttribs.colorVarMax) ||
-
-            // Opacity variable change or min/max change.
-            (m_nComponents == 2 &&
-             (m_opacityVarName != opacityVarName ||
-              m_useOpacityVarMin != m_renderingAttribs.useOpacityVarMin ||
-              (m_renderingAttribs.useOpacityVarMin &&
-               m_opacityVarMin != m_renderingAttribs.opacityVarMin) ||
-              m_useOpacityVarMax != m_renderingAttribs.useOpacityVarMax ||
-              (m_renderingAttribs.useOpacityVarMax &&
-               m_opacityVarMax != m_renderingAttribs.opacityVarMax)))
-            )
-        {
-            needImage = true;
-
-            // Check if resampling is required.
-            if( nsets >= 1 )
-            {
-                vtkDataSet* in_ds = datasetPtrs[ 0 ];
-
-                // If more than one data set then resampling is required.
-                if( nsets > 1 )
-                    mustResample |= MutlipleDatasets;
-                // If the data is not on a rectilinear grid then
-                // resampling is required.
-                if( in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID )
-                    mustResample |= NonRectilinearGrid;
-
-                // Get the opacity centering.
-                if( m_nComponents == 2 )
-                {
-                    if( in_ds->GetPointData()->GetScalars( opacityVarName.c_str() ) != nullptr )
-                        opacityCellCentering = false;
-                    else if( in_ds->GetCellData()->GetScalars( opacityVarName.c_str() ) != nullptr )
-                        opacityCellCentering = true;
-                }
-                else // if( m_nComponents == 1 )
-                    opacityCellCentering = dataCellCentering;
-
-                // If the data centering does not match the opacity
-                // centering then resampling is required.
-                if( dataCellCentering != opacityCellCentering )
-                    mustResample |= DifferentCentering;
-            }
-        }
-
-        // If one data set needs to be resample then all data sets will be
-        // resampled as avtResampleFilter is a parallel call. Otherwise
-        // MPI crashes.
-        mustResample = UnifyBitwiseOrValue(mustResample);
-    }
-
-    // Corner case when initally there are more ranks than domains. If
-    // there is no data initially but after a resampling there is
-    // data. Then if a new image is needed force a resampling so to
-    // have data for the new image.
-    if( needImage && m_needResampledData )
-    {
-        mustResample |= AttributesChanged;
-
-        // dob = m_resampleFilter->GetOutput();
-
-        // // Get the data tree which may be the original data or from the
-        // // resampled data.
-        // inputTree = ((avtDataset*) *dob)->GetDataTree(); // avtDataTree_p
-
-        // nsets = 0;
-        // datasetPtrs = inputTree->GetAllLeaves(nsets);
-    }
-
-    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-                << "rank: "  << PAR_Rank() << " "
-                << (needImage    ? "need image  " : "")
-                << (userResample ? "user resample  " : "")
-                << (mustResample ? "must resample  " : "")
-                << (mustResample ? mustResample : 0)
-                << std::endl;
-
-    // Store the resample type, target value, and centering so to
-    // check for a state change.
-    m_resampleType      = m_renderingAttribs.resampleType;
-    m_resampleTargetVal = m_renderingAttribs.resampleTargetVal;
-    m_resampleCentering = m_renderingAttribs.resampleCentering;
-
-    // Store the color variable values so to check for a state change.
-    m_activeVarName = activeVarName;
-    m_useColorVarMin = m_renderingAttribs.useColorVarMin;
-    m_colorVarMin    = m_renderingAttribs.colorVarMin;
-    m_useColorVarMax = m_renderingAttribs.useColorVarMax;
-    m_colorVarMax    = m_renderingAttribs.colorVarMax;
-
-    // Store the opacity variable values so to check for a state change.
-    m_opacityVarName = opacityVarName;
-    m_useOpacityVarMin = m_renderingAttribs.useOpacityVarMin;
-    m_opacityVarMin    = m_renderingAttribs.opacityVarMin;
-    m_useOpacityVarMax = m_renderingAttribs.useOpacityVarMax;
-    m_opacityVarMax    = m_renderingAttribs.opacityVarMax;
-
-    // If the data must be resampled and user did not request
-    // resampling report a warning so the user knows the data has
-    // been resampled.
-    if( mustResample && !userResample )
-    {
-        // Unify the values because it is possible that a rank may not
-        // have any data.
-        dataCellCentering    = UnifyMaximumValue(dataCellCentering);
-        opacityCellCentering = UnifyMaximumValue(opacityCellCentering);
-
-        std::string msg("The data must be resampled because ");
-
-        if( mustResample & MutlipleDatasets )
-        {
-            msg += "each rank has more than one domain";
-
-            if( mustResample & (NonRectilinearGrid | DifferentCentering | AttributesChanged))
-                msg += ", and ";
-        }
-
-        if( mustResample & NonRectilinearGrid )
-        {
-            msg += "the data is not on a rectilinear grid";
-
-            if( mustResample & (DifferentCentering | AttributesChanged))
-                msg += ", and ";
-        }
-
-        if( mustResample & DifferentCentering)
-        {
-            msg += "the data and opacity have different centering";
-
-            if( mustResample & AttributesChanged)
-                msg += ", and ";
-        }
-
-        if( mustResample & AttributesChanged)
-        {
-            msg += "the data and/or opacity attributes have changed";
-        }
-
-        msg += ". The data and if needed the opacity have been resampled on to a ";
-
-        if( PAR_Size() == 1 )
-            msg += "single rectilinear grid.";
-        else
-        {
-            if(m_renderingAttribs.resampleType == ParallelRedistribute)
-                msg += "common rectilinear grid and redistributed to each rank.";
-            else if(m_renderingAttribs.resampleType == ParallelPerRank )
-                msg += "rectilinear grid on each rank.";
-            else
-                msg += "common rectilinear grid and redistributed to each rank.";
-        }
-
-        avtCallback::IssueWarning(msg.c_str());
-    }
-
-    // Resampling
-    if(userResample || mustResample)
-    {
-        if(PAR_Size() == 1 &&
-           (m_renderingAttribs.resampleType == ParallelRedistribute ||
-            m_renderingAttribs.resampleType == ParallelPerRank))
-        {
-            avtCallback::IssueWarning("Running in serial but parallel resampling was selected. "
-                                      "Single domain sampling will be performed.");
-        }
-        else if(PAR_Size() > 1 &&
-                 m_renderingAttribs.resampleType == SingleDomain)
-        {
-            avtCallback::IssueWarning("Running in parallel but single domain resampling was selected. Parallel resampling should be used.");
-        }
-
-        // If the user selected a specific centering use
-        // it. Otherwise use the centering from the color data.
-        if( m_renderingAttribs.resampleCentering )
-            dataCellCentering =
-                m_renderingAttribs.resampleCentering == ZonalCentering;
-
-        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-                    << "rank: "  << PAR_Rank() << "  "
-                    << "centering requested " << m_renderingAttribs.resampleCentering << "  doing "
-                    << (dataCellCentering ? "cell " :  "point ")
-                    << "centered resampling"
-                    << std::endl;
-
-        // Create a dummy pipeline within the device so to force an
-        // execute within this "Execute".  Start with the source.
-        avtDataset_p ds;
-        CopyTo(ds, dob);
-        avtSourceFromAVTDataset termsrc(ds);
-
-        // Resample the data - must be done by all ranks.
-        InternalResampleAttributes resampleAtts;
-
-        // User requested resampling. If the type is 1 then resample
-        // on to a single domain. Otherwise resample in parallel
-        // (ignored if running in serial).
-        if( PAR_Size() > 1 )
-        {
-            if( userResample )
-            {
-                if( m_renderingAttribs.resampleType == ParallelRedistribute )
-                  resampleAtts.SetDistributedResample(true);
-                else if( m_renderingAttribs.resampleType == ParallelPerRank )
-                  resampleAtts.SetPerRankResample(true);
-            }
-            // Must resample but the user selected 'only if required' so
-            // do a distributed resample.
-            else //if( mustResample )
-            {
-                resampleAtts.SetDistributedResample(true);
-            }
-        }
-
-        resampleAtts.SetTargetVal(m_renderingAttribs.resampleTargetVal);
-        resampleAtts.SetPrefersPowersOfTwo(true);
-        resampleAtts.SetUseTargetVal(true);
-
-        if (m_resampleFilter != nullptr)
-        {
-            delete m_resampleFilter;
-            m_resampleFilter = nullptr;
-        }
-
-        avtResampleFilter *m_resampleFilter =
-            new avtResampleFilter(&resampleAtts);
-
-        m_resampleFilter->MakeOutputCellCentered( dataCellCentering );
-
-        m_resampleFilter->SetInput( termsrc.GetOutput() );
-        // Prevent this intermediate object from getting cleared
-        // out, so it is still there when rendering.
-        m_resampleFilter->GetOutput()->SetTransientStatus(false);
-
-        dob = m_resampleFilter->GetOutput();
-
-        // Since this is Execute, forcing an update is okay...
-        dob->Update(GetGeneralContract());
-
-        // Get the data tree which may be the original data or from the
-        // resampled data.
-        inputTree = ((avtDataset*) *dob)->GetDataTree(); // avtDataTree_p
-
-        nsets = 0;
-        datasetPtrs = inputTree->GetAllLeaves(nsets);
-
-        // This flag indicates that after resmapling there is data on
-        // this rank and that an image will be rendered.
-        m_imageOnThisRank = (nsets == 1);
-
-        // If an image is needed and the data came from resampling the
-        // resampled data has to be regenerated as it is transient.
-        m_needResampledData = true;
-    }
-    else if( m_renderingAttribs.resampleType == OnlyIfRequired )
-    {
-        if( needImage )
-        {
-            // This flag indicates that there is data on this rank and
-            // that an image will be rendered.
-            m_imageOnThisRank = (nsets == 1);
-            m_needResampledData = false;
-        }
-    }
-
-    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-              << "rank: "  << PAR_Rank() << " out "
-              << "nsets: " << nsets << "  "
-              << "imageOnThisRank: " << m_imageOnThisRank << "  "
-              << "needResampledData: " << m_needResampledData << "  "
-              << std::endl;
-
-    // If no image will be generated on this rank account for the
-    // parallel compositing.
-    if( m_imageOnThisRank == false )
+    // If no data then no image will be generated on this rank but
+    // there is parallel compositing so account for it.
+    if( nsets == 0 )
     {
         debug5 << "[VisItVTKDevice] Nothing to render, no data." << std::endl;
 
 #ifdef PARALLEL
         // So the parallel case can still work
         avtImage_p finalImage =
-          CreateFinalImage(nullptr, width, height, FLT_MAX);
+            CreateFinalImage(nullptr, width, height, FLT_MAX);
 
         if(PAR_Rank() == 0)
-          SetOutput(finalImage);
+            SetOutput(finalImage);
 #endif
 
         if( m_imageToRender != nullptr )
@@ -885,35 +520,80 @@ avtVisItVTKDevice::ExecuteVolume()
         return;
     }
 
-    // Create a new image if needed.
-    if( needImage )
+    // There should be only one data set.
+    if( nsets > 1 )
     {
-        // After resampling there should be only one rectilinear data set.
-        if( nsets > 1 )
-        {
-            LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-                        << "rank: "  << PAR_Rank() << " "
-                        << "Too many datasets to render, skipping." << std::endl;
-            EXCEPTION1(ImproperUseException, "Only one input dataset may be rendered.");
-        }
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+                    << "rank: "  << PAR_Rank() << " "
+                    << "Too many datasets to render, skipping." << std::endl;
+        EXCEPTION1(ImproperUseException, "Only one input dataset may be rendered.");
+    }
 
-        // Check for an implied transform.
-        avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
-        if (inatts.GetRectilinearGridHasTransform())
-        {
-            EXCEPTION1(ImproperUseException,
-                       "vtkRectilinear grids with an implied transform can not be rendered.");
-        }
+    // There should be only be a rectilinear data set.
+    vtkDataSet* in_ds = datasetPtrs[ 0 ];
+
+    if( in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID )
+    {
+        EXCEPTION1(ImproperUseException,
+                   "Only a vtkRectilinearGrid can be rendered.");
+    }
+
+    avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
+    if (inatts.GetRectilinearGridHasTransform())
+    {
+        EXCEPTION1(ImproperUseException,
+                   "vtkRectilinear grids with an implied transform can not be rendered.");
+    }
+
+    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+              << "rank: "  << PAR_Rank() << " in  "
+              << "nsets: " << nsets << "  "
+              << "nComponents: " << m_nComponents << "  "
+              << std::endl;
+
+    // Create a new image if needed.
+    if( m_imageToRender == nullptr ||
+
+        // Color variable change or min/max change. The active var
+        // name triggers needing an image on the first pass.
+        m_activeVarName != activeVarName ||
+        m_useColorVarMin != m_renderingAttribs.useColorVarMin ||
+        (m_renderingAttribs.useColorVarMin &&
+         m_colorVarMin != m_renderingAttribs.colorVarMin) ||
+        m_useColorVarMax != m_renderingAttribs.useColorVarMax ||
+        (m_renderingAttribs.useColorVarMax &&
+         m_colorVarMax != m_renderingAttribs.colorVarMax) ||
+
+        // Opacity variable change or min/max change.
+        (m_nComponents == 2 &&
+         (m_opacityVarName != opacityVarName ||
+          m_useOpacityVarMin != m_renderingAttribs.useOpacityVarMin ||
+          (m_renderingAttribs.useOpacityVarMin &&
+           m_opacityVarMin != m_renderingAttribs.opacityVarMin) ||
+          m_useOpacityVarMax != m_renderingAttribs.useOpacityVarMax ||
+          (m_renderingAttribs.useOpacityVarMax &&
+           m_opacityVarMax != m_renderingAttribs.opacityVarMax))) )
+    {
+        // Store the color variable values so to check for a state change.
+        m_activeVarName  = activeVarName;
+        m_useColorVarMin = m_renderingAttribs.useColorVarMin;
+        m_colorVarMin    = m_renderingAttribs.colorVarMin;
+        m_useColorVarMax = m_renderingAttribs.useColorVarMax;
+        m_colorVarMax    = m_renderingAttribs.colorVarMax;
+
+        // Store the opacity variable values so to check for a state change.
+        m_opacityVarName   = opacityVarName;
+        m_useOpacityVarMin = m_renderingAttribs.useOpacityVarMin;
+        m_opacityVarMin    = m_renderingAttribs.opacityVarMin;
+        m_useOpacityVarMax = m_renderingAttribs.useOpacityVarMax;
+        m_opacityVarMax    = m_renderingAttribs.opacityVarMax;
+
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+                    << "rank: "  << PAR_Rank() << " "
+                    << "Converting from rectilinear grid to image data."
+                    << std::endl;
 
         // Now to the business
-        vtkDataSet* in_ds = datasetPtrs[ 0 ];
-
-        if( in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID )
-        {
-            EXCEPTION1(ImproperUseException,
-                       "Only a vtkRectilinearGrid can be rendered.");
-        }
-
         vtkRectilinearGrid* rgrid = vtkRectilinearGrid::SafeDownCast( in_ds );
 
         // Get the bounds and extents.
@@ -953,6 +633,7 @@ avtVisItVTKDevice::ExecuteVolume()
 
         // There could be a spearate opacity scalar data array.
         vtkDataArray *opacityArr = nullptr;
+
         if( m_nComponents == 2 )
         {
             opacityArr = in_ds->GetPointData()->GetScalars( opacityVarName.c_str() );
@@ -982,6 +663,20 @@ avtVisItVTKDevice::ExecuteVolume()
         // if( gradientVarName != "default" )
         //   gradientArr = in_ds->GetPointData()->GetVectors( gradientVarName.c_str() );
 
+        // If needed adjust the colar var range
+        if( m_renderingAttribs.useColorVarMin )
+            dataRange[0] = m_renderingAttribs.colorVarMin;
+        if( m_renderingAttribs.useColorVarMax )
+            dataRange[1] = m_renderingAttribs.colorVarMax;
+
+        // If needed adjust the opacity var range
+        if( m_nComponents == 2 )
+        {
+            if( m_renderingAttribs.useOpacityVarMin )
+                opacityRange[0] = m_renderingAttribs.opacityVarMin;
+            if( m_renderingAttribs.useOpacityVarMax )
+                opacityRange[1] = m_renderingAttribs.opacityVarMax;
+        }
 
         LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                   << "rank: "  << PAR_Rank() << " dims : "
@@ -1064,12 +759,6 @@ avtVisItVTKDevice::ExecuteVolume()
         if( opacityRange[1] <= opacityRange[0])
             opacityScale = 0;
 
-        // double data_min =  1e6;
-        // double data_max = -1e6;
-
-        // double opacity_min =  1e6;
-        // double opacity_max = -1e6;
-
         // Transfer the rectilinear grid data to the image data and
         // scale to the proper range.
         m_useInterpolation = true;
@@ -1102,9 +791,6 @@ avtVisItVTKDevice::ExecuteVolume()
                         if( val > 255 ) val = 255;
 
                         scalars->SetComponent(ptId, 0, val);
-
-                        // if( data_min > val ) data_min = val;
-                        // if( data_max < val ) data_max = val;
                     }
 
                     if( m_nComponents == 2 )
@@ -1124,9 +810,6 @@ avtVisItVTKDevice::ExecuteVolume()
                             if( val > 255 ) val = 255;
 
                             scalars->SetComponent(ptId, 1, val);
-
-                            // if( opacity_min > val ) opacity_min = val;
-                            // if( opacity_max < val ) opacity_max = val;
                         }
                     }
 
@@ -1161,15 +844,6 @@ avtVisItVTKDevice::ExecuteVolume()
         //             << ptId
         //             << std::endl;
 
-        // LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-        //             << "rank: "  << PAR_Rank()
-        //             << " dataRange: "
-        //             << data_min << "  " << data_max << "  ";
-        // if( m_nComponents == 2 )
-        //     LOCAL_DEBUG << " opacityRange: "
-        //                 << opacity_min << "  " << opacity_max << "  ";
-        // LOCAL_DEBUG << std::endl;
-
         // For debugging
         // {
         //     vtkXMLImageDataWriter* writer = vtkXMLImageDataWriter::New();
@@ -1198,8 +872,7 @@ avtVisItVTKDevice::ExecuteVolume()
 #ifdef HAVE_OSPRAY
         if( m_renderingAttribs.OSPRayEnabled )
         {
-            vtkOSPRayVolumeMapper * vm = vtkOSPRayVolumeMapper::New();
-            m_volumeMapper = vm;
+            m_volumeMapper = vtkOSPRayVolumeMapper::New();
 
             LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                         << "rank: "  << PAR_Rank() << " OSPRay Volume Mapper "
@@ -1208,9 +881,7 @@ avtVisItVTKDevice::ExecuteVolume()
         else
 #endif
         {
-            vtkGPUVolumeRayCastMapper * vm = vtkGPUVolumeRayCastMapper::New();
-            m_volumeMapper = vm;
-
+            m_volumeMapper = vtkGPUVolumeRayCastMapper::New();
             LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
                         << "rank: "  << PAR_Rank() << " GPU Volume Ray Cast Mapper "
                         << std::endl;
@@ -1226,7 +897,7 @@ avtVisItVTKDevice::ExecuteVolume()
 
     m_volumeMapper->SetInputData(m_imageToRender);
 
-    // Upstream in avtVolumeFIlter an new color and opacity map are
+    // Upstream in avtVolumeFilter a new color and opacity map are
     // created each time so recreate them here.
 
     // Create the transfer function and the opacity mapping.
@@ -1287,18 +958,18 @@ avtVisItVTKDevice::ExecuteVolume()
               << volumeProperty->HasGradientOpacity() << "  "
               << std::endl;
 
-    LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
-                << "rank: "  << PAR_Rank()
-                << " lightingEnabled: " << m_renderingAttribs.lightingEnabled << "  "
-                << m_materialPropertiesPtr[0] << "  "
-                << m_materialPropertiesPtr[1] << "  "
-                << m_materialPropertiesPtr[2] << "  "
-                << m_materialPropertiesPtr[3] << "  "
-                << std::endl;
-
     // Set ambient, diffuse, specular, and specular power (shininess).
-    if( 0 && m_renderingAttribs.lightingEnabled )
+    if( m_renderingAttribs.lightingEnabled )
     {
+        LOCAL_DEBUG << __LINE__ << " [VisItVTKDevice] "
+		    << "rank: "  << PAR_Rank()
+		    << " lightingEnabled: " << m_renderingAttribs.lightingEnabled << "  "
+		    << m_materialPropertiesPtr[0] << "  "
+		    << m_materialPropertiesPtr[1] << "  "
+		    << m_materialPropertiesPtr[2] << "  "
+		    << m_materialPropertiesPtr[3] << "  "
+		    << std::endl;
+
         volumeProperty->SetAmbient      (m_materialPropertiesPtr[0]);
         volumeProperty->SetDiffuse      (m_materialPropertiesPtr[1]);
         volumeProperty->SetSpecular     (m_materialPropertiesPtr[2]);

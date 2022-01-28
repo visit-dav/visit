@@ -47,8 +47,8 @@
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-// #define LOCAL_DEBUG std::cerr
-#define LOCAL_DEBUG debug5
+#define LOCAL_DEBUG std::cerr
+// #define LOCAL_DEBUG debug5
 
 // ****************************************************************************
 //  Constructor:  avtVolumeRenderer::avtVolumeRenderer
@@ -61,10 +61,10 @@
 // ****************************************************************************
 avtVolumeRenderer::avtVolumeRenderer()
 {
-    transFunc  = vtkColorTransferFunction::New();
-    opacity    = vtkPiecewiseFunction::New();
-    volumeProp = vtkVolumeProperty::New();
-    curVolume  = vtkVolume::New();
+    m_transFunc  = vtkColorTransferFunction::New();
+    m_opacity    = vtkPiecewiseFunction::New();
+    m_volumeProp = vtkVolumeProperty::New();
+    m_curVolume  = vtkVolume::New();
 }
 
 // ****************************************************************************
@@ -78,31 +78,31 @@ avtVolumeRenderer::avtVolumeRenderer()
 // ****************************************************************************
 avtVolumeRenderer::~avtVolumeRenderer()
 {
-    if (curVolume != nullptr)
+    if (m_curVolume != nullptr)
     {
-        curVolume->Delete();
+        m_curVolume->Delete();
     }
-    if (volumeMapper != nullptr)
+    if (m_volumeMapper != nullptr)
     {
-        volumeMapper->Delete();
+        m_volumeMapper->Delete();
     }
-    if (volumeProp != nullptr)
+    if (m_volumeProp != nullptr)
     {
-        volumeProp->Delete();
-    }
-
-    if (imageToRender != nullptr)
-    {
-        imageToRender->Delete();
+        m_volumeProp->Delete();
     }
 
-    if (opacity != nullptr)
+    if (m_imageToRender != nullptr)
     {
-        opacity->Delete();
+        m_imageToRender->Delete();
     }
-    if (transFunc != nullptr)
+
+    if (m_opacity != nullptr)
     {
-        transFunc->Delete();
+        m_opacity->Delete();
+    }
+    if (m_transFunc != nullptr)
+    {
+        m_transFunc->Delete();
     }
 }
 
@@ -147,10 +147,10 @@ avtVolumeRenderer::SetAtts(const AttributeGroup *a)
 {
     const VolumeAttributes *newAtts = (const VolumeAttributes*)a;
 
-    if (*newAtts == atts)
+    if (*newAtts == m_atts)
         return;
 
-    atts = *(const VolumeAttributes*)a;
+    m_atts = *(const VolumeAttributes*) a;
 }
 
 // ****************************************************************************
@@ -174,6 +174,8 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 {
     StackTimer t("avtVolumeRenderer::Render");
 
+    const char *mName = "avtVolumeRenderer::Render: ";
+
 #ifndef HAVE_OSPRAY
     if( atts.GetOsprayEnabledFlag() )
     {
@@ -181,35 +183,85 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
     }
 #endif
 
-    const char *mName = "avtDefaultRenderer::Render: ";
-
     if (VTKRen == nullptr)
     {
         debug1 << mName << "Default Renderer: VTKRen is nullptr!";
         EXCEPTION0(ImproperUseException);
     }
 
-    if (imageToRender == nullptr)
+    if( in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID )
     {
+	EXCEPTION1(ImproperUseException,
+		   "Only a vtkRectilinearGrid can be rendered.");
+    }
+    
+    // Check for an implied transform - can not be done with the
+    // current paradigm!!!!!!
+    // avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
+    // if (inatts.GetRectilinearGridHasTransform())
+    // {
+    //     EXCEPTION1(ImproperUseException,
+    //                "vtkRectilinear grids with an implied transform can not be rendered.");
+    // }
+
+    std::string activeVarName;
+    std::string opacityVarName = m_atts.GetOpacityVariable();
+
+    if( in_ds->GetPointData()->GetScalars() )
+        activeVarName = in_ds->GetPointData()->GetScalars()->GetName();
+    else if( in_ds->GetCellData()->GetScalars() )
+        activeVarName = in_ds->GetCellData()->GetScalars()->GetName();
+
+    if( opacityVarName != "default" && opacityVarName != activeVarName )
+    {
+        m_nComponents = 2;
+    }
+    else
+    {
+        m_nComponents = 1;
+    }
+      
+    // Create a new image if needed.
+    if( m_imageToRender == nullptr ||
+
+	// Color variable change or min/max change. The active var
+        // name triggers needing an image on the first pass.
+        m_activeVarName != activeVarName ||
+	m_useColorVarMin != m_atts.GetUseColorVarMin() ||
+	(m_atts.GetUseColorVarMin() &&
+	 m_colorVarMin != m_atts.GetColorVarMin()) ||
+	m_useColorVarMax != m_atts.GetUseColorVarMax() ||
+	(m_atts.GetUseColorVarMax() &&
+	 m_colorVarMax != m_atts.GetColorVarMax()) ||
+	
+	// Opacity variable change or min/max change.
+	(m_nComponents == 2 &&
+	 (m_opacityVarName != m_atts.GetOpacityVariable() ||
+	  m_useOpacityVarMin != m_atts.GetUseOpacityVarMin() ||
+	  (m_atts.GetUseOpacityVarMin() &&
+	   m_opacityVarMin != m_atts.GetOpacityVarMin()) ||
+	  m_useOpacityVarMax != m_atts.GetUseOpacityVarMax() ||
+	  (m_atts.GetUseOpacityVarMax() &&
+	   m_opacityVarMax != m_atts.GetOpacityVarMax()))) )
+    {
+        // Store the color variable values so to check for a state change.
+        m_activeVarName  = activeVarName;
+	m_useColorVarMin = m_atts.GetUseColorVarMin();
+	m_colorVarMin    = m_atts.GetColorVarMin();
+	m_useColorVarMax = m_atts.GetUseColorVarMax();
+	m_colorVarMax    = m_atts.GetColorVarMax();
+	
+	// Store the opacity variable values so to check for a state change.
+	m_opacityVarName   = m_atts.GetOpacityVariable();
+	m_useOpacityVarMin = m_atts.GetUseOpacityVarMin();
+	m_opacityVarMin    = m_atts.GetOpacityVarMin();
+	m_useOpacityVarMax = m_atts.GetUseOpacityVarMax();
+	m_opacityVarMax    = m_atts.GetOpacityVarMax();
+
         LOCAL_DEBUG << mName << "Converting from rectilinear grid "
                     << "to image data" << std::endl;
 
-        // Check for an implied transform - can not be done with the
-        // current paradigm!!!!!!
-        // avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
-        // if (inatts.GetRectilinearGridHasTransform())
-        // {
-        //     EXCEPTION1(ImproperUseException,
-        //                "vtkRectilinear grids with an implied transform can not be rendered.");
-        // }
-
         // Now to the business
-        if( in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID )
-        {
-            EXCEPTION1(ImproperUseException,
-                       "Only a vtkRectilinearGrid can be rendered.");
-        }
-
         vtkRectilinearGrid* rgrid = vtkRectilinearGrid::SafeDownCast( in_ds );
 
         // Get the bounds and extents.
@@ -233,7 +285,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 
         if( dataArr )
         {
-            cellData = false;
+            m_cellData = false;
         }
         else
         {
@@ -244,25 +296,16 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 	        EXCEPTION1(InvalidVariableException, "");
             }
 
-            cellData = true;
+            m_cellData = true;
         }
 
-	std::string activeVarName = dataArr->GetName();
-        std::string opacityVarName = atts.GetOpacityVariable();
+        // There could be a spearate opacity scalar data array.
         vtkDataArray *opacityArr = nullptr;
 
-        LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
-		    << " vars : "
-		    << activeVarName << "  " << opacityVarName << "  "
-		    << std::endl;
-
-        // There could be a spearate opacity scalar data array.
-        if( opacityVarName != "default" && opacityVarName != activeVarName )
+        if( m_nComponents == 2 )
         {
-            nComponents = 2;
-
             opacityArr = in_ds->GetPointData()->GetScalars( opacityVarName.c_str() );
-            if( cellData && opacityArr )
+            if( m_cellData && opacityArr )
             {
                 EXCEPTION1(ImproperUseException, "The opacity data does not have the same centering (point) as the primary data (cell). This expection can be fixed by resampling the data on to a common mesh.");
             }
@@ -271,7 +314,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
             {
                 opacityArr = in_ds->GetCellData()->GetScalars( opacityVarName.c_str() );
 
-                if( !cellData && opacityArr )
+                if( !m_cellData && opacityArr )
                 {
                     EXCEPTION1(ImproperUseException, "The opacity data does not have the same centering (cell) as the primary data (point). This expection can be fixed by resampling the data on to a common mesh.");
                 }
@@ -282,29 +325,25 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
                 }
             }
         }
-        else
-        {
-            nComponents = 1;
-        }
 
         double dataRange[2] = {0., 1.};
         double opacityRange[2] = {0., 1.};
 
         dataArr->GetRange( dataRange );
 
-        if( atts.GetUseColorVarMin() )
-            dataRange[0] = atts.GetColorVarMin();
-        if( atts.GetUseColorVarMax() )
-            dataRange[1] = atts.GetColorVarMax();
+        if( m_atts.GetUseColorVarMin() )
+            dataRange[0] = m_atts.GetColorVarMin();
+        if( m_atts.GetUseColorVarMax() )
+            dataRange[1] = m_atts.GetColorVarMax();
 
-        if( nComponents == 2 )
+        if( m_nComponents == 2 )
         {
             opacityArr->GetRange( opacityRange );
 
-            if( atts.GetUseOpacityVarMin() )
-                opacityRange[0] = atts.GetOpacityVarMin();
-            if( atts.GetUseOpacityVarMax() )
-                opacityRange[1] = atts.GetOpacityVarMax();
+            if( m_atts.GetUseOpacityVarMin() )
+                opacityRange[0] = m_atts.GetOpacityVarMin();
+            if( m_atts.GetUseOpacityVarMax() )
+                opacityRange[1] = m_atts.GetOpacityVarMax();
         }
 
         LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
@@ -336,7 +375,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
                   << dataRange[0] << "  " << dataRange[1] << "  "
                   << std::endl;
 
-        if( nComponents == 2 )
+        if( m_nComponents == 2 )
             LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
                         << " opacity range : "
                         << opacityRange[0] << "  " << opacityRange[1] << "  "
@@ -344,30 +383,37 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 
         LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
                     << " expecting "
-                    << (cellData ? "cell " : "point ") << "data "
+                    << (m_cellData ? "cell " : "point ") << "data "
                     << std::endl;
 
         // The volume mapper requires a vtkImageData as input.
-        imageToRender = vtkImageData::New();
-        imageToRender->SetDimensions(dims);
-        imageToRender->SetExtent(extent);
-        imageToRender->SetSpacing(spacingX, spacingY, spacingZ);
-        imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
+        if( m_imageToRender != nullptr )
+            m_imageToRender->Delete();
+
+        m_imageToRender = vtkImageData::New();
+        m_imageToRender->SetDimensions(dims);
+        m_imageToRender->SetExtent(extent);
+        m_imageToRender->SetSpacing(spacingX, spacingY, spacingZ);
+        m_imageToRender->SetOrigin(bounds[0], bounds[2], bounds[4]);
+
+        // The color and opacity data may be separate components which
+        // requires the IndependentComponents in the
+        // vtkVolumeProperties set to 'off'
 
         // Data size for the image data as either point or cell data.
         vtkIdType dataSize =
-            (dims[0]-cellData) * (dims[1]-cellData) * (dims[2]-cellData);
+            (dims[0]-m_cellData) * (dims[1]-m_cellData) * (dims[2]-m_cellData);
 
         // Allocate the new scalars
         vtkDataArray* scalars = vtkDataArray::CreateDataArray(VTK_FLOAT);
         scalars->SetName("ImageScalars");
-        scalars->SetNumberOfComponents(nComponents);
+        scalars->SetNumberOfComponents(m_nComponents);
         scalars->SetNumberOfTuples(dataSize);
 
-        if( cellData )
-            imageToRender->GetCellData()->SetScalars(scalars);
+        if( m_cellData )
+            m_imageToRender->GetCellData()->SetScalars(scalars);
         else
-            imageToRender->GetPointData()->SetScalars(scalars);
+            m_imageToRender->GetPointData()->SetScalars(scalars);
 
         scalars->Delete();
 
@@ -383,17 +429,17 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 
         // Transfer the rgrid data to the image data
         // and scale to the proper range.
-        useInterpolation = true;
+        m_useInterpolation = true;
 
         // VisIt populates empty space with the NO_DATA_VALUE.
         // This needs to map this to a value that the mapper accepts,
         // and then clamp it so to be fully translucent.
         int ptId = 0;
-        for (int z = 0; z < dims[2]-cellData; ++z)
+        for (int z = 0; z < dims[2]-m_cellData; ++z)
         {
-            for (int y = 0; y < dims[1]-cellData; ++y)
+            for (int y = 0; y < dims[1]-m_cellData; ++y)
             {
-                for (int x = 0; x < dims[0]-cellData; ++x)
+                for (int x = 0; x < dims[0]-m_cellData; ++x)
                 {
                     // The opacity and color data may differ so add
                     // both as two separate components.
@@ -403,7 +449,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
                         // The color map is 0 -> 255. For no data values,
                         // assign a new value just out side of the map.
                         scalars->SetComponent(ptId, 0, -1.0);
-                        useInterpolation = false;
+                        m_useInterpolation = false;
                     }
                     else
                     {
@@ -415,7 +461,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
                         scalars->SetComponent(ptId, 0, val);
                     }
 
-                    if( nComponents == 2 )
+                    if( m_nComponents == 2 )
                     {
                         double opacityTuple = opacityArr->GetTuple1(ptId);
                         if (opacityTuple <= NO_DATA_VALUE)
@@ -423,7 +469,7 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
                             // The opacity map is 0 -> 255. For no data values,
                             // assign a new value just out side of the map.
                             scalars->SetComponent(ptId, 1, -1.0);
-                            useInterpolation = false;
+                            m_useInterpolation = false;
                         }
                         else
                         {
@@ -443,22 +489,24 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
 
         LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
                     << " useInterpolation: "
-                    << useInterpolation << "  "
+                    << m_useInterpolation << "  "
                     << std::endl;
     }
 
-    if( volumeMapper == nullptr ||
-        OSPRayEnabled != atts.GetOsprayEnabledFlag())
+    // Create a new volume mapper if needed.
+    if( m_volumeMapper == nullptr ||
+        m_OSPRayEnabled != m_atts.GetOsprayEnabledFlag())
     {
-        OSPRayEnabled = atts.GetOsprayEnabledFlag();
+        m_OSPRayEnabled = m_atts.GetOsprayEnabledFlag();
 
-        if (volumeMapper != nullptr)
-            volumeMapper->Delete();
+        if (m_volumeMapper != nullptr)
+            m_volumeMapper->Delete();
 
+        // Create the volume mapper.
 #ifdef HAVE_OSPRAY
-        if( atts.GetOsprayEnabledFlag())
+        if( m_atts.GetOsprayEnabledFlag())
         {
-            volumeMapper = vtkOSPRayVolumeMapper::New();
+            m_volumeMapper = vtkOSPRayVolumeMapper::New();
 
             LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
                         << " OSPRay Volume Mapper "
@@ -467,91 +515,91 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
         else
 #endif
         {
-            volumeMapper = vtkGPUVolumeRayCastMapper::New();
+            m_volumeMapper = vtkGPUVolumeRayCastMapper::New();
 
             LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
                         << " GPU Volume Ray Cast Mapper "
                         << std::endl;
         }
 
-        volumeMapper->SetBlendModeToComposite();
-        resetColorMap = true;
+        m_volumeMapper->SetBlendModeToComposite();
+        m_resetColorMap = true;
     }
 
-    if( cellData )
-        volumeMapper->SetScalarModeToUseCellData();
+    if( m_cellData )
+        m_volumeMapper->SetScalarModeToUseCellData();
     else
-        volumeMapper->SetScalarModeToUsePointData();
+        m_volumeMapper->SetScalarModeToUsePointData();
 
-    volumeMapper->SetInputData(imageToRender);
+    m_volumeMapper->SetInputData(m_imageToRender);
 
-    if (resetColorMap || oldAtts != atts)
+    if (m_resetColorMap || m_oldAtts != m_atts)
     {
         constexpr double rgbaScale = 1.0 / 255.0;
 
-        resetColorMap = false;
-        oldAtts       = atts;
+        m_resetColorMap = false;
+        m_oldAtts       = m_atts;
 
         LOCAL_DEBUG << mName << "Resetting color" << endl;
 
         // Create the transfer function and the opacity mapping.
         constexpr int tableSize = 256;
         unsigned char rgba[tableSize*4];
-        atts.GetTransferFunction(rgba);
+        m_atts.GetTransferFunction(rgba);
 
         // To make the NO_DATA_VALUEs fully translucent turn clamping
         // off (opacity becomes 0.0)
-        transFunc->RemoveAllPoints();
-        transFunc->SetScaleToLinear();
-        transFunc->SetClamping(false);
+        m_transFunc->RemoveAllPoints();
+        m_transFunc->SetScaleToLinear();
+        m_transFunc->SetClamping(false);
 
-        opacity->RemoveAllPoints();
-        opacity->SetClamping(false);
+        m_opacity->RemoveAllPoints();
+        m_opacity->SetClamping(false);
 
-        double atten = atts.GetOpacityAttenuation();
+        double atten = m_atts.GetOpacityAttenuation();
 
         // Add the color map to vtk's transfer function
         for(int i = 0; i < tableSize; i++)
         {
             int rgbIdx  = 4 * i;
-            transFunc->AddRGBPoint(i,
-                                   double(rgba[rgbIdx    ]) * rgbaScale,
-                                   double(rgba[rgbIdx + 1]) * rgbaScale,
-                                   double(rgba[rgbIdx + 2]) * rgbaScale);
-            opacity->AddPoint(i, double(rgba[rgbIdx + 3]) * rgbaScale * atten);
+            m_transFunc->AddRGBPoint(i,
+				     double(rgba[rgbIdx    ]) * rgbaScale,
+				     double(rgba[rgbIdx + 1]) * rgbaScale,
+				     double(rgba[rgbIdx + 2]) * rgbaScale);
+            m_opacity->AddPoint(i, double(rgba[rgbIdx + 3]) * rgbaScale * atten);
         }
 
         // For some reason, the endpoints aren't included when
         // clamping is turned off. So add some padding on the ends of
         // the mapping functions.
-        transFunc->AddRGBPoint(-1,
-                               double(rgba[0]) * rgbaScale,
-                               double(rgba[1]) * rgbaScale,
-                               double(rgba[2]) * rgbaScale);
-        opacity->AddPoint(-1, double(rgba[3]) * rgbaScale * atten);
+        m_transFunc->AddRGBPoint(-1,
+				 double(rgba[0]) * rgbaScale,
+				 double(rgba[1]) * rgbaScale,
+				 double(rgba[2]) * rgbaScale);
+        m_opacity->AddPoint(-1, double(rgba[3]) * rgbaScale * atten);
 
         int rgbIdx = (tableSize-1) * 4;
-        transFunc->AddRGBPoint(tableSize,
-                               double(rgba[rgbIdx    ]) * rgbaScale,
-                               double(rgba[rgbIdx + 1]) * rgbaScale,
-                               double(rgba[rgbIdx + 2]) * rgbaScale);
-        opacity->AddPoint(tableSize, double(rgba[rgbIdx + 3]) * rgbaScale * atten);
+        m_transFunc->AddRGBPoint(tableSize,
+				 double(rgba[rgbIdx    ]) * rgbaScale,
+				 double(rgba[rgbIdx + 1]) * rgbaScale,
+				 double(rgba[rgbIdx + 2]) * rgbaScale);
+        m_opacity->AddPoint(tableSize, double(rgba[rgbIdx + 3]) * rgbaScale * atten);
 
         // Set the volume properties.
-        volumeProp->SetColor(transFunc);
-        volumeProp->SetScalarOpacity(opacity);
-        volumeProp->SetIndependentComponents( nComponents == 1 );
-        volumeProp->SetShade( atts.GetLightingFlag() );
+        m_volumeProp->SetColor(m_transFunc);
+        m_volumeProp->SetScalarOpacity(m_opacity);
+        m_volumeProp->SetIndependentComponents( m_nComponents == 1 );
+        m_volumeProp->SetShade( m_atts.GetLightingFlag() );
 
         // Set ambient, diffuse, specular, and specular power (shininess).
-        const double *matProp = atts.GetMaterialProperties();
+        const double *matProp = m_atts.GetMaterialProperties();
 
-        if (atts.GetLightingFlag() && matProp != nullptr)
+        if (m_atts.GetLightingFlag() && matProp != nullptr)
         {
-            volumeProp->SetAmbient(matProp[0]);
-            volumeProp->SetDiffuse(matProp[1]);
-            volumeProp->SetSpecular(matProp[2]);
-            volumeProp->SetSpecularPower(matProp[3]);
+            m_volumeProp->SetAmbient(matProp[0]);
+            m_volumeProp->SetDiffuse(matProp[1]);
+            m_volumeProp->SetSpecular(matProp[2]);
+            m_volumeProp->SetSpecularPower(matProp[3]);
         }
 
         // If the dataset contains NO_DATA_VALUEs, interpolation will
@@ -559,13 +607,13 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
         // and a no data value). Hopefully this will be addressed in the
         // future. For now, only interpolate when the dataset contains
         // none of these values.
-        if (useInterpolation)
+        if (m_useInterpolation)
         {
-            volumeProp->SetInterpolationTypeToLinear();
+            m_volumeProp->SetInterpolationTypeToLinear();
         }
         else
         {
-            volumeProp->SetInterpolationTypeToNearest();
+            m_volumeProp->SetInterpolationTypeToNearest();
         }
 
         // A sample distance needs to be calculate the so to apply an
@@ -580,37 +628,37 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
         // value will result in an increased opacity intensity, while decreasing
         // this value will result in a decreased opacity intensity.
         double spacing[3];
-        imageToRender->GetSpacing(spacing);
+        m_imageToRender->GetSpacing(spacing);
 
         double sampleDistReference = 1.0 / 10.0;
         double averageSpacing = (spacing[0] + spacing[1] + spacing[2]) / 3.0;
         double sampleDist     = averageSpacing / sampleDistReference;
 
-        volumeProp->SetScalarOpacityUnitDistance(1, sampleDist);
+        m_volumeProp->SetScalarOpacityUnitDistance(1, sampleDist);
 
-        curVolume->SetMapper(volumeMapper);
-        curVolume->SetProperty(volumeProp);
+        m_curVolume->SetMapper(m_volumeMapper);
+        m_curVolume->SetProperty(m_volumeProp);
     }
 
 #ifdef HAVE_OSPRAY
-    if( atts.GetOsprayEnabledFlag() )
+    if( m_atts.GetOsprayEnabledFlag() )
     {
         LOCAL_DEBUG << __LINE__ << " [avtVolumeRenderer] "
                     << " RenderType: "
-                    << (atts.GetOsprayRenderType() ? "PathTracer" : "SciVis") << "  "
+                    << (m_atts.GetOsprayRenderType() ? "PathTracer" : "SciVis") << "  "
                     << std::endl;
 
-        if( atts.GetOsprayRenderType() == 1 )
+        if( m_atts.GetOsprayRenderType() == 1 )
             vtkOSPRayRendererNode::SetRendererType("pathtracer", VTKRen);
         else
             vtkOSPRayRendererNode::SetRendererType("scivis", VTKRen);
 
-        vtkOSPRayRendererNode::SetSamplesPerPixel(atts.GetOspraySPP(), VTKRen);
-        vtkOSPRayRendererNode::SetAmbientSamples (atts.GetOsprayAOSamples(), VTKRen);
-        vtkOSPRayRendererNode::SetMinContribution(atts.GetOsprayMinContribution(), VTKRen);
-        vtkOSPRayRendererNode::SetMaxContribution(atts.GetOsprayMaxContribution(), VTKRen);
+        vtkOSPRayRendererNode::SetSamplesPerPixel(m_atts.GetOspraySPP(), VTKRen);
+        vtkOSPRayRendererNode::SetAmbientSamples (m_atts.GetOsprayAOSamples(), VTKRen);
+        vtkOSPRayRendererNode::SetMinContribution(m_atts.GetOsprayMinContribution(), VTKRen);
+        vtkOSPRayRendererNode::SetMaxContribution(m_atts.GetOsprayMaxContribution(), VTKRen);
     }
 #endif
 
-    volumeMapper->Render(VTKRen, curVolume);
+    m_volumeMapper->Render(VTKRen, m_curVolume);
 }

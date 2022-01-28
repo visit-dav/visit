@@ -47,7 +47,6 @@
     #include <avtSLIVRRayTracer.h>
 #endif
 
-
 //
 // Function Prototypes
 //
@@ -274,31 +273,25 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
     {
         om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
     }
+    else if (atts.GetRendererType() == VolumeAttributes::Composite &&
+             atts.GetSampling()     == VolumeAttributes::Trilinear)
+    {
+        om.SetTableComposite(vtf, 256,
+                             atts.GetOpacityAttenuation() * 2.0 - 1.0,
+                             atts.GetRendererSamples());
+    }
+    else if (atts.GetRendererType() == VolumeAttributes::SLIVR)
+    {
+        // Set the opacity map with opacity correction. This
+        // modifies the opacities though.
+        om.SetTableComposite(vtf, 256,
+                             atts.GetOpacityAttenuation() * 2.0 - 1.0,
+                             atts.GetRendererSamples());
+    }
     else
     {
-        if (atts.GetRendererType() == VolumeAttributes::Composite &&
-            atts.GetSampling()     == VolumeAttributes::Trilinear)
-          om.SetTableComposite(vtf, 256,
-                               atts.GetOpacityAttenuation() * 2.0 - 1.0,
-                               atts.GetRendererSamples());
-        else
-        {
-#ifdef VISIT_SLIVR
-            if (atts.GetRendererType() == VolumeAttributes::SLIVR)
-            {
-                // Set the opacity map with opacity correction. This
-                // modifies the opacities though.
-                om.SetTableComposite(vtf, 256,
-                                     atts.GetOpacityAttenuation() * 2.0 - 1.0,
-                                     atts.GetRendererSamples());
-            }
-            else
-#endif
-            {
-                // Set the opacity map just using the transfer function.
-                om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
-            }
-        }
+        // Set the opacity map just using the transfer function.
+        om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
     }
 
     double actualRange[2];
@@ -539,284 +532,6 @@ avtVolumeFilter::GetRenderVariables( int &primIndex,
 }
 
 // ****************************************************************************
-//  Method: avtVolumeFilter::RenderImageRayCasting
-//
-//  Purpose:
-//      Do SW rendering with SLIVR, VTK/OSPRay, or other.
-//
-//  Programmer: Pascal Grosset
-//  Creation:
-//
-//  Notes: Brad thinks this is way too much code duplication.
-//
-//  Modifications:
-//
-// ****************************************************************************
-avtImage_p
-avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
-                                       const WindowAttributes &window)
-{
-    //
-    // Create a dummy pipeline with the volume renderer that can be
-    // executed within the volume filter "Execute".  Start with the
-    // source.
-    //
-    avtSourceFromAVTDataset termsrc(GetTypedInput());
-
-    //
-    // Set up the volume renderer.
-    //
-    avtRayTracerBase *software = nullptr;
-
-    if (atts.GetRendererType() == VolumeAttributes::Parallel)
-    {
-        avtVisItVTKDevice *device = avtVisItVTKRenderer::GetDevice();
-
-        if( device == nullptr )
-        {
-            avtVisItVTKRenderer::SetDeviceType(DeviceType::VTK);
-            device = avtVisItVTKRenderer::GetDevice();
-        }
-
-        if(device != nullptr)
-        {
-            software = dynamic_cast<avtRayTracerBase *>(device);
-        }
-        else
-        {
-            EXCEPTION1(VisItException, "[VisIt VTK Device] Device type not set or set to unknown.");
-        }
-    }
-    else
-    {
-#ifdef VISIT_SLIVR
-        if (atts.GetRendererType() == VolumeAttributes::SLIVR)
-        {
-            software = new avtSLIVRRayTracer;
-        }
-        else
-#endif
-        {
-            EXCEPTION1(VisItException, "Unknown render type.");
-        }
-    }
-
-    software->SetInput(termsrc.GetOutput());
-    software->InsertOpaqueImage(opaque_image);
-
-    const int *size = window.GetSize();
-    software->SetScreen(size[0], size[1]);
-
-    //
-    // Set the volume renderer's background color and mode from the
-    // window attributes.
-    //
-    software->SetBackgroundColor(window.GetBackground());
-    software->SetBackgroundMode(window.GetBackgroundMode());
-    software->SetGradientBackgroundColors(window.GetGradBG1(), window.GetGradBG2());
-
-    software->SetActiveVarName( primaryVariable );
-    software->SetOpacityVarName( atts.GetOpacityVariable() );
-    // software->SetGradientVarName( gradName );
-
-    //
-    // Set up the opacity mapping.
-    //
-    double range[2] = {0., 0.};
-    avtOpacityMap om(CreateOpacityMap(range));
-    om.ComputeVisibleRange();
-    software->SetTransferFn(&om);
-
-    debug5 << "Min visible scalar range: " << om.GetMinVisibleScalar() << " "
-           << "Max visible scalar range: " << om.GetMaxVisibleScalar()
-           << std::endl;
-
-    //
-    // Set up the view information.
-    //
-    const View3DAttributes &viewAtts = window.GetView3D();
-    avtViewInfo viewInfo;
-    CreateViewInfoFromViewAttributes(viewInfo, viewAtts);
-    software->SetView(viewInfo);
-
-    // If logical bounds are present compute the slices automatically.
-    int width_,height_,depth_;
-    if (GetLogicalBounds(GetInput(), width_,height_,depth_))
-    {
-        double viewDirection[3];
-        int numSlices;
-        viewDirection[0] = (viewAtts.GetViewNormal()[0] > 0)?
-                            viewAtts.GetViewNormal()[0]:
-                           -viewAtts.GetViewNormal()[0];
-        viewDirection[1] = (viewAtts.GetViewNormal()[1] > 0)?
-                            viewAtts.GetViewNormal()[1]:
-                           -viewAtts.GetViewNormal()[1];
-        viewDirection[2] = (viewAtts.GetViewNormal()[2] > 0)?
-                            viewAtts.GetViewNormal()[2]:
-                           -viewAtts.GetViewNormal()[2];
-
-        numSlices = (width_ * viewDirection[0] +
-                     height_* viewDirection[1] +
-                     depth_ * viewDirection[2]) * atts.GetRendererSamples();
-
-        software->SetSamplesPerRay(numSlices);
-    }
-    else
-        software->SetSamplesPerRay(atts.GetSamplesPerRay());
-
-    double viewDirection[3];
-    viewDirection[0] = viewInfo.focus[0] - viewInfo.camera[0];
-    viewDirection[1] = viewInfo.focus[1] - viewInfo.camera[1];
-    viewDirection[2] = viewInfo.focus[2] - viewInfo.camera[2];
-    double mag = sqrt(viewDirection[0]*viewDirection[0] +
-                      viewDirection[1]*viewDirection[1] +
-                      viewDirection[2]*viewDirection[2]);
-    if (mag != 0.) // only 0 if focus and camera are the same
-    {
-        viewDirection[0] /= mag;
-        viewDirection[1] /= mag;
-        viewDirection[2] /= mag;
-    }
-
-    //
-    // Set up the lighting
-    //
-    avtFlatLighting fl;
-    avtLightingModel *lm = &fl;
-
-#ifdef VISIT_SLIVR
-    avtCompositeRF *compositeRF = nullptr;
-
-    //
-    // Create the compositor.
-    //
-    if (atts.GetRendererType() == VolumeAttributes::SLIVR)
-    {
-        compositeRF = new avtCompositeRF(lm, &om, &om);
-
-        software->SetRayFunction(compositeRF);
-    }
-#endif
-
-    software->SetSamplesPerRay(atts.GetSamplesPerRay());
-    debug5 << "Sampling rate: " << atts.GetRendererSamples() << std::endl;
-
-    //
-    // Set up lighting and material properties
-    //
-    double *matProp = atts.GetMaterialProperties();
-    double materialPropArray[4];
-    materialPropArray[0] = matProp[0];
-    materialPropArray[1] = matProp[1];
-    materialPropArray[2] = matProp[2];
-    materialPropArray[3] = matProp[3];
-
-    if (atts.GetRendererType() == VolumeAttributes::Parallel)
-    {
-        avtVisItVTKDevice *device =
-          dynamic_cast<avtVisItVTKDevice *>(software);
-
-        device->SetResampleType     (atts.GetResampleType());
-        device->SetResampleTargetVal(atts.GetResampleTarget());
-        device->SetResampleCentering(atts.GetResampleCentering());
-
-        device->SetRenderingType(DataType::VOLUME);
-
-        device->SetUseColorVarMin( atts.GetUseColorVarMin() );
-        device->SetColorVarMin   ( atts.GetColorVarMin() );
-        device->SetUseColorVarMax( atts.GetUseColorVarMax() );
-        device->SetColorVarMax   ( atts.GetColorVarMax() );
-        device->SetUseOpacityVarMin( atts.GetUseOpacityVarMin() );
-        device->SetOpacityVarMin   ( atts.GetOpacityVarMin() );
-        device->SetUseOpacityVarMax( atts.GetUseOpacityVarMax() );
-        device->SetOpacityVarMax   ( atts.GetOpacityVarMax() );
-
-        device->SetLightList( window.GetLights() );
-        device->SetMatProperties( materialPropArray );
-        device->SetViewDirection( viewDirection );
-        device->SetLighting( atts.GetLightingFlag() );
-        device->SetSamplingRate( atts.GetRendererSamples() );
-
-#ifdef HAVE_OSPRAY
-        device->SetOSPRayEnabled(atts.GetOsprayEnabledFlag());
-        device->SetOSPRayRenderType(atts.GetOsprayRenderType());
-
-        device->SetOSPRayShadowsEnabled(atts.GetOsprayShadowsEnabledFlag());
-        device->SetOSPRayUseGridAccelerator(atts.GetOsprayUseGridAcceleratorFlag());
-        device->SetOSPRayPreIntegration(atts.GetOsprayPreIntegrationFlag());
-        device->SetOSPRaySingleShade(atts.GetOspraySingleShadeFlag());
-        device->SetOSPRayOneSidedLighting(atts.GetOsprayOneSidedLightingFlag());
-        device->SetOSPRayAOTransparencyEnabled(atts.GetOsprayAOTransparencyEnabledFlag());
-        device->SetOSPRaySamplesPerPixel(atts.GetOspraySPP());
-        device->SetOSPRayAOSamples(atts.GetOsprayAOSamples());
-        device->SetOSPRayAODistance(static_cast<float>(atts.GetOsprayAODistance()));
-        device->SetOSPRayMinContribution(static_cast<float>(atts.GetOsprayMinContribution()));
-        device->SetOSPRayMaxContribution(static_cast<float>(atts.GetOsprayMaxContribution()));
-#endif
-    }
-#ifdef VISIT_SLIVR
-    else if (atts.GetRendererType() == VolumeAttributes::SLIVR)
-    {
-      double tempLightDir[3];
-      tempLightDir[0] = ((window.GetLights()).GetLight(0)).GetDirection()[0];
-      tempLightDir[1] = ((window.GetLights()).GetLight(0)).GetDirection()[1];
-      tempLightDir[2] = ((window.GetLights()).GetLight(0)).GetDirection()[2];
-
-      avtSLIVRRayTracer* s = (avtSLIVRRayTracer*) software;
-      s->SetViewDirection(viewDirection);
-      s->SetLighting(atts.GetLightingFlag());
-      s->SetLightDirection(tempLightDir);
-      s->SetMatProperties(materialPropArray);
-    }
-#endif
-
-    //
-    // Do the funny business to force an update.
-    //
-    avtDataObject_p dob = software->GetOutput();
-    dob->Update(GetGeneralContract());
-
-    //
-    // Free up some memory and clean up.
-    //
-    if (atts.GetRendererType() == VolumeAttributes::Parallel)
-    {
-        // Only delete the VTK rendering device when the volume filter
-        // is deleted. The device which is static will hold the
-        // data - resampling on demand.
-
-        // avtVisItVTKRenderer::DeleteDevice();
-    }
-    else
-    {
-#ifdef VISIT_SLIVR
-        if (atts.GetRendererType() == VolumeAttributes::SLIVR)
-        {
-            delete software;
-        }
-        else
-#endif
-        {
-            EXCEPTION1(VisItException, "Unknown render type.");
-        }
-    }
-
-    avtRay::SetArbitrator(nullptr);
-
-#ifdef VISIT_SLIVR
-    delete compositeRF;
-#endif
-
-    //
-    // Copy the output of the volume renderer to our output.
-    //
-    avtImage_p output;
-    CopyTo(output, dob);
-    return output;
-}
-
-
-// ****************************************************************************
 //  Method: avtVolumeFilter::RenderImage
 //
 //  Purpose:
@@ -933,10 +648,14 @@ avtImage_p
 avtVolumeFilter::RenderImage(avtImage_p opaque_image,
                              const WindowAttributes &window)
 {
-    if (atts.GetRendererType() == VolumeAttributes::Parallel ||
-        atts.GetRendererType() == VolumeAttributes::SLIVR )
+    if (atts.GetRendererType() == VolumeAttributes::Parallel)
     {
-        return RenderImageRayCasting(opaque_image, window);
+        return RenderImageVTK(opaque_image, window);
+    }
+
+    else if (atts.GetRendererType() == VolumeAttributes::SLIVR )
+    {
+        return RenderImageSLIVR(opaque_image, window);
     }
 
     //
@@ -1208,6 +927,310 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     CopyTo(output, dob);
     return output;
 }
+
+
+// ****************************************************************************
+//  Method: avtVolumeFilter::RenderImageVTK
+//
+//  Purpose:
+//      Do rendering with VTK/OSPRay.
+//
+//  Programmer: Pascal Grosset
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+avtImage_p
+avtVolumeFilter::RenderImageVTK(avtImage_p opaque_image,
+                                const WindowAttributes &window)
+{
+    //
+    // Create a dummy pipeline with the volume renderer that can be
+    // executed within the volume filter "Execute".  Start with the
+    // source.
+    //
+    avtSourceFromAVTDataset termsrc(GetTypedInput());
+
+    //
+    // Set up the volume renderer.
+    //
+    avtVisItVTKDevice *device = avtVisItVTKRenderer::GetDevice();
+
+    if( device == nullptr )
+    {
+        avtVisItVTKRenderer::SetDeviceType(DeviceType::VTK);
+        device = avtVisItVTKRenderer::GetDevice();
+    }
+
+    if( device == nullptr )
+    {
+        EXCEPTION1(VisItException, "[VisIt VTK Device] Device type not set or set to unknown.");
+    }
+
+    device->SetInput(termsrc.GetOutput());
+    device->InsertOpaqueImage(opaque_image);
+
+    const int *size = window.GetSize();
+    device->SetScreen(size[0], size[1]);
+
+    //
+    // Set the volume renderer's background color and mode from the
+    // window attributes.
+    //
+    device->SetBackgroundColor(window.GetBackground());
+    device->SetBackgroundMode(window.GetBackgroundMode());
+    device->SetGradientBackgroundColors(window.GetGradBG1(), window.GetGradBG2());
+
+    device->SetActiveVarName( primaryVariable );
+    device->SetOpacityVarName( atts.GetOpacityVariable() );
+    // software->SetGradientVarName( gradName );
+
+    //
+    // Set up the opacity mapping.
+    //
+    double range[2] = {0., 0.};
+    avtOpacityMap om(CreateOpacityMap(range));
+    om.ComputeVisibleRange();
+    device->SetTransferFn(&om);
+
+    debug5 << "Min visible scalar range: " << om.GetMinVisibleScalar() << " "
+           << "Max visible scalar range: " << om.GetMaxVisibleScalar()
+           << std::endl;
+
+    //
+    // Set up the view information.
+    //
+    const View3DAttributes &viewAtts = window.GetView3D();
+    avtViewInfo viewInfo;
+    CreateViewInfoFromViewAttributes(viewInfo, viewAtts);
+    device->SetView(viewInfo);
+
+    //
+    // Set up lighting and material properties
+    //
+    double *matProp = atts.GetMaterialProperties();
+    double materialPropArray[4];
+    materialPropArray[0] = matProp[0];
+    materialPropArray[1] = matProp[1];
+    materialPropArray[2] = matProp[2];
+    materialPropArray[3] = matProp[3];
+
+    // Specific to VTK
+    device->SetRenderingType(DataType::VOLUME);
+
+    device->SetResampleType     (atts.GetResampleType());
+    device->SetResampleTargetVal(atts.GetResampleTarget());
+    device->SetResampleCentering(atts.GetResampleCentering());
+
+    device->SetUseColorVarMin( atts.GetUseColorVarMin() );
+    device->SetColorVarMin   ( atts.GetColorVarMin() );
+    device->SetUseColorVarMax( atts.GetUseColorVarMax() );
+    device->SetColorVarMax   ( atts.GetColorVarMax() );
+    device->SetUseOpacityVarMin( atts.GetUseOpacityVarMin() );
+    device->SetOpacityVarMin   ( atts.GetOpacityVarMin() );
+    device->SetUseOpacityVarMax( atts.GetUseOpacityVarMax() );
+    device->SetOpacityVarMax   ( atts.GetOpacityVarMax() );
+
+    device->SetLightList( window.GetLights() );
+    device->SetMatProperties( materialPropArray );
+    device->SetLighting( atts.GetLightingFlag() );
+
+    // Specific to OSPRay
+    device->SetOSPRayEnabled(atts.GetOsprayEnabledFlag());
+    device->SetOSPRayRenderType(atts.GetOsprayRenderType());
+
+    device->SetOSPRayShadowsEnabled(atts.GetOsprayShadowsEnabledFlag());
+    device->SetOSPRayUseGridAccelerator(atts.GetOsprayUseGridAcceleratorFlag());
+    device->SetOSPRayPreIntegration(atts.GetOsprayPreIntegrationFlag());
+    device->SetOSPRaySingleShade(atts.GetOspraySingleShadeFlag());
+    device->SetOSPRayOneSidedLighting(atts.GetOsprayOneSidedLightingFlag());
+    device->SetOSPRayAOTransparencyEnabled(atts.GetOsprayAOTransparencyEnabledFlag());
+    device->SetOSPRaySamplesPerPixel(atts.GetOspraySPP());
+    device->SetOSPRayAOSamples(atts.GetOsprayAOSamples());
+    device->SetOSPRayAODistance(static_cast<float>(atts.GetOsprayAODistance()));
+    device->SetOSPRayMinContribution(static_cast<float>(atts.GetOsprayMinContribution()));
+    device->SetOSPRayMaxContribution(static_cast<float>(atts.GetOsprayMaxContribution()));
+
+    //
+    // Do the funny business to force an update.
+    //
+    avtDataObject_p dob = device->GetOutput();
+    dob->Update(GetGeneralContract());
+
+    avtRay::SetArbitrator(nullptr);
+
+    //
+    // Copy the output of the volume renderer to our output.
+    //
+    avtImage_p output;
+    CopyTo(output, dob);
+    return output;
+}
+
+
+// ****************************************************************************
+//  Method: avtVolumeFilter::RenderImageSLIVR
+//
+//  Purpose:
+//      Do rendering with SLIVR
+//
+//  Programmer: Pascal Grosset
+//  Creation:
+//
+//  Modifications:
+//
+// ****************************************************************************
+avtImage_p
+avtVolumeFilter::RenderImageSLIVR(avtImage_p opaque_image,
+                                  const WindowAttributes &window)
+{
+#ifdef VISIT_SLIVR
+    //
+    // Create a dummy pipeline with the volume renderer that can be
+    // executed within the volume filter "Execute".  Start with the
+    // source.
+    //
+    avtSourceFromAVTDataset termsrc(GetTypedInput());
+
+    //
+    // Set up the volume renderer.
+    //
+    avtSLIVRRayTracer *software = new avtSLIVRRayTracer;
+
+    software->SetInput(termsrc.GetOutput());
+    software->InsertOpaqueImage(opaque_image);
+
+    const int *size = window.GetSize();
+    software->SetScreen(size[0], size[1]);
+
+    //
+    // Set the volume renderer's background color and mode from the
+    // window attributes.
+    //
+    software->SetBackgroundColor(window.GetBackground());
+    software->SetBackgroundMode(window.GetBackgroundMode());
+    software->SetGradientBackgroundColors(window.GetGradBG1(), window.GetGradBG2());
+
+    software->SetActiveVarName( primaryVariable );
+    software->SetOpacityVarName( atts.GetOpacityVariable() );
+    // software->SetGradientVarName( gradName );
+
+    //
+    // Set up the opacity mapping.
+    //
+    double range[2] = {0., 0.};
+    avtOpacityMap om(CreateOpacityMap(range));
+    om.ComputeVisibleRange();
+    software->SetTransferFn(&om);
+
+    debug5 << "Min visible scalar range: " << om.GetMinVisibleScalar() << " "
+           << "Max visible scalar range: " << om.GetMaxVisibleScalar()
+           << std::endl;
+
+    //
+    // Set up the view information.
+    //
+    const View3DAttributes &viewAtts = window.GetView3D();
+    avtViewInfo viewInfo;
+    CreateViewInfoFromViewAttributes(viewInfo, viewAtts);
+    software->SetView(viewInfo);
+
+    // If logical bounds are present compute the slices automatically.
+    int width_,height_,depth_;
+    if (GetLogicalBounds(GetInput(), width_,height_,depth_))
+    {
+        double viewDirection[3];
+        int numSlices;
+        viewDirection[0] = (viewAtts.GetViewNormal()[0] > 0)?
+                            viewAtts.GetViewNormal()[0]:
+                           -viewAtts.GetViewNormal()[0];
+        viewDirection[1] = (viewAtts.GetViewNormal()[1] > 0)?
+                            viewAtts.GetViewNormal()[1]:
+                           -viewAtts.GetViewNormal()[1];
+        viewDirection[2] = (viewAtts.GetViewNormal()[2] > 0)?
+                            viewAtts.GetViewNormal()[2]:
+                           -viewAtts.GetViewNormal()[2];
+
+        numSlices = (width_ * viewDirection[0] +
+                     height_* viewDirection[1] +
+                     depth_ * viewDirection[2]) * atts.GetRendererSamples();
+
+        software->SetSamplesPerRay(numSlices);
+    }
+    else
+        software->SetSamplesPerRay(atts.GetSamplesPerRay());
+
+    double viewDirection[3];
+    viewDirection[0] = viewInfo.focus[0] - viewInfo.camera[0];
+    viewDirection[1] = viewInfo.focus[1] - viewInfo.camera[1];
+    viewDirection[2] = viewInfo.focus[2] - viewInfo.camera[2];
+    double mag = sqrt(viewDirection[0]*viewDirection[0] +
+                      viewDirection[1]*viewDirection[1] +
+                      viewDirection[2]*viewDirection[2]);
+    if (mag != 0.) // only 0 if focus and camera are the same
+    {
+        viewDirection[0] /= mag;
+        viewDirection[1] /= mag;
+        viewDirection[2] /= mag;
+    }
+
+    //
+    // Set up the lighting
+    //
+    avtFlatLighting fl;
+    avtLightingModel *lm = &fl;
+
+    //
+    // Create the compositor.
+    //
+    avtCompositeRF *compositeRF = new avtCompositeRF(lm, &om, &om);
+
+    software->SetRayFunction(compositeRF);
+    software->SetSamplesPerRay(atts.GetSamplesPerRay());
+
+    debug5 << "Sampling rate: " << atts.GetRendererSamples() << std::endl;
+
+    //
+    // Set up lighting and material properties
+    //
+    double *matProp = atts.GetMaterialProperties();
+    double materialPropArray[4];
+    materialPropArray[0] = matProp[0];
+    materialPropArray[1] = matProp[1];
+    materialPropArray[2] = matProp[2];
+    materialPropArray[3] = matProp[3];
+
+    double tempLightDir[3];
+    tempLightDir[0] = ((window.GetLights()).GetLight(0)).GetDirection()[0];
+    tempLightDir[1] = ((window.GetLights()).GetLight(0)).GetDirection()[1];
+    tempLightDir[2] = ((window.GetLights()).GetLight(0)).GetDirection()[2];
+
+    software->SetViewDirection(viewDirection);
+    software->SetLighting(atts.GetLightingFlag());
+    software->SetLightDirection(tempLightDir);
+    software->SetMatProperties(materialPropArray);
+
+    //
+    // Do the funny business to force an update.
+    //
+    avtDataObject_p dob = software->GetOutput();
+    dob->Update(GetGeneralContract());
+
+    delete compositeRF;
+    delete software;
+
+    avtRay::SetArbitrator(nullptr);
+
+    //
+    // Copy the output of the volume renderer to our output.
+    //
+    avtImage_p output;
+    CopyTo(output, dob);
+    return output;
+#endif
+}
+
 
 
 // ****************************************************************************

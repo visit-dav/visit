@@ -47,23 +47,36 @@ class avtVolumeRenderer : public avtCustomRenderer
     virtual void            Render(vtkDataSet *);
 
   protected:
-    VolumeAttributes           atts;
-    VolumeAttributes           oldAtts;
+    VolumeAttributes           m_atts;
+    VolumeAttributes           m_oldAtts;
 
-    vtkColorTransferFunction  *transFunc    {nullptr};
-    vtkPiecewiseFunction      *opacity      {nullptr};
-    vtkImageData              *imageToRender{nullptr};
-    vtkVolumeProperty         *volumeProp   {nullptr};
-    vtkVolumeMapper           *volumeMapper {nullptr};
-    vtkVolume                 *curVolume    {nullptr};
+    vtkColorTransferFunction  *m_transFunc    {nullptr};
+    vtkPiecewiseFunction      *m_opacity      {nullptr};
+    vtkImageData              *m_imageToRender{nullptr};
+    vtkVolumeProperty         *m_volumeProp   {nullptr};
+    vtkVolumeMapper           *m_volumeMapper {nullptr};
+    vtkVolume                 *m_curVolume    {nullptr};
 
-    bool                       resetColorMap{true};
-    bool                       useInterpolation{true};
+    bool                       m_useInterpolation{true};
+    bool                       m_resetColorMap{true};
 
-    bool                       OSPRayEnabled{false};
+    bool                       m_OSPRayEnabled{false};
+    int                        m_OSPRayRenderType{0};
 
-    int                        nComponents{1};
-    bool                       cellData{false};
+    int                        m_nComponents{1};
+    int                        m_cellData{0};
+
+    bool                       m_useColorVarMin{false};
+    float                      m_colorVarMin{0.0};
+    bool                       m_useColorVarMax{false};
+    float                      m_colorVarMax{1.0};
+    bool                       m_useOpacityVarMin{false};
+    float                      m_opacityVarMin{0.0};
+    bool                       m_useOpacityVarMax{false};
+    float                      m_opacityVarMax{1.0};
+
+    std::string                m_activeVarName  {"default"};
+    std::string                m_opacityVarName {"default"};
 };
 
 typedef ref_ptr<avtVolumeRenderer> avtVolumeRenderer_p;
