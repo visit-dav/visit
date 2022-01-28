@@ -20,16 +20,15 @@ try:
 except:
     pass
 
-from itertools import starmap
-from pydoc import plain
 import sys
+import socket
 
-def flatten(vars):
-    """flatten(vars) -> dict
+def Flatten(vars):
+    """Flatten(vars) -> dict
 
 Synopsis:
     Query the active plot for the data at each node/zone for the given
-    variables. Data is returned in as numpy compatible 2D arrays.
+    variables. Data is returned as numpy compatible 2D arrays.
 
 Arguments:
 
@@ -49,10 +48,27 @@ Returns:
     flattenOpts = dict()
     flattenOpts["vars"] = vars
 
+    numPlots = visit.GetNumPlots()
+    if numPlots == 0:
+        print("VisIt: Error - Flatten() requires an active plot!")
+        return dict()
+
     if (sys.platform.startswith('linux')
             or sys.platform.startswith('darwin')):
 
-        if visit.GetPlotList().GetPlots(0).GetDatabaseName().startswith('localhost'):
+        plotList = visit.GetPlotList()
+        dbhost = str()
+        for i in range(0, numPlots):
+            plot = plotList.GetPlots(i)
+            if plot.GetActiveFlag() == 1:
+                dbname = plot.GetDatabaseName()
+                dbhost = dbname.split(':')[0]
+                break
+
+        hostname = socket.gethostname()
+        if (dbhost == 'localhost'
+                or dbhost == '127.0.0.1'
+                or dbhost == hostname):
             flattenOpts["useSharedMemory"] = 1
 
     visit.Query("Flatten", flattenOpts)
