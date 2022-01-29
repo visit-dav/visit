@@ -31,8 +31,8 @@ avtVolumePlot.C
 avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
-avtVisItVTKDevice.C
 avtVisItVTKRenderer.C
+avtVisItVTKRenderFilter.C
 avtICETCompositor.C
 ${COMMON_SOURCES}
 )
@@ -44,8 +44,8 @@ avtVolumePlot.C
 avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
-avtVisItVTKDevice.C
 avtVisItVTKRenderer.C
+avtVisItVTKRenderFilter.C
 avtICETCompositor.C
 ${COMMON_SOURCES}
 )

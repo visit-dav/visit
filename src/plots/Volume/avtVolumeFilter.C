@@ -28,7 +28,7 @@
 #include <avtSourceFromAVTDataset.h>
 #include <avtView3D.h>
 #include <avtViewInfo.h>
-#include <avtVisItVTKDevice.h>
+#include <avtVisItVTKRenderFilter.h>
 
 #include <DebugStream.h>
 #include <InvalidDimensionsException.h>
@@ -93,10 +93,10 @@ avtVolumeFilter::~avtVolumeFilter()
         primaryVariable = nullptr;
     }
 
-    if (VisItVTKRenderer != nullptr)
+    if (VisItVTKRenderFilter != nullptr)
     {
-        delete VisItVTKRenderer;
-        VisItVTKRenderer = nullptr;
+        delete VisItVTKRenderFilter;
+        VisItVTKRenderFilter = nullptr;
     }
 }
 
@@ -266,12 +266,7 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
     atts.GetTransferFunction(vtf);
     avtOpacityMap om(256);
 
-    if (atts.GetRendererType() == VolumeAttributes::Serial ||
-        atts.GetRendererType() == VolumeAttributes::Parallel)
-    {
-        om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
-    }
-    else if (atts.GetRendererType() == VolumeAttributes::Composite &&
+    if (atts.GetRendererType() == VolumeAttributes::Composite &&
              atts.GetSampling()     == VolumeAttributes::Trilinear)
     {
         om.SetTableComposite(vtf, 256,
@@ -953,41 +948,29 @@ avtVolumeFilter::RenderImageVTK(avtImage_p opaque_image,
     //
     // Set up the volume renderer.
     //
-    if( VisItVTKRenderer == nullptr )
+    if( VisItVTKRenderFilter == nullptr )
     {
-        VisItVTKRenderer = new avtVisItVTKDevice;
+        VisItVTKRenderFilter = new avtVisItVTKRenderFilter;
     }
 
-    VisItVTKRenderer->SetInput(termsrc.GetOutput());
-    VisItVTKRenderer->SetAtts(&atts);
-    VisItVTKRenderer->InsertOpaqueImage(opaque_image);
+    VisItVTKRenderFilter->SetInput(termsrc.GetOutput());
+    VisItVTKRenderFilter->SetAtts(&atts);
+    VisItVTKRenderFilter->InsertOpaqueImage(opaque_image);
 
     const int *size = window.GetSize();
-    VisItVTKRenderer->SetScreen(size[0], size[1]);
+    VisItVTKRenderFilter->SetScreen(size[0], size[1]);
 
     //
     // Set the volume renderer's background color and mode from the
     // window attributes.
     //
-    VisItVTKRenderer->SetBackgroundColor(window.GetBackground());
-    VisItVTKRenderer->SetBackgroundMode(window.GetBackgroundMode());
-    VisItVTKRenderer->SetGradientBackgroundColors(window.GetGradBG1(), window.GetGradBG2());
+    VisItVTKRenderFilter->SetBackgroundColor(window.GetBackground());
+    VisItVTKRenderFilter->SetBackgroundMode(window.GetBackgroundMode());
+    VisItVTKRenderFilter->SetGradientBackgroundColors(window.GetGradBG1(), window.GetGradBG2());
 
-    VisItVTKRenderer->SetActiveVarName( primaryVariable );
-    VisItVTKRenderer->SetOpacityVarName( atts.GetOpacityVariable() );
+    VisItVTKRenderFilter->SetActiveVarName( primaryVariable );
+    VisItVTKRenderFilter->SetOpacityVarName( atts.GetOpacityVariable() );
     // software->SetGradientVarName( gradName );
-
-    //
-    // Set up the opacity mapping.
-    //
-    double range[2] = {0., 0.};
-    avtOpacityMap om(CreateOpacityMap(range));
-    om.ComputeVisibleRange();
-    VisItVTKRenderer->SetTransferFn(&om);
-
-    debug5 << "Min visible scalar range: " << om.GetMinVisibleScalar() << " "
-           << "Max visible scalar range: " << om.GetMaxVisibleScalar()
-           << std::endl;
 
     //
     // Set up the view information.
@@ -995,15 +978,12 @@ avtVolumeFilter::RenderImageVTK(avtImage_p opaque_image,
     const View3DAttributes &viewAtts = window.GetView3D();
     avtViewInfo viewInfo;
     CreateViewInfoFromViewAttributes(viewInfo, viewAtts);
-    VisItVTKRenderer->SetView(viewInfo);
-
-    // Specific to teh VisItVTKRenderer
-    VisItVTKRenderer->SetRenderingType(DataType::VOLUME);
+    VisItVTKRenderFilter->SetView(viewInfo);
 
     //
     // Do the funny business to force an update.
     //
-    avtDataObject_p dob = VisItVTKRenderer->GetOutput();
+    avtDataObject_p dob = VisItVTKRenderFilter->GetOutput();
     dob->Update(GetGeneralContract());
 
     avtRay::SetArbitrator(nullptr);

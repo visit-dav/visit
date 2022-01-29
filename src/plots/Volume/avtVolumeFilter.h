@@ -17,7 +17,7 @@
 #include <avtOpacityMap.h>
 
 class WindowAttributes;
-class avtVisItVTKDevice;
+class avtVisItVTKRenderFilter;
 
 
 // ****************************************************************************
@@ -63,8 +63,8 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
     VolumeAttributes         atts;
     char                    *primaryVariable {nullptr};
 
-    avtVisItVTKDevice       *VisItVTKRenderer {nullptr};
-      
+    avtVisItVTKRenderFilter *VisItVTKRenderFilter {nullptr};
+
     avtOpacityMap            CreateOpacityMap(double range[2]);
 
     int                      GetRenderVariables( int  &primIndex,
