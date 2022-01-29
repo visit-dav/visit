@@ -1267,7 +1267,7 @@ QueryAttributes::Compress(unsigned long inSize, const void *in)
 
     const std::string timerString = "Compressing query results";
     int t0 = visitTimer->StartTimer();
-#ifdef QA_NO_COMPRESSION
+#ifndef QA_USE_COMPRESSION
     compressedResults.resize(inSize);
     memcpy(compressedResults.data(), in, inSize);
 #else
@@ -1279,7 +1279,9 @@ QueryAttributes::Compress(unsigned long inSize, const void *in)
     if(zret != Z_OK)
     {
         // Throw an exception
-        std::cout << "ERROR! deflateInit was not Z_OK!" << std::endl;
+        debug1 << "ERROR! deflateInit was not Z_OK!" << std::endl;
+        EXCEPTION1(VisItException,
+            "QueryAttributes::Compress - zlib deflateInit failed!");
         return;
     }
 
@@ -1293,11 +1295,13 @@ QueryAttributes::Compress(unsigned long inSize, const void *in)
     if(zret != Z_STREAM_END)
     {
         // Throw an exception
-        std::cout << "ERROR! deflate was not able to complete deflation "
+        debug1 << "ERROR! deflate was not able to complete deflation "
             << "in one call! Code" << zret << "." << std::endl;
         compressedResults.clear();
         deflateEnd(&zStream);
         visitTimer->StopTimer(t0, timerString);
+        EXCEPTION1(VisItException,
+            "QueryAttributes::Compress - zlib deflate failed!")
         return;
     }
     compressedResults.resize(inSize - zStream.avail_out);
@@ -1323,13 +1327,17 @@ QueryAttributes::Decompress(unsigned long outSize, void *out)
     if(compressedResults.empty())
     {
         // Throw an exception.
-        std::cout << "ERROR! compressedResults is empty!" << std::endl;
+        debug1 << "QueryAttributes::Decompress called with empty"
+            << " 'compressedResults' vector." << std::endl;
+        EXCEPTION1(VisItException,
+            "Tried to decompress a query attributes with an empty"
+            " compressedResults vector.");
         return;
     }
 
     const std::string timerString = "Decompressing query results";
     int t0 = visitTimer->StartTimer();
-#ifdef QA_NO_COMPRESSION
+#ifndef QA_USE_COMPRESSION
     memcpy(out, compressedResults.data(), outSize);
 #else
     // Initialize inflation
@@ -1339,8 +1347,10 @@ QueryAttributes::Decompress(unsigned long outSize, void *out)
     if(zret != Z_OK)
     {
         // Throw an exception
-        std::cout << "ERROR! inflateInit was not Z_OK!" << std::endl;
         visitTimer->StopTimer(t0, timerString);
+        debug1 << "ERROR! zlib inflateInit was not Z_OK!" << std::endl;
+        EXCEPTION1(VisItException,
+            "QueryAttributes::Decompress - zlib inflateInit failed!");
         return;
     }
 
@@ -1353,15 +1363,17 @@ QueryAttributes::Decompress(unsigned long outSize, void *out)
     if(zret != Z_STREAM_END)
     {
         // Throw an exception
-        std::cout << "ERROR! inflate was not able to complete inflation "
+        debug1 << "ERROR! zlib inflate was not able to complete inflation "
             << "in one call! Code" << zret << "." << std::endl;
         inflateEnd(&zStream);
         visitTimer->StopTimer(t0, timerString);
+        EXCEPTION1(VisItException,
+            "QueryAttributes::Decompress - zlib inflate failed!");
         return;
     }
-    compressedResults.clear();
     inflateEnd(&zStream);
 #endif
+    compressedResults.clear();
     visitTimer->StopTimer(t0, timerString);
 }
 

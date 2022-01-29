@@ -70,9 +70,9 @@
     </Function>
     <Function name="Move Assignment" user="true" member="true">
     </Function>
-    <Function name="Move Constructor" user="true" member="true" access="private">
+    <Function name="Move Constructor" user="true" member="true">
     </Function>
-    <Function name="Move" user="true" member="true">
+    <Function name="Move" user="true" member="true" access="private">
     </Function>
     <Include file="source" quoted="false">
       stdio.h
