@@ -41,7 +41,8 @@ public:
         OnlyIfRequired,
         SingleDomain,
         ParallelRedistribute,
-        ParallelPerRank
+        ParallelPerRank,
+        NoResampling
     };
     enum ResampleCentering
     {

@@ -40,6 +40,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int RESAMPLETYPE_SINGLEDOMAIN = 1;
     public final static int RESAMPLETYPE_PARALLELREDISTRIBUTE = 2;
     public final static int RESAMPLETYPE_PARALLELPERRANK = 3;
+    public final static int RESAMPLETYPE_NORESAMPLING = 4;
 
     public final static int RESAMPLECENTERING_NATIVECENTERING = 0;
     public final static int RESAMPLECENTERING_NODALCENTERING = 1;
@@ -939,6 +940,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "RESAMPLETYPE_PARALLELREDISTRIBUTE";
         if(resampleType == RESAMPLETYPE_PARALLELPERRANK)
             str = str + "RESAMPLETYPE_PARALLELPERRANK";
+        if(resampleType == RESAMPLETYPE_NORESAMPLING)
+            str = str + "RESAMPLETYPE_NORESAMPLING";
         str = str + "\n";
         str = str + intToString("resampleTarget", resampleTarget, indent) + "\n";
         str = str + indent + "resampleCentering = ";

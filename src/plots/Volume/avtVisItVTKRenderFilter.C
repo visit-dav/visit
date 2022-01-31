@@ -52,14 +52,14 @@
 
 #include <vector>
 
-// #ifdef PARALLEL
-//   #define LOCAL_DEBUG std::cerr << __LINE__ << " [VisItVTKRenderFilter] " \
-//                                 << "rank: "  << PAR_Rank() << "  "
-// #else
-//   #define LOCAL_DEBUG std::cerr << __LINE__ << " [VisItVTKRenderFilter] "
-// #endif
+#ifdef PARALLEL
+  #define LOCAL_DEBUG std::cerr << __LINE__ << " [VisItVTKRenderFilter] " \
+                                << "rank: "  << PAR_Rank() << "  "
+#else
+  #define LOCAL_DEBUG std::cerr << __LINE__ << " [VisItVTKRenderFilter] "
+#endif
 
-#define LOCAL_DEBUG debug5 << " [VisItVTKRenderer] "
+// #define LOCAL_DEBUG debug5 << " [VisItVTKRenderer] "
 
 // ****************************************************************************
 //  Method: avtVisItVTKRenderFilter constructor
@@ -414,8 +414,8 @@ avtVisItVTKRenderFilter::Execute()
     // There should be only one data set.
     if( nsets > 1 )
     {
-        LOCAL_DEBUG << "Too many datasets to render, skipping." << std::endl;
-        EXCEPTION1(ImproperUseException, "Only one input dataset may be rendered.");
+        LOCAL_DEBUG << "Too many datasets to render." << std::endl;
+        EXCEPTION1(ImproperUseException, "Only one input dataset may be rendered. This exception can be fixed by resampling the data on to a common rectilinear mesh");
     }
 
     // Before calling NeedImage the number of components needs to be
@@ -448,9 +448,9 @@ avtVisItVTKRenderFilter::Execute()
     }
 
     LOCAL_DEBUG << "nsets: " << nsets << "  "
-		<< "nComponents: " << m_nComponents << "  "
-		<< "needImage: " << m_needImage << "  "
-		<< std::endl;
+                << "nComponents: " << m_nComponents << "  "
+                << "needImage: " << m_needImage << "  "
+                << std::endl;
 
     // If no data then no image will be generated on this rank but
     // there is parallel compositing so account for it.

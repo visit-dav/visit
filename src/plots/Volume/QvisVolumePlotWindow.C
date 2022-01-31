@@ -909,6 +909,7 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         QLabel *resampleTypesLabel =
           new QLabel(tr("Resample:"), resampleGroup);
         resampleTypesComboBox = new QComboBox(resampleGroup);
+        resampleTypesComboBox->addItem(tr("No resampling"));
         resampleTypesComboBox->addItem(tr("Only if required"));
         resampleTypesComboBox->addItem(tr("Single Domain"));
         resampleTypesComboBox->addItem(tr("Parallel Redistribute"));
@@ -1075,8 +1076,12 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     materialProperties->setEnabled(false);
 
     //enable/disable resampleTarget
-    resampleTargetWidget->setEnabled(volumeAtts->GetResampleType() !=
-                                     VolumeAttributes::OnlyIfRequired);
+    resampleTargetWidget->setEnabled(volumeAtts->GetResampleType() ==
+                                     VolumeAttributes::SingleDomain ||
+                                     volumeAtts->GetResampleType() ==
+                                     VolumeAttributes::ParallelRedistribute ||
+                                     volumeAtts->GetResampleType() ==
+                                     VolumeAttributes::ParallelPerRank);
 
     //smooth data
     smoothDataToggle->setEnabled(true);
@@ -2012,26 +2017,35 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
         case VolumeAttributes::ID_resampleType:
             resampleTypesComboBox->blockSignals(true);
 
-            if (volumeAtts->GetResampleType() == VolumeAttributes::OnlyIfRequired)
+            if (volumeAtts->GetResampleType() == VolumeAttributes::NoResampling)
             {
                 resampleTypesComboBox->setCurrentIndex(0);
             }
-            else if (volumeAtts->GetResampleType() == VolumeAttributes::SingleDomain)
+            else if (volumeAtts->GetResampleType() == VolumeAttributes::OnlyIfRequired)
             {
                 resampleTypesComboBox->setCurrentIndex(1);
             }
-            else if (volumeAtts->GetResampleType() == VolumeAttributes::ParallelRedistribute)
+            else if (volumeAtts->GetResampleType() == VolumeAttributes::SingleDomain)
             {
                 resampleTypesComboBox->setCurrentIndex(2);
             }
-            else if (volumeAtts->GetResampleType() == VolumeAttributes::ParallelPerRank)
+            else if (volumeAtts->GetResampleType() == VolumeAttributes::ParallelRedistribute)
             {
                 resampleTypesComboBox->setCurrentIndex(3);
             }
+            else if (volumeAtts->GetResampleType() == VolumeAttributes::ParallelPerRank)
+            {
+                resampleTypesComboBox->setCurrentIndex(4);
+            }
             resampleTypesComboBox->blockSignals(false);
 
-            resampleTargetWidget->setEnabled(volumeAtts->GetResampleType() !=
-                                             VolumeAttributes::OnlyIfRequired);
+            resampleTargetWidget->setEnabled(volumeAtts->GetResampleType() ==
+                                             VolumeAttributes::SingleDomain ||
+                                             volumeAtts->GetResampleType() ==
+                                             VolumeAttributes::ParallelRedistribute ||
+                                             volumeAtts->GetResampleType() ==
+                                             VolumeAttributes::ParallelPerRank);
+
             break;
         case VolumeAttributes::ID_resampleTarget:
             resampleTarget->blockSignals(true);
@@ -3643,15 +3657,18 @@ QvisVolumePlotWindow::resampleTypeChanged(int val)
     switch (val)
     {
       case 0:
-        volumeAtts->SetResampleType(VolumeAttributes::OnlyIfRequired);
+        volumeAtts->SetResampleType(VolumeAttributes::NoResampling);
         break;
       case 1:
-        volumeAtts->SetResampleType(VolumeAttributes::SingleDomain);
+        volumeAtts->SetResampleType(VolumeAttributes::OnlyIfRequired);
         break;
       case 2:
-        volumeAtts->SetResampleType(VolumeAttributes::ParallelRedistribute);
+        volumeAtts->SetResampleType(VolumeAttributes::SingleDomain);
         break;
       case 3:
+        volumeAtts->SetResampleType(VolumeAttributes::ParallelRedistribute);
+        break;
+      case 4:
         volumeAtts->SetResampleType(VolumeAttributes::ParallelPerRank);
         break;
       default:
@@ -3688,10 +3705,10 @@ QvisVolumePlotWindow::resampleTargetChanged(int val)
 }
 
 // ****************************************************************************
-//  Method:  QvisVolumePlotWindow::resampleTypeChanged
+//  Method:  QvisVolumePlotWindow::resampleCenteringChanged
 //
 //  Purpose:
-//    Update the resample type based on user input
+//    Update the resample centering based on user input
 //
 //  Arguments:
 //    val        the new resample type

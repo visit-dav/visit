@@ -144,7 +144,7 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
         objPrefix += "opacityControlPoints.";
         str += PyGaussianControlPointList_ToString(&atts->GetOpacityControlPoints(), objPrefix.c_str());
     }
-    const char *resampleType_names = "OnlyIfRequired, SingleDomain, ParallelRedistribute, ParallelPerRank";
+    const char *resampleType_names = "OnlyIfRequired, SingleDomain, ParallelRedistribute, ParallelPerRank, NoResampling";
     switch (atts->GetResampleType())
     {
       case VolumeAttributes::OnlyIfRequired:
@@ -161,6 +161,10 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
           break;
       case VolumeAttributes::ParallelPerRank:
           snprintf(tmpStr, 1000, "%sresampleType = %sParallelPerRank  # %s\n", prefix, prefix, resampleType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::NoResampling:
+          snprintf(tmpStr, 1000, "%sresampleType = %sNoResampling  # %s\n", prefix, prefix, resampleType_names);
           str += tmpStr;
           break;
       default:
@@ -1552,16 +1556,17 @@ VolumeAttributes_SetResampleType(PyObject *self, PyObject *args)
         return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
     }
 
-    if (cval < 0 || cval >= 4)
+    if (cval < 0 || cval >= 5)
     {
         std::stringstream ss;
         ss << "An invalid resampleType value was given." << std::endl;
-        ss << "Valid values are in the range [0,3]." << std::endl;
+        ss << "Valid values are in the range [0,4]." << std::endl;
         ss << "You can also use the following symbolic names:";
         ss << " OnlyIfRequired";
         ss << ", SingleDomain";
         ss << ", ParallelRedistribute";
         ss << ", ParallelPerRank";
+        ss << ", NoResampling";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
 
@@ -3338,6 +3343,8 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(VolumeAttributes::ParallelRedistribute));
     if(strcmp(name, "ParallelPerRank") == 0)
         return PyInt_FromLong(long(VolumeAttributes::ParallelPerRank));
+    if(strcmp(name, "NoResampling") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::NoResampling));
 
     if(strcmp(name, "resampleTarget") == 0)
         return VolumeAttributes_GetResampleTarget(self, NULL);

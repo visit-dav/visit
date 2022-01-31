@@ -167,7 +167,7 @@ avtVisItVTKRenderer::NumberOfComponents(const std::string activeVariable,
 {
     if( opacityVariable == activeVariable )
     {
-       avtCallback::IssueWarning("The opacity variable is the same as "
+        avtCallback::IssueWarning("The opacity variable is the same as "
                                   "the primary variable. Ignoring it and "
                                   "any possible min/max setting.");
 
@@ -230,7 +230,7 @@ avtVisItVTKRenderer::NeedImage()
         if( m_nComponents == 0 )
         {
             EXCEPTION1(ImproperUseException,
-                       "NeedImage is being called without the number of components beging set. This error is a developer error.");
+                       "NeedImage is being called without the number of components beging set. This error is a developer error");
         }
 
         m_firstPass = false;
@@ -293,7 +293,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
     if( in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID )
     {
         EXCEPTION1(ImproperUseException,
-                   "Only a vtkRectilinearGrid can be rendered.");
+                   "Only a vtkRectilinearGrid can be rendered. . This exception can be fixed by resampling the data on to a common rectilinear mesh");
     }
 
     LOCAL_DEBUG << "in  "
@@ -306,7 +306,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         if( m_firstPass == true )
         {
             EXCEPTION1(ImproperUseException,
-                       "UpdateRenderingState is being called before NeedImage has been called. This error is a developer error.");
+                       "UpdateRenderingState is being called before NeedImage has been called. This error is a developer error");
         }
 
         if( (m_dataRange[0] == m_dataRange[1] &&
@@ -316,7 +316,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
              m_opacityRange[0] == -1.0) )
         {
             EXCEPTION1(ImproperUseException,
-                       "UpdateRenderingState is being called before the data ranges have been set. This error is a developer error.");
+                       "UpdateRenderingState is being called before the data ranges have been set. This error is a developer error");
         }
 
         // Store the color variable values so to check for a state change.
@@ -379,24 +379,26 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 
         if( m_nComponents == 2 )
         {
-          opacityArr = in_ds->GetPointData()->GetScalars( m_atts.GetOpacityVariable().c_str() );
+            std::string opacityVarName = m_atts.GetOpacityVariable();
+
+            opacityArr = in_ds->GetPointData()->GetScalars( opacityVarName.c_str() );
             if( m_cellData && opacityArr )
             {
-                EXCEPTION1(ImproperUseException, "The opacity data does not have the same centering (point) as the primary data (cell). This expection can be fixed by resampling the data on to a common mesh.");
+                EXCEPTION1(ImproperUseException, "The opacity data centering (point) does not match the primary data centering (cell). This exception can be fixed by resampling the data on to a common rectilinear mesh");
             }
 
             if( opacityArr == nullptr )
             {
-              opacityArr = in_ds->GetCellData()->GetScalars( m_atts.GetOpacityVariable().c_str() );
+              opacityArr = in_ds->GetCellData()->GetScalars( opacityVarName.c_str() );
 
                 if( !m_cellData && opacityArr )
                 {
-                    EXCEPTION1(ImproperUseException, "The opacity data does not have the same centering (cell) as the primary data (point). This expection can be fixed by resampling the data on to a common mesh.");
+                    EXCEPTION1(ImproperUseException, "The opacity data centering (cell) does not match the primary data centering (point). This exception can be fixed by resampling the data on to a common rectilinear mesh");
                 }
 
                 if( opacityArr == nullptr )
                 {
-                    // EXCEPTION1(InvalidVariableException, opacityVarName);
+                    EXCEPTION1(InvalidVariableException, opacityVarName);
                 }
             }
         }

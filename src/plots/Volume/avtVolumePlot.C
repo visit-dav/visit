@@ -494,10 +494,6 @@ avtVolumePlot::ApplyOperators(avtDataObject_p input)
 //    an operator that produces a variable that doesn't
 //    exist in the database.
 //
-//    Alister Maguire, Tue Dec 11 10:18:31 PST 2018
-//    With the new default renderer, the only time we don't resample
-//    is when we have a single domain rectilinear mesh.
-//
 // ****************************************************************************
 
 int
@@ -518,6 +514,23 @@ avtVolumePlot::DataMustBeResampled(avtDataObject_p input)
         resampling |= NonRectilinearGrid;
     }
 
+    // Get the input data.
+#if DOES_NOT_WORK_GetNumberOfLeaves_IS_ALWAYS_ZERO
+    auto inputTree = ((avtDataset*) *input)->GetDataTree(); // avtDataTree_p
+    int nsets = inputTree->GetNumberOfLeaves();
+
+    if( nsets > 1 )
+        resampling |= MutlipleDatasets;
+
+    // When there are more domains than ranks, it is possible for some
+    // ranks to have one data set while others have more than one. As
+    // such, when this case occurs the resampling must be acorss all
+    // ranks so unify the resampling.
+#ifdef ENGINE
+    UnifyBitwiseOrValue(resampling);
+#endif
+
+#else
     std::string db = datts.GetFullDBName();
 
     ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), nullptr);
@@ -525,23 +538,30 @@ avtVolumePlot::DataMustBeResampled(avtDataObject_p input)
 
     try
     {
-         //
-         // If we have multiple domains, we still need to resample
-         // onto a single domain.
-         //
-         if (md->GetNDomains(datts.GetVariableName()) > 1)
-             resampling |= MutlipleDatasets;
+        // The number of domains is from the database and does not
+        // relfect the actual number of doamins per rank at run time.
+        // That is the data could be resampled upstream and the plot
+        // does not know.
+        int nDomains = md->GetNDomains(datts.GetVariableName());
+        //
+        // If there are more domains than ranks, then resample
+        //
+#ifdef ENGINE
+        if (nDomains > PAR_Size())
+#endif
+        if (nDomains > 1)
+            resampling |= MutlipleDatasets;
     }
     catch(...)
     {
         //
-        // We don't know how many domains we have... resample to
-        // be safe.
+        // Can not get the number of domains so resample to be safe.
         //
         resampling |= MutlipleDatasets;
     }
+#endif
 
-    // If the opacity variable is different from the avtice variable
+    // If the opacity variable is different from the active variable
     // check the centering.
     std::string activeVariable = datts.GetVariableName();
     std::string opacityVariable = atts.GetOpacityVariable();
@@ -557,12 +577,15 @@ avtVolumePlot::DataMustBeResampled(avtDataObject_p input)
         }
         else
         {
-            std::string msg("Could not determine the variable centering for ");
+            if( atts.GetResampleType() != VolumeAttributes::NoResampling )
+            {
+                std::string msg("Could not determine the variable centering for ");
 
-            msg += activeVariable +" and/or " +
-                opacityVariable + " so resampling.";
+                msg += activeVariable + " and/or " +
+                  opacityVariable + " so resampling.";
 
-            avtCallback::IssueWarning(msg.c_str());
+                avtCallback::IssueWarning(msg.c_str());
+            }
 
             resampling |= DifferentCentering;
         }
@@ -667,7 +690,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         if (datts.GetRectilinearGridHasTransform())
         {
             EXCEPTION1(ImproperUseException,
-                       "vtkRectilinear grids with an implied transform can not be rendered.");
+                       "vtkRectilinear grids with an implied transform can not be rendered");
         }
     }
 
@@ -712,13 +735,17 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     {
         // Only check for required resampling if there is no user
         // resampling.
-        int userResample = atts.GetResampleType();
+        int userResample =
+          (atts.GetResampleType() == VolumeAttributes::SingleDomain ||
+           atts.GetResampleType() == VolumeAttributes::ParallelRedistribute ||
+           atts.GetResampleType() == VolumeAttributes::ParallelPerRank);
+
         int mustResample =
           userResample ? NoResampling : DataMustBeResampled(dob);
 
         if (atts.GetRendererType() == VolumeAttributes::Serial &&
-            atts.GetResampleType() != VolumeAttributes::OnlyIfRequired &&
-            atts.GetResampleType() != VolumeAttributes::SingleDomain )
+            (atts.GetResampleType() == VolumeAttributes::ParallelRedistribute ||
+             atts.GetResampleType() == VolumeAttributes::ParallelPerRank))
         {
           avtCallback::IssueWarning("Performing 'Serial Rendering' but a parallel resampling was selected. Single domain sampling will be performed.");
         }
@@ -740,19 +767,20 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
                  atts.GetResampleType() == VolumeAttributes::ParallelPerRank))
         {
             avtCallback::IssueWarning("Running in serial but parallel resampling was selected. "
-                                      "Single domain sampling will be performed.");
+                                      "'Single domain' sampling will be performed.");
         }
 
         // If the data must be resampled and user did not request
         // resampling report a warning so the user knows the data has
         // been resampled.
-        if( mustResample && !userResample )
+        if( atts.GetResampleType() != VolumeAttributes::NoResampling &&
+            (mustResample && !userResample) )
         {
-            std::string msg("The data must be resampled because ");
+            std::string msg("The data was resampled because ");
 
             if( mustResample & MutlipleDatasets )
             {
-                msg += "each rank has more than one domain";
+                msg += "one or more ranks has more than one domain";
 
                 if( mustResample & (NonRectilinearGrid | DifferentCentering))
                     msg += ", and ";
@@ -772,14 +800,27 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
             }
 
             msg += ". The data and if needed the opacity have been resampled "
-              "on to a single rectilinear grid.";
+              "on to a rectilinear grid";
+
+#ifdef ENGINE
+            if( PAR_Size() > 1 )
+                msg += " and distributed across all ranks";
+#endif
+            msg += ".";
 
             avtCallback::IssueWarning(msg.c_str());
         }
 
+        if( atts.GetResampleType() == VolumeAttributes::NoResampling &&
+            mustResample )
+        {
+            avtCallback::IssueWarning("'No resampling' was selecting but the plot 'thinks' resampling needs to occur. This need may or may not be correct. As such, the rendered results may or may not be correct.");
+        }
+
         // User can force resampling - for the serial renderer
         // everything is sampled on to a single grid.
-        if( mustResample || userResample )
+        if( atts.GetResampleType() != VolumeAttributes::NoResampling &&
+            (mustResample || userResample) )
         {
             // If the user selected a specific centering use
           // it. Otherwise use the centering from the color data.
@@ -935,14 +976,18 @@ avtVolumePlot::EnhanceSpecification(avtContract_p spec)
     std::string ov = atts.GetOpacityVariable();
     if (ov == "default")
     {
-        if(atts.GetResampleType() != VolumeAttributes::OnlyIfRequired)
+        if(atts.GetResampleType() == VolumeAttributes::SingleDomain ||
+           atts.GetResampleType() == VolumeAttributes::ParallelRedistribute ||
+           atts.GetResampleType() == VolumeAttributes::ParallelPerRank)
             return spec;
     }
     avtDataRequest_p ds = spec->GetDataRequest();
     std::string primaryVariable(ds->GetVariable());
     if (ov == primaryVariable)
     {
-        if(atts.GetResampleType() != VolumeAttributes::OnlyIfRequired)
+        if(atts.GetResampleType() == VolumeAttributes::SingleDomain ||
+           atts.GetResampleType() == VolumeAttributes::ParallelRedistribute ||
+           atts.GetResampleType() == VolumeAttributes::ParallelPerRank)
         {
             //
             // They didn't leave it as "default", but it is the same

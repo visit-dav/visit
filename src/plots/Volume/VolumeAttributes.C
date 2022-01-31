@@ -51,20 +51,20 @@ VolumeAttributes::Renderer_FromString(const std::string &s, VolumeAttributes::Re
 
 static const char *ResampleType_strings[] = {
 "OnlyIfRequired", "SingleDomain", "ParallelRedistribute",
-"ParallelPerRank"};
+"ParallelPerRank", "NoResampling"};
 
 std::string
 VolumeAttributes::ResampleType_ToString(VolumeAttributes::ResampleType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
+    if(index < 0 || index >= 5) index = 0;
     return ResampleType_strings[index];
 }
 
 std::string
 VolumeAttributes::ResampleType_ToString(int t)
 {
-    int index = (t < 0 || t >= 4) ? 0 : t;
+    int index = (t < 0 || t >= 5) ? 0 : t;
     return ResampleType_strings[index];
 }
 
@@ -72,7 +72,7 @@ bool
 VolumeAttributes::ResampleType_FromString(const std::string &s, VolumeAttributes::ResampleType &val)
 {
     val = VolumeAttributes::OnlyIfRequired;
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 5; ++i)
     {
         if(s == ResampleType_strings[i])
         {
@@ -1344,7 +1344,7 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
+            if(ival >= 0 && ival < 5)
                 SetResampleType(ResampleType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

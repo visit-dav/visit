@@ -43,6 +43,7 @@
         SLIVR
       </Enum>
       <Enum name="ResampleType">
+	NoResampling
         OnlyIfRequired
         SingleDomain
         ParallelRedistribute
