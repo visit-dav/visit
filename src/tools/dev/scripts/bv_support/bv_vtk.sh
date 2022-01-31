@@ -868,7 +868,7 @@ function apply_vtkCutter_patch
   # https://gitlab.kitware.com/vtk/vtk/-/issues/18450
    patch -p0 << \EOF
 *** Filters/Core/vtkCutter.cxx.orig	Mon Jan 31 09:05:34 2022
---- Filters/Core/vtkCutter.cxx	Mon Jan 31 09:07:43 2022
+--- Filters/Core/vtkCutter.cxx	Mon Jan 31 11:09:02 2022
 ***************
 *** 381,386 ****
 --- 381,389 ----
@@ -882,15 +882,15 @@ function apply_vtkCutter_patch
         this->GetCutFunction()->IsA("vtkPlane") && this->GetNumberOfContours() == 1 &&
         this->GetGenerateCutScalars() == 0 &&
 ***************
-*** 422,427 ****
---- 425,431 ----
-      this->UnstructuredGridCutter(input, output);
-    }
-    else
+*** 417,422 ****
+--- 420,426 ----
+  
+        return retval;
+      }
 + #endif
-    {
-      vtkDebugMacro(<< "Executing DataSet Cutter");
-      this->DataSetCutter(input, output);
+  
+      vtkDebugMacro(<< "Executing Unstructured Grid Cutter");
+      this->UnstructuredGridCutter(input, output);
 EOF
     if [[ $? != 0 ]] ; then
         warn "vtk patch for vtkCutter.cxx failed."
