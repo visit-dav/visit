@@ -125,20 +125,9 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
         EXCEPTION0(ImproperUseException);
     }
 
-    // Check for an implied transform - can not be done with the
-    // current paradigm!!!!!!
-    // avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
-    // if (inatts.GetRectilinearGridHasTransform())
-    // {
-    //     EXCEPTION1(ImproperUseException,
-    //                "vtkRectilinear grids with an implied transform can not be rendered.");
-    // }
-
-
     // Before calling the NeedImage the number of components needs to
-    // be known. This step can only be done by examining the data so
-    // to get the active variable. At the time the data and opacity
-    // ranges must be known before calling  UpdateRenderingState.
+    // be known. This step can only be done by examining the
+    // vtkDataSet so to get the active variable.
     vtkDataArray *dataArr = in_ds->GetPointData()->GetScalars();
 
     if( dataArr == nullptr )
@@ -151,54 +140,45 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
         }
     }
 
-    std::string activeVarName  = dataArr->GetName();
-    std::string opacityVarName = m_atts.GetOpacityVariable();
-
     // There could be a spearate opacity scalar data array.
-    vtkDataArray *opacityArr = nullptr;
+    std::string activeVariable  = dataArr->GetName();
+    std::string opacityVariable = m_atts.GetOpacityVariable();
 
-    if( opacityVarName == activeVarName )
+    // Before calling NeedImage the number of components needs to be
+    // known which is done by comparing the data and opacity variable
+    // names.
+    NumberOfComponents(activeVariable, opacityVariable);
+
+    // The data and opacity ranges must be known before calling
+    // UpdateRenderingState.
+    if( NeedImage() )
     {
-       avtCallback::IssueWarning("The opacity variable is the same as "
-                                  "the primary variable. Ignoring it and "
-                                  "any possible min/max setting.");
+        // The data and if needed the opacity ranges must be known before
+        // calling UpdateRenderingState.
+        dataArr->GetRange( m_dataRange );
 
-        m_nComponents = 1;
-    }
-    else if( opacityVarName != "default" )
-    {
-        m_nComponents = 2;
-    }
-    else
-    {
-        m_nComponents = 1;
-    }
-
-    dataArr->GetRange( m_dataRange );
-
-    if( m_nComponents == 2 )
-    {
-        opacityArr = in_ds->GetPointData()->GetScalars( opacityVarName.c_str() );
-
-        if( opacityArr == nullptr )
+        // If there are two components get the opacitiy range.
+        if( m_nComponents == 2 )
         {
-            opacityArr = in_ds->GetCellData()->GetScalars( opacityVarName.c_str() );
+            vtkDataArray *opacityArr =
+                in_ds->GetPointData()->GetScalars( opacityVariable.c_str() );
+
             if( opacityArr == nullptr )
             {
-                EXCEPTION1(InvalidVariableException, opacityVarName);
+                opacityArr = in_ds->GetCellData()->GetScalars( opacityVariable.c_str() );
+                if( opacityArr == nullptr )
+                {
+                    EXCEPTION1(InvalidVariableException, opacityVariable);
+                }
             }
-        }
 
-        opacityArr->GetRange( m_opacityRange );
+            opacityArr->GetRange( m_opacityRange );
+        }
     }
 
-    // LOCAL_DEBUG << "nComponents: " << m_nComponents << "  "
-    //          << "needImage: " << m_needImage << "  "
-    //          << std::endl;
-
-    NeedImage(); // Must be called before UpdateRenderingState
-
+    // Update the rendering state.
     UpdateRenderingState(in_ds, VTKRen);
 
+    // NOw do the rendering
     m_volumeMapper->Render(VTKRen, m_volume);
 }

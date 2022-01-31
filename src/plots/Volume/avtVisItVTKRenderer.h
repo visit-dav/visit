@@ -23,16 +23,19 @@ class vtkVolumeProperty;
 class avtVisItVTKRenderer
 {
 public:
-                          avtVisItVTKRenderer();
-    virtual              ~avtVisItVTKRenderer();
+                   avtVisItVTKRenderer();
+    virtual       ~avtVisItVTKRenderer();
 
-    void                  SetAtts(const AttributeGroup*);
+    void           SetAtts(const AttributeGroup*);
 
 protected:
 
-    bool                  NeedImage();
-    void                  UpdateRenderingState(vtkDataSet * in_ds,
-                                               vtkRenderer* renderer);
+    int            NumberOfComponents(const std::string activeVariable,
+                                      const std::string opacityVariable);
+
+    bool           NeedImage();
+    void           UpdateRenderingState(vtkDataSet * in_ds,
+                                        vtkRenderer* renderer);
 
     VolumeAttributes           m_atts;
 
@@ -42,25 +45,26 @@ protected:
     bool                       m_needImage{false};
 
     bool                       m_useColorVarMin{false};
-    float                      m_colorVarMin{1.0};
+    float                      m_colorVarMin{-1.0};
     bool                       m_useColorVarMax{false};
     float                      m_colorVarMax{-1.0};
+
     bool                       m_useOpacityVarMin{false};
-    float                      m_opacityVarMin{1.0};
+    float                      m_opacityVarMin{-1.0};
     bool                       m_useOpacityVarMax{false};
     float                      m_opacityVarMax{-1.0};
 
-    // For
+    // For OSPRay state changes.
     bool                       m_OSPRayEnabled{false};
     int                        m_OSPRayRenderType{0};
 
-    // For the image.
-    int                        m_nComponents{1};
+    // For generating the image.
+    int                        m_nComponents{0};
     int                        m_cellData{0};
     bool                       m_useInterpolation{true};
 
-    double                    m_dataRange[2];
-    double                    m_opacityRange[2];
+    double                     m_dataRange[2];
+    double                     m_opacityRange[2];
 
     // For the rendering.
     vtkColorTransferFunction  *m_transFunc     {nullptr};

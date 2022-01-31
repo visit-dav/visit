@@ -70,9 +70,6 @@
 //    Brad Whitlock, Mon Dec 15 15:51:38 PST 2008
 //    I added another filter.
 //
-//    Brad Whitlock, Tue Jan 31 12:11:27 PST 2012
-//    I added a compact tree filter.
-//
 // ****************************************************************************
 
 avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
@@ -122,9 +119,6 @@ avtVolumePlot::avtVolumePlot() : avtVolumeDataPlot()
 //
 //    Brad Whitlock, Mon Dec 15 15:52:01 PST 2008
 //    I added another filter.
-//
-//    Brad Whitlock, Tue Jan 31 12:11:27 PST 2012
-//    I added a compact tree filter.
 //
 // ****************************************************************************
 
@@ -511,19 +505,20 @@ avtVolumePlot::DataMustBeResampled(avtDataObject_p input)
 {
     int resampling = NoResampling;
 
+    const avtDataAttributes &datts = input->GetInfo().GetAttributes();
+
     //
     // Unless the input data is a single domain rectilinear mesh,
     // with both the color and opacity data having the same centering,
     // the data must be resampled.
     //
-    avtMeshType mt = input->GetInfo().GetAttributes().GetMeshType();
+    avtMeshType mt = datts.GetMeshType();
     if (mt != AVT_RECTILINEAR_MESH)
     {
         resampling |= NonRectilinearGrid;
     }
 
-    const avtDataAttributes &datts = input->GetInfo().GetAttributes();
-    std::string db = input->GetInfo().GetAttributes().GetFullDBName();
+    std::string db = datts.GetFullDBName();
 
     ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, datts.GetTimeIndex(), nullptr);
     avtDatabaseMetaData *md = dbp->GetMetaData(datts.GetTimeIndex(), 1);
@@ -548,16 +543,16 @@ avtVolumePlot::DataMustBeResampled(avtDataObject_p input)
 
     // If the opacity variable is different from the avtice variable
     // check the centering.
-    std::string  activeVariable = input->GetInfo().GetAttributes().GetVariableName();
+    std::string activeVariable = datts.GetVariableName();
     std::string opacityVariable = atts.GetOpacityVariable();
 
     if( opacityVariable != "default" && opacityVariable != activeVariable )
     {
-        if (input->GetInfo().GetAttributes().ValidVariable( activeVariable.c_str()) &&
-            input->GetInfo().GetAttributes().ValidVariable(opacityVariable.c_str()))
+        if (datts.ValidVariable( activeVariable.c_str()) &&
+            datts.ValidVariable(opacityVariable.c_str()))
         {
-            if(input->GetInfo().GetAttributes().GetCentering( activeVariable.c_str()) !=
-               input->GetInfo().GetAttributes().GetCentering(opacityVariable.c_str()))
+            if(datts.GetCentering( activeVariable.c_str()) !=
+               datts.GetCentering(opacityVariable.c_str()))
             resampling |= DifferentCentering;
         }
         else
@@ -661,6 +656,20 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     }
 
     avtDataObject_p dob = input;
+    const avtDataAttributes &datts = input->GetInfo().GetAttributes();
+    std::string activeVariable = datts.GetVariableName();
+
+    // Check for an implied transform - can not be done with the
+    // current paradigm!!!!!!
+    if (atts.GetRendererType() == VolumeAttributes::Serial ||
+        atts.GetRendererType() == VolumeAttributes::Parallel)
+    {
+        if (datts.GetRectilinearGridHasTransform())
+        {
+            EXCEPTION1(ImproperUseException,
+                       "vtkRectilinear grids with an implied transform can not be rendered.");
+        }
+    }
 
 #ifdef ENGINE
     // The gradient calc for ray casting compostie is needed when
@@ -701,8 +710,6 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
     if (atts.GetRendererType() == VolumeAttributes::Serial ||
         atts.GetRendererType() == VolumeAttributes::Parallel)
     {
-        const avtDataAttributes &datts = dob->GetInfo().GetAttributes();
-
         // Only check for required resampling if there is no user
         // resampling.
         int userResample = atts.GetResampleType();
@@ -785,17 +792,12 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
           }
           else
           {
-              std::string activeVariable =
-                  dob->GetInfo().GetAttributes().GetVariableName();
-
-              if (dob->GetInfo().GetAttributes().ValidVariable( activeVariable.c_str()))
+              if (datts.ValidVariable( activeVariable.c_str()))
               {
-                  dataCellCentering = (dob->GetInfo().GetAttributes().GetCentering( activeVariable.c_str()) == AVT_ZONECENT);
+                  dataCellCentering =
+                    (datts.GetCentering( activeVariable.c_str()) == AVT_ZONECENT);
               }
           }
-
-          std::string activeVariable =
-              dob->GetInfo().GetAttributes().GetVariableName();
 
           //
           // Resample the data
@@ -925,10 +927,6 @@ avtVolumePlot::CustomizeBehavior(void)
 //    Hank Childs, Thu Aug 26 17:44:13 PDT 2010
 //    Calculate the extents for the opacity variable.
 //
-//    Brad Whitlock, Mon Jan 30 14:00:46 PST 2012
-//    Add support for "compact" variable, which seems to be a point radius
-//    for splatting volume renderer.
-//
 // ****************************************************************************
 
 avtContract_p
@@ -1013,8 +1011,6 @@ avtVolumePlot::ReleaseData(void)
 //  Creation:    November 20, 2001
 //
 //  Modifications:
-//    Brad Whitlock, Tue Jan 31 17:18:59 PST 2012
-//    Added compact variable.
 //
 // ****************************************************************************
 

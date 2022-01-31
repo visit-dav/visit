@@ -145,10 +145,55 @@ avtVisItVTKRenderer::SetAtts(const AttributeGroup *a)
 }
 
 // ****************************************************************************
+//  Method:  avtVisItVTKRenderer::NumberOfComponents
+//
+//  Purpose:
+//    Set the number of components based on the color and
+//    opacity variable names.
+//
+//  Arguments:
+//    activeVariable  : the active variable
+//    opacityVariable : the opacity variable
+//
+//  Programmer: Allen R. Sanderson
+//  Creation:  30 November 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtVisItVTKRenderer::NumberOfComponents(const std::string activeVariable,
+                                        const std::string opacityVariable)
+{
+    if( opacityVariable == activeVariable )
+    {
+       avtCallback::IssueWarning("The opacity variable is the same as "
+                                  "the primary variable. Ignoring it and "
+                                  "any possible min/max setting.");
+
+        m_nComponents = 1;
+    }
+    else if( opacityVariable != "default" )
+    {
+        m_nComponents = 2;
+    }
+    else
+    {
+        m_nComponents = 1;
+    }
+
+    return m_nComponents;
+}
+
+// ****************************************************************************
 //  Method:  avtVisItVTKRenderer::NeedImage
 //
 //  Purpose:
-//    Determines if an image is needed
+//    Checks the color min/max and if needed the opacity min/max to
+//    determine if an image is needed.
+//
+//    NOTE: m_nComponents must be set before being called.
 //
 //  Arguments:
 //    none
@@ -183,6 +228,12 @@ avtVisItVTKRenderer::NeedImage()
           (m_atts.GetUseOpacityVarMax() &&
            m_opacityVarMax != m_atts.GetOpacityVarMax()))) )
     {
+        if( m_nComponents == 0 )
+        {
+            EXCEPTION1(ImproperUseException,
+                       "NeedImage is being called without the number of components beging set. This error is a developer error.");
+        }
+
         m_firstPass = false;
 
         // Store the color variable values so to check for a state change.
@@ -211,17 +262,12 @@ avtVisItVTKRenderer::NeedImage()
 }
 
 // ****************************************************************************
-//  Method: avtVisItVTKRenderer::Execute
+//  Method: avtVisItVTKRenderer::UpdateRenderingState
 //
 //  Purpose:
-//      Executes the VTK Rendering backend.
-//      This means:
-//      - Put the input mesh through a transform so it is in camera space.
-//      - Get the sample points.
-//      - Communicate the sample points (parallel only).
-//      - Composite the sample points along rays.
-//      - Communicate the pixels from each ray (parallel only).
-//      - Output the image.
+//    Updates the VTK Rendering.
+//
+//    NOTE: NeedImage must be called at least once before being called.
 //
 //  Programmer: Allen R. Sanderson
 //  Creation:   30 November 2021
@@ -256,28 +302,24 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
                 << std::endl;
 
     // Create a new image if needed.
-    if( m_imageToRender == nullptr ||
-
-        // Color variable change or min/max change. The active var
-        // name triggers needing an image on the first pass.
-        // m_activeVarName != activeVarName ||
-        m_useColorVarMin != m_atts.GetUseColorVarMin() ||
-        (m_atts.GetUseColorVarMin() &&
-         m_colorVarMin != m_atts.GetColorVarMin()) ||
-        m_useColorVarMax != m_atts.GetUseColorVarMax() ||
-        (m_atts.GetUseColorVarMax() &&
-         m_colorVarMax != m_atts.GetColorVarMax()) ||
-
-        // Opacity variable change or min/max change.
-        (m_nComponents == 2 &&
-         (//m_opacityVarName != opacityVarName ||
-          m_useOpacityVarMin != m_atts.GetUseOpacityVarMin() ||
-          (m_atts.GetUseOpacityVarMin() &&
-           m_opacityVarMin != m_atts.GetOpacityVarMin()) ||
-          m_useOpacityVarMax != m_atts.GetUseOpacityVarMax() ||
-          (m_atts.GetUseOpacityVarMax() &&
-           m_opacityVarMax != m_atts.GetOpacityVarMax()))) )
+    if( m_imageToRender == nullptr || m_needImage  )
     {
+        if( m_firstPass == true )
+        {
+            EXCEPTION1(ImproperUseException,
+                       "UpdateRenderingState is being called before NeedImage has been called. This error is a developer error.");
+        }
+
+        if( (m_dataRange[0] == m_dataRange[1] &&
+             m_dataRange[0] == -1.0) ||
+            (m_nComponents &&
+             m_opacityRange[0] == m_opacityRange[1] &&
+             m_opacityRange[0] == -1.0) )
+        {
+            EXCEPTION1(ImproperUseException,
+                       "UpdateRenderingState is being called before the data ranges have been set. This error is a developer error.");
+        }
+
         // Store the color variable values so to check for a state change.
         // m_activeVarName  = activeVarName;
         m_useColorVarMin = m_atts.GetUseColorVarMin();

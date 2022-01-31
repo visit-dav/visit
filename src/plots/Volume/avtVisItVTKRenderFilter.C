@@ -420,32 +420,12 @@ avtVisItVTKRenderFilter::Execute()
     }
 
     // Before calling NeedImage the number of components needs to be
-    // known.
-
-    // There could be separate scalar and opacity components.
-    if( opacityVarName == activeVarName )
-    {
-        avtCallback::IssueWarning("The opacity variable is the same as "
-                                  "the primary variable. Ignoring it and "
-                                  "any possible min/max setting.");
-
-        m_nComponents = 1;
-    }
-    else if( opacityVarName != "default" )
-    {
-        m_nComponents = 2;
-    }
-    else
-    {
-        m_nComponents = 1;
-    }
+    // known which is done by comparing the data and opacity variable
+    // names.
+    NumberOfComponents(activeVarName, opacityVarName);
 
     // The data and opacity ranges must be known before calling
     // UpdateRenderingState.
-
-    // GetDataExtents is a parallel call so it must be called if an
-    // image is needed regardless if there is data or not. Otherwise
-    // MPI crashes.
     if( NeedImage() )
     {
         // GetDataExtents is a parallel call so do them regardless if
@@ -468,28 +448,19 @@ avtVisItVTKRenderFilter::Execute()
         }
     }
 
+    LOCAL_DEBUG << "nsets: " << nsets << "  "
+		<< "nComponents: " << m_nComponents << "  "
+		<< "needImage: " << m_needImage << "  "
+		<< std::endl;
+
     // If no data then no image will be generated on this rank but
     // there is parallel compositing so account for it.
     unsigned char * renderedFrameBuffer = nullptr;
     float zDepth = 0;
 
+    // There should be only be a rectilinear data set.
     if( nsets == 1 )
     {
-        // There should be only be a rectilinear data set.
-        vtkDataSet* in_ds = datasetPtrs[ 0 ];
-
-        avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
-        if (inatts.GetRectilinearGridHasTransform())
-        {
-            EXCEPTION1(ImproperUseException,
-                       "vtkRectilinear grids with an implied transform can not be rendered.");
-        }
-
-        LOCAL_DEBUG << "nsets: " << nsets << "  "
-                    << "nComponents: " << m_nComponents << "  "
-                    << "needImage: " << m_needImage << "  "
-                    << std::endl;
-
         // Create camera
         vtkCamera* camera = CreateCamera();
 
@@ -521,6 +492,8 @@ avtVisItVTKRenderFilter::Execute()
 
             renderer->SetAmbient(1., 1., 1.);
         }
+
+        vtkDataSet* in_ds = datasetPtrs[ 0 ];
 
         UpdateRenderingState(in_ds, renderer);
 

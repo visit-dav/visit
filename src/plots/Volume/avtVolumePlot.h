@@ -121,6 +121,7 @@ avtVolumePlot : public avtVolumeDataPlot
     };
 
     VolumeAttributes                atts;
+
     avtLowerResolutionVolumeFilter *lowResVolumeFilter {nullptr};
     avtVolumeFilter                *volumeFilter {nullptr};
     avtGradientExpression          *gradientFilter {nullptr};
