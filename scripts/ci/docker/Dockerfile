@@ -1,10 +1,12 @@
 # Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
-FROM ubuntu:bionic
+FROM ubuntu:focal
 MAINTAINER Cyrus Harrison <cyrush@llnl.gov>
 
 # fetch build env
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=American/Los_Angeles
 RUN apt-get update && apt-get install -y \
     git \
     git-lfs \
@@ -25,6 +27,7 @@ RUN apt-get update && apt-get install -y \
     libx11-xcb-dev \
     libxcb-dri2-0-dev \
     libxcb-xfixes0-dev \
+    libxkbcommon-dev \
     libffi-dev \
     xutils-dev \
     xorg-dev \
