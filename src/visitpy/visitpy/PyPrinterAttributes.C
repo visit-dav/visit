@@ -693,6 +693,18 @@ PyPrinterAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pageSize") == 0)
         return PrinterAttributes_GetPageSize(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyPrinterAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyPrinterAttributes_methods[i].ml_name),
+                PyString_FromString(PyPrinterAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyPrinterAttributes_methods, self, name);
 }
 

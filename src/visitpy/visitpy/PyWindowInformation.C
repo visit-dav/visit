@@ -2167,6 +2167,18 @@ PyWindowInformation_getattr(PyObject *self, char *name)
     if(strcmp(name, "DDTConnected") == 0)
         return WindowInformation_GetDDTConnected(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyWindowInformation_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyWindowInformation_methods[i].ml_name),
+                PyString_FromString(PyWindowInformation_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyWindowInformation_methods, self, name);
 }
 

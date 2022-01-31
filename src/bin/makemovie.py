@@ -2688,6 +2688,16 @@ class MakeMovie(object):
                     self.Debug(1, line)
                 else:
                     self.Debug(5, line)
+            # Wait for the process to terminate. If we don't wait then it's
+            # possible that the return code could end up being "None", which
+            # will cause the "if (r == 0):" test below to fail, which we
+            # don't want. There is mention that wait can cause a hang if
+            # stdout is a PIPE, which it is, and the child produces enough
+            # data such that it blocks waiting for the OS pipe buffer to
+            # accept more data. I wouldn't expect this to happen since we
+            # only get here when there is no more data being sent by the
+            # child.
+            proc.wait()
             r = proc.returncode
                 
             self.Debug(1, "mpeg2encode returned %s" % r)

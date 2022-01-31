@@ -798,6 +798,18 @@ PyTopologyAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyTopologyAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyTopologyAttributes_methods[i].ml_name),
+                PyString_FromString(PyTopologyAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyTopologyAttributes_methods, self, name);
 }
 

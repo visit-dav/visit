@@ -2372,6 +2372,18 @@ PyPickAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "removeLabelTwins") == 0)
         return PickAttributes_GetRemoveLabelTwins(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyPickAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyPickAttributes_methods[i].ml_name),
+                PyString_FromString(PyPickAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyPickAttributes_methods, self, name);
 }
 

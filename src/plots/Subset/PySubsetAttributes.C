@@ -1521,6 +1521,18 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
         PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PySubsetAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PySubsetAttributes_methods[i].ml_name),
+                PyString_FromString(PySubsetAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PySubsetAttributes_methods, self, name);
 }
 

@@ -1416,6 +1416,18 @@ PyTensorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "animationStep") == 0)
         return TensorAttributes_GetAnimationStep(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyTensorAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyTensorAttributes_methods[i].ml_name),
+                PyString_FromString(PyTensorAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyTensorAttributes_methods, self, name);
 }
 

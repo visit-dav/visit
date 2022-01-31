@@ -278,6 +278,18 @@ PyavtDefaultPlotMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "plotAttributes") == 0)
         return avtDefaultPlotMetaData_GetPlotAttributes(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyavtDefaultPlotMetaData_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyavtDefaultPlotMetaData_methods[i].ml_name),
+                PyString_FromString(PyavtDefaultPlotMetaData_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyavtDefaultPlotMetaData_methods, self, name);
 }
 

@@ -560,6 +560,18 @@ PyTubeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "capping") == 0)
         return TubeAttributes_GetCapping(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyTubeAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyTubeAttributes_methods[i].ml_name),
+                PyString_FromString(PyTubeAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyTubeAttributes_methods, self, name);
 }
 

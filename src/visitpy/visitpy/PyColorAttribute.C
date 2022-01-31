@@ -179,6 +179,18 @@ PyColorAttribute_getattr(PyObject *self, char *name)
     if(strcmp(name, "color") == 0)
         return ColorAttribute_GetColor(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyColorAttribute_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyColorAttribute_methods[i].ml_name),
+                PyString_FromString(PyColorAttribute_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyColorAttribute_methods, self, name);
 }
 

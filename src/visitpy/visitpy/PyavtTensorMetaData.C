@@ -175,6 +175,17 @@ PyavtTensorMetaData_getattr(PyObject *self, char *name)
 
     PyavtTensorMetaData_ExtendSetGetMethodTable();
 
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyavtTensorMetaData_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyavtTensorMetaData_methods[i].ml_name),
+                PyString_FromString(PyavtTensorMetaData_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyavtTensorMetaData_methods, self, name);
 }
 

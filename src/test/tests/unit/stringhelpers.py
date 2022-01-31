@@ -11,7 +11,7 @@
 #    Kathleen Biagas, Thu Nov 12, 2020
 #    Retrieve the correct path on Windows.
 # ----------------------------------------------------------------------------
-import os, sys
+import sys
 
 if sys.platform.startswith("win"):
     tapp = visit_bin_path("StringHelpers_test.exe")

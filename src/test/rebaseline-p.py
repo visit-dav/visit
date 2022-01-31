@@ -109,7 +109,9 @@ def local_modifications_git(file):
   return False
 
 def local_modifications_svn(file):
-  svnstat = subprocess.Popen("svn stat %s" % file, shell=True,
+  svnstat = subprocess.Popen("svn stat %s" % file,
+                             shell=True,
+                             universal_newlines=True,
                              stdout=subprocess.PIPE)
   diff = svnstat.communicate()[0]
   if diff != '':

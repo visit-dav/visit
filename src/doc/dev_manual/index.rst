@@ -7,6 +7,7 @@ VisIt_ Developer Manual
     :maxdepth: 1
     :numbered: 
 
+    project_meetings
     GitHub
     StyleGuide
     pr_create
@@ -18,9 +19,12 @@ VisIt_ Developer Manual
     CreateRelease
     MemoryLeaks
     Docker
+    Spack
     SiteReliabilityEngineering
     OpenGL
     CI
+    ContributingHostProfiles
+    LaunchProcess
 
 .. Indices and tables
 .. ==================
