@@ -52,15 +52,14 @@
 
 #include <vector>
 
-#ifdef PARALLEL
-  #define LOCAL_DEBUG std::cerr << __LINE__ << " [VisItVTKRenderFilter] " \
-                                << "rank: "  << PAR_Rank() << "  "
-#else
-  #define LOCAL_DEBUG std::cerr << __LINE__ << " [VisItVTKRenderFilter] "
-#endif
+// #ifdef PARALLEL
+//   #define LOCAL_DEBUG std::cerr << __LINE__ << " [VisItVTKRenderFilter] " \
+//                                 << "rank: "  << PAR_Rank() << "  "
+// #else
+//   #define LOCAL_DEBUG std::cerr << __LINE__ << " [VisItVTKRenderFilter] "
+// #endif
 
-// #define LOCAL_DEBUG debug5 << " [VisItVTKRenderer] "
-
+#define LOCAL_DEBUG debug5 << " [VisItVTKRenderer] "
 
 // ****************************************************************************
 //  Method: avtVisItVTKRenderFilter constructor
