@@ -861,6 +861,43 @@ EOF
     fi
 }
 
+function apply_vtkCutter_patch
+{
+  # patch vtkCutter to remove use of vtk3DLinearPlaneCutter, because it 'promotes'
+  # all cell and point data to float/double arrays. See VTK issue:
+  # https://gitlab.kitware.com/vtk/vtk/-/issues/18450
+   patch -p0 << \EOF
+*** Filters/Core/vtkCutter.cxx.orig	Mon Jan 31 09:05:34 2022
+--- Filters/Core/vtkCutter.cxx	Mon Jan 31 09:07:43 2022
+***************
+*** 381,386 ****
+--- 381,389 ----
+      // See if the input can be fully processed by the fast vtk3DLinearGridPlaneCutter.
+      // This algorithm can provide a substantial speed improvement over the more general
+      // algorithm for vtkUnstructuredGrids.
++ 
++ // Don't want to use 3DlinearGridPlaneCutter, it 'promotes' all cell and point data to float arrays
++ #if 0
+      if (this->GetGenerateTriangles() && this->GetCutFunction() &&
+        this->GetCutFunction()->IsA("vtkPlane") && this->GetNumberOfContours() == 1 &&
+        this->GetGenerateCutScalars() == 0 &&
+***************
+*** 422,427 ****
+--- 425,431 ----
+      this->UnstructuredGridCutter(input, output);
+    }
+    else
++ #endif
+    {
+      vtkDebugMacro(<< "Executing DataSet Cutter");
+      this->DataSetCutter(input, output);
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for vtkCutter.cxx failed."
+        return 1
+    fi
+}
+
 function apply_vtk_patch
 {
     # this needs to be reworked for 9.1.0
@@ -887,6 +924,11 @@ function apply_vtk_patch
     fi
 
     apply_vtkRectilinearGridReader_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtkCutter_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
