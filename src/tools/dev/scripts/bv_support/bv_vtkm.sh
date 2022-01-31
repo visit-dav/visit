@@ -20,7 +20,7 @@ function bv_vtkm_alt_vtkm_dir
     bv_vtkm_enable
     USE_SYSTEM_VTKM="yes"
     VTKM_INSTALL_DIR="$1"
-    info "Using Alternate VTKM: $SYSTEM_VTKM_DIR"
+    info "Using Alternate VTKM: $VTKM_INSTALL_DIR"
 }
 
 function bv_vtkm_depends_on
@@ -39,11 +39,11 @@ function bv_vtkm_initialize_vars
 
 function bv_vtkm_info
 {
-    export VTKM_VERSION=${VTKM_VERSION:-"ff7197"}
+    export VTKM_VERSION=${VTKM_VERSION:-"v1.7.0"}
     export VTKM_FILE=${VTKM_FILE:-"vtk-m-${VTKM_VERSION}.tar.gz"}
-    export VTKM_BUILD_DIR=${VTKM_BUILD_DIR:-"vtk-m-ff71975709c69efaedd90b141309876931bb8686"}
-    export VTKM_MD5_CHECKSUM="b5008a7e815648befde479041d2e93ff"
-    export VTKM_SHA256_CHECKSUM="e88285515d3bc1a4a69e935257fed07516e0f009d3fed851ed4ea92ddf8693d5"
+    export VTKM_BUILD_DIR=${VTKM_BUILD_DIR:-"vtk-m-v1.7.0"}
+    export VTKM_MD5_CHECKSUM="8dcaf4472d2f4729a3f5ab2381e4d818"
+    export VTKM_SHA256_CHECKSUM="a86667ac22057462fc14495363cfdcc486da125b366cb568ec23c86946439be4"
 }
 
 function bv_vtkm_print
@@ -96,72 +96,9 @@ function bv_vtkm_dry_run
 #
 #
 # *************************************************************************** #
-
-function apply_patch_1
-{
-   patch -p0 << \EOF
-diff -c ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig ./vtkm/cont/arg/TransportTagTopologyFieldIn.h
-*** ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig	Tue Dec  8 12:55:32 2020
---- ./vtkm/cont/arg/TransportTagTopologyFieldIn.h	Tue Dec  8 12:55:49 2020
-***************
-*** 90,96 ****
---- 90,98 ----
-    {
-      if (object.GetNumberOfValues() != detail::TopologyDomainSize(inputDomain, TopologyElementTag()))
-      {
-+ #if 0
-        throw vtkm::cont::ErrorBadValue("Input array to worklet invocation the wrong size.");
-+ #endif
-      }
-
-      return object.PrepareForInput(Device(), token);
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtkm patch 1 failed."
-      return 1
-    fi
-    return 0;
-}
-
-function apply_patch_2
-{
-   patch -p0 << \EOF
-diff --git ./vtkm/cont/internal/OptionParser.h ./vtkm/cont/internal/OptionParser.h
-index 2e0d6127d..fd5b7e72d 100644
---- ./vtkm/cont/internal/OptionParser.h
-+++ ./vtkm/cont/internal/OptionParser.h
-@@ -42,7 +42,7 @@ namespace internal
-
- // Include from third party.
- // @cond NONE
--#include <vtkmoptionparser/optionparser.h>
-+#include <vtkm/thirdparty/optionparser/vtkmoptionparser/optionparser.h>
- // @endcond
-
- // Now restore the header guards as before so that other includes of (possibly different versions
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtkm patch 2 failed."
-      return 1
-    fi
-    return 0;
-}
-
 function apply_vtkm_patch
 {
     info "Patching VTKm . . ."
-
-    apply_patch_1
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
-
-    apply_patch_2
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
 
     return 0
 }
