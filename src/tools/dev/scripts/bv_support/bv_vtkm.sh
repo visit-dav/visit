@@ -96,9 +96,41 @@ function bv_vtkm_dry_run
 #
 #
 # *************************************************************************** #
+function apply_patch_1
+{
+   patch -p0 << \EOF
+diff -c ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig ./vtkm/cont/arg/TransportTagTopologyFieldIn.h
+*** ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig	Tue Dec  8 12:55:32 2020
+--- ./vtkm/cont/arg/TransportTagTopologyFieldIn.h	Tue Dec  8 12:55:49 2020
+***************
+*** 90,96 ****
+--- 90,98 ----
+    {
+      if (object.GetNumberOfValues() != detail::TopologyDomainSize(inputDomain, TopologyElementTag()))
+      {
++ #if 0
+        throw vtkm::cont::ErrorBadValue("Input array to worklet invocation the wrong size.");
++ #endif
+      }
+
+      return object.PrepareForInput(Device(), token);
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtkm patch 1 failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_vtkm_patch
 {
     info "Patching VTKm . . ."
+
+    apply_patch_1
+    if [[ $? != 0 ]] ; then
+       return 1
+    fi
 
     return 0
 }
