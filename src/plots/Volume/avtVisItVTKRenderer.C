@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                       avtVisItVTKRenderer.C                                 //
+//                       avtVisItVTKRenderer.C                               //
 // ************************************************************************* //
 
 #include <avtVisItVTKRenderer.h>
@@ -176,6 +176,18 @@ avtVisItVTKRenderer::NumberOfComponents(const std::string activeVariable,
     else if( opacityVariable != "default" )
     {
         m_nComponents = 2;
+
+#ifdef HAVE_OSPRAY
+        if( m_atts.GetOSPRayEnabledFlag() )
+        {
+            avtCallback::IssueWarning("The opacity variable is not the same as "
+                                      "the primary variable."
+                                      "Two component rendering is not "
+                                      "available with OSPRay. Ignoring it and "
+                                      "any possible min/max setting.");
+            m_nComponents = 1;
+        }
+#endif
     }
     else
     {
@@ -746,7 +758,6 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
     m_volume->SetProperty(m_volumeProperty);
 
 #ifdef HAVE_OSPRAY
-
     if( m_atts.GetOSPRayEnabledFlag() )
     {
         LOCAL_DEBUG << "RenderType: "
