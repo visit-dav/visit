@@ -25,7 +25,7 @@ different scalar values.
 
 .. _volume_plot_atts_window:
 
-.. figure:: ../images/volumewindow.png
+.. figure:: ../images/serial_rendering.png
 
 .. figure:: ../images/volumewindow2.png
    
@@ -34,78 +34,94 @@ different scalar values.
 Rendering Options
 """""""""""""""""
 
-The Volume plot uses hardware-accelerated graphics by default. While users will
-want to operate in this mode most of the time, since it's faster, images drawn
-by software are more accurate. To get a more accurate image, select a
-**Ray casting** option from the **Rendering method** combo box. When the Volume plot
-is set to use ray casting as its rendering mode, VisIt_ recalculates what the
-image should look like in software mode. Note that this can be a time-consuming
-process if the database being used is large or if the visualization window is
-large. We recommend shrinking the size of the visualization window before
-changing the rendering method to ray casting to reduce the time and resources
-required to draw the plot. It is worth noting that if the user has a large dataset
-with intricate details, the software volume rendering method is the best method
-to use because it scales well in parallel. Using a parallel compute engine can
-greatly speed up the rate at which software volume rendering operates as long
+The volume plot uses hardware-accelerated graphics by default
+(Serial). Though this mode is faster the image resolution is typically
+lower. Images drawn by software volume rendering, Parallel,
+Compositing, Integration, SLIVR typically have a higher resolution and
+thus are more accurate. Note software volume rendering can be a
+compute intensive process if the database or the visualization window
+is large.  Shrinking the size of the visualization window before using
+a software rendering method will reduce the time and resources
+required to draw the plot.
+
+It is worth noting that if the dataset is large with intricate
+details, the software volume rendering method is preferred because it
+scales well in parallel. Using a parallel compute engine can greatly
+speed up the rate at which software volume rendering operates as long
 as the dataset is domain-decomposed into roughly equal-sized pieces.
-The third volume-rendering technique, called ray-casting, used by the Volume
-plot is not hardware accelerated. In ray-casting, a ray is followed in reverse
-from the computer screen into the dataset. As a ray progresses through the
-dataset, sample points are taken and the sample values are used to determine
-a color and opacity value for the sample point. Each sample point along the
-ray is composited to form a final color for the screen pixel. Rays are traced
-from closest to farthest to allow for early ray termination which stops the
-sampling process when the pixel opacity gets above a certain threshold. This
-method of volume-rendering yields superior pictures at the cost of speed and
-memory use.
 
-**Rendering Method: Default Rendering** (:numref:`Figure %s<default_rendering_atts_window>`).
+The software volume rendering modes use a technique called
+ray-casting. In ray-casting, a ray is followed in reverse from the
+computer screen into the dataset. As a ray progresses through the
+dataset, sample points are taken and the sample values are used to
+determine a color and opacity value for the sample point. Each sample
+point along the ray is composited to form a final color for the screen
+pixel. Rays are traced from closest to farthest to allow for early ray
+termination which stops the sampling process when the pixel opacity
+gets above a certain threshold. This method of volume-rendering yields
+superior pictures at the cost of speed and memory use.
 
-.. _default_rendering_atts_window:
+**Rendering Method: Serial Rendering** (:numref:`Figure %s<serial_rendering_atts_window>`).
 
-.. figure:: ../images/default_rendering.png
+.. _serial_rendering_atts_window:
+
+.. figure:: ../images/serial_rendering.png
    
-   Default Rendering options 
+   Serial Rendering options 
 
-**Rendering Method: Ray casting: compositing** (:numref:`Figure %s<raycasting_compositing_atts_window>`)
+**Rendering Method: Parallel Rendering** (:numref:`Figure %s<parallel_rendering_atts_window>`).
 
-.. _raycasting_compositing_atts_window:
+.. _parallel_rendering_atts_window:
 
-.. figure:: ../images/raycasting_compositing.png
+.. figure:: ../images/parallel_rendering.png
    
-   Ray casting: compositing options 
+   Parallel Rendering options
 
-**Rendering Method: Ray casting: integration (grey scale)** (:numref:`Figure %s<raycasting_integration_atts_window>`)
+Serial and Parallel Rendering Options:
 
-.. _raycasting_integration_atts_window:
+When rendering in Serial and Parallel the data must be on rectilinear
+grid which often requires the data to be resampled. The user may
+select one the following options:
 
-.. figure:: ../images/raycasting_integration.png
-   
-   Ray casting: integration (grey scale) options
+``No Resampling``: Do not resample the data.
 
-**Rendering Method: Ray casting: SLIVR** (:numref:`Figure %s<raycasting_slivr_atts_window>`)
+``Only if required``: Automatically resample the data but only if needed.
 
-.. _raycasting_slivr_atts_window:
+``Single Domain``: Resample the data on to a single rectilinear grid
+on rank zero (0).
 
-.. figure:: ../images/raycasting_slivr.png
-   
-   Ray casting: SLIVR options
+``Parallel Redistribute``: Resample the data over all ranks on to a
+rectilinear grid and redistribute the results over all rank.
 
-**Rendering Method: Ray casting: OSPRay** (:numref:`Figure %s<raycasting_ospray_atts_window>`). `OSPRay <https://www.ospray.org>`_ is an Open source, Scalable, and Portable Ray tracing engine for volume-rendering on Intel Architecure CPUs, 
+``Parallel Per Rank``: Resample the data on each rank on to a
+rectilinear grid. Does not account for multiple samples on boundaries.
+
+Two other resampling options:
+
+``Number of Samples``: The number of samples, may be over all ranks or
+per rank.
+
+``Centering``: Native, Nodal, or Cell. Resample on a native, nodal or
+cell basis. The centering should typically be Native. Note: when using
+an opacity variable it must have the same centering as the color data.
+
+The user may also select OSPRay rendering <https://www.ospray.org>`_
+which is an Open source, Scalable, and Portable Ray tracing engine for
+volume rendering on Intel Architecture CPUs.
+
+``Rendering Type``: Sets rendering type to be either "scivis" or "path traced" photo-realism.
 
 ``AO Samples``: determines the number of rays per sample to compute ambient occlusion. 
 
 ``AO Distance``: determines the maximum distance to consider for ambient occlusion.
 
-.. _raycasting_ospray_atts_window:
+``Minimum Contribution``: The minimum sample contribution.
 
-.. figure:: ../images/raycasting_ospray.png
-   
-   Ray casting: OSPRay options
+``Maximum Contribution``: The maximum sample contribution.
 
-The Volume plot can use lighting to enhance the look of the plot. Lighting is
-enabled by default but the user can disable it by unchecking the **Lighting** check
-box near the bottom of the window.
+The volume plot can use lighting to enhance the look of the
+plot. Lighting is enabled by default but the user can disable it by
+unchecking the **Lighting** check box near the bottom of the window.
 
 ``Ambient``: ambient light weight in [0-1]
 
@@ -114,7 +130,30 @@ box near the bottom of the window.
 ``Specular``: specular reflection/transmission weight in [0-1]
 
 ``Shininess``: Phong exponent, usually in [2-10^4]
+   
+**Rendering Method: Compositing** (:numref:`Figure %s<compositing_atts_window>`)
 
+.. _compositing_atts_window:
+
+.. figure:: ../images/compositing.png
+   
+   Compositing options 
+
+**Rendering Method: Integration (grey scale)** (:numref:`Figure %s<integration_atts_window>`)
+
+.. _integration_atts_window:
+
+.. figure:: ../images/integration.png
+   
+   Integration (grey scale) options
+
+**Rendering Method: SLIVR** (:numref:`Figure %s<slivr_atts_window>`)
+
+.. _slivr_atts_window:
+
+.. figure:: ../images/slivr.png
+   
+   SLIVR options
 
 Transfer Function
 """""""""""""""""
