@@ -24,6 +24,9 @@ class     vtkDataArray;
 //  Programmer: Hank Childs
 //  Creation:   September 23, 2004
 //
+//  Modifications:
+//    Brad Whitlock, Tue Sep 10 16:12:14 PDT 2013
+//    Added ability to create IJK indices.
 // ****************************************************************************
 
 class EXPRESSION_API avtDataIdExpression : public avtSingleInputExpressionFilter
@@ -45,15 +48,18 @@ class EXPRESSION_API avtDataIdExpression : public avtSingleInputExpressionFilter
                                         { doGlobalNumbering = true; };
     void                      CreateLocalNumbering(void)
                                         { doGlobalNumbering = false; };
+    void                      CreateIJK(void) { doIJK = true; }
 
   protected:
     bool                      doZoneIds;
     bool                      doGlobalNumbering;
+    bool                      doIJK;
     bool                      haveIssuedWarning;
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual bool              IsPointVariable(void)  { return (!doZoneIds); };
 
+    virtual int               GetVariableDimension();
     virtual avtContract_p
                               ModifyContract(avtContract_p);
 };
