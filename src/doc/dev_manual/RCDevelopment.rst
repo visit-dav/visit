@@ -83,6 +83,14 @@ and locally. ::
 Apply the same changes to develop
 ---------------------------------
 
+Typically, the same changes applied to the release candidate also need to be applied to ``develop``.
+This is not always the case however.
+Some changes are made only for the release candidate and should never get applied to ``develop``.
+Our practice is to require the *last* comment in every pull request to the release candidate to include a remark indicating either that the PR was not applied to ``develop`` or that the PR was applied to ``develop`` along with the commit in which it was applied to ``develop``.
+Typically, the PR for the release candidate has already been closed when this comment needs to be added.
+This is fine.
+Developers can still add this comment to a PR when it is in a closed state.
+
 You will apply your changes from the 3.0RC to develop by creating a patch
 of your changes to the 3.0RC and applying them to a branch created off of
 develop. The easiest way to create the patch is immediately after you have
@@ -182,3 +190,10 @@ your changes into develop you can delete the branch at GitHub and locally. ::
 
 That's it. You have now made the exact same change to both the 3.0RC and
 develop.
+
+Once the PR to ``develop`` is merged, go back to the PR for the release candidate (it will probably be in a closed state but that is fine) and add a comment there indicating that the PR was also applied to develop and include the commit, from above, where it happened.
+
+Lastly, sometimes changes worth including in the release candidate nonetheless get done *first* on ``develop``.
+When this happens, we need to `backport <https://en.wikipedia.org/wiki/Backporting>`_ the changes to the release candidate.
+A procedure similar to what is described above can be followed except the roles of ``develop`` and release candidate branches are reversed.
+In addition, once the changes are backported to the release candidate, go back to the PR for ``develop`` (it will probably be in a closed state but that is fine) and add a comment there indicating that the changes were also *backported* to the release candidate and include the commit.

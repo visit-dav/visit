@@ -7,6 +7,7 @@ VisIt_ Developer Manual
     :maxdepth: 1
     :numbered: 
 
+    project_meetings
     GitHub
     StyleGuide
     pr_create
