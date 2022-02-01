@@ -204,6 +204,7 @@ function build_vtkm
     vopts="${vopts} -DVTKm_USE_64BIT_IDS:BOOL=ON"
     vopts="${vopts} -DVTKm_USE_DOUBLE_PRECISION:BOOL=ON"
     vopts="${vopts} -DVTKm_USE_DEFAULT_TYPES_FOR_VTK:BOOL=ON"
+    vopts="${vopts} -DVTKm_ENABLE_DIY_NOMPI:BOOL=ON"
     vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
     # Disable CUDA support for now since it requires using the CUDA compiler
     # to build all of VisIt, which we don't want to do.
