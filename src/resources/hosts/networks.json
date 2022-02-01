@@ -174,9 +174,6 @@
           "name": "host_llnl_vulcan.xml"
         }, 
         {
-          "name": "host_ornl_spock.xml"
-        }, 
-        {
           "name": "host_slac_red.xml"
         }
       ], 
