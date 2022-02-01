@@ -2301,7 +2301,7 @@ ELSE () # on windows
             file(TO_NATIVE_PATH ${ARCHIVER_EXE} ARCHIVER_NATIVE)
             add_custom_command(OUTPUT ${CBD_NATIVE}/${zipname}
                 COMMAND cd ${VDEP_NATIVE}
-                COMMAND "${ARCHIVER_NATIVE}" a ${CBD_NATIVE}/${zipname}
+                COMMAND "${ARCHIVER_NATIVE}" a -mx=9 ${CBD_NATIVE}/${zipname}
                     windowsbuild/distribution
                     windowsbuild/MSVC2017
                     windowsbuild/thirdparty-projects
