@@ -51,6 +51,7 @@ DeleteAllPlots()
 
 AddPlot("Volume", "Primitive Var _number_0")
 vol_atts = VolumeAttributes()
+vol_atts.rendererType =  volAtts.Serial
 vol_atts.smoothData = 0
 vol_atts.useColorVarMin = 1
 vol_atts.colorVarMin = 22
@@ -62,7 +63,7 @@ v.viewNormal = (-0.369824, 0.535308, 0.759391)
 v.viewUp = (-0.022009, 0.812062, -0.583155)
 SetView3D(v)
 
-Test("volume_03")
+Test("volume_99")
 DeleteAllPlots()
 
 # END SECTION TO BE MOVED
@@ -82,13 +83,151 @@ v.viewUp=(-0.831783, -0.415313, -0.368309)
 v.imageZoom = 2.
 SetView3D(v)
 
-# test fast volume render
+# test the serial volume render
 Test("volume_01")
 
 # test software volume render
 volAtts=VolumeAttributes()
-volAtts.rendererType = volAtts.RayCasting
+volAtts.rendererType = volAtts.Composite
 SetPlotOptions(volAtts)
 Test("volume_02")
+
+DeleteAllPlots()
+
+# Single domain checks, plots 10-16
+OpenDatabase(silo_data_path("rect3d.silo"))
+AddPlot("Volume", "d")
+DrawPlots()
+
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (0.628533, 0.511363, 0.58605)
+View3DAtts.focus = (0.5, 0.5, 0.5)
+View3DAtts.viewUp = (-0.169088, 0.825303, -0.538779)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 0.866025
+View3DAtts.nearPlane = -1.73205
+View3DAtts.farPlane = 1.73205
+View3DAtts.imagePan = (0, 0)
+View3DAtts.imageZoom = 1
+View3DAtts.perspective = 0
+View3DAtts.eyeAngle = 2
+View3DAtts.centerOfRotationSet = 0
+View3DAtts.centerOfRotation = (0.5, 0.5, 0.5)
+View3DAtts.axis3DScaleFlag = 0
+View3DAtts.axis3DScales = (1, 1, 1)
+View3DAtts.shear = (0, 0, 1)
+View3DAtts.windowValid = 1
+SetView3D(View3DAtts)
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Serial
+volAtts.resampleType = volAtts.NoResampling
+volAtts.OSPRayEnabledFlag = 0
+SetPlotOptions(volAtts)
+Test("volume_10")
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Serial
+volAtts.resampleType = volAtts.OnlyIfRequired
+volAtts.OSPRayEnabledFlag = 0
+SetPlotOptions(volAtts)
+Test("volume_11")
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Serial
+volAtts.resampleType = volAtts.OnlyIfRequired
+volAtts.OSPRayEnabledFlag = 1
+SetPlotOptions(volAtts)
+Test("volume_12")
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Serial
+volAtts.resampleType = volAtts.SingleDomain
+volAtts.OSPRayEnabledFlag = 0
+SetPlotOptions(volAtts)
+Test("volume_13")
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Serial
+volAtts.resampleType = volAtts.SingleDomain
+volAtts.OSPRayEnabledFlag = 1
+SetPlotOptions(volAtts)
+Test("volume_14")
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Parallel
+volAtts.resampleType = volAtts.ParallelRedistribute
+volAtts.OSPRayEnabledFlag = 0
+SetPlotOptions(volAtts)
+Test("volume_15")
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Parallel
+volAtts.resampleType = volAtts.ParallelRedistribute
+volAtts.OSPRayEnabledFlag = 1
+SetPlotOptions(volAtts)
+Test("volume_16")
+
+DeleteAllPlots()
+
+# Multiple domain checks, plots 20-24
+OpenDatabase(silo_data_path("multi_rect3d.silo"))
+AddPlot("Volume", "d")
+DrawPlots()
+
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (0.628533, 0.511363, 0.58605)
+View3DAtts.focus = (0.5, 0.5, 0.5)
+View3DAtts.viewUp = (-0.169088, 0.825303, -0.538779)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 0.866025
+View3DAtts.nearPlane = -1.73205
+View3DAtts.farPlane = 1.73205
+View3DAtts.imagePan = (0, 0)
+View3DAtts.imageZoom = 1
+View3DAtts.perspective = 0
+View3DAtts.eyeAngle = 2
+View3DAtts.centerOfRotationSet = 0
+View3DAtts.centerOfRotation = (0.5, 0.5, 0.5)
+View3DAtts.axis3DScaleFlag = 0
+View3DAtts.axis3DScales = (1, 1, 1)
+View3DAtts.shear = (0, 0, 1)
+View3DAtts.windowValid = 1
+SetView3D(View3DAtts)
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Serial
+volAtts.resampleType = volAtts.NoResampling
+volAtts.OSPRayEnabledFlag = 0
+SetPlotOptions(volAtts)
+Test("volume_20")
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Serial
+volAtts.resampleType = volAtts.ParallelRedistribute
+volAtts.OSPRayEnabledFlag = 0
+SetPlotOptions(volAtts)
+Test("volume_21")
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Serial
+volAtts.resampleType = volAtts.ParallelRedistribute
+volAtts.OSPRayEnabledFlag = 1
+SetPlotOptions(volAtts)
+Test("volume_22")
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Parallel
+volAtts.resampleType = volAtts.ParallelPerRank
+volAtts.OSPRayEnabledFlag = 0
+SetPlotOptions(volAtts)
+Test("volume_23")
+
+volAtts=VolumeAttributes()
+volAtts.rendererType = volAtts.Parallel
+volAtts.resampleType = volAtts.ParallelPerRank
+volAtts.OSPRayEnabledFlag = 1
+SetPlotOptions(volAtts)
+Test("volume_24")
 
 Exit()
