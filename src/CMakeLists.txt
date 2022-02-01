@@ -485,6 +485,10 @@
 #    Set VISIT_GIT_VERSION from the file GIT_VERSION if we are not in a
 #    git checkout.
 #
+#    Kathleen Biagas, Tue Feb 1, 2022
+#    Change Windows _SRC_PACKAGE to _WINDEV_PACKAGE, to simply zip up the
+#    needed windows TP development files.
+#
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -2243,7 +2247,7 @@ IF (NOT WIN32)
         ENDIF(NOT APPLE)
     ENDIF(APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
     INCLUDE(CPack)
-ELSE (NOT WIN32)
+ELSE () # on windows
     IF(VISIT_MAKE_NSIS_INSTALLER)
       IF(${MAKENSIS_FOUND})
         set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ".")
@@ -2289,21 +2293,30 @@ ELSE (NOT WIN32)
                               EXCLUDE_FROM_DEFAULT_BUILD 1
                               EXCLUDE_FROM_ALL 1 )
 
-        # source installer
-        ADD_CUSTOM_COMMAND(OUTPUT visitdev${VISIT_VERSION}.exe
-            COMMAND ${MAKENSIS}
-                    /DVisItVersion=${VISIT_VERSION}
-                    /DVISIT_SOURCE_DIR=${VSD_NATIVE}
-                    /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
-                    /DINSTALLER_LOCATION=${VISIT_BINARY_DIR}
-                     ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi
-            DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi
-        )
-        ADD_CUSTOM_TARGET(_SRC_PACKAGE ALL DEPENDS visitdev${VISIT_VERSION}.exe)
-        SET_TARGET_PROPERTIES(_SRC_PACKAGE PROPERTIES
+        if(DEFINED ARCHIVER_EXE)
+            get_filename_component(VDEP ${VWD_NATIVE} PATH)
+            file(TO_NATIVE_PATH ${VDEP} VDEP_NATIVE)
+            set(zipname visit_windowsdev_${VISIT_VERSION}.zip)
+
+            file(TO_NATIVE_PATH ${ARCHIVER_EXE} ARCHIVER_NATIVE)
+            add_custom_command(OUTPUT ${CBD_NATIVE}/${zipname}
+                COMMAND cd ${VDEP_NATIVE}
+                COMMAND "${ARCHIVER_NATIVE}" a ${CBD_NATIVE}/${zipname}
+                    windowsbuild/distribution
+                    windowsbuild/MSVC2017
+                    windowsbuild/thirdparty-projects
+                COMMAND cd ${CBD_NATIVE}
+                WORKING_DIRECTORY ${DEP_NATIVE})
+            add_custom_target(_WINDEV_PACKAGE ALL DEPENDS ${CBD_NATIVE}/${zipname})
+            set_target_properties(_WINDEV_PACKAGE PROPERTIES
                               EXCLUDE_FROM_DEFAULT_BUILD 1
                               EXCLUDE_FROM_ALL 1)
+            unset(VDEP)
+            unset(VDEP_NATIVE)
+            unset(zipname)
+        endif()
         UNSET(VSD_NATIVE)
+        UNSET(VWD_NATIVE)
         UNSET(CIP_NATIVE)
         UNSET(CBD_NATIVE)
       ELSE(${MAKENSIS_FOUND})
