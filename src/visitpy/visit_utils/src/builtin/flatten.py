@@ -23,7 +23,8 @@ except:
 import sys
 import socket
 
-def Flatten(vars):
+def Flatten(vars, fillValue=0., nodeIds=True, zoneIds=True, nodeIJK=True,
+                zoneIJK=True, maxDataSize=1.024, forceNoSharedMemory=False):
     """Flatten(vars) -> dict
 
 Synopsis:
@@ -34,6 +35,37 @@ Arguments:
 
 vars:
     The names of the desired variables (tuple of strings).
+
+fillValue:
+    The default value for a column if no data is present (float, default = 0.)
+
+nodeIds:
+    Whether or not the nodeIds should be included in the output table.
+    (bool, default = True)
+
+zoneIds:
+    Whether or not the zoneIds should be included in the output table.
+    (bool, default = True)
+
+nodeIJK:
+    Whether or not the nodeIJK should be included in the output table.
+    (bool, default = True)
+
+zoneIJK:
+    Whether or not the zoneIJK should be included in the output table.
+    (bool, default = True)
+
+maxDataSize:
+    The maximum output data size when not using shared memory, expressed in GB.
+    This parameters exists because the default method of returning query
+    results does not scale well up to large sizes.
+    (float, default=1.024)
+
+forceNoSharedMemory:
+    An override that makes sure the function will NOT use shared memory
+    to transport the output data to the VisIt CLI, even if the
+    environment seems to support it.
+    (bool, default = False)
 
 Returns:
 
@@ -46,15 +78,16 @@ Returns:
     'numpy.asarray()' function.
     """
     flattenOpts = dict()
-    flattenOpts["vars"] = vars
+    flattenOpts['vars'] = vars
 
     numPlots = visit.GetNumPlots()
     if numPlots == 0:
         print("VisIt: Error - Flatten() requires an active plot!")
         return dict()
 
-    if (sys.platform.startswith('linux')
-            or sys.platform.startswith('darwin')):
+    if ((sys.platform.startswith('linux')
+            or sys.platform.startswith('darwin'))
+            and not forceNoSharedMemory):
 
         plotList = visit.GetPlotList()
         dbhost = str()
@@ -69,7 +102,24 @@ Returns:
         if (dbhost == 'localhost'
                 or dbhost == '127.0.0.1'
                 or dbhost == hostname):
-            flattenOpts["useSharedMemory"] = 1
+            flattenOpts['useSharedMemory'] = 1
 
-    visit.Query("Flatten", flattenOpts)
-    return visit.GetFlattenOutput()
+    flattenOpts['fillValue'] = float(fillValue)
+    flattenOpts['maxDataSize'] = float(maxDataSize)
+    # NOTE: Was having problems parsing these as bool in C++,
+    #  using int now instead.
+    flattenOpts['nodeIds'] = int(nodeIds)
+    flattenOpts['zoneIds'] = int(zoneIds)
+    flattenOpts['nodeIJK'] = int(nodeIJK)
+    flattenOpts['zoneIJK'] = int(zoneIJK)
+
+    visit.Query('Flatten', flattenOpts)
+    retval = visit.GetFlattenOutput()
+
+    # NOTE: If desired we could just return the data as numpy arrays
+    #  (would have to import numpy in this file)
+    #if 'nodeTable' in retval:
+    #  retval['nodeTable'] = numpy.fromarray(retval['nodeTable'])
+    #if 'zoneTable' in retval:
+    #  retval['zoneTable'] = numpy.fromarray(retval['zoneTable'])
+    return retval

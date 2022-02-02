@@ -12,6 +12,8 @@
 
 #include <avtDatasetQuery.h>
 
+#include <memory>
+
 class vtkDataset;
 
 // ****************************************************************************
@@ -60,13 +62,12 @@ class QUERY_API avtFlattenQuery : public avtDatasetQuery
     using floatType = float;
     static const int NODE_DATA;
     static const int ZONE_DATA;
+    struct options;
+
     MapNode outInfo;
     stringVector variables;
     std::vector<floatType> outData;
-    std::string sharedMemoryName;
-    double fillValue;
-    double maxDataSize;
-    int useSharedMemory;
+    std::unique_ptr<options> opts;
 };
 
 
