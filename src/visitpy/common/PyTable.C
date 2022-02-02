@@ -16,6 +16,7 @@
 
 // std includes
 #include <array>
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -40,41 +41,59 @@ static const char *visit_PyTable_doc =
 ;
 
 // ****************************************************************************
-//  Struct: MemoryMappedDataWrapper
+//  Struct: PyTableDataWrapper
 //
 //  Purpose:
-//    Handles unmapping mapped memory.
+//    Handles unmapping mapped memory, or freeing malloc'd memory
 //
 //  Programmer: Chris Laganella
 //  Creation:   Fri Jan 28 16:54:33 EST 2022
 //
 //  Modifications:
 //
+//  Chris Laganella, Wed Feb  2 11:41:05 EST 2022
+//  Make this handle malloc'd and mmap'd memory
 // ****************************************************************************
-class MemoryMappedDataWrapper
+class PyTableDataWrapper
 {
 public:
-    MemoryMappedDataWrapper(void *ptr, std::size_t len)
+    PyTableDataWrapper(void *ptr, std::size_t len, bool isMemMapped)
     {
         this->ptr = ptr;
         this->len = len;
+        this->isMemMapped = isMemMapped;
     }
 
-    ~MemoryMappedDataWrapper()
+    ~PyTableDataWrapper()
     {
+        debug5 << "About to destroy PyTableDataWrapper with"
+            <<  " ptr=" << ptr
+            << ", len=" << len
+            << ", isMemMapped=" << isMemMapped << std::endl;
+        if(isMemMapped)
+        {
     #ifndef WIN32
-        munmap(ptr, len);
-        debug5 << "Successfully unmapped " << len
-            << " bytes at " << ptr << std::endl;
+            if(ptr)
+            {
+                munmap(ptr, len);
+                debug5 << "Successfully unmapped " << len
+                    << " bytes at " << ptr << std::endl;
+            }
     #else
-        debug2 << "WARNING: MemoryMappedDataWrapper should not be used"
-            << " on Windows." << std::endl;
+            debug2 << "WARNING: Should not be memory mapping"
+                << " on Windows." << std::endl;
     #endif
+        }
+        else
+        {
+            free(ptr);
+        }
     }
 
 private:
     void *ptr;
     std::size_t len;
+    bool isMemMapped;
 };
 
 // ****************************************************************************
@@ -91,8 +110,8 @@ private:
 // ****************************************************************************
 struct PyTableData
 {
-    std::shared_ptr<MemoryMappedDataWrapper> mmapWrap;
-    void *buff;
+    std::shared_ptr<PyTableDataWrapper> dataWrap; // Owns data
+    void *buff;           // Pointer to table data
     Py_ssize_t len;       // The size of the buffer
     Py_ssize_t itemsize;  // The size of each element in the buffer
     Py_ssize_t shape[2];
@@ -130,6 +149,9 @@ struct PyTableObject
 //
 //  Modifications:
 //
+//  Chris Laganella, Wed Feb  2 14:59:35 EST 2022
+//  Call the destructor on the shared pointer, allow the PyTableDataWrapper
+//  to manage the memory in both cases.
 // ****************************************************************************
 static void
 PyTableData_dealloc(PyTableData *table)
@@ -139,14 +161,7 @@ PyTableData_dealloc(PyTableData *table)
         return;
     }
 
-#ifndef WIN32
-    if(table->mmapWrap)
-    {
-        table->mmapWrap = nullptr;
-    }
-#endif
-    // no-op on nullptr
-    free(table->buff);
+    table->dataWrap.~shared_ptr<PyTableDataWrapper>();
 }
 
 // ****************************************************************************
@@ -338,13 +353,16 @@ SetTypeFormat<double>(char str[4])
 //
 //  Chris Laganella, Fri Jan 28 17:12:35 EST 2022
 //  I added the MemoryMappedDataWrapper class and use it when creating a PyTable
+//
+//  Chris Laganella, Wed Feb  2 14:58:39 EST 2022
+//  Use PyTableDataWrapper for both cases, call placement new on the shared
+//  pointer.
 // ****************************************************************************
 template<typename T>
 static PyObject*
 PyTable_CreateImpl(T *data,
                    const unsigned long *shape,
-                   const std::shared_ptr<MemoryMappedDataWrapper> &mmapWrap
-                        = nullptr)
+                   const std::shared_ptr<PyTableDataWrapper> &dataWrap)
 {
     PyTableObject *obj = PyObject_New(PyTableObject, &PyTableObjectType);
     if(!obj)
@@ -354,68 +372,18 @@ PyTable_CreateImpl(T *data,
 
     PyTableData &table = obj->table;
     table.len = sizeof(T) * shape[0] * shape[1];
-    if(!mmapWrap)
-    {
-        table.buff = malloc(table.len);
-        if(!table.buff)
-        {
-            Py_DecRef((PyObject*)obj);
-            return NULL;
-        }
-    }
+    new (&table.dataWrap) std::shared_ptr<PyTableDataWrapper>(dataWrap);
+    table.buff = data;
     table.itemsize = sizeof(T);
 
     typedef typename std::remove_cv<T>::type ActualType;
     SetTypeFormat<ActualType>(table.format);
 
-    table.mmapWrap = mmapWrap;
-    if(!mmapWrap)
-    {
-        memcpy(table.buff, data, table.len);
-    }
-    else
-    {
-        table.buff = data;
-    }
     table.shape[0] = shape[0];
     table.shape[1] = shape[1];
     table.strides[0] = sizeof(T) * shape[1];
     table.strides[1] = sizeof(T);
     return (PyObject*)obj;
-}
-
-// ****************************************************************************
-//  Method: PyTable_Create
-//
-//  Purpose:
-//      Call the float version of PyTable_Create
-//
-//  Programmer:   Chris Laganella
-//  Creation:     Fri Jan 21 16:12:10 EST 2022
-//
-// ****************************************************************************
-PyObject*
-PyTable_Create(float *data,
-               const unsigned long *shape)
-{
-    return PyTable_CreateImpl<float>(data, shape);
-}
-
-// ****************************************************************************
-//  Method: PyTable_Create
-//
-//  Purpose:
-//      Call the double version of PyTable_Create
-//
-//  Programmer:   Chris Laganella
-//  Creation:     Fri Jan 21 16:12:10 EST 2022
-//
-// ****************************************************************************
-PyObject*
-PyTable_Create(double *data,
-               const unsigned long *shape)
-{
-    return PyTable_CreateImpl<double>(data, shape);
 }
 
 // ****************************************************************************
@@ -430,7 +398,7 @@ PyTable_Create(double *data,
 // Creation:   Tue Jan 25 16:25:44 EST 2022
 //
 // ****************************************************************************
-static std::shared_ptr<MemoryMappedDataWrapper>
+static std::shared_ptr<PyTableDataWrapper>
 LoadFromSharedMemory(const std::string &shmName,
                      const std::array<bool, 2> &haveData,
                      const std::array<unsigned long, 2> &offsets,
@@ -446,7 +414,7 @@ LoadFromSharedMemory(const std::string &shmName,
     {
         debug1 << "Error opening shared memory block with the name "
             << shmName << std::endl;
-        return nullptr;
+        return std::shared_ptr<PyTableDataWrapper>();
     }
 
     // mmap the shared memory block and check for errors
@@ -460,7 +428,7 @@ LoadFromSharedMemory(const std::string &shmName,
             << ", MAP_PRIVATE, " << fd << ", 0);" << std::endl;
         shm_unlink(shmName.c_str());
         close(fd);
-        return nullptr;
+        return std::shared_ptr<PyTableDataWrapper>();
     }
 
     // Determine the proper offsets into the shared memory block
@@ -478,7 +446,7 @@ LoadFromSharedMemory(const std::string &shmName,
     // Always unlink / close the shared memory block
     shm_unlink(shmName.c_str());
     close(fd);
-    return std::make_shared<MemoryMappedDataWrapper>(addr, buffSize);
+    return std::make_shared<PyTableDataWrapper>(addr, buffSize, true);
 #else
     return nullptr;
 #endif
@@ -495,6 +463,9 @@ LoadFromSharedMemory(const std::string &shmName,
 // Programmer: Chris Laganella
 // Creation:   Mon Jan 24 18:06:10 EST 2022
 //
+// Modifications
+// Chris Laganella, Wed Feb  2 14:57:42 EST 2022
+// Update to use PyTableDataWrapper for mmap case and non mmap case.
 // ****************************************************************************
 template<typename FloatType>
 static PyObject *
@@ -579,40 +550,51 @@ LoadFlattenOutputData(QueryAttributes &qa,
     }
 
     const unsigned long buffSize = totalSize * sizeof(FloatType);
-    std::shared_ptr<MemoryMappedDataWrapper> mmapWrap;
-    std::vector<FloatType> tempData;
+    std::shared_ptr<PyTableDataWrapper> dataWrap;
     std::array<void*, 2> dataPtrs = {nullptr, nullptr};
     if(useShm)
     {
         const std::array<bool, 2> haveData = {haveNodeData, haveZoneData};
         const std::array<unsigned long, 2> offsets = {0, zoneTableOffset};
-        mmapWrap = LoadFromSharedMemory(shmName, haveData, offsets,
+        dataWrap = LoadFromSharedMemory(shmName, haveData, offsets,
                                 sizeof(FloatType), buffSize, dataPtrs);
         haveNodeData = (dataPtrs[0] != nullptr);
         haveZoneData = (dataPtrs[1] != nullptr);
     }
     else
     {
-        tempData.resize(totalSize);
-        TRY
-            qa.Decompress(buffSize, tempData.data());
-            dataPtrs[0] = (haveNodeData) ? tempData.data() : nullptr;
-            dataPtrs[1] = (haveZoneData) ? tempData.data() + zoneTableOffset
-                                         : nullptr;
-        CATCHALL
-            debug1 << "Could not load results value from queryattributes."
+        unsigned char *buff = (unsigned char *)malloc(buffSize);
+        if(!buff)
+        {
+            debug1 << "Could not malloc(" << buffSize << ");"
                 << std::endl;
             haveNodeData = false;
             haveZoneData = false;
             dataPtrs[0] = dataPtrs[1] = nullptr;
-        ENDTRY
+        }
+        else
+        {
+            dataWrap = std::make_shared<PyTableDataWrapper>(buff, buffSize, false);
+            TRY
+                qa.Decompress(buffSize, buff);
+                dataPtrs[0] = (haveNodeData) ? buff : nullptr;
+                dataPtrs[1] = (haveZoneData) ? buff + (zoneTableOffset * sizeof(FloatType))
+                                            : nullptr;
+            CATCHALL
+                debug1 << "Could not load results value from queryattributes."
+                    << std::endl;
+                haveNodeData = false;
+                haveZoneData = false;
+                dataPtrs[0] = dataPtrs[1] = nullptr;
+            ENDTRY
+        }
     }
 
     PyObject *retval = PyDict_New();
     if(haveNodeData)
     {
         FloatType *data = (FloatType*)dataPtrs[0];
-        PyObject *table = PyTable_CreateImpl<FloatType>(data, nodeTableShape, mmapWrap);
+        PyObject *table = PyTable_CreateImpl<FloatType>(data, nodeTableShape, dataWrap);
         PyObject *wrappedNode = PyMapNode_Wrap(*node.GetEntry("nodeColumnNames"));
         PyDict_SetItemString(retval, "nodeTable", table);
         PyDict_SetItemString(retval, "nodeColumnNames", wrappedNode);
@@ -624,7 +606,7 @@ LoadFlattenOutputData(QueryAttributes &qa,
     if(haveZoneData)
     {
         FloatType *data = (FloatType*)dataPtrs[1];
-        PyObject *table = PyTable_CreateImpl<FloatType>(data, zoneTableShape, mmapWrap);
+        PyObject *table = PyTable_CreateImpl<FloatType>(data, zoneTableShape, dataWrap);
         PyObject *wrappedNode = PyMapNode_Wrap(*node.GetEntry("zoneColumnNames"));
         PyDict_SetItemString(retval, "zoneTable", table);
         PyDict_SetItemString(retval, "zoneColumnNames", wrappedNode);
