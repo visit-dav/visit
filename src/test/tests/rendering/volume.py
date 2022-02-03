@@ -63,7 +63,8 @@ v.viewNormal = (-0.369824, 0.535308, 0.759391)
 v.viewUp = (-0.022009, 0.812062, -0.583155)
 SetView3D(v)
 
-Test("volume_99")
+Test("volume_03")
+
 DeleteAllPlots()
 
 # END SECTION TO BE MOVED
