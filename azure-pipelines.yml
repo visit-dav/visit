@@ -124,7 +124,6 @@ stages:
            echo ${VTKM_LIB_DIR}
            echo ${VTK_LIB_DIR}
            echo ${OSPRAY_LIB_DIR}
-           env
            # note: tbb has extra paths under lib
            export TBB_LIB_DIR=`ls -d ${TPLS_PATH}/tbb/*/ci/lib/intel64/gcc4.7/`
            # add to ld_lib path (rpaths are missing?)
@@ -137,6 +136,7 @@ stages:
            export TESTS="${TESTS} ../../src/test/tests/unit/assert_simple.py"
            export TESTS="${TESTS} ../../src/test/tests/unit/default_methods.py"
            export TESTS="${TESTS} ../../src/test/tests/unit/convert2to3.py"
+           env
            ./run_visit_test_suite.sh  -v ${TESTS}
         displayName: 'Run Tests'
 
