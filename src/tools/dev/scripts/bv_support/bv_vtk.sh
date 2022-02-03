@@ -881,7 +881,7 @@ EOF
 
 function apply_libxmlversionheader_patch
 {
-  # patch vtk's libxml CMakeLists.txt so that xmlversion header is installed.
+  # patch vtk's libxml CMakeLists.txt so that xml_version.h is installed
    patch -p0 << \EOF
 *** ThirdParty/libxml2/vtklibxml2/CMakeLists.txt.orig	Wed Jan 12 11:24:42 2022
 --- ThirdParty/libxml2/vtklibxml2/CMakeLists.txt	Wed Jan 12 11:25:57 2022
@@ -1013,7 +1013,6 @@ function apply_vtk_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi
-
     apply_libxmlversionheader_patch
     if [[ $? != 0 ]] ; then
         return 1
