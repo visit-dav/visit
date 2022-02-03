@@ -17,6 +17,8 @@
 
 #include <avtCallback.h>
 
+#include <DebugStream.h>
+
 
 // ****************************************************************************
 //  Method: avtDataIdExpression constructor
@@ -99,6 +101,8 @@ avtDataIdExpression::PreExecute(void)
 //    Brad Whitlock, Tue Sep 10 16:15:36 PDT 2013
 //    Added IJK creation.
 //
+//    Chris Laganella, Thu Feb  3 18:12:06 EST 2022
+//    Fixed an iteration bug with IJKs
 // ****************************************************************************
 
 vtkDataArray *
@@ -221,7 +225,7 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
             for(int k = 0; k < dims[2]; ++k)
             {
                 ijk[2] = k + origin;
-                for(int j = 0; j < dims[2]; ++j)
+                for(int j = 0; j < dims[1]; ++j)
                 {
                     ijk[1] = j + origin;
                     for(int i = 0; i < dims[0]; ++i, ++id)
