@@ -324,6 +324,8 @@ const char *expr_mesh[] = {
     "external_node",
     "global_nodeid",
     "global_zoneid",
+    "logical_nodeid",
+    "logical_zoneid",
     "max_coord",
     "min_coord",
     "nodeid",
@@ -335,6 +337,7 @@ const char *expr_mesh[] = {
     "revolved_volume",
     "volume",
     "zoneid",
+    "zone_centers",
     "zonetype_label",
     "zonetype_rank",
     NULL
