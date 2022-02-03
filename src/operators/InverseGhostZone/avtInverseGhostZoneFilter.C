@@ -223,7 +223,9 @@ avtInverseGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
     temp_ds->GetCellData()->SetActiveScalars("avtRetainThese");
     
     vtkThreshold *t = vtkThreshold::New();
-    t->ThresholdBetween(0.5, 1.5);
+    t->SetLowerThreshold(0.5);
+    t->SetUpperThreshold(1.5);
+    t->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
     t->SetInputArrayToProcess(0,0,0,vtkDataObject::FIELD_ASSOCIATION_CELLS,
                               "avtRetainThese");
     t->SetInputData(temp_ds);

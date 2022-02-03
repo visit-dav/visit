@@ -462,7 +462,8 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
 
                 threshold->SetLowerThreshold(curLowerBounds[curVarNum]);
                 threshold->SetUpperThreshold(curUpperBounds[curVarNum]);
-                
+                threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
+
                 if (curOutDataSet->GetPointData()->GetArray(curVarName) != NULL)
                 {
                     threshold->SetInputArrayToProcess(
@@ -476,7 +477,7 @@ avtThresholdFilter::ProcessOneChunk_VTK(avtDataRepresentation *in_dr, bool fromC
                 else
                 {
                     threshold->Delete();
-                    
+
                     sprintf (errMsg, "Data for variable \"%s\" is not currently available.", curVarName);
                     debug1 << errMsg << endl;
                     EXCEPTION1(VisItException, errMsg);
@@ -850,6 +851,7 @@ avtThresholdFilter::ThresholdOnRanges(vtkDataSet *in_ds,
     
     threshold->SetLowerThreshold(1);
     threshold->SetUpperThreshold(1);
+    threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_BETWEEN);
     threshold->SetInputArrayToProcess(0, 0, 0, FIELD_ASSOC, keeperName);
     threshold->Update();
     

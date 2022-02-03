@@ -3026,6 +3026,7 @@ vtkCSGGrid::DiscretizeSpaceMultiPass(int specificZone,
     vtkThreshold *threshold = vtkThreshold::New();
     threshold->SetInputData(rv);
     threshold->SetUpperThreshold(0.5);
+    threshold->SetThresholdFunction(vtkThreshold::THRESHOLD_UPPER);
     threshold->Update();
     rv = threshold->GetOutput();
     rv->Register(0);
