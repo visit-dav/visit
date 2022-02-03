@@ -882,10 +882,9 @@ EOF
 function apply_libxmlversionheader_patch
 {
   # patch vtk's libxml CMakeLists.txt so that xmlversion header is installed.
-
    patch -p0 << \EOF
-*** ThirdParty/libxml2/vtklibxml2/CMakeLists.txt.orig
---- ThirdParty/libxml2/vtklibxml2/CMakeLists.txt
+*** ThirdParty/libxml2/vtklibxml2/CMakeLists.txt.orig	Wed Jan 12 11:24:42 2022
+--- ThirdParty/libxml2/vtklibxml2/CMakeLists.txt	Wed Jan 12 11:25:57 2022
 ***************
 *** 771,779 ****
   endif ()
@@ -896,7 +895,7 @@ function apply_libxmlversionheader_patch
 ! endif ()
   
   if(MSVC)
-        configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
+  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
 --- 771,779 ----
   endif ()
   
@@ -906,10 +905,86 @@ function apply_libxmlversionheader_patch
 ! #endif ()
   
   if(MSVC)
-        configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
+  	configure_file(include/libxml/xmlwin32version.h.in libxml/xmlwin32version.h)
+
 EOF
     if [[ $? != 0 ]] ; then
-        warn "vtk patch for xmlversion header installation failed."
+        warn "vtk patch for xml_version.h installation failed."
+        return 1
+    fi
+}
+
+function apply_vtkRectilinearGridReader_patch
+{
+  # patch vtkRectilinearGridReader.cxx, per this issue:
+  # https://gitlab.kitware.com/vtk/vtk/-/issues/18447
+   patch -p0 << \EOF
+*** IO/Legacy/vtkRectilinearGridReader.cxx.orig	Thu Jan 27 10:55:12 2022
+--- IO/Legacy/vtkRectilinearGridReader.cxx	Thu Jan 27 11:01:04 2022
+***************
+*** 95,101 ****
+          break;
+        }
+  
+!       if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
+        {
+          int dim[3];
+          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+--- 95,108 ----
+          break;
+        }
+  
+!       // Have to read field data because it may be binary.
+!       if (!strncmp(this->LowerCase(line), "field", 5))
+!       {
+!         vtkFieldData* fd = this->ReadFieldData();
+!         fd->Delete();
+!       }
+! 
+!       else if (!strncmp(this->LowerCase(line), "dimensions", 10) && !dimsRead)
+        {
+          int dim[3];
+          if (!(this->Read(dim) && this->Read(dim + 1) && this->Read(dim + 2)))
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for vtkRectilinearGridReader.cxx failed."
+        return 1
+    fi
+}
+
+function apply_vtkCutter_patch
+{
+  # patch vtkCutter to remove use of vtk3DLinearPlaneCutter, because it 'promotes'
+  # all cell and point data to float/double arrays. See VTK issue:
+  # https://gitlab.kitware.com/vtk/vtk/-/issues/18450
+   patch -p0 << \EOF
+*** Filters/Core/vtkCutter.cxx.orig	Mon Jan 31 09:05:34 2022
+--- Filters/Core/vtkCutter.cxx	Mon Jan 31 11:09:02 2022
+***************
+*** 381,386 ****
+--- 381,389 ----
+      // See if the input can be fully processed by the fast vtk3DLinearGridPlaneCutter.
+      // This algorithm can provide a substantial speed improvement over the more general
+      // algorithm for vtkUnstructuredGrids.
++ 
++ // Don't want to use 3DlinearGridPlaneCutter, it 'promotes' all cell and point data to float arrays
++ #if 0
+      if (this->GetGenerateTriangles() && this->GetCutFunction() &&
+        this->GetCutFunction()->IsA("vtkPlane") && this->GetNumberOfContours() == 1 &&
+        this->GetGenerateCutScalars() == 0 &&
+***************
+*** 417,422 ****
+--- 420,426 ----
+  
+        return retval;
+      }
++ #endif
+  
+      vtkDebugMacro(<< "Executing Unstructured Grid Cutter");
+      this->UnstructuredGridCutter(input, output);
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch for vtkCutter.cxx failed."
         return 1
     fi
 }
@@ -940,6 +1015,16 @@ function apply_vtk_patch
     fi
 
     apply_libxmlversionheader_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtkRectilinearGridReader_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtkCutter_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi

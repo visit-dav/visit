@@ -18,7 +18,12 @@
 #    Kathleen Biagas, Wed Aug 28 12:04:03 PDT 2013
 #    Added tests for new data, different Open Options.
 #
+#    Kathleen Biagas, Tue Jan 25 2022
+#    Added RequiredDatabasePlugin call.
+#
 # ----------------------------------------------------------------------------
+
+RequiredDatabasePlugin("OpenFOAM")
 
 def OrigTests():
     OpenDatabase(data_path("OpenFOAM_test_data/bubbleColumn/system/controlDict"))
