@@ -322,6 +322,7 @@ avtFlattenQuery::GetSecondaryVars(stringVector &outVars)
         if(opts->nodeIds)
         {
             Expression e;
+            e.SetType(Expression::ScalarMeshVar);
             e.SetName("nodeIds");
             e.SetDefinition("nodeid(" + meshName + ")");
             exprList->AddExpressions(e);
@@ -331,6 +332,7 @@ avtFlattenQuery::GetSecondaryVars(stringVector &outVars)
         if(opts->nodeIJK)
         {
             Expression e;
+            e.SetType(Expression::VectorMeshVar);
             e.SetName("nodeIJK");
             e.SetDefinition("logical_nodeid(" + meshName + ")");
             exprList->AddExpressions(e);
@@ -340,6 +342,7 @@ avtFlattenQuery::GetSecondaryVars(stringVector &outVars)
         if(opts->zoneIds)
         {
             Expression e;
+            e.SetType(Expression::ScalarMeshVar);
             e.SetName("zoneIds");
             e.SetDefinition("zoneid(" + meshName + ")");
             exprList->AddExpressions(e);
@@ -349,6 +352,7 @@ avtFlattenQuery::GetSecondaryVars(stringVector &outVars)
         if(opts->zoneIJK)
         {
             Expression e;
+            e.SetType(Expression::VectorMeshVar);
             e.SetName("zoneIJK");
             e.SetDefinition("logical_zoneid(" + meshName + ")");
             exprList->AddExpressions(e);
