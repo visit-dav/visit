@@ -1,17 +1,21 @@
-/*=========================================================================
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
 
-  Program:   Visualization Toolkit
-  Module:    vtkOSPRayVisItDataSetMapperNode.cxx
-
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
+// ****************************************************************************
+// Class: vtkOSPRayVisItDataSetMapperNode
+//
+// Purpose:
+//   Translates vtkActor/Mapper state into OSPRay rendering calls but
+//   inserts a vtkDataSetSurfaceFilter if the data is not VTK_POLY_DATA.
+//
+// Notes:
+//
+// Programmer: Allen Sanderson
+// Creation:
+//
+// Modifications:
+//
 #include "vtkOSPRayVisItDataSetMapperNode.h"
 
 #include "vtkActor.h"
@@ -71,7 +75,7 @@ void vtkOSPRayVisItDataSetMapperNode::Render(bool prepass)
         vtkPolyData* poly = nullptr;
         vtkVisItDataSetMapper* mapper =
             vtkVisItDataSetMapper::SafeDownCast(act->GetMapper());
-        
+
         if (mapper && mapper->GetNumberOfInputPorts() > 0)
         {
             if (mapper->GetInput()->GetDataObjectType() == VTK_POLY_DATA)
