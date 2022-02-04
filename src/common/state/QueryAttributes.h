@@ -70,6 +70,7 @@ public:
     virtual void SelectAll();
     void SelectResultsMessage();
     void SelectResultsValue();
+    void SelectFloatResultsValue();
     void SelectVarTypes();
     void SelectXUnits();
     void SelectYUnits();
@@ -78,11 +79,11 @@ public:
     void SelectQueryInputParams();
     void SelectDefaultName();
     void SelectDefaultVars();
-    void SelectCompressedResults();
 
     // Property setting methods
     void SetResultsMessage(const std::string &resultsMessage_);
     void SetResultsValue(const doubleVector &resultsValue_);
+    void SetFloatResultsValue(const floatVector &floatResultsValue_);
     void SetTimeStep(int timeStep_);
     void SetVarTypes(const intVector &varTypes_);
     void SetPipeIndex(int pipeIndex_);
@@ -94,34 +95,33 @@ public:
     void SetQueryInputParams(const MapNode &queryInputParams_);
     void SetDefaultName(const std::string &defaultName_);
     void SetDefaultVars(const stringVector &defaultVars_);
-    void SetCompressedResults(const unsignedCharVector &compressedResults_);
 
     // Property getting methods
-    const std::string        &GetResultsMessage() const;
-          std::string        &GetResultsMessage();
-    const doubleVector       &GetResultsValue() const;
-          doubleVector       &GetResultsValue();
-    int                      GetTimeStep() const;
-    const intVector          &GetVarTypes() const;
-          intVector          &GetVarTypes();
-    int                      GetPipeIndex() const;
-    const std::string        &GetXUnits() const;
-          std::string        &GetXUnits();
-    const std::string        &GetYUnits() const;
-          std::string        &GetYUnits();
-    const std::string        &GetFloatFormat() const;
-          std::string        &GetFloatFormat();
-    const std::string        &GetXmlResult() const;
-          std::string        &GetXmlResult();
-    bool                     GetSuppressOutput() const;
-    const MapNode            &GetQueryInputParams() const;
-          MapNode            &GetQueryInputParams();
-    const std::string        &GetDefaultName() const;
-          std::string        &GetDefaultName();
-    const stringVector       &GetDefaultVars() const;
-          stringVector       &GetDefaultVars();
-    const unsignedCharVector &GetCompressedResults() const;
-          unsignedCharVector &GetCompressedResults();
+    const std::string  &GetResultsMessage() const;
+          std::string  &GetResultsMessage();
+    const doubleVector &GetResultsValue() const;
+          doubleVector &GetResultsValue();
+    const floatVector  &GetFloatResultsValue() const;
+          floatVector  &GetFloatResultsValue();
+    int                GetTimeStep() const;
+    const intVector    &GetVarTypes() const;
+          intVector    &GetVarTypes();
+    int                GetPipeIndex() const;
+    const std::string  &GetXUnits() const;
+          std::string  &GetXUnits();
+    const std::string  &GetYUnits() const;
+          std::string  &GetYUnits();
+    const std::string  &GetFloatFormat() const;
+          std::string  &GetFloatFormat();
+    const std::string  &GetXmlResult() const;
+          std::string  &GetXmlResult();
+    bool               GetSuppressOutput() const;
+    const MapNode      &GetQueryInputParams() const;
+          MapNode      &GetQueryInputParams();
+    const std::string  &GetDefaultName() const;
+          std::string  &GetDefaultName();
+    const stringVector &GetDefaultVars() const;
+          stringVector &GetDefaultVars();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -150,8 +150,6 @@ public:
     void PrintSelf(ostream &os);
     void SetResultsValue(const double);
     void SetResultsValues(const double*, const int);
-    void Compress(unsigned long inSize, const void *in);
-    void Decompress(unsigned long outSize, void *out);
     QueryAttributes &operator=(QueryAttributes&&);
     QueryAttributes(QueryAttributes&&);
     void Move(QueryAttributes&&);
@@ -160,6 +158,7 @@ public:
     enum {
         ID_resultsMessage = 0,
         ID_resultsValue,
+        ID_floatResultsValue,
         ID_timeStep,
         ID_varTypes,
         ID_pipeIndex,
@@ -171,30 +170,29 @@ public:
         ID_queryInputParams,
         ID_defaultName,
         ID_defaultVars,
-        ID_compressedResults,
         ID__LAST
     };
 
 private:
-    std::string        resultsMessage;
-    doubleVector       resultsValue;
-    int                timeStep;
-    intVector          varTypes;
-    int                pipeIndex;
-    std::string        xUnits;
-    std::string        yUnits;
-    std::string        floatFormat;
-    std::string        xmlResult;
-    bool               suppressOutput;
-    MapNode            queryInputParams;
-    std::string        defaultName;
-    stringVector       defaultVars;
-    unsignedCharVector compressedResults;
+    std::string  resultsMessage;
+    doubleVector resultsValue;
+    floatVector  floatResultsValue;
+    int          timeStep;
+    intVector    varTypes;
+    int          pipeIndex;
+    std::string  xUnits;
+    std::string  yUnits;
+    std::string  floatFormat;
+    std::string  xmlResult;
+    bool         suppressOutput;
+    MapNode      queryInputParams;
+    std::string  defaultName;
+    stringVector defaultVars;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define QUERYATTRIBUTES_TMFS "sd*ii*issssbmss*u*"
+#define QUERYATTRIBUTES_TMFS "sd*f*ii*issssbmss*"
 
 #endif

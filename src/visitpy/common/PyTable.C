@@ -41,6 +41,36 @@ static const char *visit_PyTable_doc =
 ;
 
 // ****************************************************************************
+//  Function: CopyValuesFromQueryAttributes
+//
+//  Purpose:
+//    Helper function to copy the proper results vector from the query attributes.
+//    Also resets the vector inside query attributes
+//
+//  Programmer: Chris Laganella
+//  Creation:   Fri Feb  4 11:09:29 EST 2022
+//
+//  Modifications:
+// ****************************************************************************
+static void
+TakeQueryAttributesResults(QueryAttributes &qA, float *buff)
+{
+    // Move the vector in so that it gets destroyed at the end of the function
+    std::vector<float> results = std::move(qA.GetFloatResultsValue());
+    std::cout << "Taking float query attribute results!" << std::endl;
+    std::cout << results[0] << ", " << results[1] << ", " << results[2] << std::endl;
+    memcpy(buff, results.data(), results.size() * sizeof(float));
+}
+
+static void
+TakeQueryAttributesResults(QueryAttributes &qA, double *buff)
+{
+    // Move the vector in so that it gets destroyed at the end of the function
+    std::vector<double> results = std::move(qA.GetResultsValue());
+    memcpy(buff, results.data(), results.size() * sizeof(double));
+}
+
+// ****************************************************************************
 //  Struct: PyTableDataWrapper
 //
 //  Purpose:
@@ -576,7 +606,7 @@ LoadFlattenOutputData(QueryAttributes &qa,
         {
             dataWrap = std::make_shared<PyTableDataWrapper>(buff, buffSize, false);
             TRY
-                qa.Decompress(buffSize, buff);
+                TakeQueryAttributesResults(qa, ((FloatType*)(void*)buff));
                 dataPtrs[0] = (haveNodeData) ? buff : nullptr;
                 dataPtrs[1] = (haveZoneData) ? buff + (zoneTableOffset * sizeof(FloatType))
                                             : nullptr;

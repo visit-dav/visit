@@ -18,6 +18,9 @@
     <Field name="resultsValue" label="resultsValue" type="doubleVector">
       0.000000
     </Field>
+    <Field name="floatResultsValue" label="floatResultsValue" type="floatVector">
+      0.000000
+    </Field>
     <Field name="timeStep" label="timeStep" type="int">
       0
     </Field>
@@ -44,8 +47,6 @@
     </Field>
     <Field name="defaultVars" label="defaultVars" type="stringVector" internal="true" ignoreeq="true" init="true">
     </Field>
-    <Field name="compressedResults" label="compressedResults" type="ucharVector" internal="true">
-    </Field>
     <Function name="SetVariables" user="true" member="true">
     </Function>
     <Function name="GetName" user="true" member="true">
@@ -64,10 +65,6 @@
     </Function>
     <Function name="SetResultsValues" user="true" member="true">
     </Function>
-    <Function name="Compress" user="true" member="true">
-    </Function>
-    <Function name="Decompress" user="true" member="true">
-    </Function>
     <Function name="Move Assignment" user="true" member="true">
     </Function>
     <Function name="Move Constructor" user="true" member="true">
@@ -81,15 +78,6 @@
       visitstream.h
     </Include>
     <Include file="source" quoted="false">
-      zlib.h
-    </Include>
-    <Include file="source" quoted="false">
-      cstring
-    </Include>
-    <Include file="source" quoted="false">
       DebugStream.h
-    </Include>
-    <Include file="source" quoted="false">
-      TimingsManager.h
     </Include>
   </Attribute>

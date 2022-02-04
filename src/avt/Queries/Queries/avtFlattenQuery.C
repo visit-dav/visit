@@ -34,11 +34,18 @@
 #include <errno.h>
 #endif
 
+using FloatType = float;
+
 const int avtFlattenQuery::NODE_DATA = 0;
 const int avtFlattenQuery::ZONE_DATA = 1;
 
-struct avtFlattenQuery::options
+struct avtFlattenQuery::impl
 {
+    MapNode outInfo;
+    stringVector variables;
+    std::vector<FloatType> outData;
+
+    // Options
     std::string sharedMemoryName = "avtFlattenQuery";
     double fillValue = 0.;
     double maxDataSize = 1.024;
@@ -107,22 +114,35 @@ CollectVectors(std::vector<double> &globalTable, std::vector<int> &recvCounts,
 }
 
 // ****************************************************************************
-//  Function: SupportsIJK
+//  Function: SwapIntoQueryAttributes
 //
 //  Purpose:
-//      Helper function to check if the mesh is structured
+//      Helper function used to swap with the float or double vector in
+//      query attributes.
 //
 //  Programmer:   Chris Laganella
-//  Creation:     Mon Jan 31 12:13:04 EST 2022
+//  Creation:     Fri Feb  4 10:49:14 EST 2022
 //
 //  Modifications:
 //
 // ****************************************************************************
-static bool
-SupportsIJK(avtMeshType mType)
+static void
+SwapIntoQueryAttributes(QueryAttributes &qA, std::vector<float> &outData)
 {
-    return mType == AVT_RECTILINEAR_MESH || mType == AVT_CURVILINEAR_MESH
-            || AVT_AMR_MESH;
+    std::vector<float> &out = qA.GetFloatResultsValue();
+    out = std::move(outData);
+    qA.SelectFloatResultsValue();
+    std::cout << "Just swapped float vectors!" << std::endl;
+    std::cout << out[0] << ", " << out[1] << ", " << out[2] << std::endl;
+    std::cout << out[4] << ", " << out[5] << ", " << out[6] << std::endl;
+}
+
+static void
+SwapIntoQueryAttributes(QueryAttributes &qA, std::vector<double> &outData)
+{
+    std::vector<double> &out = qA.GetResultsValue();
+    out = std::move(outData);
+    qA.SelectResultsValue();
 }
 
 // ****************************************************************************
@@ -138,9 +158,9 @@ SupportsIJK(avtMeshType mType)
 //
 // ****************************************************************************
 avtFlattenQuery::avtFlattenQuery()
-    : outInfo(), variables(), outData(), opts()
+    : pimpl()
 {
-    opts.reset(new avtFlattenQuery::options);
+    pimpl.reset(new avtFlattenQuery::impl);
 }
 
 // ****************************************************************************
@@ -187,7 +207,7 @@ avtFlattenQuery::SetInputParams(const MapNode &params)
         const MapNode *vars = params.GetEntry("vars");
         if(vars->Type() == MapNode::STRING_VECTOR_TYPE)
         {
-            variables = vars->AsStringVector();
+            pimpl->variables = vars->AsStringVector();
         }
     }
 
@@ -196,7 +216,7 @@ avtFlattenQuery::SetInputParams(const MapNode &params)
         const MapNode *fv = params.GetEntry("fillValue");
         if(fv->Type() == MapNode::DOUBLE_TYPE)
         {
-            opts->fillValue = fv->AsDouble();
+            pimpl->fillValue = fv->AsDouble();
         }
     }
 
@@ -206,15 +226,15 @@ avtFlattenQuery::SetInputParams(const MapNode &params)
         const MapNode *useShm = params.GetEntry("useSharedMemory");
         if(useShm->Type() == MapNode::INT_TYPE)
         {
-            opts->useSharedMemory = useShm->AsInt();
+            pimpl->useSharedMemory = useShm->AsInt();
         }
 
-        if(opts->useSharedMemory)
+        if(pimpl->useSharedMemory)
         {
             const MapNode *shmName = params.GetEntry("sharedMemoryName");
             if(shmName && shmName->Type() == MapNode::STRING_TYPE)
             {
-                opts->sharedMemoryName = shmName->AsString();
+                pimpl->sharedMemoryName = shmName->AsString();
             }
         }
     }
@@ -225,7 +245,7 @@ avtFlattenQuery::SetInputParams(const MapNode &params)
         const MapNode *doNodeIds = params.GetEntry("nodeIds");
         if(doNodeIds->Type() == MapNode::INT_TYPE)
         {
-            opts->nodeIds = doNodeIds->AsInt();
+            pimpl->nodeIds = doNodeIds->AsInt();
         }
     }
 
@@ -234,7 +254,7 @@ avtFlattenQuery::SetInputParams(const MapNode &params)
         const MapNode *doZoneIds = params.GetEntry("zoneIds");
         if(doZoneIds->Type() == MapNode::INT_TYPE)
         {
-            opts->zoneIds = doZoneIds->AsInt();
+            pimpl->zoneIds = doZoneIds->AsInt();
         }
     }
 
@@ -243,7 +263,7 @@ avtFlattenQuery::SetInputParams(const MapNode &params)
         const MapNode *doNodeIJK = params.GetEntry("nodeIJK");
         if(doNodeIJK->Type() == MapNode::INT_TYPE)
         {
-            opts->nodeIJK = doNodeIJK->AsInt();
+            pimpl->nodeIJK = doNodeIJK->AsInt();
         }
     }
 
@@ -252,11 +272,11 @@ avtFlattenQuery::SetInputParams(const MapNode &params)
         const MapNode *doZoneIJK = params.GetEntry("zoneIJK");
         if(doZoneIJK->Type() == MapNode::INT_TYPE)
         {
-            opts->zoneIJK = doZoneIJK->AsInt();
+            pimpl->zoneIJK = doZoneIJK->AsInt();
         }
     }
 
-    if(variables.empty())
+    if(pimpl->variables.empty())
     {
         EXCEPTION1(QueryArgumentException, "vars");
     }
@@ -314,53 +334,53 @@ avtFlattenQuery::GetSecondaryVars(stringVector &outVars)
 {
     outVars.clear();
 
-    if(opts->nodeIds || opts->nodeIJK || opts->zoneIds || opts->zoneIJK)
+    if(pimpl->nodeIds || pimpl->nodeIJK || pimpl->zoneIds || pimpl->zoneIJK)
     {
         ExpressionList *exprList = ParsingExprList::Instance()->GetList();
         const auto &dataAtts = GetTypedInput()->GetInfo().GetAttributes();
         const std::string meshName = dataAtts.GetMeshname();
-        if(opts->nodeIds)
+        if(pimpl->nodeIds)
         {
             Expression e;
             e.SetType(Expression::ScalarMeshVar);
             e.SetName("nodeIds");
             e.SetDefinition("nodeid(" + meshName + ")");
             exprList->AddExpressions(e);
-            variables.push_back("nodeIds");
+            pimpl->variables.push_back("nodeIds");
         }
 
-        if(opts->nodeIJK)
+        if(pimpl->nodeIJK)
         {
             Expression e;
             e.SetType(Expression::VectorMeshVar);
             e.SetName("nodeIJK");
             e.SetDefinition("logical_nodeid(" + meshName + ")");
             exprList->AddExpressions(e);
-            variables.push_back("nodeIJK");
+            pimpl->variables.push_back("nodeIJK");
         }
 
-        if(opts->zoneIds)
+        if(pimpl->zoneIds)
         {
             Expression e;
             e.SetType(Expression::ScalarMeshVar);
             e.SetName("zoneIds");
             e.SetDefinition("zoneid(" + meshName + ")");
             exprList->AddExpressions(e);
-            variables.push_back("zoneIds");
+            pimpl->variables.push_back("zoneIds");
         }
 
-        if(opts->zoneIJK)
+        if(pimpl->zoneIJK)
         {
             Expression e;
             e.SetType(Expression::VectorMeshVar);
             e.SetName("zoneIJK");
             e.SetDefinition("logical_zoneid(" + meshName + ")");
             exprList->AddExpressions(e);
-            variables.push_back("zoneIJK");
+            pimpl->variables.push_back("zoneIJK");
         }
     }
 
-    for(const auto &var : variables)
+    for(const auto &var : pimpl->variables)
     {
         outVars.push_back(var);
     }
@@ -399,7 +419,7 @@ avtFlattenQuery::VerifyInput(void)
 void
 avtFlattenQuery::PreExecute(void)
 {
-    outData.clear();
+    pimpl->outData.clear();
 }
 
 // ****************************************************************************
@@ -463,7 +483,7 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
     intVector varTypes;
     const auto &dataAtts = GetTypedInput()->GetInfo().GetAttributes();
     vtkIdType localNCol = 0;
-    for(const std::string &name : variables)
+    for(const std::string &name : pimpl->variables)
     {
         avtCentering centering = AVT_NO_VARIABLE;
         int nc = 0;
@@ -481,25 +501,25 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
         varTypes.push_back(centering == AVT_ZONECENT ? ZONE_DATA : NODE_DATA);
     }
 
-    if(variables.size() != varTypes.size()
-        || variables.size() != varNComps.size())
-    {
-        // TODO: Handle this? This should never happen, cannot throw because
-        //  collective operations happen in parallel later (also can't return).
-        debug1 << "variables.size(), varTypes.size() and varNComps.size() are "
-            << "not equal! Cannot continue executing avtFlattenQuery." << std::endl;
-        return;
-    }
+    // NOTE: This can't happen as varTypes & varNComps are built by
+    //   iterating over each item in variables once. More of a debug assert.
+    // if(pimpl->variables.size() != varTypes.size()
+    //     || variables.size() != varNComps.size())
+    // {
+    //     debug1 << "variables.size(), varTypes.size() and varNComps.size() are "
+    //         << "not equal! Cannot continue executing avtFlattenQuery." << std::endl;
+    //     return;
+    // }
 
     // Build the output tables
     std::array<int, 2> tableNCol{0, 0};
     std::vector<int> varOffsets;
-    for(std::size_t i = 0; i < variables.size(); i++)
+    for(std::size_t i = 0; i < pimpl->variables.size(); i++)
     {
         const int type = varTypes[i];
         varOffsets.push_back(tableNCol[type]);
         tableNCol[type] += varNComps[i];
-        debug5 << variables[i] << ": ncomps " << varNComps[i]
+        debug5 << pimpl->variables[i] << ": ncomps " << varNComps[i]
             << ", centering " << varTypes[i] << std::endl;
     }
 
@@ -539,8 +559,8 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
     debug5 << " ]" << std::endl;
 
     std::array<vtkIdType, 2> blockOffsets{0, 0};
-    std::vector<floatType> nodeData(tableSizes[NODE_DATA], opts->fillValue);
-    std::vector<floatType> zoneData(tableSizes[ZONE_DATA], opts->fillValue);
+    std::vector<FloatType> nodeData(tableSizes[NODE_DATA], pimpl->fillValue);
+    std::vector<FloatType> zoneData(tableSizes[ZONE_DATA], pimpl->fillValue);
     for(int blockIdx = 0; blockIdx < nblocks; blockIdx++)
     {
         vtkDataSet *ds = datasets[blockIdx];
@@ -553,15 +573,15 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
             << " " << blockOffsets[1] << std::endl;
 
         // Copy data into table in row major form
-        for(std::size_t varIdx = 0; varIdx < variables.size(); varIdx++)
+        for(std::size_t varIdx = 0; varIdx < pimpl->variables.size(); varIdx++)
         {
-            const std::string varName = variables[varIdx];
+            const std::string varName = pimpl->variables[varIdx];
             const int type = varTypes[varIdx];
             const int nc = varNComps[varIdx];
             const int stride = tableNCol[type];
             const vtkIdType N = blockSizes[type][blockIdx];
             vtkDataArray *da = dataAtts[varTypes[varIdx]]->GetArray(varName.c_str());
-            std::vector<floatType> &out = (type == NODE_DATA) ? nodeData : zoneData;
+            std::vector<FloatType> &out = (type == NODE_DATA) ? nodeData : zoneData;
             if(da)
             {
                 doubleVector tup;
@@ -572,7 +592,7 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
                     da->GetTuple(i, tup.data());
                     for(vtkIdType c = 0; c < nc; c++)
                     {
-                        out[outIdx + c] = (floatType)tup[c];
+                        out[outIdx + c] = (FloatType)tup[c];
                     }
                     outIdx += stride;
                 }
@@ -586,13 +606,13 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
 
     if(PAR_Size() == 1)
     {
-        CombineTables(nodeData, zoneData, outData, opts->fillValue);
-        BuildOutputInfo(varNComps, varTypes, nodeData.size(), zoneData.size(), outInfo);
+        CombineTables(nodeData, zoneData, pimpl->outData, pimpl->fillValue);
+        BuildOutputInfo(varNComps, varTypes, nodeData.size(), zoneData.size(), pimpl->outInfo);
     }
     else
     {
-        std::vector<floatType> globalNodeTable;
-        std::vector<floatType> globalZoneTable;
+        std::vector<FloatType> globalNodeTable;
+        std::vector<FloatType> globalZoneTable;
 
         debug5 << "Rank " << PAR_Rank() << " contributing (node) " << nodeData.size() << std::endl;
         debug5 << "Rank " << PAR_Rank() << " contributing (zone) " << zoneData.size() << std::endl;
@@ -612,8 +632,8 @@ avtFlattenQuery::Execute(avtDataTree_p dataTree)
         {
             debug5 << "globalNode size " << nodeSize << std::endl;
             debug5 << "globalZone size " << zoneSize << std::endl;
-            CombineTables(globalNodeTable, globalZoneTable, outData, opts->fillValue);
-            BuildOutputInfo(varNComps, varTypes, nodeSize, zoneSize, outInfo);
+            CombineTables(globalNodeTable, globalZoneTable, pimpl->outData, pimpl->fillValue);
+            BuildOutputInfo(varNComps, varTypes, nodeSize, zoneSize, pimpl->outInfo);
         }
     }
 }
@@ -641,30 +661,30 @@ avtFlattenQuery::SetOutputQueryAtts(QueryAttributes *qA, bool hadError)
 
     if(PAR_Rank() == 0)
     {
-        const double sizeInGigaBytes = (outData.size() * sizeof(floatType)) / (double)1e9;
-        debug5 << "avtFlattenQuery XML output:\n" << outInfo.ToXML() << std::endl;
-        qA->SetXmlResult(outInfo.ToXML());
+        const double sizeInGigaBytes = (pimpl->outData.size() * sizeof(FloatType)) / (double)1e9;
+        debug5 << "avtFlattenQuery XML output:\n" << pimpl->outInfo.ToXML() << std::endl;
+        qA->SetXmlResult(pimpl->outInfo.ToXML());
         qA->SetResultsMessage("Success!\nNOTE: This query should only "
                         "be used in the CLI via the Flatten() function.");
-        if(opts->useSharedMemory)
+        if(pimpl->useSharedMemory)
         {
             WriteSharedMemory();
         }
-        else if(sizeInGigaBytes > opts->maxDataSize)
+        else if(sizeInGigaBytes > pimpl->maxDataSize)
         {
             std::stringstream s;
             s << "ERROR: Data too large to transport via query attributes ("
                 << sizeInGigaBytes << "GB). You can override the limit by"
                 << " overriding the parameter 'maxDataSize' with a (double)"
                 << " size repesented in Gigabytes. (Current value = "
-                << opts->maxDataSize << ").\nNOTE: This query should only "
+                << pimpl->maxDataSize << ").\nNOTE: This query should only "
                 << "be used in the CLI via the Flatten() function.";
             qA->SetResultsMessage(s.str());
             debug1 << s.str() << std::endl;
         }
         else
         {
-            qA->Compress(outData.size() * sizeof(floatType), outData.data());
+            SwapIntoQueryAttributes(*qA, pimpl->outData);
         }
     }
 }
@@ -688,9 +708,9 @@ avtFlattenQuery::BuildOutputInfo(const intVector &varNComps, const intVector &va
 {
     outInfo.Reset();
     std::array<stringVector, 2> columnNames;
-    for(std::size_t i = 0; i < variables.size(); i++)
+    for(std::size_t i = 0; i < pimpl->variables.size(); i++)
     {
-        const std::string &name = variables[i];
+        const std::string &name = pimpl->variables[i];
         const int nc = varNComps[i];
         const int type = varTypes[i];
         if(nc > 1)
@@ -725,8 +745,8 @@ avtFlattenQuery::BuildOutputInfo(const intVector &varNComps, const intVector &va
         outInfo["zoneTableOffset"] = nodeSize;
     }
 
-    outInfo["totalSize"] = static_cast<long>(outData.size());
-    if(std::is_same<float, floatType>::value)
+    outInfo["totalSize"] = static_cast<long>(pimpl->outData.size());
+    if(std::is_same<float, FloatType>::value)
     {
         outInfo["dataType"] = "float";
     }
@@ -735,10 +755,10 @@ avtFlattenQuery::BuildOutputInfo(const intVector &varNComps, const intVector &va
         outInfo["dataType"] = "double";
     }
 
-    outInfo["useSharedMemory"] = opts->useSharedMemory;
-    if(opts->useSharedMemory)
+    outInfo["useSharedMemory"] = pimpl->useSharedMemory;
+    if(pimpl->useSharedMemory)
     {
-        outInfo["sharedMemoryName"] = opts->sharedMemoryName;
+        outInfo["sharedMemoryName"] = pimpl->sharedMemoryName;
     }
 }
 
@@ -759,17 +779,17 @@ void
 avtFlattenQuery::WriteSharedMemory() const
 {
 #ifndef WIN32
-    int fd = shm_open(opts->sharedMemoryName.c_str(),
+    int fd = shm_open(pimpl->sharedMemoryName.c_str(),
                         O_CREAT | O_RDWR | O_EXCL,
                         S_IREAD | S_IWRITE);
     if(fd == -1)
     {
         debug1 << "Error opening shared memory block with the name "
-            << opts->sharedMemoryName << std::endl;
+            << pimpl->sharedMemoryName << std::endl;
         return;
     }
 
-    const unsigned long shmSize = outData.size() * sizeof(floatType);
+    const unsigned long shmSize = pimpl->outData.size() * sizeof(FloatType);
     int err = ftruncate(fd, shmSize);
     if(err == -1)
     {
@@ -787,7 +807,7 @@ avtFlattenQuery::WriteSharedMemory() const
         return;
     }
 
-    memcpy(buff, outData.data(), shmSize);
+    memcpy(buff, pimpl->outData.data(), shmSize);
     munmap(buff, shmSize);
     close(fd);
 #endif

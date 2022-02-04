@@ -59,15 +59,10 @@ class QUERY_API avtFlattenQuery : public avtDatasetQuery
                                               MapNode &outInfo);
     void                      WriteSharedMemory() const;
 
-    using floatType = float;
     static const int NODE_DATA;
     static const int ZONE_DATA;
-    struct options;
-
-    MapNode outInfo;
-    stringVector variables;
-    std::vector<floatType> outData;
-    std::unique_ptr<options> opts;
+    struct impl;
+    std::unique_ptr<impl> pimpl;
 };
 
 
