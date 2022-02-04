@@ -186,6 +186,7 @@ avtVisItVTKRenderer::NumberOfComponents(const std::string activeVariable,
                                       "available with OSPRay. Ignoring it and "
                                       "any possible min/max setting.");
             m_nComponents = 1;
+            m_opacityVarName = "default";
         }
 #endif
     }
@@ -232,7 +233,8 @@ avtVisItVTKRenderer::NeedImage()
 
         // Opacity variable change or min/max change.
         (m_nComponents == 2 &&
-         (m_useOpacityVarMin != m_atts.GetUseOpacityVarMin() ||
+         (m_opacityVarName != m_atts.GetOpacityVariable() ||
+          m_useOpacityVarMin != m_atts.GetUseOpacityVarMin() ||
           (m_atts.GetUseOpacityVarMin() &&
            m_opacityVarMin != m_atts.GetOpacityVarMin()) ||
           m_useOpacityVarMax != m_atts.GetUseOpacityVarMax() ||
@@ -254,10 +256,14 @@ avtVisItVTKRenderer::NeedImage()
         m_colorVarMax    = m_atts.GetColorVarMax();
 
         // Store the opacity variable values so to check for a state change.
-        m_useOpacityVarMin = m_atts.GetUseOpacityVarMin();
-        m_opacityVarMin    = m_atts.GetOpacityVarMin();
-        m_useOpacityVarMax = m_atts.GetUseOpacityVarMax();
-        m_opacityVarMax    = m_atts.GetOpacityVarMax();
+        if( m_nComponents == 2 )
+        {
+            m_opacityVarName   = m_atts.GetOpacityVariable();
+            m_useOpacityVarMin = m_atts.GetUseOpacityVarMin();
+            m_opacityVarMin    = m_atts.GetOpacityVarMin();
+            m_useOpacityVarMax = m_atts.GetUseOpacityVarMax();
+            m_opacityVarMax    = m_atts.GetOpacityVarMax();
+        }
 
         m_needImage = true;
     }
@@ -332,20 +338,6 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
             EXCEPTION1(ImproperUseException,
                        "UpdateRenderingState is being called before the data ranges have been set. This error is a developer error");
         }
-
-        // Store the color variable values so to check for a state change.
-        // m_activeVarName  = activeVarName;
-        m_useColorVarMin = m_atts.GetUseColorVarMin();
-        m_colorVarMin    = m_atts.GetColorVarMin();
-        m_useColorVarMax = m_atts.GetUseColorVarMax();
-        m_colorVarMax    = m_atts.GetColorVarMax();
-
-        // Store the opacity variable values so to check for a state change.
-        // m_opacityVarName   = opacityVarName;
-        m_useOpacityVarMin = m_atts.GetUseOpacityVarMin();
-        m_opacityVarMin    = m_atts.GetOpacityVarMin();
-        m_useOpacityVarMax = m_atts.GetUseOpacityVarMax();
-        m_opacityVarMax    = m_atts.GetOpacityVarMax();
 
         LOCAL_DEBUG << "Converting from rectilinear grid to image data."
                     << std::endl;

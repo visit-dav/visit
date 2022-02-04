@@ -49,6 +49,7 @@ protected:
     bool                       m_useColorVarMax{false};
     float                      m_colorVarMax{-1.0};
 
+    std::string                m_opacityVarName{"default"};
     bool                       m_useOpacityVarMin{false};
     float                      m_opacityVarMin{-1.0};
     bool                       m_useOpacityVarMax{false};
