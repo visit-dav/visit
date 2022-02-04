@@ -539,7 +539,7 @@ avtVolumePlot::DataMustBeResampled(avtDataObject_p input)
     try
     {
         // The number of domains is from the database and does not
-        // relfect the actual number of doamins per rank at run time.
+        // reflect the actual number of domains per rank at run time.
         // That is the data could be resampled upstream and the plot
         // does not know.
         int nDomains = md->GetNDomains(datts.GetVariableName());
@@ -814,7 +814,7 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
         if( atts.GetResampleType() == VolumeAttributes::NoResampling &&
             mustResample )
         {
-            avtCallback::IssueWarning("'No resampling' was selecting but the plot 'thinks' resampling needs to occur. This need may or may not be correct. As such, the rendered results may or may not be correct.");
+            avtCallback::IssueWarning("'No resampling' was selected but the plot 'thinks' resampling needs to occur. This need may or may not be correct. As such, the rendered results may or may not be correct.");
         }
 
         // User can force resampling - for the serial renderer

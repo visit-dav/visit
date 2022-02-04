@@ -287,7 +287,9 @@ avtVisItVTKRenderer::NeedImage()
 //
 // ****************************************************************************
 
-#define NO_DATA_VALUE -1e+37
+#ifndef NO_DATA_VALUE
+  #define NO_DATA_VALUE -1e+37
+#endif
 
 void
 avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,

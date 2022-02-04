@@ -50,12 +50,12 @@ OpenDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
 DeleteAllPlots()
 
 AddPlot("Volume", "Primitive Var _number_0")
-vol_atts = VolumeAttributes()
-vol_atts.rendererType =  volAtts.Serial
-vol_atts.smoothData = 0
-vol_atts.useColorVarMin = 1
-vol_atts.colorVarMin = 22
-SetPlotOptions(vol_atts)
+volAtts = VolumeAttributes()
+volAtts.rendererType =  volAtts.Serial
+volAtts.smoothData = 0
+volAtts.useColorVarMin = 1
+volAtts.colorVarMin = 22
+SetPlotOptions(volAtts)
 DrawPlots()
 ResetView()
 v = GetView3D()
@@ -88,7 +88,7 @@ SetView3D(v)
 Test("volume_01")
 
 # test software volume render
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Composite
 SetPlotOptions(volAtts)
 Test("volume_02")
@@ -120,49 +120,49 @@ View3DAtts.shear = (0, 0, 1)
 View3DAtts.windowValid = 1
 SetView3D(View3DAtts)
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Serial
 volAtts.resampleType = volAtts.NoResampling
 volAtts.OSPRayEnabledFlag = 0
 SetPlotOptions(volAtts)
 Test("volume_10")
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Serial
 volAtts.resampleType = volAtts.OnlyIfRequired
 volAtts.OSPRayEnabledFlag = 0
 SetPlotOptions(volAtts)
 Test("volume_11")
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Serial
 volAtts.resampleType = volAtts.OnlyIfRequired
 volAtts.OSPRayEnabledFlag = 1
 SetPlotOptions(volAtts)
 Test("volume_12")
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Serial
 volAtts.resampleType = volAtts.SingleDomain
 volAtts.OSPRayEnabledFlag = 0
 SetPlotOptions(volAtts)
 Test("volume_13")
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Serial
 volAtts.resampleType = volAtts.SingleDomain
 volAtts.OSPRayEnabledFlag = 1
 SetPlotOptions(volAtts)
 Test("volume_14")
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Parallel
 volAtts.resampleType = volAtts.ParallelRedistribute
 volAtts.OSPRayEnabledFlag = 0
 SetPlotOptions(volAtts)
 Test("volume_15")
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Parallel
 volAtts.resampleType = volAtts.ParallelRedistribute
 volAtts.OSPRayEnabledFlag = 1
@@ -196,35 +196,35 @@ View3DAtts.shear = (0, 0, 1)
 View3DAtts.windowValid = 1
 SetView3D(View3DAtts)
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Serial
 volAtts.resampleType = volAtts.NoResampling
 volAtts.OSPRayEnabledFlag = 0
 SetPlotOptions(volAtts)
 Test("volume_20")
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Serial
 volAtts.resampleType = volAtts.ParallelRedistribute
 volAtts.OSPRayEnabledFlag = 0
 SetPlotOptions(volAtts)
 Test("volume_21")
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Serial
 volAtts.resampleType = volAtts.ParallelRedistribute
 volAtts.OSPRayEnabledFlag = 1
 SetPlotOptions(volAtts)
 Test("volume_22")
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Parallel
 volAtts.resampleType = volAtts.ParallelPerRank
 volAtts.OSPRayEnabledFlag = 0
 SetPlotOptions(volAtts)
 Test("volume_23")
 
-volAtts=VolumeAttributes()
+volAtts = VolumeAttributes()
 volAtts.rendererType = volAtts.Parallel
 volAtts.resampleType = volAtts.ParallelPerRank
 volAtts.OSPRayEnabledFlag = 1
