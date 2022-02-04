@@ -37,7 +37,7 @@
 #include <vtkPolyDataMapper.h>
 
 #ifndef NO_DATA_VALUE
-#define NO_DATA_VALUE -1e+37
+  #define NO_DATA_VALUE -1e+37
 #endif
 
 #ifndef MAX
@@ -153,9 +153,21 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
     // UpdateRenderingState.
     if( NeedImage() )
     {
-        // The data and if needed the opacity ranges must be known before
-        // calling UpdateRenderingState.
-        dataArr->GetRange( m_dataRange );
+
+        // Get the local data range so to ignore NO_DATA_VALUE values.
+        // dataArr->GetRange( m_dataRange );
+        int nTupples = dataArr->GetNumberOfTuples();
+
+        for( int ptId = 0; ptId<nTupples; ++ptId )
+        {
+            double dataTuple = dataArr->GetTuple1(ptId);
+            if (dataTuple < NO_DATA_VALUE)
+                continue;
+            if (m_dataRange[0] > dataTuple)
+                m_dataRange[0] = dataTuple;
+            if (m_dataRange[1] < dataTuple)
+                m_dataRange[1] = dataTuple;
+        }
 
         // If there are two components get the opacitiy range.
         if( m_nComponents == 2 )
@@ -172,7 +184,20 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
                 }
             }
 
-            opacityArr->GetRange( m_opacityRange );
+            // Get the local data range so to ignore NO_DATA_VALUE values.
+            // opacityArr->GetRange( m_opacityRange );
+            int nTupples = opacityArr->GetNumberOfTuples();
+
+            for( int ptId = 0; ptId<nTupples; ++ptId )
+            {
+                double opacityTuple = opacityArr->GetTuple1(ptId);
+                if (opacityTuple < NO_DATA_VALUE)
+                    continue;
+                if (m_opacityRange[0] > opacityTuple)
+                    m_opacityRange[0] = opacityTuple;
+                if (m_opacityRange[1] < opacityTuple)
+                    m_opacityRange[1] = opacityTuple;
+            }
         }
     }
 
