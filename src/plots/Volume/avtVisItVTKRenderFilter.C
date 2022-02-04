@@ -430,7 +430,6 @@ avtVisItVTKRenderFilter::Execute()
         // GetDataExtents is a parallel call so do them regardless if
         // there is data or not. Otherwise MPI crashes.
         GetDataExtents(m_dataRange, activeVarName.c_str());
-        UnifyMinMax(m_dataRange, 2);
 
         LOCAL_DEBUG << " data range : "
                     << m_dataRange[0] << "  " << m_dataRange[1] << "  "
@@ -439,7 +438,6 @@ avtVisItVTKRenderFilter::Execute()
         if( m_nComponents == 2 )
         {
             GetDataExtents(m_opacityRange, opacityVarName.c_str());
-            UnifyMinMax(m_opacityRange, 2);
 
             LOCAL_DEBUG << " opacity range : "
                         << m_opacityRange[0] << "  " << m_opacityRange[1] << "  "
