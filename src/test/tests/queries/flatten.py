@@ -8,7 +8,7 @@
 #              (which is avtFlattenQuery underneath)
 #
 #  Programmer: Christopher Laganella
-#  Date:       Thu Jan 27 11:51:09 EST 2022
+#  Date:       Fri Feb  4 17:07:24 EST 2022
 #
 #  Modifications:
 #
@@ -21,12 +21,28 @@ except:
 
 import os
 
+# NOTE: The following few functions are useful for running this test
+#  script through the regular visit CLI
+# def silo_data_path(name):
+#     return os.path.join("/home/cdl/Development/visit/visit/data/silo_hdf5_test_data",
+#         name)
+
+# def Exit():
+#     exit()
+
+# def TestSection(name):
+#     print(name)
+
+# def TestText(baseline_file, value):
+#     print("Loading up baseline file %s" % os.path.abspath(baseline_file))
+
+# def TestValueEQ(name, v0, v1):
+#     assert v0 == v1, str(name) + ": " + str(v0) + " != " + str(v1)
+
+# def TestValueIN(name, d, k):
+#     assert k in d, str(name) + ": " + str(v0) + " !in " + str(v1)
+
 n = 0
-
-def silo_data_path(name):
-    return os.path.join("/home/cdl/Development/visit/data/silo_hdf5_test_data",
-        name)
-
 basicTestCases = (
     (silo_data_path('rect2d.silo'), 'quadmesh2d'),
     (silo_data_path('rect3d.silo'), 'quadmesh3d'),
@@ -36,21 +52,6 @@ basicTestCases = (
     (silo_data_path('ucd3d.silo'), 'ucdmesh3d'),
 )
 
-def Exit():
-    exit()
-    return
-
-def TestSection(name):
-    print(name)
-
-def TestText(baseline_file, value):
-    print("Loading up baseline file %s" % os.path.abspath(baseline_file))
-
-def TestValueEQ(name, v0, v1):
-    assert v0 == v1, str(name) + ": " + str(v0) + " != " + str(v1)
-
-def TestValueIN(name, v0, v1):
-    assert v0 in v1, str(name) + ": " + str(v0) + " !in " + str(v1)
 
 def load_text(name):
     fname = name + '.txt'
@@ -116,7 +117,7 @@ def run_basic_test(db_name, mesh_name, test_type):
     have_node_table = 'nodeTable' in tables
     if expect_node_table:
         TestValueEQ("ShouldHaveNodeTable", have_node_table, True)
-        TestValueIN("ShouldHaveNodeColumnNames", 'nodeColumnNames', tables)
+        TestValueIN("ShouldHaveNodeColumnNames", tables, 'nodeColumnNames')
         column_names = tables['nodeColumnNames']
         # print(column_names)
         TestValueEQ('NodeCol0Name', column_names[0], 'nid')
@@ -131,7 +132,7 @@ def run_basic_test(db_name, mesh_name, test_type):
     have_zone_table = 'zoneTable' in tables
     if expect_zone_table:
         TestValueEQ("ShouldHaveZoneTable", have_zone_table, True)
-        TestValueIN("ShouldHaveZoneColumnNames", 'zoneColumnNames', tables)
+        TestValueIN("ShouldHaveZoneColumnNames", tables, 'zoneColumnNames')
         column_names = tables['zoneColumnNames']
         # print(column_names)
         TestValueEQ('ZoneCol0Name', column_names[0], 'zid')
@@ -164,12 +165,12 @@ def test_box(forceNoShm):
         zoneIds=True, nodeIJK=False, zoneIJK=False,
         forceNoSharedMemory=forceNoShm)
 
-    TestValueIN('ShouldHaveNodeColumnNames', 'nodeColumnNames', tables)
-    TestValueIN('ShouldHaveNodeTable', 'nodeTable', tables)
+    TestValueIN('ShouldHaveNodeColumnNames', tables, 'nodeColumnNames')
+    TestValueIN('ShouldHaveNodeTable', tables, 'nodeTable')
     nodeTable = np.asarray(tables['nodeTable'])
 
-    TestValueIN('ShouldHaveZoneColumnNames', 'zoneColumnNames', tables)
-    TestValueIN('ShouldHaveZoneTable', 'zoneTable', tables)
+    TestValueIN('ShouldHaveZoneColumnNames', tables, 'zoneColumnNames')
+    TestValueIN('ShouldHaveZoneTable', tables, 'zoneTable')
     zoneTable = np.asarray(tables['zoneTable'])
 
     ntName = 'multi_rect2d_box_nodes'
@@ -185,6 +186,7 @@ def test_box(forceNoShm):
     CloseDatabase(db_name)
 
 def test_tensor():
+    TestSection('NoiseWithTensor')
     db_name = silo_data_path('noise.silo')
     mesh_name = 'Mesh'
 
@@ -207,10 +209,8 @@ def test_tensor():
     tables = Flatten(vars, nodeIds=True, zoneIds=False,
                         nodeIJK=False, zoneIJK=False)
 
-    has_node_column_names = 'nodeColumnNames' in tables
-    has_node_table        = 'nodeTable' in tables
-    TestValueEQ('ShouldHaveNodeColumnNames', True, has_node_column_names)
-    TestValueEQ('ShouldHaveNodeTable', True, has_node_table)
+    TestValueIN('ShouldHaveNodeColumnNames', tables, 'nodeColumnNames')
+    TestValueIN('ShouldHaveNodeTable', tables, 'nodeTable')
     nodeTable = np.asarray(tables['nodeTable'])
 
     ntName = 'noise_nodes'
@@ -232,15 +232,10 @@ def test_ijk(do3d):
     vars = ('d',)
     tables = Flatten(vars, nodeIds=False, zoneIds=False, nodeIJK=True, zoneIJK=True)
 
-    has_node_columns = 'nodeColumnNames' in tables
-    has_node_table   = 'nodeTable' in tables
-    has_zone_columns = 'zoneColumnNames' in tables
-    has_zone_table   = 'zoneTable' in tables
-
-    TestValueEQ('ShouldHaveNodeColumnNames', True, has_node_columns)
-    TestValueEQ('ShouldHaveNodeTable', True, has_node_table)
-    TestValueEQ('ShouldHaveZoneColumnNames', True, has_zone_columns)
-    TestValueEQ('ShouldHaveZoneTable', True, has_zone_table)
+    TestValueIN('ShouldHaveNodeColumnNames', tables, 'nodeColumnNames')
+    TestValueIN('ShouldHaveNodeTable', tables, 'nodeTable')
+    TestValueIN('ShouldHaveZoneColumnNames', tables, 'zoneColumnNames')
+    TestValueIN('ShouldHaveZoneTable', tables, 'zoneTable')
 
     # Test rect2D and rect3D nodes
     nodeTable = np.asarray(tables['nodeTable'])
