@@ -330,7 +330,7 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         }
 
         if((m_dataRange[0] > m_dataRange[1]) ||
-           (m_nComponents && m_opacityRange[0] > m_opacityRange[1]))
+           (m_nComponents == 2 && m_opacityRange[0] > m_opacityRange[1]))
         {
             EXCEPTION1(ImproperUseException,
                        "UpdateRenderingState is being called before the data ranges have been set. This error is a developer error");
