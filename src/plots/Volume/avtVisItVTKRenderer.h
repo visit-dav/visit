@@ -45,13 +45,13 @@ protected:
     bool                       m_needImage{false};
 
     bool                       m_useColorVarMin{false};
-    float                      m_colorVarMin{-1.0};
+    float                      m_colorVarMin{+1.0};
     bool                       m_useColorVarMax{false};
     float                      m_colorVarMax{-1.0};
 
     std::string                m_opacityVarName{"default"};
     bool                       m_useOpacityVarMin{false};
-    float                      m_opacityVarMin{-1.0};
+    float                      m_opacityVarMin{+1.0};
     bool                       m_useOpacityVarMax{false};
     float                      m_opacityVarMax{-1.0};
 
@@ -64,8 +64,8 @@ protected:
     int                        m_cellData{0};
     bool                       m_useInterpolation{true};
 
-    double                     m_dataRange[2];
-    double                     m_opacityRange[2];
+    double                     m_dataRange[2] = {+1.0, -1.0};
+    double                     m_opacityRange[2] = {+1.0, -1.0};
 
     // For the rendering.
     vtkColorTransferFunction  *m_transFunc     {nullptr};

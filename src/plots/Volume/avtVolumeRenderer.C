@@ -153,10 +153,12 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
     // UpdateRenderingState.
     if( NeedImage() )
     {
-
         // Get the local data range so to ignore NO_DATA_VALUE values.
         // dataArr->GetRange( m_dataRange );
         int nTupples = dataArr->GetNumberOfTuples();
+
+        m_dataRange[0] = +FLT_MAX;
+        m_dataRange[1] = -FLT_MAX;
 
         for( int ptId = 0; ptId<nTupples; ++ptId )
         {
@@ -187,6 +189,9 @@ avtVolumeRenderer::Render(vtkDataSet *in_ds)
             // Get the local data range so to ignore NO_DATA_VALUE values.
             // opacityArr->GetRange( m_opacityRange );
             int nTupples = opacityArr->GetNumberOfTuples();
+
+            m_opacityRange[0] = +FLT_MAX;
+            m_opacityRange[1] = -FLT_MAX;
 
             for( int ptId = 0; ptId<nTupples; ++ptId )
             {
