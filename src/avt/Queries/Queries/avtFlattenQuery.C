@@ -54,6 +54,7 @@ struct avtFlattenQuery::impl
     int zoneIds = true;
     int nodeIJK = true;
     int zoneIJK = true;
+    int zoneCenters = false;
 };
 
 // ****************************************************************************
@@ -276,6 +277,15 @@ avtFlattenQuery::SetInputParams(const MapNode &params)
         }
     }
 
+    if(params.HasEntry("zoneCenters"))
+    {
+        const MapNode *doZoneCenters = params.GetEntry("zoneCenters");
+        if(doZoneCenters->Type() == MapNode::INT_TYPE)
+        {
+            pimpl->zoneCenters = doZoneCenters->AsInt();
+        }
+    }
+
     if(pimpl->variables.empty())
     {
         EXCEPTION1(QueryArgumentException, "vars");
@@ -315,6 +325,7 @@ avtFlattenQuery::GetDefaultInputParams(MapNode &params)
     params["zoneIds"] = 1;
     params["nodeIJK"] = 1;
     params["zoneIJK"] = 1;
+    params["zoneCenters"] = 0;
 }
 
 // ****************************************************************************
@@ -339,6 +350,17 @@ avtFlattenQuery::GetSecondaryVars(stringVector &outVars)
         ExpressionList *exprList = ParsingExprList::Instance()->GetList();
         const auto &dataAtts = GetTypedInput()->GetInfo().GetAttributes();
         const std::string meshName = dataAtts.GetMeshname();
+
+        if(pimpl->zoneCenters)
+        {
+            Expression e;
+            e.SetType(Expression::VectorMeshVar);
+            e.SetName("zoneCenters");
+            e.SetDefinition("zone_centers(" + meshName + ")");
+            exprList->AddExpressions(e);
+            pimpl->variables.push_back("zoneCenters");
+        }
+
         if(pimpl->nodeIds)
         {
             Expression e;
@@ -377,6 +399,27 @@ avtFlattenQuery::GetSecondaryVars(stringVector &outVars)
             e.SetDefinition("logical_zoneid(" + meshName + ")");
             exprList->AddExpressions(e);
             pimpl->variables.push_back("zoneIJK");
+        }
+
+        // Add domain id if ids or IJKs were requested
+        if(pimpl->nodeIds || pimpl->nodeIJK)
+        {
+            Expression e;
+            e.SetType(Expression::ScalarMeshVar);
+            e.SetName("nodeDomains");
+            e.SetDefinition("node_domains(" + meshName + ")");
+            exprList->AddExpressions(e);
+            pimpl->variables.push_back("nodeDomains");
+        }
+
+        if(pimpl->zoneIds || pimpl->zoneIJK)
+        {
+            Expression e;
+            e.SetType(Expression::ScalarMeshVar);
+            e.SetName("zoneDomains");
+            e.SetDefinition("zone_domains(" + meshName + ")");
+            exprList->AddExpressions(e);
+            pimpl->variables.push_back("zoneDomains");
         }
     }
 

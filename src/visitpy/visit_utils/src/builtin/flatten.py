@@ -24,7 +24,8 @@ import sys
 import socket
 
 def Flatten(vars, fillValue=0., nodeIds=True, zoneIds=True, nodeIJK=True,
-                zoneIJK=True, maxDataSize=1.024, forceNoSharedMemory=False):
+                zoneIJK=True, zoneCenters=False, maxDataSize=1.024,
+                forceNoSharedMemory=False):
     """Flatten(vars) -> dict
 
 Synopsis:
@@ -54,6 +55,10 @@ nodeIJK:
 zoneIJK:
     Whether or not the zoneIJK should be included in the output table.
     (bool, default = True)
+
+zoneCenters:
+    Whether or not to add the central coordinates of each zone.
+    (bool, default = False)
 
 maxDataSize:
     The maximum output data size when not using shared memory, expressed in GB.
@@ -112,6 +117,7 @@ Returns:
     flattenOpts['zoneIds'] = int(zoneIds)
     flattenOpts['nodeIJK'] = int(nodeIJK)
     flattenOpts['zoneIJK'] = int(zoneIJK)
+    flattenOpts['zoneCenters'] = int(zoneCenters)
 
     visit.Query('Flatten', flattenOpts)
     retval = visit.GetFlattenOutput()

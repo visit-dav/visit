@@ -68,20 +68,23 @@ def define_mesh_expressions(mesh_name):
 def test_basic_table(table):
     data = np.asarray(table)
     ncol = data.shape[1]
-    TestValueEQ("NumCols", ncol, 5)
+    TestValueEQ("NumCols", ncol, 6)
 
     badCol0 = -1
     badCol1 = -1
     badCol2 = -1
     badCol3 = -1
     badCol4 = -1
+    badCol5 = -1
     nrow = data.shape[0]
     for i in range(0, nrow):
-        badCol0 = -1 if np.isclose(data[i, 0],  i) else i
-        badCol1 = -1 if np.isclose(data[i, 1], -i) else i
-        badCol2 = -1 if np.isclose(data[i, 2],  i) else i
-        badCol3 = -1 if np.isclose(data[i, 3], -i) else i
-        badCol4 = -1 if np.isclose(data[i, 4],  i) else i
+        badCol0 = -1 if np.isclose(data[i, 0],  i) and badCol0 < 0 else i
+        badCol1 = -1 if np.isclose(data[i, 1], -i) and badCol1 < 0 else i
+        badCol2 = -1 if np.isclose(data[i, 2],  i) and badCol2 < 0 else i
+        badCol3 = -1 if np.isclose(data[i, 3], -i) and badCol3 < 0 else i
+        badCol4 = -1 if np.isclose(data[i, 4],  i) and badCol4 < 0 else i
+        # All the of the basic tests should be 1 domain
+        badCol5 = -1 if np.isclose(data[i, 5], 0) and badCol5 < 0 else i
 
     if badCol0 > -1:
         global n
@@ -125,6 +128,7 @@ def run_basic_test(db_name, mesh_name, test_type):
         TestValueEQ('NodeCol2Name', column_names[2], 'vec_nid/c1')
         TestValueEQ('NodeCol3Name', column_names[3], 'vec_nid/c2')
         TestValueEQ('NodeCol4Name', column_names[4], 'nodeIds')
+        TestValueEQ('NodeCol5Name', column_names[5], 'nodeDomains')
         test_basic_table(tables['nodeTable'])
     else:
         TestValueEQ("ShouldNotHaveNodeTable", have_node_table, False)
@@ -140,6 +144,7 @@ def run_basic_test(db_name, mesh_name, test_type):
         TestValueEQ('ZoneCol2Name', column_names[2], 'vec_zid/c1')
         TestValueEQ('ZoneCol3Name', column_names[3], 'vec_zid/c2')
         TestValueEQ('ZoneCol4Name', column_names[4], 'zoneIds')
+        TestValueEQ('ZoneCol5Name', column_names[5], 'zoneDomains')
         test_basic_table(tables['zoneTable'])
     else:
         TestValueEQ("ShouldNotHaveZoneTable", have_zone_table, False)
