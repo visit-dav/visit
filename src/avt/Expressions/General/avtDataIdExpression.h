@@ -27,6 +27,9 @@ class     vtkDataArray;
 //  Modifications:
 //    Brad Whitlock, Tue Sep 10 16:12:14 PDT 2013
 //    Added ability to create IJK indices.
+//
+//    Chris Laganella, Fri Feb  4 19:29:10 EST 2022
+//    Added ability to create domain ids.
 // ****************************************************************************
 
 class EXPRESSION_API avtDataIdExpression : public avtSingleInputExpressionFilter
@@ -49,11 +52,13 @@ class EXPRESSION_API avtDataIdExpression : public avtSingleInputExpressionFilter
     void                      CreateLocalNumbering(void)
                                         { doGlobalNumbering = false; };
     void                      CreateIJK(void) { doIJK = true; }
+    void                      CreateDomainIds(void) { doDomainIds = true; }
 
   protected:
     bool                      doZoneIds;
     bool                      doGlobalNumbering;
     bool                      doIJK;
+    bool                      doDomainIds;
     bool                      haveIssuedWarning;
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);

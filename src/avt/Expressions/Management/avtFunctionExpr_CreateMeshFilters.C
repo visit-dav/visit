@@ -206,6 +206,22 @@ avtFunctionExpr::CreateMeshFilters(const std::string &functionName) const
         avtZoneCentersExpression *e = new avtZoneCentersExpression();
         return e;
     }
+    else if (functionName == "node_domain")
+    {
+        avtDataIdExpression *e = new avtDataIdExpression();
+        e->CreateNodeIds();
+        e->CreateDomainIds();
+        e->CreateLocalNumbering();
+        return e;
+    }
+    else if (functionName == "zone_domain")
+    {
+        avtDataIdExpression *e = new avtDataIdExpression();
+        e->CreateZoneIds();
+        e->CreateDomainIds();
+        e->CreateLocalNumbering();
+        return e;
+    }
 
     return 0;
 }

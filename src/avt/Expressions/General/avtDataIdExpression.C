@@ -41,6 +41,7 @@ avtDataIdExpression::avtDataIdExpression()
     doZoneIds = true;
     doGlobalNumbering = false;
     doIJK = false;
+    doDomainIds = false;
     haveIssuedWarning = false;
 }
 
@@ -103,6 +104,9 @@ avtDataIdExpression::PreExecute(void)
 //
 //    Chris Laganella, Thu Feb  3 18:12:06 EST 2022
 //    Fixed an iteration bug with IJKs
+//
+//    Chris Laganella, Fri Feb  4 19:29:10 EST 2022
+//    Added the ability to create domain ids.
 // ****************************************************************************
 
 vtkDataArray *
@@ -251,6 +255,30 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
                 else
                     ijk[0] = (int)arr->GetComponent(i, 0);
                 rv->SetTypedTuple(i, ijk);
+            }
+        }
+    }
+    else if(doDomainIds)
+    {
+        rv->SetNumberOfComponents(1);
+        rv->SetNumberOfTuples(nvals);
+        if(arr->GetNumberOfComponents() == 2)
+        {
+            // Data is <dom, id>
+            for(vtkIdType i = 0; i < nvals; i++)
+            {
+                rv->SetValue(i, (int)arr->GetComponent(i, 0));
+            }
+        }
+        else
+        {
+            // No original domain id, set to 0
+            debug2 << "DomainIds requested from avtDataIdExpression "
+                << "but the data does not contain domain ids. Assuming 0."
+                << std::endl;
+            for(vtkIdType i = 0; i < nvals; i++)
+            {
+                rv->SetValue(i, 0);
             }
         }
     }
