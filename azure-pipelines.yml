@@ -120,14 +120,10 @@ stages:
            # find vtk, ospray and tbb
            export VTK_LIB_DIR=`ls -d ${TPLS_PATH}/vtk/*/ci/lib/`
            export OSPRAY_LIB_DIR=`ls -d ${TPLS_PATH}/ospray/*/ci/lib/`
-           export VTKM_LIB_DIR=`ls -d ${TPLS_PATH}/vtkm/*/ci/lib/`
-           echo ${VTKM_LIB_DIR}
-           echo ${VTK_LIB_DIR}
-           echo ${OSPRAY_LIB_DIR}
            # note: tbb has extra paths under lib
            export TBB_LIB_DIR=`ls -d ${TPLS_PATH}/tbb/*/ci/lib/intel64/gcc4.7/`
            # add to ld_lib path (rpaths are missing?)
-           export LD_LIBRARY_PATH=${VTKM_LIB_DIR}:${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${TBB_LIB_DIR}
+           export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${TBB_LIB_DIR}
            # run test suite on silo + blueprint tests
            export TESTS=../../src/test/tests/databases/silo.py
            export TESTS="${TESTS} ../../src/test/tests/databases/blueprint.py"
@@ -136,7 +132,6 @@ stages:
            export TESTS="${TESTS} ../../src/test/tests/unit/assert_simple.py"
            export TESTS="${TESTS} ../../src/test/tests/unit/default_methods.py"
            export TESTS="${TESTS} ../../src/test/tests/unit/convert2to3.py"
-           env
            ./run_visit_test_suite.sh  -v ${TESTS}
         displayName: 'Run Tests'
 
