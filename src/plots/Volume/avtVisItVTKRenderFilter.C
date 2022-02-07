@@ -48,7 +48,7 @@
 
 #include <vector>
 
-//#define DUMP_INTERMEDIATE_IMAGES
+// #define DUMP_INTERMEDIATE_IMAGES
 
 #ifdef DUMP_INTERMEDIATE_IMAGES
     #include <vtkWindowToImageFilter.h>
@@ -520,10 +520,11 @@ avtVisItVTKRenderFilter::Execute()
           vtkPNGWriter* writer = vtkPNGWriter::New();
 
           std::stringstream name;
+	  name << "vp_renderWindow";
+
           if( PAR_Size() > 1 )
-              name << "vp_renderWindow_" << PAR_Rank() << ".png";
-          else
-              name << "vp_renderWindow.png";
+              name << "_rank_" << PAR_Rank();
+	  name << ".png";
 
           im->SetInput(renderWin);
           im->Update();

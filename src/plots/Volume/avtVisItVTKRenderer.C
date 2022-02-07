@@ -42,7 +42,7 @@
 #include <string>
 #include <vector>
 
-//#define DUMP_IMAGE_DATA
+// #define DUMP_IMAGE_DATA
 
 #ifdef DUMP_IMAGE_DATA
     #include <vtkXMLImageDataWriter.h>
@@ -583,14 +583,19 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 #ifdef DUMP_IMAGE_DATA
         // For debugging the data images.
         {
+	    std::stringstream name;
+	    name << "vp_data_image_" << m_nComponents << "_comps";
+
+#ifdef PARALLEL      
+	    if( PAR_Size() > 1 )
+              name << "_rank_" << PAR_Rank();
+#endif	      
+
+            name << ".vti";
+
             vtkXMLImageDataWriter* writer = vtkXMLImageDataWriter::New();
-
-            writer->SetInputData(m_imageToRender);
-            if( m_nComponents == 2 )
-                writer->SetFileName("Image_Large_2_Comps.vti");
-            else
-                writer->SetFileName("Image_Large_1_Comps.vti");
-
+	    writer->SetInputData(m_imageToRender);
+	    writer->SetFileName(name.str().c_str());
             writer->Write();
             writer->Delete();
         }
