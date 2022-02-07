@@ -39,12 +39,14 @@
     #include <vtkOSPRayRendererNode.h>
 #endif
 
-#include <vtkWindowToImageFilter.h>
-#include <vtkPNGWriter.h>
-#include <vtkXMLImageDataWriter.h>
-
 #include <string>
 #include <vector>
+
+//#define DUMP_IMAGE_DATA
+
+#ifdef DUMP_IMAGE_DATA
+    #include <vtkXMLImageDataWriter.h>
+#endif
 
 // #ifdef PARALLEL
 //   #define LOCAL_DEBUG std::cerr << __LINE__ << " [VisItVTKRenderer] " \
@@ -578,19 +580,21 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
         //             << ptId
         //             << std::endl;
 
-        // For debugging
-        // {
-        //     vtkXMLImageDataWriter* writer = vtkXMLImageDataWriter::New();
+#ifdef DUMP_IMAGE_DATA
+        // For debugging the data images.
+        {
+            vtkXMLImageDataWriter* writer = vtkXMLImageDataWriter::New();
 
-        //     writer->SetInputData(m_imageToRender);
-        //     if( m_nComponents == 2 )
-        //       writer->SetFileName("Image_Large_2_Comps.vti");
-        //     else
-        //     writer->SetFileName("Image_Large_1_Comps.vti");
+            writer->SetInputData(m_imageToRender);
+            if( m_nComponents == 2 )
+                writer->SetFileName("Image_Large_2_Comps.vti");
+            else
+                writer->SetFileName("Image_Large_1_Comps.vti");
 
-        //     writer->Write();
-        //     writer->Delete();
-        // }
+            writer->Write();
+            writer->Delete();
+        }
+#endif
     }
 
     // Create a new volume mapper if needed.

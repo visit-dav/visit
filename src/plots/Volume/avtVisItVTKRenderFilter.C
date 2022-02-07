@@ -46,11 +46,14 @@
 #include <vtkTransform.h>
 #include <vtkTransformFilter.h>
 
-#include <vtkWindowToImageFilter.h>
-#include <vtkPNGWriter.h>
-#include <vtkXMLImageDataWriter.h>
-
 #include <vector>
+
+//#define DUMP_INTERMEDIATE_IMAGES
+
+#ifdef DUMP_INTERMEDIATE_IMAGES
+    #include <vtkWindowToImageFilter.h>
+    #include <vtkPNGWriter.h>
+#endif
 
 // #ifdef PARALLEL
 //   #define LOCAL_DEBUG std::cerr << __LINE__ << " [VisItVTKRenderFilter] " \
@@ -359,16 +362,18 @@ avtVisItVTKRenderFilter::CreateFinalImage(const void *colorBuffer,
                           height,
                           nColorChannels);
 
-    // For debugging
-    // if(PAR_Rank() == 0)
-    // {
-    //   vtkPNGWriter* writer = vtkPNGWriter::New();
+#ifdef DUMP_INTERMEDIATE_IMAGES
+    // For debugging the final from the compositing.
+    if(PAR_Rank() == 0)
+    {
+      vtkPNGWriter* writer = vtkPNGWriter::New();
 
-    //   writer->SetInputData(finalImageData);
-    //   writer->SetFileName("finialImage.png");
-    //   writer->Write();
-    //   writer->Delete();
-    // }
+      writer->SetInputData(finalImageData);
+      writer->SetFileName("vp_finialImage.png");
+      writer->Write();
+      writer->Delete();
+    }
+#endif
 
     finalImageData->Delete();
 
@@ -507,6 +512,28 @@ avtVisItVTKRenderFilter::Execute()
         // Finally render the image.
         renderWin->Render();
 
+#ifdef DUMP_INTERMEDIATE_IMAGES
+        // For debugging the inidivually rendered images before the
+        // compositing.
+        {
+          vtkWindowToImageFilter* im = vtkWindowToImageFilter::New();
+          vtkPNGWriter* writer = vtkPNGWriter::New();
+
+          std::stringstream name;
+          if( PAR_Size() > 1 )
+              name << "vp_renderWindow_" << PAR_Rank() << ".png";
+          else
+              name << "vp_renderWindow.png";
+
+          im->SetInput(renderWin);
+          im->Update();
+          writer->SetInputConnection(im->GetOutputPort());
+          writer->SetFileName(name.str().c_str());
+          writer->Write();
+          writer->Delete();
+          im->Delete();
+        }
+#endif
         // Get the resulting image - must have alpha values for ICET.
         renderedFrameBuffer =
             renderWin->GetRGBACharPixelData( 0, 0, width-1, height-1, 1 );
@@ -543,25 +570,6 @@ avtVisItVTKRenderFilter::Execute()
                             << cc << "/" << aa << " are bad." << std::endl;
             }
         }
-
-        // {
-        //   vtkWindowToImageFilter* im = vtkWindowToImageFilter::New();
-        //   vtkPNGWriter* writer = vtkPNGWriter::New();
-
-        //   std::stringstream name;
-        //   if( PAR_Size() > 1 )
-        //       name << "renderWindow_" << PAR_Rank() << ".png";
-        //   else
-        //       name << "renderWindow.png";
-
-        //   im->SetInput(renderWin);
-        //   im->Update();
-        //   writer->SetInputConnection(im->GetOutputPort());
-        //   writer->SetFileName(name.str().c_str());
-        //   writer->Write();
-        //   writer->Delete();
-        //   im->Delete();
-        // }
 
         // Get the z centroid value in image space of the grid. It is used
         // for the ordering of the compositing in ICET.
