@@ -26,51 +26,16 @@ import socket
 def Flatten(vars, fillValue=0., nodeIds=True, zoneIds=True, nodeIJK=True,
                 zoneIJK=True, zoneCenters=False, maxDataSize=1.024,
                 forceNoSharedMemory=False):
-    """Flatten(vars) -> dict
+    """Flatten
+
 
 Synopsis:
-    Query the active plot for the data at each node/zone for the given
-    variables. Data is returned as numpy compatible 2D arrays.
 
-Arguments:
+Flatten(vars) -> dictionary
 
-vars:
-    The names of the desired variables (tuple of strings).
+Flatten(vars, fillValue, nodeIds, zoneIds, nodeIJK, zoneIJK, zoneCenters,
+            maxDataSize, forceNoSharedMemory) -> dictionary
 
-fillValue:
-    The default value for a column if no data is present (float, default = 0.)
-
-nodeIds:
-    Whether or not the nodeIds should be included in the output table.
-    (bool, default = True)
-
-zoneIds:
-    Whether or not the zoneIds should be included in the output table.
-    (bool, default = True)
-
-nodeIJK:
-    Whether or not the nodeIJK should be included in the output table.
-    (bool, default = True)
-
-zoneIJK:
-    Whether or not the zoneIJK should be included in the output table.
-    (bool, default = True)
-
-zoneCenters:
-    Whether or not to add the central coordinates of each zone.
-    (bool, default = False)
-
-maxDataSize:
-    The maximum output data size when not using shared memory, expressed in GB.
-    This parameters exists because the default method of returning query
-    results does not scale well up to large sizes.
-    (float, default=1.024)
-
-forceNoSharedMemory:
-    An override that makes sure the function will NOT use shared memory
-    to transport the output data to the VisIt CLI, even if the
-    environment seems to support it.
-    (bool, default = False)
 
 Returns:
 
@@ -81,7 +46,56 @@ Returns:
     entries. If the query results in no output data, then an empty dictionary
     is returned. The '*Table' entries are compatible with numpy via the
     'numpy.asarray()' function.
-    """
+vars
+    The names of the desired variables (tuple of strings).
+fillValue
+    The default value for a column if no data is present (float, default = 0.)
+nodeIds
+    Whether or not the nodeIds should be included in the output table.
+    (bool, default = True)
+zoneIds
+    Whether or not the zoneIds should be included in the output table.
+    (bool, default = True)
+nodeIJK
+    Whether or not the nodeIJK should be included in the output table.
+    (bool, default = True)
+zoneIJK
+    Whether or not the zoneIJK should be included in the output table.
+    (bool, default = True)
+zoneCenters
+    Whether or not to add the central coordinates of each zone.
+    (bool, default = False)
+maxDataSize
+    The maximum output data size when not using shared memory, expressed in GB.
+    This parameters exists because the default method of returning query
+    results does not scale well up to large sizes.
+    (float, default=1.024)
+forceNoSharedMemory
+    An override that makes sure the function will NOT use shared memory
+    to transport the output data to the VisIt CLI, even if the
+    environment seems to support it.
+    (bool, default = False)
+
+
+Description:
+
+Query the active plot for the data at each node/zone for the given
+variables. Data is returned as numpy compatible 2D arrays using
+numpy.asarray().
+
+
+Example:
+
+#% visit -cli
+db = "/usr/gapps/visit/data/rect2d.silo"
+OpenDatabase(db)
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+data = Flatten(("p", "d"))
+if "nodeTable" in data:
+  print(numpy.asarray(data["nodeTable"]))
+if zoneTable in data:
+  print(numpy.asarray(data["zoneTable"]))"""
     flattenOpts = dict()
     flattenOpts['vars'] = vars
 

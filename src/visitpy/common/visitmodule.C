@@ -17974,7 +17974,7 @@ AddProxyMethods()
                                                      visit_GetQueryOutputXML_doc);
     AddMethod("GetQueryOutputObject", visit_GetQueryOutputObject,
                                                      visit_GetQueryOutputObject_doc);
-    AddMethod("GetFlattenOutput", visit_GetFlattenOutput, visit_GetQueryOutputObject_doc); // TODO: Provide doc for GetFlattenOutput!
+    AddMethod("GetFlattenOutput", visit_GetFlattenOutput, visit_GetFlattenOutput_doc);
     AddMethod("GetQueryParameters", visit_GetQueryParameters, visit_GetQueryParameters_doc);
     AddMethod("GetPlotInformation", visit_GetPlotInformation,
                                                      visit_GetPlotInformation_doc);
