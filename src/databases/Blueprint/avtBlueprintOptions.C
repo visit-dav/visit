@@ -87,6 +87,8 @@ GetBlueprintWriteOptions(void)
     rv->SetEnumStrings("Operation", ops);
 
     rv->SetInt("Partition target number of domains", 0);
+
+    rv->SetMultiLineString("JSONOptions", "");
 #endif
 
     return rv;
