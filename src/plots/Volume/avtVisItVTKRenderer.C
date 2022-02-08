@@ -197,6 +197,9 @@ avtVisItVTKRenderer::NumberOfComponents(const std::string activeVariable,
         m_nComponents = 1;
     }
 
+    LOCAL_DEBUG << "nComponents: " << m_nComponents << "  "
+                << std::endl;
+
     return m_nComponents;
 }
 
@@ -314,13 +317,12 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 
     if( in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID )
     {
-        EXCEPTION1(ImproperUseException,
-                   "Only a vtkRectilinearGrid can be rendered. . This exception can be fixed by resampling the data on to a common rectilinear mesh");
-    }
+        LOCAL_DEBUG << "Only a vtkRectilinearGrid can be rendered."
+                    << std::endl;
 
-    LOCAL_DEBUG << "in  "
-                << "nComponents: " << m_nComponents << "  "
-                << std::endl;
+        EXCEPTION1(ImproperUseException,
+                   "Only a vtkRectilinearGrid can be rendered. This exception can be fixed by resampling the data on to a rectilinear mesh");
+    }
 
     // Create a new image if needed.
     if( m_imageToRender == nullptr || m_needImage  )
@@ -583,19 +585,19 @@ avtVisItVTKRenderer::UpdateRenderingState(vtkDataSet * in_ds,
 #ifdef DUMP_IMAGE_DATA
         // For debugging the data images.
         {
-	    std::stringstream name;
-	    name << "vp_data_image_" << m_nComponents << "_comps";
+            std::stringstream name;
+            name << "vp_data_image_" << m_nComponents << "_comps";
 
-#ifdef PARALLEL      
-	    if( PAR_Size() > 1 )
+#ifdef PARALLEL
+            if( PAR_Size() > 1 )
               name << "_rank_" << PAR_Rank();
-#endif	      
+#endif
 
             name << ".vti";
 
             vtkXMLImageDataWriter* writer = vtkXMLImageDataWriter::New();
-	    writer->SetInputData(m_imageToRender);
-	    writer->SetFileName(name.str().c_str());
+            writer->SetInputData(m_imageToRender);
+            writer->SetFileName(name.str().c_str());
             writer->Write();
             writer->Delete();
         }

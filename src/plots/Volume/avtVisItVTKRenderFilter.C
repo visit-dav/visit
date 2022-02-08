@@ -420,6 +420,7 @@ avtVisItVTKRenderFilter::Execute()
     if( nsets > 1 )
     {
         LOCAL_DEBUG << "Too many datasets to render." << std::endl;
+
         EXCEPTION1(ImproperUseException, "Only one input dataset may be rendered. This exception can be fixed by resampling the data on to a common rectilinear mesh");
     }
 
