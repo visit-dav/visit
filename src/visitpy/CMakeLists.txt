@@ -49,6 +49,9 @@
 #
 #  Chris Laganella, Mon Jan 24 18:12:20 EST 2022
 #  Link the cli to "rt" on non windows platforms.
+#
+#  Chris Laganella, Mon Feb  7 20:36:34 EST 2022
+#  Link the visitmodule to "rt" on non windows platforms.
 #****************************************************************************
 
 #########################################################
@@ -407,7 +410,8 @@ ${PYTHON_LIBRARIES}
 ${CMAKE_THREAD_LIBS}
 )
 IF(NOT WIN32)
-    TARGET_LINK_LIBRARIES(cli dl rt)
+    find_library(LIBRT rt)
+    TARGET_LINK_LIBRARIES(cli dl ${LIBRT})
     IF(NOT APPLE)
         IF(NOT AIX)
             # Is this a Python companion libary? We need it for unresolved openpty/forkpty
@@ -446,6 +450,8 @@ ELSE(VISIT_STATIC)
     )
 
     IF(NOT WIN32)
+        find_library(LIBRT rt)
+        TARGET_LINK_LIBRARIES(visitmodule ${LIBRT})
         SET_TARGET_PROPERTIES(visitmodule PROPERTIES
                                           LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
     ENDIF(NOT WIN32)
