@@ -231,4 +231,67 @@ volAtts.OSPRayEnabledFlag = 1
 SetPlotOptions(volAtts)
 Test("volume_24")
 
+DeleteAllPlots()
+
+# Multiple domain checks with missing data, plots 30-34
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
+AddPlot("Volume", "p")
+DrawPlots()
+
+View3DAtts = View3DAttributes()
+View3DAtts.viewNormal = (0.409673, 0.375032, 0.831576)
+View3DAtts.focus = (0, 2.5, 10)
+View3DAtts.viewUp = (-0.208428, 0.925952, -0.314914)
+View3DAtts.viewAngle = 30
+View3DAtts.parallelScale = 11.4564
+View3DAtts.nearPlane = -22.9129
+View3DAtts.farPlane = 22.9129
+View3DAtts.imagePan = (0, 0)
+View3DAtts.imageZoom = 1
+View3DAtts.perspective = 0
+View3DAtts.eyeAngle = 2
+View3DAtts.centerOfRotationSet = 0
+View3DAtts.centerOfRotation = (0, 2.5, 10)
+View3DAtts.axis3DScaleFlag = 0
+View3DAtts.axis3DScales = (1, 1, 1)
+View3DAtts.shear = (0, 0, 1)
+View3DAtts.windowValid = 1
+SetView3D(View3DAtts)
+
+# This test should fail and produce nothing
+volAtts = VolumeAttributes()
+volAtts.rendererType = volAtts.Serial
+volAtts.resampleType = volAtts.NoResampling
+volAtts.OSPRayEnabledFlag = 0
+SetPlotOptions(volAtts)
+Test("volume_30")
+
+volAtts = VolumeAttributes()
+volAtts.rendererType = volAtts.Serial
+volAtts.resampleType = volAtts.ParallelRedistribute
+volAtts.OSPRayEnabledFlag = 0
+SetPlotOptions(volAtts)
+Test("volume_31")
+
+volAtts = VolumeAttributes()
+volAtts.rendererType = volAtts.Serial
+volAtts.resampleType = volAtts.ParallelRedistribute
+volAtts.OSPRayEnabledFlag = 1
+SetPlotOptions(volAtts)
+Test("volume_32")
+
+volAtts = VolumeAttributes()
+volAtts.rendererType = volAtts.Parallel
+volAtts.resampleType = volAtts.ParallelPerRank
+volAtts.OSPRayEnabledFlag = 0
+SetPlotOptions(volAtts)
+Test("volume_33")
+
+volAtts = VolumeAttributes()
+volAtts.rendererType = volAtts.Parallel
+volAtts.resampleType = volAtts.ParallelPerRank
+volAtts.OSPRayEnabledFlag = 1
+SetPlotOptions(volAtts)
+Test("volume_34")
+
 Exit()
