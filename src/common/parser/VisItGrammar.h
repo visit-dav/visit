@@ -2,8 +2,8 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#ifndef GRAMMAR_H
-#define GRAMMAR_H
+#ifndef VISIT_GRAMMAR_H
+#define VISIT_GRAMMAR_H
 #include <parser_exports.h>
 
 #include "Symbol.h"

@@ -290,6 +290,18 @@ PyViewerClientInformation_getattr(PyObject *self, char *name)
     if(strcmp(name, "supportedFormats") == 0)
         return ViewerClientInformation_GetSupportedFormats(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyViewerClientInformation_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyViewerClientInformation_methods[i].ml_name),
+                PyString_FromString(PyViewerClientInformation_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyViewerClientInformation_methods, self, name);
 }
 

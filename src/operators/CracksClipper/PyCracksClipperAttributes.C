@@ -561,6 +561,18 @@ PyCracksClipperAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "inMassVar") == 0)
         return CracksClipperAttributes_GetInMassVar(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyCracksClipperAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyCracksClipperAttributes_methods[i].ml_name),
+                PyString_FromString(PyCracksClipperAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyCracksClipperAttributes_methods, self, name);
 }
 

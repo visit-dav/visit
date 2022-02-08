@@ -1451,6 +1451,18 @@ PyIndexSelectAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "subsetName") == 0)
         return IndexSelectAttributes_GetSubsetName(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyIndexSelectAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyIndexSelectAttributes_methods[i].ml_name),
+                PyString_FromString(PyIndexSelectAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyIndexSelectAttributes_methods, self, name);
 }
 

@@ -412,6 +412,18 @@ PyCylinderAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "inverse") == 0)
         return CylinderAttributes_GetInverse(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyCylinderAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyCylinderAttributes_methods[i].ml_name),
+                PyString_FromString(PyCylinderAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyCylinderAttributes_methods, self, name);
 }
 
