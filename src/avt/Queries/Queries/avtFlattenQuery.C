@@ -339,6 +339,9 @@ avtFlattenQuery::GetDefaultInputParams(MapNode &params)
 //
 //  Modifications:
 //
+//  Chris Laganella, Mon Feb  7 20:27:01 EST 2022
+//  I updated the function to add expressions for nodeid/zoneid/IJK/centers
+//  when requested by the user.
 // ****************************************************************************
 void
 avtFlattenQuery::GetSecondaryVars(stringVector &outVars)
@@ -407,7 +410,7 @@ avtFlattenQuery::GetSecondaryVars(stringVector &outVars)
             Expression e;
             e.SetType(Expression::ScalarMeshVar);
             e.SetName("nodeDomains");
-            e.SetDefinition("node_domains(" + meshName + ")");
+            e.SetDefinition("node_domain(" + meshName + ")");
             exprList->AddExpressions(e);
             pimpl->variables.push_back("nodeDomains");
         }
@@ -417,7 +420,7 @@ avtFlattenQuery::GetSecondaryVars(stringVector &outVars)
             Expression e;
             e.SetType(Expression::ScalarMeshVar);
             e.SetName("zoneDomains");
-            e.SetDefinition("zone_domains(" + meshName + ")");
+            e.SetDefinition("zone_domain(" + meshName + ")");
             exprList->AddExpressions(e);
             pimpl->variables.push_back("zoneDomains");
         }
