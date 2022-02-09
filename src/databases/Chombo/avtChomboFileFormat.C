@@ -396,6 +396,26 @@ add_var(hid_t loc_id, const char *varname, void *opData)
   return 0;
 }
 
+//
+// Purpose: Open HDF5 file with close degree semi
+//
+// Programmer: Mark C. Miller, Wed Feb  9 13:35:50 PST 2022
+//
+static hid_t OpenHDF5File(char const *fname)
+{
+    hid_t retval;
+    hid_t fapl = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fclose_degree(fapl, H5F_CLOSE_SEMI);
+    retval = H5Fopen(fname, H5F_ACC_RDONLY, fapl);
+    H5Pclose(fapl);
+    return retval;
+}
+
+//
+//  Modifications
+//    Mark C. Miller, Wed Feb  9 13:37:12 PST 2022
+//    Use new method, OpenHDF5File, to open the file.
+//
 void
 avtChomboFileFormat::InitializeReader(void)
 {
@@ -416,7 +436,7 @@ avtChomboFileFormat::InitializeReader(void)
     //
     // Open file
     //
-    file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+    file_handle = OpenHDF5File(filenames[0]);
     if (file_handle < 0)
     {
         EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -1387,7 +1407,7 @@ avtChomboFileFormat::InitializeReader(void)
             FileFunctions::VisItStat_t fs;
             if (FileFunctions::VisItStat(mappingFilename.c_str(), &fs) == 0)
             {
-                hid_t mapping_file_handle = H5Fopen(mappingFilename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+                hid_t mapping_file_handle = OpenHDF5File(mappingFilename.c_str());
                 if (mapping_file_handle > 0)
                 {
                     hid_t slash = H5Gopen(mapping_file_handle, "/");
@@ -2398,6 +2418,11 @@ class LookUpOrderCmp
         const int *order2Var;
 };
 
+//
+//  Modifications
+//    Mark C. Miller, Wed Feb  9 13:38:49 PST 2022
+//    Use new method, OpenHDF5File, to open file.
+//
 vtkDataSet *
 avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 {
@@ -2648,7 +2673,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 
         if (file_handle < 0)
         {
-            file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+            file_handle = OpenHDF5File(filenames[0]);
             if (file_handle < 0)
             {
                 EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -2996,6 +3021,8 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 //    Initial bare-bones support for 4D Chombo files (fairly limited and 
 //    "hackish")
 //
+//    Mark C. Miller, Wed Feb  9 13:39:31 PST 2022
+//    Use new method, OpenHDF5File, to open the file.
 // ****************************************************************************
 
 vtkDataArray *
@@ -3112,7 +3139,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         snprintf(name, 1024, "level_%d", level);
         if (file_handle < 0)
         {
-            file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+            file_handle = OpenHDF5File(filenames[0]);
             if (file_handle < 0)
             {
                 EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -3226,7 +3253,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         {
             if (file_handle < 0)
             {
-                file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+                file_handle = OpenHDF5File(filenames[0]);
                 if (file_handle < 0)
                 {
                     EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
@@ -3309,6 +3336,8 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
 //    Initial bare-bones support for 4D Chombo files (fairly limited and 
 //    "hackish")
 //
+//    Mark C. Miller, Wed Feb  9 13:40:08 PST 2022
+//    Use new method, OpenHDF5File, to open file.
 // ****************************************************************************
 
 vtkDataArray *
@@ -3461,7 +3490,7 @@ avtChomboFileFormat::GetVectorVar(int patch, const char *varname)
             snprintf(name, 1024, "level_%d", level);
             if (file_handle < 0)
             {
-                file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
+                file_handle = OpenHDF5File(filenames[0]);
                 if (file_handle < 0)
                 {
                     EXCEPTION1(InvalidDBTypeException, "Cannot be a Chombo file, since "
