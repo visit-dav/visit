@@ -378,6 +378,12 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Initial bare-bones support for 4D Chombo files (fairly limited and 
 //    "hackish")
 //
+//    Mark C. Miller, Wed Feb  9 11:15:05 PST 2022
+//    Add contingency read logic for prob_lo, aspect_ratio, vec_dx and
+//    vec_ref_ratio to read these as simple arrays instead of structy types.
+//    The HDF5 library will fail the reads if you don't give it a compatible
+//    memory type to read into and the new logic allows for either case.
+//
 // ****************************************************************************
 
 extern "C"  herr_t
