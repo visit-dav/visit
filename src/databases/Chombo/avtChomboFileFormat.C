@@ -585,7 +585,15 @@ avtChomboFileFormat::InitializeReader(void)
             doublevect probLoBuff;
             if (H5Aread(probLo_id, (dimension == 2 ? doublevect2d_id : doublevect3d_id), &probLoBuff) < 0)
             {
-                EXCEPTION1(InvalidDBTypeException, "Cannot read \"prob_lo\".");
+                double tmp[4];
+                if (H5Aread(probLo_id, H5T_NATIVE_DOUBLE, &tmp[0]) < 0) // try reading as simple array
+                { 
+                    EXCEPTION1(InvalidDBTypeException, "Cannot read \"prob_lo\".");
+                }
+                probLo[0] = tmp[0];
+                probLo[1] = tmp[1];
+                if (dimension > 2)
+                    probLo[2] = tmp[2];
             }
             else
             {
@@ -621,7 +629,15 @@ avtChomboFileFormat::InitializeReader(void)
             doublevect aspectRatioBuff;
             if (H5Aread(aspectRatio_id, (dimension == 2 ? doublevect2d_id : doublevect3d_id), &aspectRatioBuff) < 0)
             {
-                EXCEPTION1(InvalidDBTypeException, "Cannot read \"aspect_ratio\".");
+                double tmp[4];
+                if (H5Aread(aspectRatio_id, H5T_NATIVE_DOUBLE, &tmp[0]) < 0) // try reading as simple array
+                {
+                    EXCEPTION1(InvalidDBTypeException, "Cannot read \"aspect_ratio\".");
+                }
+                aspectRatio[0] = tmp[0];
+                aspectRatio[1] = tmp[1];
+                if (dimension > 2)
+                    aspectRatio[2] = tmp[2];
             }
             else
             {
