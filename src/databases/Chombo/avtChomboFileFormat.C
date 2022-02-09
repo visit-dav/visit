@@ -383,6 +383,8 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    vec_ref_ratio to read these as simple arrays instead of structy types.
 //    The HDF5 library will fail the reads if you don't give it a compatible
 //    memory type to read into and the new logic allows for either case.
+//    Also handle possibility that dx and ref_ratio are stored as arrays
+//    instead of scalars.
 //
 // ****************************************************************************
 
@@ -904,10 +906,15 @@ avtChomboFileFormat::InitializeReader(void)
                 EXCEPTION1(InvalidDBTypeException,
                            "Does not contain \"vec_dx\" or \"dx\".");
 
-            double dx_tmp;
-            H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dx_tmp);
+            // Figure out how many values in this attribute
+            hid_t dx_sid = H5Aget_space(dx_id);
+            int nvals = (int) H5Sget_simple_extent_npoints(dx_sid);
+            H5Sclose(dx_sid);
+
+            double dx_tmp[nvals];
+            H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dx_tmp[0]);
             for (int d = 0; d<dimension; ++d)
-                dx[i].push_back(dx_tmp);
+                dx[i].push_back(dx_tmp[d<nvals?d:0]);
         }
         H5Aclose(dx_id);
 
@@ -961,10 +968,15 @@ avtChomboFileFormat::InitializeReader(void)
                     EXCEPTION1(InvalidDBTypeException,
                             "Does not contain \"vec_ref_ratio\" or \"ref_ratio\".");
 
-                int rr_tmp;
-                H5Aread(rr_id, H5T_NATIVE_INT, &rr_tmp);
+                // Figure out how many values in this attribute
+                hid_t rr_sid = H5Aget_space(rr_id);
+                int nvals = (int) H5Sget_simple_extent_npoints(rr_sid);
+                H5Sclose(rr_sid);
+
+                int rr_tmp[nvals];
+                H5Aread(rr_id, H5T_NATIVE_INT, &rr_tmp[0]);
                 for (int d = 0; d < dimension; ++d)
-                    refinement_ratio[i].push_back(rr_tmp);
+                    refinement_ratio[i].push_back(rr_tmp[d<nvals?d:0]);
             }
             H5Aclose(rr_id);
         }
