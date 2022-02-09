@@ -840,17 +840,33 @@ avtChomboFileFormat::InitializeReader(void)
         hid_t dx_id = H5Aopen_name(level, "vec_dx");
         if (dx_id >= 0)
         {
+            double dtmp[4];
             if (dimension == 2)
             {
                 doublevect2d dx_tmp;
-                H5Aread(dx_id, doublevect2d_id, &dx_tmp);
+                if (H5Aread(dx_id, doublevect2d_id, &dx_tmp) < 0)
+                {
+                    if (H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dtmp[0]) >= 0) // try as simple array
+                    {
+                        dx_tmp.x = dtmp[0];
+                        dx_tmp.y = dtmp[1];
+                    }
+                }
                 dx[i].push_back(dx_tmp.x);
                 dx[i].push_back(dx_tmp.y);
             }
             else if (dimension == 3)
             {
                 doublevect3d dx_tmp;
-                H5Aread(dx_id, doublevect3d_id, &dx_tmp);
+                if (H5Aread(dx_id, doublevect3d_id, &dx_tmp) < 0)
+                {
+                    if (H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dtmp[0]) >= 0) // try as simple array
+                    {
+                        dx_tmp.x = dtmp[0];
+                        dx_tmp.y = dtmp[1];
+                        dx_tmp.z = dtmp[2];
+                    }
+                }
                 dx[i].push_back(dx_tmp.x);
                 dx[i].push_back(dx_tmp.y);
                 dx[i].push_back(dx_tmp.z);
@@ -858,7 +874,16 @@ avtChomboFileFormat::InitializeReader(void)
             else
             {
                 doublevect4d dx_tmp;
-                H5Aread(dx_id, doublevect4d_id, &dx_tmp);
+                if (H5Aread(dx_id, doublevect4d_id, &dx_tmp) < 0)
+                {
+                    if (H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dtmp[0]) >= 0) // try as simple array
+                    {
+                        dx_tmp.x = dtmp[0];
+                        dx_tmp.y = dtmp[1];
+                        dx_tmp.z = dtmp[2];
+                        dx_tmp.u = dtmp[3];
+                    }
+                }
                 dx[i].push_back(dx_tmp.x);
                 dx[i].push_back(dx_tmp.y);
                 dx[i].push_back(dx_tmp.z);
@@ -885,17 +910,33 @@ avtChomboFileFormat::InitializeReader(void)
             hid_t rr_id = H5Aopen_name(level, "vec_ref_ratio");
             if (rr_id >= 0)
             {
+                int itmp[4];
                 if (dimension == 2)
                 {
                     intvect2d rr_tmp;
-                    H5Aread(rr_id, intvect2d_id, &rr_tmp);
+                    if (H5Aread(rr_id, intvect2d_id, &rr_tmp) < 0)
+                    {
+                        if (H5Aread(rr_id, H5T_NATIVE_INT, &itmp[0]) >= 0) // try as simple array
+                        {
+                            rr_tmp.i = itmp[0];
+                            rr_tmp.j = itmp[1];
+                        }
+                    }
                     refinement_ratio[i].push_back(rr_tmp.i);
                     refinement_ratio[i].push_back(rr_tmp.j);
                 }
                 else if (dimension == 3)
                 {
                     intvect3d rr_tmp;
-                    H5Aread(rr_id, intvect3d_id, &rr_tmp);
+                    if (H5Aread(rr_id, intvect3d_id, &rr_tmp) < 0)
+                    {
+                        if (H5Aread(rr_id, H5T_NATIVE_INT, &itmp[0]) >= 0) // try as simple array
+                        {
+                            rr_tmp.i = itmp[0];
+                            rr_tmp.j = itmp[1];
+                            rr_tmp.k = itmp[2];
+                        }
+                    }
                     refinement_ratio[i].push_back(rr_tmp.i);
                     refinement_ratio[i].push_back(rr_tmp.j);
                     refinement_ratio[i].push_back(rr_tmp.k);
