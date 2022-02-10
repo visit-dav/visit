@@ -177,6 +177,42 @@ notes from the patch release can be incorporated into the minor release notes fi
 When finishing a minor release, create the files for the next minor release *and* the
 next patch release.
 
+Manual Smoke Check Testing Check List
+-------------------------------------
+
+The following is a list of manual tests to perform once a release has been packaged.
+
+GUI Checks
+~~~~~~~~~~
+
+1. Plot Pseudocolor and Mesh plots for nodal data from curv2D.silo	
+1. Plot Pseudocolor and Mesh plots for zonal data from multi_ucd3d.silo	
+1. Test Navigation mode (rotate, pan, zoom)	
+1. Test rubberband zoom	
+1. Execute a Node and Zone Pick	
+1. Execute a Pick Query	
+1. Execute a Lineout	
+1. Check for Release Notes and Help	
+1. Check VisIt manual was populated in Help	
+1. Test "Make Movie" with dba00.pdb
+
+CLI Checks
+~~~~~~~~~~
+1. Start VisIt with CLI and check that `import numpy` works
+1. Test `import visitmodule`
+
+Additional macOS Checks
+~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Check install names for ``@rpath``
+1. Test Parallel Launch by plotting procid expr on multi_ucd3d.silo	
+1. Make sure to test both the DMG / App Bundle package and the ``tar.gz`` package.	
+1. Under Options->Appearance, make sure the GUI style has the macintosh option.	
+1. Verify OSpray is installed (look at the 'Advanced' tab under Options->Rendering...).	
+1. Verify that the xmledit tool works from the bundle (/Application/VisIt.app/Contents/Resources/bin/xmledit).	
+1. Verify that the DMG has been signed with a Developer ID and works properly.
+1. Try descending into ``Downloads`` and ``Documents`` from an instance launched from the Terminal.
+
 Preparing for a Major Release
 -----------------------------
 
