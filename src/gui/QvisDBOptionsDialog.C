@@ -130,10 +130,13 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
             { // new scope
             txt = atts->GetMultiLineString(name).c_str();
             QTextEdit *textEdit = new QTextEdit(txt, this);
-            grid->addWidget(new QLabel(tr(name.c_str()), this), i, 0);
+            QLabel *label = new QLabel(tr(name.c_str()), this);
+            label->setAlignment(Qt::AlignTop);
+            grid->addWidget(label, i, 0);
             grid->addWidget(textEdit, i, 1);
             multiLineEdits.append(textEdit);
             }
+            break;
         }
     }
    
