@@ -170,7 +170,7 @@ function build_vtkh
     vopts="${vopts} -DVTKM_DIR=${VISITDIR}/vtkm/${VTKM_VERSION}/${VISITARCH}"
     vopts="${vopts} -DENABLE_MPI=OFF"
     vopts="${vopts} -DENABLE_OPENMP=OFF"
-    vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
+    vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     vopts="${vopts} -DCMAKE_BUILD_TYPE=${VISIT_BUILD_MODE}"
     # Disable CUDA support for now since it requires using the CUDA compiler
     # to build all of VisIt, which we don't want to do.
