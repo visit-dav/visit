@@ -64,7 +64,7 @@ avtBlueprintWriter : public virtual avtDatabaseWriter
     std::string     m_root_file;
 
     bpMeshOp        m_op;
-    int             m_target;
+    conduit::Node   m_options;
     conduit::Node   m_chunks;
 
     ExpressionList exprList;
