@@ -318,15 +318,21 @@ def steps_osx_dmg_sanity_checks(opts,build_type,ctx):
         actual_version = open(actual_version_file).readline().strip()
     test_base = "mount/VisIt.app/Contents/Resources/%s/%s" % (actual_version, 
                                                               opts["arch"])
-    test_cmd   = "hdiutil attach -mountpoint mount VisIt-%s.dmg\n"
-    test_dylib = "libvtkRenderingCore-6.*.dylib"
-
-    test_cmd += "spctl -a -t exec -vv mount/VisIt.app\n"
+    # stop at any error
+    test_cmd  = ""
+    test_cmd  += "hdiutil attach -mountpoint mount VisIt-%s.dmg\n"
+    test_dylib = "libvtkRenderingCore-*.*.dylib "
     test_cmd += "otool -L %s/lib/%s | grep @exe\n"
     test_cmd += "otool -L %s/lib/%s | grep build-mb\n"
     test_cmd += "otool -L %s/lib/%s | grep build-mb | wc -l\n"
     test_cmd += "otool -L %s/lib/%s | grep RPATH\n"
+    test_cmd += "set -e\n"
+    # check for code sign
     test_cmd += 'codesign --test-requirement="=notarized" --verify --verbose mount/VisIt.app/\n'
+    # check for any bad symlinks
+    test_cmd += 'find . -type l ! -exec test -e {} \; -print | wc -l\n'
+    # verify the app
+    test_cmd += "spctl -a -t exec -vv mount/VisIt.app\n"
     test_cmd += "hdiutil detach mount\n"
     test_cmd = test_cmd %  (actual_version,test_base,test_dylib,
                                            test_base,test_dylib,
@@ -369,7 +375,7 @@ def main(opts_json):
     ctx = Context()
     steps_visit(opts,ctx)
     res = ctx.fire("build")
-    # foward return code 
+    # forward return code 
     return res["trigger"]["results"][-1]["action"]["return_code"]
 
 
