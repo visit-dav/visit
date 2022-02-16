@@ -47,12 +47,12 @@ installing the third party libraries in a another location.
 
   ./build_visit3_0_1 --thirdparty-path /usr/gapps/visit/third_party
 
-Building with the HDF5 and Silo libraries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Building with the HDF5 and Silo_ libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some of the more common I/O libraries that will result in building a larger
-number of file readers are HDF5 and Silo. The following example specifies
-building HDF5 and Silo.
+number of file readers are HDF5 and Silo_. The following example specifies
+building HDF5 and Silo_.
 
 .. code:: bash
 
