@@ -55,7 +55,7 @@ not only a powerful visualization tool but a powerful database conversion tool.
 
 You can try to use any of the supported export formats to export your data but
 some of the file formats may not be able to accept certain types of data. The
-Silo file format can safely export any type of data that you may want to export.
+Silo_ file format can safely export any type of data that you may want to export.
 If you want to export data to other applications and the data must be stored in
 an ASCII file that contains columns of data, you might want to choose the Xmdv
 file format. If you want to choose a specific database plugin to export your
@@ -74,7 +74,7 @@ Export Options
 Some export formats support various options. Those options will be presented
 in a dialog box when the **Export** button is pressed in the
 **Export Database Window**. For example, shown below are some options for
-exporting to the Silo database.
+exporting to the Silo_ database.
 
 .. _export_options_example:
 
@@ -82,11 +82,11 @@ exporting to the Silo database.
    
    Export options example (for Silo)
 
-If VisIt has been compiled with HDF5 support, Silo's export options will include
+If VisIt has been compiled with HDF5 support, Silo_'s export options will include
 the ability to select either the ``PDB`` or ``HDF5`` driver. The ``Checksums``
-check-box indicates where the Silo library should compute checksums on the exported
+check-box indicates where the Silo_ library should compute checksums on the exported
 data. In addition, the **DBSetCompression()** option text box is for specifying a
-compression string to be used in Silo's ``DBSetCompression()`` method before
+compression string to be used in Silo_'s ``DBSetCompression()`` method before
 exporting data.
 
 When the meaning of an export option is not clear, try also pressing the **Help**
