@@ -166,7 +166,7 @@ VisIt :ref:`Run Commands (rc) <visitrc_file>` File
 
   A single plugin involves a set of related files for the mdserver, engine and
   those common all VisIt_ components. For example, on UNIX the files for the
-  Silo database plugin are ``libESiloDatabase_par.so``,
+  Silo_ database plugin are ``libESiloDatabase_par.so``,
   ``libESiloDatabase_ser.so``, ``libISiloDatabase.so``, and
   ``libMSiloDatabase.so``.
 * Purpose: Directories to hold custom plugin shared library files.

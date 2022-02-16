@@ -21,7 +21,7 @@ The spack package for VisIt_ currently only builds a subset of the libraries tha
 It builds the core libraries needed by VisIt_ and the following I/O libraries:
 
 * HDF5
-* Silo
+* Silo_
 
 The rest of the I/O libraries needed by the VisIt_ readers are currently not built.
 The expectation is that the list of I/O libraries built will grow over time.
