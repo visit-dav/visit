@@ -68,7 +68,8 @@ numfig = True
 # Best place to put a substitution for 'VisIt'
 # Authors should use either VisIt_ or VisIt_'s
 rst_epilog = """
-.. _VisIt: https://visit-dav.github.io/visit-website/
+.. _VisIt: https://visit.llnl.gov
+.. _Silo: https://silo.llnl.gov
 """
 
 # Add any paths that contain templates here, relative to this directory.
