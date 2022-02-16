@@ -931,7 +931,7 @@ avtChomboFileFormat::InitializeReader(void)
             int nvals = (int) H5Sget_simple_extent_npoints(dx_sid);
             H5Sclose(dx_sid);
 
-            double dx_tmp[nvals];
+            std::vector<double> dx_tmp(nvals);
             H5Aread(dx_id, H5T_NATIVE_DOUBLE, &dx_tmp[0]);
             for (int d = 0; d<dimension; ++d)
                 dx[i].push_back(dx_tmp[d<nvals?d:0]);
@@ -993,7 +993,7 @@ avtChomboFileFormat::InitializeReader(void)
                 int nvals = (int) H5Sget_simple_extent_npoints(rr_sid);
                 H5Sclose(rr_sid);
 
-                int rr_tmp[nvals];
+                std::vector<int> rr_tmp(nvals);
                 H5Aread(rr_id, H5T_NATIVE_INT, &rr_tmp[0]);
                 for (int d = 0; d < dimension; ++d)
                     refinement_ratio[i].push_back(rr_tmp[d<nvals?d:0]);
