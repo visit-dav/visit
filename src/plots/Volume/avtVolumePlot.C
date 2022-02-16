@@ -284,7 +284,7 @@ avtVolumePlot::SetAtts(const AttributeGroup *a)
         {
             max = atts.GetColorVarMax();
         }
-        if (min >= max)
+        if (min > max)
         {
             EXCEPTION1(InvalidLimitsException, false);
         }
