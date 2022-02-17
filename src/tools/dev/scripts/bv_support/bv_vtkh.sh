@@ -1,6 +1,8 @@
 function bv_vtkh_initialize
 {
     export DO_VTKH="no"
+    export USE_SYSTEM_VTKH="no"
+    add_extra_commandline_args "vtkh" "alt-vtkh-dir" 1 "Use alternative directory for VTKh"
 }
 
 function bv_vtkh_enable
@@ -13,6 +15,14 @@ function bv_vtkh_disable
     DO_VTKH="no"
 }
 
+function bv_vtkh_alt_vtkh_dir
+{
+    bv_vtkh_enable
+    USE_SYSTEM_VTKH="yes"
+    VTKH_INSTALL_DIR="$1"
+    info "Using Alternate VTKH: $VTKH_INSTALL_DIR"
+}
+
 function bv_vtkh_depends_on
 {
     depends_on="vtkm"
@@ -22,16 +32,18 @@ function bv_vtkh_depends_on
 
 function bv_vtkh_initialize_vars
 {
-    VTKH_INSTALL_DIR="\${VISITHOME}/vtkh/$VTKH_VERSION/\${VISITARCH}"
+    if [[ "$USE_SYSTEM_VTKH" == "no" ]]; then
+        VTKH_INSTALL_DIR="\${VISITHOME}/vtkh/$VTKH_VERSION/\${VISITARCH}"
+    fi
 }
 
 function bv_vtkh_info
 {
-    export VTKH_VERSION=${VTKH_VERSION:-"v0.6.6"}
+    export VTKH_VERSION=${VTKH_VERSION:-"v0.8.0"}
     export VTKH_FILE=${VTKH_FILE:-"vtkh-${VTKH_VERSION}.tar.gz"}
     export VTKH_BUILD_DIR=${VTKH_BUILD_DIR:-"vtkh-${VTKH_VERSION}"}
-    export VTKH_MD5_CHECKSUM="ec9bead5d3bcc317149fb273f7c5a4af"
-    export VTKH_SHA256_CHECKSUM="5fe8bae5f55dbeb3047a37499cc41f3b548e4d86f0058993069f1df57f7915a1"
+    export VTKH_MD5_CHECKSUM="9e231ce66cf483116423540f64163a26"
+    export VTKH_SHA256_CHECKSUM="8366ebfe094c258555f343ba1f9bbad1d8e4804f844768b639f6ff13a6390f29"
 }
 
 function bv_vtkh_print
@@ -61,7 +73,7 @@ function bv_vtkh_host_profile
 
 function bv_vtkh_ensure
 {
-    if [[ "$DO_VTKH" == "yes" ]] ; then
+    if [[ "$DO_VTKH" == "yes" && "$USE_SYSTEM_VTKH" == "no" ]] ; then
         ensure_built_or_ready "vtk-h" $VTKH_VERSION $VTKH_BUILD_DIR $VTKH_FILE $VTKH_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
@@ -115,7 +127,7 @@ function build_vtkh
         warn "Unable to prepare VTKh build directory. Giving Up!"
         return 1
     fi
-    
+
     #
     # Apply patches
     #
@@ -139,7 +151,7 @@ function build_vtkh
     # Configure VTKH
     #
     info "Configuring VTKh . . ."
-    
+
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
 
     # Make a build directory for an out-of-source build.. Change the
@@ -158,6 +170,7 @@ function build_vtkh
     vopts="${vopts} -DVTKM_DIR=${VISITDIR}/vtkm/${VTKM_VERSION}/${VISITARCH}"
     vopts="${vopts} -DENABLE_MPI=OFF"
     vopts="${vopts} -DENABLE_OPENMP=OFF"
+    vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     vopts="${vopts} -DCMAKE_BUILD_TYPE=${VISIT_BUILD_MODE}"
     # Disable CUDA support for now since it requires using the CUDA compiler
     # to build all of VisIt, which we don't want to do.
@@ -209,13 +222,17 @@ function build_vtkh
 function bv_vtkh_is_enabled
 {
     if [[ $DO_VTKH == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }
 
 function bv_vtkh_is_installed
 {
+    if [[ "$USE_SYSTEM_VTKH" == "yes" ]]; then
+        return 1
+    fi
+
     check_if_installed "vtkh" $VTKH_VERSION
     if [[ $? == 0 ]] ; then
         return 1
@@ -226,7 +243,7 @@ function bv_vtkh_is_installed
 function bv_vtkh_build
 {
     cd "$START_DIR"
-    if [[ "$DO_VTKH" == "yes" ]] ; then
+    if [[ "$DO_VTKH" == "yes" && "$USE_SYSTEM_VTKH" == "no" ]] ; then
         check_if_installed "vtkh" $VTKH_VERSION
         if [[ $? == 0 ]] ; then
             info "Skipping VTKh build. VTKh is already installed."

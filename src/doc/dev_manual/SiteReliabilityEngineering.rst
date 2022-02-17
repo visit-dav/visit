@@ -160,7 +160,7 @@ preceding weekend/holiday. The **Primary**'s goal is to :ref:`resolve <sre_respo
 all inquiries by the end of their week.
 
 The **Primary** has the sole responsibility for responding to inquiries
-and opening and resolving :ref:`SRE issue tickets <sre_active_issues>`.
+and opening and resolving :ref:`SRE issue tickets <sre_active_discussions>`.
 When the **Primary** needs help to
 :ref:`resolve an SRE issue <sre_response_vs_resolution>`, s/he should
 first enlist the **Backup**. This is an :ref:`escalation <sre_escalation>`.

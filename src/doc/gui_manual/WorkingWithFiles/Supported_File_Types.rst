@@ -10,7 +10,7 @@ input file and imports it into VisIt_. If your data format is not listed in
 `File formats supported by VisIt 
 <http://visitusers.org/index.php?title=Detailed_list_of_file_formats_VisIt_supports>`_
 then you can first translate your data into a format that VisIt_ can read 
-(e.g. Silo, VTK, etc.) or you can create a new database reader plugin for 
+(e.g. Silo_, VTK, etc.) or you can create a new database reader plugin for 
 VisIt_. For more information on developing a database reader plugin, refer to 
 the `Getting Data Into VisIt  
 <https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisIt2.0.0.pdf>`_

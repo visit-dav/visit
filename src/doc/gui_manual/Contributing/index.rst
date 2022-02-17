@@ -467,25 +467,28 @@ Things To Consider Going Forward
       not appear in the user manual output
 
   * ``.. seealso::`` directive for references
-  * Substitutions for names of products and projects we refer to frequently
-    such as VTK_ or VisIt_ (as is used throughout this section) or for
-    frequently used text such as |viswin|::
-  
-      Substitutions for names of products and projects we refer to frequently
-      such as VTK_ or VisIt_ (as is used throughout this section) or for
-      frequently used text such as |viswin|.
+  * `named hyper link references <https://jwodder.github.io/kbits/posts/rst-hyperlinks/#named-hyperlink-references>`_ for names of products and projects we refer to frequently such as VTK_ or VisIt_.
+    In this document, we explicitly define the following named hyper link references::
 
-    with the following substitutions defined::
+      .. _VTK: https://www.vtk.org
+
+    In addition, we use the ``conf.py`` variable, ``rst_epilog`` to define::
 
       .. _VisIt: https://visit.llnl.gov
-      .. _VTK: https://www.vtk.org
+
+    So that this named hyperlink reference definition is available in all ``*.rst`` files.
+    Finally, be aware that reStructuredText supports a `wide variety of approaches for hyper-links. <https://jwodder.github.io/kbits/posts/rst-hyperlinks/>`_
+
+.. _VTK: https://www.vtk.org
+
+  * Substitutions for frequently used text such as |viswin|::
+  
+      Substitutions for frequently used text such as |viswin|.
+
+    with the following substitution defined::
+
       .. |viswin| replace:: **Viewer Window**
 
-    Note that the ``.. _VisIt: ...`` substitution is already defined for the whole
-    doctree in the ``rst_prolog`` variable in ``conf.py``.
-
-.. _VisIt: https://visit.llnl.gov
-.. _VTK: https://www.vtk.org
 .. |viswin| replace:: **Viewer Window**
 
 * Possible method for embedding python code to generate and capture images

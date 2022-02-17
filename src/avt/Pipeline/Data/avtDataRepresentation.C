@@ -12,6 +12,8 @@
 
 #ifdef HAVE_LIBVTKH
 #include <vtkh/DataSet.hpp>
+#include <vtkm/cont/UnknownArrayHandle.h>
+#include <vtkm/cont/ArrayHandleCompositeVector.h>
 #include <vtkh/utils/vtkm_array_utils.hpp>
 #endif
 
@@ -296,9 +298,9 @@ ConvertVTKToVTKm(vtkDataSet *data)
         // If we skipped any cells adjust the cell set array lengths.
         if (nCellsActual < nCells)
         {
-            connectivity.Shrink(connInd);
-            nIndices.Shrink(nCellsActual);
-            shapes.Shrink(nCellsActual);
+            connectivity.Allocate(connInd, vtkm::CopyFlag::On);
+            nIndices.Allocate(nCellsActual, vtkm::CopyFlag::On);
+            shapes.Allocate(nCellsActual, vtkm::CopyFlag::On);
         }
 
         vtkm::cont::CellSetExplicit<> cs;
@@ -392,7 +394,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
                 vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > fieldArray =
-                    vtkm::cont::make_ArrayHandle(vals, nVals);
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
@@ -407,7 +409,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
                 vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > fieldArray =
-                    vtkm::cont::make_ArrayHandle(vals, nVals);
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
@@ -492,7 +494,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
                 vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > fieldArray =
-                    vtkm::cont::make_ArrayHandle(vals, nVals);
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
@@ -507,7 +509,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 // Wrap the vector data as an array handle.
                 // This is good as long as the VTK object is around. Is it safe?
                 vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > fieldArray =
-                    vtkm::cont::make_ArrayHandle(vals, nVals);
+                    vtkm::cont::make_ArrayHandle(vals, nVals, vtkm::CopyFlag::On);
 
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(),
@@ -572,15 +574,16 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
         using CoordsVec64 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3>>;
 
         vtkm::cont::CoordinateSystem cs = ds.GetCoordinateSystem(0);
-        vtkm::cont::VariantArrayHandle coordsHandle(cs.GetData());
+        vtkm::cont::UnknownArrayHandle coordsHandle(cs.GetData());
 
         if (coordsHandle.IsType<Coords32>())
         {
-            Coords32 points = coordsHandle.Cast<Coords32>();
+            Coords32 points;
+            coordsHandle.AsArrayHandle(points);
 
-            auto xPoints = vtkm::get<0>(points.GetStorage().GetArrayTuple());
-            auto yPoints = vtkm::get<1>(points.GetStorage().GetArrayTuple());
-            auto zPoints = vtkm::get<2>(points.GetStorage().GetArrayTuple());
+            auto xPoints = vtkm::get<0>(points.GetArrayTuple());
+            auto yPoints = vtkm::get<1>(points.GetArrayTuple());
+            auto zPoints = vtkm::get<2>(points.GetArrayTuple());
 
             vtkm::Float32 *xPtr = (vtkm::Float32*)vtkh::GetVTKMPointer(xPoints);
             vtkm::Float32 *yPtr = (vtkm::Float32*)vtkh::GetVTKMPointer(yPoints);
@@ -597,7 +600,8 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
         }
         else if (coordsHandle.IsType<CoordsVec32>())
         {
-            CoordsVec32 points = coordsHandle.Cast<CoordsVec32>();
+            CoordsVec32 points;
+            coordsHandle.AsArrayHandle(points);
 
             vtkm::Float32 *pointsPtr = (vtkm::Float32*)vtkh::GetVTKMPointer(points);
 
@@ -613,11 +617,12 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
         }
         else if (coordsHandle.IsType<Coords64>())
         {
-            Coords64 points = coordsHandle.Cast<Coords64>();
+            Coords64 points;
+            coordsHandle.AsArrayHandle(points);
 
-            auto xPoints = vtkm::get<0>(points.GetStorage().GetArrayTuple());
-            auto yPoints = vtkm::get<1>(points.GetStorage().GetArrayTuple());
-            auto zPoints = vtkm::get<2>(points.GetStorage().GetArrayTuple());
+            auto xPoints = vtkm::get<0>(points.GetArrayTuple());
+            auto yPoints = vtkm::get<1>(points.GetArrayTuple());
+            auto zPoints = vtkm::get<2>(points.GetArrayTuple());
 
             vtkm::Float64 *xPtr = (vtkm::Float64*)vtkh::GetVTKMPointer(xPoints);
             vtkm::Float64 *yPtr = (vtkm::Float64*)vtkh::GetVTKMPointer(yPoints);
@@ -634,7 +639,8 @@ vtkPointsFromVTKM(vtkh::DataSet *data)
         }
         else if (coordsHandle.IsType<CoordsVec64>())
         {
-            CoordsVec64 points = coordsHandle.Cast<CoordsVec64>();
+            CoordsVec64 points;
+            coordsHandle.AsArrayHandle(points);
 
             vtkm::Float64 *pointsPtr = (vtkm::Float64*)vtkh::GetVTKMPointer(points);
 
@@ -722,17 +728,17 @@ StructuredFromVTKM(vtkh::DataSet *data)
             std::set<float> X,Y,Z;
             for(int i = 0; i < dims[0]; ++i)
             {
-                auto pt = pc.GetStorage().GetPortalConst().Get(i);
+                auto pt = pc.ArrayHandle::WritePortal().Get(i);
                 X.insert(pt[0]);
             }
             for(int j = 0; j < dims[1]; ++j)
             {
-                auto pt = pc.GetStorage().GetPortalConst().Get(j*dims[0]);
+                auto pt = pc.ArrayHandle::WritePortal().Get(j*dims[0]);
                 Y.insert(pt[1]);
             }
             for(int k = 0; k < dims[2]; ++k)
             {
-                auto pt = pc.GetStorage().GetPortalConst().Get(k*dims[0]*dims[1]);
+                auto pt = pc.ArrayHandle::WritePortal().Get(k*dims[0]*dims[1]);
                 Z.insert(pt[2]);
             }
 
@@ -1032,7 +1038,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
             if (field.IsType<ScalarUInt8>())
             {
                 ScalarUInt8 fieldArray;
-                field.CopyTo(fieldArray);
+                field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
 
@@ -1041,7 +1047,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                 outArray->SetNumberOfTuples(nValues);
 
                 memcpy(outArray->GetVoidPointer(0),
-                    fieldArray.GetStorage().GetArray(),
+                    fieldArray.WritePortal().GetArray(),
                     sizeof(unsigned char)*nValues);
                 attr->AddArray(outArray);
                 attr->SetActiveScalars(fieldName);
@@ -1051,7 +1057,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
             else if (field.IsType<Scalar32>())
             {
                 Scalar32 fieldArray;
-                field.CopyTo(fieldArray);
+                field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
 
@@ -1060,7 +1066,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                 outArray->SetNumberOfTuples(nValues);
 
                 memcpy(outArray->GetVoidPointer(0),
-                    fieldArray.GetStorage().GetArray(), sizeof(float)*nValues);
+                    fieldArray.WritePortal().GetArray(), sizeof(float)*nValues);
                 attr->AddArray(outArray);
                 attr->SetActiveScalars(fieldName);
                 attr->CopyFieldOn(fieldName);
@@ -1069,7 +1075,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
             else if (field.IsType<Scalar64>())
             {
                 Scalar64 fieldArray;
-                field.CopyTo(fieldArray);
+                field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
 
@@ -1078,7 +1084,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                 outArray->SetNumberOfTuples(nValues);
 
                 memcpy(outArray->GetVoidPointer(0),
-                    fieldArray.GetStorage().GetArray(), sizeof(double)*nValues);
+                    fieldArray.WritePortal().GetArray(), sizeof(double)*nValues);
                 attr->AddArray(outArray);
                 attr->SetActiveScalars(fieldName);
                 attr->CopyFieldOn(fieldName);
@@ -1087,7 +1093,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
             else if (field.IsType<Vector32>())
             {
                 Vector32 fieldArray;
-                field.CopyTo(fieldArray);
+                field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
 
@@ -1097,7 +1103,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                 outArray->SetNumberOfTuples(nValues);
 
                 memcpy(outArray->GetVoidPointer(0),
-                    fieldArray.GetStorage().GetArray(),
+                    fieldArray.WritePortal().GetArray(),
                     3*sizeof(float)*nValues);
                 attr->AddArray(outArray);
                 attr->SetActiveScalars(fieldName);
@@ -1107,7 +1113,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
             else if (field.IsType<Vector64>())
             {
                 Vector64 fieldArray;
-                field.CopyTo(fieldArray);
+                field.AsArrayHandle(fieldArray);
 
                 vtkm::Id nValues = fieldArray.GetNumberOfValues();
 
@@ -1117,7 +1123,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
                 outArray->SetNumberOfTuples(nValues);
 
                 memcpy(outArray->GetVoidPointer(0),
-                    fieldArray.GetStorage().GetArray(),
+                    fieldArray.WritePortal().GetArray(),
                     3*sizeof(double)*nValues);
                 attr->AddArray(outArray);
                 attr->SetActiveScalars(fieldName);
