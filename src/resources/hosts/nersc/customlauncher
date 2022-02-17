@@ -96,6 +96,9 @@ class JobSubmitter_salloc_NERSC(JobSubmitter_sbatch_NERSC):
 #   Cyrus Harrison, Fri Dec 11 09:34:38 PST 2020
 #   Python 3 port (avoid using old string methods)
 #
+#   Cyrus Harrison, Mon Jun  7 09:53:53 PDT 2021
+#   Python 3 universal_newlines for Popen
+#
 ###############################################################################
 
 class NERSCLauncher(MainLauncher):
@@ -107,7 +110,11 @@ class NERSCLauncher(MainLauncher):
 
     # Get the IP address for eth0.
     def GetIPAddress(self):
-        p = subprocess.Popen(["/usr/bin/ifconfig"], stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        p = subprocess.Popen(["/usr/bin/ifconfig"],
+                             universal_newlines=True,
+                             stdin=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             stdout=subprocess.PIPE)
         output = p.communicate()
         iplines = [x for x in output[0].split("\n") if x.find("inet ") != -1]
         start = iplines[0].find("inet ")

@@ -2,8 +2,8 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-#ifndef TOKEN_H
-#define TOKEN_H
+#ifndef VISIT_TOKEN_H
+#define VISIT_TOKEN_H
 #include <parser_exports.h>
 
 #include <string>

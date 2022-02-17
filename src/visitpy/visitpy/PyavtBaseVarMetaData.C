@@ -382,6 +382,18 @@ PyavtBaseVarMetaData_getattr(PyObject *self, char *name)
     if(strcmp(name, "hideFromGUI") == 0)
         return avtBaseVarMetaData_GetHideFromGUI(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyavtBaseVarMetaData_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyavtBaseVarMetaData_methods[i].ml_name),
+                PyString_FromString(PyavtBaseVarMetaData_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyavtBaseVarMetaData_methods, self, name);
 }
 

@@ -8,7 +8,7 @@ also very quickly visualize your data by opening a database and creating
 plots. You must first select databases to visualize. Sample data files are
 usually installed with VisIt_ in a data directory in the directory in which
 VisIt_ was installed. If you are running VisIt_ on the Windows platform, you
-can double-click on one of the sample Silo data files to open it in VisIt_
+can double-click on one of the sample Silo_ data files to open it in VisIt_
 or you can run VisIt_ and open the **File open** window from the
 **Main** window's **File** menu. Using the **File open** window, navigate to
 the appropriate directory, highlight a file, and click the **Ok** button.

@@ -60,7 +60,7 @@ function bv_uintah_info
     export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
     export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.6"}
     export UINTAH_URL=${UINTAH_URL:-"https://gforge.sci.utah.edu/svn/uintah/releases/uintah_v${UINTAH_VERSION}"}
-    export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
+    export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}"}
     export UINTAH_MD5_CHECKSUM="09cad7b2fcc7b1f41dabcf7ecae21f54"
     export UINTAH_SHA256_CHECKSUM="0801da6e5700fa826f2cbc6ed01f81f743f92df3e946cc6ba3748458f36f674e"
 }
@@ -118,6 +118,70 @@ function bv_uintah_dry_run
     if [[ "$DO_UINTAH" == "yes" ]] ; then
         echo "Dry run option not set for uintah."
     fi
+}
+
+function apply_uintah_long64_patch
+{
+    patch -p0 << \EOF
+diff -c src/VisIt/interfaces/utils.h.orig src/VisIt/interfaces/utils.h
+*** src/VisIt/interfaces/utils.h.orig	Fri Jun  7 12:39:50 2019
+--- src/VisIt/interfaces/utils.h	Tue Jan  4 10:19:55 2022
+***************
+*** 95,100 ****
+--- 95,103 ----
+  void copyComponents(double *dest, const double &src);
+  
+  template <>
++ void copyComponents(double *dest, const long64 &src);
++ 
++ template <>
+  void copyComponents<Vector>(double *dest, const Vector &src);
+  
+  template <>
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "uintah patch 1 for reading long64 data failed."
+      return 1
+    fi
+
+    patch -p0 << \EOF
+diff -c src/VisIt/interfaces/utils.cc.orig src/VisIt/interfaces/utils.cc
+*** src/VisIt/interfaces/utils.cc.orig	Fri Jun  7 12:39:50 2019
+--- src/VisIt/interfaces/utils.cc	Tue Jan  4 10:26:52 2022
+***************
+*** 113,118 ****
+--- 113,124 ----
+  }
+  
+  template <>
++ void copyComponents(double *dest, const long64 &src)
++ {
++   (*dest) = (double) src;
++ }
++ 
++ template <>
+  void copyComponents<Vector>(double *dest, const Vector &src)
+  {
+    dest[0] = (double)src[0];
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "uintah patch 2 for reading long64 data failed."
+      return 1
+    fi
+
+    return 0;
+}
+
+function apply_uintah_patch
+{
+    apply_uintah_long64_patch
+    if [[ $? != 0 ]] ; then
+       return 1
+    fi
+
+    return 0
 }
 
 # **************************************************************************** #
@@ -237,13 +301,38 @@ function build_uintah
     fi
 
     #
+    # Apply patches
+    #
+    info "Patching UINTAH . . ."
+    cd $UINTAH_BUILD_DIR || error "Can't cd to UINTAH build dir."
+    apply_uintah_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_uintah == 1 ]] ; then
+            warn "Giving up on Uintah build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+    # move back up to the start dir
+    cd "$START_DIR"
+
+    #
+    # Configure Uintah
+    #
+    info "Configuring UINTAH . . ."
+
+    UINTAH_BUILD_DIR="${UINTAH_BUILD_DIR}/optimized"
     if [[ ! -d $UINTAH_BUILD_DIR ]] ; then
         echo "Making build directory $UINTAH_BUILD_DIR"
         mkdir $UINTAH_BUILD_DIR
     fi
+
     cd $UINTAH_BUILD_DIR || error "Can't cd to UINTAH build dir."
 
-    info "Configuring UINTAH . . ."
     cf_darwin=""
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         cf_build_type="--enable-static"

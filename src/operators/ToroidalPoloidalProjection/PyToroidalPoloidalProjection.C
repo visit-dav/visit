@@ -469,6 +469,18 @@ PyToroidalPoloidalProjection_getattr(PyObject *self, char *name)
     if(strcmp(name, "project2D") == 0)
         return ToroidalPoloidalProjection_GetProject2D(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyToroidalPoloidalProjection_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyToroidalPoloidalProjection_methods[i].ml_name),
+                PyString_FromString(PyToroidalPoloidalProjection_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyToroidalPoloidalProjection_methods, self, name);
 }
 

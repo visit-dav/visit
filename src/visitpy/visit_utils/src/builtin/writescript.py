@@ -29,6 +29,10 @@ def WriteScript(f):
     """Write Python code to replicate the current VisIt state to the specified file object.
 
 Example:
+    WriteScript('foo.py')
+
+    or
+
     f = open('script.py', 'wt')
     WriteScript(f)
     f.close()
@@ -42,7 +46,7 @@ Example:
            if line == '' or line[0] == '#':
                continue
            if '#' in line:
-               pos = string.find(line, "=")
+               pos = line.find("=")
                if '"' in line[pos+2:]:
                    f.write('%s.%s\n' % (name, line))
                else:
@@ -70,7 +74,7 @@ Example:
             if line == defaultlines[i]:
                 continue
             if '#' in line:
-                pos = string.find(line, "=")
+                pos = line.find("=")
                 if '"' in line[pos+2:]:
                     f.write('%s.%s\n' % (name, line))
                     wroteline = 1
@@ -393,6 +397,12 @@ Example:
 
         set_annotation_objects(f, prefix)
 
+    # If we were given a string, open that string as a file
+    mustCloseFile = False
+    if isinstance(f, str):
+        f = open(f, 'wt')
+        mustCloseFile = True
+
     # Define expressions
     f.write('# Define expressions\n')
     expr = visit.ExpressionList(1)
@@ -428,3 +438,6 @@ Example:
         index += 1
     f.write('SetActiveWindow(GetGlobalAttributes().windows[%d])\n' % g.activeWindow)
     visit.SetActiveWindow(g.windows[g.activeWindow])
+
+    if mustCloseFile:
+        f.close()

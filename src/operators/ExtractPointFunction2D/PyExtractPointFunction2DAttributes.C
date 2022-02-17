@@ -271,6 +271,18 @@ PyExtractPointFunction2DAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "J") == 0)
         return ExtractPointFunction2DAttributes_GetJ(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyExtractPointFunction2DAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyExtractPointFunction2DAttributes_methods[i].ml_name),
+                PyString_FromString(PyExtractPointFunction2DAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyExtractPointFunction2DAttributes_methods, self, name);
 }
 

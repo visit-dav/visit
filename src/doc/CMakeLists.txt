@@ -28,6 +28,10 @@
 #   Kathleen Biagas, Thu July 1, 2021
 #   Change FATAL_ERROR to WARNING with early return.
 #
+#   Cyrus Harrison, Wed Jan 19 12:56:45 PST 2022
+#   Make sure `make install` will call docs build target, otherwise
+#   make install can fail unless "make manuals" is called manually. 
+#
 #****************************************************************************
 
 if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
@@ -57,6 +61,14 @@ if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
     add_custom_target(manuals COMMAND ${sphinx_build_cmd}
         -b html ${VISIT_SOURCE_DIR}/doc
         ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
+
+
+    ######
+    # This snippet makes sure if we do a make install w/o the optional "docs"
+    # target built, it will be built during the install process.
+    ######
+
+    install(CODE "execute_process(COMMAND ${CMAKE_BUILD_TOOL} manuals WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\")")
 
     # Add command to ensure the manuals are installed to the correct location
     install(DIRECTORY ${VISIT_BINARY_DIR}/resources/help/en_US/manual

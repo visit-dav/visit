@@ -20,7 +20,7 @@ function bv_vtkm_alt_vtkm_dir
     bv_vtkm_enable
     USE_SYSTEM_VTKM="yes"
     VTKM_INSTALL_DIR="$1"
-    info "Using Alternate VTKM: $SYSTEM_VTKM_DIR"
+    info "Using Alternate VTKM: $VTKM_INSTALL_DIR"
 }
 
 function bv_vtkm_depends_on
@@ -39,11 +39,11 @@ function bv_vtkm_initialize_vars
 
 function bv_vtkm_info
 {
-    export VTKM_VERSION=${VTKM_VERSION:-"ff7197"}
+    export VTKM_VERSION=${VTKM_VERSION:-"v1.7.0"}
     export VTKM_FILE=${VTKM_FILE:-"vtk-m-${VTKM_VERSION}.tar.gz"}
-    export VTKM_BUILD_DIR=${VTKM_BUILD_DIR:-"vtk-m-ff71975709c69efaedd90b141309876931bb8686"}
-    export VTKM_MD5_CHECKSUM="b5008a7e815648befde479041d2e93ff"
-    export VTKM_SHA256_CHECKSUM="e88285515d3bc1a4a69e935257fed07516e0f009d3fed851ed4ea92ddf8693d5"
+    export VTKM_BUILD_DIR=${VTKM_BUILD_DIR:-"vtk-m-${VTKM_VERSION}"}
+    export VTKM_MD5_CHECKSUM="8dcaf4472d2f4729a3f5ab2381e4d818"
+    export VTKM_SHA256_CHECKSUM="a86667ac22057462fc14495363cfdcc486da125b366cb568ec23c86946439be4"
 }
 
 function bv_vtkm_print
@@ -96,7 +96,6 @@ function bv_vtkm_dry_run
 #
 #
 # *************************************************************************** #
-
 function apply_patch_1
 {
    patch -p0 << \EOF
@@ -230,12 +229,14 @@ function build_vtkm
 
     vopts=""
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/vtkm/${VTKM_VERSION}/${VISITARCH}"
-    vopts="${vopts} -DVTKm_ENABLE_TESTING:BOOL=ON"
+    vopts="${vopts} -DVTKm_ENABLE_TESTING:BOOL=OFF"
+    vopts="${vopts} -DVTKm_ENABLE_TESTING_LIBRARY:BOOL=ON"
     vopts="${vopts} -DVTKm_ENABLE_RENDERING:BOOL=ON"
     vopts="${vopts} -DVTKm_USE_64BIT_IDS:BOOL=ON"
     vopts="${vopts} -DVTKm_USE_DOUBLE_PRECISION:BOOL=ON"
     vopts="${vopts} -DVTKm_USE_DEFAULT_TYPES_FOR_VTK:BOOL=ON"
     vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
+    vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=OFF"
     # Disable CUDA support for now since it requires using the CUDA compiler
     # to build all of VisIt, which we don't want to do.
     #if [[ -d $CUDA_HOME ]]; then

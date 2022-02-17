@@ -2101,6 +2101,18 @@ PyGlobalAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "removeDuplicateNodes") == 0)
         return GlobalAttributes_GetRemoveDuplicateNodes(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyGlobalAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyGlobalAttributes_methods[i].ml_name),
+                PyString_FromString(PyGlobalAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyGlobalAttributes_methods, self, name);
 }
 

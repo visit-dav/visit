@@ -44,6 +44,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>References to old email lists (@ornl.gov) throughout code and documentation were replaced with references to the help pages of the new website.</li>
   <li>The <code>Pick</code> operator now has the option to include the Euclidean distance between the current and previous <code>Pick</code> in the GUI's output window. To enable this option, check the <code>Distance to previous</code> box. You should then see a new field in the tabular output display titled <code>Distance to previous</code>.</li>
   <li>Support for <i>SeedMe</i> was removed since the service was retired.</li>
+  <li>A section was added to the <i>Developer Manual</i> describing process launching.</li>
+  <li>A section was added to the <i>Developer Manual</i> describing building VisIt with spack.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -122,7 +124,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 3.3</font></b></p>
 <ul>
   <li>There is now a WIN32DEFINES xml tag for database plugins, used to specify preprocessor defines needed by a plugin on Windows. If the needed define comes from a thirdparty library, the Find module for that library should set a CMake var with those defines that the plugin could then use in the .xml file. See FindCGNS.cmake and CGNS.xml for an example.</li>
-  <li>Developer Change 2</li>
+  <li>The minimum required version of CMake is now 3.14, the version built by build_visit.</li> 
+  <li>The programs qtviswinExample, qtvtkExample, qvtkopenglExample were added to help with debugging OpenGL issues.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

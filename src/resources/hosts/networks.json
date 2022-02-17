@@ -313,7 +313,10 @@
           "name": "customlauncher"
         },
         {
-          "name": "host_owens_hpc_osc_edu.xml"
+          "name": "host_osc_owens.xml"
+        },
+        {
+          "name": "host_osc_pitzer.xml"
         }
       ]
     },
@@ -325,6 +328,9 @@
         },
         {
           "name": "host_ornl_andes.xml"
+        },
+        {
+          "name": "host_ornl_spock.xml"
         },
         {
           "name": "host_ornl_summit.xml"

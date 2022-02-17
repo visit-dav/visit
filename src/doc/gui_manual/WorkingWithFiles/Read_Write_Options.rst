@@ -289,18 +289,18 @@ Here are the defaults:
     'Gas constant Gamma': 1.4
   }
 
-Silo
-~~~~
+Silo_
+~~~~~
 
 Ignore Extents
 """"""""""""""
 
-The Silo database plugin has the ability to load spatial and data extents for
-Silo multi-block (e.g. multiple domain) objects. This feature is an optional
+The Silo_ database plugin has the ability to load spatial and data extents for
+Silo_ multi-block (e.g. multiple domain) objects. This feature is an optional
 *acceleration* feature that enables VisIt to cull domains based on knowledge
 of downstream operations. For example, it can avoid reading domains known not
 to intersect a slice plane. However, if the data producer creates buggy extents
-data, this can lead to problems during visualization. So, the Silo plugin has
+data, this can lead to problems during visualization. So, the Silo_ plugin has
 read options to disable spatial and data extents. The options for each are
 ``Always``, ``Auto``, ``Never`` and ``Undef``\ (ined) where ``Always`` and
 ``Never`` mean to always *ignore* or never *ignore* the extents data and
@@ -311,7 +311,7 @@ very old versions of these options.
 
 Force Single
 """"""""""""
-The ``Force Single`` check box enables the Silo library's
+The ``Force Single`` check box enables the Silo_ library's
 `DBForceSingle() <https://wci.llnl.gov/codes/silo/media/pdf/LLNL-SM-453191.pdf?#page=41>`_
 method. This can potentially be useful when reading double precision data and
 running out of memory.
@@ -319,9 +319,9 @@ running out of memory.
 Search for ANNOTATION_INT (and friends)
 """""""""""""""""""""""""""""""""""""""
 The ``ANNOTATION_INT`` (and friends) objects are generic containers sometimes
-used to store mesh-specific data using Silo's
+used to store mesh-specific data using Silo_'s
 `compound array <https://wci.llnl.gov/codes/silo/media/pdf/LLNL-SM-453191.pdf?#page=260>`_.
-However, because there is no multi-block analog for Silo compound arrays, in
+However, because there is no multi-block analog for Silo_ compound arrays, in
 order to handle them VisIt_ needs to be forced to go searching for their
 existance in all the files comprising a multi-block database. Thus, enabling
 this option can result in much slower database *open* times.
