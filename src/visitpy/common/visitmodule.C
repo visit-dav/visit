@@ -149,6 +149,7 @@
 #include <PySelectionList.h>
 #include <PySILRestrictionBase.h>
 #include <PySILRestriction.h>
+#include <PyTable.h>
 
 #include <PyLine3DObject.h>
 #include <PyText2DObject.h>
@@ -9559,6 +9560,39 @@ visit_GetQueryOutputObject(PyObject *self, PyObject *args)
     return PyMapNode_Wrap(node);
 }
 
+// ****************************************************************************
+// Function: visit_GetQueryOutputObject
+//
+// Purpose:
+//   Inspects the current QueryAttributes to verify they contain the results
+//   of a FlattenQuery then returns the proper Python dictionary for the data.
+//
+//
+// Programmer: Chris Laganella
+// Creation:   Mon Jan 24 18:06:10 EST 2022
+//
+// Modifications:
+// Chris Laganella, Tue Jan 25 16:05:19 EST 2022
+// I moved all the logic to PyTable.C
+// ****************************************************************************
+STATIC PyObject *
+visit_GetFlattenOutput(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
+
+    PyObject *retval = nullptr;
+    if(qa)
+    {
+        retval = PyTable_CreateFromFlattenOutput(*qa);
+    }
+    else
+    {
+        retval = PyDict_New();
+    }
+    return retval;
+}
 
 // ****************************************************************************
 // Method: visit_GetPlotInformation
@@ -17940,6 +17974,7 @@ AddProxyMethods()
                                                      visit_GetQueryOutputXML_doc);
     AddMethod("GetQueryOutputObject", visit_GetQueryOutputObject,
                                                      visit_GetQueryOutputObject_doc);
+    AddMethod("GetFlattenOutput", visit_GetFlattenOutput, visit_GetFlattenOutput_doc);
     AddMethod("GetQueryParameters", visit_GetQueryParameters, visit_GetQueryParameters_doc);
     AddMethod("GetPlotInformation", visit_GetPlotInformation,
                                                      visit_GetPlotInformation_doc);
@@ -18928,7 +18963,7 @@ InitializeModule()
     TRY
     {
         int argc = 1;
-        char *argv[6];
+        char *argv[7];
         argv[0] = (char*)"cli";
 
         if(moduleDebugLevel > 0)
@@ -18946,12 +18981,14 @@ InitializeModule()
            if(strcmp(cli_argv[i], "-pid") == 0)
            {
                argv[argc++] = (char*)"-pid";
-               break;
            }
            if(strcmp(cli_argv[i], "-clobber_vlogs") == 0)
            {
                argv[argc++] = (char*)"-clobber_vlogs";
-               break;
+           }
+           if(strcmp(cli_argv[i], "-timings") == 0)
+           {
+               argv[argc++] = (char*)"-timings";
            }
         }
 

@@ -107,6 +107,9 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
 
     virtual void             GetSecondaryVars( std::vector<std::string> &outVars );
 
+    virtual void             SetOutputQueryAtts(QueryAttributes *qA, bool /*hadError*/)
+                                 { *qA = queryAtts; }
+
     QueryAttributes          queryAtts;
 
     int                      totalNodes;

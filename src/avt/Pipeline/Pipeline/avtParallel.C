@@ -1407,6 +1407,50 @@ CollectDoubleArraysOnRootProc(double *&receiveBuf, int *&receiveCounts,
 }
 
 // ****************************************************************************
+//  Function: CollectFloatVectorsOnRootProc
+//
+//  Purpose:
+//      Same as above but works with C++ vector inputs.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Jan 18 17:28:13 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+CollectFloatVectorsOnRootProc(std::vector<float> &recvBuf,
+                           std::vector<int> &recvCounts,
+                           const std::vector<float> &sendBuf,
+                           int root)
+{
+    globalContext.CollectFloatVectorsOnRootProc(recvBuf, recvCounts,
+                                                sendBuf, root);
+}
+
+// ****************************************************************************
+//  Function: CollectDoubleVectorsOnRootProc
+//
+//  Purpose:
+//      Same as above but works with C++ vector inputs.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Jan 18 17:28:13 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+CollectDoubleVectorsOnRootProc(std::vector<double> &recvBuf,
+                           std::vector<int> &recvCounts,
+                           const std::vector<double> &sendBuf,
+                           int root)
+{
+    globalContext.CollectDoubleVectorsOnRootProc(recvBuf, recvCounts,
+                                                 sendBuf, root);
+}
+
+// ****************************************************************************
 //  Function: GetUniqueMessageTag
 //
 //  Purpose: Returns a suitable, unique message tag to be used in MPI_Send/Recv

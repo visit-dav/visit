@@ -44,6 +44,14 @@
 #  Cyrus Harrison, Fri Dec  6 14:51:33 PST 2019
 #  Add python code gen cmake targets for those objects that can be code-gend
 #
+#  Chris Laganella, Mon Jan 17 12:31:49 EST 2022
+#  Add common/PyTable.C
+#
+#  Chris Laganella, Mon Jan 24 18:12:20 EST 2022
+#  Link the cli to "rt" on non windows platforms.
+#
+#  Chris Laganella, Mon Feb  7 20:36:34 EST 2022
+#  Link the visitmodule to "rt" on non windows platforms.
 #****************************************************************************
 
 #########################################################
@@ -237,6 +245,7 @@ common/Logging.C
 common/MethodDoc.C
 common/PySILRestrictionBase.C
 common/PySILRestriction.C
+common/PyTable.C
 common/ViewerRPCArguments.C
 common/ViewerRPCCallbacks.C
 common/visitmodule.C
@@ -401,7 +410,8 @@ ${PYTHON_LIBRARIES}
 ${CMAKE_THREAD_LIBS}
 )
 IF(NOT WIN32)
-    TARGET_LINK_LIBRARIES(cli dl)
+    find_library(LIBRT rt)
+    TARGET_LINK_LIBRARIES(cli dl ${LIBRT})
     IF(NOT APPLE)
         IF(NOT AIX)
             # Is this a Python companion libary? We need it for unresolved openpty/forkpty
@@ -440,6 +450,8 @@ ELSE(VISIT_STATIC)
     )
 
     IF(NOT WIN32)
+        find_library(LIBRT rt)
+        TARGET_LINK_LIBRARIES(visitmodule ${LIBRT})
         SET_TARGET_PROPERTIES(visitmodule PROPERTIES
                                           LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
     ENDIF(NOT WIN32)

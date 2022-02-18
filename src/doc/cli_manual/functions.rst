@@ -2846,6 +2846,88 @@ return type : tuple of expression tuples
       DrawPlots()
 
 
+Flatten
+-----------
+
+**Synopsis:**
+
+::
+
+  Flatten(vars) -> dictionary
+  Flatten(vars, fillValue, nodeIds, zoneIds, nodeIJK, zoneIJK, zoneCenters,
+            maxDataSize, forceNoSharedMemory) -> dictionary
+
+return type : dictionary
+    Flatten returns a dictionary that contains different keys depending
+    on the data. If the output contains node centered data then there
+    will be 'nodeColumnNames' and 'nodeTable' entries. If the output contains
+    zone centered data then there will be 'zoneColumnNames' and 'zoneTable'
+    entries. If the query results in no output data, then an empty dictionary
+    is returned. The '*Table' entries are compatible with numpy via the
+    'numpy.asarray()' function.
+
+vars:
+    The names of the desired variables (tuple of strings).
+
+fillValue:
+    The default value for a column if no data is present (float, default = 0.)
+
+nodeIds:
+    Whether or not the nodeIds should be included in the output table.
+    (bool, default = True)
+
+zoneIds:
+    Whether or not the zoneIds should be included in the output table.
+    (bool, default = True)
+
+nodeIJK:
+    Whether or not the nodeIJK should be included in the output table.
+    (bool, default = True)
+
+zoneIJK:
+    Whether or not the zoneIJK should be included in the output table.
+    (bool, default = True)
+
+zoneCenters:
+    Whether or not to add the central coordinates of each zone.
+    (bool, default = False)
+
+maxDataSize:
+    The maximum output data size when not using shared memory, expressed in GB.
+    This parameters exists because the default method of returning query
+    results does not scale well up to large sizes.
+    (float, default=1.024)
+
+forceNoSharedMemory:
+    An override that makes sure the function will NOT use shared memory
+    to transport the output data to the VisIt CLI, even if the
+    environment seems to support it.
+    (bool, default = False)
+
+
+**Description:**
+
+    Query the active plot for the data at each node/zone for the given
+    variables. Data is returned as numpy compatible 2D arrays using
+    numpy.asarray().
+
+
+**Example:**
+
+::
+
+  #% visit -cli
+  db = "/usr/gapps/visit/data/rect2d.silo"
+  OpenDatabase(db)
+  AddPlot("Pseudocolor", "d")
+  DrawPlots()
+  data = Flatten(("p", "d"))
+  if "nodeTable" in data:
+    print(numpy.asarray(data["nodeTable"]))
+  if "zoneTable" in data:
+    print(numpy.asarray(data["zoneTable"]))
+
+
 GetActiveContinuousColorTable
 -----------------------------
 
@@ -3423,6 +3505,43 @@ return type : EngineProperties object
   db = "/usr/gapps/visit/data/globe.silo"
   OpenDatabase(db)
   props = GetEngineProperties(GetEngineList()[0])
+
+
+GetFlattenOutput
+-------------------
+
+**Synopsis:**
+
+::
+
+  GetFlattenOutput()            -> dictionary
+
+
+**Description:**
+
+    GetFlattenOutput is used by the Flatten() CLI function to retrieve the
+    output table from the 'Flatten' query. Prefer using the Flatten()
+    CLI function to using the 'Flatten' query directly. Returns a
+    dictionary containing numpy compatible 2D arrays and associated
+    column names.
+
+**Example:**
+
+::
+
+  #% visit -cli
+  db = "/usr/gapps/visit/data/rect2d.silo"
+  OpenDatabase(db)
+  AddPlot("Pseudocolor", "d")
+  DrawPlots()
+  flattenOpts = dict()
+  flattenOpts["vars"] = ("p", "d")
+  Query("Flatten", flattenOpts)
+  data = GetFlattenOutput()
+  if "nodeTable" in data:
+    print(numpy.asarray(data["nodeTable"]))
+  if "zoneTable" in data:
+    print(numpy.asarray(data["zoneTable"]))
 
 
 GetGlobalAttributes
