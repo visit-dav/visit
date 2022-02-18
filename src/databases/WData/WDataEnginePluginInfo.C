@@ -1,12 +1,10 @@
-/*****************************************************************************
 // Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
-*****************************************************************************/
 
 #include <WDataPluginInfo.h>
 
-VISIT_DATABASE_PLUGIN_ENTRY(WData, Engine)
+VISIT_DATABASE_PLUGIN_ENTRY(WData,Engine)
 
 // ****************************************************************************
 //  Method: WDataEnginePluginInfo::GetWriter
@@ -25,3 +23,4 @@ WDataEnginePluginInfo::GetWriter(void)
 {
     return NULL;
 }
+
