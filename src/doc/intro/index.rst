@@ -23,6 +23,7 @@ VisIt_.
 
 .. toctree::
     :maxdepth: 1 
+    :numbered:
 
     Understanding_how_VisIt_works
     Getting_started

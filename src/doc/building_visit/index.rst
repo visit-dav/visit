@@ -10,11 +10,12 @@ It can be configured to build VisIt_ with a minimum of third party libraries to 
 This chapter describes how to build VisIt_, starting with the most simple case and then moving to more complex use cases.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
+    :numbered:
 
     Basic_Usage
     Advanced_Usage
     Common_Build_Scenarios
     BuildingOnWindows/index
     BuildingOnMac/index
-    ../dev_manual/Spack
+    Spack

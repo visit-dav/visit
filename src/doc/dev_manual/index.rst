@@ -21,7 +21,6 @@ VisIt_ Developer Manual
     UpdatingPythonDocStrings
     MemoryLeaks
     Docker
-    Spack
     SiteReliabilityEngineering
     OpenGL
     CI
