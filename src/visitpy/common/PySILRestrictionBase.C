@@ -884,6 +884,17 @@ SILRestriction_compare(PyObject *v, PyObject *w)
 static PyObject *
 SILRestriction_getattr(PyObject *self, char *name)
 {
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; SILRestriction_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(SILRestriction_methods[i].ml_name),
+                PyString_FromString(SILRestriction_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(SILRestriction_methods, self, name);
 }
 

@@ -816,7 +816,7 @@ Legend annotation objects
 """""""""""""""""""""""""
 
 Legends are automatically added when plots are created, and have names that include the plot type.
-:numref:`Figure %s <legned_multiple_image>` shows multiple legends listed in the **Annotation Objects** tab.
+:numref:`Figure %s <legend_multiple_image>` shows multiple legends listed in the **Annotation Objects** tab.
 The Legend annotation object interface can be used to customize the legends position, size, tick labels and aspects of its appearance.
 
 .. _legend_multiple_image:
@@ -853,6 +853,13 @@ It starts out with the **Values** column filled in with defaults.
 You can modify those, add text to the **Labels column** and change the number of table items by using the **Add tick value** and **Delete selected value** buttons.
 When modifying, adding, or deleting values in the table, keep in mind they must fall within the Min/Max range of the current plot or they won't be displayed in the legend.
 Not all plot types allow adding or deleting values.
+
+.. _legend_tickmarks_image:
+
+.. figure:: images/legend_tickmarks.png
+
+    The legend object interface for tick marks
+
 
 :numref:`Figure %s <legend_filledboundary_image>` shows an example of modifying and displaying **Labels** for a :ref:`boundary_plot_head`. The **Values** have both a number and the name of the material, and the **Labels** were added so that only the material names would be displayed in the legend.
 

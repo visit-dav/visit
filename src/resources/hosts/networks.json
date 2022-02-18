@@ -330,6 +330,9 @@
           "name": "host_ornl_andes.xml"
         },
         {
+          "name": "host_ornl_spock.xml"
+        },
+        {
           "name": "host_ornl_summit.xml"
         }
       ]

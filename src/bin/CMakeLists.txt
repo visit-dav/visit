@@ -57,6 +57,9 @@
 #  creation of the directory is non deterministic with regards to different
 #  operating systems and versions.
 #
+#  Eric Brugger, Fri Jan 21 13:16:48 PST 2022
+#  I added qtviswinExample, qtvtkExample and qvtkopenglExample.
+#
 #****************************************************************************
 
 #-----------------------------------------------------------------------------
@@ -72,6 +75,9 @@ SET(VISIT_BIN_FILES
         mcurvit
         mkgrdbl
         mpeg2encode
+        qtviswinExample
+        qtvtkExample
+        qvtkopenglExample
         regen-ajp
         run_doxygen
         surfcomp

@@ -105,6 +105,44 @@ program creates file associations for ``.silo``, ``.visit``, and
 ``.session/.vses`` files so double-clicking on files with those extensions
 opens them with VisIt_.
 
+You can also run the installer from a command prompt, and pass it certain parameters to override defaults including running in silent mode.
+Available options are as follows::
+
+
+     -ALLUSERS             Install for all users.
+                           Must be in admin-mode.
+                           Default : install for current user
+ 
+     -SITE <site-name>     Specifies host profiles to be installed (eg llnl).
+                           Default: None
+ 
+     -PB <parallel bank>   Specifies parallel bank (FOR LLNL host-profiles).
+                           Default: wbronze
+ 
+     -DB <database reader> Specifies a default database reader for VisIt.
+                           (eg Silo, FLASH, etc).
+                           Default: None
+ 
+     -DEV                  Install plugin development tools.
+                           Default: no plugin dev tools
+ 
+     -LIBSIM               Install libsim tools.
+                           Default: no libsim tools
+ 
+     -AssociatePython      Associate python files with VisIt.
+                           Default: don't set up association
+ 
+     -AssociateCurves      Associate curve files with VisIt.
+                           Default: don't set up association
+ 
+     /S                    Make install silent.
+ 
+     /D <installationdir>  Change install directory to <installationdir>.
+                           Default is %PROGRAM FILES% for ALL USERS and
+                           %HOMEPATH% for single user.
+                           MUST BE THE LAST PARAMETER!
+
+
 Startup Options
 ~~~~~~~~~~~~~~~
 

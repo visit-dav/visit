@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include <VisItParser.h>
-#include <Token.h>
+#include <VisItToken.h>
 #include <SymbolSet.h>
 #include <Sequence.h>
 #include <Rule.h>

@@ -823,6 +823,18 @@ PyElevateAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "variable") == 0)
         return ElevateAttributes_GetVariable(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyElevateAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyElevateAttributes_methods[i].ml_name),
+                PyString_FromString(PyElevateAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyElevateAttributes_methods, self, name);
 }
 

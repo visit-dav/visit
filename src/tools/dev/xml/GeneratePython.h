@@ -3044,8 +3044,19 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << "    }" << Endl;
             c << Endl;
             c << "    Py"<<name<<"_ExtendSetGetMethodTable();" << Endl;
-            c << Endl;
         }
+        c << Endl;
+        c << "    // Add a __dict__ answer so that dir() works" << Endl;
+        c << "    if (!strcmp(name, \"__dict__\"))" << Endl;
+        c << "    {" << Endl;
+        c << "        PyObject *result = PyDict_New();" << Endl;
+        c << "        for (int i = 0; Py" << name << "_methods[i].ml_meth; i++)" << Endl;
+        c << "            PyDict_SetItem(result," << Endl;
+        c << "                PyString_FromString(Py" << name << "_methods[i].ml_name)," << Endl;
+        c << "                PyString_FromString(Py" << name << "_methods[i].ml_name));" << Endl;
+        c << "        return result;" << Endl;
+        c << "    }" << Endl;
+        c << Endl;
         c << "    return Py_FindMethod(Py"<<name<<"_methods, self, name);" << Endl;
         c << "}" << Endl;
         c << Endl;

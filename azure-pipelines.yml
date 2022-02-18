@@ -12,7 +12,7 @@
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2021-02-18-sha9bfd19
+  container_tag: visitdav/visit-ci-develop:2022-02-10-sha5a28f8
 
 # only build merge target pr to develop
 trigger: none
@@ -38,7 +38,7 @@ stages:
           # run our quick check
           #######################################
           echo "OK"
-          # NOTE FOR AZURE: 
+          # NOTE FOR AZURE:
           # only return code of the command is checked!
         displayName: 'Example Fast Check'
 
@@ -108,7 +108,7 @@ stages:
            7za x -y ../../data/blueprint_v0.3.1_test_data.7z
            7za x -y ../../data/blueprint_v0.3.1_mfem_test_data.7z
            7za x -y ../../data/blueprint_v0.7.0_venn_test_data.7z
-           
+
         displayName: 'Prep Test Data'
 
       - script: |
@@ -125,7 +125,7 @@ stages:
            # add to ld_lib path (rpaths are missing?)
            export LD_LIBRARY_PATH=${VTK_LIB_DIR}:${OSPRAY_LIB_DIR}:${TBB_LIB_DIR}
            # run test suite on silo + blueprint tests
-           export TESTS=../../src/test/tests/databases/silo.py 
+           export TESTS=../../src/test/tests/databases/silo.py
            export TESTS="${TESTS} ../../src/test/tests/databases/blueprint.py"
            export TESTS="${TESTS} ../../src/test/tests/hybrid/ddf.py"
            # also run a few of our unit tests
@@ -134,7 +134,7 @@ stages:
            export TESTS="${TESTS} ../../src/test/tests/unit/convert2to3.py"
            ./run_visit_test_suite.sh  -v ${TESTS}
         displayName: 'Run Tests'
-      
+
       - task: CopyFiles@2
         inputs:
           contents: 'build/test/output/html/**'

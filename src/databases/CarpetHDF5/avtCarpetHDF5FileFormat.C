@@ -1021,7 +1021,7 @@ static herr_t H5iter(hid_t group_id, const char *member_name, void *operator_dat
    sprintf(fullname, "%s%s%s", rootname, rootname[strlen(rootname)-1]=='/' ? "" : "/",member_name);
    
    // we are interested in datasets only - skip anything else
-   H5Gget_objinfo (group_id, member_name, 0, &object_info);
+   H5Gget_objinfo (group_id, member_name, 1, &object_info);
    if (object_info.type != H5G_DATASET)
    {
       if (object_info.type == H5G_GROUP)
