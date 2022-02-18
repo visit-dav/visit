@@ -124,6 +124,8 @@ The bottom shows the :ref:`molecule_plot_head`, but with the "Subset" set to de-
 .. figure:: images/Molecule_subset_enumeration.png
    :scale: 75%
 
+   A molecule plot and a subsetted molecule plot
+
 Various file format readers may present a different set of subsets to the user through VisIt.
 For example, the *Protein Data Bank* reader presents compounds, residues, and atom type. 
 The *VASP* reader presents only the atom type, but is smart enough to restrict the choice to only those elements actually present in the file (while the *PDB* reader presents all 100+ element types). 
@@ -150,6 +152,8 @@ So make sure if you're creating a new atomic color table to create one with the 
 
 .. figure:: images/Molecule-colortables.png
    :scale: 75%
+
+   A color table for plotting molecules
 
 Expressions
 '''''''''''

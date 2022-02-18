@@ -167,10 +167,10 @@ use of Sphinx as we move forward. These are discussed at the
     :numref:`Fig. %s <my_figure2>`
 
 * Link to a downloadable file *within* this documentation like
-  :download:`this one <../Quantitative/VerdictManual-revA.pdf>`::
+  :download:`this one <../../using_visit/Quantitative/VerdictManual-revA.pdf>`::
 
     Link to a downloadable file *within* this documentation like
-    :download:`this one <../Quantitative/VerdictManual-revA.pdf>`
+    :download:`this one <../../using_visit/Quantitative/VerdictManual-revA.pdf>`
 
 * Link to different URLs with same *link text* in same ``.rst`` file.
   Sometimes you might wind up using the same phrase in a ``.rst`` file
@@ -256,10 +256,14 @@ Same image with an anchor for cross referencing...
   .. figure:: images/array_compose_with_bins.png
      :scale: 50% 
 
+  A caption
+
 .. _my_figure:
 
 .. figure:: images/array_compose_with_bins.png
    :scale: 50% 
+
+   A caption
 
 which can now be cross referenced using an inline :numref:`Fig. %s <my_figure>` 
 like so...

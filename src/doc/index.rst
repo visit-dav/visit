@@ -1,7 +1,7 @@
-.. VisIt User Documentation
+.. VisIt User Manual
 
-VisIt User Documentation
-========================
+VisIt User Manual
+=================
 
 .. toctree::
    :maxdepth: 1 

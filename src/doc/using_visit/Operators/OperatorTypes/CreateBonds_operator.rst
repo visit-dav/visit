@@ -19,12 +19,13 @@ between 0.4 and 2.5 units. :numref:`Figure %s <createbonds_bonding>`.
 
 .. figure:: images/createbonds_example.png
 
+   Bonds created with different bonding distances
+
 .. _createbonds_bonding:
 
 .. figure:: images/createbonds_bonding.png
 
-    CreateBonds bonding parameters
-
+   CreateBonds bonding parameters
 
 Setting the Bonding parameters 
 """"""""""""""""""""""""""""""
@@ -50,6 +51,7 @@ The **Details** section contains controls to set the values for a rule.  The **1
 
 .. figure:: images/createbonds-selector.png
 
+   The element selector
 
 To get a wildcard which will match any type of atom, choose **Match any element** at the bottom; it is selectable just as any individual species in the periodic table.
 
@@ -62,6 +64,7 @@ Advanced settings
 
 .. figure:: images/createbonds_advanced.png
 
+   The advanced settings tab
 
 **Variable for atomic number** defaults to *element* as per the convention, but it can be set to any integral variable corresponding to the atomic number of each atom.
 

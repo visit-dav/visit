@@ -27,9 +27,11 @@ different scalar values.
 
 .. figure:: ../images/volumewindow.png
 
+   The rendering attributes for the Volume plot
+
 .. figure:: ../images/volumewindow2.png
    
-   Volume Plot Attributes Window
+   The transfer function editor for the Volume plot
 
 Rendering Options
 """""""""""""""""

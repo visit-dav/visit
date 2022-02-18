@@ -17,7 +17,7 @@ VisIt_ Developer Manual
     xmltools
     PrepareRelease
     CreateRelease
-    ContributingToDocumentation
+    ContributingToDocumentation/index
     UpdatingPythonDocStrings
     MemoryLeaks
     Docker
