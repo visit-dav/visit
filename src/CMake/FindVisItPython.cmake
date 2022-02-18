@@ -439,7 +439,9 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
         STRING(SUBSTRING ${PYTHON_VERSION} 0 1 PYX)
         STRING(SUBSTRING ${PYTHON_VERSION} 0 3 PYX_X)
         THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python ${PYTHON_DIR}/bin/python${PYX} ${PYTHON_DIR}/bin/python${PYX_X})
+        # note: these can be symlinks to python3.Zm-config
         THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python${PYX}-config ${PYTHON_DIR}/bin/python${PYX_X}-config)
+        THIRD_PARTY_INSTALL_EXECUTABLE(${PYTHON_DIR}/bin/python${PYX_X}m-config) # python3.Zm-config
 
         # install extra python front end scripts if they exist
         set(_py_extras ${PYTHON_DIR}/bin/pip${PYX}   # pip3
