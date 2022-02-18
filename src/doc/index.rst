@@ -1,18 +1,20 @@
 .. VisIt User Manual documentation for both GUI and CLI
 
-VisIt User Manuals
-==================
+VisIt User Documentation
+========================
 
 .. toctree::
    :maxdepth: 1 
 
-   How to Search <searching>
+   Getting Started <getting_started/index>
+   Intro to VisIt <intro/index>
+   Using VisIt <using_visit/index>
+   Python Scripting <python_scripting/index>
    Building VisIt <building_visit/index>
-   GUI Manual <gui_manual/index>
-   CLI Manual <cli_manual/index>
    Tutorials <tutorials/index>
    Getting Data Into VisIt <data_into_visit/index>
    Developer Manual <dev_manual/index>
+   How to Search this Manual <searching>
 
 .. Indices and tables
 .. ==================

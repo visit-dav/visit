@@ -25,6 +25,4 @@ VisIt_.
     :maxdepth: 1 
 
     Understanding_how_VisIt_works
-    Installing_VisIt
-    The_Main_Window
     Getting_started

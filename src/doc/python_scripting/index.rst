@@ -1,7 +1,7 @@
 .. _PythonManual:
 
-VisIt Python (CLI) Interface Manual
-===================================
+Python Scripting
+================
 
 .. image:: images/teaser.png
    :width: 4.8in
