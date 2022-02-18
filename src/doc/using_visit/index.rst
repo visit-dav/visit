@@ -28,9 +28,6 @@ Contents:
    CommandWindow/index
    Preferences/index
    Help/index
-   Acknowledgments/index
-   glossary
-   Contributing/index
 
 .. Indices and tables
 .. ==================

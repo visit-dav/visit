@@ -1,7 +1,7 @@
-.. _Contributing:
+.. _ContributingToDocumentation:
 
-Contributing
-============
+Contributing to the Documentation
+=================================
 
 This is a short contributing guide on the VisIt_ project's use of `Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_ for documentation.
 All of VisIt_'s documentation is found in ``<root>/src/doc`` where ``<root>`` is the top of the git repository.

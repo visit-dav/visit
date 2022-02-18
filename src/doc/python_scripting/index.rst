@@ -15,7 +15,6 @@ Python Scripting
     functions
     attributes
     events
-    contributing
     acknowledgments
 
 .. Indices and tables

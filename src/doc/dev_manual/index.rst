@@ -17,6 +17,8 @@ VisIt_ Developer Manual
     xmltools
     PrepareRelease
     CreateRelease
+    ContributingToDocumentation
+    UpdatingPythonDocStrings
     MemoryLeaks
     Docker
     Spack
