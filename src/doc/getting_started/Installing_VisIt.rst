@@ -9,7 +9,7 @@ VisIt_ runs on the following platforms:
 * macOS
 * Microsoft Windows
 
-A new version of VisIt_ is usually released every 2-3 months, you can find VisIt_ release executables at the `VisIt releases page <https://visit-dav.github.io/visit-website/releases-as-tables/>`. 
+A new version of VisIt_ is usually released every 2-3 months, you can find VisIt_ release executables at the `VisIt releases page <https://visit-dav.github.io/visit-website/releases-as-tables/>`_. 
 
 Download a binary release compatible with the machine you want to install VisIt_ on.
 If you are installing VisIt_ on Linux, also download the ``visit-install`` script.
@@ -19,7 +19,7 @@ If you are installing VisIt_ on Linux, also download the ``visit-install`` scrip
 Installing on macOS
 ~~~~~~~~~~~~~~~~~~~
 
-VisIt_ releases include an app-bundle for Mac OSX packaged in a DMG image.
+VisIt_ releases include an app-bundle for macOS packaged in a DMG image.
 Download and open the DMG file and copy the VisIt_ app-bundle to your applications directory or any other path.
 To run VisIt_ double click on the VisIt_ app-bundle.
 The ``visit-install`` script can also be used to install tarball packaged macOS binaries.
