@@ -7,10 +7,11 @@ Vector plot
 
 .. figure:: ../images/vectorplot.png
 
+   An example vector plot
+
 .. figure:: ../images/vectorwindow.png
    
-   Vector Plot Attributes and Example Rendering
-
+   The corresponding Vector plot attributes
 
 The Vector plot (example shown in :numref:`Figure %s<vector_plot>`) displays
 vector variables using glyphs that indicate the direction and magnitude of

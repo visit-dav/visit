@@ -23,8 +23,7 @@ VisIt_.
 
 .. toctree::
     :maxdepth: 1 
+    :numbered:
 
     Understanding_how_VisIt_works
-    Installing_VisIt
-    The_Main_Window
     Getting_started

@@ -144,12 +144,13 @@ for cells and nodes independently (see :numref:`Figure %s <labelplot2>`).
 
 .. figure:: ../images/labelplot2.png
 
+   Displaying cell and node labels with different colors
+
 .. _labelplotwindow2:
 
 .. figure:: ../images/labelplotwindow2.png
 
-   Cell and node labels can be different colors when labeling mesh variables
-   using additional controls in the Label plot attributes window
+   The Label plot attributes window specifying different colors for cell and node labels
 
 Finally, the **Label plot attributes window** provides controls to determine the
 horizontal and vertical text justification used when drawing each label. To

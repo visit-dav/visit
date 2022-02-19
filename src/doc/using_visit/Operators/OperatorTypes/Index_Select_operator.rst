@@ -77,3 +77,4 @@ selection for a multiple mesh database whose sub-meshes are called domains.
 
 .. figure:: images/indexselect_categoryselection.png
 
+   Setting the category for index selection

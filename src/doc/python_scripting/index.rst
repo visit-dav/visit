@@ -1,13 +1,14 @@
 .. _PythonManual:
 
-VisIt Python (CLI) Interface Manual
-===================================
+Python Scripting
+================
 
 .. image:: images/teaser.png
    :width: 4.8in
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
+    :numbered:
 
     intro
     python
@@ -15,7 +16,6 @@ VisIt Python (CLI) Interface Manual
     functions
     attributes
     events
-    contributing
     acknowledgments
 
 .. Indices and tables
