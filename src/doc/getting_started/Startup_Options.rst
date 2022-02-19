@@ -3,7 +3,7 @@
 Startup Options
 ---------------
 
-You can get help on starting VisIt with the commands
+You can get help on starting VisIt_ with the commands
 
 ::
 

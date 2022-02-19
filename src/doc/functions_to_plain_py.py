@@ -138,7 +138,7 @@ def write_state(writer, state_dict):
 
 if __name__ == '__main__':
 
-    func_file_name = 'cli_manual/functions.rst'
+    func_file_name = 'python_scripting/functions.rst'
     py_output_name = 'PY_RST_FUNCTIONS_TO_PYTHON.py'
 
     func_file   = open(func_file_name, 'r')

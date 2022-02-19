@@ -2,8 +2,8 @@
    sphinx-quickstart on Thu Sep 22 14:59:45 2016 from original
    OpenOffice document created by Brad Whitlock
 
-VisIt GUI User Manual
-=====================
+Using VisIt_
+============
 
 Contents:
 
@@ -11,7 +11,7 @@ Contents:
    :maxdepth: 1 
    :numbered: 
 
-   Intro/index
+   The_Main_Window
    WorkingWithFiles/index
    Plots/index
    Operators/index
@@ -28,10 +28,6 @@ Contents:
    CommandWindow/index
    Preferences/index
    Help/index
-   StartupOptions/index
-   Acknowledgments/index
-   glossary
-   Contributing/index
 
 .. Indices and tables
 .. ==================
