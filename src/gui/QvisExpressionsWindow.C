@@ -164,6 +164,9 @@
 //    Eddie Rusu, Mon Sep 23 10:33:50 PDT 2019
 //    Added "divide" function under the "Math" menu.
 //
+//    Chris Laganella, Fri Feb  4 19:18:01 EST 2022
+//    Added logical_nodeid, logial_zoneid, node_domain, zone_domain,
+//    and zone_centers under the Mesh menu
 // ****************************************************************************
 
 struct ExprNameList
@@ -324,9 +327,12 @@ const char *expr_mesh[] = {
     "external_node",
     "global_nodeid",
     "global_zoneid",
+    "logical_nodeid",
+    "logical_zoneid",
     "max_coord",
     "min_coord",
     "nodeid",
+    "node_domain",
     "polar",
     "polar_radius",
     "polar_theta",
@@ -335,6 +341,8 @@ const char *expr_mesh[] = {
     "revolved_volume",
     "volume",
     "zoneid",
+    "zone_centers",
+    "zone_domain",
     "zonetype_label",
     "zonetype_rank",
     NULL

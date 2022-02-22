@@ -7,7 +7,7 @@
 # -- Path setup --------------------------------------------------------------
 
 def setup(app):
-    app.add_stylesheet('custom.css')
+    app.add_css_file('custom.css')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -25,7 +25,7 @@ copyright = u'2008-2020, LLNL, UCRL-SM-220449'
 author = u'LLNL'
 
 # The full version, including alpha/beta/rc tags
-release = '3.1'
+release = '3.2.2'
 
 
 # -- General configuration ---------------------------------------------------
