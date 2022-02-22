@@ -488,11 +488,11 @@ def cli_events_to_sphinx(event_names):
 
 if __name__ == '__main__':
 
-    atts_pre_file = open("cli_manual/preambles/attributes_preamble", "r")
-    cli_pre_file  = open("cli_manual/preambles/events_preamble", "r")
+    atts_pre_file = open("python_scripting/preambles/attributes_preamble", "r")
+    cli_pre_file  = open("python_scripting/preambles/events_preamble", "r")
   
-    atts_file     = open("cli_manual/attributes.rst", "w")
-    cli_file      = open("cli_manual/events.rst", "w")
+    atts_file     = open("python_scripting/attributes.rst", "w")
+    cli_file      = open("python_scripting/events.rst", "w")
 
     atts_preamble = ''.join(atts_pre_file.readlines())
     cli_preamble  = ''.join(cli_pre_file.readlines())

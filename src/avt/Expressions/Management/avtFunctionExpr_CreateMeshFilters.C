@@ -12,6 +12,7 @@
 #include <avtNeighborEvaluatorExpression.h>
 #include <avtSurfaceNormalExpression.h>
 #include <avtEdgeNormalExpression.h>
+#include <avtZoneCentersExpression.h>
 #include <avtZoneTypeLabelExpression.h>
 #include <avtZoneTypeRankExpression.h>
 
@@ -46,6 +47,9 @@
 //
 //   Jeremy Meredith, Mon Mar 10 14:35:18 EDT 2014
 //   Added edge normal expressions.
+//
+//   Chris Laganella, Mon Jan 31 15:43:30 EST 2022
+//   Add logical node / zone id expressions.
 //
 // ****************************************************************************
 
@@ -85,6 +89,14 @@ avtFunctionExpr::CreateMeshFilters(const std::string &functionName) const
         ff->CreateLocalNumbering();
         return ff;
     }
+    else if (functionName == "logical_zoneid")
+    {
+        avtDataIdExpression *ff = new avtDataIdExpression;
+        ff->CreateZoneIds();
+        ff->CreateLocalNumbering();
+        ff->CreateIJK();
+        return ff;
+    }
     else if (functionName == "global_zoneid")
     {
         avtDataIdExpression *ff = new avtDataIdExpression;
@@ -97,6 +109,14 @@ avtFunctionExpr::CreateMeshFilters(const std::string &functionName) const
         avtDataIdExpression *ff = new avtDataIdExpression;
         ff->CreateNodeIds();
         ff->CreateLocalNumbering();
+        return ff;
+    }
+    else if (functionName == "logical_nodeid")
+    {
+        avtDataIdExpression *ff = new avtDataIdExpression;
+        ff->CreateNodeIds();
+        ff->CreateLocalNumbering();
+        ff->CreateIJK();
         return ff;
     }
     else if (functionName == "global_nodeid")
@@ -179,6 +199,27 @@ avtFunctionExpr::CreateMeshFilters(const std::string &functionName) const
             e->SetDoCells(true);
         else
             e->SetDoCells(false);
+        return e;
+    }
+    else if (functionName == "zone_centers")
+    {
+        avtZoneCentersExpression *e = new avtZoneCentersExpression();
+        return e;
+    }
+    else if (functionName == "node_domain")
+    {
+        avtDataIdExpression *e = new avtDataIdExpression();
+        e->CreateNodeIds();
+        e->CreateDomainIds();
+        e->CreateLocalNumbering();
+        return e;
+    }
+    else if (functionName == "zone_domain")
+    {
+        avtDataIdExpression *e = new avtDataIdExpression();
+        e->CreateZoneIds();
+        e->CreateDomainIds();
+        e->CreateLocalNumbering();
         return e;
     }
 

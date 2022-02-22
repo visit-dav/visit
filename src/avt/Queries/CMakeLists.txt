@@ -96,6 +96,7 @@ Queries/avtDistanceFromBoundaryQuery.C
 Queries/avtEllipticalCompactnessFactorQuery.C
 Queries/avtEulerianQuery.C
 Queries/avtExpectedValueQuery.C
+Queries/avtFlattenQuery.C
 Queries/avtGridInformationQuery.C
 Queries/avtHohlraumFluxQuery.C
 Queries/avtIndividualChordLengthDistributionQuery.C
