@@ -123,41 +123,11 @@ EOF
     return 0;
 }
 
-function apply_patch_2
-{
-   patch -p0 << \EOF
-diff --git ./vtkm/cont/internal/OptionParser.h ./vtkm/cont/internal/OptionParser.h
-index 2e0d6127d..fd5b7e72d 100644
---- ./vtkm/cont/internal/OptionParser.h
-+++ ./vtkm/cont/internal/OptionParser.h
-@@ -42,7 +42,7 @@ namespace internal
-
- // Include from third party.
- // @cond NONE
--#include <vtkmoptionparser/optionparser.h>
-+#include <vtkm/thirdparty/optionparser/vtkmoptionparser/optionparser.h>
- // @endcond
-
- // Now restore the header guards as before so that other includes of (possibly different versions
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "vtkm patch 2 failed."
-      return 1
-    fi
-    return 0;
-}
-
 function apply_vtkm_patch
 {
     info "Patching VTKm . . ."
 
     apply_patch_1
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
-
-    apply_patch_2
     if [[ $? != 0 ]] ; then
        return 1
     fi
@@ -232,7 +202,7 @@ function build_vtkm
     vopts="${vopts} -DVTKm_ENABLE_TESTING:BOOL=OFF"
     vopts="${vopts} -DVTKm_ENABLE_TESTING_LIBRARY:BOOL=ON"
     vopts="${vopts} -DVTKm_ENABLE_RENDERING:BOOL=ON"
-    vopts="${vopts} -DVTKm_USE_64BIT_IDS:BOOL=ON"
+    vopts="${vopts} -DVTKm_USE_64BIT_IDS:BOOL=OFF"
     vopts="${vopts} -DVTKm_USE_DOUBLE_PRECISION:BOOL=ON"
     vopts="${vopts} -DVTKm_USE_DEFAULT_TYPES_FOR_VTK:BOOL=ON"
     vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=${VISIT_BUILD_MODE}"
