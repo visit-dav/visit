@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                       avtVisItVTKRenderFilter.C                         //
-// ************************************************************************* //
+// ***************************************************************************
+//  avtVisItVTKRenderFilter.C
+// ***************************************************************************
 
 #include <avtVisItVTKRenderFilter.h>
 #include <avtParallel.h>
@@ -35,6 +35,8 @@
 #include <vtkVolumeProperty.h>
 #include <vtkGPUVolumeRayCastMapper.h>
 #include <vtkSmartVolumeMapper.h>
+
+#include <visit-config.h> // for HAVE_OSPRAY
 
 #ifdef HAVE_OSPRAY
     #include <vtkOSPRayVolumeMapper.h>

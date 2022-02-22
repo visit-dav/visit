@@ -91,6 +91,9 @@ typedef   void (*ViewCallback)(VisWindow *);
 //    Hank Childs, Tue Jan  8 11:22:44 PST 2008
 //    Disallow mouse wheel movements where they are not intended.
 //
+//    Kathleen Biagas, Tue Feb 22, 2022
+//    Add SetOsprayRendering.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
@@ -131,11 +134,14 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     virtual void                SetInteractor(vtkRenderWindowInteractor *);
 
     virtual bool                LeftButtonIsDown(void)
-                                                  { return leftButtonDown; };
+                                                  { return leftButtonDown; }
     virtual bool                MiddleButtonIsDown(void)
-                                                  { return middleButtonDown; };
+                                                  { return middleButtonDown; }
     virtual bool                RightButtonIsDown(void)
-                                                  { return rightButtonDown; };
+                                                  { return rightButtonDown; }
+
+    void                        SetOsprayRendering(bool enabled)
+                                                  { useOSPRay = enabled; }
 
   protected:
     VisWindowInteractorProxy   &proxy;
@@ -151,6 +157,8 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     int                         spinNewX, spinNewY;
     float                       Center[2];
     float                       MotionFactor;
+
+    bool                        useOSPRay;
 
 
     void                        PrepTrackball();

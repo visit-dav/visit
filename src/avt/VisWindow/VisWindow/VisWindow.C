@@ -6782,6 +6782,8 @@ VisWindow::GetCompactDomainsAutoThreshold() const
 // Creation:   Tue 24 Apr 2018 11:15:25 AM EDT
 //
 // Modifications:
+//   Kathleen Biagas, Tue Feb 22, 2022
+//   Send flag to view and interactions.
 //
 // ****************************************************************************
 
@@ -6791,6 +6793,8 @@ VisWindow::SetOsprayRendering(bool enabled)
     if (enabled != rendering->GetOsprayRendering())
     {
         rendering->SetOsprayRendering(enabled);
+        view->SetOsprayRendering(enabled);
+        interactions->SetOsprayRendering(enabled);
     }
 }
 

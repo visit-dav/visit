@@ -46,6 +46,9 @@ avtViewInfo::avtViewInfo()
 //    Jeremy Meredith, Mon Aug  2 13:47:52 EDT 2010
 //    Added shear.
 //
+//    Kathleen Biagas, Tue Feb 22, 2022
+//    Add useOSPRay.
+//
 // ****************************************************************************
 
 avtViewInfo &
@@ -73,6 +76,7 @@ avtViewInfo::operator=(const avtViewInfo &vi)
     shear[0]     = vi.shear[0];
     shear[1]     = vi.shear[1];
     shear[2]     = vi.shear[2];
+    useOSPRay    = vi.useOSPRay;
 
     return *this;
 }
@@ -96,6 +100,9 @@ avtViewInfo::operator=(const avtViewInfo &vi)
 //
 //    Jeremy Meredith, Mon Aug  2 13:47:52 EDT 2010
 //    Added shear.
+//
+//    Kathleen Biagas, Tue Feb 22, 2022
+//    Add useOSPRay.
 //
 // ****************************************************************************
 
@@ -157,6 +164,10 @@ avtViewInfo::operator==(const avtViewInfo &vi)
         return false;
     }
 
+    if (useOSPRay != vi.useOSPRay)
+    {
+        return false;
+    }
 
     return true;
 }
@@ -180,6 +191,9 @@ avtViewInfo::operator==(const avtViewInfo &vi)
 //
 //    Jeremy Meredith, Mon Aug  2 14:23:08 EDT 2010
 //    Add shear for oblique projection support.
+//
+//    Kathleen Biagas, Tue Feb 22, 2022
+//    Add useOSPRay.
 //
 // ****************************************************************************
 
@@ -208,6 +222,7 @@ avtViewInfo::SetToDefault()
     shear[0]     =  0.;
     shear[1]     =  0.;
     shear[2]     =  1.;
+    useOSPRay    = false;
 }
 
 // ****************************************************************************
@@ -276,6 +291,11 @@ avtViewInfo::SetViewFromCamera(vtkCamera *vtkcam)
 //    Set user transform matrix when zooming (used to be done by hack inside
 //    vtkCamera).
 //
+//    Kathleen Biagas, Tue Feb 22, 2022
+//    Test useOSPRay to determine if ospray-path should be used.
+//    It will be true only if HAVE_OSPRAY is true and ospray rendering is
+//    currently being used.
+//
 // ****************************************************************************
 #include<vtkMatrix4x4.h>
 #include<vtkTransform.h>
@@ -297,33 +317,36 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     vtkcam->SetViewUp(viewUp);
     vtkcam->SetFocalDisk(imageZoom);
 
-    // Currently the SetWindowCenter and SetUserTransform do not get
-    // used in the vtkOSPRayCameraNode so instead use the Zoom here and
-    // in the Navigate3D.C and Zoom3D.C pan the camera rather than the
-    // image.
-#ifdef HAVE_OSPRAY
-    vtkcam->Zoom(imageZoom);
-#else
-    // ARS - commented out as the results are not used.
-    // double   imagePanCurrent[2];
-    // vtkcam->GetWindowCenter(imagePanCurrent[0], imagePanCurrent[1]);
-    vtkcam->SetWindowCenter(2.0*imagePan[0], 2.0*imagePan[1]);
-
-    if (imageZoom != 1.0)
+    if (useOSPRay)
     {
-        double matrix[4][4];
-        vtkMatrix4x4::Identity(*matrix);
-
-        matrix[0][0] = imageZoom;
-        matrix[1][1] = imageZoom;
-        vtkTransform *trans = vtkTransform::New();
-        trans->SetMatrix(*matrix);
-        vtkcam->SetUserTransform(trans);
-        trans->Delete();
+        // Currently the SetWindowCenter and SetUserTransform do not get
+        // used in the vtkOSPRayCameraNode so instead use the Zoom here and
+        // in the Navigate3D.C and Zoom3D.C pan the camera rather than the
+        // image.
+        vtkcam->Zoom(imageZoom);
     }
     else
     {
-        vtkcam->SetUserTransform(NULL);
-    }
-#endif
+        // ARS - commented out as the results are not used.
+        // double   imagePanCurrent[2];
+        // vtkcam->GetWindowCenter(imagePanCurrent[0], imagePanCurrent[1]);
+        vtkcam->SetWindowCenter(2.0*imagePan[0], 2.0*imagePan[1]);
+
+        if (imageZoom != 1.0)
+        {
+            double matrix[4][4];
+            vtkMatrix4x4::Identity(*matrix);
+
+            matrix[0][0] = imageZoom;
+            matrix[1][1] = imageZoom;
+            vtkTransform *trans = vtkTransform::New();
+            trans->SetMatrix(*matrix);
+            vtkcam->SetUserTransform(trans);
+            trans->Delete();
+        }
+        else
+        {
+            vtkcam->SetUserTransform(NULL);
+        }
+   }
 }
