@@ -34,12 +34,12 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.7.1"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.8.0"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
-    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.7.1"}
+    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.8.0"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    export CONDUIT_MD5_CHECKSUM="7f9bb79ef0a6bf42fa9bc05af3829e5b"
-    export CONDUIT_SHA256_CHECKSUM="460a480cf08fedbf5b38f707f94f20828798327adadb077f80dbab048fd0a07d"
+    export CONDUIT_MD5_CHECKSUM="a69bfff0e13de6fb6741770e3ed44ba5"
+    export CONDUIT_SHA256_CHECKSUM="0607dcf9ced44f95e0b9549f5bbf7a332afd84597c52e293d7ca8d83117b5119"
 }
 
 function bv_conduit_print
@@ -62,6 +62,8 @@ function bv_conduit_host_profile
         echo "##" >> $HOSTCONF
         echo "## Conduit" >> $HOSTCONF
         echo "##" >> $HOSTCONF
+        # Need to remove the 'v' from the version string for cmake
+        echo "SETUP_APP_VERSION(CONDUIT ${CONDUIT_VERSION:1})" >> $HOSTCONF
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR \${VISITHOME}/conduit/$CONDUIT_VERSION/\${VISITARCH})" \
             >> $HOSTCONF

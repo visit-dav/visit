@@ -22,6 +22,6 @@ VISIT_DATABASE_PLUGIN_ENTRY(Blueprint,Engine)
 avtDatabaseWriter *
 BlueprintEnginePluginInfo::GetWriter(void)
 {
-    return new avtBlueprintWriter;
+    return new avtBlueprintWriter(writeOptions);
 }
 
