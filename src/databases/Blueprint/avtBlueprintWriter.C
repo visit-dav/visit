@@ -28,6 +28,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtParallelContext.h>
 #include <FileFunctions.h>
+#include <DBOptionsAttributes.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -43,6 +44,10 @@
 #include "conduit_relay.hpp"
 #include "conduit_relay_io_hdf5.hpp"
 #include "conduit_blueprint.hpp"
+
+#ifdef PARALLEL
+#include "conduit_blueprint_mpi.hpp"
+#endif
 
 #include "avtBlueprintDataAdaptor.h"
 #include "avtBlueprintLogging.h"
@@ -116,11 +121,49 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
 //
 //  Modifications:
 //
+//  Chris Laganella Thu Nov  4 15:15:06 EDT 2021
+//  Added support for blueprint mesh operations
+//
+//  Chris Laganella Wed Dec 15 17:57:09 EST 2021
+//  Add conditional compilation based on flatten/partition support
 // ****************************************************************************
 
-avtBlueprintWriter::avtBlueprintWriter() :m_stem(), m_meshName()
+avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
+    m_meshName(), m_chunks()
 {
     m_nblocks = 0;
+
+    m_op = BP_MESH_OP_NONE;
+    m_target = 0;
+#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
+    if(options)
+    {
+        int op_val = options->GetEnum("Operation");
+        if(op_val >= 0 && op_val < 4)
+        {
+            m_op = (bpMeshOp)op_val;
+        }
+        else
+        {
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                "Invalid value passed for attribute 'Operation'.");
+        }
+
+        if(m_op == BP_MESH_OP_PARTITION)
+        {
+            int target_val = options->GetInt("Partition target number of domains");
+            if(target_val >= 0)
+            {
+                m_target = target_val;
+            }
+            else
+            {
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                    "Invalid value passed for attribute 'Partition target number of domains', must be >= 0.");
+            }
+        }
+    }
+#endif
 
     conduit::utils::set_info_handler(blueprint_writer_plugin_info_handler);
     conduit::utils::set_warning_handler(blueprint_writer_plugin_warning_handler);
@@ -141,35 +184,28 @@ avtBlueprintWriter::avtBlueprintWriter() :m_stem(), m_meshName()
 //
 //  Modifications:
 //
+//  Chris Laganella Thu Nov  4 15:22:37 EDT 2021
+//  I moved the subdirectory creation code out into its own function (CreateOutputDir),
+//  and only create the directory if we are not performing an operation.
+//
+//  Chris Laganella Thu Nov  4 18:53:09 EDT 2021
+//  Updated m_nblocks to match the number of target domains if we are partitioning
 // ****************************************************************************
 
 void
 avtBlueprintWriter::OpenFile(const string &stemname, int nb)
 {
-    m_stem = stemname;
-    m_nblocks = nb;
-
-    int c = GetCycle();
-    if (c != INVALID_CYCLE)
-    {
-        c = 0;
-    }
-    char fmt_buff[64];
-    snprintf(fmt_buff, sizeof(fmt_buff), "%06d",c);
-    // we want the basename without the extension to use as a sub-dir name
-    m_mbDirName = FileFunctions::Basename(m_stem);
-    std::ostringstream oss;
-    oss << m_stem << ".cycle_" << fmt_buff;
-    m_output_dir  =  oss.str();
-
-#ifdef WIN32
-    _mkdir(m_output_dir.c_str());
-#else
-    mkdir(m_output_dir.c_str(), 0777);
+#ifdef PARALLEL
+    BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called OpenFile().");
 #endif
-    m_genRoot = true;
-    n_root_file.reset();
-    BP_PLUGIN_INFO("BlueprintMeshWriter: create output dir "<<m_output_dir);
+    m_stem = stemname;
+    m_nblocks = (m_target > 0) ? m_target : nb;
+    if(m_op == BP_MESH_OP_NONE || m_op == BP_MESH_OP_PARTITION)
+    {
+        m_genRoot = true;
+        n_root_file.reset();
+        CreateOutputDir();
+    }
 }
 
 
@@ -192,6 +228,9 @@ avtBlueprintWriter::WriteHeaders(const avtDatabaseMetaData *md,
                            const vector<string> &vectors,
                            const vector<string> &materials)
 {
+#ifdef PARALLEL
+    BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called WriteHeaders().");
+#endif
     m_meshName = GetMeshName(md);
     m_time     = GetTime();
     m_cycle    = GetCycle();
@@ -210,11 +249,16 @@ avtBlueprintWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //  Modifications:
 //
-//
+//  Chris Laganella Thu Nov  4 16:07:56 EDT 2021
+//  I moved the vtkDataSet -> blueprint mesh code into ChunkToBpMesh() and
+//  the relay::io::save code into WriteMeshDomain()
 // ****************************************************************************
 void
 avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
+#ifdef PARALLEL
+    BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called WriteChunk().");
+#endif
     char chunkname[1024];
     if (m_nblocks > 1)
         sprintf(chunkname, "%s/%s.%d", m_stem.c_str(), m_mbDirName.c_str(), chunk);
@@ -223,7 +267,128 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     BP_PLUGIN_INFO("BlueprintMeshWriter: " << chunkname
                     << " [domain " << chunk<< "]");
-    Node mesh;
+
+    Node &mesh = m_chunks.append();
+    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    ChunkToBpMesh(ds, chunk, ndims, mesh);
+
+    if(m_op == BP_MESH_OP_NONE)
+    {
+        // If we aren't partitioning/flattening the mesh
+        // then we can write it out like normal and clear m_chunks.
+        WriteMeshDomain(mesh, chunk);
+
+        if(m_genRoot)
+        {
+            BP_PLUGIN_INFO("BlueprintMeshWriter: generating root");
+            GenRootNode(mesh, m_output_dir, ndims);
+            m_genRoot = false;
+        }
+        m_chunks.reset();
+    }
+    // Need to defer all mesh operations to CloseFile()
+}
+
+
+// ****************************************************************************
+//  Method: BuildSelections
+//
+//  Purpose:
+//      Reads the avtGhostZones field and builds a "selections" node so that
+//      ghost cells do not contribute to the partition operation.
+//
+//      This function will remove the avtGhostZones field from the input domains.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Mon Nov  8 15:26:05 EST 2021
+//
+//  Modifications:
+//
+//  Chris Laganella Wed Jan 12 12:52:01 EST 2022
+//  I converted this from a static method of the avtBlueprintWriter class
+//  to a static function local to this file. I now conditionally compile
+//  the function based off partition/flatten support since it is only used
+//  by the partition operation.
+//
+// ****************************************************************************
+#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
+static void
+BuildSelections(Node &domains,
+                                    Node &selections)
+{
+    selections.reset();
+    const std::vector<Node*> n_domains =
+        conduit::blueprint::mesh::domains(domains);
+
+    for(Node *m : n_domains)
+    {
+        if(!m->has_path("fields/avtGhostZones"))
+        {
+            continue;
+        }
+        const Node &avtGhostZones = m->fetch("fields/avtGhostZones");
+
+        // This path should always be correct, the field is created by VisIt.
+        const Node &values = avtGhostZones.fetch_existing("values/c0");
+        const DataType dt = DataType::index_t(values.dtype().number_of_elements());
+
+        // Cast the ghost info to the correct type if necessary
+        Node n_tmp;
+        DataArray<index_t> orig_vals;
+        if(values.dtype().is_index_t())
+        {
+            orig_vals = values.value();
+        }
+        else
+        {
+            values.to_data_type(dt.id(), n_tmp);
+            orig_vals = n_tmp.value();
+        }
+
+        // Build selection element ids
+        std::vector<index_t> sel;
+        sel.reserve(dt.number_of_elements());
+        for(index_t i = 0; i < orig_vals.number_of_elements(); i++)
+        {
+            if(orig_vals[i] == 0)
+            {
+                sel.push_back(i);
+            }
+        }
+
+        // Create a selection for this domain
+        Node &selection = selections.append();
+        selection["type"].set("explicit");
+        selection["topology"].set(avtGhostZones.child("topology"));
+        selection["domain_id"].set(m->fetch_existing("state/domain_id"));
+        selection["elements"].set(sel);
+
+        // No longer need the avtGhostZones field
+        m->child("fields").remove_child("avtGhostZones");
+    }
+    BP_PLUGIN_INFO("Done building selections." << selections.schema().to_json());
+}
+#endif
+
+// ****************************************************************************
+//  Method: avtBlueprintWriter::ChunkToBpMesh
+//
+//  Purpose:
+//      Calls VTKToBlueprint on the given vtkDataSet. Uses chunk for
+//      mesh["state/domain_id"] and stores the output in the mesh parameter.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Thu Nov  4 16:00:44 EDT 2021
+//  This code originated in OpenFile()
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtBlueprintWriter::ChunkToBpMesh(vtkDataSet *ds, int chunk, int ndims,
+                                  Node &mesh)
+{
+    mesh.reset();
     mesh["state/domain_id"] = chunk;
     //std::string topo_name = "topo";
 
@@ -242,7 +407,6 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
         mesh["state/time"] = m_time;
     }
 
-    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
     avtBlueprintDataAdaptor::BP::VTKToBlueprint(mesh, ds, ndims);
 
     Node verify_info;
@@ -252,22 +416,44 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
                               "VTK to Blueprint conversion failed " << verify_info.to_json());
         return;
     }
-
-    char fmt_buff[64];
-    snprintf(fmt_buff, sizeof(fmt_buff), "%06d",chunk);
-    std::stringstream oss;
-    oss << "domain_" << fmt_buff << "." << "hdf5";
-    string output_file  = conduit::utils::join_file_path(m_output_dir,oss.str());
-    relay::io::save(mesh, output_file);
-
-    if(m_genRoot)
-    {
-        BP_PLUGIN_INFO("BlueprintMeshWriter: generating root");
-        GenRootNode(mesh, m_output_dir, ndims);
-        m_genRoot = false;
-    }
 }
 
+// ****************************************************************************
+//  Method: avtBlueprintWriter::CreateOutputDir
+//
+//  Purpose:
+//      Creates a subdirectory based off m_stem and the current cycle.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Thu Nov  4 15:22:37 EDT 2021
+//  This code originated in OpenFile()
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtBlueprintWriter::CreateOutputDir()
+{
+    int c = GetCycle();
+    if (c != INVALID_CYCLE)
+    {
+        c = 0;
+    }
+    char fmt_buff[64];
+    snprintf(fmt_buff, sizeof(fmt_buff), "%06d",c);
+    // we want the basename without the extension to use as a sub-dir name
+    m_mbDirName = FileFunctions::Basename(m_stem);
+    std::ostringstream oss;
+    oss << m_stem << ".cycle_" << fmt_buff;
+    m_output_dir  =  oss.str();
+
+#ifdef WIN32
+    _mkdir(m_output_dir.c_str());
+#else
+    mkdir(m_output_dir.c_str(), 0777);
+#endif
+    BP_PLUGIN_INFO("BlueprintMeshWriter: create output dir "<<m_output_dir);
+}
 
 // ****************************************************************************
 //  Method: avtBlueprintWriter::GenRootNode
@@ -288,7 +474,9 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
                                 const std::string output_dir,
                                 const int ndims)
 {
-
+#ifdef PARALLEL
+    BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called GenRootNode().");
+#endif
     int c = GetCycle();
     if (c != INVALID_CYCLE)
     {
@@ -370,6 +558,34 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
 }
 
 // ****************************************************************************
+//  Method: avtBlueprintWriter::WriteMeshDomain
+//
+//  Purpose:
+//      Writes the given blueprint mesh domain to a file based off the given
+//      domain_id.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Thu Nov  4 16:00:44 EDT 2021
+//  This code orginated in WriteChunk
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtBlueprintWriter::WriteMeshDomain(Node &mesh, int domain_id)
+{
+#ifdef PARALLEL
+    BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called WriteMeshDomain().");
+#endif
+    char fmt_buff[64];
+    snprintf(fmt_buff, sizeof(fmt_buff), "%06d",domain_id);
+    std::stringstream oss;
+    oss << "domain_" << fmt_buff << "." << "hdf5";
+    string output_file  = conduit::utils::join_file_path(m_output_dir,oss.str());
+    relay::io::save(mesh, output_file);
+}
+
+// ****************************************************************************
 //  Method: avtBlueprintWriter::CloseFile
 //
 //  Purpose:
@@ -380,11 +596,102 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
 //
 //  Modifications:
 //
+//  Chris Laganella Thu Nov  4 16:47:28 EDT 2021
+//  Added support for flatten to CSV or HDF5
+//
+//  Chris Laganella Thu Nov  4 18:54:15 EDT 2021
+//  Added support for partition to a target number of domains
+//
+//  Chris Laganella Mon Nov  8 16:58:22 EST 2021
+//  Added BuildSelections call and surrounding logic
+//
+//  Chris Laganella Wed Dec 15 18:01:21 EST 2021
 // ****************************************************************************
-
 void
 avtBlueprintWriter::CloseFile(void)
 {
+#ifdef PARALLEL
+    BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called CloseFile().");
+#endif
+
+#if CONDUIT_HAVE_PARTITION_FLATTEN == 1
+    if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5)
+    {
+        conduit::Node opts, table;
+        int rank = 0;
+        int root = 0;
+#ifdef PARALLEL
+        rank = writeContext.Rank();
+        BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " flattening.");
+        // It's okay to pass empty nodes to this.
+        conduit::blueprint::mpi::mesh::flatten(m_chunks, opts, table,
+            writeContext.GetCommunicator());
+#else
+        conduit::blueprint::mesh::flatten(m_chunks, opts, table);
+#endif
+        // Don't need the mesh anymore.
+        m_chunks.reset();
+
+        const std::string filename = m_op == BP_MESH_OP_FLATTEN_CSV ? m_stem + ".csv"
+                                                                    : m_stem + ".hdf5";
+        if(rank == root)
+        {
+#ifdef PARALLEL
+        BP_PLUGIN_INFO("I'm rank " << rank << " and I'm about to write " << filename << ".");
+#endif
+            conduit::relay::io::save(table, filename);
+        }
+    }
+    else if(m_op == BP_MESH_OP_PARTITION)
+    {
+        int rank = 0;
+        Node repart_mesh;
+        {
+            Node selections, opts;
+            BuildSelections(m_chunks, selections);
+            if(!selections.dtype().is_empty())
+            {
+                opts["selections"].set_external(selections);
+            }
+            if(m_target > 0)
+            {
+                opts["target"].set(m_target);
+            }
+
+#ifdef PARALLEL
+            rank = writeContext.Rank();
+            BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " partitioning.");
+            conduit::blueprint::mpi::mesh::partition(m_chunks, opts, repart_mesh,
+                writeContext.GetCommunicator());
+#else
+            conduit::blueprint::mesh::partition(m_chunks, opts, repart_mesh);
+#endif
+        }
+        // Don't need the original data anymore
+        m_chunks.reset();
+
+        if(!repart_mesh.dtype().is_empty())
+        {
+            const std::vector<Node*> n_domains =
+                conduit::blueprint::mesh::domains(repart_mesh);
+
+            for(Node *m : n_domains)
+            {
+                BP_PLUGIN_INFO("Rank " << rank << " domain:" << m->schema().to_json());
+                int dom_id = m->fetch("state/domain_id").to_int();
+                WriteMeshDomain(*m, dom_id);
+
+                if(m_genRoot)
+                {
+                    BP_PLUGIN_INFO("BlueprintMeshWriter: generating root");
+                    int ndims = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+                    GenRootNode(*m, m_output_dir, ndims);
+                    m_genRoot = false;
+                }
+            }
+        }
+    }
+#endif
 }
 
 // ****************************************************************************
@@ -398,37 +705,42 @@ avtBlueprintWriter::CloseFile(void)
 //
 //  Modifications:
 //
+//  Chris Laganella Thu Nov  4 18:55:00 EDT 2021
+//  Writes a root file as long as we aren't flattening
 // ****************************************************************************
 
 void
 avtBlueprintWriter::WriteRootFile()
 {
-    int root_writer = 0;
-    int rank = 0;
+    if(m_op == BP_MESH_OP_NONE || m_op == BP_MESH_OP_PARTITION)
+    {
+        int root_writer = 0;
+        int rank = 0;
 #ifdef PARALLEL
-    // assume nothing about what rank was given a chunk;
-    rank = writeContext.Rank();
-    bool has_root_file = n_root_file.has_path("blueprint_index");
-    int i_has_root = has_root_file ? 1 : 0;
-    int *roots = new int[writeContext.Size()];
+        // assume nothing about what rank was given a chunk;
+        rank = writeContext.Rank();
+        bool has_root_file = n_root_file.has_path("blueprint_index");
+        int i_has_root = has_root_file ? 1 : 0;
+        int *roots = new int[writeContext.Size()];
 
-    MPI_Allgather(&i_has_root, 1, MPI_INT, roots, 1, MPI_INT,
-                  writeContext.GetCommunicator());
+        MPI_Allgather(&i_has_root, 1, MPI_INT, roots, 1, MPI_INT,
+                    writeContext.GetCommunicator());
 
-    for(int i = 0; i < writeContext.Size(); ++i)
-    {
-        if(roots[i] == 1)
+        for(int i = 0; i < writeContext.Size(); ++i)
         {
-            root_writer = i;
-            break;
+            if(roots[i] == 1)
+            {
+                root_writer = i;
+                break;
+            }
         }
-    }
 
-    delete[] roots;
+        delete[] roots;
 #endif
-    if(rank == root_writer)
-    {
-        BP_PLUGIN_INFO("BlueprintMeshWriter: writing root "<<m_root_file);
-        relay::io::save(n_root_file, m_root_file,"hdf5");
+        if(rank == root_writer)
+        {
+            BP_PLUGIN_INFO("BlueprintMeshWriter: writing root "<<m_root_file);
+            relay::io::save(n_root_file, m_root_file,"hdf5");
+        }
     }
 }

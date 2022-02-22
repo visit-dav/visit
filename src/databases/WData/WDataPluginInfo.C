@@ -1,19 +1,17 @@
-/*****************************************************************************
 // Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
-*****************************************************************************/
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: WDataPluginInfo.C
-// ************************************************************************* //
+// ****************************************************************************
 
 #include <WDataPluginInfo.h>
 
 #include <visit-config.h>
-VISIT_PLUGIN_VERSION(WData, DBP_EXPORT)
+VISIT_PLUGIN_VERSION(WData,DBP_EXPORT)
 
-VISIT_DATABASE_PLUGIN_ENTRY(WData, General)
+VISIT_DATABASE_PLUGIN_ENTRY(WData,General)
 
 // ****************************************************************************
 //  Method: WDataGeneralPluginInfo::GetName
@@ -50,7 +48,7 @@ WDataGeneralPluginInfo::GetName() const
 const char *
 WDataGeneralPluginInfo::GetVersion() const
 {
-    return "1.0";
+    return "0.2.0";
 }
 
 // ****************************************************************************
@@ -69,7 +67,7 @@ WDataGeneralPluginInfo::GetVersion() const
 const char *
 WDataGeneralPluginInfo::GetID() const
 {
-    return "WData_1.0";
+    return "WData_0.2.0";
 }
 // ****************************************************************************
 //  Method: WDataGeneralPluginInfo::EnabledByDefault
@@ -84,7 +82,8 @@ WDataGeneralPluginInfo::GetID() const
 //
 // ****************************************************************************
 
-bool WDataGeneralPluginInfo::EnabledByDefault() const
+bool
+WDataGeneralPluginInfo::EnabledByDefault() const
 {
     return true;
 }
@@ -101,7 +100,8 @@ bool WDataGeneralPluginInfo::EnabledByDefault() const
 //
 // ****************************************************************************
 
-bool WDataGeneralPluginInfo::HasWriter() const
+bool
+WDataGeneralPluginInfo::HasWriter() const
 {
     return false;
 }
@@ -135,7 +135,8 @@ WDataGeneralPluginInfo::GetDefaultFilePatterns() const
 //  Creation:    omitted
 //
 // ****************************************************************************
-bool WDataGeneralPluginInfo::AreDefaultFilePatternsStrict() const
+bool
+WDataGeneralPluginInfo::AreDefaultFilePatternsStrict() const
 {
     return false;
 }
@@ -151,7 +152,8 @@ bool WDataGeneralPluginInfo::AreDefaultFilePatternsStrict() const
 //  Creation:    omitted
 //
 // ****************************************************************************
-bool WDataGeneralPluginInfo::OpensWholeDirectory() const
+bool
+WDataGeneralPluginInfo::OpensWholeDirectory() const
 {
     return false;
 }

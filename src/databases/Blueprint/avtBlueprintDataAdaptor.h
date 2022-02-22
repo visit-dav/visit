@@ -68,6 +68,10 @@ public:
   class BP
   {
     public:
+      static void VTKFieldNameToBlueprint(const std::string &vtk_name,
+                                          const std::string &topo_name,
+                                          std::string &bp_name);
+
       static void VTKFieldsToBlueprint(conduit::Node &node,
                                        const std::string topo_name,
                                        vtkDataSet* dataset);

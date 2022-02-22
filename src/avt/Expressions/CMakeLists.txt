@@ -173,6 +173,7 @@ General/avtVariableSkewExpression.C
 General/avtVectorComposeExpression.C
 General/avtVectorDecomposeExpression.C
 General/avtViscousStressExpression.C
+General/avtZoneCentersExpression.C
 General/avtZoneTypeLabelExpression.C
 General/avtZoneTypeRankExpression.C
 )

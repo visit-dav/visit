@@ -17,9 +17,10 @@ VisIt_ Developer Manual
     xmltools
     PrepareRelease
     CreateRelease
+    ContributingToDocumentation/index
+    UpdatingPythonDocStrings
     MemoryLeaks
     Docker
-    Spack
     SiteReliabilityEngineering
     OpenGL
     CI
