@@ -332,7 +332,7 @@ UnifyMinMax(double *buff, int size, int altsize)
 //      and value over all processors.
 //
 //  Arguments:
-//      mymin    The value on this processor.
+//      myval    The value on this processor.
 //
 //  Returns:     The logical and value over all processors.
 //
@@ -355,7 +355,7 @@ UnifyLogicalAndValue(int myval)
 //      or value over all processors.
 //
 //  Arguments:
-//      mymin    The value on this processor.
+//      myval    The value on this processor.
 //
 //  Returns:     The logical or value over all processors.
 //
@@ -378,7 +378,7 @@ UnifyLogicalOrValue(int myval)
 //      and value over all processors.
 //
 //  Arguments:
-//      mymin    The value on this processor.
+//      myval    The value on this processor.
 //
 //  Returns:     The bitwise and value over all processors.
 //
@@ -401,7 +401,7 @@ UnifyBitwiseAndValue(int myval)
 //      or value over all processors.
 //
 //  Arguments:
-//      mymin    The value on this processor.
+//      myval    The value on this processor.
 //
 //  Returns:     The bitwise or value over all processors.
 //
