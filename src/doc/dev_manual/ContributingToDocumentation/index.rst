@@ -414,22 +414,6 @@ All of the above is automated with the ``linkcheck`` make target also.
 
 .. _contributing_forward:
 
-Previewing Branch Changes on ReadTheDocs
-----------------------------------------
-
-Even with the ability to run ``sphinx-build`` locally or as an alternative to running it locally, it is often convenient to be able to preview documentation changes being made on a branch directly on ReadTheDocs.
-
-In order to do this, the branch with the changes needs to be made *active* on the ReadTheDocs project where the VisIt_ user manuals are hosted.
-Anyone who is a *maintainer* in the project can do this.
-To become a maintainer, email any of the existing maintainers your ReadTheDocs username and ask them to add you.
-Once the branch is activated on ReadTheDocs, it may take some time for the documentation on the branch to be generated.
-The resulting docs will be browseable on ReadTheDocs with a URL of the form ``https://visit-sphinx-github-user-manual.readthedocs.io/en/<branch-name>/``
-
-Be aware that if you are doing anything on the branch that could cause generation to fail (e.g. changing ``conf.py``), you will need to examine the build logs on ReadTheDocs to diagnose the cause.
-
-Please clean up after yourself when you are done working with the branch.
-To do this, first *wipe* the branch (removes the generated version) on ReadTheDocs and then deactivate it.
-
 Things To Consider Going Forward
 --------------------------------
 
