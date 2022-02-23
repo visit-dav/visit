@@ -489,10 +489,6 @@ MinMaxOp(void *ibuf, void *iobuf, int *len, MPI_Datatype *)
 //  Programmer:  Allen Sanderson
 //  Creation:    February 6, 2022
 //
-//  Modifications:
-//
-//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
-//    Changed MPI_COMM_WORLD to this->GetCommunicator()
 // ****************************************************************************
 
 /* ARGSUSED */
@@ -523,10 +519,6 @@ avtParallelContext::UnifyLogicalAndValue(int myval)
 //  Programmer:  Allen Sanderson
 //  Creation:    February 6, 2022
 //
-//  Modifications:
-//
-//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
-//    Changed MPI_COMM_WORLD to this->GetCommunicator()
 // ****************************************************************************
 
 /* ARGSUSED */
@@ -557,10 +549,6 @@ avtParallelContext::UnifyLogicalOrValue(int myval)
 //  Programmer:  Allen Sanderson
 //  Creation:    February 6, 2022
 //
-//  Modifications:
-//
-//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
-//    Changed MPI_COMM_WORLD to this->GetCommunicator()
 // ****************************************************************************
 
 /* ARGSUSED */
@@ -591,10 +579,6 @@ avtParallelContext::UnifyBitwiseAndValue(int myval)
 //  Programmer:  Allen Sanderson
 //  Creation:    February 6, 2022
 //
-//  Modifications:
-//
-//    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
-//    Changed MPI_COMM_WORLD to this->GetCommunicator()
 // ****************************************************************************
 
 /* ARGSUSED */
