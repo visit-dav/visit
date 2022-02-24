@@ -254,14 +254,14 @@ QvisExportDBWindow::CreateWindowContents()
 
     // Directory
 
-    QString caption("Directory name");
+    QString caption(tr("Directory name"));
     if(plotList)
     {
         int sel = plotList->FirstSelectedIndex();
         if (sel >=0)
         {
             QualifiedFilename dbName(plotList->GetPlots(sel).GetDatabaseName());
-            if (dbName.host != "localhost");
+            if (dbName.host != "localhost")
             {
                 caption += QString(" on %1").arg(dbName.host.c_str());
             }
@@ -358,7 +358,7 @@ QvisExportDBWindow::CreateWindowContents()
     varLayout->addWidget(varsButton, 1, 0);
 
     varsLineEdit = new QLineEdit(varGroup);
-    varsLineEdit->setText("default");
+    varsLineEdit->setText(tr("default"));
     connect(varsLineEdit, SIGNAL(returnPressed()),
             this, SLOT(variableProcessText()));
     varLayout->addWidget(varsLineEdit, 1, 1, 1, 2);

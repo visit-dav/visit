@@ -226,21 +226,54 @@ VectorAttributes_SetGlyphLocation(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid glyphLocation value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " AdaptsToMeshResolution";
+        ss << ", UniformInSpace";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the glyphLocation in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetGlyphLocation(VectorAttributes::GlyphLocation(ival));
-    else
-    {
-        fprintf(stderr, "An invalid glyphLocation value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "AdaptsToMeshResolution, UniformInSpace.");
-        return NULL;
-    }
+    obj->data->SetGlyphLocation(VectorAttributes::GlyphLocation(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -259,12 +292,48 @@ VectorAttributes_SetUseStride(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useStride in the object.
-    obj->data->SetUseStride(ival != 0);
+    obj->data->SetUseStride(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -283,12 +352,48 @@ VectorAttributes_SetNVectors(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the nVectors in the object.
-    obj->data->SetNVectors((int)ival);
+    obj->data->SetNVectors(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -307,12 +412,48 @@ VectorAttributes_SetStride(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stride in the object.
-    obj->data->SetStride((int)ival);
+    obj->data->SetStride(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -331,12 +472,48 @@ VectorAttributes_SetOrigOnly(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the origOnly in the object.
-    obj->data->SetOrigOnly(ival != 0);
+    obj->data->SetOrigOnly(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -355,21 +532,54 @@ VectorAttributes_SetLimitsMode(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid limitsMode value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " OriginalData";
+        ss << ", CurrentPlot";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the limitsMode in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetLimitsMode(VectorAttributes::LimitsMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid limitsMode value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "OriginalData, CurrentPlot.");
-        return NULL;
-    }
+    obj->data->SetLimitsMode(VectorAttributes::LimitsMode(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -388,12 +598,48 @@ VectorAttributes_SetMinFlag(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minFlag in the object.
-    obj->data->SetMinFlag(ival != 0);
+    obj->data->SetMinFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -412,12 +658,48 @@ VectorAttributes_SetMin(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the min in the object.
-    obj->data->SetMin(dval);
+    obj->data->SetMin(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -436,12 +718,48 @@ VectorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxFlag in the object.
-    obj->data->SetMaxFlag(ival != 0);
+    obj->data->SetMaxFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -460,12 +778,48 @@ VectorAttributes_SetMax(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the max in the object.
-    obj->data->SetMax(dval);
+    obj->data->SetMax(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -484,12 +838,48 @@ VectorAttributes_SetColorByMagnitude(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorByMagnitude in the object.
-    obj->data->SetColorByMagnitude(ival != 0);
+    obj->data->SetColorByMagnitude(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -508,12 +898,37 @@ VectorAttributes_SetColorTableName(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorTableName in the object.
-    obj->data->SetColorTableName(std::string(str));
+    obj->data->SetColorTableName(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -532,12 +947,48 @@ VectorAttributes_SetInvertColorTable(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the invertColorTable in the object.
-    obj->data->SetInvertColorTable(ival != 0);
+    obj->data->SetInvertColorTable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -633,12 +1084,48 @@ VectorAttributes_SetUseLegend(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useLegend in the object.
-    obj->data->SetUseLegend(ival != 0);
+    obj->data->SetUseLegend(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -657,12 +1144,48 @@ VectorAttributes_SetScale(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scale in the object.
-    obj->data->SetScale(dval);
+    obj->data->SetScale(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -681,12 +1204,48 @@ VectorAttributes_SetScaleByMagnitude(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the scaleByMagnitude in the object.
-    obj->data->SetScaleByMagnitude(ival != 0);
+    obj->data->SetScaleByMagnitude(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -705,12 +1264,48 @@ VectorAttributes_SetAutoScale(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the autoScale in the object.
-    obj->data->SetAutoScale(ival != 0);
+    obj->data->SetAutoScale(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -729,21 +1324,54 @@ VectorAttributes_SetGlyphType(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid glyphType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Arrow";
+        ss << ", Ellipsoid";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the glyphType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetGlyphType(VectorAttributes::GlyphType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid glyphType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Arrow, Ellipsoid.");
-        return NULL;
-    }
+    obj->data->SetGlyphType(VectorAttributes::GlyphType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -762,12 +1390,48 @@ VectorAttributes_SetHeadOn(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the headOn in the object.
-    obj->data->SetHeadOn(ival != 0);
+    obj->data->SetHeadOn(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -786,12 +1450,48 @@ VectorAttributes_SetHeadSize(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the headSize in the object.
-    obj->data->SetHeadSize(dval);
+    obj->data->SetHeadSize(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -810,21 +1510,54 @@ VectorAttributes_SetLineStem(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid lineStem value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Cylinder";
+        ss << ", Line";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineStem in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetLineStem(VectorAttributes::LineStem(ival));
-    else
-    {
-        fprintf(stderr, "An invalid lineStem value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Cylinder, Line.");
-        return NULL;
-    }
+    obj->data->SetLineStem(VectorAttributes::LineStem(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -843,12 +1576,48 @@ VectorAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -867,12 +1636,48 @@ VectorAttributes_SetStemWidth(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the stemWidth in the object.
-    obj->data->SetStemWidth(dval);
+    obj->data->SetStemWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -891,21 +1696,55 @@ VectorAttributes_SetVectorOrigin(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 3)
+    {
+        std::stringstream ss;
+        ss << "An invalid vectorOrigin value was given." << std::endl;
+        ss << "Valid values are in the range [0,2]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Head";
+        ss << ", Middle";
+        ss << ", Tail";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the vectorOrigin in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetVectorOrigin(VectorAttributes::OriginType(ival));
-    else
-    {
-        fprintf(stderr, "An invalid vectorOrigin value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Head, Middle, Tail.");
-        return NULL;
-    }
+    obj->data->SetVectorOrigin(VectorAttributes::OriginType(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -924,21 +1763,54 @@ VectorAttributes_SetGeometryQuality(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid geometryQuality value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " Fast";
+        ss << ", High";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the geometryQuality in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetGeometryQuality(VectorAttributes::Quality(ival));
-    else
-    {
-        fprintf(stderr, "An invalid geometryQuality value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "Fast, High.");
-        return NULL;
-    }
+    obj->data->SetGeometryQuality(VectorAttributes::Quality(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -957,12 +1829,48 @@ VectorAttributes_SetAnimationStep(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the animationStep in the object.
-    obj->data->SetAnimationStep((int)ival);
+    obj->data->SetAnimationStep(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1180,127 +2088,140 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
     }
     if (lineStyleFound)
     {
-        fprintf(stdout, "lineStyle is no longer a valid Vector "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "lineStyle is no longer a valid Vector "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyVectorAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyVectorAttributes_methods[i].ml_name),
+                PyString_FromString(PyVectorAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyVectorAttributes_methods, self, name);
 }
 
 int
 PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "glyphLocation") == 0)
-        obj = VectorAttributes_SetGlyphLocation(self, tuple);
+        obj = VectorAttributes_SetGlyphLocation(self, args);
     else if(strcmp(name, "useStride") == 0)
-        obj = VectorAttributes_SetUseStride(self, tuple);
+        obj = VectorAttributes_SetUseStride(self, args);
     else if(strcmp(name, "nVectors") == 0)
-        obj = VectorAttributes_SetNVectors(self, tuple);
+        obj = VectorAttributes_SetNVectors(self, args);
     else if(strcmp(name, "stride") == 0)
-        obj = VectorAttributes_SetStride(self, tuple);
+        obj = VectorAttributes_SetStride(self, args);
     else if(strcmp(name, "origOnly") == 0)
-        obj = VectorAttributes_SetOrigOnly(self, tuple);
+        obj = VectorAttributes_SetOrigOnly(self, args);
     else if(strcmp(name, "limitsMode") == 0)
-        obj = VectorAttributes_SetLimitsMode(self, tuple);
+        obj = VectorAttributes_SetLimitsMode(self, args);
     else if(strcmp(name, "minFlag") == 0)
-        obj = VectorAttributes_SetMinFlag(self, tuple);
+        obj = VectorAttributes_SetMinFlag(self, args);
     else if(strcmp(name, "min") == 0)
-        obj = VectorAttributes_SetMin(self, tuple);
+        obj = VectorAttributes_SetMin(self, args);
     else if(strcmp(name, "maxFlag") == 0)
-        obj = VectorAttributes_SetMaxFlag(self, tuple);
+        obj = VectorAttributes_SetMaxFlag(self, args);
     else if(strcmp(name, "max") == 0)
-        obj = VectorAttributes_SetMax(self, tuple);
+        obj = VectorAttributes_SetMax(self, args);
     else if(strcmp(name, "colorByMagnitude") == 0)
-        obj = VectorAttributes_SetColorByMagnitude(self, tuple);
+        obj = VectorAttributes_SetColorByMagnitude(self, args);
     else if(strcmp(name, "colorTableName") == 0)
-        obj = VectorAttributes_SetColorTableName(self, tuple);
+        obj = VectorAttributes_SetColorTableName(self, args);
     else if(strcmp(name, "invertColorTable") == 0)
-        obj = VectorAttributes_SetInvertColorTable(self, tuple);
+        obj = VectorAttributes_SetInvertColorTable(self, args);
     else if(strcmp(name, "vectorColor") == 0)
-        obj = VectorAttributes_SetVectorColor(self, tuple);
+        obj = VectorAttributes_SetVectorColor(self, args);
     else if(strcmp(name, "useLegend") == 0)
-        obj = VectorAttributes_SetUseLegend(self, tuple);
+        obj = VectorAttributes_SetUseLegend(self, args);
     else if(strcmp(name, "scale") == 0)
-        obj = VectorAttributes_SetScale(self, tuple);
+        obj = VectorAttributes_SetScale(self, args);
     else if(strcmp(name, "scaleByMagnitude") == 0)
-        obj = VectorAttributes_SetScaleByMagnitude(self, tuple);
+        obj = VectorAttributes_SetScaleByMagnitude(self, args);
     else if(strcmp(name, "autoScale") == 0)
-        obj = VectorAttributes_SetAutoScale(self, tuple);
+        obj = VectorAttributes_SetAutoScale(self, args);
     else if(strcmp(name, "glyphType") == 0)
-        obj = VectorAttributes_SetGlyphType(self, tuple);
+        obj = VectorAttributes_SetGlyphType(self, args);
     else if(strcmp(name, "headOn") == 0)
-        obj = VectorAttributes_SetHeadOn(self, tuple);
+        obj = VectorAttributes_SetHeadOn(self, args);
     else if(strcmp(name, "headSize") == 0)
-        obj = VectorAttributes_SetHeadSize(self, tuple);
+        obj = VectorAttributes_SetHeadSize(self, args);
     else if(strcmp(name, "lineStem") == 0)
-        obj = VectorAttributes_SetLineStem(self, tuple);
+        obj = VectorAttributes_SetLineStem(self, args);
     else if(strcmp(name, "lineWidth") == 0)
-        obj = VectorAttributes_SetLineWidth(self, tuple);
+        obj = VectorAttributes_SetLineWidth(self, args);
     else if(strcmp(name, "stemWidth") == 0)
-        obj = VectorAttributes_SetStemWidth(self, tuple);
+        obj = VectorAttributes_SetStemWidth(self, args);
     else if(strcmp(name, "vectorOrigin") == 0)
-        obj = VectorAttributes_SetVectorOrigin(self, tuple);
+        obj = VectorAttributes_SetVectorOrigin(self, args);
     else if(strcmp(name, "geometryQuality") == 0)
-        obj = VectorAttributes_SetGeometryQuality(self, tuple);
+        obj = VectorAttributes_SetGeometryQuality(self, args);
     else if(strcmp(name, "animationStep") == 0)
-        obj = VectorAttributes_SetAnimationStep(self, tuple);
+        obj = VectorAttributes_SetAnimationStep(self, args);
 
    // Try and handle legacy fields in VectorAttributes
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         VectorAttributesObject *VectorObj = (VectorAttributesObject *)self;
         if(strcmp(name, "colorByMag") == 0)
         {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            int ival = -1;
+            PyErr_WarnEx(NULL, "'colorByMag' is obsolete. Use 'colorByMagnitude'.", 3);
+            ival = (int) PyLong_AsLong(args);
+            if (ival != -1)
             {
-                Py_DECREF(tuple);
-                return -1;
+                if (ival == 0)
+                    VectorObj->data->SetColorByMagnitude(false);
+                else
+                    VectorObj->data->SetColorByMagnitude(true);
             }
-            if(ival == 0)
-                VectorObj->data->SetColorByMagnitude(false);
-            else
-                VectorObj->data->SetColorByMagnitude(true);
-
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         if(strcmp(name, "highQuality") == 0)
         {
-            int ival;
-            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            int ival = -1;
+            PyErr_WarnEx(NULL, "'highQuality' is obsolete. Use 'geometryQuality'.", 3);
+            ival = (int) PyLong_AsLong(args);
+            if (ival != -1)
             {
-                Py_DECREF(tuple);
-                return -1;
+                if (ival == 0)
+                    VectorObj->data->SetGeometryQuality(VectorAttributes::Fast);
+                else
+                    VectorObj->data->SetGeometryQuality(VectorAttributes::High);
             }
-            if(ival == 0)
-                VectorObj->data->SetGeometryQuality(VectorAttributes::Fast);
-            else
-                VectorObj->data->SetGeometryQuality(VectorAttributes::High);
-
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
     }
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

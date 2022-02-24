@@ -134,7 +134,7 @@ avtIVPNek5000TimeVaryingField::avtIVPNek5000TimeVaryingField( vtkDataSet* datase
     else 
     {
       EXCEPTION1( InvalidVariableException,
-                  "Uninitialized option. (Please contact visit-developer mailing list to report)" );
+                  "Uninitialized option. (Please post at https://github.com/visit-dav/visit/discussions to report)" );
     }
 
     unsigned int iBlockSize2[3] = { 2*iBlockSize[0],

@@ -32,6 +32,9 @@
 #   Brad Whitlock, Thu Sep 14 16:53:41 PDT 2017
 #   Cinema support.
 #
+#   Eric Brugger, Thu Aug  5 11:21:21 PDT 2021
+#   Removed support for SeedMe.
+#
 #****************************************************************************
 
 SET(GUILIB_SOURCES
@@ -157,7 +160,6 @@ QvisSaveWindow.C
 QvisScreenPositionEdit.C
 QvisScreenPositioner.C
 QvisScribbleOpacityBar.C
-QvisSeedMeWindow.C
 QvisSelectionsDialog.C
 QvisSelectionsWindow.C
 QvisSetupHostProfilesAndConfigWindow.C
@@ -285,7 +287,6 @@ QvisSaveWindow.h
 QvisScreenPositionEdit.h
 QvisScreenPositioner.h
 QvisScribbleOpacityBar.h
-QvisSeedMeWindow.h
 QvisSelectionsDialog.h
 QvisSelectionsWindow.h
 QvisSessionFileDatabaseLoader.h

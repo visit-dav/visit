@@ -5,6 +5,7 @@ Postfix:
     // try to handle old attributes
     if(strcmp(name, "foregroundFlag") == 0)
     {
+        PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Will try to accomodate.", 3);
         if( ScatterAttributes_GetColorType(self, NULL) == PyInt_FromLong(0) )
         {
             PyObject *retval = PyInt_FromLong(1);
@@ -26,9 +27,12 @@ Postfix:
     {
         PyObject *new_args = NULL;
 
+        PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Will try to accomodate.", 3);
+
         // from the tuple get the foreground value
-        int ival;
-        if(!PyArg_ParseTuple(tuple, "i", &ival))
+        int ival = -1;
+        ival = (int) PyLong_AsLong(args);
+        if (ival == -1 && PyErr_Occurred())
               new_args = Py_BuildValue("(i)", 0);
 
         // foreground is false so single color and color type is 1

@@ -291,10 +291,12 @@ function build_mili
     fi
 
     info "Invoking command to configure Mili"
+    set -x
     ./${config_script} CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
                 ac_cv_prog_FOUND_GMAKE=make $extra_ac_flags \
                 --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
+    set +x
     if [[ $? != 0 ]] ; then
         warn "Mili configure failed.  Giving up"
         return 1

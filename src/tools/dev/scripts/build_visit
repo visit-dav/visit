@@ -11,8 +11,8 @@
 #   Warning:
 #       This script is only expected to work for Linux, and Darwin systems.
 #
-#   Please send feedback to visit-users@ornl.gov if you run into problems
-#   so that this script can be improved in the future.
+#   Please visit https://visit-help.llnl.gov to send feedback if you run into
+#   problems so that this script can be improved in the future.
 #
 
 # To create your own modular file these 7 functions need to be implemented..
@@ -36,7 +36,7 @@
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
 #6. bv_<module>_build builds the module
 
-export VISIT_VERSION=${VISIT_VERSION:-"3.2.0"}
+export VISIT_VERSION=${VISIT_VERSION:-"3.2.1"}
 
 ####
 # Trunk:
@@ -182,7 +182,7 @@ function configure_support_files
         fi
 
         if [ ! -d $bv_PREFIX ]; then
-            echo "Failed to detect or fetch support files, please contact visit-users mailing list with error. Quitting..."
+            echo "Failed to detect or fetch support files. Quitting..."
             exit 2
         fi
     fi

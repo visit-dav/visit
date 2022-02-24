@@ -81,7 +81,7 @@
 #   Remove custom help target.
 #****************************************************************************
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
 
 IF(WIN32)
     PROJECT(VISIT_DATA)
@@ -119,6 +119,15 @@ ENDIF(WIN32)
 #-----------------------------------------------------------------------------
 IF("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
     MESSAGE(WARNING "Archiver \"${VISIT_DATA_ARCHIVER_NAME}\" not found, data files cannot be extracted. Try setting VISIT_SEVEN_ZIP_DIR to location of 7-zip package, and VISIT_DATA_ARCHIVER_NAME to correct 7-zip executable name (eg, 7za, p7zip, 7z).")
+    #--------------------------------------------------------------------------
+    # CMake target to handle make-time requests to build targets that require
+    # 7z archiver yet none was provided. The test "" forces make-time failure.
+    #--------------------------------------------------------------------------
+    ADD_CUSTOM_TARGET(missing-7z-archiver ALL
+        COMMAND ${CMAKE_COMMAND} -E echo ""
+        COMMAND ${CMAKE_COMMAND} -E echo "No 7z archiver"
+        COMMAND ${CMAKE_COMMAND} -E echo ""
+        COMMAND test "")
 ELSE("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
     SET(ARCHIVER_CMD ${ARCHIVER_EXE})
     SET(ARCHIVER_XARGS x -y)                 # Expand archive args
@@ -165,6 +174,10 @@ FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
     SET(DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET})
 ENDFOREACH()
 
+IF(NOT DEFINED ARCHIVER_CMD)
+   set(DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} missing-7z-archiver)
+endif()
+
 #-----------------------------------------------------------------------------
 # Add custom targets: "data" & "testdata"
 #-----------------------------------------------------------------------------
@@ -205,7 +218,7 @@ ADD_CUSTOM_COMMAND(
 ADD_CUSTOM_TARGET(list DEPENDS _archive_list)
 
 #-----------------------------------------------------------------------------
-# Define target for help on 7z
+# Define target for more help on 7z
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_TARGET(
     7z-more-help VERBATIM
@@ -234,14 +247,13 @@ ADD_CUSTOM_TARGET(
     COMMAND ${CMAKE_COMMAND} -E echo "algorithm (-m0=lzma2). Also, we require compression be used on any"
     COMMAND ${CMAKE_COMMAND} -E echo "single file or collections of related files exceeding 1Mb in size."
     COMMAND ${CMAKE_COMMAND} -E echo "It is a best practice to put all related files in a directory named"
-    COMMAND ${CMAKE_COMMAND} -E echo "<format>_test_data where <format> (e.g. vtk_test_data) is a moniker"
+    COMMAND ${CMAKE_COMMAND} -E echo "<format>_test_data (e.g. vtk_test_data) where <format> is a moniker"
     COMMAND ${CMAKE_COMMAND} -E echo "indicating the data format and then archive that single directory."
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "")
 
 #-----------------------------------------------------------------------------
-# Define help target. Note, in later versions of CMake, CMP0037 needs to be
-# set to old.
+# Define 7z-help target.
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_TARGET(
     7z-help VERBATIM
@@ -252,17 +264,22 @@ ADD_CUSTOM_TARGET(
     COMMAND ${CMAKE_COMMAND} -E echo "To create an archive..."
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> AFILES=... archive"
     COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "  ANAME is the name of the archive without the extension (e.g .7z)"
-    COMMAND ${CMAKE_COMMAND} -E echo "  AFILES can a directory name, a file name, or space separated"
+    COMMAND ${CMAKE_COMMAND} -E echo "  ANAME is the name of the archive withOUT the extension (e.g .7z)"
+    COMMAND ${CMAKE_COMMAND} -E echo "  AFILES can be a directory name, a file name, or space separated"
     COMMAND ${CMAKE_COMMAND} -E echo "    list of files and/or directories bracketed in quotes."
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "To expand a single, specific archive..."
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> expand"
     COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "  ANAME is the name of the archive WITH the extension (e.g .7z)"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "To list contents of a single, specific archive..."
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> list"
     COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "  ANAME is the name of the archive WITH the extension (e.g .7z)"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "Examples..."
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=silo_hdf5_test_data.7z expand"
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=silo_hdf5_test_data.7z list"
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=new_archive AFILES=\"*.txt\" archive"
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=foodir_archive AFILES=foodir archive"

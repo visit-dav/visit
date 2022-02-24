@@ -462,7 +462,7 @@ recentering to occur.
 Mesh compatibility
 """"""""""""""""""
 
-In many cases, especially in Silo databases, all the available variables
+In many cases, especially in Silo_ databases, all the available variables
 in a database are not always defined on the same mesh. This can complicate
 matters involving expressions in variables from different meshes. 
 

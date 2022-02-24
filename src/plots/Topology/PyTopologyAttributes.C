@@ -83,12 +83,48 @@ TopologyAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -143,12 +179,11 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the tuple is the right size.
                             if(PyTuple_Size(pyobj) < cL.GetNumColors())
-                                return NULL;
+                                return PyErr_Format(PyExc_IndexError, "color tuple size=%d, expected=%d", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());
 
                             // Make sure that the tuple is the right size.
-                            bool badInput = false;
                             int *C = new int[4 * cL.GetNumColors()];
-                            for(int i = 0; i < PyTuple_Size(pyobj) && !badInput; ++i)
+                            for(int i = 0; i < PyTuple_Size(pyobj); ++i)
                             {
                                 PyObject *item = PyTuple_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
@@ -158,7 +193,7 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                     C[i*4+1] = 0;
                                     C[i*4+2] = 0;
                                     C[i*4+3] = 255;
-                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)
+                                    for(int j = 0; j < PyTuple_Size(item); ++j)
                                     {
                                         PyObject *colorcomp = PyTuple_GET_ITEM(item, j);
                                         if(PyInt_Check(colorcomp))
@@ -166,17 +201,17 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else if(PyFloat_Check(colorcomp))
                                            C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));
                                         else
-                                           badInput = true;
+                                        {
+                                           delete [] C;
+                                           return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d at index %d as a color component",j,i);
+                                        }
                                     }
                                 }
                                 else
-                                    badInput = true;
-                            }
-
-                            if(badInput)
-                            {
-                                delete [] C;
-                                return NULL;
+                                {
+                                    delete [] C;
+                                    return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
+                                }
                             }
 
                             for(int i = 0; i < cL.GetNumColors(); ++i)
@@ -187,12 +222,11 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the list is the right size.
                             if(PyList_Size(pyobj) < cL.GetNumColors())
-                                return NULL;
+                                return PyErr_Format(PyExc_IndexError, "color tuple size=%d, expected=%d", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());
 
                             // Make sure that the tuple is the right size.
-                            bool badInput = false;
                             int *C = new int[4 * cL.GetNumColors()];
-                            for(int i = 0; i < PyList_Size(pyobj) && !badInput; ++i)
+                            for(int i = 0; i < PyList_Size(pyobj); ++i)
                             {
                                 PyObject *item = PyList_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
@@ -202,7 +236,7 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                     C[i*4+1] = 0;
                                     C[i*4+2] = 0;
                                     C[i*4+3] = 255;
-                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)
+                                    for(int j = 0; j < PyTuple_Size(item); ++j)
                                     {
                                         PyObject *colorcomp = PyTuple_GET_ITEM(item, j);
                                         if(PyInt_Check(colorcomp))
@@ -210,17 +244,17 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else if(PyFloat_Check(colorcomp))
                                            C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));
                                         else
-                                           badInput = true;
+                                        {
+                                           delete [] C;
+                                           return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d at index %d as a color component",j,i);
+                                        }
                                     }
                                 }
                                 else
-                                    badInput = true;
-                            }
-
-                            if(badInput)
-                            {
-                                delete [] C;
-                                return NULL;
+                                {
+                                    delete [] C;
+                                    return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
+                                }
                             }
 
                             for(int i = 0; i < cL.GetNumColors(); ++i)
@@ -229,7 +263,7 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             delete [] C;
                         }
                         else
-                            return NULL;
+                            return PyErr_Format(PyExc_TypeError, "Expecting tuple or list");
                     }
                 }
                 else
@@ -239,7 +273,7 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
 
                     // Make sure that the tuple is the right size.
                     if(PyTuple_Size(pyobj) < 3 || PyTuple_Size(pyobj) > 4)
-                        return NULL;
+                        return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
 
                     // Make sure that all elements in the tuple are ints.
                     for(int i = 0; i < PyTuple_Size(pyobj); ++i)
@@ -250,7 +284,7 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         else if(PyFloat_Check(item))
                             c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(pyobj, i)));
                         else
-                            return NULL;
+                            return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d as a color component", i);
                     }
                 }
             }
@@ -259,7 +293,7 @@ TopologyAttributes_SetMultiColor(PyObject *self, PyObject *args)
     }
 
     if(index < 0 || index >= cL.GetNumColors())
-        return NULL;
+        return PyErr_Format(PyExc_ValueError, "color index out of range 0 <= i < %d", (int) cL.GetNumColors());
 
     // Set the color in the object.
     if(setTheColor)
@@ -319,12 +353,48 @@ TopologyAttributes_SetMinOpacity(PyObject *self, PyObject *args)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minOpacity in the object.
-    obj->data->SetMinOpacity(dval);
+    obj->data->SetMinOpacity(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -343,12 +413,48 @@ TopologyAttributes_SetMinPlateauOpacity(PyObject *self, PyObject *args)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the minPlateauOpacity in the object.
-    obj->data->SetMinPlateauOpacity(dval);
+    obj->data->SetMinPlateauOpacity(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -367,12 +473,48 @@ TopologyAttributes_SetMaxPlateauOpacity(PyObject *self, PyObject *args)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxPlateauOpacity in the object.
-    obj->data->SetMaxPlateauOpacity(dval);
+    obj->data->SetMaxPlateauOpacity(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -391,12 +533,48 @@ TopologyAttributes_SetMaxOpacity(PyObject *self, PyObject *args)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the maxOpacity in the object.
-    obj->data->SetMaxOpacity(dval);
+    obj->data->SetMaxOpacity(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -415,12 +593,48 @@ TopologyAttributes_SetTolerance(PyObject *self, PyObject *args)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the tolerance in the object.
-    obj->data->SetTolerance(dval);
+    obj->data->SetTolerance(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -439,12 +653,48 @@ TopologyAttributes_SetHitpercent(PyObject *self, PyObject *args)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the hitpercent in the object.
-    obj->data->SetHitpercent(dval);
+    obj->data->SetHitpercent(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -542,56 +792,71 @@ PyTopologyAttributes_getattr(PyObject *self, char *name)
     }
     if (lineStyleFound)
     {
-        fprintf(stdout, "lineStyle is no longer a valid Topology "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "lineStyle is no longer a valid Topology "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyTopologyAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyTopologyAttributes_methods[i].ml_name),
+                PyString_FromString(PyTopologyAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyTopologyAttributes_methods, self, name);
 }
 
 int
 PyTopologyAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "lineWidth") == 0)
-        obj = TopologyAttributes_SetLineWidth(self, tuple);
+        obj = TopologyAttributes_SetLineWidth(self, args);
     else if(strcmp(name, "multiColor") == 0)
-        obj = TopologyAttributes_SetMultiColor(self, tuple);
+        obj = TopologyAttributes_SetMultiColor(self, args);
     else if(strcmp(name, "minOpacity") == 0)
-        obj = TopologyAttributes_SetMinOpacity(self, tuple);
+        obj = TopologyAttributes_SetMinOpacity(self, args);
     else if(strcmp(name, "minPlateauOpacity") == 0)
-        obj = TopologyAttributes_SetMinPlateauOpacity(self, tuple);
+        obj = TopologyAttributes_SetMinPlateauOpacity(self, args);
     else if(strcmp(name, "maxPlateauOpacity") == 0)
-        obj = TopologyAttributes_SetMaxPlateauOpacity(self, tuple);
+        obj = TopologyAttributes_SetMaxPlateauOpacity(self, args);
     else if(strcmp(name, "maxOpacity") == 0)
-        obj = TopologyAttributes_SetMaxOpacity(self, tuple);
+        obj = TopologyAttributes_SetMaxOpacity(self, args);
     else if(strcmp(name, "tolerance") == 0)
-        obj = TopologyAttributes_SetTolerance(self, tuple);
+        obj = TopologyAttributes_SetTolerance(self, args);
     else if(strcmp(name, "hitpercent") == 0)
-        obj = TopologyAttributes_SetHitpercent(self, tuple);
+        obj = TopologyAttributes_SetHitpercent(self, args);
 
     // Try and handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'lineStyle' is obsolete.", 2);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
     }
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

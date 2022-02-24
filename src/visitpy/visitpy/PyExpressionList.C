@@ -71,19 +71,13 @@ ExpressionList_Notify(PyObject *self, PyObject *args)
 ExpressionList_GetExpressions(PyObject *self, PyObject *args)
 {
     ExpressionListObject *obj = (ExpressionListObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetExpressions().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetExpressions().size() == 0)
-            snprintf(msg, 400, "In ExpressionList::GetExpressions : The index %d is invalid because expressions is empty.", index);
-        else
-            snprintf(msg, 400, "In ExpressionList::GetExpressions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetExpressions().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+    int index = -1;
+    if (args == NULL)
+        return PyErr_Format(PyExc_NameError, "Use .GetExpressions(int index) to get a single entry");
+    if (!PyArg_ParseTuple(args, "i", &index))
+        return PyErr_Format(PyExc_TypeError, "arg must be a single integer index");
+    if (index < 0 || (size_t)index >= obj->data->GetExpressions().size())
+        return PyErr_Format(PyExc_ValueError, "index out of range");
 
     // Since the new object will point to data owned by the this object,
     // we need to increment the reference count.
@@ -112,12 +106,7 @@ ExpressionList_AddExpressions(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &element))
         return NULL;
     if(!PyExpression_Check(element))
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "The ExpressionList::AddExpressions method only accepts Expression objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "expected attr object of type Expression");
     Expression *newData = PyExpression_FromPyObject(element);
     obj->data->AddExpressions(*newData);
     obj->data->SelectExpressions();
@@ -155,17 +144,12 @@ ExpressionList_Remove_One_Expressions(PyObject *self, int index)
 PyObject *
 ExpressionList_RemoveExpressions(PyObject *self, PyObject *args)
 {
-    int index;
+    int index = -1;
     if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "Expecting integer index");
     ExpressionListObject *obj = (ExpressionListObject *)self;
     if(index < 0 || index >= obj->data->GetNumExpressions())
-    {
-        char msg[400] = {'\0'};
-        snprintf(msg, 400, "In ExpressionList::RemoveExpressions : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
+        return PyErr_Format(PyExc_IndexError, "Index out of range");
 
     return ExpressionList_Remove_One_Expressions(self, index);
 }
@@ -217,26 +201,39 @@ PyExpressionList_getattr(PyObject *self, char *name)
     if(strcmp(name, "expressions") == 0)
         return ExpressionList_GetExpressions(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyExpressionList_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyExpressionList_methods[i].ml_name),
+                PyString_FromString(PyExpressionList_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyExpressionList_methods, self, name);
 }
 
 int
 PyExpressionList_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
 
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

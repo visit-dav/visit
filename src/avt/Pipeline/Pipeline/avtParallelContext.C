@@ -2256,24 +2256,32 @@ bool avtParallelContext::GetListToRootProc(std::vector<std::string> &vars, int t
 //    I moved the body into a static helper that I templated so I could add
 //    another version that uses doubles.
 //
+//    Chris Laganella, Tue Jan 18 17:04:44 EST 2022
+//    I updated the function to take allocator functions (which are templates)
+//    so that I could add another version that uses C++ vectors.
+//    Also made sendBuf const.
+//
 // ****************************************************************************
 
-template <class T>
+template <class T, typename RecvBuffAllocFunc, typename RecvCountsAllocFunc>
 static void
 CollectArraysOnRank(int rank, int nProc, T *&receiveBuf, int *&receiveCounts,
-    T *sendBuf, int sendCount,
+    const T *sendBuf, int sendCount,
 #ifdef PARALLEL
     MPI_Datatype dataType,
     MPI_Comm communicator,
 #endif
-    int root)
+    int root,
+    RecvBuffAllocFunc &&rbAlloc,
+    RecvCountsAllocFunc &&rcAlloc
+    )
 {
 #ifdef PARALLEL
     // Determine the receive counts.
     receiveCounts = NULL;
     if (rank == root)
     {
-        receiveCounts = new int[nProc];
+        receiveCounts = rcAlloc(nProc);
     }
     MPI_Gather(&sendCount, 1, MPI_INT, receiveCounts, 1, MPI_INT,
                root, communicator);
@@ -2298,7 +2306,7 @@ CollectArraysOnRank(int rank, int nProc, T *&receiveBuf, int *&receiveCounts,
             nReceiveBuf += receiveCounts[i];
 
         // Allocate it.
-        receiveBuf = new T[nReceiveBuf];
+        receiveBuf = rbAlloc(nReceiveBuf);
     }
 
     MPI_Gatherv(sendBuf, sendCount, dataType, receiveBuf,
@@ -2309,13 +2317,33 @@ CollectArraysOnRank(int rank, int nProc, T *&receiveBuf, int *&receiveCounts,
         delete [] procOffset;
     }
 #else
-    receiveCounts = new int[1];
+    receiveCounts = rcAlloc(1);
     receiveCounts[0] = sendCount;
 
-    receiveBuf = new T[sendCount];
+    receiveBuf = rbAlloc(sendCount);
     for (int i = 0; i < sendCount; i++)
         receiveBuf[i] = sendBuf[i];
 #endif
+}
+
+// ****************************************************************************
+//  Function: SimpleNewAlloc
+//
+//  Purpose:
+//      To be passed to CollectArraysOnRank for the original cases that just
+//      use new T[N].
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Jan 18 17:08:50 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+template<typename T>
+static T *
+SimpleNewAlloc(int N)
+{
+    return new T[N];
 }
 
 void
@@ -2326,7 +2354,9 @@ avtParallelContext::CollectIntArraysOnRank(int *&receiveBuf, int *&receiveCounts
 #ifdef PARALLEL
                              MPI_INT, this->GetCommunicator(),
 #endif
-                             root);
+                             root,
+                             SimpleNewAlloc<int>,
+                             SimpleNewAlloc<int>);
 }
 
 void
@@ -2337,7 +2367,9 @@ avtParallelContext::CollectIntArraysOnRootProc(int *&receiveBuf, int *&receiveCo
 #ifdef PARALLEL
                              MPI_INT, this->GetCommunicator(),
 #endif
-                             0);
+                             0,
+                             SimpleNewAlloc<int>,
+                             SimpleNewAlloc<int>);
 }
 
 void
@@ -2348,7 +2380,97 @@ avtParallelContext::CollectDoubleArraysOnRootProc(double *&receiveBuf, int *&rec
 #ifdef PARALLEL
                                 MPI_DOUBLE, this->GetCommunicator(),
 #endif
-                                0);
+                                0,
+                                SimpleNewAlloc<double>,
+                                SimpleNewAlloc<int>);
+}
+
+// ****************************************************************************
+//  Function: CollectFloatVectorsOnRank
+//
+//  Purpose:
+//      Same as above but works with C++ vector inputs.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Fri Jan 21 15:30:47 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtParallelContext::CollectFloatVectorsOnRootProc(
+                                    std::vector<float> &recvBuf,
+                                    std::vector<int> &recvCounts,
+                                    const std::vector<float> &sendBuf,
+                                    int root)
+{
+    const auto allocRecvBuf = [&recvBuf](int sz){
+        recvBuf.resize(sz);
+        return recvBuf.data();
+    };
+    const auto allocRecvCount = [&recvCounts](int sz) {
+        recvCounts.resize(sz);
+        return recvCounts.data();
+    };
+
+    // The template function takes references to pointers and manipulates them
+    //   this version of the function doesn't need those pointers returned out
+    float *rbTemp = recvBuf.data();
+    int *rcTemp = recvCounts.data();
+    int sendCount = static_cast<int>(sendBuf.size());
+
+    CollectArraysOnRank<float>(Rank(), Size(), rbTemp, rcTemp,
+                                sendBuf.data(), sendCount,
+#ifdef PARALLEL
+                                MPI_FLOAT, this->GetCommunicator(),
+#endif
+                                root,
+                                allocRecvBuf,
+                                allocRecvCount);
+}
+
+// ****************************************************************************
+//  Function: CollectDoubleVectorsOnRank
+//
+//  Purpose:
+//      Same as above but works with C++ vector inputs.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Tue Jan 18 17:26:16 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+avtParallelContext::CollectDoubleVectorsOnRootProc(
+                                    std::vector<double> &recvBuf,
+                                    std::vector<int> &recvCounts,
+                                    const std::vector<double> &sendBuf,
+                                    int root)
+{
+    const auto allocRecvBuf = [&recvBuf](int sz){
+        recvBuf.resize(sz);
+        return recvBuf.data();
+    };
+    const auto allocRecvCount = [&recvCounts](int sz) {
+        recvCounts.resize(sz);
+        return recvCounts.data();
+    };
+
+    // The template function takes references to pointers and manipulates them
+    //   this version of the function doesn't need those pointers returned out
+    double *rbTemp = recvBuf.data();
+    int *rcTemp = recvCounts.data();
+    int sendCount = static_cast<int>(sendBuf.size());
+
+    CollectArraysOnRank<double>(Rank(), Size(), rbTemp, rcTemp,
+                                sendBuf.data(), sendCount,
+#ifdef PARALLEL
+                                MPI_DOUBLE, this->GetCommunicator(),
+#endif
+                                root,
+                                allocRecvBuf,
+                                allocRecvCount);
 }
 
 // ****************************************************************************

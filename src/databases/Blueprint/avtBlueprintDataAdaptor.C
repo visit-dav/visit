@@ -186,7 +186,22 @@ Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
 }
 
 
-
+// ****************************************************************************
+//  Method: ConduitArrayToVTKDataArray
+//
+//  Purpose:
+//   Constructs a vtkDataArray from a Conduit mcarray.
+//
+//  Arguments:
+//   n:    Blueprint Field Values Node
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014 (?)
+//
+//  Modifications:
+//    Cyrus Harrison, Thu Jan 13 11:14:20 PST 2022
+//    Add support for unsigned long and unsigned long long.
+//
 // ****************************************************************************
 vtkDataArray *
 ConduitArrayToVTKDataArray(const conduit::Node &n)
@@ -251,6 +266,24 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
                                                                               ntuples,
                                                                               retval);
     }
+    else if (vals_dtype.is_unsigned_long())
+    {
+        retval = vtkUnsignedLongArray::New();
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_LONG>(n,
+                                                                               ncomps,
+                                                                               ntuples,
+                                                                               retval);
+    }
+#if CONDUIT_USE_LONG_LONG
+    else if (vals_dtype.id() == CONDUIT_NATIVE_UNSIGNED_LONG_LONG_ID)
+    {
+        retval = vtkUnsignedLongLongArray::New();
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_LONG_LONG>(n,
+                                                                                    ncomps,
+                                                                                    ntuples,
+                                                                                    retval);
+    }
+#endif
     else if (vals_dtype.is_char())
     {
         retval = vtkCharArray::New();
@@ -569,11 +602,40 @@ StructuredTopologyToVTKStructuredGrid(const Node &n_coords,
     return sgrid;
 }
 
-
+// ****************************************************************************
+//  Method: HomogeneousShapeTopologyToVTKCellArray
+//
+//  Purpose:
+//   Constructs a vtkCell array from a Blueprint topology
+//
+//  Arguments:
+//   n_topo:    Blueprint Topology
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014
+//
+//  Modifications:
+//    Chris Laganella, Thu Jan 13 11:07:26 PST 2022
+//    Fix bug where index array could be copied in interloop
+//
+// ****************************************************************************
+//  Method: HomogeneousShapeTopologyToVTKCellArray
+//
+//  Purpose:
+//   Translates the blueprint connectivity array to a VTK connectivity array
+//
+//  Programmer:
+//  Creation:
+//
+//  Modifications:
+//
+//  Chris Laganella, Fri Nov  5 17:21:05 EDT 2021
+//  I fixed a bug where it was copying the entire connectivity array in each
+//  iteration of the for loop.
 // ****************************************************************************
 vtkCellArray *
 HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
-                                       int npts)
+                                       int /* npts -- UNUSED */)
 {
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
@@ -600,22 +662,25 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
         int ctype = ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string());
         int csize = VTKCellTypeSize(ctype);
         int ncells = n_topo["elements/connectivity"].dtype().number_of_elements() / csize;
+        ida->SetNumberOfTuples(ncells * (csize + 1));
 
+        // Extract connectivity as int array, using 'to_int_array' if needed.
         int_array topo_conn;
         ida->SetNumberOfTuples(ncells * (csize + 1));
+
+        Node n_tmp;
+        if(n_topo["elements/connectivity"].dtype().is_int())
+        {
+            topo_conn = n_topo["elements/connectivity"].as_int_array();
+        }
+        else
+        {
+            n_topo["elements/connectivity"].to_int_array(n_tmp);
+            topo_conn = n_tmp.as_int_array();
+        }
+
         for (int i = 0 ; i < ncells; i++)
         {
-            Node n_tmp;
-            if(n_topo["elements/connectivity"].dtype().is_int())
-            {
-                topo_conn = n_topo["elements/connectivity"].as_int_array();
-            }
-            else
-            {
-                n_topo["elements/connectivity"].to_int_array(n_tmp);
-                topo_conn = n_tmp.as_int_array();
-            }
-
             ida->SetComponent((csize+1)*i, 0, csize);
             for (int j = 0; j < csize; j++)
             {
@@ -1878,6 +1943,46 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 //  Method: avtBlueprintDataAdapter::VTKFieldsToBlueprint
 //
 //  Purpose:
+//      Replaces '/''s in input vtk_name with '_''s and stores the output in
+//      bp_name. If the field name is "mesh_topo_name/name" then the
+//      entire "mesh_topo_name/" is removed from the output.
+//
+//  Programmer: Chris Laganella
+//  Creation:   Fri Nov  5 16:35:09 EDT 2021
+//
+//  Modifications:
+//
+// ****************************************************************************
+void avtBlueprintDataAdaptor::BP::VTKFieldNameToBlueprint(const std::string &vtk_name,
+                                                          const std::string &topo_name,
+                                                          std::string &bp_name)
+{
+    bp_name = vtk_name;
+    int first = bp_name.find('/');
+    if(first == bp_name.npos)
+    {
+        return;
+    }
+
+    const std::string mesh_topo = "mesh_" + topo_name;
+    if(bp_name.substr(0, first) == mesh_topo)
+    {
+        bp_name = bp_name.substr(first+1);
+    }
+
+    for(char &c : bp_name)
+    {
+        if(c == '/')
+        {
+            c = '_';
+        }
+    }
+}
+
+// ****************************************************************************
+//  Method: avtBlueprintDataAdapter::VTKFieldsToBlueprint
+//
+//  Purpose:
 //      Takes a vtk data set and converts all the fields into blueprint nodes.
 //      node is the mesh["fields"] node in the blueprint dataset
 //
@@ -1886,6 +1991,8 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 //
 //  Modifications:
 //
+//  Chris Laganella Fri Nov  5 16:51:15 EDT 2021
+//  Updated to use VTKFieldNameToBlueprint
 // ****************************************************************************
 void avtBlueprintDataAdaptor::BP::VTKFieldsToBlueprint(conduit::Node &node,
                                                        const std::string topo_name,
@@ -1904,7 +2011,8 @@ void avtBlueprintDataAdaptor::BP::VTKFieldsToBlueprint(conduit::Node &node,
          if (strstr(arr->GetName(), "vtk") != NULL)
              continue;
          // keep fields like avtGhostZones
-         std::string fname = arr->GetName();
+         std::string fname;
+         VTKFieldNameToBlueprint(arr->GetName(), topo_name, fname);
          std::string field_path = "fields/" + fname;
          node[field_path + "/association"] = "vertex";
          node[field_path + "/topology"] = topo_name;
@@ -1923,7 +2031,8 @@ void avtBlueprintDataAdaptor::BP::VTKFieldsToBlueprint(conduit::Node &node,
          if (strstr(arr->GetName(), "vtk") != NULL)
              continue;
          // keep fields like avtGhostZones
-         std::string fname = arr->GetName();
+         std::string fname;
+         VTKFieldNameToBlueprint(arr->GetName(), topo_name, fname);
          std::string field_path = "fields/" + fname;
          node[field_path + "/association"] = "element";
          node[field_path + "/topology"] = topo_name;

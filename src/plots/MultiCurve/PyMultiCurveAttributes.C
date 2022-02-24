@@ -148,10 +148,7 @@ MultiCurveAttributes_SetDefaultPalette(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
     if(!PyColorControlPointList_Check(newValue))
-    {
-        fprintf(stderr, "The defaultPalette field can only be set with ColorControlPointList objects.\n");
-        return NULL;
-    }
+        return PyErr_Format(PyExc_TypeError, "Field defaultPalette can be set only with ColorControlPointList objects");
 
     obj->data->SetDefaultPalette(*PyColorControlPointList_FromPyObject(newValue));
 
@@ -180,59 +177,59 @@ MultiCurveAttributes_SetChangedColors(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    unsignedCharVector  &vec = obj->data->GetChangedColors();
-    PyObject     *tuple;
-    if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+    typedef unsigned char uchar;
+    ucharVector vec;
 
-    if(PyTuple_Check(tuple))
+    if (PyNumber_Check(args))
     {
-        vec.resize(PyTuple_Size(tuple));
-        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        long val = PyLong_AsLong(args);
+        uchar cval = uchar(val);
+        if (val == -1 && PyErr_Occurred())
         {
-            int c;
-            PyObject *item = PyTuple_GET_ITEM(tuple, i);
-            if(PyFloat_Check(item))
-                c = int(PyFloat_AS_DOUBLE(item));
-            else if(PyInt_Check(item))
-                c = int(PyInt_AS_LONG(item));
-            else if(PyLong_Check(item))
-                c = int(PyLong_AsDouble(item));
-            else
-                c = 0;
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ uchar");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ uchar");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
 
-            if(c < 0) c = 0;
-            if(c > 255) c = 255;
-            vec[i] = (unsigned char)(c);
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            uchar cval = uchar(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ uchar", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ uchar", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
         }
     }
-    else if(PyFloat_Check(tuple))
-    {
-        vec.resize(1);
-        int c = int(PyFloat_AS_DOUBLE(tuple));
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
-    else if(PyInt_Check(tuple))
-    {
-        vec.resize(1);
-        int c = int(PyInt_AS_LONG(tuple));
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
-    else if(PyLong_Check(tuple))
-    {
-        vec.resize(1);
-        int c = PyLong_AsLong(tuple);
-        if(c < 0) c = 0;
-        if(c > 255) c = 255;
-        vec[0] = (unsigned char)(c);
-    }
     else
-        return NULL;
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more uchars");
 
+    obj->data->GetChangedColors() = vec;
     // Mark the changedColors in the object as modified.
     obj->data->SelectChangedColors();
 
@@ -257,21 +254,54 @@ MultiCurveAttributes_SetColorType(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if ((val == -1 && PyErr_Occurred()) || long(cval) != val)
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+
+    if (cval < 0 || cval >= 2)
+    {
+        std::stringstream ss;
+        ss << "An invalid colorType value was given." << std::endl;
+        ss << "Valid values are in the range [0,1]." << std::endl;
+        ss << "You can also use the following symbolic names:";
+        ss << " ColorBySingleColor";
+        ss << ", ColorByMultipleColors";
+        return PyErr_Format(PyExc_ValueError, ss.str().c_str());
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the colorType in the object.
-    if(ival >= 0 && ival < 2)
-        obj->data->SetColorType(MultiCurveAttributes::ColoringMethod(ival));
-    else
-    {
-        fprintf(stderr, "An invalid colorType value was given. "
-                        "Valid values are in the range of [0,1]. "
-                        "You can also use the following names: "
-                        "ColorBySingleColor, ColorByMultipleColors.");
-        return NULL;
-    }
+    obj->data->SetColorType(MultiCurveAttributes::ColoringMethod(cval));
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -403,12 +433,11 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the tuple is the right size.
                             if(PyTuple_Size(pyobj) < cL.GetNumColors())
-                                return NULL;
+                                return PyErr_Format(PyExc_IndexError, "color tuple size=%d, expected=%d", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());
 
                             // Make sure that the tuple is the right size.
-                            bool badInput = false;
                             int *C = new int[4 * cL.GetNumColors()];
-                            for(int i = 0; i < PyTuple_Size(pyobj) && !badInput; ++i)
+                            for(int i = 0; i < PyTuple_Size(pyobj); ++i)
                             {
                                 PyObject *item = PyTuple_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
@@ -418,7 +447,7 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                     C[i*4+1] = 0;
                                     C[i*4+2] = 0;
                                     C[i*4+3] = 255;
-                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)
+                                    for(int j = 0; j < PyTuple_Size(item); ++j)
                                     {
                                         PyObject *colorcomp = PyTuple_GET_ITEM(item, j);
                                         if(PyInt_Check(colorcomp))
@@ -426,17 +455,17 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else if(PyFloat_Check(colorcomp))
                                            C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));
                                         else
-                                           badInput = true;
+                                        {
+                                           delete [] C;
+                                           return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d at index %d as a color component",j,i);
+                                        }
                                     }
                                 }
                                 else
-                                    badInput = true;
-                            }
-
-                            if(badInput)
-                            {
-                                delete [] C;
-                                return NULL;
+                                {
+                                    delete [] C;
+                                    return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
+                                }
                             }
 
                             for(int i = 0; i < cL.GetNumColors(); ++i)
@@ -447,12 +476,11 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         {
                             // Make sure that the list is the right size.
                             if(PyList_Size(pyobj) < cL.GetNumColors())
-                                return NULL;
+                                return PyErr_Format(PyExc_IndexError, "color tuple size=%d, expected=%d", (int) PyTuple_Size(pyobj), (int) cL.GetNumColors());
 
                             // Make sure that the tuple is the right size.
-                            bool badInput = false;
                             int *C = new int[4 * cL.GetNumColors()];
-                            for(int i = 0; i < PyList_Size(pyobj) && !badInput; ++i)
+                            for(int i = 0; i < PyList_Size(pyobj); ++i)
                             {
                                 PyObject *item = PyList_GET_ITEM(pyobj, i);
                                 if(PyTuple_Check(item) &&
@@ -462,7 +490,7 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                     C[i*4+1] = 0;
                                     C[i*4+2] = 0;
                                     C[i*4+3] = 255;
-                                    for(int j = 0; j < PyTuple_Size(item) && !badInput; ++j)
+                                    for(int j = 0; j < PyTuple_Size(item); ++j)
                                     {
                                         PyObject *colorcomp = PyTuple_GET_ITEM(item, j);
                                         if(PyInt_Check(colorcomp))
@@ -470,17 +498,17 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
                                         else if(PyFloat_Check(colorcomp))
                                            C[i*4+j] = int(PyFloat_AS_DOUBLE(colorcomp));
                                         else
-                                           badInput = true;
+                                        {
+                                           delete [] C;
+                                           return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d at index %d as a color component",j,i);
+                                        }
                                     }
                                 }
                                 else
-                                    badInput = true;
-                            }
-
-                            if(badInput)
-                            {
-                                delete [] C;
-                                return NULL;
+                                {
+                                    delete [] C;
+                                    return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
+                                }
                             }
 
                             for(int i = 0; i < cL.GetNumColors(); ++i)
@@ -489,7 +517,7 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
                             delete [] C;
                         }
                         else
-                            return NULL;
+                            return PyErr_Format(PyExc_TypeError, "Expecting tuple or list");
                     }
                 }
                 else
@@ -499,7 +527,7 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
 
                     // Make sure that the tuple is the right size.
                     if(PyTuple_Size(pyobj) < 3 || PyTuple_Size(pyobj) > 4)
-                        return NULL;
+                        return PyErr_Format(PyExc_ValueError, "Color tuple must be size 3 or 4");
 
                     // Make sure that all elements in the tuple are ints.
                     for(int i = 0; i < PyTuple_Size(pyobj); ++i)
@@ -510,7 +538,7 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
                         else if(PyFloat_Check(item))
                             c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(pyobj, i)));
                         else
-                            return NULL;
+                            return PyErr_Format(PyExc_ValueError, "Unable to interpret component %d as a color component", i);
                     }
                 }
             }
@@ -519,7 +547,7 @@ MultiCurveAttributes_SetMultiColor(PyObject *self, PyObject *args)
     }
 
     if(index < 0 || index >= cL.GetNumColors())
-        return NULL;
+        return PyErr_Format(PyExc_ValueError, "color index out of range 0 <= i < %d", (int) cL.GetNumColors());
 
     // Set the color in the object.
     if(setTheColor)
@@ -579,12 +607,48 @@ MultiCurveAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the lineWidth in the object.
-    obj->data->SetLineWidth(ival);
+    obj->data->SetLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -603,12 +667,37 @@ MultiCurveAttributes_SetYAxisTitleFormat(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yAxisTitleFormat in the object.
-    obj->data->SetYAxisTitleFormat(std::string(str));
+    obj->data->SetYAxisTitleFormat(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -627,12 +716,48 @@ MultiCurveAttributes_SetUseYAxisTickSpacing(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the useYAxisTickSpacing in the object.
-    obj->data->SetUseYAxisTickSpacing(ival != 0);
+    obj->data->SetUseYAxisTickSpacing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -651,12 +776,48 @@ MultiCurveAttributes_SetYAxisTickSpacing(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the yAxisTickSpacing in the object.
-    obj->data->SetYAxisTickSpacing(dval);
+    obj->data->SetYAxisTickSpacing(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -675,12 +836,48 @@ MultiCurveAttributes_SetDisplayMarkers(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the displayMarkers in the object.
-    obj->data->SetDisplayMarkers(ival != 0);
+    obj->data->SetDisplayMarkers(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -699,12 +896,48 @@ MultiCurveAttributes_SetMarkerScale(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    double dval;
-    if(!PyArg_ParseTuple(args, "d", &dval))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    double val = PyFloat_AsDouble(args);
+    double cval = double(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ double");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ double");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the markerScale in the object.
-    obj->data->SetMarkerScale(dval);
+    obj->data->SetMarkerScale(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -723,12 +956,48 @@ MultiCurveAttributes_SetMarkerLineWidth(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    int cval = int(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ int");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ int");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the markerLineWidth in the object.
-    obj->data->SetMarkerLineWidth(ival);
+    obj->data->SetMarkerLineWidth(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -747,12 +1016,37 @@ MultiCurveAttributes_SetMarkerVariable(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the markerVariable in the object.
-    obj->data->SetMarkerVariable(std::string(str));
+    obj->data->SetMarkerVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -771,12 +1065,48 @@ MultiCurveAttributes_SetDisplayIds(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the displayIds in the object.
-    obj->data->SetDisplayIds(ival != 0);
+    obj->data->SetDisplayIds(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -795,12 +1125,37 @@ MultiCurveAttributes_SetIdVariable(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    char *str;
-    if(!PyArg_ParseTuple(args, "s", &str))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged as first member of a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyUnicode_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (!PyUnicode_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+    }
+
+    char const *val = PyUnicode_AsUTF8(args);
+    std::string cval = std::string(val);
+
+    if (val == 0 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the idVariable in the object.
-    obj->data->SetIdVariable(std::string(str));
+    obj->data->SetIdVariable(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -819,12 +1174,48 @@ MultiCurveAttributes_SetLegendFlag(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
+    PyObject *packaged_args = 0;
+
+    // Handle args packaged into a tuple of size one
+    // if we think the unpackaged args matches our needs
+    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    {
+        packaged_args = PySequence_GetItem(args, 0);
+        if (PyNumber_Check(packaged_args))
+            args = packaged_args;
+    }
+
+    if (PySequence_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
+    }
+
+    if (!PyNumber_Check(args))
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
+    }
+
+    long val = PyLong_AsLong(args);
+    bool cval = bool(val);
+
+    if (val == -1 && PyErr_Occurred())
+    {
+        Py_XDECREF(packaged_args);
+        PyErr_Clear();
+        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
+    }
+    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+    {
+        Py_XDECREF(packaged_args);
+        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
+    }
+
+    Py_XDECREF(packaged_args);
 
     // Set the legendFlag in the object.
-    obj->data->SetLegendFlag(ival != 0);
+    obj->data->SetLegendFlag(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -959,72 +1350,87 @@ PyMultiCurveAttributes_getattr(PyObject *self, char *name)
     }
     if (lineStyleFound)
     {
-        fprintf(stdout, "lineStyle is no longer a valid MultiCurve "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
+        PyErr_WarnEx(NULL,
+            "lineStyle is no longer a valid MultiCurve "
+            "attribute.\nIt's value is being ignored, please remove "
+            "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyMultiCurveAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyMultiCurveAttributes_methods[i].ml_name),
+                PyString_FromString(PyMultiCurveAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyMultiCurveAttributes_methods, self, name);
 }
 
 int
 PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
-    // Create a tuple to contain the arguments since all of the Set
-    // functions expect a tuple.
-    PyObject *tuple = PyTuple_New(1);
-    PyTuple_SET_ITEM(tuple, 0, args);
-    Py_INCREF(args);
-    PyObject *obj = NULL;
+    PyObject NULL_PY_OBJ;
+    PyObject *obj = &NULL_PY_OBJ;
 
     if(strcmp(name, "defaultPalette") == 0)
-        obj = MultiCurveAttributes_SetDefaultPalette(self, tuple);
+        obj = MultiCurveAttributes_SetDefaultPalette(self, args);
     else if(strcmp(name, "changedColors") == 0)
-        obj = MultiCurveAttributes_SetChangedColors(self, tuple);
+        obj = MultiCurveAttributes_SetChangedColors(self, args);
     else if(strcmp(name, "colorType") == 0)
-        obj = MultiCurveAttributes_SetColorType(self, tuple);
+        obj = MultiCurveAttributes_SetColorType(self, args);
     else if(strcmp(name, "singleColor") == 0)
-        obj = MultiCurveAttributes_SetSingleColor(self, tuple);
+        obj = MultiCurveAttributes_SetSingleColor(self, args);
     else if(strcmp(name, "multiColor") == 0)
-        obj = MultiCurveAttributes_SetMultiColor(self, tuple);
+        obj = MultiCurveAttributes_SetMultiColor(self, args);
     else if(strcmp(name, "lineWidth") == 0)
-        obj = MultiCurveAttributes_SetLineWidth(self, tuple);
+        obj = MultiCurveAttributes_SetLineWidth(self, args);
     else if(strcmp(name, "yAxisTitleFormat") == 0)
-        obj = MultiCurveAttributes_SetYAxisTitleFormat(self, tuple);
+        obj = MultiCurveAttributes_SetYAxisTitleFormat(self, args);
     else if(strcmp(name, "useYAxisTickSpacing") == 0)
-        obj = MultiCurveAttributes_SetUseYAxisTickSpacing(self, tuple);
+        obj = MultiCurveAttributes_SetUseYAxisTickSpacing(self, args);
     else if(strcmp(name, "yAxisTickSpacing") == 0)
-        obj = MultiCurveAttributes_SetYAxisTickSpacing(self, tuple);
+        obj = MultiCurveAttributes_SetYAxisTickSpacing(self, args);
     else if(strcmp(name, "displayMarkers") == 0)
-        obj = MultiCurveAttributes_SetDisplayMarkers(self, tuple);
+        obj = MultiCurveAttributes_SetDisplayMarkers(self, args);
     else if(strcmp(name, "markerScale") == 0)
-        obj = MultiCurveAttributes_SetMarkerScale(self, tuple);
+        obj = MultiCurveAttributes_SetMarkerScale(self, args);
     else if(strcmp(name, "markerLineWidth") == 0)
-        obj = MultiCurveAttributes_SetMarkerLineWidth(self, tuple);
+        obj = MultiCurveAttributes_SetMarkerLineWidth(self, args);
     else if(strcmp(name, "markerVariable") == 0)
-        obj = MultiCurveAttributes_SetMarkerVariable(self, tuple);
+        obj = MultiCurveAttributes_SetMarkerVariable(self, args);
     else if(strcmp(name, "displayIds") == 0)
-        obj = MultiCurveAttributes_SetDisplayIds(self, tuple);
+        obj = MultiCurveAttributes_SetDisplayIds(self, args);
     else if(strcmp(name, "idVariable") == 0)
-        obj = MultiCurveAttributes_SetIdVariable(self, tuple);
+        obj = MultiCurveAttributes_SetIdVariable(self, args);
     else if(strcmp(name, "legendFlag") == 0)
-        obj = MultiCurveAttributes_SetLegendFlag(self, tuple);
+        obj = MultiCurveAttributes_SetLegendFlag(self, args);
 
     // Try and handle legacy fields
-    if(obj == NULL)
+    if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "lineStyle") == 0)
         {
+            PyErr_WarnEx(NULL, "'lineStyle is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
     }
-    if(obj != NULL)
+    if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
-    Py_DECREF(tuple);
-    if( obj == NULL)
-        PyErr_Format(PyExc_RuntimeError, "Unable to set unknown attribute: '%s'", name);
+    if (obj == &NULL_PY_OBJ)
+    {
+        obj = NULL;
+        PyErr_Format(PyExc_NameError, "name '%s' is not defined", name);
+    }
+    else if (obj == NULL && !PyErr_Occurred())
+        PyErr_Format(PyExc_RuntimeError, "unknown problem with '%s'", name);
+
     return (obj != NULL) ? 0 : -1;
 }
 

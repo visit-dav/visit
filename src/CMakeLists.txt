@@ -485,21 +485,28 @@
 #    Set VISIT_GIT_VERSION from the file GIT_VERSION if we are not in a
 #    git checkout.
 #
+#    Kathleen Biagas, Tue Feb 1, 2022
+#    Change Windows _SRC_PACKAGE to _WINDEV_PACKAGE, to simply zip up the
+#    needed windows TP development files.
+#
 #****************************************************************************
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-IF (COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 NEW)
-    cmake_policy(SET CMP0011 NEW)
+if(COMMAND cmake_policy)
     cmake_policy(SET CMP0033 OLD)
-    cmake_policy(SET CMP0057 NEW)
-    cmake_policy(SET CMP0062 NEW)
-    IF(WIN32)
+    if(WIN32)
         # don't automatically link with qtmain
         cmake_policy(SET CMP0020 OLD)
-    ENDIF()
-ENDIF (COMMAND cmake_policy)
+        if(POLICY CMP0091) # introduced in cmake 3.15
+            # Tell CMake to always use /MD, even for debug builds.
+            # Done because prebuilt TP libraries are built with /MD and
+            # if debug build of VisIt uses /MDd there are runtime issues.
+            cmake_policy(SET CMP0091 NEW) # MSVC_RUNTIME_LIBRARY
+            set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+        endif()
+    endif()
+endif()
 
 #
 # Try to capture the initial set of cmake command line args passed by
@@ -863,7 +870,6 @@ IF (NOT WIN32)
   VISIT_3RDPARTY_VAR(OSMESA_DIR   "Path containing the OSMesa library's include and lib")
 ENDIF (NOT WIN32)
 VISIT_3RDPARTY_VAR(ICET_DIR   "Path containing the Ice-T library's include and lib")
-VISIT_3RDPARTY_VAR(TCMALLOC_DIR   "Path containing the tcmalloc library's include and lib")
 
 # Libraries some third-parties are dependent upon
 IF(WIN32)
@@ -1316,9 +1322,6 @@ endif()
 IF(VISIT_PARALLEL)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindIceT.cmake)
 ENDIF(VISIT_PARALLEL)
-
-# Include TCMALLOC support if we can.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindTCMALLOC.cmake)
 
 # zlib
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
@@ -2247,7 +2250,7 @@ IF (NOT WIN32)
         ENDIF(NOT APPLE)
     ENDIF(APPLE AND VISIT_CREATE_APPBUNDLE_PACKAGE)
     INCLUDE(CPack)
-ELSE (NOT WIN32)
+ELSE () # on windows
     IF(VISIT_MAKE_NSIS_INSTALLER)
       IF(${MAKENSIS_FOUND})
         set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ".")
@@ -2293,21 +2296,31 @@ ELSE (NOT WIN32)
                               EXCLUDE_FROM_DEFAULT_BUILD 1
                               EXCLUDE_FROM_ALL 1 )
 
-        # source installer
-        ADD_CUSTOM_COMMAND(OUTPUT visitdev${VISIT_VERSION}.exe
-            COMMAND ${MAKENSIS}
-                    /DVisItVersion=${VISIT_VERSION}
-                    /DVISIT_SOURCE_DIR=${VSD_NATIVE}
-                    /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
-                    /DINSTALLER_LOCATION=${VISIT_BINARY_DIR}
-                     ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi
-            DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi
-        )
-        ADD_CUSTOM_TARGET(_SRC_PACKAGE ALL DEPENDS visitdev${VISIT_VERSION}.exe)
-        SET_TARGET_PROPERTIES(_SRC_PACKAGE PROPERTIES
+        if(DEFINED ARCHIVER_EXE)
+            get_filename_component(VDEP ${VWD_NATIVE} PATH)
+            file(TO_NATIVE_PATH ${VDEP} VDEP_NATIVE)
+            set(zipname visit_windowsdev_${VISIT_VERSION}.zip)
+
+            file(TO_NATIVE_PATH ${ARCHIVER_EXE} ARCHIVER_NATIVE)
+            add_custom_command(OUTPUT ${CBD_NATIVE}/${zipname}
+                COMMAND cd ${VDEP_NATIVE}
+                COMMAND "${ARCHIVER_NATIVE}" a -m0=LZMA -mx=9
+                    ${CBD_NATIVE}/${zipname}
+                    windowsbuild/distribution
+                    windowsbuild/MSVC2017
+                    windowsbuild/thirdparty-projects
+                COMMAND cd ${CBD_NATIVE}
+                WORKING_DIRECTORY ${DEP_NATIVE})
+            add_custom_target(_WINDEV_PACKAGE ALL DEPENDS ${CBD_NATIVE}/${zipname})
+            set_target_properties(_WINDEV_PACKAGE PROPERTIES
                               EXCLUDE_FROM_DEFAULT_BUILD 1
                               EXCLUDE_FROM_ALL 1)
+            unset(VDEP)
+            unset(VDEP_NATIVE)
+            unset(zipname)
+        endif()
         UNSET(VSD_NATIVE)
+        UNSET(VWD_NATIVE)
         UNSET(CIP_NATIVE)
         UNSET(CBD_NATIVE)
       ELSE(${MAKENSIS_FOUND})

@@ -422,6 +422,13 @@
 #    Eric Brugger, Thus Feb  6 07:01:40 PST 2020
 #    I removed the rzgw from the rz host profile names.
 #
+#    Mark C. Miller, Sat Aug 28 10:07:41 PDT 2021
+#    Removed all refs to visit_plugin
+#
+#    Eric Brugger, Tue Jan 25 09:53:25 PST 2022
+#    I added qtviswinExample, qtvtkExample and qvtkopenglExample to
+#    the bin directory.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -1020,7 +1027,6 @@ fi
 cp $distributiondir/bin/frontendlauncher    "$dir"/bin/frontendlauncher+
 cp $distributiondir/bin/frontendlauncher.py "$dir"/bin/frontendlauncher.py+
 cp $distributiondir/bin/xml2plugin          "$dir"/bin/xml2plugin+
-cp $distributiondir/bin/visit_plugin        "$dir"/bin/visit_plugin+
 cp $distributiondir/bin/mkgrdbl             "$dir"/bin/mkgrdbl+
 
 if [ -e "$dir"/$version ]; then
@@ -1188,7 +1194,6 @@ chmod $dir_permission "$dir"/bin
 chmod $dir_permission "$dir"/bin/frontendlauncher+
 chmod $dir_permission "$dir"/bin/frontendlauncher.py+
 chmod $dir_permission "$dir"/bin/xml2plugin+
-chmod $dir_permission "$dir"/bin/visit_plugin+
 chmod $dir_permission "$dir"/bin/mkgrdbl+
 if [ -e "$dir"/data ]; then
     chmod $dir_permission "$dir"/data
@@ -1259,7 +1264,7 @@ rm -rf distribution
 #
 # Make the symbolic links for the programs
 #
-programs="curv3dprep makemili_driver mcurvit mpeg2encode surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
+programs="curv3dprep makemili_driver mcurvit mpeg2encode qtviswinExample qtvtkExample qvtkopenglExample surfcomp text2polys time_annotation visit visitconvert xml2atts xml2avt xml2info xml2java xml2makefile xml2cmake xml2projectfile xml2python xml2window xmledit xmltest visit_composite visit_transition"
 
 cd "$dir"/bin
 for prog in $programs; do
@@ -1292,8 +1297,6 @@ mv bin/frontendlauncher+ bin/frontendlauncher
 mv bin/frontendlauncher.py+ bin/frontendlauncher.py
 [ -e bin/xml2plugin ] &&         rm -f bin/xml2plugin
 mv bin/xml2plugin+ bin/xml2plugin
-[ -e bin/visit_plugin ] &&       rm -f bin/visit_plugin
-mv bin/visit_plugin+ bin/visit_plugin
 [ -e bin/mkgrdbl ] &&            rm -f bin/mkgrdbl
 mv bin/mkgrdbl+ bin/mkgrdbl
 if [ "$beta" = "true" ]; then

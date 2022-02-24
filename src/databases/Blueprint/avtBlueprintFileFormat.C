@@ -17,6 +17,7 @@
 #include "avtMaterial.h"
 #include "avtMixedVariable.h"
 #include "avtVariableCache.h"
+#include "DBOptionsAttributes.h"
 
 #include "DebugStream.h"
 #include "StringHelpers.h"
@@ -172,7 +173,7 @@ sanitize_var_name(const std::string &varname)
 //  Creation:   Wed Jun 15 16:25:28 PST 2016
 //
 // ****************************************************************************
-avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename)
+avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAttributes *opts)
     : avtSTMDFileFormat(&filename, 1),
       m_root_node(),
       m_protocol(""),
@@ -1224,7 +1225,8 @@ avtBlueprintFileFormat::ReadRootFile()
 //  Creation:   Mon Mar  9 12:24:16 PDT 2020
 //
 //  Modifications:
-//
+//   Cyrus Harrison, Fri Jul 16 15:39:57 PDT 2021
+//   Bugfix: When using relay::io::IOHandle, always open in read only mode
 //
 // ****************************************************************************
 void
@@ -1243,10 +1245,6 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
 
     if(root_protocol == "hdf5")
     {
-        // we can't use relay::io::IOHandle here b/c it currently
-        // lacks an option to open the file in read only mode, and
-        // by default opens in R/W.
-        //
         // For the case where the data is also included in the root file,
         // VisIt may have a read only hdf5 file handle open, trying
         // to open with R/W will throw an error.
@@ -1277,7 +1275,9 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
         // broadcasted to all ranks and is also printed in debug 5 logs
         // so we still filter what is pulled out here
         relay::io::IOHandle root_hnd;
-        root_hnd.open(root_fname,root_protocol);
+        Node open_opts;
+        open_opts["mode"] = "r";
+        root_hnd.open(root_fname, root_protocol, open_opts);
 
         // loop over all names and copy them to the output node
         NodeConstIterator itr = index_names.children();

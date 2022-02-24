@@ -15,6 +15,9 @@
 #    Eddie Rusu, Mon Aug 26 08:46:44 PDT 2019
 #    Added test for cell-centered non VTK_VERTEX points.
 #
+#    Kathleen Biagas, Mon Jun 21 09:41:41 PDT 2021
+#    Added 'DeleteAllPlots' before 'CloseDatabase'.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -66,7 +69,7 @@ TimeSliderNextState()
 Test("xyz_05")
 TimeSliderNextState()
 Test("xyz_06")
-
+DeleteAllPlots()
 CloseDatabase(data_path("xyz_test_data/nanowireTB23K298.xyz"))
 
 # Test case where XYZ writer is cell-centered VTK_VERTEX data

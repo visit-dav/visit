@@ -877,6 +877,8 @@ simv2_set_operator_options(void *e,
 // Creation:   Thu Sep 18 10:53:32 PDT 2014
 //
 // Modifications:
+//    Kathleen Biagas, Fri Sep 10 09:14:56 PDT 2021
+//    Add support for VISIT_DATATYPE_ENUM.
 //
 // ****************************************************************************
 
@@ -943,6 +945,9 @@ simv2_exportdatabase_with_options(void *e, const char *filename, const char *for
                             break;
                         case VISIT_DATATYPE_STRING:
                             opt.SetString(name, std::string((const char *)pvalue));
+                            break;
+                        case VISIT_DATATYPE_ENUM:
+                            opt.SetEnum(name, *((int *)pvalue));
                             break;
                         }
                     }

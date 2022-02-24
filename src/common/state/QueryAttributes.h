@@ -70,6 +70,7 @@ public:
     virtual void SelectAll();
     void SelectResultsMessage();
     void SelectResultsValue();
+    void SelectFloatResultsValue();
     void SelectVarTypes();
     void SelectXUnits();
     void SelectYUnits();
@@ -82,6 +83,7 @@ public:
     // Property setting methods
     void SetResultsMessage(const std::string &resultsMessage_);
     void SetResultsValue(const doubleVector &resultsValue_);
+    void SetFloatResultsValue(const floatVector &floatResultsValue_);
     void SetTimeStep(int timeStep_);
     void SetVarTypes(const intVector &varTypes_);
     void SetPipeIndex(int pipeIndex_);
@@ -99,6 +101,8 @@ public:
           std::string  &GetResultsMessage();
     const doubleVector &GetResultsValue() const;
           doubleVector &GetResultsValue();
+    const floatVector  &GetFloatResultsValue() const;
+          floatVector  &GetFloatResultsValue();
     int                GetTimeStep() const;
     const intVector    &GetVarTypes() const;
           intVector    &GetVarTypes();
@@ -146,11 +150,15 @@ public:
     void PrintSelf(ostream &os);
     void SetResultsValue(const double);
     void SetResultsValues(const double*, const int);
+    QueryAttributes &operator=(QueryAttributes&&);
+    QueryAttributes(QueryAttributes&&);
+    void Move(QueryAttributes&&);
 
     // IDs that can be used to identify fields in case statements
     enum {
         ID_resultsMessage = 0,
         ID_resultsValue,
+        ID_floatResultsValue,
         ID_timeStep,
         ID_varTypes,
         ID_pipeIndex,
@@ -168,6 +176,7 @@ public:
 private:
     std::string  resultsMessage;
     doubleVector resultsValue;
+    floatVector  floatResultsValue;
     int          timeStep;
     intVector    varTypes;
     int          pipeIndex;
@@ -184,6 +193,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define QUERYATTRIBUTES_TMFS "sd*ii*issssbmss*"
+#define QUERYATTRIBUTES_TMFS "sd*f*ii*issssbmss*"
 
 #endif

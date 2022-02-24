@@ -9,11 +9,11 @@
 #include <vector>
 #include <visitstream.h>
 
-#include <Token.h>
+#include <VisItToken.h>
 #include <ParseTreeNode.h>
 #include <Symbol.h>
 #include <State.h>
-#include <Grammar.h>
+#include <VisItGrammar.h>
 
 // ****************************************************************************
 //  Class:  ParseElem

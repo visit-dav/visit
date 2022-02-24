@@ -172,7 +172,7 @@ function build_gdal
             apply_gdal_linux_x86_64_patch
         fi
     fi
-
+    set -x
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS -DH5_USE_16_API" \
                 CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS -DH5_USE_16_API" \
@@ -183,6 +183,7 @@ function build_gdal
                 --with-hdf5=no --with-pg=no --with-curl=no \
                 --without-jasper --without-python \
                 --without-sqlite3 --without-xml2 --with-geos=no
+    set +x
     if [[ $? != 0 ]] ; then
         warn "GDAL configure failed.  Giving up"
         return 1

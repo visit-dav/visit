@@ -149,6 +149,7 @@
 #include <PySelectionList.h>
 #include <PySILRestrictionBase.h>
 #include <PySILRestriction.h>
+#include <PyTable.h>
 
 #include <PyLine3DObject.h>
 #include <PyText2DObject.h>
@@ -164,8 +165,6 @@
 #include <PyWindowInformation.h>
 #include <PyavtDatabaseMetaData.h>
 #include <PyViewerRPC.h>
-
-#include <SeedMeAttributes.h>
 
 // Variant & MapNode Helpers:
 #include <PyVariant.h>
@@ -9561,6 +9560,39 @@ visit_GetQueryOutputObject(PyObject *self, PyObject *args)
     return PyMapNode_Wrap(node);
 }
 
+// ****************************************************************************
+// Function: visit_GetQueryOutputObject
+//
+// Purpose:
+//   Inspects the current QueryAttributes to verify they contain the results
+//   of a FlattenQuery then returns the proper Python dictionary for the data.
+//
+//
+// Programmer: Chris Laganella
+// Creation:   Mon Jan 24 18:06:10 EST 2022
+//
+// Modifications:
+// Chris Laganella, Tue Jan 25 16:05:19 EST 2022
+// I moved all the logic to PyTable.C
+// ****************************************************************************
+STATIC PyObject *
+visit_GetFlattenOutput(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
+
+    PyObject *retval = nullptr;
+    if(qa)
+    {
+        retval = PyTable_CreateFromFlattenOutput(*qa);
+    }
+    else
+    {
+        retval = PyDict_New();
+    }
+    return retval;
+}
 
 // ****************************************************************************
 // Method: visit_GetPlotInformation
@@ -15035,30 +15067,6 @@ DeleteAnnotationObjectHelper(AnnotationObject *annot)
     return transferOwnership;
 }
 
-STATIC PyObject *
-visit_UpdateSeedMeStatus(PyObject *self, PyObject *args)
-{
-    ENSURE_VIEWER_EXISTS();
-
-    const char* col = 0;
-    const char *result = 0;
-    if (!PyArg_ParseTuple(args, "ss", &col, &result))
-    {
-        VisItErrorFunc("UpdateSeedMeStatus: Cannot parse response");
-        return NULL;
-    }
-
-    MUTEX_LOCK();
-    if(atoi(col) > 0)
-        GetViewerState()->GetSeedMeAttributes()->SetCollectionID(atoi(col));
-    GetViewerState()->GetSeedMeAttributes()->SetOperationResult(result);
-    GetViewerState()->GetSeedMeAttributes()->Notify();
-    MUTEX_UNLOCK();
-
-    // Return the success value.
-    return IntReturnValue(Synchronize());
-}
-
 // ****************************************************************************
 // Function: CreateAnnotationWrapper
 //
@@ -17966,6 +17974,7 @@ AddProxyMethods()
                                                      visit_GetQueryOutputXML_doc);
     AddMethod("GetQueryOutputObject", visit_GetQueryOutputObject,
                                                      visit_GetQueryOutputObject_doc);
+    AddMethod("GetFlattenOutput", visit_GetFlattenOutput, visit_GetFlattenOutput_doc);
     AddMethod("GetQueryParameters", visit_GetQueryParameters, visit_GetQueryParameters_doc);
     AddMethod("GetPlotInformation", visit_GetPlotInformation,
                                                      visit_GetPlotInformation_doc);
@@ -18296,7 +18305,6 @@ AddProxyMethods()
     AddMethod("GetNumPlots", visit_GetNumPlots, visit_GetNumPlots_doc);
     AddMethod("Argv", visit_Argv, NULL);
     AddMethod("UpdateMouseActions", visit_UpdateMouseActions, NULL);
-    AddMethod("UpdateSeedMeStatus", visit_UpdateSeedMeStatus, NULL);
 }
 
 // ****************************************************************************
@@ -18486,6 +18494,9 @@ AddExtensions()
 //   Brad Whitlock, Wed Jul 16 11:50:44 PDT 2014
 //   Add EngineProperties.
 //
+//   Kathleen Biagas, Fri Sep 10, 2021
+//   Add GlobalLineoutAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -18499,6 +18510,7 @@ InitializeExtensions()
     PyExpression_StartUp(0, 0);
     PyExpressionList_StartUp(GetViewerState()->GetExpressionList(), 0);
     PyGlobalAttributes_StartUp(GetViewerState()->GetGlobalAttributes(), 0);
+    PyGlobalLineoutAttributes_StartUp(GetViewerState()->GetGlobalLineoutAttributes(), 0);
     PyKeyframeAttributes_StartUp(GetViewerState()->GetKeyframeAttributes(), 0);
     PyLaunchProfile_StartUp(0, 0);
     PyMachineProfile_StartUp(0, 0);
@@ -18951,7 +18963,7 @@ InitializeModule()
     TRY
     {
         int argc = 1;
-        char *argv[6];
+        char *argv[7];
         argv[0] = (char*)"cli";
 
         if(moduleDebugLevel > 0)
@@ -18969,12 +18981,14 @@ InitializeModule()
            if(strcmp(cli_argv[i], "-pid") == 0)
            {
                argv[argc++] = (char*)"-pid";
-               break;
            }
            if(strcmp(cli_argv[i], "-clobber_vlogs") == 0)
            {
                argv[argc++] = (char*)"-clobber_vlogs";
-               break;
+           }
+           if(strcmp(cli_argv[i], "-timings") == 0)
+           {
+               argv[argc++] = (char*)"-timings";
            }
         }
 

@@ -107,7 +107,7 @@ avtIVPNektarPPField::avtIVPNektarPPField( vtkDataSet* dataset,
   else
   {
     EXCEPTION1( InvalidVariableException,
-                "Uninitialized option: Nektar++FieldPointers. (Please contact visit-developer mailing list to report)" );
+                "Uninitialized option: Nektar++FieldPointers. (Please report at https://github.com/visit-dav/visit/discussions)" );
   }
 
   nektar_element_lookup =
@@ -116,7 +116,7 @@ avtIVPNektarPPField::avtIVPNektarPPField( vtkDataSet* dataset,
   if( nektar_element_lookup == NULL )
   {
     EXCEPTION1( InvalidVariableException,
-                "Uninitialized option: Nektar++ElementLookup. (Please contact visit-developer mailing list to report)" );
+                "Uninitialized option: Nektar++ElementLookup. (Please report at https://github.com/visit-dav/visit/discussions)" );
   }
 }
 
