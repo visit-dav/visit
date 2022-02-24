@@ -325,6 +325,98 @@ UnifyMinMax(double *buff, int size, int altsize)
 }
 
 // ****************************************************************************
+//  Function: UnifyLogicalAndValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the logical
+//      and value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The logical and value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+int
+UnifyLogicalAndValue(int myval)
+{
+    return globalContext.UnifyLogicalAndValue(myval);
+}
+
+// ****************************************************************************
+//  Function: UnifyLogicalOrValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the logical
+//      or value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The logical or value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+int
+UnifyLogicalOrValue(int myval)
+{
+    return globalContext.UnifyLogicalOrValue(myval);
+}
+
+// ****************************************************************************
+//  Function: UnifyBitwiseAndValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the bitwise
+//      and value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The bitwise and value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+int
+UnifyBitwiseAndValue(int myval)
+{
+    return globalContext.UnifyBitwiseAndValue(myval);
+}
+
+// ****************************************************************************
+//  Function: UnifyBitwiseOrValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the bitwise
+//      or value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The bitwise or value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+int
+UnifyBitwiseOrValue(int myval)
+{
+    return globalContext.UnifyBitwiseOrValue(myval);
+}
+
+// ****************************************************************************
 //  Function: UnifyMinimumValue
 //
 //  Purpose:

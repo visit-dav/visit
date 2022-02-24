@@ -410,9 +410,10 @@ ${PYTHON_LIBRARIES}
 ${CMAKE_THREAD_LIBS}
 )
 IF(NOT WIN32)
-    find_library(LIBRT rt)
-    TARGET_LINK_LIBRARIES(cli dl ${LIBRT})
+    TARGET_LINK_LIBRARIES(cli dl)
     IF(NOT APPLE)
+        find_library(LIBRT rt)
+        TARGET_LINK_LIBRARIES(cli ${LIBRT})
         IF(NOT AIX)
             # Is this a Python companion libary? We need it for unresolved openpty/forkpty
             TARGET_LINK_LIBRARIES(cli util)
@@ -450,8 +451,10 @@ ELSE(VISIT_STATIC)
     )
 
     IF(NOT WIN32)
-        find_library(LIBRT rt)
-        TARGET_LINK_LIBRARIES(visitmodule ${LIBRT})
+        IF(NOT APPLE)
+            find_library(LIBRT rt)
+            TARGET_LINK_LIBRARIES(visitmodule ${LIBRT})
+        ENDIF(NOT APPLE)
         SET_TARGET_PROPERTIES(visitmodule PROPERTIES
                                           LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/site-packages/visit)
     ENDIF(NOT WIN32)
