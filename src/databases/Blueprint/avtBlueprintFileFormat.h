@@ -14,6 +14,7 @@
 #include "conduit.hpp"
 
 class     avtMaterial;
+class     DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtBlueprintFileFormat
@@ -36,7 +37,7 @@ class avtBlueprintTreeCache;
 class avtBlueprintFileFormat : public avtSTMDFileFormat
 {
   public:
-                           avtBlueprintFileFormat(const char *);
+                           avtBlueprintFileFormat(const char *, DBOptionsAttributes*);
     virtual               ~avtBlueprintFileFormat();
 
     virtual const char    *GetType(void) 

@@ -30,6 +30,7 @@
 #include <avtEllipticalCompactnessFactorQuery.h>
 #include <avtEulerianQuery.h>
 #include <avtExpectedValueQuery.h>
+#include <avtFlattenQuery.h>
 #include <avtGridInformationQuery.h>
 #include <avtHohlraumFluxQuery.h>
 #include <avtIndividualChordLengthDistributionQuery.h>
@@ -315,6 +316,9 @@ avtQueryFactory::Instance()
 //
 //    Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
 //    Added the GyRadius Query
+//
+//    Chris Laganella, Tue Jan 11 17:33:52 EST 2022
+//    Added the "Flatten" query.
 //
 // ****************************************************************************
 
@@ -653,6 +657,10 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (CaseInsenstiveEqual(qname,"GyRadius"))
     {
         query = new avtGyRadiusQuery();
+    }
+    else if(CaseInsenstiveEqual(qname, "Flatten"))
+    {
+        query = new avtFlattenQuery();
     }
 
     if (query == NULL && !foundAQuery)

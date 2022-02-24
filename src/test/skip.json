@@ -1,5 +1,6 @@
 { "skip_list":[
  {"mode":"serial","tests":[
+                    {"category":"databases","file":"blueprint_export.py"},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"hybrid","file":"clonecopy.py"},
@@ -29,6 +30,7 @@
                     {"platform":"win", "category":"unit","file":"launcher.py"}
                   ]},
  {"mode":"parallel","tests":[
+                    {"category":"databases","file":"blueprint_export.py"},
                     {"category":"databases","file":"diff.py"},
                     {"category":"databases","file":"exodus.py","cases":["exodus_13a","exodus_13b"]},
                     {"category":"databases","file":"pixie.py","cases":["pixie_04"]},
