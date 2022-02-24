@@ -130,6 +130,21 @@ do
     fi
 done
 
+# Handle possible language spec
+have_lang=no
+for arg in $@
+do
+    if test "$have_lang" = "yes"; then
+        lang=$arg
+        export LANG="$lang"
+        export LANGUAGE="$lang"
+        break
+    fi
+    if test "$arg" = "-lang"; then
+        have_lang=yes
+    fi
+done
+
 # If we have a two digit version number, find the latest patch associated
 # with that two digit version. 
 if expr "$version" : '[0-9]\+\.[0-9]\+$' > /dev/null; then
