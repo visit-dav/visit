@@ -1,11 +1,9 @@
-/*****************************************************************************
 // Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
-*****************************************************************************/
 
 // ****************************************************************************
-//                               WDataPluginInfo.h
+//  WDataPluginInfo.h
 // ****************************************************************************
 
 #ifndef WDATA_PLUGIN_INFO_H
@@ -33,36 +31,36 @@ class avtDatabaseWriter;
 
 class WDataGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
 {
-public:
-  virtual const char *GetName() const;
-  virtual const char *GetVersion() const;
-  virtual const char *GetID() const;
-  virtual bool EnabledByDefault() const;
-  virtual bool HasWriter() const;
-  virtual std::vector<std::string> GetDefaultFilePatterns() const;
-  virtual bool AreDefaultFilePatternsStrict() const;
-  virtual bool OpensWholeDirectory() const;
+  public:
+    virtual const char *GetName() const;
+    virtual const char *GetVersion() const;
+    virtual const char *GetID() const;
+    virtual bool  EnabledByDefault() const;
+    virtual bool  HasWriter() const;
+    virtual std::vector<std::string> GetDefaultFilePatterns() const;
+    virtual bool  AreDefaultFilePatternsStrict() const;
+    virtual bool  OpensWholeDirectory() const;
 };
 
 class WDataCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual WDataGeneralPluginInfo
 {
-public:
-  virtual DatabaseType GetDatabaseType();
-  virtual avtDatabase *SetupDatabase(const char *const *list, int nList, int nBlock);
-  virtual std::string GetLicense() const;
+  public:
+    virtual DatabaseType              GetDatabaseType();
+    virtual avtDatabase              *SetupDatabase(const char * const *list,
+                                                    int nList, int nBlock);
 };
 
 class WDataMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual WDataCommonPluginInfo
 {
-public:
-  // this makes compilers happy... remove if we ever have functions here
-  virtual void dummy();
+  public:
+    // this makes compilers happy... remove if we ever have functions here
+    virtual void dummy();
 };
 
 class WDataEnginePluginInfo : public virtual EngineDatabasePluginInfo, public virtual WDataCommonPluginInfo
 {
-public:
-  virtual avtDatabaseWriter *GetWriter(void);
+  public:
+    virtual avtDatabaseWriter        *GetWriter(void);
 };
 
 #endif

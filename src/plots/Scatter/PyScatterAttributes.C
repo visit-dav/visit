@@ -3174,6 +3174,18 @@ PyScatterAttributes_getattr(PyObject *self, char *name)
             return retval;
         }
     }
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyScatterAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyScatterAttributes_methods[i].ml_name),
+                PyString_FromString(PyScatterAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyScatterAttributes_methods, self, name);
 }
 

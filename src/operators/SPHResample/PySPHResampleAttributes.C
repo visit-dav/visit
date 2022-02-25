@@ -851,6 +851,18 @@ PySPHResampleAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "RK") == 0)
         return SPHResampleAttributes_GetRK(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PySPHResampleAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PySPHResampleAttributes_methods[i].ml_name),
+                PyString_FromString(PySPHResampleAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PySPHResampleAttributes_methods, self, name);
 }
 

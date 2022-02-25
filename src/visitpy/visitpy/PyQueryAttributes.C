@@ -59,6 +59,22 @@ PyQueryAttributes_ToString(const QueryAttributes *atts, const char *prefix)
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const floatVector &floatResultsValue = atts->GetFloatResultsValue();
+        snprintf(tmpStr, 1000, "%sfloatResultsValue = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < floatResultsValue.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%f", floatResultsValue[i]);
+            str += tmpStr;
+            if(i < floatResultsValue.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     snprintf(tmpStr, 1000, "%stimeStep = %d\n", prefix, atts->GetTimeStep());
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sxUnits = \"%s\"\n", prefix, atts->GetXUnits().c_str());
@@ -204,6 +220,82 @@ QueryAttributes_GetResultsValue(PyObject *self, PyObject *args)
     PyObject *retval = PyTuple_New(resultsValue.size());
     for(size_t i = 0; i < resultsValue.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(resultsValue[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+QueryAttributes_SetFloatResultsValue(PyObject *self, PyObject *args)
+{
+    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+
+    floatVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        double val = PyFloat_AsDouble(args);
+        float cval = float(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ float");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ float");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            double val = PyFloat_AsDouble(item);
+            float cval = float(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ float", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(double(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ float", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more floats");
+
+    obj->data->GetFloatResultsValue() = vec;
+    // Mark the floatResultsValue in the object as modified.
+    obj->data->SelectFloatResultsValue();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+QueryAttributes_GetFloatResultsValue(PyObject *self, PyObject *args)
+{
+    QueryAttributesObject *obj = (QueryAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the floatResultsValue.
+    const floatVector &floatResultsValue = obj->data->GetFloatResultsValue();
+    PyObject *retval = PyTuple_New(floatResultsValue.size());
+    for(size_t i = 0; i < floatResultsValue.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(floatResultsValue[i]));
     return retval;
 }
 
@@ -495,6 +587,8 @@ PyMethodDef PyQueryAttributes_methods[QUERYATTRIBUTES_NMETH] = {
     {"GetResultsMessage", QueryAttributes_GetResultsMessage, METH_VARARGS},
     {"SetResultsValue", QueryAttributes_SetResultsValue, METH_VARARGS},
     {"GetResultsValue", QueryAttributes_GetResultsValue, METH_VARARGS},
+    {"SetFloatResultsValue", QueryAttributes_SetFloatResultsValue, METH_VARARGS},
+    {"GetFloatResultsValue", QueryAttributes_GetFloatResultsValue, METH_VARARGS},
     {"SetTimeStep", QueryAttributes_SetTimeStep, METH_VARARGS},
     {"GetTimeStep", QueryAttributes_GetTimeStep, METH_VARARGS},
     {"SetXUnits", QueryAttributes_SetXUnits, METH_VARARGS},
@@ -532,6 +626,8 @@ PyQueryAttributes_getattr(PyObject *self, char *name)
         return QueryAttributes_GetResultsMessage(self, NULL);
     if(strcmp(name, "resultsValue") == 0)
         return QueryAttributes_GetResultsValue(self, NULL);
+    if(strcmp(name, "floatResultsValue") == 0)
+        return QueryAttributes_GetFloatResultsValue(self, NULL);
     if(strcmp(name, "timeStep") == 0)
         return QueryAttributes_GetTimeStep(self, NULL);
     if(strcmp(name, "xUnits") == 0)
@@ -544,6 +640,18 @@ PyQueryAttributes_getattr(PyObject *self, char *name)
         return QueryAttributes_GetXmlResult(self, NULL);
     if(strcmp(name, "queryInputParams") == 0)
         return QueryAttributes_GetQueryInputParams(self, NULL);
+
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyQueryAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyQueryAttributes_methods[i].ml_name),
+                PyString_FromString(PyQueryAttributes_methods[i].ml_name));
+        return result;
+    }
 
     return Py_FindMethod(PyQueryAttributes_methods, self, name);
 }
@@ -558,6 +666,8 @@ PyQueryAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = QueryAttributes_SetResultsMessage(self, args);
     else if(strcmp(name, "resultsValue") == 0)
         obj = QueryAttributes_SetResultsValue(self, args);
+    else if(strcmp(name, "floatResultsValue") == 0)
+        obj = QueryAttributes_SetFloatResultsValue(self, args);
     else if(strcmp(name, "timeStep") == 0)
         obj = QueryAttributes_SetTimeStep(self, args);
     else if(strcmp(name, "xUnits") == 0)

@@ -190,6 +190,10 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
     m_nblocks = 0;
 
     m_op = BP_MESH_OP_NONE;
+<<<<<<< HEAD
+=======
+    m_target = 0;
+>>>>>>> develop
 #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(options)
     {
@@ -204,6 +208,7 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
                 "Invalid value passed for attribute 'Operation'.");
         }
 
+<<<<<<< HEAD
         if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5
                 || m_op == BP_MESH_OP_PARTITION)
         {
@@ -219,6 +224,19 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
                 {
                     m_options["target"].set(target_val);
                 }
+=======
+        if(m_op == BP_MESH_OP_PARTITION)
+        {
+            int target_val = options->GetInt("Partition target number of domains");
+            if(target_val >= 0)
+            {
+                m_target = target_val;
+            }
+            else
+            {
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                    "Invalid value passed for attribute 'Partition target number of domains', must be >= 0.");
+>>>>>>> develop
             }
         }
     }
@@ -258,7 +276,11 @@ avtBlueprintWriter::OpenFile(const string &stemname, int nb)
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called OpenFile().");
 #endif
     m_stem = stemname;
+<<<<<<< HEAD
     m_nblocks = nb;
+=======
+    m_nblocks = (m_target > 0) ? m_target : nb;
+>>>>>>> develop
     if(m_op == BP_MESH_OP_NONE || m_op == BP_MESH_OP_PARTITION)
     {
         m_genRoot = true;
@@ -676,18 +698,29 @@ avtBlueprintWriter::CloseFile(void)
 #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5)
     {
+<<<<<<< HEAD
         debug5 << "Flatten options:\n" << m_options.to_string() << std::endl;
         conduit::Node table;
+=======
+        conduit::Node opts, table;
+>>>>>>> develop
         int rank = 0;
         int root = 0;
 #ifdef PARALLEL
         rank = writeContext.Rank();
         BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " flattening.");
         // It's okay to pass empty nodes to this.
+<<<<<<< HEAD
         conduit::blueprint::mpi::mesh::flatten(m_chunks, m_options, table,
             writeContext.GetCommunicator());
 #else
         conduit::blueprint::mesh::flatten(m_chunks, m_options, table);
+=======
+        conduit::blueprint::mpi::mesh::flatten(m_chunks, opts, table,
+            writeContext.GetCommunicator());
+#else
+        conduit::blueprint::mesh::flatten(m_chunks, opts, table);
+>>>>>>> develop
 #endif
         // Don't need the mesh anymore.
         m_chunks.reset();
@@ -704,6 +737,7 @@ avtBlueprintWriter::CloseFile(void)
     }
     else if(m_op == BP_MESH_OP_PARTITION)
     {
+<<<<<<< HEAD
         debug5 << "Parition options:\n" << m_options.to_string() << std::endl;
         int rank = 0;
         Node repart_mesh;
@@ -719,11 +753,26 @@ avtBlueprintWriter::CloseFile(void)
                     // Make sure selections stays alive for the partition call!
                     m_options["selections"].set_external(selections);
                 }
+=======
+        int rank = 0;
+        Node repart_mesh;
+        {
+            Node selections, opts;
+            BuildSelections(m_chunks, selections);
+            if(!selections.dtype().is_empty())
+            {
+                opts["selections"].set_external(selections);
+            }
+            if(m_target > 0)
+            {
+                opts["target"].set(m_target);
+>>>>>>> develop
             }
 
 #ifdef PARALLEL
             rank = writeContext.Rank();
             BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " partitioning.");
+<<<<<<< HEAD
             conduit::blueprint::mpi::mesh::partition(m_chunks, m_options, repart_mesh,
                 writeContext.GetCommunicator());
             m_nblocks = conduit::blueprint::mpi::mesh::number_of_domains(repart_mesh,
@@ -738,6 +787,12 @@ avtBlueprintWriter::CloseFile(void)
             {
                 m_nblocks = 0;
             }
+=======
+            conduit::blueprint::mpi::mesh::partition(m_chunks, opts, repart_mesh,
+                writeContext.GetCommunicator());
+#else
+            conduit::blueprint::mesh::partition(m_chunks, opts, repart_mesh);
+>>>>>>> develop
 #endif
         }
         // Don't need the original data anymore

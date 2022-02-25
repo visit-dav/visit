@@ -738,6 +738,18 @@ PyOnionPeelAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "honorOriginalMesh") == 0)
         return OnionPeelAttributes_GetHonorOriginalMesh(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyOnionPeelAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyOnionPeelAttributes_methods[i].ml_name),
+                PyString_FromString(PyOnionPeelAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyOnionPeelAttributes_methods, self, name);
 }
 

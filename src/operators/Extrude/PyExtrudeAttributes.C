@@ -503,6 +503,18 @@ PyExtrudeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "preserveOriginalCellNumbers") == 0)
         return ExtrudeAttributes_GetPreserveOriginalCellNumbers(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyExtrudeAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyExtrudeAttributes_methods[i].ml_name),
+                PyString_FromString(PyExtrudeAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyExtrudeAttributes_methods, self, name);
 }
 

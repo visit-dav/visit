@@ -2,7 +2,11 @@
 #  MODES: serial parallel
 #  CLASSES: nightly
 #
+<<<<<<< HEAD
 #  Test Case:  blueprint_export.py
+=======
+#  Test Case:  blueprint_export.py 
+>>>>>>> develop
 #
 #  Tests:      Tests blueprint export features "partition" and "flatten".
 #
@@ -11,14 +15,23 @@
 #
 #  Modifications:
 #
+<<<<<<< HEAD
 #  Chris Laganella, Mon Feb 14 14:39:48 EST 2022
 #  I added a test case for user provided JSON/YAML options
 # ----------------------------------------------------------------------------
+=======
+# ----------------------------------------------------------------------------
+RequiredDatabasePlugin("Blueprint")
+
+>>>>>>> develop
 import time
 import sys
 import os.path
 
+<<<<<<< HEAD
 # Uncomment these functions to run the script through the regular CLI
+=======
+>>>>>>> develop
 # def Exit():
 #     print("Exiting test...")
 #     return
@@ -308,6 +321,7 @@ def partition_test_case(case_name, targets, view=None):
         DeleteAllPlots()
         CloseDatabase(export_filename)
 
+<<<<<<< HEAD
 def partition_test_extra_options():
     dbname = "multi_rect2d.silo"
     TestSection("Extra options")
@@ -373,6 +387,8 @@ def partition_test_extra_options():
     DeleteAllPlots()
     CloseDatabase("multi_rect2d_override_target_1.cycle_000000.root")
 
+=======
+>>>>>>> develop
 def test_flatten():
     TestSection("Blueprint flatten")
 
@@ -443,10 +459,13 @@ def test_partition():
     partition_test_case("multi_rect2d.silo",
         targets_2d)
 
+<<<<<<< HEAD
     # Test extra options
     partition_test_extra_options()
 
 RequiredDatabasePlugin("Blueprint")
+=======
+>>>>>>> develop
 test_partition()
 test_flatten()
 Exit()

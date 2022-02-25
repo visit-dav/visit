@@ -1231,6 +1231,18 @@ PyConstructDataBinningAttributes_getattr(PyObject *self, char *name)
         return ConstructDataBinningAttributes_GetVarForReductionOperator(self, NULL);
     if(strcmp(name, "numSamples") == 0)
         return ConstructDataBinningAttributes_GetNumBins(self, NULL);
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyConstructDataBinningAttributes_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyConstructDataBinningAttributes_methods[i].ml_name),
+                PyString_FromString(PyConstructDataBinningAttributes_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyConstructDataBinningAttributes_methods, self, name);
 }
 

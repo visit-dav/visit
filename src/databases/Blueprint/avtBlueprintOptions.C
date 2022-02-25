@@ -87,8 +87,11 @@ GetBlueprintWriteOptions(void)
     rv->SetEnumStrings("Operation", ops);
 
     rv->SetInt("Partition target number of domains", 0);
+<<<<<<< HEAD
 
     rv->SetMultiLineString("Flatten / Partition extra options", "");
+=======
+>>>>>>> develop
 #endif
 
     return rv;

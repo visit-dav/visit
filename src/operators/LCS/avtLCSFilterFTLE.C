@@ -381,8 +381,14 @@ avtLCSFilter::SingleBlockSingleCalc( vtkDataSet *in_ds,
     {
       // Save the times/distances so that points that do not fully
       // advect can be culled.
-      for(size_t j = 0; j < (size_t) nTuples; ++j)
-        outputArray->SetTuple1(j, remapTimes[j]);
+#if 0
+// Commented out because the code was used in avtLCSFilter::ComputeLyapunovExponent but not at the present time.
+          if(atts.GetOperationType() == LCSAttributes::Lyapunov )
+          {
+              for (size_t l = 0; l < nTuples; l++)
+                outputArray->SetTuple1(l, remapTimes[l]);
+          }
+#endif
 
       // remapTimes does not contain all of the values only the
       // ones for the integral curves on this processor. So sum
@@ -912,8 +918,14 @@ avtLCSFilter::RectilinearGridSingleCalc(std::vector<avtIntegralCurve*> &ics)
         {
           // Save the times/distances so that points that do not fully
           // advect can be culled.
-          for (size_t l = 0; l < nTuples; l++)
-            outputArray->SetTuple1(l, remapTimes[l]);
+#if 0
+// Commented out because the code was used in avtLCSFilter::ComputeLyapunovExponent but not at the present time.
+          if(atts.GetOperationType() == LCSAttributes::Lyapunov )
+          {
+              for (size_t l = 0; l < nTuples; l++)
+                outputArray->SetTuple1(l, remapTimes[l]);
+          }
+#endif
 
           vtkDataArray* jacobian[3];
 

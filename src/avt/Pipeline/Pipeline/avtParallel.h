@@ -49,6 +49,10 @@ PIPELINE_API void    SumIntArrayAcrossAllProcessors(int *, int *, int);
 PIPELINE_API void    SumLongLongArrayAcrossAllProcessors(long long*, long long*, int);
 PIPELINE_API bool    ThisProcessorHasMinimumValue(double);
 PIPELINE_API bool    ThisProcessorHasMaximumValue(double);
+PIPELINE_API int     UnifyLogicalAndValue(int);
+PIPELINE_API int     UnifyLogicalOrValue(int);
+PIPELINE_API int     UnifyBitwiseAndValue(int);
+PIPELINE_API int     UnifyBitwiseOrValue(int);
 PIPELINE_API void    UnifyMinMax(double *, int, int=0);
 PIPELINE_API int     UnifyMaximumValue(int);
 PIPELINE_API float   UnifyMaximumValue(float);
@@ -83,6 +87,15 @@ PIPELINE_API bool    GetListToRootProc(std::vector<std::string> &, int);
 
 PIPELINE_API void    CollectIntArraysOnRootProc(int *&, int *&, int *, int);
 PIPELINE_API void    CollectDoubleArraysOnRootProc(double *&, int *&, double *, int);
+PIPELINE_API void    CollectFloatVectorsOnRootProc(std::vector<float> &recvBuf,
+                                       std::vector<int> &recvCounts,
+                                       const std::vector<float> &sendBuf,
+                                       int root = 0);
+PIPELINE_API void    CollectDoubleVectorsOnRootProc(
+                                        std::vector<double> &recvBuf,
+                                        std::vector<int> &recvCounts,
+                                        const std::vector<double> &sendBuf,
+                                        int root = 0);
 
 PIPELINE_API int     GetUniqueMessageTag();
 PIPELINE_API void    GetUniqueMessageTags(int *tags, int ntags);

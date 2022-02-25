@@ -176,7 +176,7 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     }
 
     UpdateProgress(1, 0);
-    *qA = queryAtts;
+    SetOutputQueryAtts(qA, hadError);
 }
 
 

@@ -7,7 +7,7 @@
 # -- Path setup --------------------------------------------------------------
 
 def setup(app):
-    app.add_stylesheet('custom.css')
+    app.add_css_file('custom.css')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -25,7 +25,7 @@ copyright = u'2008-2020, LLNL, UCRL-SM-220449'
 author = u'LLNL'
 
 # The full version, including alpha/beta/rc tags
-release = '3.1'
+release = '3.2.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -68,7 +68,8 @@ numfig = True
 # Best place to put a substitution for 'VisIt'
 # Authors should use either VisIt_ or VisIt_'s
 rst_epilog = """
-.. _VisIt: https://visit-dav.github.io/visit-website/
+.. _VisIt: https://visit.llnl.gov
+.. _Silo: https://silo.llnl.gov
 """
 
 # Add any paths that contain templates here, relative to this directory.

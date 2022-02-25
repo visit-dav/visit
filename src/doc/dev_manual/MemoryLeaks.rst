@@ -37,7 +37,7 @@ and change it to: ::
 
 In order for the stack traces from Valgrid to be the most useful, you should
 build the third party libraries with debug support. In our case we are
-going to do a minimal build with just the Silo and HDF5 I/O libraries. ::
+going to do a minimal build with just the Silo_ and HDF5 I/O libraries. ::
 
     ./build_visit3_1_0 --required --mesagl --llvm --silo --hdf5 --debug --no-visit \
     --thirdparty-path /usr/workspace/wsa/visit/visit/thirdparty_shared/3.1.0/toss3_debug \

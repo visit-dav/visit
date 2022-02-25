@@ -1645,6 +1645,18 @@ PyPlot_getattr(PyObject *self, char *name)
     if(strcmp(name, "animatingFlag") == 0)
         return Plot_GetAnimatingFlag(self, NULL);
 
+
+    // Add a __dict__ answer so that dir() works
+    if (!strcmp(name, "__dict__"))
+    {
+        PyObject *result = PyDict_New();
+        for (int i = 0; PyPlot_methods[i].ml_meth; i++)
+            PyDict_SetItem(result,
+                PyString_FromString(PyPlot_methods[i].ml_name),
+                PyString_FromString(PyPlot_methods[i].ml_name));
+        return result;
+    }
+
     return Py_FindMethod(PyPlot_methods, self, name);
 }
 

@@ -22,7 +22,7 @@ class AttributeGroup;
 // Notes:    This class does the typical AVT parallel operations but does it
 //           on ranks specified by an internal communicator. By accessing parallel
 //           operations through this class, algorithms will use the right
-//           communicator without us having to expose MPI communicators all 
+//           communicator without us having to expose MPI communicators all
 //           over the place.
 //
 // Programmer: Brad Whitlock
@@ -91,9 +91,9 @@ public:
     avtParallelContext CreateGroupsOfN(int N);
 
     /**
-      Assume that we have group ids [0,nGroups], let's make a new parallel 
+      Assume that we have group ids [0,nGroups], let's make a new parallel
       context where this rank joins a specified group. If multiple ranks passed
-      a groupId of 5 then those ranks would join the new communicator. Other 
+      a groupId of 5 then those ranks would join the new communicator. Other
       groupIds would join other communicators.
      */
     avtParallelContext Split(int groupId, int nGroups);
@@ -118,6 +118,10 @@ public:
     void    SumLongLongArrayAcrossAllProcessors(long long*, long long*, int);
     bool    ThisProcessorHasMinimumValue(double);
     bool    ThisProcessorHasMaximumValue(double);
+    int     UnifyLogicalAndValue(int);
+    int     UnifyLogicalOrValue(int);
+    int     UnifyBitwiseAndValue(int);
+    int     UnifyBitwiseOrValue(int);
     void    UnifyMinMax(double *, int, int=0);
     int     UnifyMaximumValue(int);
     float   UnifyMaximumValue(float);
@@ -155,6 +159,14 @@ public:
     void    CollectIntArraysOnRank(int *&, int *&, int *, int, int root);
     void    CollectIntArraysOnRootProc(int *&, int *&, int *, int);
     void    CollectDoubleArraysOnRootProc(double *&, int *&, double *, int);
+    void    CollectFloatVectorsOnRootProc(std::vector<float> &recvBuf,
+                                       std::vector<int> &recvCounts,
+                                       const std::vector<float> &sendBuf,
+                                       int root = 0);
+    void    CollectDoubleVectorsOnRootProc(std::vector<double> &recvBuf,
+                                       std::vector<int> &recvCounts,
+                                       const std::vector<double> &sendBuf,
+                                       int root = 0);
 
     int     GetUniqueMessageTag();
     void    GetUniqueMessageTags(int *tags, int ntags);
@@ -168,7 +180,7 @@ public:
     void    TestSome(std::vector<int> &reqs, std::vector<int> &done, std::vector<int> &status );
     void    CancelRequest(void *req);
 
- 
+
     static void Init();
 private:
     class PrivateData;
