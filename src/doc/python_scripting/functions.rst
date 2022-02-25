@@ -4369,17 +4369,15 @@ GetQueryOutputObject
   GetQueryOutputObject() -> dictionary or value
 
 return type : dictionary or value
-    GetQueryOutputObject returns an xml string produced by the last query.
+    GetQueryOutputObject returns a dictionary or value.
 
 
 **Description:**
 
-    Both the GetQueryOutputString and GetQueryOutputValue functions return
-    information about the last query to be executed but the type of information
-    returns differs. GetQueryOutputString returns a string containing the
-    output of the last query. GetQueryOutputValue returns a single number or
-    tuple of numbers, depending on the nature of the last query to be executed.
-    GetQueryOutputXML and GetQueryOutputObject expose more complex query output.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query to be executed
+    but with the type of information returned. GetQueryOutputObject returns
+    a dictionary of the output of the last query.
 
 
 **Example:**
@@ -4391,8 +4389,8 @@ return type : dictionary or value
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   Query("MinMax")
-  print(GetQueryOutputString())
-  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
+  obj = GetQueryOutputObject()
+  print("The min is: %g and the max is: %g" % (obj["min"], obj["max"]))
 
 
 GetQueryOutputString
@@ -4410,12 +4408,10 @@ return type : string
 
 **Description:**
 
-    Both the GetQueryOutputString and GetQueryOutputValue functions return
-    information about the last query to be executed but the type of information
-    returns differs. GetQueryOutputString returns a string containing the
-    output of the last query. GetQueryOutputValue returns a single number or
-    tuple of numbers, depending on the nature of the last query to be executed.
-    GetQueryOutputXML and GetQueryOutputObject expose more complex query output.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query to be executed
+    but with the type of information returned. GetQueryOutputString returns
+    a string containing the output of the last query.
 
 
 **Example:**
@@ -4428,7 +4424,6 @@ return type : string
   DrawPlots()
   Query("MinMax")
   print(GetQueryOutputString())
-  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
 
 
 GetQueryOutputValue
@@ -4447,12 +4442,11 @@ return type : double, tuple of doubles
 
 **Description:**
 
-    Both the GetQueryOutputString and GetQueryOutputValue functions return
-    information about the last query to be executed but the type of information
-    returns differs. GetQueryOutputString returns a string containing the
-    output of the last query. GetQueryOutputValue returns a single number or
-    tuple of numbers, depending on the nature of the last query to be executed.
-    GetQueryOutputXML and GetQueryOutputObject expose more complex query output.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query to be executed
+    but with the type of information returned. GetQueryOutputValue returns
+    a single number or tuple of numbers, depending on the nature of the
+    last query to be executed.
 
 
 **Example:**
@@ -4464,7 +4458,6 @@ return type : double, tuple of doubles
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   Query("MinMax")
-  print(GetQueryOutputString())
   print("The min is: %g and the max is: %g" % GetQueryOutputValue())
 
 
@@ -4478,17 +4471,15 @@ GetQueryOutputXML
   GetQueryOutputXML() -> string
 
 return type : string
-    GetQueryOutputXML returns an xml string produced by the last query.
+    GetQueryOutputXML returns an XML string.
 
 
 **Description:**
 
-    Both the GetQueryOutputString and GetQueryOutputValue functions return
-    information about the last query to be executed but the type of information
-    returns differs. GetQueryOutputString returns a string containing the
-    output of the last query. GetQueryOutputValue returns a single number or
-    tuple of numbers, depending on the nature of the last query to be executed.
-    GetQueryOutputXML and GetQueryOutputObject expose more complex query output.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query to be
+    executed but with the type of information returned. GetQueryOutputXML
+    returns a XML string containing the output of the last query.
 
 
 **Example:**
@@ -4500,8 +4491,7 @@ return type : string
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   Query("MinMax")
-  print(GetQueryOutputString())
-  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
+  print(GetQueryOutputXML())
 
 
 GetQueryOverTimeAttributes
