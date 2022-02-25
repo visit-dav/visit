@@ -13,7 +13,7 @@ then you can first translate your data into a format that VisIt_ can read
 (e.g. Silo_, VTK, etc.) or you can create a new database reader plugin for 
 VisIt_. For more information on developing a database reader plugin, refer to 
 the `Getting Data Into VisIt  
-<https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisIt2.0.0.pdf>`_
+<https://visit-dav.github.io/visit-website/pdfs/GettingDataIntoVisIt2.0.0.pdf?#page=97>`_
 manual or contact us via `Getting help <https://visit-dav.github.io/visit-website/support/>`_.
 
 File extensions
