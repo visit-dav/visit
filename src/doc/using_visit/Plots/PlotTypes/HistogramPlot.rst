@@ -81,3 +81,15 @@ options are:
   - **Linear**: no scaling is applied. This is the default option. 
   - **Log**: the logarithms of all the scalars are binned.
   - **Square Root**: the square roots of all scalars are binned.
+
+
+Statistical Options
+""""""""""""""""""""
+
+The Histogram binning results can be processed further to calculate statistical distributions.
+The **Statistical Options** controls support this:
+
+  - **Normalize Histogram**: Will bin the data and then divide each bin by the sum of the values across all bins, to create a Probability density function.
+  - **Compute the CDF**:  Will bin the data, normalize it, and then create a Cumulative distribution function from the normalized binning.
+
+
