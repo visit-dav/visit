@@ -6058,6 +6058,35 @@ return type : CLI_return_t
   print("The names of the plugins are: ", PlotPlugins())
 
 
+OpenCLI
+-------
+
+**Synopsis:**
+
+::
+
+  OpenCLI() -> integer
+  OpenCLI(args) -> integer
+
+
+args: list of strings
+    The list of arguments to pass to the CLI.
+
+
+**Description:**
+
+    The OpenCLI function is used to launch the CLI in an Xterm window with
+    the specified arguments.
+
+
+**Example:**
+
+::
+
+  #% visit -cli -nowin
+  OpenCLI("-debug", "5")
+
+
 OpenComputeEngine
 -----------------
 
@@ -6164,6 +6193,35 @@ return type : CLI_return_t
   OpenDatabase("file.visit")
   OpenDatabase("file.visit", 4)
   OpenDatabase("mcr:/usr/gapps/visit/data/multi_ucd3d.silo",0,"Silo_1.0")
+
+
+OpenGUI
+-------
+
+**Synopsis:**
+
+::
+
+  OpenGUI() -> integer
+  OpenGUI(args) -> integer
+
+
+args: list of strings
+    The list of arguments to pass to the GUI.
+
+
+**Description:**
+
+    The OpenGUI function is used to launch the GUI with the specified
+    arguments.
+
+
+**Example:**
+
+::
+
+  #% visit -cli -nowin
+  OpenGUI("-debug", "5")
 
 
 OpenMDServer
