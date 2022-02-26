@@ -34,6 +34,7 @@ Here is how to import all functions into a "visit" module namespace:
 
     import visit
     visit.Launch()
+    import visit
 
 
 If you are running VisIt at an HPC center where multiple versions of VisIt are installed, the default version of VisIt may not always match the version you expect.
@@ -44,6 +45,7 @@ To avoid confusion, you should use:
     import visit
     visit.AddArgument("-v <version>") # example: "-v 3.2"
     visit.Launch()
+    import visit
 
 
 
