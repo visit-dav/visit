@@ -4,7 +4,7 @@ Regression Testing
 Overview
 --------
 VisIt_ has a large and continually growing test suite.
-VisIt_'s test suite involves a combination python scripts in ``src/test``, raw data and data generation sources in ``src/testdata`` and of course the VisIt_ sources themselves.
+VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data and data generation sources in ``src/testdata`` and of course the VisIt_ sources themselves.
 Regression tests are run on a nightly basis.
 Testing exercises VisIt_'s viewer, mdserver, engine and cli but not the GUI.
 
