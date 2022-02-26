@@ -19,19 +19,24 @@ manual or contact us via `Getting help <https://visit-dav.github.io/visit-websit
 File extensions
 ~~~~~~~~~~~~~~~
 
-VisIt_ uses file extensions to decide which database reader plugin should be 
-used to open a particular file format. Each database reader plugin has a set 
-of file extensions that are used to match a filename to it. When a file's 
-extension matches (case sensitive except on MS Windows) that of a certain 
-plugin, VisIt_ attempts to load the file with that plugin. If the plugin cannot 
-load the file then VisIt_ attempts to open the file with the next suitable 
-plugin, before trying to open the file with the default database reader plugin.
-If your files do not have file extensions then VisIt_ will attempt to use the 
-default database reader plugin. You can provide the ``-default_format``
-command line option with the name of the database reader plugin to use if 
-you want to specify which reader VisIt_ should use when first trying to open a 
-file. For example, if you want to load a PDB/Flash file, which usually has no 
-file extension, you could provide: ``-default_format PDB`` on the command line.
+VisIt_ uses file extension matching to decide which database reader plugin should be used to open a particular file.
+Each database reader plugin has a set of file extensions that are used to match a filename to it.
+When a file's extension matches (case sensitive except on MS Windows) that of a certain plugin, VisIt_ attempts to load the file with that plugin.
+If the plugin cannot load the file, then VisIt_ attempts to open the file with the next plugin that matches the extension.
+If you have a file with a common extension like ``.hdf5`` or ``.h5``, there can be *many* VisIt plugins that match those extensions.
+VisIt_ will use the *first* plugin it tries that appears to successfully open the file.
+Sometimes, the first plugin isn't the one you really wanted.
+In that case, your options are to explicitly select the plugin or to add it to the list of *preferred* plugins.
+To explicitly select the plugin, use **File --> Open file...** and select the plugin you want from the ``Open file as type`` pull down list.
+To add a plugin to the list of *Preferred Database Plugins*, go to **Options --> Plugin Manager...** and then the **Databases** tab.
+Select the plugin from the list at left and then hit the **Add to preferred list** button at right.
+Be sure to go to **Options --> Save settings...** if you want your selections to persist across VisIt_ sessions.
+If VisIt_ finds it is unable to open a file either because there are no plugins matching the extension or all the matching plugins failed to open the file, it will begin trying preferred plugins their order specified in the list.
+
+VisIt_ also supports the ``-fallback_format`` command-line option.
+This option adds the specified plugin to the list of preferred plugins.
+For example, ``-fallback_format VTK`` adds the VTK plugin to the list of preferred plugins.
+More than one ``-fallback_format`` option can be specified on the command-line and earlier encountered options take precedence over later ones.
 
 Example Data Files
 ~~~~~~~~~~~~~~~~~~
