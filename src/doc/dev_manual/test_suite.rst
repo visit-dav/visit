@@ -46,14 +46,15 @@ Here is an example of the contents of the generated ``run_visit_test_suite.sh`` 
 Once the test suite has run, the results can be found in the ``output/html`` directory.
 Open ``output/html/index.html`` in a web browser to view the test suite results.
 
-If you want to restrict the amount of parallelism ujsed in running the test suite you can do so with the ``-n`` command line option.
+If you want to restrict the amount of parallelism used in running the test suite you can do so with the ``-n`` command line option.
 By default, the test suite will be run using all the cores on your system.
 We have found that on some systems, running more than one test at a time may result in failures.
 To work around this issue you can run one test at a time. ::
 
     ./run_visit_test_suite.sh -n 1
 
-If you want to run a single test or just a few tests from the test suite you can list them on the command line. ::
+If you want to run a single test or just a few tests from the test suite you can list them on the command line.
+The list of tests must be the last entries on the command line. ::
 
     ./run_visit_test_suite.sh -n 1 tests/databases/silo.py tests/databases/xdmf.py
 
@@ -79,6 +80,11 @@ Each of these modes represents a fundamental and relatively global change in the
 For example, the difference between ``parallel`` and ``scalable,parallel,icet`` modes is whether the scalable renderer is being used to render images. In the ``parallel`` mode, rendering is done in the viewer.
 In ``scalable,parallel,icet`` mode, it is done, in parallel, on the engine and images from each processor are composited with `IceT <https://icet.sandia.gov>`_.
 Typically, the entire test suite is run in each mode specified by the regression test policy.
+
+The mode is specified with the ``-m`` command line option.
+For example, to run in ``scalable,parallel,icet`` mode use: ::
+
+    ./run_visit_test_suite.sh -n 1 -m "scalable,parallel,icet"
 
 Until we are able to get re-baselined on the systems available outside of LLNL firewalls, options enabling some filtering of image differences will be very useful.
 Use of these options on platforms other than the currently adopted testing platform (pascal.llnl.gov) will facilitate filtering big differences (and probably real bugs that have been introduced) from differences due to platform where tests are run. See the section on filtering image differences.
