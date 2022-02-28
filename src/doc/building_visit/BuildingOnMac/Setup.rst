@@ -134,6 +134,21 @@ To `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_ind
 
    Xcode Manage Certificates Dialog
 
+
+.. warning::
+    Remain disconnected from VPN when building and code signing a VisIt release.
+    The code signing process talks to Apple servers and validates credentials with them.
+    If you are on VPN, the validation may fail with a message similar to:
+    
+    .. code-block::
+
+        Certificate trust evaluation did not return expected result. (5)  [leaf AnchorApple ChainLength CheckIntermediateMarkerOid CheckLeafMarkersProdAndQA]
+        Certificate trust evaluation for api.apple-cloudkit.com did not return expected result. No error..
+        Certificate trust evaluation did not return expected result. (5)  [leaf AnchorApple ChainLength CheckIntermediateMarkerOid CheckLeafMarkersProdAndQA]
+        Certificate trust evaluation for api.apple-cloudkit.com did not return expected result. No error..
+        Could not establish secure connection to api.apple-cloudkit.com
+
+
 App-Specific Password
 ~~~~~~~~~~~~~~~~~~~~~
 To create an app-specific password go to: `https://appleid.apple.com/account/manage <https://appleid.apple.com/account/manage>`_ . Generate the app-specific password by navigating to: *Security->App-Specific Password*.
