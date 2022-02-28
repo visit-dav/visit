@@ -1036,6 +1036,8 @@ void PickleInit()
 //    Cyrus Harrison, Mon Mar 23 12:02:27 PDT 2020
 //    Port to python 3.
 //
+//    Chris Laganella, Mon Feb 14 14:37:24 EST 2022
+//    Support MultiLineString from DBOptionsAttributes
 // ****************************************************************************
 bool
 FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
@@ -1143,6 +1145,20 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
             {
                 char *str_val = PyString_AsString(value);
                 opts.SetString(name, std::string(str_val));
+                PyString_AsString_Cleanup(str_val);
+            }
+            else
+            {
+                sprintf(msg, "Expected string to set '%s'", name.c_str());
+                VisItErrorFunc(msg);
+                return false;
+            }
+            break;
+          case DBOptionsAttributes::MultiLineString:
+            if (PyString_Check(value))
+            {
+                char *str_val = PyString_AsString(value);
+                opts.SetMultiLineString(name, str_val);
                 PyString_AsString_Cleanup(str_val);
             }
             else

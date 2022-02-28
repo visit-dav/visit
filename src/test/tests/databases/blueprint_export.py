@@ -2,7 +2,7 @@
 #  MODES: serial parallel
 #  CLASSES: nightly
 #
-#  Test Case:  blueprint_export.py 
+#  Test Case:  blueprint_export.py
 #
 #  Tests:      Tests blueprint export features "partition" and "flatten".
 #
@@ -11,13 +11,14 @@
 #
 #  Modifications:
 #
+#  Chris Laganella, Mon Feb 14 14:39:48 EST 2022
+#  I added a test case for user provided JSON/YAML options
 # ----------------------------------------------------------------------------
-RequiredDatabasePlugin("Blueprint")
-
 import time
 import sys
 import os.path
 
+# Uncomment these functions to run the script through the regular CLI
 # def Exit():
 #     print("Exiting test...")
 #     return
@@ -307,6 +308,71 @@ def partition_test_case(case_name, targets, view=None):
         DeleteAllPlots()
         CloseDatabase(export_filename)
 
+def partition_test_extra_options():
+    dbname = "multi_rect2d.silo"
+    TestSection("Extra options")
+    OpenDatabase(silo_data_path(dbname))
+    AddPlot("Subset", "domains(mesh1)")
+    DrawPlots()
+    Test("DefaultMesh")
+
+    # Test JSON
+    e0 = ExportDBAttributes()
+    e0.db_type = "Blueprint"
+    e0.filename = "multi_rect2d_json_target_1"
+    e0.variables = ("u")
+    opts0 = GetExportOptions("Blueprint")
+    opts0["Operation"] = "Partition"
+    opts0["Flatten / Partition extra options"] = '{"target": 1}'
+    ExportDatabase(e0, opts0)
+    time.sleep(1)
+
+    # Test YAML
+    e1 = ExportDBAttributes()
+    e1.db_type = "Blueprint"
+    e1.filename = "multi_rect2d_yaml_target_1"
+    e1.variables = ("u")
+    opts1 = GetExportOptions("Blueprint")
+    opts1["Operation"] = "Partition"
+    opts1["Flatten / Partition extra options"]  = 'target: 1'
+    ExportDatabase(e1, opts1)
+    time.sleep(1)
+
+    # Test that the JSON/YAML overrides the options field
+    e2 = ExportDBAttributes()
+    e2.db_type = "Blueprint"
+    e2.filename = "multi_rect2d_override_target_1"
+    e2.variables = ("u")
+    opts2 = GetExportOptions("Blueprint")
+    opts2["Operation"] = "Partition"
+    opts2["Partition target number of domains"] = 13
+    opts2["Flatten / Partition extra options"]  = 'target: 1'
+    ExportDatabase(e2, opts2)
+    time.sleep(1)
+    DeleteAllPlots()
+    CloseDatabase(silo_data_path(dbname))
+
+    OpenDatabase("multi_rect2d_json_target_1.cycle_000000.root")
+    AddPlot("Subset", "domains")
+    DrawPlots()
+    Test("JSONOptions")
+    DeleteAllPlots()
+    CloseDatabase("multi_rect2d_json_target_1.cycle_000000.root")
+
+    OpenDatabase("multi_rect2d_yaml_target_1.cycle_000000.root")
+    AddPlot("Subset", "domains")
+    DrawPlots()
+    Test("YAMLOptions")
+    DeleteAllPlots()
+    CloseDatabase("multi_rect2d_yaml_target_1.cycle_000000.root")
+
+    OpenDatabase("multi_rect2d_override_target_1.cycle_000000.root")
+    AddPlot("Subset", "domains")
+    DrawPlots()
+    Test("OverrideOptions")
+    DeleteAllPlots()
+    CloseDatabase("multi_rect2d_override_target_1.cycle_000000.root")
+
 def test_flatten():
     TestSection("Blueprint flatten")
 
@@ -377,6 +443,10 @@ def test_partition():
     partition_test_case("multi_rect2d.silo",
         targets_2d)
 
+    # Test extra options
+    partition_test_extra_options()
+
+RequiredDatabasePlugin("Blueprint")
 test_partition()
 test_flatten()
 Exit()
