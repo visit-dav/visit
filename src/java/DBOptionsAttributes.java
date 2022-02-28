@@ -25,7 +25,7 @@ import java.lang.Double;
 
 public class DBOptionsAttributes extends AttributeSubject
 {
-    private static int DBOptionsAttributes_numAdditionalAtts = 12;
+    private static int DBOptionsAttributes_numAdditionalAtts = 13;
 
     // Enum values
     public final static int OPTIONTYPE_BOOL = 0;
@@ -34,6 +34,7 @@ public class DBOptionsAttributes extends AttributeSubject
     public final static int OPTIONTYPE_DOUBLE = 3;
     public final static int OPTIONTYPE_STRING = 4;
     public final static int OPTIONTYPE_ENUM = 5;
+    public final static int OPTIONTYPE_MULTILINESTRING = 6;
 
 
     public DBOptionsAttributes()
@@ -48,6 +49,7 @@ public class DBOptionsAttributes extends AttributeSubject
         optInts = new Vector();
         optStrings = new Vector();
         optEnums = new Vector();
+        optMultiLineStrings = new Vector();
         enumStrings = new Vector();
         enumStringsSizes = new Vector();
         obsoleteNames = new Vector();
@@ -66,6 +68,7 @@ public class DBOptionsAttributes extends AttributeSubject
         optInts = new Vector();
         optStrings = new Vector();
         optEnums = new Vector();
+        optMultiLineStrings = new Vector();
         enumStrings = new Vector();
         enumStringsSizes = new Vector();
         obsoleteNames = new Vector();
@@ -124,6 +127,10 @@ public class DBOptionsAttributes extends AttributeSubject
             Integer iv = (Integer)obj.optEnums.elementAt(i);
             optEnums.addElement(new Integer(iv.intValue()));
         }
+        optMultiLineStrings = new Vector(obj.optMultiLineStrings.size());
+        for(i = 0; i < obj.optMultiLineStrings.size(); ++i)
+            optMultiLineStrings.addElement(new String((String)obj.optMultiLineStrings.elementAt(i)));
+
         enumStrings = new Vector(obj.enumStrings.size());
         for(i = 0; i < obj.enumStrings.size(); ++i)
             enumStrings.addElement(new String((String)obj.enumStrings.elementAt(i)));
@@ -229,6 +236,15 @@ public class DBOptionsAttributes extends AttributeSubject
             Integer optEnums2 = (Integer)obj.optEnums.elementAt(i);
             optEnums_equal = optEnums1.equals(optEnums2);
         }
+        // Compare the elements in the optMultiLineStrings vector.
+        boolean optMultiLineStrings_equal = (obj.optMultiLineStrings.size() == optMultiLineStrings.size());
+        for(i = 0; (i < optMultiLineStrings.size()) && optMultiLineStrings_equal; ++i)
+        {
+            // Make references to String from Object.
+            String optMultiLineStrings1 = (String)optMultiLineStrings.elementAt(i);
+            String optMultiLineStrings2 = (String)obj.optMultiLineStrings.elementAt(i);
+            optMultiLineStrings_equal = optMultiLineStrings1.equals(optMultiLineStrings2);
+        }
         // Compare the elements in the enumStrings vector.
         boolean enumStrings_equal = (obj.enumStrings.size() == enumStrings.size());
         for(i = 0; (i < enumStrings.size()) && enumStrings_equal; ++i)
@@ -265,6 +281,7 @@ public class DBOptionsAttributes extends AttributeSubject
                 optInts_equal &&
                 optStrings_equal &&
                 optEnums_equal &&
+                optMultiLineStrings_equal &&
                 enumStrings_equal &&
                 enumStringsSizes_equal &&
                 obsoleteNames_equal &&
@@ -320,28 +337,34 @@ public class DBOptionsAttributes extends AttributeSubject
         Select(7);
     }
 
+    public void SetOptMultiLineStrings(Vector optMultiLineStrings_)
+    {
+        optMultiLineStrings = optMultiLineStrings_;
+        Select(8);
+    }
+
     public void SetEnumStrings(Vector enumStrings_)
     {
         enumStrings = enumStrings_;
-        Select(8);
+        Select(9);
     }
 
     public void SetEnumStringsSizes(Vector enumStringsSizes_)
     {
         enumStringsSizes = enumStringsSizes_;
-        Select(9);
+        Select(10);
     }
 
     public void SetObsoleteNames(Vector obsoleteNames_)
     {
         obsoleteNames = obsoleteNames_;
-        Select(10);
+        Select(11);
     }
 
     public void SetHelp(String help_)
     {
         help = help_;
-        Select(11);
+        Select(12);
     }
 
     // Property getting methods
@@ -353,6 +376,7 @@ public class DBOptionsAttributes extends AttributeSubject
     public Vector GetOptInts() { return optInts; }
     public Vector GetOptStrings() { return optStrings; }
     public Vector GetOptEnums() { return optEnums; }
+    public Vector GetOptMultiLineStrings() { return optMultiLineStrings; }
     public Vector GetEnumStrings() { return enumStrings; }
     public Vector GetEnumStringsSizes() { return enumStringsSizes; }
     public Vector GetObsoleteNames() { return obsoleteNames; }
@@ -378,12 +402,14 @@ public class DBOptionsAttributes extends AttributeSubject
         if(WriteSelect(7, buf))
             buf.WriteIntVector(optEnums);
         if(WriteSelect(8, buf))
-            buf.WriteStringVector(enumStrings);
+            buf.WriteStringVector(optMultiLineStrings);
         if(WriteSelect(9, buf))
-            buf.WriteIntVector(enumStringsSizes);
+            buf.WriteStringVector(enumStrings);
         if(WriteSelect(10, buf))
-            buf.WriteStringVector(obsoleteNames);
+            buf.WriteIntVector(enumStringsSizes);
         if(WriteSelect(11, buf))
+            buf.WriteStringVector(obsoleteNames);
+        if(WriteSelect(12, buf))
             buf.WriteString(help);
     }
 
@@ -416,15 +442,18 @@ public class DBOptionsAttributes extends AttributeSubject
             SetOptEnums(buf.ReadIntVector());
             break;
         case 8:
-            SetEnumStrings(buf.ReadStringVector());
+            SetOptMultiLineStrings(buf.ReadStringVector());
             break;
         case 9:
-            SetEnumStringsSizes(buf.ReadIntVector());
+            SetEnumStrings(buf.ReadStringVector());
             break;
         case 10:
-            SetObsoleteNames(buf.ReadStringVector());
+            SetEnumStringsSizes(buf.ReadIntVector());
             break;
         case 11:
+            SetObsoleteNames(buf.ReadStringVector());
+            break;
+        case 12:
             SetHelp(buf.ReadString());
             break;
         }
@@ -441,6 +470,7 @@ public class DBOptionsAttributes extends AttributeSubject
         str = str + intVectorToString("optInts", optInts, indent) + "\n";
         str = str + stringVectorToString("optStrings", optStrings, indent) + "\n";
         str = str + intVectorToString("optEnums", optEnums, indent) + "\n";
+        str = str + stringVectorToString("optMultiLineStrings", optMultiLineStrings, indent) + "\n";
         str = str + stringVectorToString("enumStrings", enumStrings, indent) + "\n";
         str = str + intVectorToString("enumStringsSizes", enumStringsSizes, indent) + "\n";
         str = str + stringVectorToString("obsoleteNames", obsoleteNames, indent) + "\n";
@@ -458,6 +488,7 @@ public class DBOptionsAttributes extends AttributeSubject
     private Vector optInts; // vector of Integer objects
     private Vector optStrings; // vector of String objects
     private Vector optEnums; // vector of Integer objects
+    private Vector optMultiLineStrings; // vector of String objects
     private Vector enumStrings; // vector of String objects
     private Vector enumStringsSizes; // vector of Integer objects
     private Vector obsoleteNames; // vector of String objects

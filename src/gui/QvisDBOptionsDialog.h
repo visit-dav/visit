@@ -11,6 +11,7 @@ class QPushButton;
 class QCheckBox;
 class QLineEdit;
 class QComboBox;
+class QTextEdit;
 class DBOptionsAttributes;
 
 // ****************************************************************************
@@ -48,6 +49,7 @@ private:
     QList<QCheckBox*>    checkboxes;
     QList<QLineEdit*>    lineedits;
     QList<QComboBox*>    comboboxes;
+    QList<QTextEdit*>    multiLineEdits;
 
     QPushButton         *okButton;
     QPushButton         *helpButton;
