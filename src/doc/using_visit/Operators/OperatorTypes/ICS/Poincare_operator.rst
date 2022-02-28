@@ -122,7 +122,7 @@ Detect Rational Surface
     Allows for the construction of rational surfaces via an iterative process.
     Typically, they can be constructed with 5-10 iterations. 
 
-.. danger:
+.. danger::
     The rational surface construction is experimental code and does not
     always work.
 
@@ -130,7 +130,7 @@ Detect O Points
     Allows for the detection of O points in “island chains” via an iterative
     process. Typically, they can be detected with 5 iterations. 
 
-.. danger:
+.. danger::
     The critical point detection is experimental code and does not always work.
 
 Perform O-Line Analysis
@@ -255,7 +255,7 @@ Smooth
     Display all of the punctures points in a connected fashion, removing the
     overlapping sections while smoothing between points.
 
-.. danger:
+.. danger::
     Smooth is experimental and does not always work.
 
 Advanced
