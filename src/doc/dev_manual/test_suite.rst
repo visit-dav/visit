@@ -4,7 +4,7 @@ Regression Testing
 Overview
 --------
 VisIt_ has a large and continually growing test suite.
-VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data and data generation sources in ``src/testdata`` and of course the VisIt_ sources themselves.
+VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data in 7z archives in the top-level ``data`` directory and data generation sources in ``src/tools/data/datagen``.
 Regression tests are run on a nightly basis.
 Testing exercises VisIt_'s viewer, mdserver, engine and cli but not the GUI.
 
@@ -17,6 +17,7 @@ Where nightly regression tests are run
 The regression suite is run on `LLNL's Pascal Cluster <https://hpc.llnl.gov/hardware/platforms/pascal>`_.
 Pascal runs the TOSS3 operating system, which is a flavor of Linux.
 If you are going to run the regression suite yourself you should run on a similar system or there will be differences due to numeric precision issues.
+If you do have to run the test suite on a different system there are options for doing :ref:`fuzzy matching <Fuzzy Matching Thresholds>`.
 
 The regression suite is run on Pascal using a cron job that checks out VisIt_ source code, builds it, and then runs the tests.
 
@@ -26,7 +27,9 @@ How to run the regression tests manually
 The regression suite relies on having a working VisIt_ build and test data available on your local computer.
 Our test data and baselines are stored using git lfs, so you need to setup git lfs and pull to have all the necessary files. 
 
-The test suite is written in python and the source is in ``src/test``. 
+The test suite is written in python and the source is in ``src/test``.
+The main driver to run the whole test suite is ``src/test/visit_test_main.py``.
+Individual test `.py` files are in ``src/test/tests/<category>/*.py``.
 When you configure VisIt_, a bash script is generated in the build directory that you can use to run the test suite out of source with all the proper data and baseline directory arguments. ::
 
     cd visit-build/test/
@@ -44,7 +47,7 @@ Here is an example of the contents of the generated ``run_visit_test_suite.sh`` 
 
 
 Once the test suite has run, the results can be found in the ``output/html`` directory.
-Open ``output/html/index.html`` in a web browser to view the test suite results.
+There, you will find an ``index.html`` file entry that you can use to browse all the results.
 
 If you want to restrict the amount of parallelism used in running the test suite you can do so with the ``-n`` command line option.
 By default, the test suite will be run using all the cores on your system.
@@ -67,7 +70,7 @@ The nightly test suite results are posted to `GitHub <https://visit-dav.github.i
 
 In the event of failure on the nightly run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-If any tests fail, ''all'' developers who updated the code from the last time all tests successfully passed will receive an email indicating what failed.
+If any tests fail, **all** developers who updated the code from the last time all tests successfully passed will receive an email indicating what failed.
 In addition, failed results should be available on the web.  
 
 How regression testing works
@@ -86,8 +89,8 @@ For example, to run in ``scalable,parallel,icet`` mode use: ::
 
     ./run_visit_test_suite.sh -n 1 -m "scalable,parallel,icet"
 
-Until we are able to get re-baselined on the systems available outside of LLNL firewalls, options enabling some filtering of image differences will be very useful.
-Use of these options on platforms other than the currently adopted testing platform (pascal.llnl.gov) will facilitate filtering big differences (and probably real bugs that have been introduced) from differences due to platform where tests are run. See the section on filtering image differences.
+Until we are able to get re-baselined on the systems available outside of LLNL firewalls, using :ref:`fuzzy matching <Fuzzy Matching Thresholds>` to allow minor differences to still be considered a match will be very useful.
+Use of these options on platforms other than the currently adopted testing platform will facilitate filtering big differences (and probably real bugs that have been introduced) from differences due to platform differences.
 
 There are a number of different categories of tests. The test
 categories are the names of all the directories under
@@ -308,6 +311,8 @@ Avg. Diff (``avgdiff``) :
     The average *luminance* (gray-scale, obtained by weighting RGB channels by 1/3rd
     and summing) difference. This is the sum of all pixel luminance differences
     divided by ``#diff``.
+
+.. _Fuzzy Matching Thresholds:
 
 Fuzzy Matching Thresholds
 """""""""""""""""""""""""

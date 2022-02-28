@@ -2863,7 +2863,7 @@ return type : dictionary
     will be 'nodeColumnNames' and 'nodeTable' entries. If the output contains
     zone centered data then there will be 'zoneColumnNames' and 'zoneTable'
     entries. If the query results in no output data, then an empty dictionary
-    is returned. The '*Table' entries are compatible with numpy via the
+    is returned. The 'Table' entries are compatible with numpy via the
     'numpy.asarray()' function.
 
 vars:
