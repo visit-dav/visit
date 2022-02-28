@@ -21,6 +21,14 @@ The remainder of this VTK documentation consistes of a description of the file f
 
 The official VTK file format descriptions can be found `here <https://kitware.github.io/vtk-examples/site/VTKFileFormats/>`_.
 
+.. warning::
+
+    Reading VTK files into VisIt_ requires *strict* file extension matching.
+    For example, if you have a pvtu file, it must have the ``.pvtu`` extension or VisIt_ will not be able to open and read the file.
+    This is true even when using VisIt_'s feature to explicitly specify the plugin to use to open the file.
+    For example, if you know ``file.foo`` is a VTK file and try to open it using VisIt_'s VTK plugin, it will fail because the extension does not match a known extension for VTK files.
+    For VisIt_ to read VTK files, the files *must have* the correct VTK extensions.
+
 .. _data_into_visit_vtk_structure:
 
 The basic structure of a VTK file
