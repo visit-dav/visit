@@ -32,6 +32,9 @@
 #   Make sure `make install` will call docs build target, otherwise
 #   make install can fail unless "make manuals" is called manually. 
 #
+#   Cyrus Harrison, Fri Feb 25 14:49:03 PST 2022
+#   Add a `docs` cmake target that is an alais for `manuals`
+#
 #****************************************************************************
 
 if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
@@ -61,6 +64,12 @@ if(VISIT_PYTHON_DIR AND VISIT_ENABLE_MANUALS AND NOT VISIT_STATIC)
     add_custom_target(manuals COMMAND ${sphinx_build_cmd}
         -b html ${VISIT_SOURCE_DIR}/doc
         ${VISIT_BINARY_DIR}/resources/help/en_US/manual -a)
+
+    #
+    # Allow `make docs` to be an alais for `make manuals`
+    #
+    add_custom_target(docs)
+    add_dependencies(docs manuals)
 
 
     ######
