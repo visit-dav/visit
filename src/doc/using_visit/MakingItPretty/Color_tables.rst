@@ -380,7 +380,7 @@ color control points will not have changed.
 Better Color Tables
 ~~~~~~~~~~~~~~~~~~~
 
-VisIt_ includes sets of color tables that are *optimized* for various properties.
+VisIt_ includes sets of color tables that are *optimized* for `various properties <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199239#sec011>`_.
 These color tables, although they are less well known and used, often represent better choices
 than the *default* **hot** color table.
 Some are better for consumers of visual data who have *color vision deficiency (CVD)* (e.g. `color blindness <https://www.colourblindawareness.org/colour-blindness/>`_).
@@ -396,7 +396,7 @@ The `Viridis <https://cran.r-project.org/web/packages/viridis/vignettes/intro-to
 * **Perceptually uniform:** meaning that values close to each other have similar-appearing colors and values far away from each other have more different-appearing colors, consistently across the range of values.
 * **Robust to colorblindness:** so that the above properties hold true for people with common forms of colorblindness, as well as in grey scale printing.
 
-These color tables are defined in the ``Viridis` category and are named ``virdis-<name>`` where ``<name>`` is the specific color table in the Viridis set of color tables.
+These color tables are defined in the ``CvdFriendlyViridis` category and are named ``virdis-<name>`` where ``<name>`` is the specific color table in the Viridis set of color tables.
 
 The Crameri color tables
 """"""""""""""""""""""""
@@ -419,4 +419,4 @@ The Crameri color tables define five broad classes of color tables...
 
 In addition, *discrete* versions consisting of 10, 25, 50 and 100 colors from their associated *main* color table are defined.
 
-These color tables are defined in the ``Crameri`` category and are named ``<name>-<class>-<count>`` where ``<name>`` is the specific color table in the Crameri set of color tables, ``<class>`` is one of the five classes defined above and ``<count>`` is defined only for discrete color tables and indicates the number of colors in the table.
+These color tables are defined in the ``CvdFriendlyCrameri`` category and are named ``<name>-<class>-<count>`` where ``<name>`` is the specific color table in the Crameri set of color tables, ``<class>`` is one of the five classes defined above and ``<count>`` is defined only for discrete color tables and indicates the number of colors in the table.
