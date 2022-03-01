@@ -2863,7 +2863,7 @@ return type : dictionary
     will be 'nodeColumnNames' and 'nodeTable' entries. If the output contains
     zone centered data then there will be 'zoneColumnNames' and 'zoneTable'
     entries. If the query results in no output data, then an empty dictionary
-    is returned. The '*Table' entries are compatible with numpy via the
+    is returned. The 'Table' entries are compatible with numpy via the
     'numpy.asarray()' function.
 
 vars:
@@ -4369,17 +4369,13 @@ GetQueryOutputObject
   GetQueryOutputObject() -> dictionary or value
 
 return type : dictionary or value
-    GetQueryOutputObject returns an xml string produced by the last query.
+    GetQueryOutputObject returns a dictionary or value.
 
 
 **Description:**
 
-    Both the GetQueryOutputString and GetQueryOutputValue functions return
-    information about the last query to be executed but the type of information
-    returns differs. GetQueryOutputString returns a string containing the
-    output of the last query. GetQueryOutputValue returns a single number or
-    tuple of numbers, depending on the nature of the last query to be executed.
-    GetQueryOutputXML and GetQueryOutputObject expose more complex query output.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputObject returns a dictionary of the output of the last query.
 
 
 **Example:**
@@ -4391,8 +4387,8 @@ return type : dictionary or value
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   Query("MinMax")
-  print(GetQueryOutputString())
-  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
+  obj = GetQueryOutputObject()
+  print("The min is: %g and the max is: %g" % (obj["min"], obj["max"]))
 
 
 GetQueryOutputString
@@ -4410,12 +4406,8 @@ return type : string
 
 **Description:**
 
-    Both the GetQueryOutputString and GetQueryOutputValue functions return
-    information about the last query to be executed but the type of information
-    returns differs. GetQueryOutputString returns a string containing the
-    output of the last query. GetQueryOutputValue returns a single number or
-    tuple of numbers, depending on the nature of the last query to be executed.
-    GetQueryOutputXML and GetQueryOutputObject expose more complex query output.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputString returns a string containing the output of the last query.
 
 
 **Example:**
@@ -4428,7 +4420,6 @@ return type : string
   DrawPlots()
   Query("MinMax")
   print(GetQueryOutputString())
-  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
 
 
 GetQueryOutputValue
@@ -4447,12 +4438,8 @@ return type : double, tuple of doubles
 
 **Description:**
 
-    Both the GetQueryOutputString and GetQueryOutputValue functions return
-    information about the last query to be executed but the type of information
-    returns differs. GetQueryOutputString returns a string containing the
-    output of the last query. GetQueryOutputValue returns a single number or
-    tuple of numbers, depending on the nature of the last query to be executed.
-    GetQueryOutputXML and GetQueryOutputObject expose more complex query output.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputValue returns a single number or tuple of numbers, depending on the nature of the last query to be executed.
 
 
 **Example:**
@@ -4464,7 +4451,6 @@ return type : double, tuple of doubles
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   Query("MinMax")
-  print(GetQueryOutputString())
   print("The min is: %g and the max is: %g" % GetQueryOutputValue())
 
 
@@ -4478,17 +4464,13 @@ GetQueryOutputXML
   GetQueryOutputXML() -> string
 
 return type : string
-    GetQueryOutputXML returns an xml string produced by the last query.
+    GetQueryOutputXML returns an XML string.
 
 
 **Description:**
 
-    Both the GetQueryOutputString and GetQueryOutputValue functions return
-    information about the last query to be executed but the type of information
-    returns differs. GetQueryOutputString returns a string containing the
-    output of the last query. GetQueryOutputValue returns a single number or
-    tuple of numbers, depending on the nature of the last query to be executed.
-    GetQueryOutputXML and GetQueryOutputObject expose more complex query output.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputXML returns a XML string containing the output of the last query.
 
 
 **Example:**
@@ -4500,8 +4482,7 @@ return type : string
   AddPlot("Pseudocolor", "d")
   DrawPlots()
   Query("MinMax")
-  print(GetQueryOutputString())
-  print("The min is: %g and the max is: %g" % GetQueryOutputValue())
+  print(GetQueryOutputXML())
 
 
 GetQueryOverTimeAttributes
@@ -6068,6 +6049,35 @@ return type : CLI_return_t
   print("The names of the plugins are: ", PlotPlugins())
 
 
+OpenCLI
+-------
+
+**Synopsis:**
+
+::
+
+  OpenCLI() -> integer
+  OpenCLI(args) -> integer
+
+
+args: list of strings
+    The list of arguments to pass to the CLI.
+
+
+**Description:**
+
+    The OpenCLI function is used to launch the CLI in an Xterm window with
+    the specified arguments.
+
+
+**Example:**
+
+::
+
+  #% visit -cli -nowin
+  OpenCLI("-debug", "5")
+
+
 OpenComputeEngine
 -----------------
 
@@ -6174,6 +6184,35 @@ return type : CLI_return_t
   OpenDatabase("file.visit")
   OpenDatabase("file.visit", 4)
   OpenDatabase("mcr:/usr/gapps/visit/data/multi_ucd3d.silo",0,"Silo_1.0")
+
+
+OpenGUI
+-------
+
+**Synopsis:**
+
+::
+
+  OpenGUI() -> integer
+  OpenGUI(args) -> integer
+
+
+args: list of strings
+    The list of arguments to pass to the GUI.
+
+
+**Description:**
+
+    The OpenGUI function is used to launch the GUI with the specified
+    arguments.
+
+
+**Example:**
+
+::
+
+  #% visit -cli -nowin
+  OpenGUI("-debug", "5")
 
 
 OpenMDServer

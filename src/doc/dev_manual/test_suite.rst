@@ -3,12 +3,10 @@ Regression Testing
 
 Overview
 --------
-VisIt_ has a large and continually growing test suite. VisIt_'s test
-suite involves a combination python scripts
-in ``src/test``, raw data and data generation sources in ``src/testdata``
-and of course the VisIt_ sources themselves. Regression tests are
-run on a nightly basis. Testing exercises VisIt_'s viewer,
-mdserver, engine and cli but not the GUI.
+VisIt_ has a large and continually growing test suite.
+VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data in 7z archives in the top-level ``data`` directory and data generation sources in ``src/tools/data/datagen``.
+Regression tests are run on a nightly basis.
+Testing exercises VisIt_'s viewer, mdserver, engine and cli but not the GUI.
 
 
 Running regression tests
@@ -16,7 +14,10 @@ Running regression tests
 
 Where nightly regression tests are run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The regression suite is run on `LLNL's Pascal Cluster <https://hpc.llnl.gov/hardware/platforms/pascal>`_. Pascal runs the TOSS3 operating system, which is a flavor of Linux. If you are going to run the regression suite yourself you should run on a similar system or there will be differences due to numeric precision issues.
+The regression suite is run on `LLNL's Pascal Cluster <https://hpc.llnl.gov/hardware/platforms/pascal>`_.
+Pascal runs the TOSS3 operating system, which is a flavor of Linux.
+If you are going to run the regression suite yourself you should run on a similar system or there will be differences due to numeric precision issues.
+If you do have to run the test suite on a different system there are options for doing :ref:`fuzzy matching <Fuzzy Matching Thresholds>`.
 
 The regression suite is run on Pascal using a cron job that checks out VisIt_ source code, builds it, and then runs the tests.
 
@@ -26,9 +27,10 @@ How to run the regression tests manually
 The regression suite relies on having a working VisIt_ build and test data available on your local computer.
 Our test data and baselines are stored using git lfs, so you need to setup git lfs and pull to have all the necessary files. 
 
-The test suite is written in python and to source is in ``src/test``. 
-When you configure VisIt_, a bash script is generated in the build directory that you can use to run the test
-suite out of source with all the proper data and baseline directory arguments. ::
+The test suite is written in python and the source is in ``src/test``.
+The main driver to run the whole test suite is ``src/test/visit_test_main.py``.
+Individual test `.py` files are in ``src/test/tests/<category>/*.py``.
+When you configure VisIt_, a bash script is generated in the build directory that you can use to run the test suite out of source with all the proper data and baseline directory arguments. ::
 
     cd visit-build/test/
     ./run_visit_test_suite.sh
@@ -44,45 +46,51 @@ Here is an example of the contents of the generated ``run_visit_test_suite.sh`` 
        -e /Users/harrison37/Work/github/visit-dav/visit/build-mb-develop-darwin-10.13-x86_64/build-debug/bin/visit "$@"
 
 
-Once the test suite has run, the results can be found in the ``output/html`` directory. Open ``output/html/index.html`` in a web browser to view the test suite results.
+Once the test suite has run, the results can be found in the ``output/html`` directory.
+There, you will find an ``index.html`` file entry that you can use to browse all the results.
+
+If you want to restrict the amount of parallelism used in running the test suite you can do so with the ``-n`` command line option.
+By default, the test suite will be run using all the cores on your system.
+We have found that on some systems, running more than one test at a time may result in failures.
+To work around this issue you can run one test at a time. ::
+
+    ./run_visit_test_suite.sh -n 1
+
+If you want to run a single test or just a few tests from the test suite you can list them on the command line.
+The list of tests must be the last entries on the command line. ::
+
+    ./run_visit_test_suite.sh -n 1 tests/databases/silo.py tests/databases/xdmf.py
+
+There are a number of additional command-line options to the test suite.
+``./run_visit_test_suite.sh -help`` will give you details about these options.
 
 Accessing regression test results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The nightly test suite results are posted to: http://portal.nersc.gov/project/visit/.
+The nightly test suite results are posted to `GitHub <https://visit-dav.github.io/dashboard/>`_.
 
 In the event of failure on the nightly run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-If any tests
-fail, ''all'' developers who updated the code from the last time all
-tests successfully passed will receive an email indicating what failed.
+If any tests fail, **all** developers who updated the code from the last time all tests successfully passed will receive an email indicating *something* failed.
 In addition, failed results should be available on the web.  
 
 How regression testing works
 ----------------------------
 
-The workhorse script that manages the testing is ``visit_test_suite.py`` in 
-``src/test``. Tests can be run in a variety of ways called *modes*.
-For example, VisIt_'s nightly testing is run in ``serial``, ``parallel``
-and ``scalable,parallel`` modes. Each of these modes represents a fundamental and
-relatively global change in the way VisIt_ is doing business
-under the covers during its testing. For example, the difference
-between ``parallel`` and ``scalable,parallel`` modes is whether the scalable
-renderer is being used to render images. In the ``parallel`` mode,
-rendering is done in the viewer. In ``scalable,parallel`` mode, it
-is done, in parallel, on the engine and images from each processor
-are composited. Typically, the entire test suite is run in each
-mode specified by the regression test policy.
+The workhorse script that manages the testing is ``visit_test_suite.py`` in ``src/test``.
+Tests can be run in a variety of ways called *modes*.
+For example, VisIt_'s nightly testing is run in ``serial``, ``parallel`` and ``scalable,parallel,icet`` modes.
+Each of these modes represents a fundamental and relatively global change in the way VisIt_ is doing business under the covers during its testing.
+For example, the difference between ``parallel`` and ``scalable,parallel,icet`` modes is whether the scalable renderer is being used to render images. In the ``parallel`` mode, rendering is done in the viewer.
+In ``scalable,parallel,icet`` mode, it is done, in parallel, on the engine and images from each processor are composited with `IceT <https://icet.sandia.gov>`_.
+Typically, the entire test suite is run in each mode specified by the regression test policy.
 
-There are a number
-of command-line options to the test suite. ``./run_visit_test_suite.sh -help``
-will give you details about these options. Until we are
-able to get re-baselined on the systems available outside of LLNL firewalls,
-options enabling some filtering of image differences will be very useful.
-Use of these options on platforms other than the currently adopted testing
-platform (pascal.llnl.gov) will facilitate filtering big
-differences (and probably real bugs that have been introduced)
-from differences due to platform where tests are run. See the section on
-filtering image differences.
+The mode is specified with the ``-m`` command line option.
+For example, to run in ``scalable,parallel,icet`` mode use: ::
+
+    ./run_visit_test_suite.sh -n 1 -m "scalable,parallel,icet"
+
+For simplicity, we maintain baselines only for one *blessed* platform which is conveniently accessible to the *core* development team. Running the test suite anywhere else requires the use of :ref:`fuzzy matching <Fuzzy Matching Thresholds>` to ignore minor differences.
+Use of these options on platforms other than the currently adopted testing platform will facilitate filtering big differences (and probably real bugs that have been introduced) from differences due to platform or configuration.
 
 There are a number of different categories of tests. The test
 categories are the names of all the directories under
@@ -304,6 +312,8 @@ Avg. Diff (``avgdiff``) :
     and summing) difference. This is the sum of all pixel luminance differences
     divided by ``#diff``.
 
+.. _Fuzzy Matching Thresholds:
+
 Fuzzy Matching Thresholds
 """""""""""""""""""""""""
 There are some command-line arguments to run tests that control *fuzzy* matching.
@@ -408,9 +418,8 @@ to the repository.
 
 Using VisIt_ Test Suite for Sim Code Testing
 --------------------------------------------
-VisIt_'s testing infrastructure can also be used from a VisIt_ install by simulation codes 
-how want to write their own Visit-based tests.
-For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_ 
+VisIt_'s testing infrastructure can also be used from a VisIt_ install by simulation codes that want to write their own Visit-based tests.
+For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_.
 
 
 Diagnosing pluginVsInstall failures
@@ -425,7 +434,7 @@ The output consists of text files containing the name of each plugin tested and 
 * ``cmake executable could not be found``   (rare, just for completeness)
 * ``make executable could not be found``  (rare, just for completeness)
 
-When failure occurs, another output file is generated in ``logs/plugins`` subdirectory in the form  ``<PluginName>_build_res.txt`` which should contain sufficient information for fixing the error.
+When a failure occurs, another output file is generated in ``logs/plugins`` subdirectory in the form  ``<PluginName>_build_res.txt`` which should contain sufficient information for fixing the error.
 
 The most likely culprit for errors is missing information in one of the following files:
 
