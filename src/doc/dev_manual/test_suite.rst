@@ -418,9 +418,8 @@ to the repository.
 
 Using VisIt_ Test Suite for Sim Code Testing
 --------------------------------------------
-VisIt_'s testing infrastructure can also be used from a VisIt_ install by simulation codes 
-how want to write their own Visit-based tests.
-For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_ 
+VisIt_'s testing infrastructure can also be used from a VisIt_ install by simulation codes that want to write their own Visit-based tests.
+For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_.
 
 
 Diagnosing pluginVsInstall failures
@@ -435,7 +434,7 @@ The output consists of text files containing the name of each plugin tested and 
 * ``cmake executable could not be found``   (rare, just for completeness)
 * ``make executable could not be found``  (rare, just for completeness)
 
-When failure occurs, another output file is generated in ``logs/plugins`` subdirectory in the form  ``<PluginName>_build_res.txt`` which should contain sufficient information for fixing the error.
+When a failure occurs, another output file is generated in ``logs/plugins`` subdirectory in the form  ``<PluginName>_build_res.txt`` which should contain sufficient information for fixing the error.
 
 The most likely culprit for errors is missing information in one of the following files:
 
