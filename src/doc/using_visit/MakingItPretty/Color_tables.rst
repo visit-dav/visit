@@ -396,7 +396,7 @@ The `Viridis <https://cran.r-project.org/web/packages/viridis/vignettes/intro-to
 * **Perceptually uniform:** meaning that values close to each other have similar-appearing colors and values far away from each other have more different-appearing colors, consistently across the range of values.
 * **Robust to colorblindness:** so that the above properties hold true for people with common forms of colorblindness, as well as in grey scale printing.
 
-These color tables are defined in the ``CvdFriendlyViridis` category.
+These color tables are defined in the ``CvdFriendlyViridis`` category.
 
 The Crameri color tables
 """"""""""""""""""""""""
