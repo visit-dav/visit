@@ -396,7 +396,7 @@ The `Viridis <https://cran.r-project.org/web/packages/viridis/vignettes/intro-to
 * **Perceptually uniform:** meaning that values close to each other have similar-appearing colors and values far away from each other have more different-appearing colors, consistently across the range of values.
 * **Robust to colorblindness:** so that the above properties hold true for people with common forms of colorblindness, as well as in grey scale printing.
 
-These color tables are defined in the ``CvdFriendlyViridis` category and are named ``virdis-<name>`` where ``<name>`` is the specific color table in the Viridis set of color tables.
+These color tables are defined in the ``CvdFriendlyViridis` category.
 
 The Crameri color tables
 """"""""""""""""""""""""
@@ -413,7 +413,7 @@ The Crameri color tables define five broad classes of color tables...
 * Diverging (``div``) - good for displaying comparative data or data differenceing.
 * Mult-sequential (``2seq``) - good for displaying multi-modal data.
 * Cyclic (``cyc``) - good for displaying periodic data.
-* Categorical (``hash``) - good for displaying categorical data or false contouring of data.
+* Categorical (``jumbled``) - good for displaying categorical data or false contouring of smooth data.
 
   * This is just a `jumbling <https://www.fabiocrameri.ch/categorical-colour-maps/>`_ of the associated *sequential* color table to maximize perceptual differentiation between *neighboring* data values.
 
