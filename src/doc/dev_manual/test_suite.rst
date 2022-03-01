@@ -405,13 +405,33 @@ results dashboard are suitable for using as baseline results. To use this script
 Once you've completed using ``rebase.py`` to update image baselines, don't forget to commit your changes back
 to the repository.
 
- 
+
 Using VisIt_ Test Suite for Sim Code Testing
 --------------------------------------------
 VisIt_'s testing infrastructure can also be used from a VisIt_ install by simulation codes 
 how want to write their own Visit-based tests.
 For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_ 
 
+
+Diagnosing pluginVsInstall failures
+-----------------------------------
+pluginsVsInstall test output is generated in the ``current/plugins`` subdirectory of the test results location.
+There will be a further subdirectory for each type of plugin: databasesVsInstall, operatorsVsInstall and plotsVsInstall.
+The output consists of text files containing the name of each plugin tested and either ``success`` or one of the following errors:
+
+* ``No installed package.`` Indicates a failure in install of VisIt.
+* ``cmake configure failed`` Failure with cmake to configure the plugin for build.
+* ``make failed`` Failure with the build of the plugin.
+* ``cmake executable could not be found``   (rare, just for completeness)
+* ``make executable could not be found``  (rare, just for completeness)
+
+When failure occurs, another output file is generated in ``logs/plugins`` subdirectory in the form  ``<PluginName>_build_res.txt`` which should contain sufficient information for fixing the error.
+
+The most likely culprit for errors is missing information in one of the following files:
+
+* ``src/include/visit-cmake.h.in`` --  Holds all the #defines needed for a build (HAVE_LIBXXX, etc).
+* ``src/CMake/PluginVsInstall.cmake.in`` -- Ensures third-party include/library locations are correct for an install.
+* ``src/CMake/FilterDependnecies.cmake.in`` -- Filters library dependency paths to account for differences between locations of third-party libraries used in a build vs. where they are located within an installed version of VisIt.
 
 .. CYRUS NOTE: This info seems to old to be relevant, but keeping here commented out just in case. 
 .. 

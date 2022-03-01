@@ -34,7 +34,8 @@ public:
         Float,
         Double,
         String,
-        Enum
+        Enum,
+        MultiLineString
     };
 
     // These constructors are for objects of this class
@@ -70,6 +71,7 @@ public:
     void SelectOptInts();
     void SelectOptStrings();
     void SelectOptEnums();
+    void SelectOptMultiLineStrings();
     void SelectEnumStrings();
     void SelectEnumStringsSizes();
     void SelectObsoleteNames();
@@ -84,6 +86,7 @@ public:
     void SetOptInts(const intVector &optInts_);
     void SetOptStrings(const stringVector &optStrings_);
     void SetOptEnums(const intVector &optEnums_);
+    void SetOptMultiLineStrings(const stringVector &optMultiLineStrings_);
     void SetEnumStrings(const stringVector &enumStrings_);
     void SetEnumStringsSizes(const intVector &enumStringsSizes_);
     void SetObsoleteNames(const stringVector &obsoleteNames_);
@@ -106,6 +109,8 @@ public:
           stringVector &GetOptStrings();
     const intVector    &GetOptEnums() const;
           intVector    &GetOptEnums();
+    const stringVector &GetOptMultiLineStrings() const;
+          stringVector &GetOptMultiLineStrings();
     const stringVector &GetEnumStrings() const;
           stringVector &GetEnumStrings();
     const intVector    &GetEnumStringsSizes() const;
@@ -147,6 +152,8 @@ public:
     void SetEnum(const std::string &name, int defaultValue);
     int GetEnum(const std::string &name) const;
     void SetEnumStrings(const std::string &name, const std::vector<std::string> &values);
+    const std::string &GetMultiLineString(const std::string &name) const;
+    void SetMultiLineString(const std::string &name, const std::string &defaultValue);
     int GetNumberOfOptions(void) const;
     DBOptionsAttributes::OptionType GetType(int) const;
     std::vector<std::string> GetEnumStrings(const std::string &name) const;
@@ -165,6 +172,7 @@ public:
         ID_optInts,
         ID_optStrings,
         ID_optEnums,
+        ID_optMultiLineStrings,
         ID_enumStrings,
         ID_enumStringsSizes,
         ID_obsoleteNames,
@@ -181,6 +189,7 @@ private:
     intVector    optInts;
     stringVector optStrings;
     intVector    optEnums;
+    stringVector optMultiLineStrings;
     stringVector enumStrings;
     intVector    enumStringsSizes;
     stringVector obsoleteNames;
@@ -190,6 +199,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define DBOPTIONSATTRIBUTES_TMFS "i*s*i*d*d*i*s*i*s*i*s*s"
+#define DBOPTIONSATTRIBUTES_TMFS "i*s*i*d*d*i*s*i*s*s*i*s*s"
 
 #endif
