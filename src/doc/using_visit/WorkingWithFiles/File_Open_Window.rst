@@ -191,7 +191,7 @@ interact with the data or you can choose to have the simulation continue and
 push new data to VisIt for plotting. For more information about instrumenting 
 your simulation code with the VisIt simulation library interface, see the
 `Getting Data Into VisIt 
-<https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/visit/GettingDataIntoVisIt2.0.0.pdf>`_
+<https://visit-dav.github.io/visit-website/pdfs/GettingDataIntoVisIt2.0.0.pdf?#page=151>`_
 manual.
 
 VisIt currently treats simulations as though they were ordinary files. When 
