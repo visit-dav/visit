@@ -100,7 +100,7 @@ makeVisItDiscreteFromTxtDiscrete() {
 # </Object>
 #            $f/DiscretePalettes $m $name 10
 
-    delta=$(perl -e "print 1.0/($4-1)")
+    delta=$(perl -e "print int((10000000.0/($4-1)+0.5))/10000000")
     newct="$3-$2-$4.ct"
     echo "<?xml version=\"1.0\"?>" > $newct
     echo "<Object name=\"ColorTable\">" >> $newct
@@ -119,6 +119,7 @@ makeVisItDiscreteFromTxtDiscrete() {
         echo "            <Field name=\"position\" type=\"float\">$pos</Field>" >> $newct
         echo "        </Object>" >> $newct
         pos=$(perl -e "print $pos+$delta")
+        pos=$(perl -e "print $pos>1?1:$pos")
     done < $1/$3$4.txt
     echo "    <Field name=\"discrete\" type=\"bool\">true</Field>" >> $newct
     echo "    <Field name=\"category\" type=\"string\">CvdFriendlyCrameri</Field>" >> $newct
@@ -147,9 +148,10 @@ for f in $ctfiles; do
     cat $f/$name.ct | tr '\n' '@' | sed -e 's#@    </Object>@</Object>#@        <Field name="category" type="string">CvdFriendlyCrameri</Field>@    </Object>@</Object>#' | tr '@' '\n' > $name-$m.ct
 
     # Get categorical map if present
+    #git mv ${name}S-$m-jumbled.ct $name-$m-jumbled.ct
     rm -f $name-$m-jumbled.ct
     if [ -n "$cat" ]; then
-        cat $f/CategoricalPalettes/${name}S.ct | tr '\n' '@' | sed -e 's#@    </Object>@</Object>#@        <Field name="category" type="string">CvdFriendlyCrameri</Field>@    </Object>@</Object>#' | tr '@' '\n' > ${name}S-$m-jumbled.ct
+        cat $f/CategoricalPalettes/${name}S.ct | tr '\n' '@' | sed -e 's#@    </Object>@</Object>#@        <Field name="category" type="string">CvdFriendlyCrameri</Field>@    </Object>@</Object>#' | tr '@' '\n' > ${name}-$m-jumbled.ct
     fi
 
     # Make the discrete maps
