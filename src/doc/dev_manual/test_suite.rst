@@ -70,7 +70,7 @@ The nightly test suite results are posted to `GitHub <https://visit-dav.github.i
 
 In the event of failure on the nightly run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-If any tests fail, **all** developers who updated the code from the last time all tests successfully passed will receive an email indicating what failed.
+If any tests fail, **all** developers who updated the code from the last time all tests successfully passed will receive an email indicating *something* failed.
 In addition, failed results should be available on the web.  
 
 How regression testing works
