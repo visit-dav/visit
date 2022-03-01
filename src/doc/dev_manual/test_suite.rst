@@ -89,7 +89,7 @@ For example, to run in ``scalable,parallel,icet`` mode use: ::
 
     ./run_visit_test_suite.sh -n 1 -m "scalable,parallel,icet"
 
-Until we are able to get re-baselined on the systems available outside of LLNL firewalls, using :ref:`fuzzy matching <Fuzzy Matching Thresholds>` to allow minor differences to still be considered a match will be very useful.
+For simplicity, we maintain baselines only for one *blessed* platform which is conveniently accessible to the *core* development team. Running the test suite anywhere else requires the use of :ref:`fuzzy matching <Fuzzy Matching Thresholds>` to ignore minor differences.
 Use of these options on platforms other than the currently adopted testing platform will facilitate filtering big differences (and probably real bugs that have been introduced) from differences due to platform differences.
 
 There are a number of different categories of tests. The test
