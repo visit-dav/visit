@@ -4374,10 +4374,8 @@ return type : dictionary or value
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
-    GetQueryOutputXML all return output from the last query to be executed
-    but with the type of information returned. GetQueryOutputObject returns
-    a dictionary of the output of the last query.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputObject returns a dictionary of the output of the last query.
 
 
 **Example:**
@@ -4408,10 +4406,8 @@ return type : string
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
-    GetQueryOutputXML all return output from the last query to be executed
-    but with the type of information returned. GetQueryOutputString returns
-    a string containing the output of the last query.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputString returns a string containing the output of the last query.
 
 
 **Example:**
@@ -4442,11 +4438,8 @@ return type : double, tuple of doubles
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
-    GetQueryOutputXML all return output from the last query to be executed
-    but with the type of information returned. GetQueryOutputValue returns
-    a single number or tuple of numbers, depending on the nature of the
-    last query to be executed.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputValue returns a single number or tuple of numbers, depending on the nature of the last query to be executed.
 
 
 **Example:**
@@ -4476,10 +4469,8 @@ return type : string
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
-    GetQueryOutputXML all return output from the last query to be
-    executed but with the type of information returned. GetQueryOutputXML
-    returns a XML string containing the output of the last query.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputXML returns a XML string containing the output of the last query.
 
 
 **Example:**
