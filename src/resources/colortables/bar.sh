@@ -1,7 +1,7 @@
 #!/bin/bash
 
 makeVisItDiscreteFromTxtDiscrete() {
-    delta=$(perl -e "print 1.0/(256-1)")
+    delta=$(perl -e "print int((10000000.0/(256-1)+0.5))/10000000")
     newct="cividis.ct"
     echo "<?xml version=\"1.0\"?>" > $newct
     echo "<Object name=\"ColorTable\">" >> $newct
