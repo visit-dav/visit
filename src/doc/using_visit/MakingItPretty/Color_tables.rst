@@ -380,7 +380,7 @@ color control points will not have changed.
 Better Color Tables
 ~~~~~~~~~~~~~~~~~~~
 
-VisIt_ includes sets of color tables that are *optimized* for `various properties <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199239#sec011>`_.
+VisIt_ includes sets of color tables that are *optimized* for `various properties <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199239>`_.
 These color tables, although they are less well known and used, often represent better choices
 than the *default* **hot** color table.
 Some are better for consumers of visual data who have *color vision deficiency (CVD)* (e.g. `color blindness <https://www.colourblindawareness.org/colour-blindness/>`_).
