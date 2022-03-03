@@ -1641,7 +1641,8 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Added divide expression with optional arguments.
 //
 //    Justin Privitera, Thu 03 Mar 2022 10:41:04 AM PST
-//    Removed angle brackets from all constant functions.
+//    Removed angle brackets from constantvalue field 
+//    in all 4 constant functions.
 //
 // ****************************************************************************
 
