@@ -603,7 +603,6 @@ avtThresholdFilter::ProcessOneChunk_VTKM(avtDataRepresentation *in_dr)
             {
                 thresher.SetAllInRange(true);
             }
-cerr << "running vtkm thresher" << endl;
             thresher.Update();
             out_ds = thresher.GetOutput();
         }
