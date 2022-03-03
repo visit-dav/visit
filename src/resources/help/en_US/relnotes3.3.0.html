@@ -46,6 +46,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Support for <i>SeedMe</i> was removed since the service was retired.</li>
   <li>A section was added to the <i>Developer Manual</i> describing process launching.</li>
   <li>A section was added to the <i>Developer Manual</i> describing building VisIt with spack.</li>
+  <li>The Blueprint export now supports repartitioning the mesh on output. In the Blueprint export options, select the "Partition" operation and set the target number of domains field.</li>
+  <li>The Blueprint export now supports flattening the mesh data on output. In the Blueprint export options, select "Flatten_CSV" to export the mesh data to vertex and element based CSV files, or "Flatten_HDF5" to export the data to a Blueprint "Table" node.</li>
   <li>The Flatten() function has been added to the CLI; this function uses the new avtFlattenQuery to return the active plot data as a tabular, numpy compatible, 2D array.</li>
   <li>Added new mesh expressions 'logical_nodeid', 'logical_zoneid', 'node_domain', 'zone_domain', and 'zone_centers'.</li>
 </ul>

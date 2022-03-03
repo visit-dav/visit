@@ -17,6 +17,7 @@
 #include "avtMaterial.h"
 #include "avtMixedVariable.h"
 #include "avtVariableCache.h"
+#include "DBOptionsAttributes.h"
 
 #include "DebugStream.h"
 #include "StringHelpers.h"
@@ -172,7 +173,7 @@ sanitize_var_name(const std::string &varname)
 //  Creation:   Wed Jun 15 16:25:28 PST 2016
 //
 // ****************************************************************************
-avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename)
+avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAttributes *opts)
     : avtSTMDFileFormat(&filename, 1),
       m_root_node(),
       m_protocol(""),

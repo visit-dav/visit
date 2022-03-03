@@ -376,3 +376,47 @@ in a spectrum but no color control points will have changed. You can
 even turn the color table back into a discrete color table and the
 **Editor** area will show the color table in discrete mode, but the
 color control points will not have changed.
+
+Better Color Tables
+~~~~~~~~~~~~~~~~~~~
+
+VisIt_ includes sets of color tables that are *optimized* for `various properties <https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0199239>`_.
+These color tables, although they are less well known and used, often represent better choices
+than the *default* **hot** color table.
+Some are better for consumers of visual data who have *color vision deficiency (CVD)* (e.g. `color blindness <https://www.colourblindawareness.org/colour-blindness/>`_).
+Some represent emerging standards used in various corners of the visualization community.
+In some sense, these color table choices are more *inclusive* in that they convey the same information to a broader segment of the population and more *portable* in that they work across a number of different contexts; print, projection, monitor.
+
+The Viridis color tables
+""""""""""""""""""""""""
+
+The `Viridis <https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html>`_ color tables assert the following properties...
+
+* **Colorful:** spanning as wide a palette as possible so as to make differences easy to see.
+* **Perceptually uniform:** meaning that values close to each other have similar-appearing colors and values far away from each other have more different-appearing colors, consistently across the range of values.
+* **Robust to colorblindness:** so that the above properties hold true for people with common forms of colorblindness, as well as in grey scale printing.
+
+These color tables are defined in the ``CvdFriendlyViridis`` category.
+
+The Crameri color tables
+""""""""""""""""""""""""
+
+The `Crameri color maps <https://www.fabiocrameri.ch/colourmaps/>`_ (also called the *Scientific Colour Maps*) assert the following properties.
+
+* **Fairly representing data:** perceptually uniform and ordered to represent data both fairly, without visual distortion, and intuitively.
+* **Universally readable:** The color combinations are readable both by color-vision deficient and color-blind people, and even when printed in black and white.
+* **Citable & reproducible:** The color maps and their diagnostics are permanently archived and versioned to enable upgrades and acknowledge developers and contributors.
+
+The Crameri color tables define five broad classes of color tables...
+
+* Sequential (``seq``) - good for displaying continuous numerical data.
+* Diverging (``div``) - good for displaying comparative data or data differenceing.
+* Mult-sequential (``2seq``) - good for displaying multi-modal data.
+* Cyclic (``cyc``) - good for displaying periodic data.
+* Categorical (``jumbled``) - good for displaying categorical data or false contouring of smooth data.
+
+  * This is just a `jumbling <https://www.fabiocrameri.ch/categorical-colour-maps/>`_ of the associated *sequential* color table to maximize perceptual differentiation between *neighboring* data values.
+
+In addition, *discrete* versions consisting of 10, 25, 50 and 100 colors from their associated *main* color table are defined.
+
+These color tables are defined in the ``CvdFriendlyCrameri`` category and are named ``<name>-<class>-<count>`` where ``<name>`` is the specific color table in the Crameri set of color tables, ``<class>`` is one of the five classes defined above and ``<count>`` is defined only for discrete color tables and indicates the number of colors in the table.

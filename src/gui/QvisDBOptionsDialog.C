@@ -48,6 +48,9 @@
 //    Mark C. Miller, Thu Dec 18 13:06:50 PST 2014
 //    Added tr() around the name strings passed to the Qt items. Also,
 //    added the help button.
+//
+//    Chris Laganella, Tue Feb  8 18:24:35 EST 2022
+//    Add support for multi line string
 // ****************************************************************************
 
 QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
@@ -123,6 +126,17 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
             comboboxes.append(cbo_box);
             }
             break;
+          case DBOptionsAttributes::MultiLineString:
+            { // new scope
+            txt = atts->GetMultiLineString(name).c_str();
+            QTextEdit *textEdit = new QTextEdit(txt, this);
+            QLabel *label = new QLabel(tr(name.c_str()), this);
+            label->setAlignment(Qt::AlignTop);
+            grid->addWidget(label, i, 0);
+            grid->addWidget(textEdit, i, 1);
+            multiLineEdits.append(textEdit);
+            }
+            break;
         }
     }
    
@@ -179,6 +193,9 @@ QvisDBOptionsDialog::~QvisDBOptionsDialog()
 //
 //    Mark C. Miller, Mon Mar 16 23:10:47 PDT 2009
 //    Added logic to skip obsolete options.
+//
+//    Chris Laganella, Tue Feb  8 18:24:35 EST 2022
+//    Add support for multi line string
 // ****************************************************************************
 
 void
@@ -189,6 +206,7 @@ QvisDBOptionsDialog::okayClicked()
     int lineedit_index = 0;
     int checkbox_index = 0;
     int combobox_index = 0;
+    int multiLineEditIdx = 0;
     for (int i=0; i<size; i++)
     {
         QString txt;
@@ -241,6 +259,13 @@ QvisDBOptionsDialog::okayClicked()
             atts->SetEnum(name, val);
           }
             break;
+          case DBOptionsAttributes::MultiLineString:
+          {
+            std::string val = multiLineEdits[multiLineEditIdx++]->toPlainText().toStdString();
+            debug5 << mName << "Setting \"" << name.c_str() << "\" to " << val.c_str() << endl;
+            atts->SetMultiLineString(name, val);
+            break;
+          }
         }
     }
     

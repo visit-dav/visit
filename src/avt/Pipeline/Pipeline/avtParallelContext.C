@@ -276,9 +276,9 @@ avtParallelContext::GlobalSize()
 // Arguments:
 //   ranks : The ranks to include from the current communicator.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug  4 16:27:07 PDT 2015
@@ -326,7 +326,7 @@ avtParallelContext::CreateGroup(const std::vector<int> &ranks)
 // Arguments:
 //   N : The number of ranks to include in each group.
 //
-// Returns:    
+// Returns:
 //
 // Note:       The grouping will put leftover ranks (group smaller than N) into
 //             the last group so the last group might have fewer than N members.
@@ -391,9 +391,9 @@ avtParallelContext::CreateGroupsOfN(int N)
 //   groupId : The id of the group.
 //   nGroups : The number of possible groups we're creating.
 //
-// Returns:    
+// Returns:
 //
-// Note:       All ranks that are part of the context's communicator must 
+// Note:       All ranks that are part of the context's communicator must
 //             call this.
 //
 // Programmer: Brad Whitlock
@@ -473,6 +473,126 @@ MinMaxOp(void *ibuf, void *iobuf, int *len, MPI_Datatype *)
     }
 }
 #endif
+
+// ****************************************************************************
+//  Function: avtParallelContext::UnifyLogicalAndValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the logical
+//      and value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The logical and value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+/* ARGSUSED */
+int
+avtParallelContext::UnifyLogicalAndValue(int myval)
+{
+#ifdef PARALLEL
+    int allval;
+    MPI_Allreduce(&myval, &allval, 1, MPI_INT, MPI_LAND, this->GetCommunicator());
+    return allval;
+#else
+    return myval;
+#endif
+}
+
+// ****************************************************************************
+//  Function: avtParallelContext::UnifyLogicalOrValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the logical
+//      or value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The logical or value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+/* ARGSUSED */
+int
+avtParallelContext::UnifyLogicalOrValue(int myval)
+{
+#ifdef PARALLEL
+    int allval;
+    MPI_Allreduce(&myval, &allval, 1, MPI_INT, MPI_LOR, this->GetCommunicator());
+    return allval;
+#else
+    return myval;
+#endif
+}
+
+// ****************************************************************************
+//  Function: avtParallelContext::UnifyBitwiseAndValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the bitwise
+//      and value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The bitwise and value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+/* ARGSUSED */
+int
+avtParallelContext::UnifyBitwiseAndValue(int myval)
+{
+#ifdef PARALLEL
+    int allval;
+    MPI_Allreduce(&myval, &allval, 1, MPI_INT, MPI_BAND, this->GetCommunicator());
+    return allval;
+#else
+    return myval;
+#endif
+}
+
+// ****************************************************************************
+//  Function: avtParallelContext::UnifyBitwiseOrValue
+//
+//  Purpose:
+//      Makes a collective call across all processors to unify the bitwise
+//      or value over all processors.
+//
+//  Arguments:
+//      myval    The value on this processor.
+//
+//  Returns:     The bitwise or value over all processors.
+//
+//  Programmer:  Allen Sanderson
+//  Creation:    February 6, 2022
+//
+// ****************************************************************************
+
+/* ARGSUSED */
+int
+avtParallelContext::UnifyBitwiseOrValue(int myval)
+{
+#ifdef PARALLEL
+    int allval;
+    MPI_Allreduce(&myval, &allval, 1, MPI_INT, MPI_BOR, this->GetCommunicator());
+    return allval;
+#else
+    return myval;
+#endif
+}
 
 // ****************************************************************************
 //  Function: avtParallelContext::UnifyMinMax
@@ -1717,14 +1837,14 @@ void avtParallelContext::BroadcastIntVectorFromAny(std::vector<int> &vi, int myr
     MPI_Bcast(&len, 1, MPI_INT, root, this->GetCommunicator());
     if (myrank!=root)
         vi.resize(len);
-    
+
     if(len == 0)
     {
         debug1 << "Don't know how to broadcast empty vector!  "
         << "Bailing out early." << std::endl;
         return;
     }
-    
+
     MPI_Bcast(&vi[0], len, MPI_INT, root, this->GetCommunicator());
 #endif
 }
@@ -1964,14 +2084,14 @@ void avtParallelContext::BroadcastDoubleVectorFromAny(std::vector<double> &vi, i
     MPI_Bcast(&len, 1, MPI_INT, root, this->GetCommunicator());
     if (myrank!=root)
         vi.resize(len);
-    
+
     if(len == 0)
     {
         debug1 << "Don't know how to broadcast empty vector!  "
         << "Bailing out early." << std::endl;
         return;
     }
-    
+
     MPI_Bcast(&vi[0], len, MPI_DOUBLE, root, this->GetCommunicator());
 #endif
 }
@@ -2693,9 +2813,9 @@ avtParallelContext::GetAttToRootProc(AttributeGroup &att, int hasAtt)
 // Arguments:
 //   atts : The AttributeGroup that we want to broadcast.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 17 15:27:20 PDT 2015
