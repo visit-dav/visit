@@ -1026,6 +1026,6 @@
             <Field name="colors" type="unsignedCharArray" length="4">122 4 2 255</Field>
             <Field name="position" type="float">1.0</Field>
         </Object>
-        <Field name="category" type="string">UserDefined</Field>
+        <Field name="category" type="string">CvdFriendlyViridis</Field>
     </Object>
 </Object>

@@ -92,6 +92,9 @@
 #   Use @filtered_VTKm_INCLUDE_DIRS@  for setting VTKm_INCLUDE_DIRS
 #   instead of setting manually.
 #
+#   Kathleen Biagas, Mon Feb 28 13:48:42 PST 2022
+#   Added CONDUIT_HAVE_PARTITION_FLATTEN.
+#
 #****************************************************************************/
 
 ##
@@ -311,6 +314,7 @@ set(XDMF_LIB @XDMF_LIB@)
 set(CONDUIT_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/conduit/conduit)
 set(CONDUIT_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(CONDUIT_LIB @CONDUIT_LIB@)
+set(CONDUIT_HAVE_PARTITION_FLATTEN @CONDUIT_HAVE_PARTITION_FLATTEN@)
 if(VISIT_PARALLEL)
     set(CONDUIT_MPI_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/conduit/conduit)
     set(CONDUIT_MPI_LIBRARY_DIR ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})

@@ -60,6 +60,62 @@ using namespace conduit;
 int    avtBlueprintWriter::INVALID_CYCLE = -INT_MAX;
 double avtBlueprintWriter::INVALID_TIME = -DBL_MAX;
 
+// ****************************************************************************
+//  Method: LoadConduitOptions
+//
+//  Purpose:
+//    Helper function to load Conduit options from a string
+//
+//  Programmer: Chris Laganella
+//  Creation:   Wed Feb  9 11:42:53 EST 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+static void
+LoadConduitOptions(const std::string &optString, conduit::Node &out)
+{
+    out.reset();
+    // Just return an empty node if there's an empty string, no issue.
+    if(optString.empty())
+    {
+        return;
+    }
+
+    bool ok = false;
+    try
+    {
+        out.parse(optString, "json");
+        ok = true;
+    }
+    catch (...)
+    {
+        ok = false;
+        out.reset();
+    }
+
+    if(!ok)
+    {
+        try
+        {
+            out.parse(optString, "yaml");
+            ok = true;
+        }
+        catch (...)
+        {
+            ok = false;
+            out.reset();
+        }
+    }
+
+    if(!ok)
+    {
+        out.reset();
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException, "Could not parse"
+            " 'Flatten / Partition extra options' as either JSON or Yaml.");
+    }
+}
+
 //-----------------------------------------------------------------------------
 // These methods are used to re-wire conduit's default error handling
 //-----------------------------------------------------------------------------
@@ -134,7 +190,6 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
     m_nblocks = 0;
 
     m_op = BP_MESH_OP_NONE;
-    m_target = 0;
 #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(options)
     {
@@ -149,17 +204,21 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
                 "Invalid value passed for attribute 'Operation'.");
         }
 
-        if(m_op == BP_MESH_OP_PARTITION)
+        if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5
+                || m_op == BP_MESH_OP_PARTITION)
         {
-            int target_val = options->GetInt("Partition target number of domains");
-            if(target_val >= 0)
+            // Parse JSON/YAML input into m_options
+            LoadConduitOptions(options->GetMultiLineString("Flatten / Partition extra options"), m_options);
+
+            if(m_op == BP_MESH_OP_PARTITION)
             {
-                m_target = target_val;
-            }
-            else
-            {
-                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                    "Invalid value passed for attribute 'Partition target number of domains', must be >= 0.");
+                // Only take the target value from the gui if one was not already set
+                //   in the JSON
+                int target_val = options->GetInt("Partition target number of domains");
+                if(!m_options.has_child("target") && target_val > 0)
+                {
+                    m_options["target"].set(target_val);
+                }
             }
         }
     }
@@ -199,7 +258,7 @@ avtBlueprintWriter::OpenFile(const string &stemname, int nb)
     BP_PLUGIN_INFO("I'm rank " << writeContext.Rank() << " and I called OpenFile().");
 #endif
     m_stem = stemname;
-    m_nblocks = (m_target > 0) ? m_target : nb;
+    m_nblocks = nb;
     if(m_op == BP_MESH_OP_NONE || m_op == BP_MESH_OP_PARTITION)
     {
         m_genRoot = true;
@@ -617,17 +676,18 @@ avtBlueprintWriter::CloseFile(void)
 #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(m_op == BP_MESH_OP_FLATTEN_CSV || m_op == BP_MESH_OP_FLATTEN_HDF5)
     {
-        conduit::Node opts, table;
+        debug5 << "Flatten options:\n" << m_options.to_string() << std::endl;
+        conduit::Node table;
         int rank = 0;
         int root = 0;
 #ifdef PARALLEL
         rank = writeContext.Rank();
         BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " flattening.");
         // It's okay to pass empty nodes to this.
-        conduit::blueprint::mpi::mesh::flatten(m_chunks, opts, table,
+        conduit::blueprint::mpi::mesh::flatten(m_chunks, m_options, table,
             writeContext.GetCommunicator());
 #else
-        conduit::blueprint::mesh::flatten(m_chunks, opts, table);
+        conduit::blueprint::mesh::flatten(m_chunks, m_options, table);
 #endif
         // Don't need the mesh anymore.
         m_chunks.reset();
@@ -644,27 +704,40 @@ avtBlueprintWriter::CloseFile(void)
     }
     else if(m_op == BP_MESH_OP_PARTITION)
     {
+        debug5 << "Parition options:\n" << m_options.to_string() << std::endl;
         int rank = 0;
         Node repart_mesh;
         {
-            Node selections, opts;
-            BuildSelections(m_chunks, selections);
-            if(!selections.dtype().is_empty())
+            Node selections;
+            // If the user has not given their own selections then
+            //  filter out the ghost nodes/zones
+            if(!m_options.has_child("selections"))
             {
-                opts["selections"].set_external(selections);
-            }
-            if(m_target > 0)
-            {
-                opts["target"].set(m_target);
+                BuildSelections(m_chunks, selections);
+                if(!selections.dtype().is_empty())
+                {
+                    // Make sure selections stays alive for the partition call!
+                    m_options["selections"].set_external(selections);
+                }
             }
 
 #ifdef PARALLEL
             rank = writeContext.Rank();
             BP_PLUGIN_INFO("BlueprintMeshWriter: rank " << rank << " partitioning.");
-            conduit::blueprint::mpi::mesh::partition(m_chunks, opts, repart_mesh,
+            conduit::blueprint::mpi::mesh::partition(m_chunks, m_options, repart_mesh,
+                writeContext.GetCommunicator());
+            m_nblocks = conduit::blueprint::mpi::mesh::number_of_domains(repart_mesh,
                 writeContext.GetCommunicator());
 #else
-            conduit::blueprint::mesh::partition(m_chunks, opts, repart_mesh);
+            conduit::blueprint::mesh::partition(m_chunks, m_options, repart_mesh);
+            if(!repart_mesh.dtype().is_empty())
+            {
+                m_nblocks = conduit::blueprint::mesh::number_of_domains(repart_mesh);
+            }
+            else
+            {
+                m_nblocks = 0;
+            }
 #endif
         }
         // Don't need the original data anymore
