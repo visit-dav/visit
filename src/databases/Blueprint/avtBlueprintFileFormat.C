@@ -715,6 +715,11 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
             mt = AVT_CURVILINEAR_MESH;
             BP_PLUGIN_INFO(mesh_topo_name << " topology is structured ");
         }
+        else if (n_topo["type"].as_string() == "points")
+        {
+            mt = AVT_UNSTRUCTURED_MESH;
+            BP_PLUGIN_INFO(mesh_topo_name << " topology is unstructured (points) ");
+        }
         else if (n_topo["type"].as_string() == "unstructured")
         {
             mt = AVT_UNSTRUCTURED_MESH;
