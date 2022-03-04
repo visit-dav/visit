@@ -768,7 +768,7 @@ avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
         }
         else if (n_topo["type"].as_string() == "points")
         {
-            BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet PointsTopologyToVTKUnstructuredGrid")
+            BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet PointsTopologyToVTKUnstructuredGrid");
             res = PointsTopologyToVTKUnstructuredGrid(n_coords, n_topo);
         }
         else
