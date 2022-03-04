@@ -22,6 +22,7 @@ from os.path import join as pjoin
 bp_test_dir = "blueprint_v0.3.1_test_data"
 bp_venn_test_dir = "blueprint_v0.7.0_venn_test_data"
 bp_mfem_test_dir = "blueprint_v0.3.1_mfem_test_data"
+bp_0_8_2_test_dir = "blueprint_v0.8.2_braid_examples"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -31,6 +32,11 @@ braid_3d_json_root = data_path(pjoin(bp_test_dir,"braid_3d_examples_json.root"))
 
 braid_2d_sidre_root = data_path(pjoin(bp_test_dir,"braid_2d_sidre_examples.root"))
 braid_3d_sidre_root = data_path(pjoin(bp_test_dir,"braid_3d_sidre_examples.root"))
+
+braid_2d_0_8_2_hdf5_root = data_path(pjoin(bp_0_8_2_test_dir,"braid_2d_examples_hdf5.root"))
+braid_3d_0_8_2_hdf5_root = data_path(pjoin(bp_0_8_2_test_dir,"braid_3d_examples_hdf5.root"))
+braid_2d_0_8_2_yaml_root = data_path(pjoin(bp_0_8_2_test_dir,"braid_2d_examples_yaml.root"))
+braid_3d_0_8_2_yaml_root = data_path(pjoin(bp_0_8_2_test_dir,"braid_3d_examples_yaml.root"))
 
 uniform_root = data_path(pjoin(bp_test_dir,"uniform.cycle_001038.root"))
 
@@ -59,6 +65,8 @@ venn_s_by_m_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
 braid_2d_meshes = ["points", "uniform", "rect", "struct", "tris","quads"]
 braid_3d_meshes = ["points", "uniform", "rect", "struct", "tets","hexs"]
 
+braid_2d_meshes_0_8_2 = ["points", "uniform", "rect", "struct", "tris","quads", "points_implicit"]
+braid_3d_meshes_0_8_2 = ["points", "uniform", "rect", "struct", "tets","hexs", "points_implicit"]
 
 mfem_ex9_examples   = ["periodic_cube","star_q3","periodic_hexagon"]
 mfem_ex9_protocols = ["json","conduit_bin","conduit_json","hdf5"]
@@ -107,17 +115,26 @@ def test(mesh_name,tag_name):
     AddPlot("Mesh","%s" % full_mesh_name(mesh_name))
     DrawPlots()
     set_test_view(tag_name)
+    # mesh_atts = MeshAttributes()
+    # mesh_atts.pointSizePixels = 10
+    # SetPlotOptions(mesh_atts)
     Test(tag_name + "_" +  mesh_name + "_mesh")
     DeleteAllPlots()
     #
     AddPlot("Pseudocolor", full_var_name(mesh_name,"braid"))
     DrawPlots()
     set_test_view(tag_name)
+    # pc_atts = PseudocolorAttributes()
+    # pc_atts.pointSizePixels = 10
+    # SetPlotOptions(pc_atts)
     Test(tag_name + "_" +  mesh_name + "_braid")
     #
     DeleteAllPlots()
     AddPlot("Pseudocolor", full_var_name(mesh_name,"radial"))
     set_test_view(tag_name)
+    # pc_atts = PseudocolorAttributes()
+    # pc_atts.pointSizePixels = 10
+    # SetPlotOptions(pc_atts)
     DrawPlots()
     Test(tag_name + "_" +  mesh_name + "_radial")
     DeleteAllPlots()
@@ -292,5 +309,25 @@ test_venn("venn_small_sparse_by_material", venn_s_by_m_root)
 test_venn("venn_small_full_yaml", venn_full_yaml_root)
 test_venn("venn_small_sparse_by_element_yaml", venn_s_by_e_yaml_root)
 test_venn("venn_small_sparse_by_material_yaml", venn_s_by_m_yaml_root)
+
+TestSection("2D Example HDF5 Mesh Files, 0.8.2")
+OpenDatabase(braid_2d_0_8_2_hdf5_root)
+for mesh_name in braid_2d_meshes_0_8_2:
+    test(mesh_name,"blueprint_2d_hdf5_0_8_2")
+CloseDatabase(braid_2d_0_8_2_hdf5_root)
+
+# add other 3 cases
+
+TestSection("3D Example HDF5 Mesh Files, 0.8.2")
+OpenDatabase(braid_3d_0_8_2_hdf5_root)
+for mesh_name in braid_3d_meshes_0_8_2:
+    test(mesh_name,"blueprint_3d_hdf5_0_8_2")
+CloseDatabase(braid_3d_0_8_2_hdf5_root)
+
+TestSection("3D Example YAML Mesh Files, 0.8.2")
+OpenDatabase(braid_3d_0_8_2_yaml_root)
+for mesh_name in braid_3d_meshes_0_8_2:
+    test(mesh_name,"blueprint_3d_yaml_0_8_2")
+CloseDatabase(braid_3d_0_8_2_yaml_root)
 
 Exit()
