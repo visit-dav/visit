@@ -7,6 +7,7 @@
       Double
       String
       Enum
+      MultiLineString
     </Enum>
     <Field name="types" label="Format String" type="intVector">
     </Field>
@@ -23,6 +24,8 @@
     <Field name="optStrings" label="String options" type="stringVector" internal="true">
     </Field>
     <Field name="optEnums" label="Enumerated type options" type="intVector" internal="true">
+    </Field>
+    <Field name="optMultiLineStrings" label="Multi Line String Options" type="stringVector" internal="true">
     </Field>
     <Field name="enumStrings" label="Enumerated type strings" type="stringVector" internal="true">
     </Field>
@@ -59,6 +62,10 @@
     <Function name="GetEnum" user="true" member="true">
     </Function>
     <Function name="SetEnumStrings" user="true" member="true">
+    </Function>
+    <Function name="GetMultiLineString" user="true" member="true">
+    </Function>
+    <Function name="SetMultiLineString" user="true" member="true">
     </Function>
     <Function name="GetNumberOfOptions" user="true" member="true">
     </Function>
