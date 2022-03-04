@@ -1640,6 +1640,10 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Eddie Rusu, Mon Sep 23 10:33:50 PDT 2019
 //    Added divide expression with optional arguments.
 //
+//    Justin Privitera, Thu 03 Mar 2022 10:41:04 AM PST
+//    Removed angle brackets from constantvalue field 
+//    in all 4 constant functions.
+//
 // ****************************************************************************
 
 QString
@@ -1767,7 +1771,7 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
              func_name == "point_constant" ||
              func_name == "nodal_constant" )
     {
-        res += QString("(<meshvar>, <constantvalue>)");
+        res += QString("(<meshvar>, constantvalue)");
         doParens = false;
     }
     else if(func_name == "average_over_time" || func_name == "min_over_time"
