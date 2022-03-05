@@ -734,7 +734,14 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
     return ugrid;
 }
 
-
+// ****************************************************************************
+//  Method: MeshToVTK
+//
+//  Modifications:
+//    Justin Privitera, Fri 04 Mar 2022 05:57:49 PM PST
+//    added support for points topology type; see
+//    PointsTopologyToVTKUnstructuredGrid as well
+//
 // ****************************************************************************
 vtkDataSet *
 avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
