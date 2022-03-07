@@ -641,6 +641,10 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 //  Modifications:
 //    Cyrus Harrison, Mon Mar  9 15:45:17 PDT 2020
 //    Use explicit map from registered mesh name to bp mesh and topo names.
+//
+//    Justin Privitera, Mon 07 Mar 2022 03:08:01 PM PST
+//    Added case for implicit points topology.
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md,

@@ -15,7 +15,7 @@
 #    are able to be visualized.
 #
 #    Justin Privitera Fri 04 Mar 2022 05:57:49 PM PST
-#    added new tests
+#    Added tests to test new implicit points topologies
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
@@ -118,26 +118,17 @@ def test(mesh_name,tag_name):
     AddPlot("Mesh","%s" % full_mesh_name(mesh_name))
     DrawPlots()
     set_test_view(tag_name)
-    # mesh_atts = MeshAttributes()
-    # mesh_atts.pointSizePixels = 10
-    # SetPlotOptions(mesh_atts)
     Test(tag_name + "_" +  mesh_name + "_mesh")
     DeleteAllPlots()
     #
     AddPlot("Pseudocolor", full_var_name(mesh_name,"braid"))
     DrawPlots()
     set_test_view(tag_name)
-    # pc_atts = PseudocolorAttributes()
-    # pc_atts.pointSizePixels = 10
-    # SetPlotOptions(pc_atts)
     Test(tag_name + "_" +  mesh_name + "_braid")
     #
     DeleteAllPlots()
     AddPlot("Pseudocolor", full_var_name(mesh_name,"radial"))
     set_test_view(tag_name)
-    # pc_atts = PseudocolorAttributes()
-    # pc_atts.pointSizePixels = 10
-    # SetPlotOptions(pc_atts)
     DrawPlots()
     Test(tag_name + "_" +  mesh_name + "_radial")
     DeleteAllPlots()
