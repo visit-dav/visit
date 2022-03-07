@@ -319,7 +319,11 @@ for mesh_name in braid_2d_meshes_0_8_2:
     test(mesh_name,"blueprint_2d_hdf5_0_8_2")
 CloseDatabase(braid_2d_0_8_2_hdf5_root)
 
-# add other 3 cases
+TestSection("2D Example YAML Mesh Files, 0.8.2")
+OpenDatabase(braid_2d_0_8_2_yaml_root)
+for mesh_name in braid_2d_meshes_0_8_2:
+    test(mesh_name,"blueprint_2d_yaml_0_8_2")
+CloseDatabase(braid_2d_0_8_2_yaml_root)
 
 TestSection("3D Example HDF5 Mesh Files, 0.8.2")
 OpenDatabase(braid_3d_0_8_2_hdf5_root)
