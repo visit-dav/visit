@@ -79,6 +79,6 @@ GetXmdvWriteOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     rv->SetBool("Export coordinates?", true);
-    rv->SetInt("Set output precision", 16);
+    rv->SetInt("Output precision", 16);
     return rv;
 }
