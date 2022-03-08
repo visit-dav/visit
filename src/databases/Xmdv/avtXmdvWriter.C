@@ -45,8 +45,8 @@ using     std::vector;
 avtXmdvWriter::avtXmdvWriter(const DBOptionsAttributes *atts)
 {
     writeOutCoordinates = atts->GetBool("Export coordinates?");
-    // Get it in the range 1-20
     outputPrecision = atts->GetInt("Set output precision");
+    // Get it in the range 1-20
     if (outputPrecision > 20) outputPrecision = 20;
     else if (outputPrecision < 1) outputPrecision = 1;
 }
