@@ -719,7 +719,7 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
 
     ida->SetNumberOfTuples(npoints * 2);
-    // create cell array that is 0 to n-1
+    // Create cell array that ranges from 0 to n-1.
     for (int i = 0; i < npoints; i++)
     {
         ida->SetComponent(2 * i, 0, 1);
@@ -739,8 +739,8 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
 //
 //  Modifications:
 //    Justin Privitera, Fri 04 Mar 2022 05:57:49 PM PST
-//    added support for points topology type; see
-//    PointsTopologyToVTKUnstructuredGrid as well
+//    Added support for points topology type; see
+//    PointsTopologyToVTKUnstructuredGrid as well.
 //
 // ****************************************************************************
 vtkDataSet *
