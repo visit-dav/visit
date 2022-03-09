@@ -46,9 +46,15 @@ avtXmdvWriter::avtXmdvWriter(const DBOptionsAttributes *atts)
 {
     writeOutCoordinates = atts->GetBool("Export coordinates?");
     outputPrecision = atts->GetInt("Output precision");
-    // Get it in the range 1-20
-    if (outputPrecision > 20) outputPrecision = 20;
-    else if (outputPrecision < 1) outputPrecision = 1;
+    // Get it in the range 1-18
+    if (outputPrecision > 18) 
+    {
+        outputPrecision = 18;
+    }
+    else if (outputPrecision < 1) 
+    {
+        outputPrecision = 1;
+    }
 }
 
 // ****************************************************************************
