@@ -2,78 +2,42 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
-//                              VisWinUserInfo.h                             //
-// ************************************************************************* //
-
-#ifndef VIS_WIN_USER_INFO_H
-#define VIS_WIN_USER_INFO_H
+#ifndef AVT_ANNOTATION_WITH_TEXT_H
+#define AVT_ANNOTATION_WITH_TEXT_H
 #include <viswindow_exports.h>
 #include <avtAnnotationColleague.h>
-#include <ColorAttribute.h>
 
-class vtkVisItTextActor;
+class avtDataAttributes;
 
 // ****************************************************************************
-// Class: avtText2DColleague
+// Class: avtAnnotationWithTextColleague
 //
-// Purpose:
-//   This colleague is a text label that can be shown in the vis window.
+// Purpose: A class that shares the bulk of functionality related to text
+//    handling and in particular, text macros of the form $<keyword> that name
+//    members of avtDataAttributes, for any annotation colleagues involving
+//    text.
 //
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 14:09:57 PST 2003
-//
-// Modifications:
-//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
-//    Added $cycle support.
-//
-//    Brad Whitlock, Mon Sep 19 15:44:40 PDT 2011
-//    Switch to vtkVisItTextActor.
+// Mark C. Miller, Mon Mar  7 10:26:40 PST 2022
 //
 // ****************************************************************************
 
-class VISWINDOW_API avtText2DColleague : public avtAnnotationColleague
+class VISWINDOW_API avtAnnotationWithTextColleague : public avtAnnotationColleague
 {
 public:
-    avtText2DColleague(VisWindowColleagueProxy &);
-    virtual ~avtText2DColleague();
+    avtAnnotationWithTextColleague(VisWindowColleagueProxy &);
+    virtual ~avtAnnotationWithTextColleague();
 
-    virtual void AddToRenderer();
-    virtual void RemoveFromRenderer();
-    virtual void Hide();
-
-    virtual std::string TypeName() const { return "Text2D"; }
-
-    // Methods to set and get the annotation's properties.
-    virtual void SetOptions(const AnnotationObject &annot);
-    virtual void GetOptions(AnnotationObject &annot);
-
-    // Methods that are called in response to vis window events.
-    virtual void SetForegroundColor(double r, double g, double b);
-    virtual void HasPlots(void);
-    virtual void NoPlots(void);
     virtual void UpdatePlotList(std::vector<avtActor_p> &lst);
+
 protected:
-    bool ShouldBeAddedToRenderer() const;
-    void SetText(const char *text);
+    char *CreateAnnotationString(char const *fmtStr);
 
-    static double initialTime;
-    static int    initialCycle;
+    static avtDataAttributes *initialDataAttributes;
 
-    vtkVisItTextActor *textActor;
-    char           *textFormatString;
-    char           *textString;
-    double          currentTime;
-    int             currentCycle;
+    char                     *textFormatString; // fmt string from user
+    char                     *textString; // string produced from fmt
 
-    bool            useForegroundForTextColor;
-    bool            addedToRenderer;
-    ColorAttribute  textColor;
+    avtDataAttributes        *currentDataAttributes;
 };
 
-
 #endif
-
-
