@@ -780,6 +780,8 @@ avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
         }
         else
         {
+            // could put functionality inside of UnstructuredTopologyToVTKUnstructuredGrid
+            // I want it in there :)
             BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet UnstructuredTopologyToVTKUnstructuredGrid");
             res = UnstructuredTopologyToVTKUnstructuredGrid(n_coords, n_topo);
         }
