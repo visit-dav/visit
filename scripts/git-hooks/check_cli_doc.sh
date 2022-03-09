@@ -1,7 +1,7 @@
 #!/bin/sh
 
 top_level=$(git rev-parse --show-toplevel)
-str_functions_rst="src/doc/python_scripting/functions.rst"
+str_functions_rst="src/doc/cli_manual/functions.rst"
 str_method_doc_C="src/visitpy/common/MethodDoc.C"
 str_method_doc_h="src/visitpy/common/MethodDoc.h"
 method_doc_staged=false
