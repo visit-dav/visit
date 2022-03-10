@@ -678,19 +678,23 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 }
 
 // ****************************************************************************
-// <Q> do we care about multi-domain datasets?
+// <Q> do we care about multi-domain datasets? - handed a single topo and coordset
 // <Q> what should these functions be named? UnstructuredPolyhedralTopologyTo... ?
+// ----descriptive names!
 bool 
 is_poly(const conduit::Node &doms)
 {
-    const int num_domains = doms.number_of_children();
+    // const int num_domains = doms.number_of_children();
 
-    for (int i = 0; i < num_domains; i ++)
-    {
-        const conduit::Node &dom = doms.child(i);
-        conduit::NodeConstIterator itr = dom["topologies"].children();
-        while (itr.has_next())
-        {
+    // for (int i = 0; i < num_domains; i ++)
+    // {
+    //     const conduit::Node &dom = doms.child(i);
+    //     conduit::NodeConstIterator itr = dom["topologies"].children();
+    //     while (itr.has_next())
+    //     {
+
+
+            // I'm here!
             const conduit::Node &topo = itr.next();
             if (topo.has_child("elements"))
             {
@@ -703,14 +707,15 @@ is_poly(const conduit::Node &doms)
                     }
                 }
             }
-        }
-    }
+    //     }
+    // }
 
     return false;
 }
 
 // ****************************************************************************
 // to_poly assumes that the node n is polyhedral
+// <Q> to_vtkh?
 void 
 to_poly(conduit::Node &doms, 
         conduit::Node &to_vtkh)
@@ -768,6 +773,11 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
                                           const Node &n_topo)
 {
     // in here we must check is_poly() and if so run to_poly()
+
+    // example of getting parent
+    // const Node &hmmmm = (*(n_topo.parent()->parent()))["fields"];
+
+    // <Q> so what level do I need? Will this be multi-domain? - no
 
     vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords);
 
