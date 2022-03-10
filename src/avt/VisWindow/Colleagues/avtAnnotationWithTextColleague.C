@@ -43,8 +43,10 @@ avtDataAttributes *avtAnnotationWithTextColleague::initialDataAttributes = new a
 avtAnnotationWithTextColleague::avtAnnotationWithTextColleague(VisWindowColleagueProxy &m) 
     : avtAnnotationColleague(m)
 {
-    textFormatString = 0;
-    textString = 0;
+    textFormatString = new char[1];
+    textFormatString[0] = '\0';
+    textString = new char[1];
+    textString[0] = '\0';
     currentDataAttributes = new avtDataAttributes;
     currentDataAttributes->Copy(*initialDataAttributes);
 }
@@ -106,10 +108,62 @@ avtAnnotationWithTextColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
     }
 }
 
+#define TIME_IDENTIFIER "$time"
+#define CYCLE_IDENTIFIER "$cycle"
+#define INDEX_IDENTIFIER "$index"
+
 // Caller must delete what is returned
 char *
 avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
 {
+    char *retval;
+
+    size_t len = strlen(formatString);
+    std::string fmtStr(formatString);
+    std::string::size_type pos;
+    if((pos=fmtStr.find(TIME_IDENTIFIER)) != std::string::npos)
+    {
+        size_t tlen = strlen(TIME_IDENTIFIER);
+        std::string left(fmtStr.substr(0, pos));
+        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
+        char tmp[100];
+        snprintf(tmp, 100, "%g", currentDataAttributes->GetTime());
+        len = left.size() + strlen(tmp) + right.size() + 1;
+        retval = new char[len + 1];
+        snprintf(retval, len, "%s%s%s", left.c_str(), tmp, right.c_str());
+    }
+    else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
+    {
+        size_t tlen = strlen(CYCLE_IDENTIFIER);
+        std::string left(fmtStr.substr(0, pos));
+        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
+        char tmp[100];
+        snprintf(tmp, 100, "%d", currentDataAttributes->GetCycle());
+        len = left.size() + strlen(tmp) + right.size() + 1;
+        retval = new char[len + 1];
+        snprintf(retval, len, "%s%s%s", left.c_str(), tmp, right.c_str());
+    }
+    else if((pos=fmtStr.find(INDEX_IDENTIFIER)) != std::string::npos)
+    {
+        size_t tlen = strlen(INDEX_IDENTIFIER);
+        std::string left(fmtStr.substr(0, pos));
+        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
+        char tmp[100];
+        snprintf(tmp, 100, "%d", currentDataAttributes->GetTimeIndex());
+        len = left.size() + strlen(tmp) + right.size() + 1;
+        retval = new char[len + 1];
+        snprintf(retval, len, "%s%s%s", left.c_str(), tmp, right.c_str());
+    }
+    else
+    {
+        retval = new char[len + 1];
+        strcpy(retval, formatString);
+    }
+
+    return retval;
+
+
+#if 0
     char *retval = new char[100]();
     if (!strcmp(formatString, "$time"))
         snprintf(retval, 100, "%g", currentDataAttributes->GetTime());
@@ -119,6 +173,6 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
         snprintf(retval, 100, "%d", currentDataAttributes->GetTimeIndex());
     else
         snprintf(retval, 100, "%s", formatString);
-#warning FIXME: USE C++ EQUIV OF STRCPY
     return retval;
+#endif
 }

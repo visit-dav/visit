@@ -60,7 +60,6 @@ protected:
     void SetText(const char *text);
 
     vtkVisItTextActor *textActor;
-    char              *textString;
     bool               useForegroundForTextColor;
     bool               addedToRenderer;
     ColorAttribute     textColor;
