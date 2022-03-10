@@ -5,7 +5,7 @@
 #ifndef AVT_TIME_SLIDER_COLLEAGUE_H
 #define AVT_TIME_SLIDER_COLLEAGUE_H
 #include <viswindow_exports.h>
-#include <avtAnnotationColleague.h>
+#include <avtAnnotationWithTextColleague.h>
 #include <ColorAttribute.h>
 
 class vtkVisItTextActor;
@@ -38,7 +38,7 @@ class vtkTimeSliderActor;
 //
 // ****************************************************************************
 
-class VISWINDOW_API avtTimeSliderColleague : public avtAnnotationColleague
+class VISWINDOW_API avtTimeSliderColleague : public avtAnnotationWithTextColleague
 {
 public:
     avtTimeSliderColleague(VisWindowColleagueProxy &);
@@ -70,18 +70,11 @@ private:
     void  GetTextRect(double, double, double, double, double *) const;
     void  GetSliderRect(double, double, double, double, double *) const;
 
-    static double      initialTime;
-    static int         initialCycle;
-
     vtkTimeSliderActor *timeSlider;
     vtkVisItTextActor  *textActor;
-    char               *textFormatString;
-    char               *textString;
     char               *timeFormatString;
     int                timeDisplayMode;
 
-    double             currentTime;
-    int                currentCycle;
     double             timeScale;
     double             timeOffset;
     bool               useForegroundForTextColor;
