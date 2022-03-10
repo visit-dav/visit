@@ -678,10 +678,97 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 }
 
 // ****************************************************************************
+// <Q> do we care about multi-domain datasets?
+// <Q> what should these functions be named? UnstructuredPolyhedralTopologyTo... ?
+bool 
+is_poly(const conduit::Node &doms)
+{
+    const int num_domains = doms.number_of_children();
+
+    for (int i = 0; i < num_domains; i ++)
+    {
+        const conduit::Node &dom = doms.child(i);
+        conduit::NodeConstIterator itr = dom["topologies"].children();
+        while (itr.has_next())
+        {
+            const conduit::Node &topo = itr.next();
+            if (topo.has_child("elements"))
+            {
+                if (topo["elements"].has_child("shape"))
+                {
+                    if (topo["elements/shape"].as_string() == "polyhedral" || 
+                        topo["elements/shape"].as_string() == "polygonal")
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+// ****************************************************************************
+// to_poly assumes that the node n is polyhedral
+void 
+to_poly(conduit::Node &doms, 
+        conduit::Node &to_vtkh)
+{
+    const int num_domains = doms.number_of_children();
+
+    for (int i = 0; i < num_domains; i ++)
+    {
+        const conduit::Node &dom = doms.child(i);
+        std::vector<std::string> poly_topos;
+        conduit::Node &res = to_vtkh.append();
+
+        // we know it must have a child "topologies" b/c otherwise it 
+        // is not valid blueprint
+        conduit::NodeConstIterator itr = dom["topologies"].children();
+        while (itr.has_next())
+        {
+            const conduit::Node &topo = itr.next();
+            if (topo.has_child("elements"))
+            {
+                if (topo["elements"].has_child("shape"))
+                {
+                    if (topo["elements/shape"].as_string() == "polyhedral" ||
+                        topo["elements/shape"].as_string() == "polygonal")
+                    {
+                        poly_topos.push_back(topo.name());
+                    }
+                }
+            }
+        }
+
+        res.set_external(dom);
+
+        std::vector<std::string> coordsets;
+        for (int i = 0; i < poly_topos.size(); i ++)
+        {
+            conduit::Node s2dmap, d2smap, options;
+            coordsets.push_back(
+                dom["topologies/" + poly_topos[i] + "/coordset"].as_string());
+            conduit::blueprint::mesh::topology::unstructured::generate_sides(
+                dom["topologies/" + poly_topos[i]],
+                res["topologies/" + poly_topos[i]],
+                res["coordsets/" + coordsets[coordsets.size() - 1]],
+                res["fields"],
+                s2dmap,
+                d2smap,
+                options);
+        }
+    }
+}
+
+// ****************************************************************************
 vtkDataSet *
 UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
                                           const Node &n_topo)
 {
+    // in here we must check is_poly() and if so run to_poly()
+
     vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords);
 
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
@@ -780,8 +867,6 @@ avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
         }
         else
         {
-            // could put functionality inside of UnstructuredTopologyToVTKUnstructuredGrid
-            // I want it in there :)
             BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet UnstructuredTopologyToVTKUnstructuredGrid");
             res = UnstructuredTopologyToVTKUnstructuredGrid(n_coords, n_topo);
         }

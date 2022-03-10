@@ -1561,12 +1561,6 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("mesh  " << topo_name << " is a standard mesh");
         // construct a vtk dataset directly from blueprint data
         // in a conduit tree
-
-
-        // call some is_poly() function and if so, call a to_poly() function
-        // only right here???
-        // and should those functions live in this class?
-
         res = avtBlueprintDataAdaptor::VTK::MeshToVTK(data);
     }
 
