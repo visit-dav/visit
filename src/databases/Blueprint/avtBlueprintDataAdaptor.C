@@ -682,8 +682,8 @@ vtkDataSet *
 UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
                                           const Node &n_topo)
 {
-    Node *coords_ptr = &n_coords;
-    Node *topo_ptr = &n_topo;
+    const Node *coords_ptr = &n_coords;
+    const Node *topo_ptr = &n_topo;
 
     Node res; // Used as a destination for the generate sides call
 
