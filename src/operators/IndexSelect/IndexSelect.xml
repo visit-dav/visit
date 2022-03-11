@@ -66,8 +66,6 @@
       <Field name="subsetName" label="Set" type="string" enabler="useWholeCollection:false">
         Whole
       </Field>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Function name="IndexSelectViewerEnginePluginInfo::InitializeOperatorAtts" user="false" member="true">
       </Function>
     </Attribute>
