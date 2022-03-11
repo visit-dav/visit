@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="AnimationAttributes" purpose="This class contains the animation attributes." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AnimationAttributes.code">
+  <Attribute name="AnimationAttributes" purpose="This class contains the animation attributes." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" >
     <Enum name="AnimationMode">
       ReversePlayMode
       StopMode
@@ -25,6 +25,4 @@
     <Field name="playbackMode" label="playbackMode" type="enum" subtype="PlaybackMode">
       PlayOnce
     </Field>
-    <Function name="ProcessOldVersions" user="true" member="true">
-    </Function>
   </Attribute>
