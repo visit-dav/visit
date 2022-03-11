@@ -40,6 +40,10 @@ class DBOptionsAttributes;
 //    Kathleen Bonnell, Mon Apr 16 11:38:34 PDT 2007 
 //    Add varCentering.
 //
+//    Justin Privitera, Mon 07 Mar 2022 06:02:13 PM PST
+//    Added new protected variable "outputPrecision" for specifying
+//    how precise Xmdv exports should be.
+//
 // ****************************************************************************
 
 class
@@ -57,6 +61,7 @@ avtXmdvWriter : virtual public avtDatabaseWriter
     bool           varsAreNodal;
     avtCentering   varCentering;
     bool           writeOutCoordinates;
+    int            outputPrecision;
     int            nblocks;
 
     virtual void   OpenFile(const std::string &, int);

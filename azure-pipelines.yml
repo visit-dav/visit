@@ -94,6 +94,7 @@ stages:
            git lfs pull --include blueprint_v0.3.1_test_data.7z
            git lfs pull --include blueprint_v0.3.1_mfem_test_data.7z
            git lfs pull --include blueprint_v0.7.0_venn_test_data.7z
+           git lfs pull --include blueprint_v0.8.2_braid_examples_test_data.7z
            cd ../
            git lfs pull  --include test/baseline/databases/silo
            git lfs pull  --include test/baseline/databases/blueprint
@@ -108,6 +109,7 @@ stages:
            7za x -y ../../data/blueprint_v0.3.1_test_data.7z
            7za x -y ../../data/blueprint_v0.3.1_mfem_test_data.7z
            7za x -y ../../data/blueprint_v0.7.0_venn_test_data.7z
+           7za x -y ../../data/blueprint_v0.8.2_braid_examples_test_data.7z
 
         displayName: 'Prep Test Data'
 
