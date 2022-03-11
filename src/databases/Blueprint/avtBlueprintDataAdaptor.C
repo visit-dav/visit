@@ -678,44 +678,34 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 }
 
 // ****************************************************************************
-// my understanding is that n_topo is the list of topologies
-// and n_coords is the list of coordsets
 vtkDataSet *
 UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
                                           const Node &n_topo)
 {
-    // <Q> help! where can I put the results and how can I make sure they are used below?
-    Node res; // used as a destination for the generate sides call
+    Node *coords_ptr = &n_coords;
+    Node *topo_ptr = &n_topo;
 
-    NodeConstIterator itr = n_topo.children();
-    while (itr.has_next())
+    Node res; // Used as a destination for the generate sides call
+
+    if (n_topo.has_path("elements/shape"))
     {
-        const Node &topo = itr.next();
-        // <Q> can I do if (topo.has_child("elements/shape")) instead of 
-        // the double if statement?
-        if (topo.has_child("elements"))
+        if (n_topo["elements/shape"].as_string() == "polyhedral" || 
+            n_topo["elements/shape"].as_string() == "polygonal")
         {
-            if (topo["elements"].has_child("shape"))
-            {
-                if (topo["elements/shape"].as_string() == "polyhedral" || 
-                    topo["elements/shape"].as_string() == "polygonal")
-                {
-                    Node s2dmap, d2smap, options;
-                    // <Q> can I write to the same location? i.e. don't use a `res`
-                    blueprint::mesh::topology::unstructured::generate_sides(
-                        topo,
-                        res["topologies/" + topo.name()],
-                        res["coordsets/" + topo["coordset"].as_string()],
-                        res["fields"],
-                        s2dmap,
-                        d2smap,
-                        options);
-                }
-            }
+            Node s2dmap, d2smap, options;
+            blueprint::mesh::topology::unstructured::generate_sides(
+                n_topo,
+                res["topologies/" + n_topo.name()],
+                res["coordsets/" + n_topo["coordset"].as_string()],
+                s2dmap,
+                d2smap);
+
+            coords_ptr = res.fetch_ptr("coordsets/" + n_topo["coordset"].as_string());
+            // topo_ptr same deal
         }
     }
 
-    vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords);
+    vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr);
 
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->SetPoints(points);
@@ -724,8 +714,8 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
     //
     // Now, add explicit topology
     //
-    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, points->GetNumberOfPoints());
-    ugrid->SetCells(ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string()), ca);
+    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
+    ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), ca);
     ca->Delete();
 
     return ugrid;
