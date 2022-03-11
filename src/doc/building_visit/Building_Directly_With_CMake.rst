@@ -12,7 +12,7 @@ steps.
   mkdir visit/build
   cd visit/build
 
-``build_visit`` should have created a cmake file specific to your machine.
+If ``build_visit`` was used to build VisIt_ on the platform in the past, it should have created a cmake file specific to your machine which we call a *config site* file.
 CMake needs to be simply pointed at it. Examples can be found in the 
 ``src/config-site`` directory.
 
