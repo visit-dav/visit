@@ -3,7 +3,7 @@
 Building Directly with CMake
 ----------------------------
 If the third party libraries have already been installed using ``build_visit``, 
-VisIt_ can be built without the use of the ``build_visit`` script, with these 
+If a *config site file* is available for the platform you wish to build on, VisIt_ can often be built without the use of the ``build_visit`` script, with these 
 steps.
 
 .. code:: bash
