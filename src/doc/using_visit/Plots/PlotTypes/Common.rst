@@ -2,7 +2,7 @@ Common Controls
 ~~~~~~~~~~~~~~~
 
 There are a number of attributes of plots that are common to many, if not all plots.
-These include such things as **Color table**, **Foreground** and **Background** colors, **Opacity**, **Line style** and **Point type**, **Log** or **Linear** scaling, the **Legend** checkbox, the **Lighting** checkbox and others.
+These include such things as **Color table**, **Foreground** and **Background** colors, **Opacity**, **Line width** and **Point type**, **Log** or **Linear** scaling, the **Legend** checkbox, the **Lighting** checkbox and others.
 These common plot attributes are described here first using the **Pseudocolor plot** as an example.
 
 .. _pseudocolorwindow_1:
