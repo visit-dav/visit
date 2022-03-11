@@ -1,20 +1,16 @@
 visit_utils
 =============
 
-visit_utils is a pure python module distributed along with Visit_'s
-Python interface. It provides a simple interface to encode movie files
-and methods that wrap more complex VisIt Python command sequences
-to simplify a few common use cases. It also provides a stand alone
-PySide based annotation rendering API.
+visit_utils is a pure python module distributed along with Visit_'s Python interface.
+It provides a simple interface to encode movie files and methods that wrap more complex VisIt Python command sequences to simplify a few common use cases.
+It also provides a stand alone PySide based annotation rendering API.
 
 Here we provide details on the encoding and engine launching modules:
 
 visit_utils.encoding
 ----------------------
 
-``visit_utils.encoding`` provides methods that allow you to use 
-movie encoders (e.g ffmpeg) to encode movies from sequences of 
-image files and extract image files from movie files.
+``visit_utils.encoding`` provides methods that allow you to use movie encoders (e.g ffmpeg) to encode movies from sequences of  image files and extract image files from movie files.
 
 Methods:
 
@@ -65,8 +61,7 @@ Methods:
 visit_utils.engine
 ----------------------
 
-``visit_utils.engine`` provides an interface to 
-launch VisIt engines that uses installed host profiles.
+``visit_utils.engine`` provides an interface to launch VisIt engines that uses installed host profiles.
 
 Methods:
 
