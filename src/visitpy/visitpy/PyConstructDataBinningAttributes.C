@@ -1220,17 +1220,6 @@ PyConstructDataBinningAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(ConstructDataBinningAttributes::Discard));
 
 
-    // try to handle old ddf attributes
-    if(strcmp(name, "ddfName") == 0)
-        return ConstructDataBinningAttributes_GetName(self, NULL);
-    if(strcmp(name, "ranges") == 0)
-        return ConstructDataBinningAttributes_GetBinBoundaries(self, NULL);
-    if(strcmp(name, "statisticalOperator") == 0)
-        return ConstructDataBinningAttributes_GetReductionOperator(self, NULL);
-    if(strcmp(name, "codomainName") == 0)
-        return ConstructDataBinningAttributes_GetVarForReductionOperator(self, NULL);
-    if(strcmp(name, "numSamples") == 0)
-        return ConstructDataBinningAttributes_GetNumBins(self, NULL);
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1281,17 +1270,6 @@ PyConstructDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *a
     else if(strcmp(name, "outOfBoundsBehavior") == 0)
         obj = ConstructDataBinningAttributes_SetOutOfBoundsBehavior(self, args);
 
-    // try to handle old ddf attributes
-    if(strcmp(name, "ddfName") == 0)
-        obj = ConstructDataBinningAttributes_SetName(self, args);
-    else if(strcmp(name, "ranges") == 0)
-        obj = ConstructDataBinningAttributes_SetBinBoundaries(self, args);
-    else if(strcmp(name, "statisticalOperator") == 0)
-        obj = ConstructDataBinningAttributes_SetReductionOperator(self, args);
-    else if(strcmp(name, "codomainName") == 0)
-        obj = ConstructDataBinningAttributes_SetVarForReductionOperator(self, args);
-    else if(strcmp(name, "numSamples") == 0)
-        obj = ConstructDataBinningAttributes_SetNumBins(self, args);
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
