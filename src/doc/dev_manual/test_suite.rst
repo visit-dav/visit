@@ -73,8 +73,6 @@ In the event of failure on the nightly run
 If any tests fail, **all** developers who updated the code from the last time all tests successfully passed will receive an email indicating *something* failed.
 In addition, failed results should be available on the web.  
 
-
-
 How regression testing works
 ----------------------------
 
@@ -108,6 +106,7 @@ The difference images are essentially binary bitmaps of the pixels that are diff
 This is to facilitate identifying the location and cause of the differences.
 
 Adding a test involves:
+
 a) adding a .py file to the appropriate subdirectory in ``src/test/tests``, 
 b) adding the expected baselines to ``test/baselines`` and, depending on the test, 
 c) adding any necessary input data files to ``src/testdata``. 
@@ -387,13 +386,11 @@ Regression testing on Windows
 -----------------------------
 Running the regression suite manually on Windows is a good way to detect Windows-specific run-time errors that may have been inadverently introduced.
 
-A dos-batch script (``run_visit_test_suite.bat``) is generated in the <build> test directory, and is similar to the shell script created on *nix.
+A dos-batch script (``run_visit_test_suite.bat``) is generated in the ``<build>/test`` directory, and is similar to the shell script created on Linux.
 The generated script turns on ``--lessverbose`` mode so that output can be viewed while the test is running. 
-Output can be redirected using this syntax: ``run_visit_test_suite.bat > test_results.txt and 2> test_general_output.txt``.
+Output can be redirected using this syntax: ::
 
-The script runs the test suite in serial mode by default.
-Add ``-m parallel`` or ``-m parallel,scalable,icet`` to change the mode.
-Individual tests can be added to the command line if the full test-suite isn't desired.
+     run_visit_test_suite.bat > test_results.txt and 2> test_general_output.txt
 
 Windows-specific baselines are stored in the **testing_baselines** subdirectory in the `visit-deps repo <https://github.com/visit-dav/visit-deps>`_, and were generated from a Windows 10 system with NVIDIA Quadro P1000 graphics card.
 Most likely, running from a different system will yield a large number of failures due to minor pixel diffs.
