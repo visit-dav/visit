@@ -678,106 +678,42 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 }
 
 // ****************************************************************************
-// <Q> do we care about multi-domain datasets? - handed a single topo and coordset
-// <Q> what should these functions be named? UnstructuredPolyhedralTopologyTo... ?
-// ----descriptive names!
-bool 
-is_poly(const conduit::Node &doms)
-{
-    // const int num_domains = doms.number_of_children();
-
-    // for (int i = 0; i < num_domains; i ++)
-    // {
-    //     const conduit::Node &dom = doms.child(i);
-    //     conduit::NodeConstIterator itr = dom["topologies"].children();
-    //     while (itr.has_next())
-    //     {
-
-
-            // I'm here!
-            const conduit::Node &topo = itr.next();
-            if (topo.has_child("elements"))
-            {
-                if (topo["elements"].has_child("shape"))
-                {
-                    if (topo["elements/shape"].as_string() == "polyhedral" || 
-                        topo["elements/shape"].as_string() == "polygonal")
-                    {
-                        return true;
-                    }
-                }
-            }
-    //     }
-    // }
-
-    return false;
-}
-
-// ****************************************************************************
-// to_poly assumes that the node n is polyhedral
-// <Q> to_vtkh?
-void 
-to_poly(conduit::Node &doms, 
-        conduit::Node &to_vtkh)
-{
-    const int num_domains = doms.number_of_children();
-
-    for (int i = 0; i < num_domains; i ++)
-    {
-        const conduit::Node &dom = doms.child(i);
-        std::vector<std::string> poly_topos;
-        conduit::Node &res = to_vtkh.append();
-
-        // we know it must have a child "topologies" b/c otherwise it 
-        // is not valid blueprint
-        conduit::NodeConstIterator itr = dom["topologies"].children();
-        while (itr.has_next())
-        {
-            const conduit::Node &topo = itr.next();
-            if (topo.has_child("elements"))
-            {
-                if (topo["elements"].has_child("shape"))
-                {
-                    if (topo["elements/shape"].as_string() == "polyhedral" ||
-                        topo["elements/shape"].as_string() == "polygonal")
-                    {
-                        poly_topos.push_back(topo.name());
-                    }
-                }
-            }
-        }
-
-        res.set_external(dom);
-
-        std::vector<std::string> coordsets;
-        for (int i = 0; i < poly_topos.size(); i ++)
-        {
-            conduit::Node s2dmap, d2smap, options;
-            coordsets.push_back(
-                dom["topologies/" + poly_topos[i] + "/coordset"].as_string());
-            conduit::blueprint::mesh::topology::unstructured::generate_sides(
-                dom["topologies/" + poly_topos[i]],
-                res["topologies/" + poly_topos[i]],
-                res["coordsets/" + coordsets[coordsets.size() - 1]],
-                res["fields"],
-                s2dmap,
-                d2smap,
-                options);
-        }
-    }
-}
-
-// ****************************************************************************
+// my understanding is that n_topo is the list of topologies
+// and n_coords is the list of coordsets
 vtkDataSet *
 UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
                                           const Node &n_topo)
 {
-    // in here we must check is_poly() and if so run to_poly()
+    // <Q> help! where can I put the results and how can I make sure they are used below?
+    Node res; // used as a destination for the generate sides call
 
-    // example of getting parent
-    // const Node &hmmmm = (*(n_topo.parent()->parent()))["fields"];
-
-    // <Q> so what level do I need? Will this be multi-domain? - no
+    NodeConstIterator itr = n_topo.children();
+    while (itr.has_next())
+    {
+        const Node &topo = itr.next();
+        // <Q> can I do if (topo.has_child("elements/shape")) instead of 
+        // the double if statement?
+        if (topo.has_child("elements"))
+        {
+            if (topo["elements"].has_child("shape"))
+            {
+                if (topo["elements/shape"].as_string() == "polyhedral" || 
+                    topo["elements/shape"].as_string() == "polygonal")
+                {
+                    Node s2dmap, d2smap, options;
+                    // <Q> can I write to the same location? i.e. don't use a `res`
+                    blueprint::mesh::topology::unstructured::generate_sides(
+                        topo,
+                        res["topologies/" + topo.name()],
+                        res["coordsets/" + topo["coordset"].as_string()],
+                        res["fields"],
+                        s2dmap,
+                        d2smap,
+                        options);
+                }
+            }
+        }
+    }
 
     vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords);
 
