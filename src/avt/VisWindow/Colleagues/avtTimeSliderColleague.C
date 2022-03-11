@@ -18,6 +18,7 @@
 #define DEFAULT_Y       0.01
 #define DEFAULT_WIDTH   0.4
 #define DEFAULT_HEIGHT  0.05
+#define DEFAULT_STRING  "Time=$time"
 #define TEXT_SCALING_CORRECTION 0.666667
 
 // ****************************************************************************
@@ -83,9 +84,7 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
     //
     textActor = vtkVisItTextActor::New();
     textActor->SetTextScaleMode(vtkTextActor::TEXT_SCALE_MODE_VIEWPORT);
-#warning FIXME: USE OF EXPLICIT STRING
-    std::string defaultString("Time="); defaultString += "$time";
-    SetText(defaultString.c_str(), "%g");
+    SetText(DEFAULT_STRING, "%g");
     vtkCoordinate *pos = textActor->GetPositionCoordinate();
     pos->SetCoordinateSystemToNormalizedViewport();
     GetTextRect(DEFAULT_X, DEFAULT_Y, DEFAULT_WIDTH, DEFAULT_HEIGHT, rect);
@@ -347,7 +346,7 @@ avtTimeSliderColleague::SetOptions(const AnnotationObject &annot)
         if(text.size() > 1)
             SetText(text[0].c_str(), text[1].c_str());
         else
-            SetText("", "%g");
+            SetText(DEFAULT_STRING, "%g");
     }
 
     //
