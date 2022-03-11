@@ -13,6 +13,10 @@
 #    Edward Rusu, Tue Aug 21 10:06:24 PST 2018
 #    Added tests for quadratic elements.
 #
+#    Kathleen Biagas, Wed Feb 16 09:15:45 PST 2022
+#    Replace use of meshatts 'foregroundFlag' and 'backgroundFlag' with
+#    meshColorSource and opaqueColorSource.
+#
 # ----------------------------------------------------------------------------
 
 def AddMeshPlot():
@@ -20,8 +24,8 @@ def AddMeshPlot():
     m = MeshAttributes()
     m.legendFlag = 0
     m.opaqueColor = (153, 204, 255, 255)
-    m.backgroundFlag = 0
-    m.foregroundFlag = 0
+    m.opaqueColorSource = m.OpaqueCustom
+    m.meshColorSource = m.MeshCustom
     m.meshColor = (0,0,0,255)
     SetPlotOptions(m)
 
@@ -342,7 +346,7 @@ def test7(datapath):
 
     DeleteActivePlots()
     CloseDatabase(pjoin(datapath,db))
-    
+
 def test8(datapath):
     db = "simpleCQUAD8.nas"
     TestSection(db)
@@ -350,17 +354,17 @@ def test8(datapath):
     AddMeshPlot()
     DrawPlots()
     Test("nastran8_0")
-    
+
     DeleteActivePlots()
     CloseDatabase(pjoin(datapath,db))
-    
+
 def test9(datapath):
     db = "simpleQuadSphere.nas"
     TestSection(db)
     OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
-    
+
     View3DAtts = View3DAttributes()
     View3DAtts.viewNormal = (0, 0, 1)
     View3DAtts.focus = (2.88777, -1.45671, -0.629586)
@@ -381,17 +385,17 @@ def test9(datapath):
     View3DAtts.windowValid = 1
     SetView3D(View3DAtts)
     Test("nastran9_0")
-    
+
     DeleteActivePlots()
     CloseDatabase(pjoin(datapath,db))
-    
+
 def test10(datapath):
     db = "simpleQuadSphereBlock.nas"
     TestSection(db)
     OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
-    
+
     View3DAtts = View3DAttributes()
     View3DAtts.viewNormal = (0, 0, 1)
     View3DAtts.focus = (0, -1.38778, -3.66334)
@@ -412,17 +416,17 @@ def test10(datapath):
     View3DAtts.windowValid = 1
     SetView3D(View3DAtts)
     Test("nastran10_0")
-    
+
     DeleteActivePlots()
     CloseDatabase(pjoin(datapath,db))
-    
+
 def test11(datapath):
     db = "simpleQuadTet.nas"
     TestSection(db)
     OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
-    
+
     View3DAtts = View3DAttributes()
     View3DAtts.viewNormal = (0.585895, 0.392177, 0.709172)
     View3DAtts.focus = (0.5, 0.5, 0.5)
@@ -443,17 +447,17 @@ def test11(datapath):
     View3DAtts.windowValid = 1
     SetView3D(View3DAtts)
     Test("nastran11_0")
-    
+
     DeleteActivePlots()
     CloseDatabase(pjoin(datapath,db))
-    
+
 def test12(datapath):
     db = "simpleQuadWedge.nas"
     TestSection(db)
     OpenDatabase(pjoin(datapath,db))
     AddMeshPlot()
     DrawPlots()
-    
+
     View3DAtts = View3DAttributes()
     View3DAtts.viewNormal = (-0.468638, 0.237166, 0.850959)
     View3DAtts.focus = (0.5, 0.5, 0.5)
@@ -474,7 +478,7 @@ def test12(datapath):
     View3DAtts.windowValid = 1
     SetView3D(View3DAtts)
     Test("nastran12_0")
-    
+
     DeleteActivePlots()
     CloseDatabase(pjoin(datapath,db))
 

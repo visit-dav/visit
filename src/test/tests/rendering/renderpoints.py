@@ -21,6 +21,10 @@
 #    Kathleen Biagas, Thu Dec 15 09:16:39 PST 2016
 #    Added tests for other glyph types, scaling by variable and restoring
 #    session files.
+#
+#    Kathleen Biagas, Wed Feb 16 09:15:45 PST 2022
+#    Replace use of meshatts 'foregroundFlag' with meshColorSource.
+#
 # ----------------------------------------------------------------------------
 
 #
@@ -70,7 +74,7 @@ def test0():
     # Test Mesh
     atts = MeshAttributes()
     atts.meshColor = (100,150,255)
-    atts.foregroundFlag = 0
+    atts.meshColorSource = atts.MeshCustom
     TestPlot("Mesh", "StarMesh", atts, ("_0_00", "_0_01", "_0_02"))
 
     # Test Pseudocolor
@@ -179,7 +183,7 @@ def test2():
     # Test Mesh
     atts = MeshAttributes()
     atts.meshColor = (100,150,255)
-    atts.foregroundFlag = 0
+    atts.meshColorSource = atts.MeshCustom
     TestPlot2("Mesh", "StarMesh", atts, ("_2_00", "_2_01"))
 
     # Test Pseudocolor
@@ -237,7 +241,7 @@ def test3():
     TestSection("Check glyph types for Mesh plot")
     atts = MeshAttributes()
     atts.meshColor = (152,203,0)
-    atts.foregroundFlag = 0
+    atts.meshColorSource = atts.MeshCustom
     TestPlot3("Mesh", "StarMesh", atts, ("_3_00", "_3_01", "_3_02", "_3_03", "_3_04"))
 
     TestSection("Check glyph types for Pseudocolor plot")
@@ -284,7 +288,7 @@ def test4():
     TestSection("Check scaling glyphs by a variable")
     atts = MeshAttributes()
     atts.meshColor = (152,203,0)
-    atts.foregroundFlag = 0
+    atts.meshColorSource = atts.MeshCustom
     TestPlot4("Mesh", "StarMesh", atts, "_4_00")
 
     # Test Pseudocolor

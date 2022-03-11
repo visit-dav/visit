@@ -1398,6 +1398,8 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
 // Creation:   Fri Mar 12 09:33:52 PST 2010
 //
 // Modifications:
+//   Kathleen Biagas, Tue Feb 15 15:55:04 PST 2022
+//   Removed processing versions older than 2.10.0.
 //
 // ****************************************************************************
 #include <Utility.h>
@@ -1412,22 +1414,6 @@ MeshAttributes::ProcessOldVersions(DataNode *parentNode,
     if(searchNode == 0)
         return;
 
-    if(VersionLessThan(configVersion, "2.0.0"))
-    {
-        DataNode *k = 0;
-        if((k = searchNode->GetNode("foregroundFlag")) != 0)
-        {
-            MeshColor val = k->AsBool() ? Foreground : MeshCustom;
-            searchNode->RemoveNode(k, true);
-            searchNode->AddNode(new DataNode("meshColorSource", MeshColor_ToString(val)));
-        }
-        if((k = searchNode->GetNode("backgroundFlag")) != 0)
-        {
-            OpaqueColor val = k->AsBool() ? Background : OpaqueCustom;
-            searchNode->RemoveNode(k, true);
-            searchNode->AddNode(new DataNode("opaqueColorSource", OpaqueColor_ToString(val)));
-        }
-    }
     if(VersionLessThan(configVersion, "3.0.0"))
     {
         if (searchNode->GetNode("lineStyle") != 0)
