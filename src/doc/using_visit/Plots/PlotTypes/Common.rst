@@ -1,12 +1,9 @@
 Common Controls
 ~~~~~~~~~~~~~~~
 
-There are a number of attributes of plots that are common to
-many, if not all plots. These include such things as **Color table**,
-**Foreground** and **Background** colors, **Opacity**,
-**Line style** and **Point type**, **Log** or **Linear** scaling,
-the **Legend** checkbox and others. These common plot attributes
-are described here first using the **Pseudocolor plot** as an example.
+There are a number of attributes of plots that are common to many, if not all plots.
+These include such things as **Color table**, **Foreground** and **Background** colors, **Opacity**, **Line width** and **Point type**, **Log** or **Linear** scaling, the **Legend** checkbox, the **Lighting** checkbox and others.
+These common plot attributes are described here first using the **Pseudocolor plot** as an example.
 
 .. _pseudocolorwindow_1:
 
@@ -101,3 +98,10 @@ select a new scalar variable from the **Variable** menu. The value ``default``
 must be replaced with the name of another scalar variable if you want VisIt_ to
 scale the points with a variable other than the one being plotted.
 
+Lighting
+""""""""
+
+Various plots include a **Lighting** checkbox.
+When the box is checked, it means the plot will obey all *active* :ref:`light sources <Lighting>`.
+When the box is **not** checked, this does not mean the plot will not be lit at all.
+Instead, it means that the plot will be lit by **Ambient** lighting only.
