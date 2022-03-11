@@ -16,5 +16,7 @@ steps.
 CMake needs to be simply pointed at it. Examples can be found in the 
 ``src/config-site`` directory.
 
+.. code:: bash
+
   /path/to/cmake ../src/ -DVISIT_CONFIG_SITE="/path/to/your_computer.cmake"
   make -j
