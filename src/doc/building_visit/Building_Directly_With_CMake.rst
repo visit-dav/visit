@@ -13,7 +13,7 @@ steps.
   cd visit/build
 
 If ``build_visit`` was used to build VisIt_ on the platform in the past, it should have created a cmake file specific to your machine which we call a *config site* file.
-CMake needs to be simply pointed at it. Examples can be found in the 
+CMake simply needs to be told where to find it using the ``-DVISIT_CONFIG_SITE`` option. Examples of *config site* files for a variety of machines VisIt_ developers directly support can be found in the 
 ``src/config-site`` directory.
 
 .. code:: bash
