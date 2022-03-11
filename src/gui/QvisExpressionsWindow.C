@@ -167,6 +167,11 @@
 //    Chris Laganella, Fri Feb  4 19:18:01 EST 2022
 //    Added logical_nodeid, logial_zoneid, node_domain, zone_domain,
 //    and zone_centers under the Mesh menu
+// 
+//    Justin Privitera, Fri 04 Mar 2022 02:03:33 PM PST
+//    moved curl, divergence, gradient exprs, and laplacian
+//    from misc. submenu to vector submenu
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -277,8 +282,14 @@ const char *expr_vector[] = {
     "color4",
     "colorlookup",
     "cross",
+    "curl",
+    "divergence",
     "dot",
+    "gradient",
     "hsvcolor",
+    "ij_gradient",
+    "ijk_gradient",
+    "Laplacian",
     "magnitude",
     "normalize",
     NULL
@@ -352,20 +363,14 @@ const char *expr_misc[] = {
     "bin",
     "cell_constant",
     "conn_components",
-    "curl",
     "curve_domain",
     "curve_integrate",
     "curve_swapxy",
     "cycle",
-    "divergence",
     "enumerate",
     "gauss_curvature",
-    "gradient",
-    "ij_gradient",
-    "ijk_gradient",
     "isnan",
     "lambda2",
-    "Laplacian",
     "map",
     "mean_curvature",
     "nodal_constant",
@@ -1648,6 +1653,10 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Eddie Rusu, Mon Sep 23 10:33:50 PDT 2019
 //    Added divide expression with optional arguments.
 //
+//    Justin Privitera, Thu 03 Mar 2022 10:41:04 AM PST
+//    Removed angle brackets from constantvalue field 
+//    in all 4 constant functions.
+//
 // ****************************************************************************
 
 QString
@@ -1775,7 +1784,7 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
              func_name == "point_constant" ||
              func_name == "nodal_constant" )
     {
-        res += QString("(<meshvar>, <constantvalue>)");
+        res += QString("(<meshvar>, constantvalue)");
         doParens = false;
     }
     else if(func_name == "average_over_time" || func_name == "min_over_time"

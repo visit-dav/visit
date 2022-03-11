@@ -642,6 +642,10 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 //  Modifications:
 //    Cyrus Harrison, Mon Mar  9 15:45:17 PDT 2020
 //    Use explicit map from registered mesh name to bp mesh and topo names.
+//
+//    Justin Privitera, Mon 07 Mar 2022 03:08:01 PM PST
+//    Added case for implicit points topology.
+//
 // ****************************************************************************
 void
 avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md,
@@ -715,6 +719,11 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
         {
             mt = AVT_CURVILINEAR_MESH;
             BP_PLUGIN_INFO(mesh_topo_name << " topology is structured ");
+        }
+        else if (n_topo["type"].as_string() == "points")
+        {
+            mt = AVT_UNSTRUCTURED_MESH;
+            BP_PLUGIN_INFO(mesh_topo_name << " topology is unstructured (points) ");
         }
         else if (n_topo["type"].as_string() == "unstructured")
         {
