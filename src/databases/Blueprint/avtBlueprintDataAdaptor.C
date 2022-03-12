@@ -701,7 +701,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
                 d2smap);
 
             coords_ptr = res.fetch_ptr("coordsets/" + n_topo["coordset"].as_string());
-            // topo_ptr same deal
+            topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
         }
     }
 
