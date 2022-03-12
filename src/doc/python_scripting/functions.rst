@@ -1510,21 +1510,18 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineArrayExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
     DefineArrayExpression creates new array variables.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
+    Array variables are a collection of scalar variables that are grouped together.
+    Currently there are no plots that take array variables, but they can be used in queries, such as the "XRay Image" query or used as a pick variable that creates a Histogram plot of the array variable for a specific zone.
+
+    The variableName argument is a string that contains the name of the new variable.
+    You can pass the name of an existing expression if you want to provide a new expression definition.
+    The expression argument is a string that contains the definition of the new variable in terms of `built-in expressions <../using_visit/Quantitative/Expressions.html#built-in-expressions>`_ and pre-existing variable names using VisIt_'s `expression grammar <../using_visit/Quantitative/Expressions.html#expression-grammar>`_.
 
 
 **Example:**
@@ -1532,16 +1529,27 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
+  OpenDatabase("/usr/gapps/visit/data/curv3d.silo")
+  DefineScalarExpression("d1", 'recenter(d, "zonal")')
+  DefineScalarExpression("p1", 'recenter(p, "zonal")')
+  DefineArrayExpression("da", "array_compose(d1, d1)")
+  DefineArrayExpression("pa", "array_compose(p1, p1)")
+  # Create a plot to use for performing an XRay Image query.
+  AddPlot("Pseudocolor", "d1")
   DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
-  DrawPlots()
-
+  # Do the query.
+  params = GetQueryParameters("XRay Image")
+  params['output_type'] ="png"
+  params['divide_emis_by_absorb'] = 1
+  params['origin'] = (0.0, 2.5, 10.0)
+  params['up_vector'] = (0, 1, 0)
+  params['theta'] = 0
+  params['phi'] = 0
+  params['width'] = 10.
+  params['height'] = 10.
+  params['image_size'] = (300, 300)
+  params['vars'] = ("da", "pa")
+  Query("XRay Image", params)
 
 DefineCurveExpression
 ---------------------
@@ -1560,21 +1568,18 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineCurveExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
     DefineCurveExpression creates new curve variables.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
+    Curve variables are a collection of X - Y coordinates that form a curve.
+    Curve variables are used in the Curve, Parallel Coordinates, Scatter and Spreadsheet plots.
+
+    The variableName argument is a string that contains the name of the new variable.
+    You can pass the name of an existing expression if you want to provide a new expression definition.
+    The expression argument is a string that contains the definition of the new variable in terms of `built-in expressions <../using_visit/Quantitative/Expressions.html#built-in-expressions>`_ and pre-existing variable names using VisIt_'s `expression grammar <../using_visit/Quantitative/Expressions.html#expression-grammar>`_.
 
 
 **Example:**
@@ -1582,14 +1587,10 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
+  OpenDatabase("/usr/gapps/visit/data/lines.curve")
+  DefineCurveExpression("myvar", "2 * curve1")
+  # Plot the curve variable.
+  AddPlot("Curve", "myvar")
   DrawPlots()
 
 
@@ -1610,37 +1611,15 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineMaterialExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineMaterialExpression function creates new material variables.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
-  DrawPlots()
+    DefineMaterialExpression creates new material variables.
+    Material variables are special variables that store material information for mesh and scalar variables.
+    Material variables are used by the Boundary and Filled Boundary plots.
+    Currently there are no built-in expressions that create material variables.
 
 
 DefineMeshExpression
@@ -1660,37 +1639,15 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineMeshExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineMeshExpression creates new mesh variables.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
-  DrawPlots()
+    DefineMeshExpression creates new mesh variables.
+    Mesh variables define the coordinates and connectivity of a mesh.
+    Mesh variables are used by the Label, Mesh and Subset plots.
+    Currently there are no built-in expressions that create mesh variables.
 
 
 DefinePythonExpression
@@ -1748,22 +1705,17 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineScalarExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineScalarExpression function creates a new scalar variable based on
-    other variables from the open database.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
+    DefineScalarExpression creates new scalar variables.
+    Scalar variables define a scalar field over a mesh and are used by plots that take scalar variables.
+
+    The variableName argument is a string that contains the name of the new variable.
+    You can pass the name of an existing expression if you want to provide a new expression definition.
+    The expression argument is a string that contains the definition of the new variable in terms of `built-in expressions <../using_visit/Quantitative/Expressions.html#built-in-expressions>`_ and pre-existing variable names using VisIt_'s `expression grammar <../using_visit/Quantitative/Expressions.html#expression-grammar>`_.
 
 
 **Example:**
@@ -1773,12 +1725,8 @@ return type : CLI_return_t
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/globe.silo")
   DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
+  # Plot the scalar variable.
   AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
   DrawPlots()
 
 
@@ -1799,37 +1747,14 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineSpeciesExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineSpeciesExpression creates new species variables.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
-  DrawPlots()
+    DefineSpeciesExpression creates new species variables.
+    Species variables are special variables that are associated with material variables that store species information for scalar variables.
+    Species variables are currently only used by some built-in expressions to create scalar expressions.
 
 
 DefineTensorExpression
@@ -1849,21 +1774,17 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineTensorExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineTensorExpression creates new tensor variables.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
+    DefineTensorExpression creates new tensor variables.
+    Tensor variables define a tensor field over a mesh and are used by the Tensor plot.
+
+    The variableName argument is a string that contains the name of the new variable.
+    You can pass the name of an existing expression if you want to provide a new expression definition.
+    The expression argument is a string that contains the definition of the new variable in terms of `built-in expressions <../using_visit/Quantitative/Expressions.html#built-in-expressions>`_ and pre-existing variable names using VisIt_'s `expression grammar <../using_visit/Quantitative/Expressions.html#expression-grammar>`_.
 
 
 **Example:**
@@ -1872,13 +1793,9 @@ return type : CLI_return_t
 
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
+  # Plot a tensor variable.
+  DefineTensorExpression("myten", "{{u,v,w},{u,v,w},{u,v,w}}")
+  AddPlot("Tensor", "myten")
   DrawPlots()
 
 
@@ -1899,21 +1816,17 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineVectorExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineVectorExpression creates new vector variables
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
+    DefineVectorExpression creates new vector variables.
+    Vector variables define a vector field over a mesh and are used by the Vector plot.
+
+    The variableName argument is a string that contains the name of the new variable.
+    You can pass the name of an existing expression if you want to provide a new expression definition.
+    The expression argument is a string that contains the definition of the new variable in terms of `built-in expressions <../using_visit/Quantitative/Expressions.html#built-in-expressions>`_ and pre-existing variable names using VisIt_'s `expression grammar <../using_visit/Quantitative/Expressions.html#expression-grammar>`_.
 
 
 **Example:**
@@ -1922,11 +1835,7 @@ return type : CLI_return_t
 
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
+  # Plot a vector variable.
   DefineVectorExpression("myvec", "{u,v,w}")
   AddPlot("Vector", "myvec")
   DrawPlots()
