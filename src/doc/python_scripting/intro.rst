@@ -43,7 +43,8 @@ To avoid confusion, you should use:
 ::
 
     import visit
-    visit.AddArgument("-v <version>") # example: "-v 3.2"
+    visit.AddArgument("-v")
+    visit.AddArgument("<version>") # for example: "3.2.0"
     visit.Launch()
     import visit
 
