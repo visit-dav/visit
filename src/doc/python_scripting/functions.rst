@@ -1754,7 +1754,7 @@ return type : CLI_return_t
 
     DefineSpeciesExpression creates new species variables.
     Species variables are special variables that are associated with material variables that store species information for scalar variables.
-    Species variables are currently only used by some built-in expressions to create scalar expressions.
+    Currently there are no built-in expressions that create species variables.
 
 
 DefineTensorExpression
