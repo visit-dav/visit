@@ -1,6 +1,6 @@
 .. _Data_Into_VisIt_PT:
 
-The ``PlainText`` file format
+The PlainText file format
 =============================
 
 Standard CSV (Comma Separated Values) files are read using the ``PlainText`` reader.
@@ -32,8 +32,8 @@ Here is the Python script that created the file.
 
 .. literalinclude:: ../../test/tests/databases/plaintext.py
    :language: Python 
-   :start-after: # Begin curve data gen logic
-   :end-before: # End curve data gen logic
+   :start-after: # Curve gen {
+   :end-before: # Curve gen }
 
 Here are the ``PlainText`` reader options used to read the data.
 
@@ -46,8 +46,8 @@ Here is the Python code to plot this data in VisIt_
 
 .. literalinclude:: ../../test/tests/databases/plaintext.py
    :language: Python 
-   :start-after: SetOpenOptionsCurveTest()
-   :end-before: os.unlink(filename)
+   :start-after: # Curve plot {
+   :end-before: # Curve plot }
 
 and the resulting data plotted in VisIt_
 
@@ -65,15 +65,15 @@ Here is the Python script that created the file.
 
 .. literalinclude:: ../../test/tests/databases/plaintext.py
    :language: Python 
-   :start-after: # Begin curve noX data gen logic
-   :end-before: # End curve noX data gen logic
+   :start-after: # Curve noX gen {
+   :end-before: # Curve noX gen }
 
 Here is the Python code to plot this data in VisIt_
 
 .. literalinclude:: ../../test/tests/databases/plaintext.py
    :language: Python 
-   :start-after: SetOpenOptionsCurveTestNoX()
-   :end-before: os.unlink(filename)
+   :start-after: # Curve noX plot {
+   :end-before: # Curve noX plot }
 
 and the resulting data plotted in VisIt_
 
@@ -84,6 +84,7 @@ Defining 2D or 3D points with variables
 
 The first line can be an optional list of variable names.
 The remaining lines consist of rows, where each row represents the coordinates and variable values for a single point.
+In this example, the values on each row are separated by spaces.
 
 Here are the first 10 lines of an example of a file representing 3D points.
 
@@ -94,8 +95,8 @@ Here is the Python script that created the file.
 
 .. literalinclude:: ../../test/tests/databases/plaintext.py
    :language: Python 
-   :start-after: # Begin 3D points with velocity & temp variable data gen logic
-   :end-before: # End 3D points with velocity & temp variable data gen logic
+   :start-after: # Points gen {
+   :end-before: # Points gen }
 
 Here are the ``PlainText`` reader options used to read the data.
 
@@ -108,8 +109,8 @@ Here is the Python code to plot this data in VisIt_
 
 .. literalinclude:: ../../test/tests/databases/plaintext.py
    :language: Python 
-   :start-after: SetOpenOptionsPointsTest()
-   :end-before: os.unlink(filename)
+   :start-after: # Points plot {
+   :end-before: # Points plot }
 
 and the resulting data plotted in VisIt_
 
@@ -136,8 +137,8 @@ Here is the Python script that created the file.
 
 .. literalinclude:: ../../test/tests/databases/plaintext.py
    :language: Python 
-   :start-after: # Begin 2D array gen logic
-   :end-before: # End 2D array gen logic
+   :start-after: # Array gen {
+   :end-before: # Array gen }
 
 Here are the ``PlainText`` reader options used to read the data.
 
@@ -149,8 +150,8 @@ Here is the Python code to plot this data in VisIt_
 
 .. literalinclude:: ../../test/tests/databases/plaintext.py
    :language: Python 
-   :start-after: SetOpenOptionsForArrayTest()
-   :end-before: os.unlink(filename)
+   :start-after: # Array plot {
+   :end-before: # Array plot }
 
 and the resulting data plotted in VisIt_
 

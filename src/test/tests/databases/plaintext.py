@@ -46,11 +46,13 @@ def SetOpenOptionsForCurveTest():
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
+    # SetOpenOptionsForCurveTest
 
 def SetOpenOptionsForCurveTestNoX():
     plainTextOpenOptions = GetDefaultOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
+    # SetOpenOptionsForCurveTestNoX
 
 def SetOpenOptionsForPointsTest():
     plainTextOpenOptions = GetDefaultOpenOptions()
@@ -59,16 +61,18 @@ def SetOpenOptionsForPointsTest():
     plainTextOpenOptions['Column for Y coordinate (or -1 for none)'] = 1
     plainTextOpenOptions['Column for Z coordinate (or -1 for none)'] = 2
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
+    # SetOpenOptionsForPointsTest
 
 def SetOpenOptionsForArrayTest():
     plainTextOpenOptions = GetDefaultOpenOptions()
     plainTextOpenOptions['First row has variable names'] = 1
     plainTextOpenOptions['Data layout'] = '2D Array'
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
+    # SetOpenOptionsForArrayTest
 
 def CreateCurvesDataFile(filename):
 
-    # Begin curve data gen logic
+    # Curve gen {
     with open(filename, "wt") as f:
         # create header
         f.write("angle,sine,cosine\n")
@@ -80,11 +84,11 @@ def CreateCurvesDataFile(filename):
             cosine = math.cos(angle_rad)
             # write abscissa (x value) and ordinates (y-value(s))
             f.write("%g,%g,%g\n" % (angle_deg, sine, cosine))
-    # End curve data gen logic
+    # Curve gen }
 
 def CreateCurvesDataFileWithNoXCoordinates(filename):
 
-    # Begin curve noX data gen logic
+    # Curve noX gen {
     with open(filename, "wt") as f:
         # create header
         f.write("inverse sqrt quadratic\n")
@@ -94,11 +98,11 @@ def CreateCurvesDataFileWithNoXCoordinates(filename):
             sqr = 10 * math.sqrt(i)
             quad = float(i*i) / float(100)
             f.write("%g %g %g\n" % (inv, sqr, quad))
-    # End curve noX data gen logic
+    # Curve noX gen }
 
 def Create3DPointsWithVariablesDataFile(filename):
 
-    # Begin 3D points with velocity & temp variable data gen logic
+    # Points gen {
     with open(filename, "wt") as f:
         # write header
         f.write("x y z velx vely velz temp\n")
@@ -116,11 +120,11 @@ def Create3DPointsWithVariablesDataFile(filename):
             temp = math.sqrt((t-0.5)*(t-0.5))
             # write point and value(s)
             f.write("%g %g %g %g %g %g %g\n" % (x,y,z,vx,vy,vz,temp))
-    # End 3D points with velocity & temp variable data gen logic
+    # Points gen }
 
 def Create2DArrayDataFile(filename):
 
-    # Begin 2D array gen logic
+    # Array gen {
     with open(filename, "wt") as f:
         # Only the first column name matters.
         # The others are required but otherwise ignored.
@@ -136,7 +140,7 @@ def Create2DArrayDataFile(filename):
                    f.write("%g " % dist)
                 else:
                    f.write("%g\n" % dist)
-    # End 2D array gen logic
+    # Array gen }
 
 def TestCSVCurves(filename):
     TestSection("CSV data as Curves")
@@ -144,10 +148,12 @@ def TestCSVCurves(filename):
     CreateCurvesDataFile(filename)
     SetOpenOptionsForCurveTest()
 
+    # Curve plot {
     OpenDatabase(filename)
     AddPlot("Curve","sine")
     AddPlot("Curve","cosine")
     DrawPlots()
+    # Curve plot }
     ResetView()
     Test("PlainText_Curves")
     DeleteAllPlots()
@@ -160,11 +166,13 @@ def TestCSVCurvesNoX(filename):
     CreateCurvesDataFileWithNoXCoordinates(filename)
     SetOpenOptionsForCurveTestNoX()
 
+    # Curve noX plot {
     OpenDatabase(filename)
     AddPlot("Curve","inverse")
     AddPlot("Curve","sqrt")
     AddPlot("Curve","quadratic")
     DrawPlots()
+    # Curve noX plot }
     ResetView()
     Test("PlainText_Curves_noX")
     DeleteAllPlots()
@@ -177,11 +185,13 @@ def TestCSV3DPointsAndVariables(filename):
     Create3DPointsWithVariablesDataFile(filename)
     SetOpenOptionsForPointsTest()
 
+    # Points plot {
     OpenDatabase(filename)
     DefineVectorExpression("vel", "{velx,vely,velz}")
     AddPlot("Pseudocolor", "temp")
     AddPlot("Vector","vel")
     DrawPlots()
+    # Points plot }
     ResetView()
     Test("PlainText_Points")
     DeleteAllPlots()
@@ -194,10 +204,12 @@ def TestCSV2DArray(filename):
     Create2DArrayDataFile(filename)
     SetOpenOptionsForArrayTest()
 
+    # Array plot {
     OpenDatabase(filename)
     AddPlot("Pseudocolor", "density")
     DrawPlots()
     ResetView()
+    # Array plot }
     Test("PlainText_2DArray")
     DeleteAllPlots()
     CloseDatabase(filename)
