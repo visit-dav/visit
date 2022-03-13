@@ -131,7 +131,6 @@ def Create2DArrayDataFile(filename):
             y = float(iy)
             for ix in range(nx):
                 x = float(ix)
-                #dist = math.sqrt((x - 3.5) * (x - 3.5) + (y - 4.5) * (y - 4.5))
                 dist = math.sqrt(x*x + y*y)
                 if (ix < nx - 1):
                    f.write("%g " % dist)

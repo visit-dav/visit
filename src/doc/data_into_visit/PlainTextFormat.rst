@@ -42,7 +42,14 @@ Here are the ``PlainText`` reader options used to read the data.
 If you specify the column for the X coordinates, then that column will be used for the domain for all the curves.
 If you don't specify an X coordinate, then it will use the row index for the domain for all the curves.
 
-Here is the resulting data plotted in VisIt_
+Here is the Python code to plot this data in VisIt_
+
+.. literalinclude:: ../../test/tests/databases/plaintext.py
+   :language: Python 
+   :start-after: SetOpenOptionsCurveTest()
+   :end-before: os.unlink(filename)
+
+and the resulting data plotted in VisIt_
 
 .. figure:: ../../../test/baseline/databases/plaintext/PlainText_Curves.png
 
@@ -61,7 +68,14 @@ Here is the Python script that created the file.
    :start-after: # Begin curve noX data gen logic
    :end-before: # End curve noX data gen logic
 
-Here is the resulting data plotted in VisIt_
+Here is the Python code to plot this data in VisIt_
+
+.. literalinclude:: ../../test/tests/databases/plaintext.py
+   :language: Python 
+   :start-after: SetOpenOptionsCurveTestNoX()
+   :end-before: os.unlink(filename)
+
+and the resulting data plotted in VisIt_
 
 .. figure:: ../../../test/baseline/databases/plaintext/PlainText_Curves_noX.png
 
@@ -90,7 +104,14 @@ Here are the ``PlainText`` reader options used to read the data.
 If you specify the columns for the X and Y coordinates, the points will be defined in 2D space.
 If you specify the columns for the X, Y and Z coordinates, the points will be defined in 3D space.
 
-Here is the resulting data plotted in VisIt_
+Here is the Python code to plot this data in VisIt_
+
+.. literalinclude:: ../../test/tests/databases/plaintext.py
+   :language: Python 
+   :start-after: SetOpenOptionsPointsTest()
+   :end-before: os.unlink(filename)
+
+and the resulting data plotted in VisIt_
 
 .. figure:: ../../../test/baseline/databases/plaintext/PlainText_Points.png
 
@@ -124,6 +145,13 @@ Here are the ``PlainText`` reader options used to read the data.
 
 The columns for the X, Y and Z coordinates are not used.
 
-Here is the resulting data plotted in VisIt_
+Here is the Python code to plot this data in VisIt_
+
+.. literalinclude:: ../../test/tests/databases/plaintext.py
+   :language: Python 
+   :start-after: SetOpenOptionsForArrayTest()
+   :end-before: os.unlink(filename)
+
+and the resulting data plotted in VisIt_
 
 .. figure:: ../../../test/baseline/databases/plaintext/PlainText_2DArray.png
