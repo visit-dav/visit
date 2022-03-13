@@ -35,6 +35,8 @@ release = '3.2.2'
 # ones.
 extensions = ['sphinx.ext.mathjax']
 
+# Force installation of any special stuff in the RTD virtual machine instance
+# needed to support any custom extensions.
 if os.environ.get('READTHEDOCS'):
     from subprocess import call
     call(['pip', 'install', 'sphinx-notfound-page'])
