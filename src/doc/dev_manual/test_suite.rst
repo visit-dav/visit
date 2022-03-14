@@ -99,8 +99,7 @@ The .py files in this directory tree are all the actual test driver files that d
 In addition, the ``src/test/visit_test_main.py`` file defines a number of helper Python functions that facilitate testing including two key functions; ``Test()`` for testing image outputs and ``TestText()`` for testing text outputs. 
 Of course, all the .py files in ``src/test/tests`` subtree are excellent examples of test scripts.
 
-When the test suite finishes, it will have created a web-browseable HTML tree in
-the html directory. 
+When the test suite finishes, it will have created a web-browseable HTML tree in the html directory. 
 The actual image and text raw results will be in the current directory and difference images will be in the diff directory. 
 The difference images are essentially binary bitmaps of the pixels that are different and not the actual pixel differences themselves. 
 This is to facilitate identifying the location and cause of the differences.
@@ -205,9 +204,7 @@ Minor variations such as single pixel shifts in position or slight variations in
 When testing, it would be nice to be able to ignore variations in results attributable to these causes. 
 On the other hand, we would like to be alerted to variations in results attributable to changes made to the source code.
 
-To satisfy both of these goals, we use bit-for-bit identical matching to
-track the impact of changes to source code but *fuzzy* matching for anything
-else. 
+To satisfy both of these goals, we use bit-for-bit identical matching to track the impact of changes to source code but *fuzzy* matching for anything else. 
 We maintain a set of several thousand version-controlled, baseline results computed for a specific, fixed *configuration and test mode* of VisIt_. 
 Nightly testing of key branches of development reveals any results that are not
 bit-for-bit identical to their baseline.
@@ -226,9 +223,7 @@ About 2% of results vary with the execution mode.
 To handle these cases, we also maintain *mode-specific* baseline results as the need arises.
 
 The need for a mode-specific baseline is discovered as new tests are added.
-When testing reveals that VisIt computes slightly different results in 
-different modes, a single mode-agnostic baseline will fail to match in all
-test modes. 
+When testing reveals that VisIt computes slightly different results in different modes, a single mode-agnostic baseline will fail to match in all test modes. 
 At that time, mode-specific baselines are added.
 
 Changing Baseline Configuration
@@ -297,9 +292,7 @@ Testing on Non-Baseline Configurations
 
 When running the test suite on platforms other than the currently adopted baseline platform or when running tests in modes other than the standard modes, the ``--pixdiff`` and ``--avgdiff`` command-line options will be very useful.
 
-For numerical textual results, there is also a ``--numdiff`` command-line option
-that specifies a *relative* numerical difference tolerance in numerical textual
-results. 
+For numerical textual results, there is also a ``--numdiff`` command-line option that specifies a *relative* numerical difference tolerance in numerical textual results. 
 The command-line option ``--numdiff=0.01`` means that if a numerical result is different but the magnitude of the difference divided by the magnitude of the expected value is less than ``0.01`` it is considered a **Pass**.
 
 When specified on the command-line to a test suite run, the above tolerances wind up being applied to *all* test results computed during a test suite run. 
