@@ -40,9 +40,6 @@ def GetDefaultOpenOptions():
         GetDefaultOpenOptions.defaultOpenOptions = copy.deepcopy(GetDefaultFileOpenOptions("PlainText"))
     return copy.deepcopy(GetDefaultOpenOptions.defaultOpenOptions)
 
-def SetOpenOptionsForArrayTest():
-    # SetOpenOptionsForArrayTest
-
 def CreateCurvesDataFile(filename):
 
     # Curve gen {
@@ -159,7 +156,7 @@ def TestCSVCurvesNoX():
 
 def TestCSV3DPointsAndVariables():
     TestSection("CSV data as 3D points with variable(s)")
-    Create3DPointsWithVariablesDataFile("points.csv")
+    Create3DPointsWithVariablesDataFile("points.txt")
 
     # Points plot {
     plainTextOpenOptions = GetDefaultOpenOptions()
@@ -168,7 +165,7 @@ def TestCSV3DPointsAndVariables():
     plainTextOpenOptions['Column for Y coordinate (or -1 for none)'] = 1
     plainTextOpenOptions['Column for Z coordinate (or -1 for none)'] = 2
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
-    OpenDatabase("points.csv")
+    OpenDatabase("points.txt")
 
     DefineVectorExpression("vel", "{velx,vely,velz}")
     AddPlot("Pseudocolor", "temp")
@@ -178,12 +175,12 @@ def TestCSV3DPointsAndVariables():
     ResetView()
     Test("PlainText_Points")
     DeleteAllPlots()
-    CloseDatabase("points.csv")
-    os.unlink("points.csv")
+    CloseDatabase("points.txt")
+    os.unlink("points.txt")
 
 def TestCSV2DArray():
     TestSection("CSV data as 2D array on uniform grid")
-    Create2DArrayDataFile("array.csv")
+    Create2DArrayDataFile("array.txt")
 
     # Array plot {
     plainTextOpenOptions = GetDefaultOpenOptions()
@@ -191,23 +188,23 @@ def TestCSV2DArray():
     plainTextOpenOptions['Data layout'] = '2D Array'
     SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
 
-    OpenDatabase("array.csv")
+    OpenDatabase("array.txt")
     AddPlot("Pseudocolor", "density")
     DrawPlots()
     ResetView()
     # Array plot }
     Test("PlainText_2DArray")
     DeleteAllPlots()
-    CloseDatabase("array.csv")
-    os.unlink("array.csv")
+    CloseDatabase("array.txt")
+    os.unlink("array.txt")
 
 def main():
 
     if 'genonly' in sys.argv:
         CreateCurvesDataFile('curves.csv')
         CreateCurvesDataFileWithNoXCoordinates('curves_nox.csv')
-        Create3DPointsWithVariablesDataFile('points.csv')
-        Create2DArrayDataFile('array.csv')
+        Create3DPointsWithVariablesDataFile('points.txt')
+        Create2DArrayDataFile('array.txt')
         sys.exit(0)
 
     #
