@@ -41,33 +41,7 @@ def GetDefaultOpenOptions():
         GetDefaultOpenOptions.defaultOpenOptions = copy.deepcopy(GetDefaultFileOpenOptions("PlainText"))
     return copy.deepcopy(GetDefaultOpenOptions.defaultOpenOptions)
 
-def SetOpenOptionsForCurveTest():
-    plainTextOpenOptions = GetDefaultOpenOptions()
-    plainTextOpenOptions['First row has variable names'] = 1
-    plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
-    SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
-    # SetOpenOptionsForCurveTest
-
-def SetOpenOptionsForCurveTestNoX():
-    plainTextOpenOptions = GetDefaultOpenOptions()
-    plainTextOpenOptions['First row has variable names'] = 1
-    SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
-    # SetOpenOptionsForCurveTestNoX
-
-def SetOpenOptionsForPointsTest():
-    plainTextOpenOptions = GetDefaultOpenOptions()
-    plainTextOpenOptions['First row has variable names'] = 1
-    plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
-    plainTextOpenOptions['Column for Y coordinate (or -1 for none)'] = 1
-    plainTextOpenOptions['Column for Z coordinate (or -1 for none)'] = 2
-    SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
-    # SetOpenOptionsForPointsTest
-
 def SetOpenOptionsForArrayTest():
-    plainTextOpenOptions = GetDefaultOpenOptions()
-    plainTextOpenOptions['First row has variable names'] = 1
-    plainTextOpenOptions['Data layout'] = '2D Array'
-    SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
     # SetOpenOptionsForArrayTest
 
 def CreateCurvesDataFile(filename):
@@ -142,14 +116,17 @@ def Create2DArrayDataFile(filename):
                    f.write("%g\n" % dist)
     # Array gen }
 
-def TestCSVCurves(filename):
+def TestCSVCurves():
     TestSection("CSV data as Curves")
-
-    CreateCurvesDataFile(filename)
-    SetOpenOptionsForCurveTest()
+    CreateCurvesDataFile("curves.csv")
 
     # Curve plot {
-    OpenDatabase(filename)
+    plainTextOpenOptions = GetDefaultOpenOptions()
+    plainTextOpenOptions['First row has variable names'] = 1
+    plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
+    SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
+
+    OpenDatabase("curves.csv")
     AddPlot("Curve","sine")
     AddPlot("Curve","cosine")
     DrawPlots()
@@ -157,17 +134,19 @@ def TestCSVCurves(filename):
     ResetView()
     Test("PlainText_Curves")
     DeleteAllPlots()
-    CloseDatabase(filename)
-    os.unlink(filename)
+    CloseDatabase("curves.csv")
+    os.unlink("curves.csv")
 
-def TestCSVCurvesNoX(filename):
+def TestCSVCurvesNoX():
     TestSection("CSV data as Curves inferred X coordinate")
-
-    CreateCurvesDataFileWithNoXCoordinates(filename)
-    SetOpenOptionsForCurveTestNoX()
+    CreateCurvesDataFileWithNoXCoordinates("curves_nox.csv")
 
     # Curve noX plot {
-    OpenDatabase(filename)
+    plainTextOpenOptions = GetDefaultOpenOptions()
+    plainTextOpenOptions['First row has variable names'] = 1
+    SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
+
+    OpenDatabase("curves_nox.csv")
     AddPlot("Curve","inverse")
     AddPlot("Curve","sqrt")
     AddPlot("Curve","quadratic")
@@ -176,17 +155,22 @@ def TestCSVCurvesNoX(filename):
     ResetView()
     Test("PlainText_Curves_noX")
     DeleteAllPlots()
-    CloseDatabase(filename)
-    os.unlink(filename)
+    CloseDatabase("curves_nox.csv")
+    os.unlink("curves_nox.csv")
 
-def TestCSV3DPointsAndVariables(filename):
+def TestCSV3DPointsAndVariables():
     TestSection("CSV data as 3D points with variable(s)")
-
-    Create3DPointsWithVariablesDataFile(filename)
-    SetOpenOptionsForPointsTest()
+    Create3DPointsWithVariablesDataFile("points.csv")
 
     # Points plot {
-    OpenDatabase(filename)
+    plainTextOpenOptions = GetDefaultOpenOptions()
+    plainTextOpenOptions['First row has variable names'] = 1
+    plainTextOpenOptions['Column for X coordinate (or -1 for none)'] = 0
+    plainTextOpenOptions['Column for Y coordinate (or -1 for none)'] = 1
+    plainTextOpenOptions['Column for Z coordinate (or -1 for none)'] = 2
+    SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
+    OpenDatabase("points.csv")
+
     DefineVectorExpression("vel", "{velx,vely,velz}")
     AddPlot("Pseudocolor", "temp")
     AddPlot("Vector","vel")
@@ -195,25 +179,28 @@ def TestCSV3DPointsAndVariables(filename):
     ResetView()
     Test("PlainText_Points")
     DeleteAllPlots()
-    CloseDatabase(filename)
-    os.unlink(filename)
+    CloseDatabase("points.csv")
+    os.unlink("points.csv")
 
-def TestCSV2DArray(filename):
+def TestCSV2DArray():
     TestSection("CSV data as 2D array on uniform grid")
-
-    Create2DArrayDataFile(filename)
-    SetOpenOptionsForArrayTest()
+    Create2DArrayDataFile("array.csv")
 
     # Array plot {
-    OpenDatabase(filename)
+    plainTextOpenOptions = GetDefaultOpenOptions()
+    plainTextOpenOptions['First row has variable names'] = 1
+    plainTextOpenOptions['Data layout'] = '2D Array'
+    SetDefaultFileOpenOptions("PlainText", plainTextOpenOptions)
+
+    OpenDatabase("array.csv")
     AddPlot("Pseudocolor", "density")
     DrawPlots()
     ResetView()
     # Array plot }
     Test("PlainText_2DArray")
     DeleteAllPlots()
-    CloseDatabase(filename)
-    os.unlink(filename)
+    CloseDatabase("array.csv")
+    os.unlink("array.csv")
 
 def main():
 
@@ -230,13 +217,13 @@ def main():
     #
     OpenMDServer("localhost")
 
-    TestCSVCurves("curves.csv")
+    TestCSVCurves()
 
-    TestCSVCurvesNoX("curves_nox.csv")
+    TestCSVCurvesNoX()
 
-    TestCSV3DPointsAndVariables("points.csv")
+    TestCSV3DPointsAndVariables()
 
-    TestCSV2DArray("array.csv")
+    TestCSV2DArray()
 
     Exit()
 
