@@ -61,13 +61,13 @@ def CreateCurvesDataFileWithNoXCoordinates(filename):
     # Curve noX gen {
     with open(filename, "wt") as f:
         # create header
-        f.write("inverse sqrt quadratic\n")
+        f.write("inverse,sqrt,quadratic\n")
         npts = 100 
         for i in range(npts):
             inv = float(100) / (float(i)+1)
             sqr = 10 * math.sqrt(i)
             quad = float(i*i) / float(100)
-            f.write("%g %g %g\n" % (inv, sqr, quad))
+            f.write("%g,%g,%g\n" % (inv, sqr, quad))
     # Curve noX gen }
 
 def Create3DPointsWithVariablesDataFile(filename):
