@@ -16,6 +16,7 @@ Python Scripting
     functions
     attributes
     events
+    visit_utils
     acknowledgments
 
 .. Indices and tables
