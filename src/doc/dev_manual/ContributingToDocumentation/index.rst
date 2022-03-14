@@ -199,7 +199,7 @@ There are many advantages to using a single sentence per line mostly having to d
 This practice, of course, does not apply to source code.
 It applies only to ascii files that are intended to represent, more or less, human readable prose.
 Going forward, we will not reformat existing documentation to a sentence per line en masse.
-However, when updates to documentation are made we will encourage developers to follow this practice and request changes in PRs when it is not followed.
+However, when updating any *existing* paragraph or adding new paragraphs, we will encourage developers to follow this practice for the *whole* paragraph and request changes in PRs when it is not followed.
 
 .. _contributing_images:
 
