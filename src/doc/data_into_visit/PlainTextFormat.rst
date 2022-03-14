@@ -6,8 +6,8 @@ The PlainText file format
 Standard CSV (Comma Separated Values) files are read using the ``PlainText`` reader.
 
 Plain text files are text files with columns of data.
-A single space, comma or tab character separates (e.g. *delimits*) individual values on each line of the file.
-The ``PlainText`` reader automatically detects the separator character being used.
+A *single* space, comma or tab character separates (e.g. *delimits*) values in each line of the file belonging to the different columns.
+The ``PlainText`` reader automatically detects the separator character in use.
 The file can include an arbitrary number of lines at the *beginning* of the file to be skipped.
 Following any skipped lines, the file may include an optional *header* line holding the names associated with each column.
 Plain text files can be used to represent the following types of data:
@@ -56,7 +56,8 @@ and the resulting data plotted in VisIt_
 Defining curves using row index for X coordinate
 ------------------------------------------------
 
-Here are the first 10 lines of an example of a file representing curves.
+Here are the first 10 lines of an example of a file representing curves where the *abscissa* (e.g. x-coordinte) is implied by the row number (starting from 0) in the file.
+In this example, the values on each row are separated by spaces.
 
 .. literalinclude:: data_examples/curves.csv
    :lines: 1-10
@@ -130,6 +131,7 @@ Other column names are ignored but nonetheless required to read the file properl
 The remaining lines consist of rows, where each row represents the values for a single Y coordinate.
 
 Here is an example of a file representing 3D points.
+In this example, the values on each row are separated by spaces.
 
 .. literalinclude:: data_examples/array.csv
 
