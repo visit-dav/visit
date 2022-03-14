@@ -6,6 +6,7 @@
 
 # -- Path setup --------------------------------------------------------------
 
+# Attempt add_css_file only if the version of Sphinx actually supports it
 def setup(app):
     if hasattr(app, 'add_css_file'):
         app.add_css_file('custom.css')
