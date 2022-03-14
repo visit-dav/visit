@@ -156,9 +156,7 @@ The above explanation is offered as a rational to justify that whenever possible
 More About TestValueXX Type Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``TestValueXX()`` methods are similar in spirit to ``Test()`` and
-``TestText()`` except operates on Python *values* passed as args both for the
-*current* (actual) and the *baseline* (expected) results. 
+The ``TestValueXX()`` methods are similar in spirit to ``Test()`` and ``TestText()`` except operates on Python *values* passed as args both for the *current* (actual) and the *baseline* (expected) results. 
 The values can be any Python object. 
 When they are floats or ints or strings of floats or ints or lists/tuples of the same, these methods will round the arguments to the desired precision and do the comparisons numerically. 
 Otherwise they will compare them as strings.
@@ -189,16 +187,14 @@ For some examples, see `test_values_simple.py <https://github.com/visit-dav/visi
 
 Filtering Image Differences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-There are many alternative ways for both compiling and even running VisIt_ to
-produce any given image or textual output. 
+There are many alternative ways for both compiling and even running VisIt_ to produce any given image or textual output. 
 Nonetheless, we expect results to be nearly if not perfectly identical. 
 For example, we expect VisIt_ running on two different implementations of the GL library to produce by and large the same images. 
 We expect VisIt_ running in serial or parallel to produce the same images. 
 We expect VisIt_ running on Ubuntu Linux to produce the same images as it would running on Mac OSX. 
 We expect VisIt_ running in client-server mode to produce the same images as VisIt_ running entirely remotely.
 
-In many cases, we expect outputs produced by these alternative approaches to be
-nearly the same but not always bit-for-bit identical. 
+In many cases, we expect outputs produced by these alternative approaches to be nearly the same but not always bit-for-bit identical. 
 Minor variations such as single pixel shifts in position or slight variations in color are inevitable and ultimately unremarkable.
 
 When testing, it would be nice to be able to ignore variations in results attributable to these causes. 
@@ -206,8 +202,7 @@ On the other hand, we would like to be alerted to variations in results attribut
 
 To satisfy both of these goals, we use bit-for-bit identical matching to track the impact of changes to source code but *fuzzy* matching for anything else. 
 We maintain a set of several thousand version-controlled, baseline results computed for a specific, fixed *configuration and test mode* of VisIt_. 
-Nightly testing of key branches of development reveals any results that are not
-bit-for-bit identical to their baseline.
+Nightly testing of key branches of development reveals any results that are not bit-for-bit identical to their baseline.
 
 These *failures* are then corrected in one of two ways. 
 Either the new result is wrong and additional source code changes are required to ensure VisIt_ continues to produce the original baseline. 
