@@ -1,7 +1,7 @@
 .. _Data_Into_VisIt_PT:
 
 The PlainText file format
-=============================
+=========================
 
 Standard CSV (Comma Separated Values) files are read using the ``PlainText`` reader.
 
