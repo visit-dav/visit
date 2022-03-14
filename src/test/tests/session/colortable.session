@@ -6153,7 +6153,6 @@
                             </Object>
                         </Object>
                         <Field name="scalableAutoThreshold" type="int">2000000</Field>
-                        <Field name="scalableActivationMode" type="int">2</Field>
                         <Field name="compactDomainsAutoThreshold" type="int">256</Field>
                         <Field name="compactDomainsActivationMode" type="int">2</Field>
                         <Field name="notifyForEachRender" type="bool">false</Field>
