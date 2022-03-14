@@ -3,10 +3,9 @@
 #
 #  Test Case:  plaintext.py
 #
-#  Tests:      multiple curves from a CSV file
+#  Tests:      multiple curves from a CSV file without and with implicit X
 #              2D and 3D points with variables in a CSV file
 #              An array of data as a 2D regular grid
-#              A .visit file listing a bunch of arrays forming a 3D regular grid
 #
 #  Notes:
 #    - Code snippets from this file are literalinclude'd in our docs.

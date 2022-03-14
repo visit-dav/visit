@@ -123,14 +123,14 @@ Defining a single variable on a 2D uniform grid
 The data is interpreted as a node centered variable on a uniform mesh where the row and column indices define the X and Y coordinates.
 The rows represent values along the X direction and the rows get *stacked* in the Y direction.
 Each row further *down* in the file gets stacked *up*, one upon the other in the visualized result in VisIt_.
-This means that the row-by-row *downward* direction in the file is the same as the *upward* (positive Y) direction in the visualized result in VisIt_.
+This means that the row-by-row *downward* direction in the file listing is the same as the *upward* (positive Y) direction in the visualized result in VisIt_.
 
 The first line can be an optional list of variable names.
 The first column name will be used for the name of the variable.
 Other column names are ignored but nonetheless required to read the file properly. 
 The remaining lines consist of rows, where each row represents the values for a single Y coordinate.
 
-Here is an example of a file representing 3D points.
+Here is an example of a file listing representing 3D points.
 In this example, the values on each row are separated by spaces.
 
 .. literalinclude:: data_examples/array.csv
