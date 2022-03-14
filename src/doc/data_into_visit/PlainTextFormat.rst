@@ -57,7 +57,7 @@ Defining curves using row index for X coordinate
 ------------------------------------------------
 
 Here are the first 10 lines of an example of a file representing curves where the *abscissa* (e.g. x-coordinte) is implied by the row number (starting from 0) in the file.
-In this example, the values on each row are separated by spaces.
+In this example, the values on each row are separated by commas.
 
 .. literalinclude:: data_examples/curves.csv
    :lines: 1-10
@@ -159,4 +159,4 @@ and the resulting data plotted in VisIt_
 
 .. figure:: ../../../test/baseline/databases/plaintext/PlainText_2DArray.png
 
-Note that the redest part of the plot (e.g. highest numerical values in the data) appears in the upper right corner of the plot whereas the highest numerical values in the file data, displayed row-by-row appears in the *lower* right corner.
+Note that the reddest part of the plot (e.g. highest numerical values in the data) appears in the upper right corner of the plot whereas the highest numerical values in the file data row-by-row listing appears in the *lower* right corner.
