@@ -59,7 +59,7 @@ Defining curves using row index for X coordinate
 Here are the first 10 lines of an example of a file representing curves where the *abscissa* (e.g. x-coordinate) is implied by the row number (starting from 0) in the file.
 In this example, the values on each row are separated by commas.
 
-.. literalinclude:: data_examples/curves.csv
+.. literalinclude:: data_examples/curves_nox.csv
    :lines: 1-10
 
 Here is the Python script that created the file.
@@ -89,7 +89,7 @@ In this example, the values on each row are separated by spaces.
 
 Here are the first 10 lines of an example of a file representing 3D points.
 
-.. literalinclude:: data_examples/points.csv
+.. literalinclude:: data_examples/points.txt
    :lines: 1-10
 
 Here is the Python script that created the file.
@@ -133,7 +133,7 @@ The remaining lines consist of rows, where each row represents the values for a 
 Here is an example of a file listing representing 3D points.
 In this example, the values on each row are separated by spaces.
 
-.. literalinclude:: data_examples/array.csv
+.. literalinclude:: data_examples/array.txt
 
 Here is the Python script that created the file.
 
