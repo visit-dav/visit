@@ -17,7 +17,7 @@
 #    Kathleen Bonnell, Thu Aug 19 15:07:23 PDT 2004
 #    Added tests 4-7.
 #
-#    Kathleen Bonnell, Thu Nov 11 17:28:15 PST 2004 
+#    Kathleen Bonnell, Thu Nov 11 17:28:15 PST 2004
 #    Added tests 8-17.
 #
 #    Brad Whitlock, Thu Jul 21 15:44:05 PST 2005
@@ -29,6 +29,10 @@
 #
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Kathleen Biagas, Wed Feb 16 09:15:45 PST 2022
+#    Replace use of meshatts 'foregroundFlag' with meshColorSource.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -135,7 +139,7 @@ DrawPlots()
 Test("meshtype_point_13")
 
 # the next two not only test using poingSizeVar, but also DataSetVerifier which
-# will reduce the number of values in the var array to match the actual number 
+# will reduce the number of values in the var array to match the actual number
 # of points in the point mesh
 p.pointSize = 0.5
 p.pointSizeVarEnabled = 1
@@ -153,7 +157,7 @@ DeleteAllPlots()
 
 AddPlot("Mesh", "PointMesh")
 m = MeshAttributes()
-m.foregroundFlag = 0
+m.meshColorSource = m.MeshCustom
 m.meshColor = (0, 122, 200, 255)
 m.pointType = m.Box
 m.pointSize = 0.5

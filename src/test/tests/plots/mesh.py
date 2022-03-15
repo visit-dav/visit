@@ -11,7 +11,7 @@
 #
 #  Defect ID:  none
 #
-#  Programmer: Kathleen Bonnell 
+#  Programmer: Kathleen Bonnell
 #  Date:       September 03, 2003
 #
 #  Modifications:
@@ -28,9 +28,9 @@
 #    Jeremy Meredith, Tue May  4 12:41:49 PDT 2004
 #    Added test for unglyphed (i.e. GL_POINT) point meshes.
 #
-#    Kathleen Bonnell, Tue Nov  2 16:20:55 PST 2004 
+#    Kathleen Bonnell, Tue Nov  2 16:20:55 PST 2004
 #    Removed opaque-mode portion of mesh_point_01, as opaque-mode no longer
-#    applies to Mesh plots of Point meshes. 
+#    applies to Mesh plots of Point meshes.
 #
 #    Mark C. Miller, Tue Aug 19 17:31:29 PDT 2008
 #    Add code to permit the test to be run with compression as well.
@@ -42,7 +42,7 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 #
 #    Cyrus Harrison, Thu Mar 25 09:57:34 PDT 2010
-#    Added call(s) to DrawPlots() b/c of changes to the default plot state 
+#    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
 #    Kathleen Biagas, Wed Jun 10 17:39:23 PDT 2020
@@ -54,6 +54,10 @@
 #    topological dimension to 0, and data with mixed topology can still do
 #    point glyphing and changes point size.
 #
+#    Kathleen Biagas, Wed Feb 16 09:15:45 PST 2022
+#    Replace use of meshatts 'foregroundFlag', 'backgroundFlag' with
+#    'meshColorSource' and 'opaqueColorSource' respectively.
+#
 # ----------------------------------------------------------------------------
 
 
@@ -62,7 +66,7 @@ def TestCurve():
     OpenDatabase(silo_data_path("curv3d.silo"))
 
     AddPlot("Mesh", "curvmesh3d")
-    DrawPlots()    
+    DrawPlots()
 
     v = GetView3D()
     v.viewNormal = (0.37, 0.48, 0.79)
@@ -78,7 +82,7 @@ def TestCurve():
     # and add a PC Plot.
     m = MeshAttributes()
     m.lineStyle = 3
-    m.backgroundFlag = 0
+    m.opaqueColorSource = m.OpaqueCustom
     m.opaqueColor = (0, 122, 200, 255)
     SetPlotOptions(m)
     AddPlot("Pseudocolor", "u")
@@ -106,7 +110,7 @@ def TestPointMesh():
 
     DrawPlots()
     Test("mesh_point_01")
-   
+
     p.pointType = p.Icosahedron
     p.pointSize = 1.5
     SetPlotOptions(p)
@@ -114,10 +118,10 @@ def TestPointMesh():
     Test("mesh_point_02")
 
     DeleteActivePlots()
- 
+
     AddPlot("Mesh", "PointMesh")
     m = MeshAttributes()
-    m.foregroundFlag = 0
+    m.meshColorSource = m.MeshCustom
     m.meshColor = (0, 122, 200, 255)
     m.pointSize = 1.5
     m.pointType = m.Axis
@@ -198,7 +202,7 @@ def TestPointMesh():
     Test("mesh_point_11")
 
     m.pointType = m.Icosahedron
-    m.pointSize = 0.5 
+    m.pointSize = 0.5
     SetPlotOptions(m)
     Test("mesh_point_12")
 
@@ -212,7 +216,7 @@ def TestGlobe():
 
     AddPlot("Mesh", "mesh1")
     DrawPlots()
-    
+
     v = GetView3D()
     v.viewNormal = (1, 0, 0)
     v.focus = (0, 0, 0)
@@ -256,8 +260,8 @@ def TestGlobe():
     t.rotateAmount = 112
     SetOperatorOptions(t)
     DrawPlots()
-    
-    SetViewExtentsType("actual") 
+
+    SetViewExtentsType("actual")
     Test("mesh_globe_04")
 
     DeleteAllPlots()
@@ -287,11 +291,11 @@ def TestRect3d():
 
     DrawPlots()
 
-    SetViewExtentsType("actual") 
+    SetViewExtentsType("actual")
     v = GetView3D()
     v.viewNormal = (0.27, 0.27, 0.93)
     v.focus = (0.35, 0.15, 0.15)
-    v.viewUp = (-0.06, 0.96, -0.26) 
+    v.viewUp = (-0.06, 0.96, -0.26)
     v.parallelScale = 0.139692
     v.nearPlane = -0.28
     v.farPlane = 0.28
@@ -392,7 +396,7 @@ def TestRandomColor():
     DeleteAllPlots()
     CloseDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
     SetDefaultPlotOptions(savedMeshAttrs)
-    
+
 def TestCustomColor():
     TestSection("Testing custom color mode")
     OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
@@ -417,7 +421,7 @@ def TestCustomColor():
     Test("mesh_custom_color_01")
     DeleteAllPlots()
     CloseDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
-        
+
 def Main():
     TurnOffAllAnnotations()
     TestRandomColor()

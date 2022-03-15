@@ -1523,6 +1523,9 @@ PyHistogramAttributes_getattr(PyObject *self, char *name)
 
     // Try and handle legacy fields
 
+    //
+    //  Removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     bool lineStyleFound = false;
     if (strcmp(name, "lineStyle") == 0)
@@ -1616,6 +1619,9 @@ PyHistogramAttributes_setattr(PyObject *self, char *name, PyObject *args)
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
+        //
+        //  Removed in 3.0.0
+        //
         if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);

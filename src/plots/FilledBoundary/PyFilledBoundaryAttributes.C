@@ -1616,6 +1616,9 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
 
     // Try and handle legacy fields
 
+    //
+    // Removed in 2.13.0
+    //
     bool boundaryTypeFound = false;
     bool lineStyleFound = false;
     // boundaryType and it's possible enumerations
@@ -1647,6 +1650,10 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+    //
+
+    // Removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     else if (strcmp(name, "lineStyle") == 0)
     {
