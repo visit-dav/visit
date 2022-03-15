@@ -15,7 +15,7 @@
 #   so that this script can be improved in the future.
 #
 
-# To create your own modular file these 7 functions need to be implemented..
+# To create your own modular file these 13 functions need to be implemented..
 #filename: bv_<module>.sh
 #bv_<module>_initialize : Initialize any variables you may want to export
 #bv_<module>_enable : Enables the module
@@ -24,6 +24,12 @@
 #bv_<module>_ensure : Ensure the module has been downloaded and extracted properly. Set and check variables here..
 #bv_<module>_depends_on : What other modules does this module depend on. Example "adios" returns string "mxml"
 #bv_<module>_build : build the module
+#bv_<module>_print : TODO
+#bv_<module>_print_usage : TODO
+#bv_<module>_host_profile : TODO
+#bv_<module>_dry_run : TODO
+#bv_<module>_is_installed : TODO
+#bv_<module>_is_enabled : TODO
 
 # Then add the module name to bv_support/modules.xml under the appropriate
 # categories
@@ -35,6 +41,12 @@
 #4. bv_<module>_ensure runs to ensure module is setup properly and variables are initialized
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
 #6. bv_<module>_build builds the module
+#7. bv_<module>_print TODO
+#8. bv_<module>_print_usage TODO
+#9. bv_<module>_host_profile TODO
+#10. bv_<module>_dry_run TODO
+#11. bv_<module>_is_installed TODO
+#12. bv_<module>_is_enabled TODO
 
 export VISIT_VERSION=${VISIT_VERSION:-"3.2.2"}
 
