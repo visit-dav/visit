@@ -678,6 +678,21 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 }
 
 // ****************************************************************************
+//  Method: UnstructuredTopologyToVTKUnstructuredGrid
+//
+//  Purpose:
+//   Constructs a vtkUnstructuredGrid from a Blueprint topology and coordset
+//
+//  Arguments:
+//   n_coords:  Blueprint Coordset
+//   n_topo:    Blueprint Topology
+//
+//  Modifications:
+//    Justin Privitera Wed Mar 9 2022
+//    added logic to check if topology is polyhedral or polygonal, and, if so,
+//    transform it to a tetrahedral or triangular topology, respectively.
+//
+// ****************************************************************************
 vtkDataSet *
 UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
                                           const Node &n_topo)
