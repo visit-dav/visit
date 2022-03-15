@@ -2051,19 +2051,20 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
         return VectorAttributes_GetAnimationStep(self, NULL);
 
     // Try and handle legacy fields in VectorAttributes
+
+    //
+    // Removed in 3.2.0
+    //
     if(strcmp(name, "colorByMag") == 0)
     {
         VectorAttributesObject *vectorObj = (VectorAttributesObject *)self;
         bool colorByMagnitude = vectorObj->data->GetColorByMagnitude();
         return PyInt_FromLong(colorByMagnitude?1L:0L);
     }
-    if(strcmp(name, "highQuality") == 0)
-    {
-        VectorAttributesObject *vectorObj = (VectorAttributesObject *)self;
-        bool highQuality = vectorObj->data->GetGeometryQuality() == VectorAttributes::High;
-        return PyInt_FromLong(highQuality?1L:0L);
-    }
 
+    //
+    // Removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     bool lineStyleFound = false;
     if (strcmp(name, "lineStyle") == 0)
@@ -2174,6 +2175,10 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if(obj == &NULL_PY_OBJ)
     {
         VectorAttributesObject *VectorObj = (VectorAttributesObject *)self;
+
+        //
+        // Removed in 3.2.0
+        //
         if(strcmp(name, "colorByMag") == 0)
         {
             int ival = -1;
@@ -2189,21 +2194,9 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
             Py_INCREF(Py_None);
             obj = Py_None;
         }
-        if(strcmp(name, "highQuality") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'highQuality' is obsolete. Use 'geometryQuality'.", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                    VectorObj->data->SetGeometryQuality(VectorAttributes::Fast);
-                else
-                    VectorObj->data->SetGeometryQuality(VectorAttributes::High);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
+        //
+        // Removed in 3.0.0
+        //
         if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);

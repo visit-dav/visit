@@ -59,6 +59,9 @@ Prefix:
 Postfix:
     // Try and handle legacy fields
 
+    //
+    // Removed in 3.0.0
+    //
     // bondLineStyle and it's possible enumerations
     bool bondLineStyleFound = false;
     if (strcmp(name, "bondLineStyle") == 0)
@@ -97,6 +100,9 @@ Postfix:
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
+        //
+        // Removed in 3.0.0
+        //
         if(strcmp(name, "bondLineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'bondLineStyle' is obsolete. It is being ignored.", 3);
