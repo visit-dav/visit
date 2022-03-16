@@ -1462,6 +1462,9 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
 
     // Try and handle legacy fields
 
+    //
+    //  Changed in 2.13.0 to be internal
+    //
     // subsetType and it's possible enumerations
     // these should have been internal all along ...
     if (strcmp(name, "subsetType") == 0)
@@ -1489,12 +1492,18 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
         PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
+    //
+    //  Removed in 2.13.0
+    //
     // filledFlag -- hasn't been used in a LONG time
     else if (strcmp(name, "filledFlag") == 0)
     {
         PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
+    //
+    //  Removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     else if (strcmp(name, "lineStyle") == 0)
     {
@@ -1580,12 +1589,18 @@ PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
+        //
+        //  Removed in 2.13.0
+        //
         if(strcmp(name, "filledFlag") == 0)
         {
             PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
+        //
+        //  Changed in 2.13.0 to be internal
+        //
         // internal only, shouldn't be set by scripts
         else if(strcmp(name, "subsetType") == 0)
         {
@@ -1593,6 +1608,9 @@ PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
             Py_INCREF(Py_None);
             obj = Py_None;
         }
+        //
+        //  Removed in 3.0.0
+        //
         else if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
