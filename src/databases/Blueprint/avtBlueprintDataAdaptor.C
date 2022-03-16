@@ -692,6 +692,11 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 //    added logic to check if topology is polyhedral or polygonal, and, if so,
 //    transform it to a tetrahedral or triangular topology, respectively.
 //
+//    Justin Privitera Tue Mar 15 18:01:14 PDT 2022
+//    now this function adds original element ids (avtOriginalCellNumbers)
+//    to the vtkDataSet it returns, if applicable (if the mesh was polyhedral
+//    or polygonal and was transformed; see above modification comment).
+//
 // ****************************************************************************
 vtkDataSet *
 UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
@@ -701,6 +706,9 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
     const Node *topo_ptr = &n_topo;
 
     Node res; // Used as a destination for the generate sides call
+
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    vtkUnsignedIntArray *oca = vtkUnsignedIntArray::New();
 
     if (n_topo.has_path("elements/shape"))
     {
@@ -715,16 +723,43 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
                 s2dmap,
                 d2smap);
 
-            coords_ptr = res.fetch_ptr("coordsets/" + n_topo["coordset"].as_string());
+            // Q? this is messy, and probably unnecessary, but
+            //    how do I get around the fact that I don't know
+            //    the type? Or do I? Will the type always be the same?
+            //    digging around the original generate_sides makes 
+            //    me think no
+            d2smap["values"].to_int32_array(d2smap["values_typed"]);
+
+            // Q? is it acceptable to just attach oca to ugrid inside 
+            //    this conditional? Do we want all meshes to have this?
+            //    I figured no.
+            oca->SetName("avtOriginalCellNumbers");
+            oca->SetNumberOfComponents(2);
+            ugrid->GetCellData()->AddArray(oca);
+            ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+
+            int num_new_shapes = d2smap["values_typed"].dtype().number_of_elements();
+            int32 *orig_elem_ids = d2smap["values_typed"].value();
+            for (int i = 0; i < num_new_shapes; i ++)
+            {
+                unsigned int ocdata[2] = {static_cast<unsigned int>(0), 
+                                          static_cast<unsigned int>(orig_elem_ids[i])};
+                oca->InsertNextTypedTuple(ocdata);
+            }
+
+            coords_ptr = res.fetch_ptr(
+                "coordsets/" + n_topo["coordset"].as_string());
             topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
         }
     }
 
+    // The coords could be changed in the call above, so this must happen
+    // after the conditionals
     vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr);
 
-    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->SetPoints(points);
     points->Delete();
+    oca->Delete();
 
     //
     // Now, add explicit topology
