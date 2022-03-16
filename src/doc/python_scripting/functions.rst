@@ -1517,11 +1517,13 @@ return type : CLI_return_t
 
     DefineArrayExpression creates new array variables.
     Array variables are a collection of scalar variables that are grouped together.
-    Currently there are no plots that take array variables, but they can be used in queries, such as the "XRay Image" query or used as a pick variable that creates a Histogram plot of the array variable for a specific zone.
+    All the variables must have the same centering and only scalar variables are supported, for example, no vector, tensor or material variables.
+    Array variables are used in the Label plot.
 
     The variableName argument is a string that contains the name of the new variable.
     You can pass the name of an existing expression if you want to provide a new expression definition.
-    The expression argument is a string that contains the definition of the new variable in terms of `built-in expressions <../using_visit/Quantitative/Expressions.html#built-in-expressions>`_ and pre-existing variable names using VisIt_'s `expression grammar <../using_visit/Quantitative/Expressions.html#expression-grammar>`_.
+    The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
 
 **Example:**
@@ -1532,6 +1534,10 @@ return type : CLI_return_t
   OpenDatabase("/usr/gapps/visit/data/curv3d.silo")
   DefineScalarExpression("d1", 'recenter(d, "zonal")')
   DefineScalarExpression("p1", 'recenter(p, "zonal")')
+  # Define an 2 array variables from 2 scalars. In both
+  # cases the same scalar is being used twice since the
+  # file doesn't have a lot of scalars. Normally, the
+  # scalars would be different.
   DefineArrayExpression("da", "array_compose(d1, d1)")
   DefineArrayExpression("pa", "array_compose(p1, p1)")
   # Create a plot to use for performing an XRay Image query.
@@ -1579,7 +1585,8 @@ return type : CLI_return_t
 
     The variableName argument is a string that contains the name of the new variable.
     You can pass the name of an existing expression if you want to provide a new expression definition.
-    The expression argument is a string that contains the definition of the new variable in terms of `built-in expressions <../using_visit/Quantitative/Expressions.html#built-in-expressions>`_ and pre-existing variable names using VisIt_'s `expression grammar <../using_visit/Quantitative/Expressions.html#expression-grammar>`_.
+    The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
 
 **Example:**
@@ -1588,6 +1595,7 @@ return type : CLI_return_t
 
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/lines.curve")
+  # Define an expression to multiply the y value of the curve by 2.
   DefineCurveExpression("myvar", "2 * curve1")
   # Plot the curve variable.
   AddPlot("Curve", "myvar")
@@ -1715,7 +1723,8 @@ return type : CLI_return_t
 
     The variableName argument is a string that contains the name of the new variable.
     You can pass the name of an existing expression if you want to provide a new expression definition.
-    The expression argument is a string that contains the definition of the new variable in terms of `built-in expressions <../using_visit/Quantitative/Expressions.html#built-in-expressions>`_ and pre-existing variable names using VisIt_'s `expression grammar <../using_visit/Quantitative/Expressions.html#expression-grammar>`_.
+    The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
 
 **Example:**
@@ -1781,10 +1790,16 @@ return type : CLI_return_t
 
     DefineTensorExpression creates new tensor variables.
     Tensor variables define a tensor field over a mesh and are used by the Tensor plot.
+    A 2D tensor would consist of a vector of 2 2-component vectors.
+    A 3D tensor would consist of a vector of 3 3-component vectors.
+    A symmetric tensor would need to provide 4 or 9 components even though a 2D tensor has 3 unique values and a 3D tensor has 6 unique values.
+    For a 2D symmetric tensor, the components would be supplied as {{Sxx, Syx}, {Syx, Syy}}.
+    For a 3D symmetric tensor, the components would be supplied as {{Sxx, Syx, Szx}, {Syx, Syy, Szy}, {Szx, Szy, Szz}}.
 
     The variableName argument is a string that contains the name of the new variable.
     You can pass the name of an existing expression if you want to provide a new expression definition.
-    The expression argument is a string that contains the definition of the new variable in terms of `built-in expressions <../using_visit/Quantitative/Expressions.html#built-in-expressions>`_ and pre-existing variable names using VisIt_'s `expression grammar <../using_visit/Quantitative/Expressions.html#expression-grammar>`_.
+    The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
 
 **Example:**
@@ -1823,10 +1838,13 @@ return type : CLI_return_t
 
     DefineVectorExpression creates new vector variables.
     Vector variables define a vector field over a mesh and are used by the Vector plot.
+    A 2D vector would consist of 2 components.
+    A 3D vector would consist of 3 components.
 
     The variableName argument is a string that contains the name of the new variable.
     You can pass the name of an existing expression if you want to provide a new expression definition.
-    The expression argument is a string that contains the definition of the new variable in terms of `built-in expressions <../using_visit/Quantitative/Expressions.html#built-in-expressions>`_ and pre-existing variable names using VisIt_'s `expression grammar <../using_visit/Quantitative/Expressions.html#expression-grammar>`_.
+    The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
 
 **Example:**
