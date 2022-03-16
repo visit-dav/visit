@@ -213,6 +213,13 @@ def main():
     #
     OpenMDServer("localhost")
 
+    #
+    # Make sure curve plots are without labels
+    #
+    ca = CurveAttributes()
+    ca.showLabels = 0
+    SetDefaultPlotOptions(ca)
+
     TestCSVCurves()
 
     TestCSVCurvesNoX()
