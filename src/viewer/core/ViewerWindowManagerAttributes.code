@@ -1,8 +1,89 @@
 Initialization: actionConfigurations
     // Initialize the action groups.
     DataNode *parentNode = new DataNode("parent");
-    parentNode->AddNode(new DataNode("ViewerWindowManagerAttributes"));
-    ProcessOldVersions(parentNode, 0);
+    DataNode *vwmaNode = new DataNode("ViewerWindowManagerAttributes");
+    parentNode->AddNode(vwmaNode);
+
+    DataNode *actionNode = new DataNode("ActionConfigurations");
+    vwmaNode->AddNode(actionNode);
+
+    // Create an action group for the mode.
+    ActionGroupDescription modeGroup("Mode");
+    AddActionGroup(actionNode, modeGroup);
+
+    // Create an action group for the tools.
+    ActionGroupDescription toolGroup("Tools");
+    AddActionGroup(actionNode, toolGroup);
+
+    // Create an action group that contains window actions.
+    ActionGroupDescription windowGroup("Window");
+    windowGroup.AddAction(ViewerRPC::SetActiveWindowRPC);
+    windowGroup.AddAction(ViewerRPC::AddWindowRPC);
+    windowGroup.AddAction(ViewerRPC::CloneWindowRPC);
+    windowGroup.AddAction(ViewerRPC::DeleteWindowRPC);
+    windowGroup.AddAction(ViewerRPC::SetWindowLayoutRPC);
+    windowGroup.AddAction(ViewerRPC::ToggleSpinModeRPC);
+    windowGroup.AddAction(ViewerRPC::InvertBackgroundRPC);
+    AddActionGroup(actionNode, windowGroup);
+
+    // Create an action group that contains the view actions.
+    ActionGroupDescription viewGroup("View");
+    viewGroup.AddAction(ViewerRPC::TogglePerspectiveViewRPC);
+    viewGroup.AddAction(ViewerRPC::ResetViewRPC);
+    viewGroup.AddAction(ViewerRPC::RecenterViewRPC);
+    viewGroup.AddAction(ViewerRPC::UndoViewRPC);
+    viewGroup.AddAction(ViewerRPC::RedoViewRPC);
+    viewGroup.AddAction(ViewerRPC::ToggleFullFrameRPC);
+    viewGroup.AddAction(ViewerRPC::SaveViewRPC);
+    viewGroup.AddAction(ViewerRPC::ChooseCenterOfRotationRPC);
+    AddActionGroup(actionNode, viewGroup);
+
+    // Create an action group that contains the animation options.
+    ActionGroupDescription animationGroup("Animation");
+    animationGroup.AddAction(ViewerRPC::TimeSliderPreviousStateRPC);
+    animationGroup.AddAction(ViewerRPC::AnimationReversePlayRPC);
+    animationGroup.AddAction(ViewerRPC::AnimationStopRPC);
+    animationGroup.AddAction(ViewerRPC::AnimationPlayRPC);
+    animationGroup.AddAction(ViewerRPC::TimeSliderNextStateRPC);
+    AddActionGroup(actionNode, animationGroup);
+
+    // Create an action group that contains the operator actions.
+    ActionGroupDescription operatorGroup("Operators");
+    operatorGroup.SetVisible(false);
+    operatorGroup.AddAction(ViewerRPC::AddOperatorRPC);
+    operatorGroup.AddAction(ViewerRPC::RemoveLastOperatorRPC);
+    operatorGroup.AddAction(ViewerRPC::RemoveAllOperatorsRPC);
+    AddActionGroup(actionNode, operatorGroup);
+
+    // Create an action group that contains the plot actions.
+    ActionGroupDescription plotGroup("Plots");
+    plotGroup.SetVisible(false);
+    plotGroup.AddAction(ViewerRPC::AddPlotRPC);
+    plotGroup.AddAction(ViewerRPC::DrawPlotsRPC);
+    plotGroup.AddAction(ViewerRPC::HideActivePlotsRPC);
+    plotGroup.AddAction(ViewerRPC::DeleteActivePlotsRPC);
+    plotGroup.AddAction(ViewerRPC::CopyActivePlotsRPC);
+    plotGroup.AddAction(ViewerRPC::SetPlotFollowsTimeRPC);
+    AddActionGroup(actionNode, plotGroup);
+
+    // Create an action group that contains the clear actions.
+    ActionGroupDescription clearGroup("Clear");
+    clearGroup.SetVisible(true);
+    clearGroup.AddAction(ViewerRPC::ClearWindowRPC);
+    clearGroup.AddAction(ViewerRPC::ClearAllWindowsRPC);
+    clearGroup.AddAction(ViewerRPC::ClearPickPointsRPC);
+    clearGroup.AddAction(ViewerRPC::ClearRefLinesRPC);
+    AddActionGroup(actionNode, clearGroup);
+
+    // Create an action group that contains the lock actions.
+    ActionGroupDescription lockGroup("Lock");
+    lockGroup.SetVisible(true);
+    lockGroup.AddAction(ViewerRPC::ToggleLockViewModeRPC);
+    lockGroup.AddAction(ViewerRPC::ToggleLockTimeRPC);
+    lockGroup.AddAction(ViewerRPC::ToggleLockToolsRPC);
+    lockGroup.AddAction(ViewerRPC::TurnOffAllLocksRPC);
+    AddActionGroup(actionNode, lockGroup);
+
     SetFromNode(parentNode);
     delete parentNode;
 
@@ -126,249 +207,6 @@ ViewerWindowManagerAttributes::SetFromNode(DataNode *parentNode)
     //
     if((node = searchNode->GetNode("largeIcons")) != 0)
         SetLargeIcons(node->AsBool());
-}
-
-Function: ProcessOldVersions
-Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
-Definition:
-// ****************************************************************************
-// Method: ViewerWindowManagerAttributes::ProcessOldVersions
-//
-// Purpose:
-//   This method creates modifies a DataNode representation of the object
-//   so it conforms to the newest representation of the object, which can
-//   can be read back in.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 21 10:37:49 PDT 2003
-//
-// Modifications:
-//   Kathleen Bonnell, Thu May 15 13:13:52 PDT 2003
-//   Added ToggleFullFrameRPC to the viewGroup for 1.1.5.
-//
-//   Brad Whitlock, Mon Jun 23 16:39:49 PST 2003
-//   I added the Clear action group for 1.1.6.
-//
-//   Brad Whitlock, Mon Dec 29 15:00:03 PST 2003
-//   I added new actions.
-//
-//   Brad Whitlock, Sun Jan 25 19:48:23 PST 2004
-//   I renamed some actions.
-//
-//   Brad Whitlock, Fri Mar 18 17:39:05 PST 2005
-//   Added a "Lock" action group.
-//
-//   Brad Whitlock, Tue Mar 7 18:14:53 PST 2006
-//   Added redo view.
-//
-//   Brad Whitlock, Wed Jan 23 10:58:27 PST 2008
-//   Added "Copy active plots", "Disconnect from time slider".
-//
-//   Jeremy Meredith, Fri Feb 15 15:01:48 EST 2008
-//   Added lock tools.
-//
-//   Hank Childs, Sat Mar 13 18:43:02 PST 2010
-//   Remove reference to toggling bounding box mode.
-//
-// ****************************************************************************
-
-void
-ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
-    const char *configVersion)
-{
-    if(parentNode == 0)
-        return;
-
-    DataNode *searchNode = parentNode->GetNode("ViewerWindowManagerAttributes");
-    if(searchNode == 0)
-        return;
-
-    // Try and find the ActionConfigurations node. If there is no such
-    // node, create one.
-    DataNode *actionNode = searchNode->GetNode("ActionConfigurations");
-    if(actionNode == 0)
-    {
-        actionNode = new DataNode("ActionConfigurations");
-        searchNode->AddNode(actionNode);
-    }
-
-    //
-    // Add actions that are new in 1.1
-    //
-    if(VersionLessThan(configVersion, "1.1"))
-    {
-        // Create an action group for the mode.
-        ActionGroupDescription modeGroup("Mode");
-        AddActionGroup(actionNode, modeGroup);
-
-        // Create an action group for the tools.
-        ActionGroupDescription toolGroup("Tools");
-        AddActionGroup(actionNode, toolGroup);
-
-        // Create an action group that contains window actions.
-        ActionGroupDescription windowGroup("Window");
-        windowGroup.AddAction(ViewerRPC::SetActiveWindowRPC);
-        windowGroup.AddAction(ViewerRPC::AddWindowRPC);
-        windowGroup.AddAction(ViewerRPC::CloneWindowRPC);
-        windowGroup.AddAction(ViewerRPC::DeleteWindowRPC);
-        windowGroup.AddAction(ViewerRPC::SetWindowLayoutRPC);
-        windowGroup.AddAction(ViewerRPC::ToggleSpinModeRPC);
-        windowGroup.AddAction(ViewerRPC::InvertBackgroundRPC);
-        AddActionGroup(actionNode, windowGroup);
-
-        // Create an action group that contains the view actions.
-        ActionGroupDescription viewGroup("View");
-        viewGroup.AddAction(ViewerRPC::TogglePerspectiveViewRPC);
-        viewGroup.AddAction(ViewerRPC::ToggleLockViewModeRPC);
-        viewGroup.AddAction(ViewerRPC::ResetViewRPC);
-        viewGroup.AddAction(ViewerRPC::RecenterViewRPC);
-        viewGroup.AddAction(ViewerRPC::UndoViewRPC);
-        AddActionGroup(actionNode, viewGroup);
-
-        // Create an action group that contains the animation options.
-        ActionGroupDescription animationGroup("Animation");
-        animationGroup.AddAction(ViewerRPC::TimeSliderPreviousStateRPC);
-        animationGroup.AddAction(ViewerRPC::AnimationReversePlayRPC);
-        animationGroup.AddAction(ViewerRPC::AnimationStopRPC);
-        animationGroup.AddAction(ViewerRPC::AnimationPlayRPC);
-        animationGroup.AddAction(ViewerRPC::TimeSliderNextStateRPC);
-        AddActionGroup(actionNode, animationGroup);
-    }
-
-    //
-    // Add actions that are new in 1.1.1
-    //
-    if(VersionLessThan(configVersion, "1.1.1"))
-    {
-        AddAction(actionNode, "View", ViewerRPC::SaveViewRPC);
-    }
-
-    //
-    // Add actions that are new in 1.1.2
-    //
-    if(VersionLessThan(configVersion, "1.1.2"))
-    {
-        // Create an action group that contains the operator actions.
-        ActionGroupDescription operatorGroup("Operators");
-        operatorGroup.SetVisible(false);
-        operatorGroup.AddAction(ViewerRPC::AddOperatorRPC);
-        operatorGroup.AddAction(ViewerRPC::RemoveLastOperatorRPC);
-        operatorGroup.AddAction(ViewerRPC::RemoveAllOperatorsRPC);
-        AddActionGroup(actionNode, operatorGroup);
-
-        // Create an action group that contains the operator actions.
-        ActionGroupDescription plotGroup("Plots");
-        plotGroup.SetVisible(false);
-        plotGroup.AddAction(ViewerRPC::AddPlotRPC);
-        plotGroup.AddAction(ViewerRPC::DrawPlotsRPC);
-        plotGroup.AddAction(ViewerRPC::HideActivePlotsRPC);
-        plotGroup.AddAction(ViewerRPC::DeleteActivePlotsRPC);
-        AddActionGroup(actionNode, plotGroup);
-    }
-
-    //
-    // Add actions that are new in 1.1.5
-    //
-    if(VersionLessThan(configVersion, "1.1.5"))
-    {
-        AddAction(actionNode, "View", ViewerRPC::ToggleFullFrameRPC);
-    }
-
-    //
-    // Add actions that are new in 1.1.6
-    //
-    if(VersionLessThan(configVersion, "1.1.6"))
-    {
-        ActionGroupDescription clearGroup("Clear");
-        clearGroup.SetVisible(true);
-        clearGroup.AddAction(ViewerRPC::ClearWindowRPC);
-        clearGroup.AddAction(ViewerRPC::ClearAllWindowsRPC);
-        clearGroup.AddAction(ViewerRPC::ClearPickPointsRPC);
-        clearGroup.AddAction(ViewerRPC::ClearRefLinesRPC);
-        AddActionGroup(actionNode, clearGroup);
-
-        // Remove ClearWindowRPC from the Window action group.
-        RemoveActionFromNode(actionNode, "Window",
-                             ViewerRPC::ClearWindowRPC);
-    }
-
-    //
-    // Add actions that are new in 1.3
-    //
-    if(VersionLessThan(configVersion, "1.3"))
-    {
-        AddAction(actionNode, "View", ViewerRPC::ChooseCenterOfRotationRPC);
-    }
-
-    //
-    // Add actions that are new in 1.4.3
-    //
-    if(VersionLessThan(configVersion, "1.4.3"))
-    {
-        // Remove "lock view" from the View group and make a new "Lock" group.
-        RemoveActionFromNode(actionNode, "View", "ToggleLockViewModeRPC");
-        ActionGroupDescription lockGroup("Lock");
-        lockGroup.SetVisible(true);
-        lockGroup.AddAction(ViewerRPC::ToggleLockViewModeRPC);
-        lockGroup.AddAction(ViewerRPC::ToggleLockTimeRPC);
-        AddActionGroup(actionNode, lockGroup);
-    }
-
-    // Add actions that are new in 1.5.2.
-    if(VersionLessThan(configVersion, "1.5.2"))
-    {
-        // Remove some view actions so we can add RedoView and have it be
-        // next to UndoView in the list of actions. Then re-add the removed
-        // view actions so we don't lose them,
-        RemoveActionFromNode(actionNode, "View", ViewerRPC::SaveViewRPC);
-        RemoveActionFromNode(actionNode, "View", ViewerRPC::ChooseCenterOfRotationRPC);
-        RemoveActionFromNode(actionNode, "View", ViewerRPC::ToggleFullFrameRPC);
-        AddAction(actionNode, "View", ViewerRPC::RedoViewRPC);
-        AddAction(actionNode, "View", ViewerRPC::ToggleFullFrameRPC);
-        AddAction(actionNode, "View", ViewerRPC::SaveViewRPC);
-        AddAction(actionNode, "View", ViewerRPC::ChooseCenterOfRotationRPC);
-    }
-
-    // Add actions that are new in 1.8.0
-    if(VersionLessThan(configVersion, "1.8.0"))
-    {
-        AddAction(actionNode, "Plots", ViewerRPC::CopyActivePlotsRPC);
-    }
-
-    // Add actions that are new in 1.9.0
-    if(VersionLessThan(configVersion, "1.9.0"))
-    {
-        AddAction(actionNode, "Plots", ViewerRPC::SetPlotFollowsTimeRPC);
-        AddAction(actionNode, "Lock", ViewerRPC::ToggleLockToolsRPC);
-        AddAction(actionNode, "Lock", ViewerRPC::TurnOffAllLocksRPC);
-    }
-
-    // Add actions that are new in 1.10.0
-    if(VersionLessThan(configVersion, "1.10.0"))
-    {
-        // Make sure to add the "lock tools" button to the Lock group.
-        RemoveActionFromNode(actionNode, "Lock", "ToggleLockToolsRPC");
-        RemoveActionFromNode(actionNode, "Lock", "TurnOffAllLocksRPC");
-        AddAction(actionNode, "Lock", ViewerRPC::ToggleLockToolsRPC);
-        AddAction(actionNode, "Lock", ViewerRPC::TurnOffAllLocksRPC);
-    }
-
-    //
-    // Remove all of the animation actions and then re-add them with
-    // the new names in the right order.
-    //
-    RemoveActionFromNode(actionNode, "Animation", "TimeSliderPreviousStateRPC");
-    RemoveActionFromNode(actionNode, "Animation", "AnimationPreviousFrameRPC");
-    RemoveActionFromNode(actionNode, "Animation", "TimeSliderNextStateRPC");
-    RemoveActionFromNode(actionNode, "Animation", "AnimationNextFrameRPC");
-    RemoveActionFromNode(actionNode, "Animation", "AnimationStopRPC");
-    RemoveActionFromNode(actionNode, "Animation", "AnimationReversePlayRPC");
-    RemoveActionFromNode(actionNode, "Animation", "AnimationPlayRPC");
-    AddAction(actionNode, "Animation", ViewerRPC::TimeSliderPreviousStateRPC);
-    AddAction(actionNode, "Animation", ViewerRPC::AnimationReversePlayRPC);
-    AddAction(actionNode, "Animation", ViewerRPC::AnimationStopRPC);
-    AddAction(actionNode, "Animation", ViewerRPC::AnimationPlayRPC);
-    AddAction(actionNode, "Animation", ViewerRPC::TimeSliderNextStateRPC);
 }
 
 Function: RemoveActionFromNode
