@@ -4972,6 +4972,10 @@ ViewerWindow::ResetView2d()
 //    Eric Brugger, Wed Jan  8 16:52:11 PST 2014
 //    I added a multi resolution display capability for 3d.
 //
+//    Kathleen Biagas, Thu Mar 17, 2022
+//    Changed '+=' to '=' when setting z-focus for Flythrough.
+//    Fixes bug where Multiple calls to ResetView made the plot disappear.
+//
 // ****************************************************************************
 
 void
@@ -5062,7 +5066,7 @@ ViewerWindow::ResetView3d()
     view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
     if (navigationMode == InteractorAttributes::Flythrough)
     {
-        view3D.focus[2] += (1.0 - 1.0 / 20.) * distance;
+        view3D.focus[2] = (1.0 - 1.0 / 20.) * distance;
     }
     else
     {
@@ -5333,6 +5337,9 @@ ViewerWindow::AdjustView3d(const double *limits)
 //    the center of rotation to handle the case where the navigation mode
 //    is dolly.
 //
+//    Kathleen Biagas, Thu Mar 17, 2022
+//    Changed '+=' to '=' when setting z-focus for Flythrough.
+//
 // ****************************************************************************
 
 void
@@ -5392,7 +5399,7 @@ ViewerWindow::SetInitialView3d()
     view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
     if (navigationMode == InteractorAttributes::Flythrough)
     {
-        view3D.focus[2] += (1.0 - 1.0 / 20.) * distance;
+        view3D.focus[2] = (1.0 - 1.0 / 20.) * distance;
     }
     else
     {
