@@ -4,7 +4,10 @@
 
 import os, sys, tarfile
 
-def usage(msg=""):
+#
+# Output a usage message with optional error messag
+#
+def usage(errmsg=""):
     print(\
 """
 %s
@@ -21,7 +24,7 @@ Simple xz archiving tool using Python 3 tarfile module:
     
     More advanced archiving and compression operations are likely
     possible using your platform's native tooling.
-"""%("***%s***\n"%msg if msg else "")
+"""%("***Error***: %s\n"%errmsg if errmsg else "")
 )
     sys.exit(1)
 
