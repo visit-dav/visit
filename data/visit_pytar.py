@@ -11,7 +11,7 @@ def usage(errmsg=""):
     print(\
 """
 %s
-Simple xz archiving tool using Python 3 tarfile module:
+Usage: Simple xz archiver using Python 3 tarfile module:
 
     Create: visit_pytar c <archive> <input dir>
     List:   visit_pytar t <archive>
