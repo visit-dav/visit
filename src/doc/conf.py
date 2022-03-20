@@ -6,8 +6,10 @@
 
 # -- Path setup --------------------------------------------------------------
 
+# Attempt add_css_file only if the version of Sphinx actually supports it
 def setup(app):
-    app.add_css_file('custom.css')
+    if hasattr(app, 'add_css_file'):
+        app.add_css_file('custom.css')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -35,10 +37,14 @@ release = '3.2.2'
 # ones.
 extensions = ['sphinx.ext.mathjax']
 
+# Force installation of any special stuff in the RTD virtual machine instance
+# needed to support any custom extensions.
 if os.environ.get('READTHEDOCS'):
     from subprocess import call
     call(['pip', 'install', 'sphinx-notfound-page'])
     extensions.append('notfound.extension')
+    call(['python', '-m', 'pip', 'install', 'sphinx_lfs_content'])
+    extensions.append('sphinx_lfs_content')
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:

@@ -2164,25 +2164,10 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
 
 
     // Try and handle legacy fields in CurveAttributes
-    if(strcmp(name, "cycleColors") == 0)
-    {
-        CurveAttributesObject *curveObj = (CurveAttributesObject *)self;
-        bool cycleColors = curveObj->data->GetCurveColorSource() == CurveAttributes::Custom;
-        return PyInt_FromLong(cycleColors?1L:0L);
-    }
-    // Try and handle legacy fields in CurveAttributes
-    if(strcmp(name, "color") == 0)
-    {
-        return CurveAttributes_GetCurveColor(self, NULL);
-    }
-    if(strcmp(name, "RenderAsLines") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    if(strcmp(name, "RenderAsPoints") == 0)
-    {
-        return PyInt_FromLong(1L);
-    }
+
+    //
+    // removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     bool lineStyleFound = false;
     if (strcmp(name, "lineStyle") == 0)
@@ -2293,44 +2278,10 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if(obj == &NULL_PY_OBJ)
     {
         CurveAttributesObject *CurveObj = (CurveAttributesObject *)self;
-        if(strcmp(name, "color") == 0)
-            obj = CurveAttributes_SetCurveColor(self, args);
-        if(strcmp(name, "cycleColors") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'cycleColors' is obsolete. Use 'curveColor' set to 'Cycle'", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                    CurveObj->data->SetCurveColorSource(CurveAttributes::Custom);
-                else
-                    CurveObj->data->SetCurveColorSource(CurveAttributes::Cycle);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        if(strcmp(name, "renderMode") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'renderMode' is obsolete. Use 'showLines' or 'showPoints'", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                {
-                    CurveObj->data->SetShowLines(true);
-                    CurveObj->data->SetShowPoints(false);
-                }
-                else
-                {
-                    CurveObj->data->SetShowLines(false);
-                    CurveObj->data->SetShowPoints(true);
-                }
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
+
+        //
+        // removed in 3.0.0
+        //
         if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);

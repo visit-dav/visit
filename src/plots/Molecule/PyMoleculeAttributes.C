@@ -1640,6 +1640,9 @@ PyMoleculeAttributes_getattr(PyObject *self, char *name)
 
     // Try and handle legacy fields
 
+    //
+    // Removed in 3.0.0
+    //
     // bondLineStyle and it's possible enumerations
     bool bondLineStyleFound = false;
     if (strcmp(name, "bondLineStyle") == 0)
@@ -1737,6 +1740,9 @@ PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
+        //
+        // Removed in 3.0.0
+        //
         if(strcmp(name, "bondLineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'bondLineStyle' is obsolete. It is being ignored.", 3);

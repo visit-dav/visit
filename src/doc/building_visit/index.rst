@@ -19,3 +19,4 @@ This chapter describes how to build VisIt_, starting with the most simple case a
     BuildingOnWindows/index
     BuildingOnMac/index
     Spack
+    Building_Directly_With_CMake

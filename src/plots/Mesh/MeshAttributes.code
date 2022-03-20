@@ -3,19 +3,10 @@ Code: PyMeshAttributes_getattr
 Prefix:
 Postfix:
     // Try and handle legacy fields in MeshAttributes
-    if(strcmp(name, "backgroundFlag") == 0)
-    {
-        MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
-        bool backgroundFlag = meshObj->data->GetOpaqueColorSource() == MeshAttributes::Background;
-        return PyInt_FromLong(backgroundFlag?1L:0L);
-    }
-    else if(strcmp(name, "foregroundFlag") == 0)
-    {
-        MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
-        bool foregroundFlag = meshObj->data->GetMeshColorSource() == MeshAttributes::Foreground;
-        return PyInt_FromLong(foregroundFlag?1L:0L);
-    }
 
+    //
+    // Removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     bool lineStyleFound = false;
     if (strcmp(name, "lineStyle") == 0)
@@ -54,37 +45,10 @@ Postfix:
     if(obj == &NULL_PY_OBJ)
     {
         MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
-        if(strcmp(name, "backgroundFlag") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'backgroundFlag' is obsolete. Use 'opaqueColor'.", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                    meshObj->data->SetOpaqueColorSource(MeshAttributes::OpaqueCustom);
-                else 
-                    meshObj->data->SetOpaqueColorSource(MeshAttributes::Background);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "foregroundFlag") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Use 'meshColor'.", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                    meshObj->data->SetMeshColorSource(MeshAttributes::MeshCustom);
-                else
-                    meshObj->data->SetMeshColorSource(MeshAttributes::Foreground);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "lineStyle") == 0)
+        //
+        // Removed in 3.0.0
+        //
+        if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
@@ -161,6 +125,8 @@ Definition:
 // Creation:   Fri Mar 12 09:33:52 PST 2010
 //
 // Modifications:
+//   Kathleen Biagas, Tue Feb 15 15:55:04 PST 2022
+//   Removed processing versions older than 2.10.0.
 //
 // ****************************************************************************
 #include <Utility.h>
@@ -175,22 +141,6 @@ MeshAttributes::ProcessOldVersions(DataNode *parentNode,
     if(searchNode == 0)
         return;
 
-    if(VersionLessThan(configVersion, "2.0.0"))
-    {
-        DataNode *k = 0;
-        if((k = searchNode->GetNode("foregroundFlag")) != 0)
-        {
-            MeshColor val = k->AsBool() ? Foreground : MeshCustom;
-            searchNode->RemoveNode(k, true);
-            searchNode->AddNode(new DataNode("meshColorSource", MeshColor_ToString(val)));
-        }
-        if((k = searchNode->GetNode("backgroundFlag")) != 0)
-        {
-            OpaqueColor val = k->AsBool() ? Background : OpaqueCustom;
-            searchNode->RemoveNode(k, true);
-            searchNode->AddNode(new DataNode("opaqueColorSource", OpaqueColor_ToString(val)));
-        }
-    }
     if(VersionLessThan(configVersion, "3.0.0"))
     {
         if (searchNode->GetNode("lineStyle") != 0)

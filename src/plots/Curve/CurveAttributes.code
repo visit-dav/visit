@@ -3,25 +3,10 @@ Code: PyCurveAttributes_getattr
 Prefix:
 Postfix:
     // Try and handle legacy fields in CurveAttributes
-    if(strcmp(name, "cycleColors") == 0)
-    {
-        CurveAttributesObject *curveObj = (CurveAttributesObject *)self;
-        bool cycleColors = curveObj->data->GetCurveColorSource() == CurveAttributes::Custom;
-        return PyInt_FromLong(cycleColors?1L:0L);
-    }
-    // Try and handle legacy fields in CurveAttributes
-    if(strcmp(name, "color") == 0)
-    {
-        return CurveAttributes_GetCurveColor(self, NULL);
-    }
-    if(strcmp(name, "RenderAsLines") == 0)
-    {
-        return PyInt_FromLong(0L);
-    }
-    if(strcmp(name, "RenderAsPoints") == 0)
-    {
-        return PyInt_FromLong(1L);
-    }
+
+    //
+    // removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     bool lineStyleFound = false;
     if (strcmp(name, "lineStyle") == 0)
@@ -60,44 +45,10 @@ Postfix:
     if(obj == &NULL_PY_OBJ)
     {
         CurveAttributesObject *CurveObj = (CurveAttributesObject *)self;
-        if(strcmp(name, "color") == 0)
-            obj = CurveAttributes_SetCurveColor(self, args);
-        if(strcmp(name, "cycleColors") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'cycleColors' is obsolete. Use 'curveColor' set to 'Cycle'", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                    CurveObj->data->SetCurveColorSource(CurveAttributes::Custom);
-                else
-                    CurveObj->data->SetCurveColorSource(CurveAttributes::Cycle);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        if(strcmp(name, "renderMode") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'renderMode' is obsolete. Use 'showLines' or 'showPoints'", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                {
-                    CurveObj->data->SetShowLines(true);
-                    CurveObj->data->SetShowPoints(false);
-                }
-                else
-                {
-                    CurveObj->data->SetShowLines(false);
-                    CurveObj->data->SetShowPoints(true);
-                }
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
+
+        //
+        // removed in 3.0.0
+        //
         if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
@@ -192,6 +143,8 @@ Definition:
 // Creation:   August 16, 2010
 //
 // Modifications:
+//   Kathleen Biagas, Tue Feb 15 13:34:17 PST 2022
+//   Removed processing of version < 2.1.0.
 //
 // ****************************************************************************
 
@@ -206,25 +159,6 @@ CurveAttributes::ProcessOldVersions(DataNode *parentNode,
     if (searchNode == 0)
         return;
 
-    if (VersionLessThan(configVersion, "2.1.0"))
-    {
-        DataNode *k = 0;
-        if (( k = searchNode->GetNode("renderMode")) != 0)
-        {
-            std::string mode = k->AsString();
-            searchNode->RemoveNode(k, true);
-            if (mode == "RenderAsLines") // asLines
-            {
-                searchNode->AddNode(new DataNode("showLines", true));
-                searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Static)));
-            }
-            else
-            {
-                searchNode->AddNode(new DataNode("showLines", false));
-                searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Dynamic)));
-            }
-        }
-    }
     if (VersionLessThan(configVersion, "3.0.0"))
     {
        if (searchNode->GetNode("lineStyle") != 0)
