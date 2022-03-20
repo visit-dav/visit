@@ -1534,10 +1534,9 @@ return type : CLI_return_t
   OpenDatabase("/usr/gapps/visit/data/curv3d.silo")
   DefineScalarExpression("d1", 'recenter(d, "zonal")')
   DefineScalarExpression("p1", 'recenter(p, "zonal")')
-  # Define an 2 array variables from 2 scalars. In both
-  # cases the same scalar is being used twice since the
-  # file doesn't have a lot of scalars. Normally, the
-  # scalars would be different.
+  # Define 2 array variables, each from 2 scalars. Here, we
+  # reuse the same scalars twice for illustrative purposes
+  # only. Normally, the scalars are different.
   DefineArrayExpression("da", "array_compose(d1, d1)")
   DefineArrayExpression("pa", "array_compose(p1, p1)")
   # Create a plot to use for performing an XRay Image query.
