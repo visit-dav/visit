@@ -353,7 +353,7 @@ Our practice is to store test data archives as maximally xz compressed, `tar-com
 We use `xz (e.g. lzma) compression <https://en.wikipedia.org/wiki/XZ_Utils>`_ instead of the more familiar `gzip compression <https://en.wikipedia.org/wiki/Gzip>`_ because ``xz`` is known to compress 2-3x smaller and because in most circumstances only VisIt_ developers (not users) are burdened with having to manage any additional tooling.
 Any data archives for users, we make available in a choice of compressed formats which include the more familiar gzip compression.
 
-In the top-level ``data`` directory in the repository, we provide a simple Python3 based tool, `visit_pytar.py <https://github.com/visit-dav/visit/tree/develop/data/visit_pytar.py>`_ to create, expand and list the contents of tar-compatible archives on Windows, macOS and linux platforms.
+In the top-level ``data`` directory in the repository, we provide a simple Python3 based tool, `visit_pytar.py <https://github.com/visit-dav/visit/tree/develop/data/visit_pytar.py>`_ to *create*, *expand* and *list* the contents of tar-compatible archives on Windows, macOS and linux platforms.
 In most cases, this simple tool should be sufficient for development needs.
 If for some reason this simple tooling is not sufficient, a developer may override the archive and compression tooling on the command-line to CMake when cmaking the ``data`` directory.
 For example, this cmake command... ::
@@ -363,6 +363,8 @@ For example, this cmake command... ::
 
 ...has the effect of replacing the use of ``visit_pytar.py`` tooling with the ``tar`` command.
 The ``J`` in the ``VISIT_DATA_ARCHIVER_CARGS`` is the key argument that ensures ``tar`` will use ``xz`` compression.
+Note, however, that by default, ``tar`` will use a compression *level* of 6 for the ``J`` option.
+For absolutely *maximal* compression, its often best to use the highest possible *level* of 9.
 
 Sometimes, bulk operations on all the test data archives may take a while and developers may desire better or faster tooling.
 In this case, developers may wish to manipulate the archive and compression tooling directly.
