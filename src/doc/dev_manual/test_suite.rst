@@ -343,15 +343,33 @@ This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test results das
 To use this script, run ``./rebase.py --help.``
 Once you've completed using ``rebase.py`` to update image baselines, don't forget to commit your changes back to the repository.
 
-Test input archives and 7-zip compression
------------------------------------------
+Test data archives
+------------------
 Testing VisIt_ requires input data sets.
-Because of the wide variety of data formats and readers VisIt_ supports, we have a wide variety of `test input data sets <https://github.com/visit-dav/visit/tree/develop/data>`_.
-Our practice is to store these as compressed archives.
-We use `7z compression <https://en.wikipedia.org/wiki/7z>`_ instead of the more familiar `gzip compression <https://en.wikipedia.org/wiki/Gzip>`_ because `7z <https://www.7-zip.org>`_ is known to compress 2-3x smaller and because in most circumstances only VisIt_ developers (not users) are burdened with having to manage 7z tooling.
-Any data archives we make available for users, we provide through our `large data shares <https://visit-dav.github.io/largedata/datarchives.html>`_ site and make available in a choice of compressed formats; 7z, gzip and Zip.
+Because of the wide variety of data formats and readers VisIt_ supports, we have a wide variety of `test data archives <https://github.com/visit-dav/visit/tree/develop/data>`_.
+A tar-compatible archive format and the *highest* available compression are the two basic requirements of our development workflow.
+Our practice is to store test data archives as maximally lzma (aka xz) compressed, `tar-compatible <https://en.wikipedia.org/wiki/List_of_archive_formats#Archiving_and_compression>`_ archives.
+We use `xz (e.g. lzma) compression <https://en.wikipedia.org/wiki/XZ_Utils>`_ instead of the more familiar `gzip compression <https://en.wikipedia.org/wiki/Gzip>`_ because ``xz`` is known to compress 2-3x smaller and because in most circumstances only VisIt_ developers (not users) are burdened with having to manage any additional tooling.
+Any data archives for users, we make available in a choice of compressed formats which include the more familiar gzip compression.
 
+In the top-level ``data`` directory in the repository, we provide a simple Python3 based tool, `visit_pytar.py <https://github.com/visit-dav/visit/tree/develop/data/visit_pytar.py>`_ to create, expand and list the contents of tar-compatible archives on Windows, macOS and linux platforms.
+In most cases, this simple tool should be sufficient for development needs.
+If for some reason this simple tooling is not sufficient, a developer may override the archive and compression tooling on the command-line to CMake when cmaking the ``data`` directory.
+For example, this cmake command... ::
 
+    cmake -DVISIT_DATA_ARCHIVER_CMD:STRING="tar" -DVISIT_DATA_ARCHIVER_XARGS:STRING="xvf" -DVISIT_DATA_ARCHIVER_CARGS:STRING="cvfJ" -DVISIT_DATA_ARCHIVER_LARGS:STRING="tf" .
+
+...has the effect of replacing the archive and compression tooling with the ``tar`` command.
+The ``J`` in the ``VISIT_DATA_ARCHIVER_CARGS`` is the key argument that ensures it will use xz compression.
+
+Sometimes, bulk operations on all the test data archives may take a while and developers may desire better or faster tooling.
+In this case, developers may wish to manipulate the archive and compression tooling directly.
+For example, this command pipe on linux... ::
+
+   tar cvf - my_test_data | xz -9e -T0 - > my_test_data.tar.xz 
+
+...will create a compressed archive of ``my_test_data`` using multi-threaded xz compression where the number of threads will be chosen (``-T0``) equal to match the number of hardware cores.
+For more information about advanced archive and compression operations, readers are encouraged to have a look at the `tar <https://man7.org/linux/man-pages/man1/tar.1.html>`_ and `xz <https://linux.die.net/man/1/xz>`_ man pages.
 
 Using VisIt_'s test routines in other applications
 --------------------------------------------------
