@@ -361,7 +361,7 @@ For example, this cmake command... ::
           -DVISIT_DATA_ARCHIVER_CARGS:STRING="cvfJ" -DVISIT_DATA_ARCHIVER_LARGS:STRING="tf"
 
 ...has the effect of replacing the use of ``visit_pytar.py`` tooling with the ``tar`` command.
-The ``J`` in the ``VISIT_DATA_ARCHIVER_CARGS`` is the key argument that ensures it will use xz compression.
+The ``J`` in the ``VISIT_DATA_ARCHIVER_CARGS`` is the key argument that ensures ``tar`` will use ``xz`` compression.
 
 Sometimes, bulk operations on all the test data archives may take a while and developers may desire better or faster tooling.
 In this case, developers may wish to manipulate the archive and compression tooling directly.
@@ -369,7 +369,7 @@ For example, this command pipe on linux... ::
 
    tar cvf - my_test_data | xz -9e -T0 - > my_test_data.tar.xz 
 
-...will create a compressed archive of ``my_test_data`` using multi-threaded xz compression where the number of threads will be chosen (``-T0``) equal to match the number of hardware cores.
+...will create a *maximally* compressed (``-9e``) archive of ``my_test_data`` using multi-threaded xz compression where the number of threads will be chosen (``-T0``) equal to match the number of hardware cores.
 For more information about advanced archive and compression operations, readers are encouraged to have a look at the `tar <https://man7.org/linux/man-pages/man1/tar.1.html>`_ and `xz <https://linux.die.net/man/1/xz>`_ man pages.
 
 Using VisIt_'s test routines in other applications
