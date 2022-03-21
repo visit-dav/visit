@@ -87,13 +87,13 @@ IF(WIN32)
     PROJECT(VISIT_DATA)
 ENDIF(WIN32)
 
-MESSAGE(STATUS "Configuring VisIt Binary Tarball Data Targets")
+MESSAGE(STATUS "Configuring VisIt Binary Data Archive Targets")
 
 #-----------------------------------------------------------------------------
-# Set up archiver executable name (7z, 7za and p7zip are common ones)
+# Set up archiver executable name (tar is most common)
 #-----------------------------------------------------------------------------
 IF(NOT VISIT_DATA_ARCHIVER_NAME)
-    list(APPEND VISIT_DATA_ARCHIVER_NAME "7z" "7za" "7zr" "p7zip")
+    list(APPEND VISIT_DATA_ARCHIVER_NAME "./visit_pytar.py")
 ENDIF()
 
 #-----------------------------------------------------------------------------
@@ -103,14 +103,14 @@ IF(WIN32)
     SET(PF1 "PROGRAMFILES")
     SET(PF2 "PROGRAMFILES(X86)")
     FIND_PROGRAM(ARCHIVER_EXE NAMES ${VISIT_DATA_ARCHIVER_NAME}
-        PATHS ${VISIT_SEVEN_ZIP_DIR} 
-              $ENV{${PF1}}/7-Zip 
-              $ENV{${PF2}}/7-Zip)
+        PATHS ${VISIT_TAR_DIR} 
+              $ENV{${PF1}}
+              $ENV{${PF2}})
     UNSET(PF2)
     UNSET(PF1)
 ELSE(WIN32)
     FIND_PROGRAM(ARCHIVER_EXE NAMES ${VISIT_DATA_ARCHIVER_NAME}
-                              PATHS ${VISIT_SEVEN_ZIP_DIR}
+                              PATHS ${VISIT_TAR_DIR}
                               PATH_SUFFIXES bin)
 ENDIF(WIN32)
 
@@ -118,21 +118,28 @@ ENDIF(WIN32)
 # Set arguments for archiver creation, extraction and list convenience targets
 #-----------------------------------------------------------------------------
 IF("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
-    MESSAGE(WARNING "Archiver \"${VISIT_DATA_ARCHIVER_NAME}\" not found, data files cannot be extracted. Try setting VISIT_SEVEN_ZIP_DIR to location of 7-zip package, and VISIT_DATA_ARCHIVER_NAME to correct 7-zip executable name (eg, 7za, p7zip, 7z).")
+    MESSAGE(WARNING "Archiver \"${VISIT_DATA_ARCHIVER_NAME}\" not found, data files cannot be extracted. Try setting VISIT_TAR_DIR to location of the tar command, and VISIT_DATA_ARCHIVER_NAME to correct tar executable name (eg, tar, bsdtar, etc.).")
     #--------------------------------------------------------------------------
     # CMake target to handle make-time requests to build targets that require
-    # 7z archiver yet none was provided. The test "" forces make-time failure.
+    # archiver yet none was provided. The test "" forces make-time failure.
     #--------------------------------------------------------------------------
-    ADD_CUSTOM_TARGET(missing-7z-archiver ALL
+    ADD_CUSTOM_TARGET(missing-archiver ALL
         COMMAND ${CMAKE_COMMAND} -E echo ""
-        COMMAND ${CMAKE_COMMAND} -E echo "No 7z archiver"
+        COMMAND ${CMAKE_COMMAND} -E echo "No archiver"
         COMMAND ${CMAKE_COMMAND} -E echo ""
         COMMAND test "")
 ELSE("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
-    SET(ARCHIVER_CMD ${ARCHIVER_EXE})
-    SET(ARCHIVER_XARGS x -y)                 # Expand archive args
-    SET(ARCHIVER_CARGS a -y -m0=lzma2 -mx=9) # Create archive args
-    SET(ARCHIVER_LARGS l -y)                 # List archive args
+    SET(ARCHIVER_CMD python3 ./${ARCHIVER_EXE})
+    IF("${ARCHIVER_CMD}" STREQUAL "./visit_pytar.py")
+        SET(ARCHIVER_XARGS2 X) # Expand into archive args
+        SET(ARCHIVER_XARGS x) # Expand archive args
+        SET(ARCHIVER_CARGS c) # Create archive args
+        SET(ARCHIVER_LARGS t) # List archive args
+    ELSE("${ARCHIVER_CMD}" STREQUAL "./visit_pytar.py")
+        SET(ARCHIVER_XARGS -xvf)  # Expand archive args
+        SET(ARCHIVER_CARGS -cvfJ) # Create archive args
+        SET(ARCHIVER_LARGS -tf)   # List archive args
+    ENDIF("${ARCHIVER_CMD}" STREQUAL "./visit_pytar.py")
 ENDIF("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
 
 #-----------------------------------------------------------------------------
@@ -142,7 +149,7 @@ ENDIF("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
 # of the source tarball. This makes tracking the dependencies simple.
 #
 #-----------------------------------------------------------------------------
-FILE(GLOB ARCHIVED_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *test_data*.7z)
+FILE(GLOB ARCHIVED_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *test_data*.tar.xz)
 
 #-----------------------------------------------------------------------------
 # Add a custom command that extracts all archived dataset *and* collect
@@ -158,14 +165,14 @@ FILE(GLOB ARCHIVED_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *test_data*.7z)
 #
 # Note 2: With traditional Make, this could have been easily handled as a
 # pattern rule of the form:
-#   %_test_data : %_test_data.7z
+#   %_test_data : %_test_data.tar.xz
 #       $(ARCHIVER_CMD) $(ARCHIVER_XARGS) $<
 # which is also processed at make-time, not configure/cmake-time.
 # But not all target platforms understand or use make pattern rules.    
 #-----------------------------------------------------------------------------
 SET(DATA_TARGET_DEPENDS "")
 FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
-    STRING(REPLACE ".7z" "" DATASET_TARGET "${DATASET_TARGET_FILE}")
+    STRING(REPLACE ".tar.xz" "" DATASET_TARGET "${DATASET_TARGET_FILE}")
     ADD_CUSTOM_COMMAND(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
         COMMAND ${ARCHIVER_CMD}
@@ -175,7 +182,7 @@ FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
 ENDFOREACH()
 
 IF(NOT DEFINED ARCHIVER_CMD)
-   set(DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} missing-7z-archiver)
+   set(DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} missing-archiver)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -191,14 +198,13 @@ ADD_DEPENDENCIES(testdata data)
 # make time, not cmake time.
 #-----------------------------------------------------------------------------
 SET(ARCHIVE_NAME {ANAME})
-SET(ARCHIVE_FILES {AFILES})
 
 #-----------------------------------------------------------------------------
 # Define convenience command/target to create an archive
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive_create
-    COMMAND ${ARCHIVER_EXE} ${ARCHIVER_CARGS} $${ARCHIVE_NAME} $${ARCHIVE_FILES})
+    COMMAND ${ARCHIVER_CMD} ${ARCHIVER_CARGS} $${ARCHIVE_NAME})
 ADD_CUSTOM_TARGET(archive DEPENDS _archive_create)
 
 #-----------------------------------------------------------------------------
@@ -206,85 +212,45 @@ ADD_CUSTOM_TARGET(archive DEPENDS _archive_create)
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive_expand
-    COMMAND ${ARCHIVER_EXE} ${ARCHIVER_XARGS} $${ARCHIVE_NAME})
+    COMMAND ${ARCHIVER_CMD} ${ARCHIVER_XARGS} $${ARCHIVE_NAME})
 ADD_CUSTOM_TARGET(expand DEPENDS _archive_expand)
+
+#-----------------------------------------------------------------------------
+# Define convenience command/target to expand an archive into existing dir
+#-----------------------------------------------------------------------------
+ADD_CUSTOM_COMMAND(
+    OUTPUT _archive_expand_into
+    COMMAND ${ARCHIVER_CMD} ${ARCHIVER_XARGS2} $${ARCHIVE_NAME})
+ADD_CUSTOM_TARGET(expand_into DEPENDS _archive_expand_into)
 
 #-----------------------------------------------------------------------------
 # Define convenience command/target to list an archive
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive_list
-    COMMAND ${ARCHIVER_EXE} ${ARCHIVER_LARGS} $${ARCHIVE_NAME})
+    COMMAND ${ARCHIVER_CMD} ${ARCHIVER_LARGS} $${ARCHIVE_NAME})
 ADD_CUSTOM_TARGET(list DEPENDS _archive_list)
 
-#-----------------------------------------------------------------------------
-# Define target for more help on 7z
-#-----------------------------------------------------------------------------
 ADD_CUSTOM_TARGET(
-    7z-more-help VERBATIM
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "             More help using 7z archiver/compresser"
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "7z (or 7-Zip) is an archiving and compression tool that replaces"  
-    COMMAND ${CMAKE_COMMAND} -E echo "the combination of tools like tar and gzip (.tar.gz or .tgz) and"
-    COMMAND ${CMAKE_COMMAND} -E echo "often does a better job at compression. 7z supports a variety of"
-    COMMAND ${CMAKE_COMMAND} -E echo "archival and comression file formats including .tar.gz. Here are"
-    COMMAND ${CMAKE_COMMAND} -E echo "examples of command-lines to use 7z. Sometimes the 7z executable"
-    COMMAND ${CMAKE_COMMAND} -E echo "is named 7za, p7zip or 7-Zip. See www.7-zip.org for more info."
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "creating an archive for VisIt test data"
-    COMMAND ${CMAKE_COMMAND} -E echo "  7z a -m0=lzma2 -mx=9 <archive-file-name>.7z <file1>|<dir1>|<file2>..."
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "expand an archive"
-    COMMAND ${CMAKE_COMMAND} -E echo "  7z x <archive-file-name>.7z"
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "list contents of an archive"
-    COMMAND ${CMAKE_COMMAND} -E echo "  7z l <archive-file-name>.7z"
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "For VisIt test data archives, we want maximal compression and this"
-    COMMAND ${CMAKE_COMMAND} -E echo "is usually best acchived using ultra compression (-mx=9) and lzma2"
-    COMMAND ${CMAKE_COMMAND} -E echo "algorithm (-m0=lzma2). Also, we require compression be used on any"
-    COMMAND ${CMAKE_COMMAND} -E echo "single file or collections of related files exceeding 1Mb in size."
-    COMMAND ${CMAKE_COMMAND} -E echo "It is a best practice to put all related files in a directory named"
-    COMMAND ${CMAKE_COMMAND} -E echo "<format>_test_data (e.g. vtk_test_data) where <format> is a moniker"
-    COMMAND ${CMAKE_COMMAND} -E echo "indicating the data format and then archive that single directory."
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "")
-
-#-----------------------------------------------------------------------------
-# Define 7z-help target.
-#-----------------------------------------------------------------------------
-ADD_CUSTOM_TARGET(
-    7z-help VERBATIM
+    xz-help VERBATIM
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "               Conveninent make targets:"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "To create an archive..."
-    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> AFILES=... archive"
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "  ANAME is the name of the archive withOUT the extension (e.g .7z)"
-    COMMAND ${CMAKE_COMMAND} -E echo "  AFILES can be a directory name, a file name, or space separated"
-    COMMAND ${CMAKE_COMMAND} -E echo "    list of files and/or directories bracketed in quotes."
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> archive"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "To expand a single, specific archive..."
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> expand"
     COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "  ANAME is the name of the archive WITH the extension (e.g .7z)"
-    COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "To list contents of a single, specific archive..."
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> list"
     COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "  ANAME is the name of the archive WITH the extension (e.g .7z)"
+    COMMAND ${CMAKE_COMMAND} -E echo "  ANAME is the name of the archive with the extension (e.g .tar.xz)"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "Examples..."
-    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=silo_hdf5_test_data.7z expand"
-    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=silo_hdf5_test_data.7z list"
-    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=new_archive AFILES=\"*.txt\" archive"
-    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=foodir_archive AFILES=foodir archive"
-    COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "To get more help on using the 7z archiver"
-    COMMAND ${CMAKE_COMMAND} -E echo "  make 7z-more-help"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=silo_hdf5_test_data.tar.xz expand"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=silo_hdf5_test_data.tar.xz list"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=my_test_data.tar.xz archive"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "")
