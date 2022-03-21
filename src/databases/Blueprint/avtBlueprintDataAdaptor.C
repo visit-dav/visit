@@ -738,10 +738,12 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
             ugrid->GetCellData()->AddArray(oca);
             ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
 
+            // Q? Can I break the style guidelines for these long lines?
             int num_new_shapes = d2smap["values_typed"].dtype().number_of_elements();
             int32 *orig_elem_ids = d2smap["values_typed"].value();
             for (int i = 0; i < num_new_shapes; i ++)
             {
+                // Q? the first half of this is for the domain? hmmm
                 unsigned int ocdata[2] = {static_cast<unsigned int>(0), 
                                           static_cast<unsigned int>(orig_elem_ids[i])};
                 oca->InsertNextTypedTuple(ocdata);
@@ -757,6 +759,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
     // after the conditionals
     vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr);
 
+    // Q? this happens after the orig elem ids now, is that ok? seems to run fine
     ugrid->SetPoints(points);
     points->Delete();
     oca->Delete();
