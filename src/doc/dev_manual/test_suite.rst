@@ -348,6 +348,7 @@ Test data archives
 Testing VisIt_ requires input data sets.
 Because of the wide variety of data formats and readers VisIt_ supports, we have a wide variety of `test data archives <https://github.com/visit-dav/visit/tree/develop/data>`_.
 A tar-compatible archive format and the *highest* available compression are the two basic requirements of our development workflow.
+
 Our practice is to store test data archives as maximally xz compressed, `tar-compatible <https://en.wikipedia.org/wiki/List_of_archive_formats#Archiving_and_compression>`_ archives.
 We use `xz (e.g. lzma) compression <https://en.wikipedia.org/wiki/XZ_Utils>`_ instead of the more familiar `gzip compression <https://en.wikipedia.org/wiki/Gzip>`_ because ``xz`` is known to compress 2-3x smaller and because in most circumstances only VisIt_ developers (not users) are burdened with having to manage any additional tooling.
 Any data archives for users, we make available in a choice of compressed formats which include the more familiar gzip compression.
