@@ -348,7 +348,7 @@ Test data archives
 Testing VisIt_ requires input data sets.
 Because of the wide variety of data formats and readers VisIt_ supports, we have a wide variety of `test data archives <https://github.com/visit-dav/visit/tree/develop/data>`_.
 A tar-compatible archive format and the *highest* available compression are the two basic requirements of our development workflow.
-Our practice is to store test data archives as maximally lzma (aka xz) compressed, `tar-compatible <https://en.wikipedia.org/wiki/List_of_archive_formats#Archiving_and_compression>`_ archives.
+Our practice is to store test data archives as maximally xz compressed, `tar-compatible <https://en.wikipedia.org/wiki/List_of_archive_formats#Archiving_and_compression>`_ archives.
 We use `xz (e.g. lzma) compression <https://en.wikipedia.org/wiki/XZ_Utils>`_ instead of the more familiar `gzip compression <https://en.wikipedia.org/wiki/Gzip>`_ because ``xz`` is known to compress 2-3x smaller and because in most circumstances only VisIt_ developers (not users) are burdened with having to manage any additional tooling.
 Any data archives for users, we make available in a choice of compressed formats which include the more familiar gzip compression.
 
@@ -357,9 +357,10 @@ In most cases, this simple tool should be sufficient for development needs.
 If for some reason this simple tooling is not sufficient, a developer may override the archive and compression tooling on the command-line to CMake when cmaking the ``data`` directory.
 For example, this cmake command... ::
 
-    cmake -DVISIT_DATA_ARCHIVER_CMD:STRING="tar" -DVISIT_DATA_ARCHIVER_XARGS:STRING="xvf" -DVISIT_DATA_ARCHIVER_CARGS:STRING="cvfJ" -DVISIT_DATA_ARCHIVER_LARGS:STRING="tf" .
+    cmake -DVISIT_DATA_ARCHIVER_CMD:STRING="tar" -DVISIT_DATA_ARCHIVER_XARGS:STRING="xvf" \
+          -DVISIT_DATA_ARCHIVER_CARGS:STRING="cvfJ" -DVISIT_DATA_ARCHIVER_LARGS:STRING="tf"
 
-...has the effect of replacing the archive and compression tooling with the ``tar`` command.
+...has the effect of replacing the use of ``visit_pytar.py`` tooling with the ``tar`` command.
 The ``J`` in the ``VISIT_DATA_ARCHIVER_CARGS`` is the key argument that ensures it will use xz compression.
 
 Sometimes, bulk operations on all the test data archives may take a while and developers may desire better or faster tooling.
