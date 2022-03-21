@@ -1,6 +1,11 @@
+#!/usr/bin/env python3
+
 # Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
 # Project developers.  See the top-level LICENSE file for dates and other
 # details.  No copyright assignment is required to contribute to VisIt.
+
+
+# https://martinheinz.dev/blog/57
 
 import os, sys, tarfile
 
@@ -16,13 +21,13 @@ Usage: Basic archiver with xz compression using Python 3 tarfile
 
     Create: visit_pytar c <batch>_test_data.tar.xz
     List:   visit_pytar t <batch>_test_data.tar.xz
-    Expand: visit_pytar x|X <batch>_test_data.tar.xz (X=expand into)
+    Expand: visit_pytar x|X <batch>_test_data.tar.xz
 
     Where <batch> is an arbitrary string naming a batch of related
     data files. For Create, (c) option, a matching directory name
-    of the form <batch>_test_data must already exist. Expand with
-    lowercase x fails if <batch>_test_data already exists. Use X
-    to override.
+    of the form <batch>_test_data must already exist. Lowercase x
+    Expand fails if <batch>_test_data already exists. Uppercase X
+    Expand ignores this check.
 
     This tooling is provided only as a convenience.
     
@@ -43,7 +48,7 @@ elif 'c' in sys.argv[1]: # Create
         usage('%s must not already exist'%sys.argv[2])
     if not os.path.isdir(sys.argv[2][:-7]): 
         usage('"%s" must be a pre-existing directory'%sys.argv[2][:-7])
-    tf = tarfile.open(sys.argv[2], 'w:xz')
+    tf = tarfile.open(sys.argv[2], 'w:xz', preset=9)
     tf.add(sys.argv[2][:-7])
     tf.close()
 elif 't' in sys.argv[1]: # List
