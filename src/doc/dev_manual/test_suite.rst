@@ -64,8 +64,8 @@ The list of tests must be the last entries on the command line. ::
 There are a number of additional command-line options to the test suite.
 ``./run_visit_test_suite.sh -help`` will give you details about these options.
 
-Accessing regression test results
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Accessing nightly regression test results
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The nightly test suite results are posted to `GitHub <https://visit-dav.github.io/dashboard/>`_.
 
 In the event of failure on the nightly run
@@ -343,10 +343,19 @@ This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test results das
 To use this script, run ``./rebase.py --help.``
 Once you've completed using ``rebase.py`` to update image baselines, don't forget to commit your changes back to the repository.
 
+Test input archives and 7-zip compression
+-----------------------------------------
+Testing VisIt_ requires input data sets.
+Because of the wide variety of data formats and readers VisIt_ supports, we have a wide variety of `test input data sets <https://github.com/visit-dav/visit/tree/develop/data>`_.
+Our practice is to store these as compressed archives.
+We use `7z compression <https://en.wikipedia.org/wiki/7z>`_ instead of the more familiar `gzip compression <https://en.wikipedia.org/wiki/Gzip>`_ because `7z <https://www.7-zip.org>`_ is known to compress 2-3x smaller and because in most circumstances only VisIt_ developers (not users) are burdened with having to manage 7z tooling.
+Any data archives we make available for users, we provide through our `large data shares <https://visit-dav.github.io/largedata/datarchives.html>`_ site and make available in a choice of compressed formats; 7z, gzip and Zip.
 
-Using VisIt_ Test Suite for Sim Code Testing
---------------------------------------------
-VisIt_'s testing infrastructure can also be used from a VisIt_ install by simulation codes that want to write their own Visit-based tests.
+
+
+Using VisIt_'s test routines in other applications
+--------------------------------------------------
+VisIt_'s testing infrastructure can also be used from any VisIt_ installation by other applications that want to write their own Visit-based tests.
 For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_.
 
 
