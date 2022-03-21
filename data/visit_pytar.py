@@ -16,25 +16,34 @@ def usage(errmsg=""):
     print(\
 """
 %s
-Usage: Basic archiver with xz compression using Python 3 tarfile
-    module for VisIt test data archives:
+Usage: Basic tar-compatible archiver for VisIt test data archives
+    using Python3 tarfile & lzma modules with (xz) compression.
 
     Create: visit_pytar c|C <batch>_test_data.tar.xz
     List:   visit_pytar t   <batch>_test_data.tar.xz
     Expand: visit_pytar x|X <batch>_test_data.tar.xz
 
     Where <batch> is an arbitrary string naming a batch of related
-    data files. For Create, (c) option, a matching directory name
-    of the form <batch>_test_data must already exist. Lowercase c
-    Create fails if <batc>_test_data.tar.xz already exists.
-    Uppercase C ignores this check. Lowercase x Expand fails if
-    <batch>_test_data already exists. Uppercase X Expand ignores
+    data files. Usually, it is used to indicate the underlying data
+    format all the files use.
+
+    For Create, (c) option, a matching directory name of the form
+    <batch>_test_data must already exist. Lowercase c Create fails
+    if <batc>_test_data.tar.xz already exists. Uppercase C ignores
     this check.
 
-    This tooling is provided only as a convenience.
-    
-    More advanced archiving and compression operations are likely
-    possible using your platform's native tooling.
+    For Expand, Lowercase x fails if <batch>_test_data already
+    exists. Uppercase X ignores this check.
+
+    This tooling is provided only as a convenience. More advanced
+    archiving and compression operations are likely possible using
+    your platform's native tooling. For example, on many systems
+    the command...
+
+    tar cvf - my_test_data | xz -9e -T0 - > my_test_data.tar.xz
+
+    will use tar and xv commands in a pipe with maximal compression
+    and as many threads as actual hardware cores.
 """%("***Error***: %s\n"%errmsg if errmsg else "")
 )
     sys.exit(1)
