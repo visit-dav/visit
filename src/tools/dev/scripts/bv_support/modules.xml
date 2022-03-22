@@ -42,7 +42,6 @@
             <lib name="openexr"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
-            <lib name="p7zip"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="silo"/>
@@ -91,7 +90,6 @@
             <lib name="netcdf"/>
             <lib name="openexr"/>
             <lib name="ospray"/>
-            <lib name="p7zip"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="silo"/>
