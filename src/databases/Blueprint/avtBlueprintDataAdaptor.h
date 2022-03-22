@@ -50,7 +50,8 @@ public:
   class VTK
   {
     public:
-      static vtkDataSet*    MeshToVTK(const conduit::Node &mesh);
+      static vtkDataSet*    MeshToVTK(int domain, 
+                                      const conduit::Node &mesh);
       static vtkDataArray*  FieldToVTK(const conduit::Node &field);
 
   };

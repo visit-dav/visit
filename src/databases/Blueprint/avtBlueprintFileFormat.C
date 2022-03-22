@@ -1561,7 +1561,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("mesh  " << topo_name << " is a standard mesh");
         // construct a vtk dataset directly from blueprint data
         // in a conduit tree
-        res = avtBlueprintDataAdaptor::VTK::MeshToVTK(data);
+        res = avtBlueprintDataAdaptor::VTK::MeshToVTK(domain, data);
     }
 
     BP_PLUGIN_INFO("avtBlueprintFileFormat::GetMesh Done");
@@ -1670,6 +1670,15 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
     // if we have an association, this is a standard field
     if(n_field.has_child("association"))
     {
+      // TODO
+      // in this case, add polyhedral stuff
+      // run ReadBlueprintMesh again to get mesh
+      // check for if it is polyhedral
+      // pass it and this field to gen sides
+      // might want to use a ptr for n_field so that I can swap it out as needed
+      // run FieldToVTK on the field and save in res
+
+
         // low-order case, use vtk
         res = avtBlueprintDataAdaptor::VTK::FieldToVTK(n_field);
     }

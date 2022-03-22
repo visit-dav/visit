@@ -699,7 +699,8 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 //
 // ****************************************************************************
 vtkDataSet *
-UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
+UnstructuredTopologyToVTKUnstructuredGrid(int domain,
+                                          const Node &n_coords,
                                           const Node &n_topo)
 {
     const Node *coords_ptr = &n_coords;
@@ -708,7 +709,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
     Node res; // Used as a destination for the generate sides call
 
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-    vtkUnsignedIntArray *oca = vtkUnsignedIntArray::New();
+    vtkUnsignedIntArray *oca = NULL;
 
     if (n_topo.has_path("elements/shape"))
     {
@@ -723,29 +724,16 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
                 s2dmap,
                 d2smap);
 
-            // Q? this is messy, and probably unnecessary, but
-            //    how do I get around the fact that I don't know
-            //    the type? Or do I? Will the type always be the same?
-            //    digging around the original generate_sides makes 
-            //    me think no
-            d2smap["values"].to_int32_array(d2smap["values_typed"]);
+            unsigned_int_accessor values = d2smap["values"].value();
 
-            // Q? is it acceptable to just attach oca to ugrid inside 
-            //    this conditional? Do we want all meshes to have this?
-            //    I figured no.
+            oca = vtkUnsignedIntArray::New();
             oca->SetName("avtOriginalCellNumbers");
             oca->SetNumberOfComponents(2);
-            ugrid->GetCellData()->AddArray(oca);
-            ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
 
-            // Q? Can I break the style guidelines for these long lines?
-            int num_new_shapes = d2smap["values_typed"].dtype().number_of_elements();
-            int32 *orig_elem_ids = d2smap["values_typed"].value();
-            for (int i = 0; i < num_new_shapes; i ++)
+            for (int i = 0; i < values.number_of_elements(); i ++)
             {
-                // Q? the first half of this is for the domain? hmmm
-                unsigned int ocdata[2] = {static_cast<unsigned int>(0), 
-                                          static_cast<unsigned int>(orig_elem_ids[i])};
+                unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
+                                          static_cast<unsigned int>(values[i])};
                 oca->InsertNextTypedTuple(ocdata);
             }
 
@@ -759,11 +747,17 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
     // after the conditionals
     vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr);
 
-    // Q? this happens after the orig elem ids now, is that ok? seems to run fine
     ugrid->SetPoints(points);
-    points->Delete();
-    oca->Delete();
 
+    if (oca != NULL)
+    {
+        ugrid->GetCellData()->AddArray(oca);
+        ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+        oca->Delete();
+    }
+
+    points->Delete();
+    
     //
     // Now, add explicit topology
     //
@@ -820,7 +814,8 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
 //
 // ****************************************************************************
 vtkDataSet *
-avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
+avtBlueprintDataAdaptor::VTK::MeshToVTK(int domain,
+                                        const Node &n_mesh)
 {
     //NOTE: this assumes one coordset and one topo
     // that is the case for the blueprint plugin, but may not be the case
@@ -857,7 +852,7 @@ avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
         else
         {
             BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet UnstructuredTopologyToVTKUnstructuredGrid");
-            res = UnstructuredTopologyToVTKUnstructuredGrid(n_coords, n_topo);
+            res = UnstructuredTopologyToVTKUnstructuredGrid(domain, n_coords, n_topo);
         }
     }
     else
