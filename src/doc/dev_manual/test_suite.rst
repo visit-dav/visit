@@ -4,8 +4,8 @@ Regression Testing
 Overview
 --------
 VisIt_ has a large and continually growing test suite.
-VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data in 7z archives in the top-level ``data`` directory and data generation sources in ``src/tools/data/datagen``.
-Regression tests are run on a nightly basis.
+VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data in archives in the top-level ``data`` directory and data generation sources in ``src/tools/data/datagen``.
+Regression tests are run on a nightly basis and results are posted to VisIt_'s `test dashboard <https://visit-dav.github.io/dashboard/>`_.
 Testing exercises VisIt_'s viewer, mdserver, engine and cli but not the GUI.
 
 
