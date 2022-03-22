@@ -382,7 +382,7 @@ Adding test data
 
 Sometimes new data files need to be added to support the new tests.
 This involves adding either an entirely new data archive or adding a new file to an existing data archive.
-With names like ``hdf5_test_data.tar.xz``, all the data archives are named more or less for the data format(s) in which the data files then contain are stored.
+With names like ``hdf5_test_data.tar.xz``, all the data archives are named more or less for the data format(s) in which the data files they contain are stored.
 
 Adding new tests 
 ~~~~~~~~~~~~~~~~
@@ -401,6 +401,10 @@ Once logic to produce new test results via ``Test()``, ``TestText()`` or ``TestV
 However, *current* results from ``Test()`` and ``TestText()`` type tests will be written to a directory name of the form ``output/current/<category>/<.py-file-name>/``.
 The new results should be inspected for correctness.
 If they are as expected, to create the baseline results simply copy the new ``.png`` or ``.txt`` file(s) to their respective place(s) in the ``test/baseline`` directory tree being careful to follow the same *category* and *pyfile* name as was introduced above.
+Of course, don't forget to ``git add`` them for eventual commit.
+Note that if you work on a machine or software configuration different from where VisIt_'s nightly testing is run, there is a chance the baseline results you create won't match, bit-for-bit, with those same results from nightly testing.
+Because only developers with access to `LLNL CZ systems <https://hpc.llnl.gov/documentation/user-guides/accessing-lc-systems#logging-in-to-LLNL-machines>`_ can *generate* baselines *guaranteed* to match nightly results there, our practice is to permit developers to commit potentially non-matching baselines and allow the nightly tests to run and maybe fail.
+Then, any developer can use the ``rebase.py`` `tool <https://github.com/visit-dav/visit/blob/develop/test/baseline/rebase.py>`_ in ``test/baseline`` to update the baselines to whatever nightly testing produced to create perfect matches.
 
 To make debugging a new test case easier, add the ``-v`` (-verbose flag) or ``-v --vargs "-debug 5"`` to the ``run_visit_test_suite.sh`` command, above.
 
