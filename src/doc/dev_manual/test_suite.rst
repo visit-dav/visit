@@ -127,6 +127,8 @@ This is handled by the ``--skiplist`` argument to the test suite.
 We maintain a list of the tests we currently skip and update it as necessary.
 The default skip list file is ``src/test/skip.json``.
 
+.. _three_results_types:
+
 Three Types of Test Results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -374,6 +376,35 @@ For example, this command pipe on linux... ::
 
 ...will create a *maximally* compressed (``-9e``) archive of ``my_test_data`` using multi-threaded xz compression where the number of threads will be chosen (``-T0``) equal to match the number of hardware cores.
 For more information about advanced archive and compression operations, readers are encouraged to have a look at the `tar <https://man7.org/linux/man-pages/man1/tar.1.html>`_ and `xz <https://linux.die.net/man/1/xz>`_ man pages.
+
+Adding test data
+~~~~~~~~~~~~~~~~
+
+Sometimes new data files need to be added to support the new tests.
+This involves adding either an entirely new data archive or adding a new file to an existing data archive.
+With names like ``hdf5_test_data.tar.xz``, all the data archives are named more or less for the data format(s) in which the data files then contain are stored.
+
+Adding new tests 
+~~~~~~~~~~~~~~~~
+
+* Add code to an existing ``.py`` file or create a new ``.py`` file copying the basic format of an existing one including boilerplat calls to functions like ``TurnOffAllAnnotations()``, using ``data_path()`` when opening a database file and ``Exit()`` when terminating a test.
+* If adding a new ``.py`` file, be careful to use the correct *category* directory.
+  For example, when writing tests for a new database format, add the ``.py`` file to the *databases* directory or when adding a new ``.py`` file to test a new plot, add it to the *plots* directory.
+  To see existing categories, have a look at the directory/folder names in the `tests <ihttps://github.com/visit-dav/visit/tree/develop/src/test/tests>`_ directory.
+  If an entirely new kind of category needs to be introduced, be sure to discuss this with other developers first.
+* From within a ``.py`` file, image results are generated with the ``Test()`` function and textual results with the ``TestText()`` function.
+  But, see :ref:`above <three_results_types>` for why ``TestValueXX()`` is preferred over image or text results.
+  
+Once logic to produce new test results via ``Test()``, ``TestText()`` or ``TestValueXX()`` are added to a ``.py`` file, the new tests can be run for the *first* time.
+
+``Test()`` and ``TestText()`` type tests will of course *fail* the first time because there are no associated baseline results defined for them.
+However, *current* results from ``Test()`` and ``TestText()`` type tests will be written to a directory name of the form ``output/current/<category>/<.py-file-name>/``.
+The new results should be inspected for correctness.
+If they are as expected, to create the baseline results simply copy the new ``.png`` or ``.txt`` file(s) to their respective place(s) in the ``test/baseline`` directory tree being careful to follow the same *category* and *pyfile* name as was introduced above.
+
+To make debugging a new test case easier, add the ``-v`` (-verbose flag) or ``-v --vargs "-debug 5"`` to the ``run_visit_test_suite.sh`` command, above.
+
+Finally, make sure to tag the test in a comment block with a space separated list of CLASSES and MODES the test supports.
 
 Using VisIt_'s test routines in other applications
 --------------------------------------------------
