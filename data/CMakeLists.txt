@@ -89,34 +89,6 @@ ENDIF(WIN32)
 
 MESSAGE(STATUS "Configuring VisIt Binary Data Archive Targets")
 
-FIND_PACKAGE(Python3)
-
-#EXECUTE_PROCESS(COMMAND "${PYTHON3_EXECUTABLE}" "-c" "import tarfile, lzma"
-#    COMMAND_ERROR_IS_FATAL ANY)
-EXECUTE_PROCESS(COMMAND "${Python3_EXECUTABLE}" "-c" "import tarfile, lzma"
-    RESULT_VARIABLE PYTHON_TARFILE_AND_LZMA_MODULES_NOT_FOUND
-    ERROR_QUIET OUTPUT_QUIET)
-IF(PYTHON_TARFILE_AND_LZMA_MODULES_NOT_FOUND)
-    MESSAGE(FATAL_ERROR "python3 with tarfile and lzma modules is required")
-ENDIF()
-
-#-----------------------------------------------------------------------------
-# Set up path to archiver executable
-#-----------------------------------------------------------------------------
-IF(NOT VISIT_DATA_ARCHIVER_CMD)
-    SET(ARCHIVER_CMD ${Python3_EXECUTABLE} ./visit_pytar.py)
-    SET(ARCHIVER_XARGS2 X) # Expand into archive args
-    SET(ARCHIVER_XARGS x) # Expand archive args
-    SET(ARCHIVER_CARGS c) # Create archive args
-    SET(ARCHIVER_CARGS2 C) # Create overwrite archive args
-    SET(ARCHIVER_LARGS t) # List archive args
-ELSE()
-    SET(ARCHIVER_CMD ${VISIT_DATA_ARCHIVER_CMD})
-    SET(ARCHIVER_XARGS ${VISIT_DATA_ARCHIVER_XARGS}) # Expand archive args
-    SET(ARCHIVER_CARGS ${VISIT_DATA_ARCHIVER_CARGS}) # Create archive args
-    SET(ARCHIVER_LARGS ${VISIT_DATA_ARCHIVER_LARGS}) # List archive args
-ENDIF()
-
 #-----------------------------------------------------------------------------
 # Create the list of archived data targets.
 #
@@ -150,15 +122,10 @@ FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
     STRING(REPLACE ".tar.xz" "" DATASET_TARGET "${DATASET_TARGET_FILE}")
     ADD_CUSTOM_COMMAND(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
-        COMMAND ${ARCHIVER_CMD}
-        ARGS ${ARCHIVER_XARGS} ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
+        COMMAND ${CMAKE_COMMAND} -E tar xvf ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
     SET(DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET})
 ENDFOREACH()
-
-IF(NOT DEFINED ARCHIVER_CMD)
-   set(DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} missing-archiver)
-endif()
 
 #-----------------------------------------------------------------------------
 # Add custom targets: "data" & "testdata"
@@ -180,43 +147,30 @@ SET(ARCHIVE_DIR {ADIR})
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive_create
-    COMMAND ${ARCHIVER_CMD} ${ARCHIVER_CARGS} $${ARCHIVE_NAME} $${ARCHIVE_DIR})
+    COMMAND ${CMAKE_COMMAND} -E tar cvfJ $${ARCHIVE_NAME} $${ARCHIVE_DIR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ADD_CUSTOM_TARGET(archive DEPENDS _archive_create)
-
-#-----------------------------------------------------------------------------
-# Define convenience command/target to create an archive
-#-----------------------------------------------------------------------------
-ADD_CUSTOM_COMMAND(
-    OUTPUT _archive_force_create
-    COMMAND ${ARCHIVER_CMD} ${ARCHIVER_CARGS2} $${ARCHIVE_NAME} $${ARCHIVE_DIR})
-ADD_CUSTOM_TARGET(force_archive DEPENDS _archive_force_create)
 
 #-----------------------------------------------------------------------------
 # Define convenience command/target to expand an archive
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive_expand
-    COMMAND ${ARCHIVER_CMD} ${ARCHIVER_XARGS} $${ARCHIVE_NAME})
+    COMMAND ${CMAKE_COMMAND} -E tar xvf $${ARCHIVE_NAME}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ADD_CUSTOM_TARGET(expand DEPENDS _archive_expand)
-
-#-----------------------------------------------------------------------------
-# Define convenience target to force expand an archive into existing dir
-#-----------------------------------------------------------------------------
-ADD_CUSTOM_COMMAND(
-    OUTPUT _archive_force_expand
-    COMMAND ${ARCHIVER_CMD} ${ARCHIVER_XARGS2} $${ARCHIVE_NAME})
-ADD_CUSTOM_TARGET(force_expand DEPENDS _archive_force_expand)
 
 #-----------------------------------------------------------------------------
 # Define convenience command/target to list an archive
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive_list
-    COMMAND ${ARCHIVER_CMD} ${ARCHIVER_LARGS} $${ARCHIVE_NAME})
+    COMMAND ${CMAKE_COMMAND} -E tar tvf $${ARCHIVE_NAME}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ADD_CUSTOM_TARGET(list DEPENDS _archive_list)
 
 ADD_CUSTOM_TARGET(
-    xz-help VERBATIM
+    archive-help VERBATIM
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "               Conveninent make targets:"
