@@ -1670,6 +1670,51 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
     // if we have an association, this is a standard field
     if(n_field.has_child("association"))
     {
+        string abs_meshname = metadata->MeshForVar(sanitize_var_name(abs_varname_str));
+
+        // element coloring is generated from the mesh
+        Node n_mesh;
+        // read the mesh data
+        ReadBlueprintMesh(domain, abs_meshname, n_mesh);
+        // check for empty mesh case
+        if(n_mesh.dtype().is_empty())
+        {
+            // support empty mesh case by returning NULL
+            return NULL;
+        }
+
+        Node verify_info;
+        if(!blueprint::mesh::verify(n_mesh,verify_info))
+        {
+            BP_PLUGIN_INFO("blueprint::mesh::verify failed for field "
+                           << abs_meshname << " [domain " << domain << "]" << endl
+                           << "Verify Info " << endl
+                           << verify_info.to_yaml() << endl
+                           << "Data Schema " << endl
+                           << n_mesh.schema().to_yaml());
+            return NULL;
+        }
+
+        n_mesh.print();
+
+        // Q? how do I know what the name "topo" should be?
+        if (n_mesh.has_path("topologies/topo/elements/shape"))
+        {
+            if (n_mesh["topologies/topo/elements/shape"].as_string() == "polyhedral" || 
+                n_mesh["topologies/topo/elements/shape"].as_string() == "polygonal")
+            {
+                Node side_mesh;
+                Node s2dmap, d2smap, options;
+                Node &side_coords = side_mesh["coordsets/coords"];
+                Node &side_topo = side_mesh["topologies/topo"];
+                Node &side_fields = side_mesh["fields"];
+
+                // uh oh... how do I get the field to live inside n_mesh???
+                // return to this another time
+            }
+        }
+
+        
       // TODO
       // in this case, add polyhedral stuff
       // run ReadBlueprintMesh again to get mesh
