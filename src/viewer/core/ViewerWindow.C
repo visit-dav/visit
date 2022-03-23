@@ -10752,9 +10752,9 @@ ViewerWindow::SetInteractorAtts(const InteractorAttributes *atts)
     bool modeChanged = atts->GetNavigationMode() !=
                        visWindow->GetInteractorAtts()->GetNavigationMode();
     visWindow->SetInteractorAtts(atts);
-    if(viewSetIn3d && modeChanged)
+    if(modeChanged && GetWindowMode() == WINMODE_3D)
     {
-        ResetView3d();
+        ViewerWindowManager::Instance()->ResetView(windowId);
     }
 }
 
