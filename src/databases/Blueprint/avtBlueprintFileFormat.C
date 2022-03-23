@@ -1674,7 +1674,6 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
     if(field_ptr->has_child("association"))
     {
         string abs_meshname = metadata->MeshForVar(sanitize_var_name(abs_varname_str));
-
         // element coloring is generated from the mesh
         Node n_mesh;
         // read the mesh data
@@ -1698,12 +1697,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             return NULL;
         }
 
-        n_mesh.print();
-
-        string mesh_name;
-        string topo_name;
-        string coords_name;
-        string field_name;
+        string mesh_name, topo_name;
 
         FetchMeshAndTopoNames(std::string(abs_meshname),
                               mesh_name,
@@ -1712,29 +1706,24 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         BP_PLUGIN_INFO("mesh name: " << mesh_name);
         BP_PLUGIN_INFO("topo name: " << topo_name);
 
-        field_name = FileFunctions::Basename(abs_varname_str);
-
         const Node &n_topo = n_mesh["topologies/" + topo_name];
 
-        // TODO put n_topo everywhere
-
-        // get name of coordset from topology
-
-        coords_name = n_mesh["topologies/" + topo_name + "/coordset"].as_string();
-
-        if (n_mesh.has_path("topologies/" + topo_name + "/elements/shape"))
+        if (n_topo.has_path("elements/shape"))
         {
-            if (n_mesh["topologies/" + topo_name + "/elements/shape"].as_string() == "polyhedral" || 
-                n_mesh["topologies/" + topo_name + "/elements/shape"].as_string() == "polygonal")
+            if (n_topo["elements/shape"].as_string() == "polyhedral" || 
+                n_topo["elements/shape"].as_string() == "polygonal")
             {
+                string field_name, coords_name;
+                // get name of coordset from topology
+                coords_name = n_topo["coordset"].as_string();
+
                 Node s2dmap, d2smap, options;
                 Node &side_coords = side_mesh["coordsets/" + coords_name];
                 Node &side_topo = side_mesh["topologies/" + topo_name];
                 Node &side_fields = side_mesh["fields"];
 
+                field_name = FileFunctions::Basename(abs_varname_str);
                 n_mesh["fields/" + field_name].set_external(*field_ptr);
-
-                n_mesh.print();
 
                 blueprint::mesh::topology::unstructured::generate_sides(
                   n_mesh["topologies/" + topo_name],
@@ -1748,16 +1737,6 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 field_ptr = side_fields.fetch_ptr(field_name);
             }
         }
-
-        
-      // TODO
-      // in this case, add polyhedral stuff
-      // run ReadBlueprintMesh again to get mesh
-      // check for if it is polyhedral
-      // pass it and this field to gen sides
-      // might want to use a ptr for n_field so that I can swap it out as needed
-      // run FieldToVTK on the field and save in res
-
 
         // low-order case, use vtk
         res = avtBlueprintDataAdaptor::VTK::FieldToVTK(*field_ptr);
