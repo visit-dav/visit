@@ -137,6 +137,8 @@ for any other expressions that use the deleted expression. If a plot uses
 an expression with unresolved references, VisIt_ will not be able to generate
 it until the user resolves the reference.
 
+.. _Expression_grammar:
+
 Expression grammar
 ~~~~~~~~~~~~~~~~~~
 
@@ -2146,6 +2148,8 @@ neighbor average Function: ``neighbor_average()`` : ``neighbor_average(expr0)``
 
 Displacement Function: ``displacement()`` : ``displacement(expr0)``
     No description available.
+
+.. _Expression_Compatibility_Gotchas:
 
 Expression Compatibility Gotchas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
