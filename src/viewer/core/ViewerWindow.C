@@ -10741,13 +10741,21 @@ ViewerWindow::Lineout(const bool fromDefault)
 //  Creation:   August 16, 2004 
 //   
 //  Modifications:
+//    Kathleen Biagas, Wed Mar 23, 2022
+//    Reset the view for 3D Navigation mode changes.
 //
 // ****************************************************************************
 
 void
 ViewerWindow::SetInteractorAtts(const InteractorAttributes *atts)
 {
+    bool modeChanged = atts->GetNavigationMode() !=
+                       visWindow->GetInteractorAtts()->GetNavigationMode();
     visWindow->SetInteractorAtts(atts);
+    if(viewSetIn3d && modeChanged)
+    {
+        ResetView3d();
+    }
 }
 
 // ****************************************************************************

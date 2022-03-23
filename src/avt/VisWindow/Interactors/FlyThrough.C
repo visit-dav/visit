@@ -300,7 +300,7 @@ void
 FlyThrough::OnMouseWheelForward()
 {
     StartZoom();
-    DollyCameraAndFocus3D(MotionFactor * -0.05 * this->MouseWheelMotionFactor);
+    DollyCameraAndFocus3D(MotionFactor * -0.2 * this->MouseWheelMotionFactor);
     EndZoom();
     IssueViewCallback(true);
 }
@@ -321,7 +321,7 @@ void
 FlyThrough::OnMouseWheelBackward()
 {
     StartZoom();
-    DollyCameraAndFocus3D(MotionFactor * 0.05 * this->MouseWheelMotionFactor);
+    DollyCameraAndFocus3D(MotionFactor * 0.2 * this->MouseWheelMotionFactor);
     EndZoom();
     IssueViewCallback(true);
 }
