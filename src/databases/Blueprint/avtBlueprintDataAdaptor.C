@@ -697,6 +697,9 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 //    to the vtkDataSet it returns, if applicable (if the mesh was polyhedral
 //    or polygonal and was transformed; see above modification comment).
 //
+//    Justin Privitera Wed Mar 23 12:28:02 PDT 2022
+//    Added domain as first argument, which is used for orig elem ids.
+//
 // ****************************************************************************
 vtkDataSet *
 UnstructuredTopologyToVTKUnstructuredGrid(int domain,
@@ -811,6 +814,10 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
 //    Justin Privitera, Fri 04 Mar 2022 05:57:49 PM PST
 //    Added support for points topology type; see
 //    PointsTopologyToVTKUnstructuredGrid as well.
+// 
+//    Justin Privitera, Wed Mar 23 12:26:31 PDT 2022
+//    Added "domain" as first arg of MeshToVTK and passed it to
+//    UnstructuredTopologyToVTKUnstructuredGrid.
 //
 // ****************************************************************************
 vtkDataSet *

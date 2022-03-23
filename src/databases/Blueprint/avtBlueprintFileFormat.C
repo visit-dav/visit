@@ -1489,6 +1489,9 @@ avtBlueprintFileFormat::GetTime()
 //    Cyrus Harrison, Tue Mar 10 13:15:26 PDT 2020
 //    Support empty mesh case.
 //
+//    Justin Privitera, Wed Mar 23 12:24:49 PDT 2022
+//    Passes domain to MeshToVTK.
+//
 // ****************************************************************************
 vtkDataSet *
 avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
@@ -1588,6 +1591,10 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 //  Modifications:
 //    Cyrus Harrison, Wed Mar 11 10:42:22 PDT 2020
 //    Allow empty domains.
+// 
+//    Justin Privitera, Wed Mar 23 12:21:50 PDT 2022
+//    Now handles polyhedral/polygonal meshes and converts them
+//    to tetrahedral/triangular meshes using conduit.
 //
 // ****************************************************************************
 
