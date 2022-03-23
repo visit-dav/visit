@@ -25,7 +25,7 @@ from os.path import join as pjoin
 bp_test_dir = "blueprint_v0.3.1_test_data"
 bp_venn_test_dir = "blueprint_v0.7.0_venn_test_data"
 bp_mfem_test_dir = "blueprint_v0.3.1_mfem_test_data"
-bp_0_8_2_test_dir = "blueprint_v0.8.2_braid_examples"
+bp_0_8_2_test_dir = "blueprint_v0.8.2_braid_examples_test_data"
 bp_poly_test_dir = "blueprint_v0.8.2_polytess_test_data"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
@@ -271,8 +271,6 @@ def test_venn(tag_name, venn_db_file):
     
 
     CloseDatabase(venn_db_file)
-
-
 
 def test_paren_vars():
     TestSection("Variables With Parens")
