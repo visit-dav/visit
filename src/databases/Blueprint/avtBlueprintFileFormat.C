@@ -1489,6 +1489,9 @@ avtBlueprintFileFormat::GetTime()
 //    Cyrus Harrison, Tue Mar 10 13:15:26 PDT 2020
 //    Support empty mesh case.
 //
+//    Justin Privitera, Wed Mar 23 12:24:49 PDT 2022
+//    Passes domain to MeshToVTK.
+//
 // ****************************************************************************
 vtkDataSet *
 avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
@@ -1561,7 +1564,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("mesh  " << topo_name << " is a standard mesh");
         // construct a vtk dataset directly from blueprint data
         // in a conduit tree
-        res = avtBlueprintDataAdaptor::VTK::MeshToVTK(data);
+        res = avtBlueprintDataAdaptor::VTK::MeshToVTK(domain, data);
     }
 
     BP_PLUGIN_INFO("avtBlueprintFileFormat::GetMesh Done");
@@ -1588,6 +1591,10 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 //  Modifications:
 //    Cyrus Harrison, Wed Mar 11 10:42:22 PDT 2020
 //    Allow empty domains.
+// 
+//    Justin Privitera, Wed Mar 23 12:21:50 PDT 2022
+//    Now handles polyhedral/polygonal meshes and converts them
+//    to tetrahedral/triangular meshes using conduit.
 //
 // ****************************************************************************
 
@@ -1647,34 +1654,102 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
     // else, normal field case
 
     Node n_field;
-    ReadBlueprintField(domain,abs_varname_str,n_field);
+    Node side_mesh;
+    Node *field_ptr = &n_field;
+
+    ReadBlueprintField(domain,abs_varname_str,*field_ptr);
     // check for empty field case
-    if(n_field.dtype().is_empty())
+    if(field_ptr->dtype().is_empty())
     {
         // support empty field case by returning NULL
         return NULL;
     }
 
     Node verify_info;
-    if(!blueprint::mesh::field::verify(n_field,verify_info))
+    if(!blueprint::mesh::field::verify(*field_ptr,verify_info))
     {
         BP_PLUGIN_INFO("blueprint::mesh::field::verify failed for field "
                        << abs_varname_str << " [domain " << domain << "]" << endl
                        << "Verify Info " << endl
                        << verify_info.to_yaml() << endl
                        << "Data Schema " << endl
-                       << n_field.schema().to_yaml());
+                       << field_ptr->schema().to_yaml());
         return NULL;
     }
 
     // if we have an association, this is a standard field
-    if(n_field.has_child("association"))
+    if(field_ptr->has_child("association"))
     {
+        string abs_meshname = metadata->MeshForVar(sanitize_var_name(abs_varname_str));
+        // element coloring is generated from the mesh
+        Node n_mesh;
+        // read the mesh data
+        ReadBlueprintMesh(domain, abs_meshname, n_mesh);
+        // check for empty mesh case
+        if(n_mesh.dtype().is_empty())
+        {
+            // support empty mesh case by returning NULL
+            return NULL;
+        }
+
+        Node verify_info;
+        if(!blueprint::mesh::verify(n_mesh,verify_info))
+        {
+            BP_PLUGIN_INFO("blueprint::mesh::verify failed for field "
+                           << abs_meshname << " [domain " << domain << "]" << endl
+                           << "Verify Info " << endl
+                           << verify_info.to_yaml() << endl
+                           << "Data Schema " << endl
+                           << n_mesh.schema().to_yaml());
+            return NULL;
+        }
+
+        string mesh_name, topo_name;
+
+        FetchMeshAndTopoNames(std::string(abs_meshname),
+                              mesh_name,
+                              topo_name);
+
+        BP_PLUGIN_INFO("mesh name: " << mesh_name);
+        BP_PLUGIN_INFO("topo name: " << topo_name);
+
+        const Node &n_topo = n_mesh["topologies/" + topo_name];
+
+        if (n_topo.has_path("elements/shape"))
+        {
+            if (n_topo["elements/shape"].as_string() == "polyhedral" || 
+                n_topo["elements/shape"].as_string() == "polygonal")
+            {
+                string field_name, coords_name;
+                // get name of coordset from topology
+                coords_name = n_topo["coordset"].as_string();
+
+                Node s2dmap, d2smap, options;
+                Node &side_coords = side_mesh["coordsets/" + coords_name];
+                Node &side_topo = side_mesh["topologies/" + topo_name];
+                Node &side_fields = side_mesh["fields"];
+
+                field_name = FileFunctions::Basename(abs_varname_str);
+                n_mesh["fields/" + field_name].set_external(*field_ptr);
+
+                blueprint::mesh::topology::unstructured::generate_sides(
+                  n_mesh["topologies/" + topo_name],
+                  side_topo,
+                  side_coords,
+                  side_fields,
+                  s2dmap,
+                  d2smap,
+                  options);
+
+                field_ptr = side_fields.fetch_ptr(field_name);
+            }
+        }
+
         // low-order case, use vtk
-        res = avtBlueprintDataAdaptor::VTK::FieldToVTK(n_field);
+        res = avtBlueprintDataAdaptor::VTK::FieldToVTK(*field_ptr);
     }
     // if we have a basis, this field is actually an mfem grid function
-    else if(n_field.has_child("basis"))
+    else if(field_ptr->has_child("basis"))
     {
         // TODO: we currently have to replace colons, brackets, etc
         // to fetch from the mesh metadata, is there a standard helper
@@ -1710,7 +1785,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
         // create the grid fuction
         mfem::GridFunction *gf =  avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mesh,
-                                                                             n_field);
+                                                                             *field_ptr);
         // refine the grid function into a vtk data array
         res =  avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mesh,
                                                                       gf,
@@ -1723,7 +1798,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
 
     // check to see if we have matset_values multi-material data
     // if so, provide them as AUXILIARY_DATA_MIXED_VARIABLE
-    if(n_field.has_child("matset"))
+    if(field_ptr->has_child("matset"))
     {
         // get mesh and topo for var:
         //  - abs_varname_str
@@ -1740,7 +1815,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                               mesh_name,
                               topo_name);
 
-        std::string matset_name = n_field["matset"].as_string();
+        std::string matset_name = (*field_ptr)["matset"].as_string();
         std::string mat_name = mesh_name + "_" + topo_name + "_" + matset_name;
 
         BP_PLUGIN_INFO("mesh name: " << mesh_name);
@@ -1755,7 +1830,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                             n_matset);
 
         Node n_silo_matset;
-        conduit::blueprint::mesh::field::to_silo(n_field,
+        conduit::blueprint::mesh::field::to_silo(*field_ptr,
                                                  n_matset,
                                                  n_silo_matset);
 

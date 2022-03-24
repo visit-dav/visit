@@ -678,21 +678,94 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 }
 
 // ****************************************************************************
+//  Method: UnstructuredTopologyToVTKUnstructuredGrid
+//
+//  Purpose:
+//   Constructs a vtkUnstructuredGrid from a Blueprint topology and coordset
+//
+//  Arguments:
+//   n_coords:  Blueprint Coordset
+//   n_topo:    Blueprint Topology
+//
+//  Modifications:
+//    Justin Privitera Wed Mar 9 2022
+//    added logic to check if topology is polyhedral or polygonal, and, if so,
+//    transform it to a tetrahedral or triangular topology, respectively.
+//
+//    Justin Privitera Tue Mar 15 18:01:14 PDT 2022
+//    now this function adds original element ids (avtOriginalCellNumbers)
+//    to the vtkDataSet it returns, if applicable (if the mesh was polyhedral
+//    or polygonal and was transformed; see above modification comment).
+//
+//    Justin Privitera Wed Mar 23 12:28:02 PDT 2022
+//    Added domain as first argument, which is used for orig elem ids.
+//
+// ****************************************************************************
 vtkDataSet *
-UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
+UnstructuredTopologyToVTKUnstructuredGrid(int domain,
+                                          const Node &n_coords,
                                           const Node &n_topo)
 {
-    vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords);
+    const Node *coords_ptr = &n_coords;
+    const Node *topo_ptr = &n_topo;
+
+    Node res; // Used as a destination for the generate sides call
 
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-    ugrid->SetPoints(points);
-    points->Delete();
+    vtkUnsignedIntArray *oca = NULL;
 
+    if (n_topo.has_path("elements/shape"))
+    {
+        if (n_topo["elements/shape"].as_string() == "polyhedral" || 
+            n_topo["elements/shape"].as_string() == "polygonal")
+        {
+            Node s2dmap, d2smap, options;
+            blueprint::mesh::topology::unstructured::generate_sides(
+                n_topo,
+                res["topologies/" + n_topo.name()],
+                res["coordsets/" + n_topo["coordset"].as_string()],
+                s2dmap,
+                d2smap);
+
+            unsigned_int_accessor values = d2smap["values"].value();
+
+            oca = vtkUnsignedIntArray::New();
+            oca->SetName("avtOriginalCellNumbers");
+            oca->SetNumberOfComponents(2);
+
+            for (int i = 0; i < values.number_of_elements(); i ++)
+            {
+                unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
+                                          static_cast<unsigned int>(values[i])};
+                oca->InsertNextTypedTuple(ocdata);
+            }
+
+            coords_ptr = res.fetch_ptr(
+                "coordsets/" + n_topo["coordset"].as_string());
+            topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
+        }
+    }
+
+    // The coords could be changed in the call above, so this must happen
+    // after the conditionals
+    vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr);
+
+    ugrid->SetPoints(points);
+
+    if (oca != NULL)
+    {
+        ugrid->GetCellData()->AddArray(oca);
+        ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+        oca->Delete();
+    }
+
+    points->Delete();
+    
     //
     // Now, add explicit topology
     //
-    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, points->GetNumberOfPoints());
-    ugrid->SetCells(ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string()), ca);
+    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
+    ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), ca);
     ca->Delete();
 
     return ugrid;
@@ -741,10 +814,15 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
 //    Justin Privitera, Fri 04 Mar 2022 05:57:49 PM PST
 //    Added support for points topology type; see
 //    PointsTopologyToVTKUnstructuredGrid as well.
+// 
+//    Justin Privitera, Wed Mar 23 12:26:31 PDT 2022
+//    Added "domain" as first arg of MeshToVTK and passed it to
+//    UnstructuredTopologyToVTKUnstructuredGrid.
 //
 // ****************************************************************************
 vtkDataSet *
-avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
+avtBlueprintDataAdaptor::VTK::MeshToVTK(int domain,
+                                        const Node &n_mesh)
 {
     //NOTE: this assumes one coordset and one topo
     // that is the case for the blueprint plugin, but may not be the case
@@ -781,7 +859,7 @@ avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
         else
         {
             BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet UnstructuredTopologyToVTKUnstructuredGrid");
-            res = UnstructuredTopologyToVTKUnstructuredGrid(n_coords, n_topo);
+            res = UnstructuredTopologyToVTKUnstructuredGrid(domain, n_coords, n_topo);
         }
     }
     else
