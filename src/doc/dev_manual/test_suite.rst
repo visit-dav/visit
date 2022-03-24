@@ -362,8 +362,9 @@ We define four convenient ``make`` targets for creating, expanding and listing d
 The ``archive`` target uses python's tarfile module to create a *maximally* xz compressed archive.
 On some platforms, that operation may fail.
 If it does, an error message is reported informing the user to use the ``fbarchive`` target instead.
+
 The ``fbarchive`` target is a fall-back if the ``archive`` target fails.
-It uses ``cmake -E tar cvfJ`` but may not compress the resultant archive as well.
+It uses CMake's `run a command-line tool <https://cmake.org/cmake/help/v3.23/manual/cmake.1.html#run-a-command-line-tool>`_ feature to run ``cmake -E tar cvfJ`` but may not compress the resultant archive as well.
 Users are not *required* to use these targets but they are highly recommended to ensure optimal compression and portability of the resulting data archives.
 
 Sometimes, bulk operations on all the test data archives may take a while and developers may desire better or faster tooling.
