@@ -38,10 +38,6 @@ Other Software
 
    * For creating an installer for VisIt. NSIS 2 is known to work. NSIS 3 hasn't been tested.
 
-4. `7zip <http://7-zip.org>`_ *Optional*
-
-   * Used to untar testdata files.
-
-5. `Microsoft MPI <https://www.microsoft.com/en-us/download/details.aspx?id=57467>`_. *Optional*
+4. `Microsoft MPI <https://www.microsoft.com/en-us/download/details.aspx?id=57467>`_. *Optional*
 
    * For building VisIt's parallel engine.  Redistributable binaries and SDK's are needed, so download and install both msmpisdk.msi and msmpisetup.exe.
