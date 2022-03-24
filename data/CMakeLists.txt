@@ -79,6 +79,9 @@
 #
 #   Mark C. Miller, Tue Dec 10 09:24:24 PST 2019
 #   Remove custom help target.
+#
+#   Mark C. Miller, Wed Mar 23 18:37:27 PDT 2022
+#   Replace 7z with vanilla tar w/xz compression.
 #****************************************************************************
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.14)
@@ -135,28 +138,41 @@ ADD_CUSTOM_TARGET(testdata)
 ADD_DEPENDENCIES(testdata data)
 
 #-----------------------------------------------------------------------------
-# CMake variable names for make variables used in coneneience targets below.
+# CMake variable names for make variables used in convenience targets below.
 # Note the {} surrounding the make variables allowing them to be expanded at
 # make time, not cmake time.
 #-----------------------------------------------------------------------------
 SET(ARCHIVE_NAME {ANAME})
-SET(ARCHIVE_DIR {ADIR})
+SET(ARCHIVE_FILES {AFILES})
 
 #-----------------------------------------------------------------------------
-# Define convenience command/target to create an archive
+# Define convenience command/target to create an archive...optimized variant
+# using python tarfile module. This gives optimal compression (due to preset=9)
+# but might fail. If it does, it prints an error message informing user to
+# use `fbarchive` target instead
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive_create
-    COMMAND ${CMAKE_COMMAND} -E tar cvfJ $${ARCHIVE_NAME} $${ARCHIVE_DIR}
+    COMMAND python3 -c \"import sys,tarfile\try:\  tf=tarfile.open\(sys.argv[1],'w:xz',preset=9\)\  [tf.add\(x\) for x in sys.argv[2:]]\except:\  print\('\\n\\n\\n***archive target failed, use fbarchive target***\\n\\n\\n'\)\" ${CMAKE_CURRENT_SOURCE_DIR}/$${ARCHIVE_NAME} $${ARCHIVE_FILES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ADD_CUSTOM_TARGET(archive DEPENDS _archive_create)
+
+#--------------------------------------------------------------------------------
+# Define convenience command/target to create an archive...tried and true variant
+# Should always succeed but compression might not be as good.
+#--------------------------------------------------------------------------------
+ADD_CUSTOM_COMMAND(
+    OUTPUT _fbarchive_create
+    COMMAND ${CMAKE_COMMAND} -E tar cvfJ $${ARCHIVE_NAME} $${ARCHIVE_FILES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+ADD_CUSTOM_TARGET(fbarchive DEPENDS _fbarchive_create)
 
 #-----------------------------------------------------------------------------
 # Define convenience command/target to expand an archive
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive_expand
-    COMMAND ${CMAKE_COMMAND} -E tar xvf $${ARCHIVE_NAME}
+    COMMAND ${CMAKE_COMMAND} -E tar xvf ${CMAKE_CURRENT_SOURCE_DIR}/$${ARCHIVE_NAME}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ADD_CUSTOM_TARGET(expand DEPENDS _archive_expand)
 
@@ -165,7 +181,7 @@ ADD_CUSTOM_TARGET(expand DEPENDS _archive_expand)
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_COMMAND(
     OUTPUT _archive_list
-    COMMAND ${CMAKE_COMMAND} -E tar tvf $${ARCHIVE_NAME}
+    COMMAND ${CMAKE_COMMAND} -E tar tvf ${CMAKE_CURRENT_SOURCE_DIR}/$${ARCHIVE_NAME}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ADD_CUSTOM_TARGET(list DEPENDS _archive_list)
 
@@ -175,8 +191,11 @@ ADD_CUSTOM_TARGET(
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "               Conveninent make targets:"
     COMMAND ${CMAKE_COMMAND} -E echo ""
-    COMMAND ${CMAKE_COMMAND} -E echo "To create an archive..."
-    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> ADIR=<ardir> archive"
+    COMMAND ${CMAKE_COMMAND} -E echo "To create an optimally compressed archive..."
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> AFILES=\"dir1 dir2 file1...\" archive"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "To create a fallback archive if optimal compression fails..."
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> AFILES=\"dir1 dir2 file1 file2...\" fbarchive"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "To expand a single, specific archive..."
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> expand"
@@ -185,11 +204,14 @@ ADD_CUSTOM_TARGET(
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> list"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "  ANAME is the name of the archive with the .tar.xz extension"
-    COMMAND ${CMAKE_COMMAND} -E echo "  ADIR is the name of the directory to be archived"
+    COMMAND ${CMAKE_COMMAND} -E echo "  AFILES is a \"-bracketed, space separated list of dirs and/or"
+    COMMAND ${CMAKE_COMMAND} -E echo "    files. If just one entry \"-bracketing is not needed."
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "Examples..."
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=silo_hdf5_test_data.tar.xz expand"
     COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=silo_hdf5_test_data.tar.xz list"
-    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=my_test_data.tar.xz ADIR=my_test_data archive"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=my_test_data.tar.xz AFILES=my_test_data archive"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=foo.tar.xz AFILES=\"dir1 file1 dir2\" archive"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=foo.tar.xz AFILES=foo fbarchive"
     COMMAND ${CMAKE_COMMAND} -E echo ""
     COMMAND ${CMAKE_COMMAND} -E echo "")
