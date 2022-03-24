@@ -346,7 +346,7 @@ ENDIF(SILO_FOUND)
 #
 #-----------------------------------------------------------------------------
 FIND_PROGRAM(TAR_EXE tar)
-IF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
+IF(TAR_EXE AND NOT WIN32)
     SET(TAR_CMD ${TAR_EXE})
     SET(UNTAR_ARGS "xvf")
     SET(TAR_ARGS "cvfJ")
