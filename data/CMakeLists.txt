@@ -98,8 +98,10 @@ MESSAGE(STATUS "Configuring VisIt Binary Data Archive Targets")
 # Each archived target extracts data into a directory matching the root name
 # of the source tarball. This makes tracking the dependencies simple.
 #
+#   Mark C. Miller, Thu Mar 24 13:22:24 PDT 2022
+#   Add CONFIGURE_DEPENDS so that new *.tar.gz archives are seen at make time
 #-----------------------------------------------------------------------------
-FILE(GLOB ARCHIVED_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *test_data*.tar.xz)
+FILE(GLOB ARCHIVED_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS *.tar.xz)
 
 #-----------------------------------------------------------------------------
 # Add a custom command that extracts all archived dataset *and* collect
