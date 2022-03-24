@@ -18043,9 +18043,9 @@ AddProxyMethods()
     AddMethod("OpenClient", visit_OpenClient);
     AddMethod("OpenComputeEngine", visit_OpenComputeEngine,
                                                   visit_OpenComputeEngine_doc);
-    AddMethod("OpenGUI", visit_OpenGUI);
+    AddMethod("OpenGUI", visit_OpenGUI, visit_OpenGUI_doc);
     AddMethod("OpenMDServer", visit_OpenMDServer, visit_OpenMDServer_doc);
-    AddMethod("OpenCLI", visit_OpenCLI);
+    AddMethod("OpenCLI", visit_OpenCLI, visit_OpenCLI_doc);
     AddMethod("OverlayDatabase", visit_OverlayDatabase,
                                                     visit_OverlayDatabase_doc);
     AddMethod("Pick", visit_ZonePick, visit_ZonePick_doc);

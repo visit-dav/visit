@@ -11815,21 +11815,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnDomainsOff function turns domains off. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnDomainsOff function with no arguments, all domains would be turned
-    off. All functions can also take a string argument, which is the name of the set
-    to modify. For example, you could turn off domain 0 by calling the
-    TurnDomainsOff with a single argument of "domain0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**
@@ -11870,21 +11868,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnDomainsOn function turns domains on. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnDomainsOn function with no arguments, all domains would be turned
-    on. All functions can also take a string argument, which is the name of
-    the set to modify. For example, you could turn on domain 0 by calling the
-    TurnDomainsOn with a single argument of "domain0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**
@@ -11925,21 +11921,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnMaterialsOff function turns materials off. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnMaterialsOff function with no arguments, all materials would be turned
-    off. All functions can also take a string argument, which is the name of
-    the set to modify. For example, you could turn off material 0 by calling
-    TurnMaterialsOff with a single argument of "material0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**
@@ -11980,21 +11974,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnMaterialsOn function turns materials on. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnMaterialsOn function with no arguments, all materials would be turned
-    off. All functions can also take a string argument, which is the name of
-    the set to modify. For example, you could turn on material 0 by calling the
-    TurnMaterialsOn with a single argument of "material0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**
