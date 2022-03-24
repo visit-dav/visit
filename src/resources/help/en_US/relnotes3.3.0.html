@@ -133,6 +133,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>There is now a WIN32DEFINES xml tag for database plugins, used to specify preprocessor defines needed by a plugin on Windows. If the needed define comes from a thirdparty library, the Find module for that library should set a CMake var with those defines that the plugin could then use in the .xml file. See FindCGNS.cmake and CGNS.xml for an example.</li>
   <li>The minimum required version of CMake is now 3.14, the version built by build_visit.</li> 
   <li>The programs qtviswinExample, qtvtkExample, qvtkopenglExample were added to help with debugging OpenGL issues.</li>
+  <li>VisIt test data archive tooling was changed from 7z to tar with the same (lzma2) compression.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
