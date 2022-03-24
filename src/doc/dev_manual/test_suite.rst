@@ -412,7 +412,7 @@ Note that if you work on a machine or software configuration different from how 
 Often there can be single-pixel shifts in position or rgb color values can be off by one or two values.
 Typically the differences are imperceptible except by direct, numerical comparison.
 Because only developers with access to `LLNL CZ systems <https://hpc.llnl.gov/documentation/user-guides/accessing-lc-systems#logging-in-to-LLNL-machines>`_ can *generate* baselines *guaranteed* to match nightly results there, our practice is to permit developers to commit potentially non-matching baselines and allow the nightly tests to run and maybe fail.
-Then, any developer can use the ``rebase.py`` `tool <https://github.com/visit-dav/visit/blob/develop/test/baseline/rebase.py>`_ in ``test/baseline`` (also see the :ref:`above paragraph about using ``rebase.py`` <rebaselining_test_results>`) to update the baselines to whatever nightly testing produced to create perfect matches.
+Then, any developer can use the ``rebase.py`` `tool <https://github.com/visit-dav/visit/blob/develop/test/baseline/rebase.py>`_ in ``test/baseline`` (also see the :ref:`above paragraph about using rebase.py <rebaselining_test_results>`) to update the baselines to whatever nightly testing produced to create perfect matches.
 
 To make debugging a new test case easier, add the ``-v`` (-verbose flag) or ``-v --vargs "-debug 5"`` to the ``run_visit_test_suite.sh`` command, above.
 
