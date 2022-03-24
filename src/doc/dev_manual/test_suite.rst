@@ -4,8 +4,8 @@ Regression Testing
 Overview
 --------
 VisIt_ has a large and continually growing test suite.
-VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data in 7z archives in the top-level ``data`` directory and data generation sources in ``src/tools/data/datagen``.
-Regression tests are run on a nightly basis.
+VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data in archives in the top-level ``data`` directory and data generation sources in ``src/tools/data/datagen``.
+Regression tests are run on a nightly basis and results are posted to VisIt_'s `test dashboard <https://visit-dav.github.io/dashboard/>`_.
 Testing exercises VisIt_'s viewer, mdserver, engine and cli but not the GUI.
 
 
@@ -64,8 +64,8 @@ The list of tests must be the last entries on the command line. ::
 There are a number of additional command-line options to the test suite.
 ``./run_visit_test_suite.sh -help`` will give you details about these options.
 
-Accessing regression test results
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Accessing nightly regression test results
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The nightly test suite results are posted to `GitHub <https://visit-dav.github.io/dashboard/>`_.
 
 In the event of failure on the nightly run
@@ -126,6 +126,8 @@ Or, we temporarily disable a test by skipping it until a given problem in the co
 This is handled by the ``--skiplist`` argument to the test suite. 
 We maintain a list of the tests we currently skip and update it as necessary.
 The default skip list file is ``src/test/skip.json``.
+
+.. _three_results_types:
 
 Three Types of Test Results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -334,6 +336,7 @@ Tips on writing regression tests
 |tests/databases/xform_precision.py |  * uses test-specific enviornment variable settings                |
 +-----------------------------------+--------------------------------------------------------------------+
 
+.. _rebaselining_test_results:
 
 Rebaselining Test Results
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -343,10 +346,81 @@ This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test results das
 To use this script, run ``./rebase.py --help.``
 Once you've completed using ``rebase.py`` to update image baselines, don't forget to commit your changes back to the repository.
 
+Test data archives
+------------------
+Testing VisIt_ requires input data sets.
+Because of the wide variety of data formats and readers VisIt_ supports, we have a wide variety of `test data archives <https://github.com/visit-dav/visit/tree/develop/data>`_.
+A tar-compatible archive format using the *highest* and *commonly* available compression are the two basic requirements for data archives in our development workflow.
 
-Using VisIt_ Test Suite for Sim Code Testing
---------------------------------------------
-VisIt_'s testing infrastructure can also be used from a VisIt_ install by simulation codes that want to write their own Visit-based tests.
+Our practice is to store test data archives as maximally xz compressed, `tar-compatible <https://en.wikipedia.org/wiki/List_of_archive_formats#Archiving_and_compression>`_ archives.
+We use `xz (e.g. lzma2) compression <https://en.wikipedia.org/wiki/XZ_Utils>`_ instead of the more familiar `gzip compression <https://en.wikipedia.org/wiki/Gzip>`_ because ``xz`` is known to compress 2-3x smaller and because in most circumstances only VisIt_ developers (not users) are burdened with having to manage any additional tooling if needed.
+Any data archives for users, we make available in a choice of compressed formats which include the more familiar gzip compression.
+
+The ``CMakeLists.txt`` file in the top-level ``data`` directory is designed to be useable independently of the rest of the VisIt_ source code tree.
+After running ``cmake`` there, the command ``make help-archive`` explains how to use some convenient ``make`` targets for managing data archives.
+We define four convenient ``make`` targets for creating, expanding and listing data archives.
+The ``archive`` target uses python's tarfile module to create a *maximally* xz compressed archive.
+On some platforms, that operation may fail.
+If it does, an error message is reported informing the user to use the ``fbarchive`` target instead.
+
+The ``fbarchive`` target is a fall-back if the ``archive`` target fails.
+It uses CMake's `run a command-line tool <https://cmake.org/cmake/help/v3.23/manual/cmake.1.html#run-a-command-line-tool>`_ feature to run ``cmake -E tar cvfJ`` but may not compress the resultant archive as well.
+Users are not *required* to use these targets but they are highly recommended to ensure optimal compression and portability of the resulting data archives.
+
+Sometimes, bulk operations on all the test data archives may take a while and developers may desire better or faster tooling.
+In this case, developers may wish to manipulate the archive and compression tooling directly.
+For example, this command pipe on linux... ::
+
+   tar cvf - my_test_data | xz -9e -T0 - > my_test_data.tar.xz 
+
+...will create a *maximally* compressed (``-9e``) archive of ``my_test_data`` using multi-threaded xz compression where the number of threads will be chosen (``-T0``) equal to match the number of hardware cores.
+For more information about advanced archive and compression operations, readers are encouraged to have a look at the `tar <https://man7.org/linux/man-pages/man1/tar.1.html>`_ and `xz <https://linux.die.net/man/1/xz>`_ man pages.
+
+If users do use tar and compression tools directly to *create* data archives instead of through the convenient make targets, users are required to at least confirm that *expanding* the archives with the ``expand`` target does work.
+Doing so will ensure it will work for everyone everywhere.
+
+Adding test data
+~~~~~~~~~~~~~~~~
+
+Sometimes new data files need to be added to support the new tests.
+This involves adding either an entirely new data archive or adding a new file to an existing data archive.
+With names like ``hdf5_test_data.tar.xz``, all the data archives are named more or less for the data format(s) in which the data files they contain are stored.
+
+Adding new tests 
+~~~~~~~~~~~~~~~~
+
+* Add code to an existing ``.py`` file or create a new ``.py`` file copying the basic format of an existing one including boilerplat calls to functions like ``TurnOffAllAnnotations()``, using ``data_path()`` when opening a database file and ``Exit()`` when terminating a test.
+* If adding a new ``.py`` file, be careful to use the correct *category* directory.
+  For example, when writing tests for a new database format, add the ``.py`` file to the *databases* directory or when adding a new ``.py`` file to test a new plot, add it to the *plots* directory.
+  To see existing categories, have a look at the directory/folder names in the `tests <ihttps://github.com/visit-dav/visit/tree/develop/src/test/tests>`_ directory.
+  If an entirely new kind of category needs to be introduced, be sure to discuss this with other developers first.
+* From within a ``.py`` file, image results are generated with the ``Test()`` function and textual results with the ``TestText()`` function.
+  But, see :ref:`above <three_results_types>` for why ``TestValueXX()`` is preferred over image or text results.
+  
+Once logic to produce new test results via ``Test()``, ``TestText()`` or ``TestValueXX()`` are added to a ``.py`` file, the new tests can be run for the *first* time.
+
+``Test()`` and ``TestText()`` type tests will of course *fail* the first time because there are no associated baseline results defined for them.
+However, *current* results from ``Test()`` and ``TestText()`` type tests will be written to a directory name of the form ``output/current/<category>/<.py-file-name>/``.
+The new results should be inspected for correctness.
+If they are as expected, to create the baseline results simply copy the new ``.png`` or ``.txt`` file(s) to their respective place(s) in the ``test/baseline`` directory tree being careful to follow the same *category* and *pyfile* name as was introduced above.
+Of course, don't forget to ``git add`` them for eventual commit.
+
+Rebaselining for different configurations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Note that if you work on a machine or software configuration different from how VisIt_'s nightly testing is run, there is a chance the baseline results you create won't match, bit-for-bit, with those same results from nightly testing.
+Often there can be single-pixel shifts in position or rgb color values can be off by one or two values.
+Typically the differences are imperceptible except by direct, numerical comparison.
+Because only developers with access to `LLNL CZ systems <https://hpc.llnl.gov/documentation/user-guides/accessing-lc-systems#logging-in-to-LLNL-machines>`_ can *generate* baselines *guaranteed* to match nightly results there, our practice is to permit developers to commit potentially non-matching baselines and allow the nightly tests to run and maybe fail.
+Then, any developer can use the ``rebase.py`` `tool <https://github.com/visit-dav/visit/blob/develop/test/baseline/rebase.py>`_ in ``test/baseline`` (also see the :ref:`above paragraph about using rebase.py <rebaselining_test_results>`) to update the baselines to whatever nightly testing produced to create perfect matches.
+
+To make debugging a new test case easier, add the ``-v`` (-verbose flag) or ``-v --vargs "-debug 5"`` to the ``run_visit_test_suite.sh`` command, above.
+
+Finally, make sure to tag the test in a comment block with a space separated list of CLASSES and MODES the test supports.
+
+Using VisIt_'s test routines in other applications
+--------------------------------------------------
+VisIt_'s testing infrastructure can also be used from any VisIt_ installation by other applications that want to write their own Visit-based tests.
 For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_.
 
 
