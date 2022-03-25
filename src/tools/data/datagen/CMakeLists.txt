@@ -388,7 +388,7 @@ if(EXISTS ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz)
     # with build_visit,  because lfs content isn't pulled.
 
     file(SIZE ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz VDD_SIZE)
-    if(VDD_SIZE GREATER 200) # lfs'd files are generally ~130.
+    if(VDD_SIZE GREATER 200) # lfs'd files are generally ~130 bytes.
         set(USE_VISIT_DIST_DATA_TARBALL true)
     endif()
 endif()
