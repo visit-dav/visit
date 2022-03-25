@@ -68,6 +68,9 @@
 #   Cyrus Harrison, Wed Jan 19 10:06:17 PST 2022
 #   Install extra python front end scripts if they exist
 #
+#   Kathleen Biagas, Thu Mar 24, 2022
+#   Use CMake-style path for installs of python-include on Windows.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -519,7 +522,8 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
             IF(VISIT_HEADERS_SKIP_INSTALL)
                 MESSAGE(STATUS "Skipping python headers installation")
             ELSE(VISIT_HEADERS_SKIP_INSTALL)
-            INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}/
+            file(TO_CMAKE_PATH "${PYTHON_INCLUDE_PATH}" PyPth)
+            INSTALL(DIRECTORY ${PyPth}/
                 DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/python
                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE
                                  GROUP_READ GROUP_WRITE
@@ -537,7 +541,7 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
             # if we want to be able to install python modules into a visit
             # install.
             #
-            INSTALL(DIRECTORY ${PYTHON_INCLUDE_PATH}/
+            INSTALL(DIRECTORY ${PyPth}/
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}/python/include
                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE
                                  GROUP_READ GROUP_WRITE
@@ -558,6 +562,7 @@ IF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
                                       WORLD_READ             WORLD_EXECUTE
                 PATTERN ".svn"   EXCLUDE
             )
+            unset(PyPth)
         ENDIF (NOT WIN32)
     ENDIF((NOT ${PYTHON_DIR} STREQUAL "/usr"))
 ENDIF(PYTHONLIBS_FOUND AND NOT VISIT_PYTHON_SKIP_INSTALL)
