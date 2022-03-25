@@ -5211,6 +5211,11 @@ ViewerWindow::ResetViewAxisArray()
 //    I added code to set the center of rotation to handle the case where
 //    the navigation mode is dolly.
 //
+//    Kathleen Biagas, Wed Mar 23, 2022
+//    Account for Flythrough navigation mode when setting the z-focus,
+//    parallelScale and near/far clipping planes. Calculations based on
+//    those in ResetView3d.
+//
 // ****************************************************************************
 
 void
@@ -5226,6 +5231,9 @@ ViewerWindow::AdjustView3d(const double *limits)
         centeringValid3d = false;
         return;
     }
+
+    InteractorAttributes::NavigationMode navigationMode =
+        visWindow->GetInteractorAtts()->GetNavigationMode();
 
     //
     // Get the current view.
@@ -5280,23 +5288,38 @@ ViewerWindow::AdjustView3d(const double *limits)
     if( width == 0.0 )
       width = 0.001;
 
+    double distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
+
     view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2. +
                       panFactor[0] * width;
     view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2. +
                       panFactor[1] * width;
-    view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2. +
-                      panFactor[2] * width;
+
+    if (navigationMode == InteractorAttributes::Flythrough)
+    {
+        view3D.focus[2] = (1.0 - 1.0 / 20.) * distance;
+    }
+    else
+    {
+        view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2. +
+                          panFactor[2] * width;
+    }
 
     //
-    // Calculate the new parallel scale.
+    // Calculate the new parallel scale and near and far clipping planes.
     //
-    view3D.parallelScale = width / zoomFactor;
-
-    //
-    // Calculate the near and far clipping planes.
-    //
-    view3D.nearPlane = - 2.0 * width;
-    view3D.farPlane  =   2.0 * width;
+    if (navigationMode == InteractorAttributes::Flythrough)
+    {
+        view3D.parallelScale = width / 20.;
+        view3D.nearPlane = - (1.0 / 20.) * distance * 0.99;
+        view3D.farPlane  = (1.0 - 1.0 / 20.) * distance + 2.0 * width;
+    }
+    else
+    {
+        view3D.parallelScale = width / zoomFactor;
+        view3D.nearPlane = - 2.0 * width;
+        view3D.farPlane  =   2.0 * width;
+    }
 
     //
     // Set the center of rotation if the user hasn't specified it.
