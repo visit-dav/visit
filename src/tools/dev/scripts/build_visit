@@ -27,9 +27,9 @@
 #bv_<module>_print : TODO
 #bv_<module>_print_usage : TODO
 #bv_<module>_host_profile : TODO
-#bv_<module>_dry_run : TODO
-#bv_<module>_is_installed : TODO
-#bv_<module>_is_enabled : TODO
+#bv_<module>_dry_run : ???
+#bv_<module>_is_installed : returns true if the module is installed, and false otherwise
+#bv_<module>_is_enabled : returns true if the module is enabled, and false otherwise
 
 # Then add the module name to bv_support/modules.xml under the appropriate
 # categories

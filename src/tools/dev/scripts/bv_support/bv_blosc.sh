@@ -21,9 +21,9 @@ function bv_blosc_disable
 function bv_blosc_info
 {
     export BLOSC_VERSION=${BLOSC_VERSION:-"2.0.4"}
-    # TODO change filename and put in 3rd party lib and 3rd party lib 3.2 release
-    export BLOSC_FILE=${BLOSC_FILE:-"v${BLOSC_VERSION}.tar.gz"}
-    # the name is different if downloaded directly from github release
+    export BLOSC_FILE=${BLOSC_FILE:-"c-blosc2-${BLOSC_VERSION}.tar.gz"}
+    # the URL is commented out because the filename is different in the blosc release
+    # there, the filename is v2.0.4.tar.gz.
     # export BLOSC_URL=${BLOSC_URL:-"https://github.com/Blosc/c-blosc2/archive/refs/tags"}
     export BLOSC_BUILD_DIR=${BLOSC_BUILD_DIR:-"c-blosc2-${BLOSC_VERSION}"}
     export BLOSC_MD5_CHECKSUM="d427fcf68543f971dd7dd22974a47c74"
@@ -51,6 +51,7 @@ function bv_blosc_depends_on
 
 function build_blosc
 {
+    # TODO there is a chance it might need zlib? need to investigate further
     printf ""
 }
 
@@ -63,8 +64,7 @@ function bv_blosc_build
         if [[ $? == 0 ]] ; then
             info "Skipping Blosc build.  Blosc is already installed."
         else
-            # TODO time a build to get an idea
-            info "Building Blosc (~??? minutes)"
+            info "Building Blosc (~5 minutes)"
 
             build_blosc
             if [[ $? != 0 ]] ; then
@@ -89,15 +89,13 @@ function bv_blosc_print_usage
 
 function bv_blosc_host_profile
 {
-    printf ""
-
-    # if [[ "$DO_DAMARIS" == "yes" ]] ; then
-    #     echo "##" >> $HOSTCONF
-    #     echo "## DAMARIS" >> $HOSTCONF
-    #     echo "##" >> $HOSTCONF
-    #     echo "VISIT_OPTION_DEFAULT(VISIT_DAMARIS_DIR \${VISITHOME}/damaris/$DAMARIS_VERSION/\${VISITARCH})" \
-    #          >> $HOSTCONF
-    # fi
+    if [[ "$DO_BLOSC" == "yes" ]] ; then
+        echo "##" >> $HOSTCONF
+        echo "## BLOSC" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_BLOSC_DIR \${VISITHOME}/blosc/$BLOSC_VERSION/\${VISITARCH})" \
+             >> $HOSTCONF
+    fi
 }
 
 function bv_blosc_dry_run
