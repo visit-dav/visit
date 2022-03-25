@@ -336,7 +336,7 @@ class AttributesTable(Table):
 
         output      = "**%s**: *%sAttributes()*\n" % (self.attribute, self.attribute)
         output     += '-' * char_count
-        output     += "\n|\n\n%s\n" % (self.build_sphinx_table(title=True))
+        output     += "\n\n%s\n" % (self.build_sphinx_table(title=True))
 
         return output
 
@@ -460,7 +460,7 @@ def attributes_to_sphinx(atts):
                 print("\nERROR: MISSING CASE!", file=sys.stderr)
                 print("LINE: " + str(line) + "\n", file=sys.stderr)
     
-        attributes_doc += "\n|\n\n%s\n|\n" % (str(table))
+        attributes_doc += "%s\n" % (str(table))
 
     return attributes_doc
 
@@ -547,7 +547,7 @@ if __name__ == '__main__':
     attrlist.sort()
     event_names = visit.GetCallbackNames()
     
-    template = "\n\n%s|\n|\n%s"
+    template = "%s%s"
 
     atts_doc    = attributes_to_sphinx(attrlist)
     atts_doc    = template % (atts_preamble, atts_doc)
