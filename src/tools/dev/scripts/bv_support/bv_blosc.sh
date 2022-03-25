@@ -20,13 +20,11 @@ function bv_blosc_disable
 # Where to get the module, the version, etc...
 function bv_blosc_info
 {
-    # Q?
-    # potential problem: the file is stored on github without the name cblosc
-    # but in our 3rd party libs it would be bad to have a tarball that just said v2.0.4
-    # so the download from the 3rd party libs folder fails because the filename is wrong
     export BLOSC_VERSION=${BLOSC_VERSION:-"2.0.4"}
+    # TODO change filename and put in 3rd party lib and 3rd party lib 3.2 release
     export BLOSC_FILE=${BLOSC_FILE:-"v${BLOSC_VERSION}.tar.gz"}
-    export BLOSC_URL=${BLOSC_URL:-"https://github.com/Blosc/c-blosc2/archive/refs/tags"}
+    # the name is different if downloaded directly from github release
+    # export BLOSC_URL=${BLOSC_URL:-"https://github.com/Blosc/c-blosc2/archive/refs/tags"}
     export BLOSC_BUILD_DIR=${BLOSC_BUILD_DIR:-"c-blosc2-${BLOSC_VERSION}"}
     export BLOSC_MD5_CHECKSUM="d427fcf68543f971dd7dd22974a47c74"
     export BLOSC_SHA256_CHECKSUM="90c78edcc262759dd16d243141513310624bb4fda3d98ac34dcfb78255e151c1"
@@ -41,9 +39,6 @@ function bv_blosc_ensure
             ANY_ERRORS="yes"
             DO_BLOSC="no"
             error "Unable to build CBlosc2.  ${BLOSC_FILE} not found."
-        else
-            # Q? is this going to be ok?
-            mv $BLOSC_FILE c-blosc2-2.0.4.tar.gz
         fi
     fi
 }
@@ -51,9 +46,6 @@ function bv_blosc_ensure
 # What other modules does this module depend on. Example "adios" returns string "mxml"
 function bv_blosc_depends_on
 {
-    # Q?
-    # if it builds with cmake, does that necessarily mean it depends on cmake?
-    # i.e. do other things build with cmake but don't list it as a dependency?
     echo "cmake"
 }
 
@@ -71,7 +63,7 @@ function bv_blosc_build
         if [[ $? == 0 ]] ; then
             info "Skipping Blosc build.  Blosc is already installed."
         else
-            # Q? should I time a build to get this estimate?
+            # TODO time a build to get an idea
             info "Building Blosc (~??? minutes)"
 
             build_blosc
@@ -95,15 +87,19 @@ function bv_blosc_print_usage
     printf "%-20s %s [%s]\n" "--blosc" "Build Blosc" "DO_BLOSC"
 }
 
-# Q? what do I do???
 function bv_blosc_host_profile
 {
     printf ""
+
+    # if [[ "$DO_DAMARIS" == "yes" ]] ; then
+    #     echo "##" >> $HOSTCONF
+    #     echo "## DAMARIS" >> $HOSTCONF
+    #     echo "##" >> $HOSTCONF
+    #     echo "VISIT_OPTION_DEFAULT(VISIT_DAMARIS_DIR \${VISITHOME}/damaris/$DAMARIS_VERSION/\${VISITARCH})" \
+    #          >> $HOSTCONF
+    # fi
 }
 
-# Q?
-# what is the point of this function?
-# every example I've found has this same logic
 function bv_blosc_dry_run
 {
     if [[ "$DO_BLOSC" == "yes" ]] ; then
