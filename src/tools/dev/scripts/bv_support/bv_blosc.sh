@@ -41,6 +41,9 @@ function bv_blosc_ensure
             ANY_ERRORS="yes"
             DO_BLOSC="no"
             error "Unable to build CBlosc2.  ${BLOSC_FILE} not found."
+        else
+            # Q? is this going to be ok?
+            mv $BLOSC_FILE c-blosc2-2.0.4.tar.gz
         fi
     fi
 }
@@ -54,10 +57,30 @@ function bv_blosc_depends_on
     echo "cmake"
 }
 
+function build_blosc
+{
+    printf ""
+}
+
 # build the module
 function bv_blosc_build
 {
-    echo ""
+    cd "$START_DIR"
+    if [[ "$DO_BLOSC" == "yes" ]] ; then
+        check_if_installed "blosc" $BLOSC_VERSION
+        if [[ $? == 0 ]] ; then
+            info "Skipping Blosc build.  Blosc is already installed."
+        else
+            # Q? should I time a build to get this estimate?
+            info "Building Blosc (~??? minutes)"
+
+            build_blosc
+            if [[ $? != 0 ]] ; then
+                error "Unable to build or install Blosc.  Bailing out."
+            fi
+            info "Done building Blosc"
+        fi
+    fi
 }
 
 function bv_blosc_print
@@ -72,6 +95,7 @@ function bv_blosc_print_usage
     printf "%-20s %s [%s]\n" "--blosc" "Build Blosc" "DO_BLOSC"
 }
 
+# Q? what do I do???
 function bv_blosc_host_profile
 {
     printf ""
