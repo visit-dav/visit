@@ -74,6 +74,9 @@ class avtMaterial;
 //    Paul Selby, Fri 21 May 16:54:23 BST 2021
 //    Added GetUnstrMesh & GetUnstrVar methods
 //
+//    Paul Selby, Fri 25 Mar 13:19:54 GMT 2022
+//    Added GetUnstrMat, GetQuadMat & CreateMaterial methods
+//
 // ****************************************************************************
 
 class avtTyphonIOFileFormat : public avtMTMDFileFormat
@@ -133,7 +136,10 @@ class avtTyphonIOFileFormat : public avtMTMDFileFormat
     vtkDataArray          *GetQuadVar(TIO_Object_t, TIO_Size_t, TIO_Centre_t);
     vtkDataArray          *GetPointVar(TIO_Object_t, TIO_Size_t, TIO_Centre_t);
     vtkDataArray          *GetUnstrVar(TIO_Object_t, TIO_Size_t, TIO_Centre_t);
+    avtMaterial           *GetQuadMat(TIO_Object_t, TIO_Size_t);
     avtMaterial           *GetPointMat(TIO_Object_t, TIO_Size_t);
+    avtMaterial           *GetUnstrMat(TIO_Object_t, TIO_Size_t);
+    avtMaterial           *CreateMaterial(TIO_Object_t, TIO_Size_t, int, int *);
 };
 
 

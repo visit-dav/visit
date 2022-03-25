@@ -30,6 +30,9 @@
 #    Paul Selby, Fri 21 May 16:54:23 BST 2021
 #    Added Pseudocolor for Unstr data
 #
+#    Paul Selby, Fri 25 Mar 13:19:54 GMT 2022
+#    Added Material plot for Unstr data
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("TyphonIO")
 
@@ -159,6 +162,14 @@ DeleteAllPlots()
 AddPlot("Pseudocolor", "Quant2")
 DrawPlots()
 Test("typhonio_03_05")
+
+#
+# Unstructured Mesh material plot
+#
+DeleteAllPlots()
+AddPlot("FilledBoundary", "Material1")
+DrawPlots()
+Test("typhonio_03_06")
 
 DeleteAllPlots()
 CloseDatabase(db)

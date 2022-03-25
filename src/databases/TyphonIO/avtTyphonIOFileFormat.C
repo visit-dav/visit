@@ -1678,6 +1678,10 @@ avtTyphonIOFileFormat::GetVectorVar(int timestate, int domain,
 //  Programmer: Paul Selby
 //  Creation:   June 18, 2015
 //
+//  Modifications:
+//    Paul Selby, Fri 25 Mar 13:19:54 GMT 2022
+//    Added support for Quad & Unstructured meshes
+//
 // ****************************************************************************
 
 void *
@@ -1725,6 +1729,13 @@ avtTyphonIOFileFormat::GetAuxiliaryData(const char *varname, int timestate,
         {
             switch(meshType)
             {
+              case TIO_MESH_QUAD_COLINEAR: // FALLTHRU
+              case TIO_MESH_QUAD_NONCOLINEAR:
+                retval = GetQuadMat(matId, domain);
+                break;
+              case TIO_MESH_UNSTRUCT:
+                retval = GetUnstrMat(matId, domain);
+                break;
               case TIO_MESH_POINT:
                 retval = GetPointMat(matId, domain);
                 break;
@@ -1768,6 +1779,79 @@ avtTyphonIOFileFormat::GetAuxiliaryData(const char *varname, int timestate,
 
 
 // ****************************************************************************
+//  Method: avtTyphonIOFileFormat::GetQuadMat
+//
+//  Purpose:
+//      Gets the quad mesh material
+//
+//  Arguments:
+//      matId    Previously opened TyphonIO matId
+//      chunk    TyphonIO chunk index
+//
+//  Programmer: Paul Selby
+//  Creation:   March 25, 2022
+//
+// ****************************************************************************
+
+avtMaterial *
+avtTyphonIOFileFormat::GetQuadMat(TIO_Object_t matId, TIO_Size_t chunk)
+{
+    TIO_Dims_t ndims;
+    TIO_Size_t ni, nj, nk, nmixcell, nmixcomp;
+    TIO_t success;
+
+    success = TIO_Read_QuadMaterial_Chunk(fileId, matId, chunk,
+                                          TIO_XFER_INDEPENDENT, TIO_INT,
+                                          TIO_GHOSTS_NONE, &ndims, &ni, &nj,
+                                          &nk, NULL, TIO_INT, TIO_INT,
+                                          TIO_FLOAT, &nmixcell, &nmixcomp, NULL,
+                                          NULL, NULL, NULL);
+    if (success != TIO_SUCCESS)
+    {
+        EXCEPTION1(TyphonIOException, success);
+    }
+
+    //
+    // Read material values
+    // Note: TyphonIO will convert to int on the fly if needed
+    //
+    TIO_Size_t ncells = ni * (ndims > 1 ? nj : 1) * (ndims > 2 ? nk : 1);
+    int *matlist = new int[ncells];
+
+    success = TIO_Read_QuadMaterial_Chunk(fileId, matId, chunk,
+                                          TIO_XFER_INDEPENDENT, TIO_INT,
+                                          TIO_GHOSTS_NONE, NULL, NULL, NULL,
+                                          NULL, matlist, TIO_INT, TIO_INT,
+                                          TIO_FLOAT, NULL, NULL, NULL, NULL,
+                                          NULL, NULL);
+    if (success != TIO_SUCCESS)
+    {
+        delete[] matlist;
+        EXCEPTION1(TyphonIOException, success);
+    }
+
+    //
+    // Quad mesh material can have mix
+    // => VisIt will echo warning but will still render pure cells
+    //
+    avtMaterial *mat = NULL;
+    TRY
+    {
+        mat = CreateMaterial(matId, chunk, ncells, matlist);
+    }
+    CATCHALL
+    {
+        delete[] matlist;
+        RETHROW;
+    }
+    ENDTRY
+    delete[] matlist;
+
+    return mat;
+}
+
+
+// ****************************************************************************
 //  Method: avtTyphonIOFileFormat::GetPointMat
 //
 //  Purpose:
@@ -1779,6 +1863,10 @@ avtTyphonIOFileFormat::GetAuxiliaryData(const char *varname, int timestate,
 //
 //  Programmer: Paul Selby
 //  Creation:   June 18, 2015
+//
+//  Modifications:
+//    Paul Selby, Fri 25 Mar 13:19:54 GMT 2022
+//    Moved common code to CreateMaterial
 //
 // ****************************************************************************
 
@@ -1812,6 +1900,119 @@ avtTyphonIOFileFormat::GetPointMat(TIO_Object_t matId, TIO_Size_t chunk)
     }
 
     //
+    // Point mesh material never has mix
+    //
+    avtMaterial *mat = NULL;
+    TRY
+    {
+        mat = CreateMaterial(matId, chunk, nnodes, matlist);
+    }
+    CATCHALL
+    {
+        delete[] matlist;
+        RETHROW;
+    }
+    ENDTRY
+    delete[] matlist;
+
+    return mat;
+}
+
+
+// ****************************************************************************
+//  Method: avtTyphonIOFileFormat::GetUnstrMat
+//
+//  Purpose:
+//      Gets the unstructured mesh material
+//
+//  Arguments:
+//      matId    Previously opened TyphonIO matId
+//      chunk    TyphonIO chunk index
+//
+//  Programmer: Paul Selby
+//  Creation:   March 25, 2022
+//
+// ****************************************************************************
+
+avtMaterial *
+avtTyphonIOFileFormat::GetUnstrMat(TIO_Object_t matId, TIO_Size_t chunk)
+{
+    TIO_Size_t ncells, nmixcell, nmixcomp;
+    TIO_t success;
+
+    success = TIO_Read_UnstrMaterial_Chunk(fileId, matId, chunk,
+                                           TIO_XFER_INDEPENDENT, TIO_INT,
+                                           TIO_GHOSTS_NONE, &ncells, NULL,
+                                           TIO_INT, TIO_INT, TIO_FLOAT,
+                                           &nmixcell, &nmixcomp, NULL, NULL,
+                                           NULL, NULL);
+    if (success != TIO_SUCCESS)
+    {
+        EXCEPTION1(TyphonIOException, success);
+    }
+
+    //
+    // Read material values
+    // Note: TyphonIO will convert to int on the fly if needed
+    //
+    int *matlist = new int[ncells];
+
+    success = TIO_Read_UnstrMaterial_Chunk(fileId, matId, chunk,
+                                           TIO_XFER_INDEPENDENT, TIO_INT,
+                                           TIO_GHOSTS_NONE, NULL, matlist,
+                                           TIO_INT, TIO_INT, TIO_FLOAT,
+                                           NULL, NULL, NULL, NULL, NULL, NULL);
+    if (success != TIO_SUCCESS)
+    {
+        delete[] matlist;
+        EXCEPTION1(TyphonIOException, success);
+    }
+
+    //
+    // Unstr mesh material can have mix
+    // => VisIt will echo warning but will still render pure cells
+    //
+    avtMaterial *mat = NULL;
+    TRY
+    {
+        mat = CreateMaterial(matId, chunk, ncells, matlist);
+    }
+    CATCHALL
+    {
+        delete[] matlist;
+        RETHROW;
+    }
+    ENDTRY
+    delete[] matlist;
+
+    return mat;
+}
+
+
+// ****************************************************************************
+//  Method: avtTyphonIOFileFormat::CreateMaterial
+//
+//  Purpose:
+//      Creates avtMaterial object - currently ignores mix
+//
+//  Arguments:
+//      matId    Previously opened TyphonIO matId
+//      chunk    TyphonIO chunk index
+//      ncells   size of matlist
+//      matlist  array containing Material values
+//
+//  Programmer: Paul Selby
+//  Creation:   March 25, 2022
+//
+// ****************************************************************************
+
+avtMaterial *
+avtTyphonIOFileFormat::CreateMaterial(TIO_Object_t matId, TIO_Size_t chunk,
+                                      int ncells, int *matlist)
+{
+    TIO_t success;
+
+    //
     // Get material names and numbers
     //
     TIO_Size_t nmat;
@@ -1819,7 +2020,6 @@ avtTyphonIOFileFormat::GetPointMat(TIO_Object_t matId, TIO_Size_t chunk)
                                      NULL);
     if (success != TIO_SUCCESS)
     {
-        delete[] matlist;
         EXCEPTION1(TyphonIOException, success);
     }
     int *matNums = new int[nmat];
@@ -1828,7 +2028,6 @@ avtTyphonIOFileFormat::GetPointMat(TIO_Object_t matId, TIO_Size_t chunk)
                                      matNames);
     if (success != TIO_SUCCESS)
     {
-        delete[] matlist;
         delete[] matNums;
         delete[] matNames;
         EXCEPTION1(TyphonIOException, success);
@@ -1847,13 +2046,12 @@ avtTyphonIOFileFormat::GetPointMat(TIO_Object_t matId, TIO_Size_t chunk)
     domain << "chunk " << chunk;
 
     //
-    // Point mesh material never has mix
+    // Quad & Unstr mesh material can have mix
+    // => VisIt will throw warning but will still render pure cells
     //
-    int dims = nnodes;
-    avtMaterial *mat = new avtMaterial(nmat, matNums, names, 1, &dims, 0,
+    avtMaterial *mat = new avtMaterial(nmat, matNums, names, 1, &ncells, 0,
                                        matlist, 0, NULL, NULL, NULL, NULL,
                                        domain.str().c_str());
-    delete[] matlist;
     delete[] matNums;
     delete[] matNames;
     delete[] names;
