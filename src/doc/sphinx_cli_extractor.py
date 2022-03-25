@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 ############################################################################################
@@ -213,11 +213,11 @@ class Table(object):
                 if j > 0:
                     left_over = max_lengths[j] - len(item) - 1
                     inner_pre = ""
-    	            table += "%s| %s%s" % (inner_pre, item, " " * (left_over))
+                    table += "%s| %s%s" % (inner_pre, item, " " * (left_over))
                 else:
                     left_over = max_lengths[j] - len(item) - 5
                     inner_pre = preclude 
-      	            table += "%s| **%s**%s" % (inner_pre, item, " " * (left_over))
+                    table += "%s| **%s**%s" % (inner_pre, item, " " * (left_over))
             table +=  "|\n"
             start += 1
     
@@ -515,7 +515,9 @@ if __name__ == '__main__':
     
     visit.AddArgument("-nowin")
     visit.AddArgument("-noconfig")
-    visit.Launch()
+    visit.LaunchNowin()
+    import visit
+
     print("**\n**  Running VisIt", eval('visit.Version()'), "\n**", file=sys.stderr)
     
     for func in dir(visit):
