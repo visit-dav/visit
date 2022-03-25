@@ -74,6 +74,11 @@
 #
 #   Mark C. Miller, Wed Mar 23 21:12:34 PDT 2022
 #   Elim use of 7z in favor of vanilla tar
+#
+#   Kathleen Biagas, Fri Mar 25 11:41:48 PDT 2022
+#   Test the size of visit_dist_data.tar.xz to ensure its the real one
+#   and not the lfs'd version. Otherwise untar will fail.
+#
 #****************************************************************************
 
 MESSAGE(STATUS "Configuring VisIt Data Generation Targets")
@@ -341,7 +346,7 @@ ENDIF(SILO_FOUND)
 #
 #  Kathleen Biagas, Wed Oct  2 14:19:36 PDT 2013
 #  Added PROGRAM6432 env var to search as I discovered that 32-bit cmake
-#  running on 64-bit Windows 8 reports 'Program Files (x86)' for 
+#  running on 64-bit Windows 8 reports 'Program Files (x86)' for
 #  'ENV${PROGRAMFILES}'.
 #
 #-----------------------------------------------------------------------------
@@ -375,7 +380,20 @@ endif()
 # Add install command for contents of "data"
 #-----------------------------------------------------------------------------
 
-IF(EXISTS ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz)
+set(USE_VISIT_DIST_DATA_TARBALL false)
+
+if(EXISTS ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz)
+    # Need to test the size of visit_dist_data, because untar will fail if
+    # its the lfs'd version of the file and not the real one. This happens
+    # with build_visit,  because lfs content isn't pulled.
+
+    file(SIZE ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz VDD_SIZE)
+    if(VDD_SIZE GREATER 200) # lfs'd files are generally ~130.
+        set(USE_VISIT_DIST_DATA_TARBALL true)
+    endif()
+endif()
+
+IF(USE_VISIT_DIST_DATA_TARBALL)
     SET(DIST_UNTAR_CMD "${TAR_CMD} ${UNTAR_ARGS} ${VISIT_SOURCE_DIR}/../data/visit_dist_data.tar.xz")
     INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
     INSTALL(
