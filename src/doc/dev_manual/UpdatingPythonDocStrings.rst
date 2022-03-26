@@ -21,8 +21,8 @@ Steps to update the Python scripting manual
 #. Run ``functions_to_plain_py.py`` to generate ``PY_RST_FUNCTIONS_TO_PYTHON.py``.
 #. Run ``2to3 -p PY_RST_FUNCTIONS_TO_PYTHON.py`` to check for Python syntax errors and Python 3 compatibly.
 
-   * **NOTE:** ``PY_RST_FUNCTIONS_TO_PYTHON.py`` is just a temporarily test steps 2 and 3 here.
-     It is not part of the repository.
+   * **NOTE:** ``PY_RST_FUNCTIONS_TO_PYTHON.py`` is just a temporary file to test steps 2 and 3 here.
+     It could be named anything and is not part of the repository.
    * **NOTE:** ``2to3`` will run to completion and issue a number of messages.
      A zero return code indicates all is well.
 
