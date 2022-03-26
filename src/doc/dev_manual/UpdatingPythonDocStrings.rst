@@ -16,7 +16,8 @@ Steps to update the Python scripting manual
 
 #. Modify ``python_scripting/functions.rst``.
 
-   * **NOTE:** Ordinarily, we keep documentation to a :ref:`single sentence per line of text <contributing_line_length>` and do not wrap lines at arbitrary column widths. However, for the ``functions.rst`` from which python doc strings are generated, we must forego this requirement. Otherwise, the python doc strings do not display nicely at the python prompt.
+   * **NOTE:** Ordinarily, we keep documentation to a :ref:`single sentence per line of text <contributing_line_length>` and do not wrap lines at arbitrary column widths.
+     However, for the ``functions.rst`` file from which python doc strings are generated, we must forego this requirement. Otherwise, the doc strings do not display nicely at the python prompt.
 
 #. Run ``functions_to_plain_py.py`` to generate ``PY_RST_FUNCTIONS_TO_PYTHON.py``.
 #. Run ``2to3 -p PY_RST_FUNCTIONS_TO_PYTHON.py`` to check for Python syntax errors and Python 3 compatibly.
