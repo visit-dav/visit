@@ -15,11 +15,17 @@ Steps to update the Python scripting manual
 -------------------------------------------
 
 #. Modify ``python_scripting/functions.rst``.
+
    * **NOTE:** Ordinarily, we keep documentation to a :ref:`single sentence per line of text <contributing_line_length>` and do not wrap lines at arbitrary column widths. However, for the ``functions.rst`` from which python doc strings are generated, we must forego this requirement. Otherwise, the python doc strings do not display nicely at the python prompt.
+
 #. Run ``functions_to_plain_py.py`` to generate ``PY_RST_FUNCTIONS_TO_PYTHON.py``.
 #. Run ``2to3 -p PY_RST_FUNCTIONS_TO_PYTHON.py`` to check for Python syntax errors and Python 3 compatibly.
+
    * **NOTE:** ``PY_RST_FUNCTIONS_TO_PYTHON.py`` is just a temporarily test steps 2 and 3 here.
      It is not part of the repository.
+   * **NOTE:** ``2to3`` will run to completion and issue a number of messages.
+     A zero return code indicates all is well.
+
 #. Run ``functions_to_method_doc.py`` to regenerate ``MethodDoc.C``.
 #. Build and run the VisIt_ scripting interface and assure yourself ``help(<your-new-func-doc>)`` produces the desired output.
 #. Run the ``sphinx_cli_extractor.py`` tool producing new ``attributes.rst`` and ``events.rst`` files.
