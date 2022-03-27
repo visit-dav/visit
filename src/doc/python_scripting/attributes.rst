@@ -21,7 +21,7 @@ attributes of either the currently active **Curve** plot or the *first*
 hidden.
 
 Many functions return an integer where 1 means success and 0 means failure.
-This behavior is represented by the type CLI_return_t in an attempt to
+This behavior is represented by the type ``CLI_return_t`` in an attempt to
 distinguish it from functions that may utilize the full range of integers.
 
 **AMRStitchCell**: *AMRStitchCellAttributes()*
