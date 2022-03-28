@@ -52,7 +52,30 @@ function bv_blosc_depends_on
 function build_blosc
 {
     # TODO there is a chance it might need zlib? need to investigate further
-    printf ""
+    
+    #
+    # Blosc uses CMake  -- make sure we have it built.
+    #
+    CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
+    if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
+        info "Blosc: CMake found"
+    else
+        build_cmake
+        if [[ $? != 0 ]] ; then
+            warn "Unable to build cmake.  Giving up"
+            return 1
+        fi
+    fi
+
+    #
+    # Prepare build dir
+    #
+    prepare_build_dir $BLOSC_BUILD_DIR $BLOSC_FILE
+    untarred_blosc=$?
+    if [[ $untarred_blosc == -1 ]] ; then
+        warn "Unable to prepare Blosc build directory. Giving Up!"
+        return 1
+    fi
 }
 
 # build the module
