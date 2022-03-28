@@ -1725,12 +1725,6 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                 n_topo["elements/shape"].as_string() == "polygonal")
             {
                 #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
-                    Node about;
-                    conduit::about(about);
-                    BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                        "VisIt Blueprint Plugin requires Conduit >= 0.8.0 to read polytopal meshes."
-                        "VisIt was built with Conduit version:"  << about["version"].as_string());
-                #else
                     string field_name, coords_name;
                     // get name of coordset from topology
                     coords_name = n_topo["coordset"].as_string();
@@ -1753,6 +1747,12 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
                       options);
 
                     field_ptr = side_fields.fetch_ptr(field_name);
+                #else
+                    Node about;
+                    conduit::about(about);
+                    BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                        "VisIt Blueprint Plugin requires Conduit >= 0.8.0 to read polytopal meshes."
+                        "VisIt was built with Conduit version:"  << about["version"].as_string());
                 #endif
             }
         }
