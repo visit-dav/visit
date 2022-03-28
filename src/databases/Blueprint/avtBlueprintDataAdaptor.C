@@ -728,6 +728,9 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 //    Justin Privitera Wed Mar 23 12:28:02 PDT 2022
 //    Added domain as first argument, which is used for orig elem ids.
 //
+//    Cyrus Harrison, Mon Mar 28 12:14:20 PDT 2022
+//    Use conduit version check for polytopal support.
+//
 // ****************************************************************************
 vtkDataSet *
 UnstructuredTopologyToVTKUnstructuredGrid(int domain,
@@ -747,30 +750,38 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         if (n_topo["elements/shape"].as_string() == "polyhedral" || 
             n_topo["elements/shape"].as_string() == "polygonal")
         {
-            Node s2dmap, d2smap, options;
-            blueprint::mesh::topology::unstructured::generate_sides(
-                n_topo,
-                res["topologies/" + n_topo.name()],
-                res["coordsets/" + n_topo["coordset"].as_string()],
-                s2dmap,
-                d2smap);
+            #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
+                Node about;
+                conduit::about(about);
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                    "VisIt Blueprint Plugin requires Conduit >= 0.8.0 to read polytopal meshes."
+                    "VisIt was built with Conduit version:"  << about["version"].as_string());
+            #else
+                Node s2dmap, d2smap, options;
+                blueprint::mesh::topology::unstructured::generate_sides(
+                    n_topo,
+                    res["topologies/" + n_topo.name()],
+                    res["coordsets/" + n_topo["coordset"].as_string()],
+                    s2dmap,
+                    d2smap);
 
-            unsigned_int_accessor values = d2smap["values"].value();
+                unsigned_int_accessor values = d2smap["values"].value();
 
-            oca = vtkUnsignedIntArray::New();
-            oca->SetName("avtOriginalCellNumbers");
-            oca->SetNumberOfComponents(2);
+                oca = vtkUnsignedIntArray::New();
+                oca->SetName("avtOriginalCellNumbers");
+                oca->SetNumberOfComponents(2);
 
-            for (int i = 0; i < values.number_of_elements(); i ++)
-            {
-                unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
-                                          static_cast<unsigned int>(values[i])};
-                oca->InsertNextTypedTuple(ocdata);
-            }
+                for (int i = 0; i < values.number_of_elements(); i ++)
+                {
+                    unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
+                                              static_cast<unsigned int>(values[i])};
+                    oca->InsertNextTypedTuple(ocdata);
+                }
 
-            coords_ptr = res.fetch_ptr(
-                "coordsets/" + n_topo["coordset"].as_string());
-            topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
+                coords_ptr = res.fetch_ptr(
+                    "coordsets/" + n_topo["coordset"].as_string());
+                topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
+            #endif
         }
     }
 
