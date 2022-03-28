@@ -723,12 +723,6 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             n_topo["elements/shape"].as_string() == "polygonal")
         {
             #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
-                Node about;
-                conduit::about(about);
-                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                    "VisIt Blueprint Plugin requires Conduit >= 0.8.0 to read polytopal meshes."
-                    "VisIt was built with Conduit version:"  << about["version"].as_string());
-            #else
                 Node s2dmap, d2smap, options;
                 blueprint::mesh::topology::unstructured::generate_sides(
                     n_topo,
@@ -753,6 +747,12 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
                 coords_ptr = res.fetch_ptr(
                     "coordsets/" + n_topo["coordset"].as_string());
                 topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
+            #else
+                Node about;
+                conduit::about(about);
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                    "VisIt Blueprint Plugin requires Conduit >= 0.8.0 to read polytopal meshes."
+                    "VisIt was built with Conduit version:"  << about["version"].as_string());
             #endif
         }
     }
