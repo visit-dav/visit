@@ -76,6 +76,30 @@ function build_blosc
         warn "Unable to prepare Blosc build directory. Giving Up!"
         return 1
     fi
+
+    cd $BLOSC_BUILD_DIR || error "Can't cd to BLOSC source dir."
+
+    cfg_opts="-DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/blosc/${BLOSC_VERSION}/${VISITARCH}"
+
+    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
+    fi
+
+    echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../${BLOSC_BUILD_DIR}/src > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh
+
+    if [[ $? != 0 ]] ; then
+        warn "Blosc configure failed.  Giving up"
+        return 1
+    fi
+
+    #
+    # Build Blosc
+    #
+    info "Building Blosc . . . (~5 minutes)"
+    echo "hooray you made it this far woo"
 }
 
 # build the module
