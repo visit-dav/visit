@@ -51,7 +51,7 @@ Here is the Python code to plot this data in VisIt_
 
 and the resulting data plotted in VisIt_
 
-.. figure:: ../../../test/baseline/databases/plaintext/PlainText_Curves.png
+.. figure:: https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/databases/plaintext/PlainText_Curves.png
 
 Defining curves using row index for X coordinate
 ------------------------------------------------
@@ -78,7 +78,7 @@ Here is the Python code to plot this data in VisIt_
 
 and the resulting data plotted in VisIt_
 
-.. figure:: ../../../test/baseline/databases/plaintext/PlainText_Curves_noX.png
+.. figure:: https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/databases/plaintext/PlainText_Curves_noX.png
 
 Defining 2D or 3D points with variables
 ---------------------------------------
@@ -115,7 +115,7 @@ Here is the Python code to plot this data in VisIt_
 
 and the resulting data plotted in VisIt_
 
-.. figure:: ../../../test/baseline/databases/plaintext/PlainText_Points.png
+.. figure:: https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/databases/plaintext/PlainText_Points.png
 
 Defining a single variable on a 2D uniform grid
 -----------------------------------------------
@@ -157,6 +157,6 @@ Here is the Python code to plot this data in VisIt_
 
 and the resulting data plotted in VisIt_
 
-.. figure:: ../../../test/baseline/databases/plaintext/PlainText_2DArray.png
+.. figure:: https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/databases/plaintext/PlainText_2DArray.png
 
 Note that the reddest part of the plot (e.g. highest numerical values in the data) appears in the upper right corner of the plot whereas the highest numerical values in the file data row-by-row listing appears in the *lower* right corner.

@@ -1016,8 +1016,8 @@ return type : CLI_return_t
 
     The ConstructDataBinning function creates a data binning function for the active
     plot. Data Binnings place data from a data set into bins and reduce that data.
-    They are used to either be incorporated with expressions to make new derived quantities
-    or to be directly visualized.
+    They are used to either be incorporated with expressions to make new derived
+    quantities or to be directly visualized.
 
 
 **Example:**
@@ -1516,15 +1516,20 @@ return type : CLI_return_t
 **Description:**
 
     DefineArrayExpression creates new array variables.
-    Array variables are a collection of scalar variables that are grouped together.
-    All the variables must have the same centering and only scalar variables are supported, for example, no vector, tensor or material variables.
+    Array variables are a collection of scalar variables that are grouped
+    together. All the variables must have the same centering and only scalar
+    variables are supported, for example, no vector, tensor or material variables.
     Array variables are used in the Label plot.
 
-    The variableName argument is a string that contains the name of the new variable.
-    You can pass the name of an existing expression if you want to provide a new expression definition.
-    The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
-    If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
-
+    The variableName argument is a string that contains the name of the new
+    variable. You can pass the name of an existing expression if you want to
+    provide a new expression definition. The expression argument is a string
+    that contains the definition of the new variable in terms of
+    :ref:`built-in expressions <Built-in_expressions>` and pre-existing
+    variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read
+    the section on
+    :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
 **Example:**
 
@@ -1580,12 +1585,18 @@ return type : CLI_return_t
 
     DefineCurveExpression creates new curve variables.
     Curve variables are a collection of X - Y coordinates that form a curve.
-    Curve variables are used in the Curve, Parallel Coordinates, Scatter and Spreadsheet plots.
+    Curve variables are used in the Curve, Parallel Coordinates, Scatter and
+    Spreadsheet plots.
 
-    The variableName argument is a string that contains the name of the new variable.
-    You can pass the name of an existing expression if you want to provide a new expression definition.
-    The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
-    If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
+    The variableName argument is a string that contains the name of the new
+    variable. You can pass the name of an existing expression if you want to
+    provide a new expression definition. The expression argument is a string
+    that contains the definition of the new variable in terms of
+    :ref:`built-in expressions <Built-in_expressions>` and pre-existing
+    variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read
+    the section on
+    :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
 
 **Example:**
@@ -1624,9 +1635,10 @@ return type : CLI_return_t
 **Description:**
 
     DefineMaterialExpression creates new material variables.
-    Material variables are special variables that store material information for mesh and scalar variables.
-    Material variables are used by the Boundary and Filled Boundary plots.
-    Currently there are no built-in expressions that create material variables.
+    Material variables are special variables that store material information for
+    mesh and scalar variables. Material variables are used by the Boundary and
+    Filled Boundary plots. Currently there are no built-in expressions that create
+    material variables.
 
 
 DefineMeshExpression
@@ -1718,13 +1730,17 @@ return type : CLI_return_t
 **Description:**
 
     DefineScalarExpression creates new scalar variables.
-    Scalar variables define a scalar field over a mesh and are used by plots that take scalar variables.
+    Scalar variables define a scalar field over a mesh and are used by plots
+    that take scalar variables.
 
-    The variableName argument is a string that contains the name of the new variable.
-    You can pass the name of an existing expression if you want to provide a new expression definition.
-    The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
-    If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
-
+    The variableName argument is a string that contains the name of the new
+    variable. You can pass the name of an existing expression if you want to
+    provide a new expression definition. The expression argument is a string
+    that contains the definition of the new variable in terms of
+    :ref:`built-in expressions <Built-in_expressions>` and pre-existing
+    variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read
+    the section on
 
 **Example:**
 
@@ -1761,7 +1777,8 @@ return type : CLI_return_t
 **Description:**
 
     DefineSpeciesExpression creates new species variables.
-    Species variables are special variables that are associated with material variables that store species information for scalar variables.
+    Species variables are special variables that are associated with material
+    variables that store species information for scalar variables.
     Currently there are no built-in expressions that create species variables.
 
 
@@ -1788,18 +1805,23 @@ return type : CLI_return_t
 **Description:**
 
     DefineTensorExpression creates new tensor variables.
-    Tensor variables define a tensor field over a mesh and are used by the Tensor plot.
-    A 2D tensor would consist of a vector of 2 2-component vectors.
-    A 3D tensor would consist of a vector of 3 3-component vectors.
-    A symmetric tensor would need to provide 4 or 9 components even though a 2D tensor has 3 unique values and a 3D tensor has 6 unique values.
-    For a 2D symmetric tensor, the components would be supplied as {{Sxx, Syx}, {Syx, Syy}}.
-    For a 3D symmetric tensor, the components would be supplied as {{Sxx, Syx, Szx}, {Syx, Syy, Szy}, {Szx, Szy, Szz}}.
+    Tensor variables define a tensor field over a mesh and are used by
+    the Tensor plot. A 2D tensor would consist of a vector of 2 2-component
+    vectors. A 3D tensor would consist of a vector of 3 3-component vectors.
+    A symmetric tensor would need to provide 4 or 9 components even though a
+    2D tensor has 3 unique values and a 3D tensor has 6 unique values.
+    For a 2D symmetric tensor, the components would be supplied as
+    {{Sxx, Syx}, {Syx, Syy}}. For a 3D symmetric tensor, the components would
+    be supplied as {{Sxx, Syx, Szx}, {Syx, Syy, Szy}, {Szx, Szy, Szz}}.
 
-    The variableName argument is a string that contains the name of the new variable.
-    You can pass the name of an existing expression if you want to provide a new expression definition.
-    The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
-    If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
-
+    The variableName argument is a string that contains the name of the new
+    variable. You can pass the name of an existing expression if you want to
+    provide a new expression definition. The expression argument is a string
+    that contains the definition of the new variable in terms of
+    :ref:`built-in expressions <Built-in_expressions>` and pre-existing
+    variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read
+    the section on
 
 **Example:**
 
@@ -1836,15 +1858,20 @@ return type : CLI_return_t
 **Description:**
 
     DefineVectorExpression creates new vector variables.
-    Vector variables define a vector field over a mesh and are used by the Vector plot.
+    Vector variables define a vector field over a mesh and are used by the
+    Vector plot.
     A 2D vector would consist of 2 components.
     A 3D vector would consist of 3 components.
 
-    The variableName argument is a string that contains the name of the new variable.
-    You can pass the name of an existing expression if you want to provide a new expression definition.
-    The expression argument is a string that contains the definition of the new variable in terms of :ref:`built-in expressions <Built-in_expressions>` and pre-existing variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
-    If you run into problems defining your expression you might want to read the section on :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
-
+    The variableName argument is a string that contains the name of the new
+    variable. You can pass the name of an existing expression if you want to
+    provide a new expression definition. The expression argument is a string
+    that contains the definition of the new variable in terms of
+    :ref:`built-in expressions <Built-in_expressions>` and pre-existing
+    variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read
+    the section on
+    :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
 **Example:**
 
@@ -3888,9 +3915,9 @@ return type : MeshmanagementAttributes object
 
 **Description:**
 
-    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes object
-    that contains VisIt's current mesh discretization settings.
-    You can set properties on the MeshManagementAttributes object and then pass it to
+    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes
+    object that contains VisIt's current mesh discretization settings. You can set
+    properties on the MeshManagementAttributes object and then pass it to
     SetMeshManagementAttributes to make VisIt use the new material attributes that
     you've specified:
 
@@ -4300,7 +4327,8 @@ return type : dictionary or value
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query.
     GetQueryOutputObject returns a dictionary of the output of the last query.
 
 
@@ -4332,7 +4360,8 @@ return type : string
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query.
     GetQueryOutputString returns a string containing the output of the last query.
 
 
@@ -4364,8 +4393,10 @@ return type : double, tuple of doubles
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
-    GetQueryOutputValue returns a single number or tuple of numbers, depending on the nature of the last query to be executed.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query. GetQueryOutputValue
+    returns a single number or tuple of numbers, depending on the nature of
+    the last query to be executed.
 
 
 **Example:**
@@ -4395,8 +4426,9 @@ return type : string
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
-    GetQueryOutputXML returns a XML string containing the output of the last query.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query. GetQueryOutputXML
+    returns a XML string containing the output of the last query.
 
 
 **Example:**
@@ -7248,8 +7280,8 @@ clear : integer
     An integer flag indicating whether the host profile list should cleared first.
 
 return type : CLI_return_t
-    The ReadHostProfilesFromDirectory function returns an integer value of 1 for success and
-    0 for failure.
+    The ReadHostProfilesFromDirectory function returns an integer value of 1 for
+    success and 0 for failure.
 
 
 **Description:**
@@ -8685,7 +8717,8 @@ SetCreateMeshQualityExpressions
 
 
 val : integer
-    Either a zero (false) or non-zero (true) integer value to indicate ifMesh Quality expressions should be automatically created when a database is opened.
+    Either a zero (false) or non-zero (true) integer value to indicate if Mesh
+    Quality expressions should be automatically created when a database is opened.
 
 return type : CLI_return_t
     The SetCreateMeshQualityExpressions function returns 1 on success and 0 on failure.
@@ -8763,7 +8796,8 @@ SetCreateVectorMagnitudeExpressions
 
 val : integer
     Either a zero (false) or non-zero (true) integer value to indicate if
-    Vector magnitude expressions should be automatically created when a database is opened.
+    Vector magnitude expressions should be automatically created when a database
+    is opened.
 
 return type : CLI_return_t
     The SetCreateVectorMagnitudeExpressions function returns 1 on success
@@ -9091,11 +9125,11 @@ return type : MeshmanagementAttributes object
 
 **Description:**
 
-    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes object
-    that contains VisIt's current mesh discretization settings.
-    You can set properties on the MeshManagementAttributes object and then pass it to
-    SetMeshManagementAttributes to make VisIt use the new material attributes that
-    you've specified:
+    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes
+    object that contains VisIt's current mesh discretization settings. You can
+    set properties on the MeshManagementAttributes object and then pass it to
+    SetMeshManagementAttributes to make VisIt use the new material attributes
+    that you've specified:
 
 
 **Example:**
@@ -9452,8 +9486,8 @@ MachineProfile : MachineProfile object
 
 **Description:**
 
-    Sets the input machine profile in the HostProfileList, replaces if one already exists
-    Otherwise adds to the list
+    Sets the input machine profile in the HostProfileList, replaces if one already
+    exists. Otherwise adds to the list
 
 
 SetMaterialAttributes
@@ -9519,9 +9553,9 @@ return type : MeshmanagementAttributes object
 
 **Description:**
 
-    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes object
-    that contains VisIt's current mesh discretization settings.
-    You can set properties on the MeshManagementAttributes object and then pass it to
+    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes
+    object that contains VisIt's current mesh discretization settings. You can
+    set properties on the MeshManagementAttributes object and then pass it to
     SetMeshManagementAttributes to make VisIt use the new material attributes that
     you've specified:
 
@@ -10561,11 +10595,11 @@ return type : CLI_return_t
     indicating if all databases should be treated as time varying or not. Ordinarily,
     VisIt tries to minimize file I/O and database interaction by avoiding re-reading
     metadata that is 'time-invariant' and, therefore, assumed to be the same in a
-    database from one time step to the next. However, sometimes, portions of the metadata,
-    such as the list of variable names and/or number of domains, does in fact vary. In this
-    case, VisIt can actually fail to acknowledge the existence of new variables in the file.
-    Turning this feature on forces VisIt to re-read metadata each time the time-state is
-    changed.
+    database from one time step to the next. However, sometimes, portions of the
+    metadata, such as the list of variable names and/or number of domains, does in
+    fact vary. In this case, VisIt can actually fail to acknowledge the existence of
+    new variables in the file. Turning this feature on forces VisIt to re-read metadata
+    each time the time-state is changed.
 
 
 **Example:**
@@ -11815,21 +11849,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnDomainsOff function turns domains off. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnDomainsOff function with no arguments, all domains would be turned
-    off. All functions can also take a string argument, which is the name of the set
-    to modify. For example, you could turn off domain 0 by calling the
-    TurnDomainsOff with a single argument of "domain0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**
@@ -11870,21 +11902,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnDomainsOn function turns domains on. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnDomainsOn function with no arguments, all domains would be turned
-    on. All functions can also take a string argument, which is the name of
-    the set to modify. For example, you could turn on domain 0 by calling the
-    TurnDomainsOn with a single argument of "domain0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**
@@ -11925,21 +11955,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnMaterialsOff function turns materials off. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnMaterialsOff function with no arguments, all materials would be turned
-    off. All functions can also take a string argument, which is the name of
-    the set to modify. For example, you could turn off material 0 by calling
-    TurnMaterialsOff with a single argument of "material0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**
@@ -11980,21 +12008,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnMaterialsOn function turns materials on. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnMaterialsOn function with no arguments, all materials would be turned
-    off. All functions can also take a string argument, which is the name of
-    the set to modify. For example, you could turn on material 0 by calling the
-    TurnMaterialsOn with a single argument of "material0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**

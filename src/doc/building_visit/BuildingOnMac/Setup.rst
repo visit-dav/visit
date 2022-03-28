@@ -138,9 +138,7 @@ To `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_ind
 .. warning::
     Remain disconnected from VPN when building and code signing a VisIt release.
     The code signing process talks to Apple servers and validates credentials with them.
-    If you are on VPN, the validation may fail with a message similar to:
-    
-    .. code-block::
+    If you are on VPN, the validation may fail with a message similar to: ::
 
         Certificate trust evaluation did not return expected result. (5)  [leaf AnchorApple ChainLength CheckIntermediateMarkerOid CheckLeafMarkersProdAndQA]
         Certificate trust evaluation for api.apple-cloudkit.com did not return expected result. No error..
