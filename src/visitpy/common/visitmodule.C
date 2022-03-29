@@ -17824,7 +17824,7 @@ AddDefaultMethods()
     AddMethod("AddArgument", visit_AddArgument, visit_AddArgument_doc);
     AddMethod("Close",  visit_Close, visit_Close_doc);
     AddMethod("Launch", visit_Launch, visit_Launch_doc);
-    AddMethod("LaunchNowin", visit_LaunchNowin, visit_Launch_doc);
+    AddMethod("LaunchNowin", visit_LaunchNowin, visit_LaunchNowin_doc);
     AddMethod("LocalNameSpace", visit_LocalNameSpace,visit_LocalNameSpace_doc);
     AddMethod("GetDebugLevel", visit_GetDebugLevel, visit_GetDebugLevel_doc);
     AddMethod("GetLastError", visit_GetLastError, visit_GetLastError_doc);
@@ -17859,7 +17859,7 @@ AddProxyMethods()
     AddMethod("ClearAllWindows", visit_ClearAllWindows, visit_ClearAllWindows_doc);
     AddMethod("ClearCache", visit_ClearCache, visit_ClearCache_doc);
     AddMethod("ClearCacheForAllEngines", visit_ClearCacheForAllEngines,
-                                                         visit_ClearCache_doc);
+                                                         visit_ClearCacheForAllEngines_doc);
     AddMethod("ClearPickPoints", visit_ClearPickPoints,
                                                     visit_ClearPickPoints_doc);
     AddMethod("RemovePicks", visit_RemovePicks,
@@ -17978,7 +17978,7 @@ AddProxyMethods()
                                                   visit_GetPickAttributes_doc);
     AddMethod("GetPickOutput", visit_GetPickOutput, visit_GetPickOutput_doc);
     AddMethod("GetPickOutputObject", visit_GetPickOutputObject, 
-              visit_GetPickOutput_doc);
+              visit_GetPickOutputObject_doc);
     AddMethod("GetPipelineCachingMode", visit_GetPipelineCachingMode,
                                              visit_GetPipelineCachingMode_doc);
     AddMethod("GetProcessAttributes", visit_GetProcessAttributes, NULL);
@@ -18043,9 +18043,9 @@ AddProxyMethods()
     AddMethod("OpenClient", visit_OpenClient);
     AddMethod("OpenComputeEngine", visit_OpenComputeEngine,
                                                   visit_OpenComputeEngine_doc);
-    AddMethod("OpenGUI", visit_OpenGUI);
+    AddMethod("OpenGUI", visit_OpenGUI, visit_OpenGUI_doc);
     AddMethod("OpenMDServer", visit_OpenMDServer, visit_OpenMDServer_doc);
-    AddMethod("OpenCLI", visit_OpenCLI);
+    AddMethod("OpenCLI", visit_OpenCLI, visit_OpenCLI_doc);
     AddMethod("OverlayDatabase", visit_OverlayDatabase,
                                                     visit_OverlayDatabase_doc);
     AddMethod("Pick", visit_ZonePick, visit_ZonePick_doc);
@@ -18057,7 +18057,7 @@ AddProxyMethods()
                                                    visit_PickByGlobalNode_doc);
     AddMethod("PickByGlobalZone", visit_PickByGlobalZone,
                                                    visit_PickByGlobalZone_doc);
-    AddMethod("PointPick", visit_NodePick, visit_NodePick_doc);
+    AddMethod("PointPick", visit_NodePick, visit_PointPick_doc);
     AddMethod("PrintWindow", visit_PrintWindow, visit_PrintWindow_doc);
     AddMethod("PromoteOperator", visit_PromoteOperator,
                                                     visit_PromoteOperator_doc);
@@ -18069,9 +18069,9 @@ AddProxyMethods()
     AddMethod("RecenterView", visit_RecenterView, visit_RecenterView_doc);
     AddMethod("RedrawWindow", visit_RedrawWindow, visit_RedrawWindow_doc);
     AddMethod("RemoveAllOperators", visit_RemoveAllOperators,
-                                                     visit_RemoveOperator_doc);
+                                                     visit_RemoveAllOperators_doc);
     AddMethod("RemoveLastOperator", visit_RemoveLastOperator,
-                                                     visit_RemoveOperator_doc);
+                                                     visit_RemoveLastOperator_doc);
     AddMethod("RemoveOperator", visit_RemoveOperator,visit_RemoveOperator_doc);
     AddMethod("RenamePickLabel", visit_RenamePickLabel, visit_RenamePickLabel_doc);
     AddMethod("ReOpenDatabase", visit_ReOpenDatabase,visit_ReOpenDatabase_doc);
@@ -18092,7 +18092,7 @@ AddProxyMethods()
     AddMethod("RestoreSession", visit_RestoreSession,visit_RestoreSession_doc);
     AddMethod("RestoreSessionWithDifferentSources",
               visit_RestoreSessionWithDifferentSources,
-              visit_RestoreSession_doc);
+              visit_RestoreSessionWithDifferentSources_doc);
     AddMethod("SaveSession", visit_SaveSession, visit_SaveSession_doc);
     AddMethod("SaveNamedSelection", visit_SaveNamedSelection,
                                            visit_SaveNamedSelection_doc);
@@ -18123,21 +18123,21 @@ AddProxyMethods()
                                                 visit_SetCenterOfRotation_doc);
     AddMethod("SetCloneWindowOnFirstRef", visit_SetCloneWindowOnFirstRef);
     AddMethod("SetDefaultAnnotationAttributes", visit_SetDefaultAnnotationAttributes,
-                                            visit_SetAnnotationAttributes_doc);
+                                            visit_SetDefaultAnnotationAttributes_doc);
     AddMethod("SetDefaultFileOpenOptions", visit_SetDefaultFileOpenOptions,
                                           visit_SetDefaultFileOpenOptions_doc);
     AddMethod("SetDefaultInteractorAttributes", visit_SetDefaultInteractorAttributes,
-                                            visit_SetInteractorAttributes_doc);
+                                            visit_SetDefaultInteractorAttributes_doc);
     AddMethod("SetDefaultMaterialAttributes", visit_SetDefaultMaterialAttributes,
-                                            visit_SetMaterialAttributes_doc);
+                                            visit_SetDefaultMaterialAttributes_doc);
     AddMethod("SetDefaultMeshManagementAttributes", visit_SetDefaultMeshManagementAttributes,
-                                            visit_SetMeshManagementAttributes_doc);
+                                            visit_SetDefaultMeshManagementAttributes_doc);
     AddMethod("SetDefaultOperatorOptions", visit_SetDefaultOperatorOptions,
-                                                 visit_SetOperatorOptions_doc);
+                                                 visit_SetDefaultOperatorOptions_doc);
     AddMethod("SetDefaultPickAttributes", visit_SetDefaultPickAttributes,
-                                                  visit_SetPickAttributes_doc);
+                                                  visit_SetDefaultPickAttributes_doc);
     AddMethod("SetDefaultPlotOptions", visit_SetDefaultPlotOptions,
-                                                visit_SetPlotOptions_doc);
+                                                visit_SetDefaultPlotOptions_doc);
     AddMethod("SetDefaultQueryOverTimeAttributes", visit_SetDefaultQueryOverTimeAttributes);
     AddMethod("SetGlobalLineoutAttributes", visit_SetGlobalLineoutAttributes,
                                          visit_SetGlobalLineoutAttributes_doc);
@@ -18219,7 +18219,7 @@ AddProxyMethods()
     AddMethod("TimeSliderPreviousState", visit_TimeSliderPreviousState,
                                                 visit_TimeSliderPreviousState_doc);
     AddMethod("TimeSliderSetState", visit_SetTimeSliderState,
-                                                 visit_SetTimeSliderState_doc);
+                                                 visit_TimeSliderSetState_doc);
     AddMethod("ToggleBoundingBoxMode", visit_ToggleBoundingBoxMode,
                                                          visit_ToggleBoundingBoxMode_doc);
     AddMethod("ToggleCameraViewMode", visit_ToggleCameraViewMode,
