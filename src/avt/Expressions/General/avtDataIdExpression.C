@@ -42,6 +42,7 @@ avtDataIdExpression::avtDataIdExpression()
     doGlobalNumbering = false;
     doIJK = false;
     doDomainIds = false;
+    doGhostZoneIds = false;
     haveIssuedWarning = false;
 }
 
@@ -130,6 +131,11 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
         arr = in_ds->GetPointData()->GetArray("avtGlobalNodeNumbers");
     else if (!doZoneIds && !doGlobalNumbering)
         arr = in_ds->GetPointData()->GetArray("avtOriginalNodeNumbers");
+    // Q? each of these cases handles one of the four options for
+    //    two boolean values, what about 3? Do I need 8 cases now?
+    //    Or should this just be separated and be its own if-statement?
+    else if (doGhostZoneIds)
+        arr = in_ds->GetPointData()->GetArray("avtGhostZones");
 
     if (arr == NULL)
     {
@@ -282,6 +288,34 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
             }
         }
     }
+    else if(doGhostZoneIds)
+    {
+        // TODO this case
+
+        // this code was copied from above
+
+        // rv->SetNumberOfComponents(1);
+        // rv->SetNumberOfTuples(nvals);
+        // if(arr->GetNumberOfComponents() == 2)
+        // {
+        //     // Data is <dom, id>
+        //     for(vtkIdType i = 0; i < nvals; i++)
+        //     {
+        //         rv->SetValue(i, (int)arr->GetComponent(i, 0));
+        //     }
+        // }
+        // else
+        // {
+        //     // No original domain id, set to 0
+        //     debug2 << "DomainIds requested from avtDataIdExpression "
+        //         << "but the data does not contain domain ids. Assuming 0."
+        //         << std::endl;
+        //     for(vtkIdType i = 0; i < nvals; i++)
+        //     {
+        //         rv->SetValue(i, 0);
+        //     }
+        // }
+    }
     else
     {
         rv->SetNumberOfTuples(nvals);
@@ -339,6 +373,8 @@ avtDataIdExpression::ModifyContract(avtContract_p spec)
         spec->GetDataRequest()->TurnGlobalNodeNumbersOn();
     else if (!doZoneIds && !doGlobalNumbering)
         spec->GetDataRequest()->TurnNodeNumbersOn();
+    else if (doGhostZoneIds)
+        spec->GetDataRequest()->Turn
 
     return spec;
 }
