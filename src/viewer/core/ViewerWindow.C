@@ -4430,6 +4430,9 @@ ViewerWindow::RecenterView2d(const double *limits)
 //    Eric Brugger, Wed Jan  8 16:52:11 PST 2014
 //    I added a multi resolution display capability for 3d.
 //
+//    Kathleen Biagas, Tue Mar 29 2022
+//    Make this a no-op for Flythrough mode.
+//
 // ****************************************************************************
 
 void
@@ -4466,6 +4469,20 @@ ViewerWindow::RecenterView3d(const double *limits)
         //
         visWindow->SetView3D(view3D);
 
+        return;
+    }
+
+
+    //
+    // Flythrough navigation mode doesn't use centerOfRotation
+    // and messing with any other view atts like focus will negate
+    // any changes made during rotation or pan.
+    //
+    InteractorAttributes::NavigationMode navigationMode =
+        visWindow->GetInteractorAtts()->GetNavigationMode();
+
+    if(navigationMode == InteractorAttributes::Flythrough)
+    {
         return;
     }
 
