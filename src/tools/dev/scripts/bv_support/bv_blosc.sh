@@ -52,7 +52,7 @@ function bv_blosc_depends_on
 function build_blosc
 {
     # TODO there is a chance it might need zlib? need to investigate further
-    
+    echo "we are here 1"
     #
     # Blosc uses CMake  -- make sure we have it built.
     #
@@ -66,6 +66,7 @@ function build_blosc
             return 1
         fi
     fi
+    echo "we are here 2"
 
     #
     # Prepare build dir
@@ -76,6 +77,7 @@ function build_blosc
         warn "Unable to prepare Blosc build directory. Giving Up!"
         return 1
     fi
+    echo "we are here 3"
 
     cd $BLOSC_BUILD_DIR || error "Can't cd to BLOSC source dir."
 
@@ -85,6 +87,7 @@ function build_blosc
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
+    echo "we are here 4"
 
     echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../${BLOSC_BUILD_DIR}/src > bv_run_cmake.sh
     cat bv_run_cmake.sh
@@ -94,6 +97,7 @@ function build_blosc
         warn "Blosc configure failed.  Giving up"
         return 1
     fi
+    echo "we are here 5"
 
     #
     # Build Blosc
