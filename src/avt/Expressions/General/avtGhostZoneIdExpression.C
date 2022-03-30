@@ -101,7 +101,7 @@ avtGhostZoneIdExpression::DeriveVariable(vtkDataSet *in_ds, int /*currentDomains
     rv->SetNumberOfTuples(nvals);
 
     vtkDataArray *arr = NULL;
-    arr = in_ds->GetPointData()->GetArray("avtGhostZones");
+    arr = in_ds->GetCellData()->GetArray("avtGhostZones");
 
     if (arr == NULL)
     {
