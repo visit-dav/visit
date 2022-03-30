@@ -131,9 +131,8 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
         arr = in_ds->GetPointData()->GetArray("avtGlobalNodeNumbers");
     else if (!doZoneIds && !doGlobalNumbering)
         arr = in_ds->GetPointData()->GetArray("avtOriginalNodeNumbers");
-    // Q? each of these cases handles one of the four options for
-    //    two boolean values, what about 3? Do I need 8 cases now?
-    //    Or should this just be separated and be its own if-statement?
+// this is correct
+    // HEYJUSTIN see notes below 
     else if (doGhostZoneIds)
         arr = in_ds->GetPointData()->GetArray("avtGhostZones");
 
@@ -288,33 +287,11 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
             }
         }
     }
+
     else if(doGhostZoneIds)
     {
-        // TODO this case
-
-        // this code was copied from above
-
-        // rv->SetNumberOfComponents(1);
-        // rv->SetNumberOfTuples(nvals);
-        // if(arr->GetNumberOfComponents() == 2)
-        // {
-        //     // Data is <dom, id>
-        //     for(vtkIdType i = 0; i < nvals; i++)
-        //     {
-        //         rv->SetValue(i, (int)arr->GetComponent(i, 0));
-        //     }
-        // }
-        // else
-        // {
-        //     // No original domain id, set to 0
-        //     debug2 << "DomainIds requested from avtDataIdExpression "
-        //         << "but the data does not contain domain ids. Assuming 0."
-        //         << std::endl;
-        //     for(vtkIdType i = 0; i < nvals; i++)
-        //     {
-        //         rv->SetValue(i, 0);
-        //     }
-        // }
+        // HEYJUSTIN
+        // instead of this, do a different file; see below
     }
     else
     {
@@ -327,6 +304,9 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
                 // <dom, id>.  We will want the second one.
                 rv->SetValue(i, (int)arr->GetComponent(i, 1));
             else
+                // HEYJUSTIN
+                // do this!!! :)
+                // for my purposes, arr will never have two components
                 rv->SetValue(i, (int)arr->GetComponent(i, 0));
         }
     }
@@ -373,10 +353,24 @@ avtDataIdExpression::ModifyContract(avtContract_p spec)
         spec->GetDataRequest()->TurnGlobalNodeNumbersOn();
     else if (!doZoneIds && !doGlobalNumbering)
         spec->GetDataRequest()->TurnNodeNumbersOn();
-    else if (doGhostZoneIds)
-        spec->GetDataRequest()->Turn
+    // HEYJUSTIN
+    // else if (doGhostZoneIds)
+    //     // Q? what function should be called here?
+    //     //    you asked me to look at the contract ptr
+    //     //    but it doesn't have something for ghost zones
+    //     spec->GetDataRequest()->MysteryFunction();
 
     return spec;
 }
 
+// HEYJUSTIN
+// make a new file
+// avtGhostZoneIdExpression
+// copy from here hollow it out
+// add to cmakelists
+// keep inheritance hierarchy the same
+// include the new header file where I want to use it
+    // look at places that include this one and check it out
+// check https://github.com/visit-dav/visit/blob/d1tofbae6caeb3364954f3c2b54eb0a27ae69fd889/src/avt/Expressions/General/avtNeighborEvaluatorExpression.C#L395
+// to see spec->GetDataRequest()
 

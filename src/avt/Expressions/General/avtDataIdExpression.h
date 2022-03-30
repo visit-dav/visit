@@ -53,11 +53,12 @@ class EXPRESSION_API avtDataIdExpression : public avtSingleInputExpressionFilter
                                         { doGlobalNumbering = false; };
     void                      CreateIJK(void) { doIJK = true; }
     void                      CreateDomainIds(void) { doDomainIds = true; }
+    // HEYJUSTIN
+    // this belongs in its own class/file
     void                      CreateGhostZoneIds(void) 
                                         { doGhostZoneIds = true; }
-    // Q? what should this function be called?
-    void                      DontDoGhostZoneIds(void) 
-                                        { doGhostZoneIds = false; }
+    // void                      DontDoGhostZoneIds(void) 
+    //                                     { doGhostZoneIds = false; }
 
   protected:
     bool                      doZoneIds;

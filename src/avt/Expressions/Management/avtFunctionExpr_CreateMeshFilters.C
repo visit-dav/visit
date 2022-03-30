@@ -82,6 +82,10 @@ avtFunctionExpr::CreateMeshFilters(const std::string &functionName) const
         ff->DoPointNormals(false);
         return ff;
     }
+    // HEYJUSTIN
+    // add a new case here for "ghostzoneid"
+    // create a new avtGhost...Expression which is the class you will make
+    // call necessary functions and return it
     else if (functionName == "zoneid")
     {
         avtDataIdExpression *ff = new avtDataIdExpression;
