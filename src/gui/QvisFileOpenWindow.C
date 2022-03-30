@@ -207,8 +207,11 @@ QvisFileOpenWindow::CreateWindowContents()
 
     directoryList = new QListWidget(directoryWidget);
     directoryVBox->addWidget(directoryList);
-    
+#if QT_VERSION >= 0x051100
     int minColumnWidth = fontMetrics().horizontalAdvance("X");
+#else
+    int minColumnWidth = fontMetrics().width("X");
+#endif
     directoryList->setMinimumWidth(minColumnWidth * 20);
     
     connect(directoryList, SIGNAL(itemActivated(QListWidgetItem *)),

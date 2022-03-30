@@ -49,7 +49,11 @@ XMLEditCodeGeneratorWindow::XMLEditCodeGeneratorWindow(QWidget *parent)
 
     outputText = new QTextEdit(central);
     outputText->setWordWrapMode(QTextOption::NoWrap);
+#if QT_VERSION >= 0x051100
     outputText->setMinimumWidth(fontMetrics().horizontalAdvance("X") * 70);
+#else
+    outputText->setMinimumWidth(fontMetrics().width("X") * 70);
+#endif
     outputText->setMinimumHeight(fontMetrics().lineSpacing() * 25);
     topLayout->addWidget(outputText, 10);
 
