@@ -42,7 +42,6 @@ avtDataIdExpression::avtDataIdExpression()
     doGlobalNumbering = false;
     doIJK = false;
     doDomainIds = false;
-    doGhostZoneIds = false;
     haveIssuedWarning = false;
 }
 
@@ -131,10 +130,6 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
         arr = in_ds->GetPointData()->GetArray("avtGlobalNodeNumbers");
     else if (!doZoneIds && !doGlobalNumbering)
         arr = in_ds->GetPointData()->GetArray("avtOriginalNodeNumbers");
-// this is correct
-    // HEYJUSTIN see notes below 
-    else if (doGhostZoneIds)
-        arr = in_ds->GetPointData()->GetArray("avtGhostZones");
 
     if (arr == NULL)
     {
@@ -287,12 +282,6 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
             }
         }
     }
-
-    else if(doGhostZoneIds)
-    {
-        // HEYJUSTIN
-        // instead of this, do a different file; see below
-    }
     else
     {
         rv->SetNumberOfTuples(nvals);
@@ -304,9 +293,6 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
                 // <dom, id>.  We will want the second one.
                 rv->SetValue(i, (int)arr->GetComponent(i, 1));
             else
-                // HEYJUSTIN
-                // do this!!! :)
-                // for my purposes, arr will never have two components
                 rv->SetValue(i, (int)arr->GetComponent(i, 0));
         }
     }
@@ -353,24 +339,8 @@ avtDataIdExpression::ModifyContract(avtContract_p spec)
         spec->GetDataRequest()->TurnGlobalNodeNumbersOn();
     else if (!doZoneIds && !doGlobalNumbering)
         spec->GetDataRequest()->TurnNodeNumbersOn();
-    // HEYJUSTIN
-    // else if (doGhostZoneIds)
-    //     // Q? what function should be called here?
-    //     //    you asked me to look at the contract ptr
-    //     //    but it doesn't have something for ghost zones
-    //     spec->GetDataRequest()->MysteryFunction();
 
     return spec;
 }
 
-// HEYJUSTIN
-// make a new file
-// avtGhostZoneIdExpression
-// copy from here hollow it out
-// add to cmakelists
-// keep inheritance hierarchy the same
-// include the new header file where I want to use it
-    // look at places that include this one and check it out
-// check https://github.com/visit-dav/visit/blob/d1tofbae6caeb3364954f3c2b54eb0a27ae69fd889/src/avt/Expressions/General/avtNeighborEvaluatorExpression.C#L395
-// to see spec->GetDataRequest()
 

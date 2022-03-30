@@ -53,19 +53,12 @@ class EXPRESSION_API avtDataIdExpression : public avtSingleInputExpressionFilter
                                         { doGlobalNumbering = false; };
     void                      CreateIJK(void) { doIJK = true; }
     void                      CreateDomainIds(void) { doDomainIds = true; }
-    // HEYJUSTIN
-    // this belongs in its own class/file
-    void                      CreateGhostZoneIds(void) 
-                                        { doGhostZoneIds = true; }
-    // void                      DontDoGhostZoneIds(void) 
-    //                                     { doGhostZoneIds = false; }
 
   protected:
     bool                      doZoneIds;
     bool                      doGlobalNumbering;
     bool                      doIJK;
     bool                      doDomainIds;
-    bool                      doGhostZoneIds;
     bool                      haveIssuedWarning;
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
