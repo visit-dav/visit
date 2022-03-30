@@ -153,10 +153,3 @@ avtGhostZoneIdExpression::ModifyContract(avtContract_p spec)
     spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
     return spec;
 }
-
-// HEYJUSTIN
-// add this new file to cmakelists
-// go back and clean up the edited files from before!
-// include the new header file where I want to use it
-    // look at places that include this one and check it out
-
