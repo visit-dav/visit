@@ -89,8 +89,12 @@ QvisOutputWindow::CreateWindowContents()
 {
     // Create a multi line edit to display the text.
     outputText = new QTextEdit(central);
-    outputText->setMinimumWidth(fontMetrics().horizontalAdvance("MESSAGE: Closed the "
-        "compute engine on host"));
+    QString msg("MESSAGE: Closed the compute engine on host");
+#if QT_VERSION >= 0x051100
+    outputText->setMinimumWidth(fontMetrics().horizontalAdvance(msg));
+#else
+    outputText->setMinimumWidth(fontMetrics().width(msg));
+#endif
     outputText->setWordWrapMode(QTextOption::WordWrap);
     outputText->setReadOnly(true);
     topLayout->addWidget(outputText);

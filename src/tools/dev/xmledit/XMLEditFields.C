@@ -46,8 +46,12 @@ class QNarrowLineEdit : public QLineEdit
     {
         QSize size = QLineEdit::sizeHint();
         QFontMetrics fm(font());
-        int w = fm.horizontalAdvance('x') * 4; // 4 characters
-        size.setWidth(w);
+#if QT_VERSION >= 0x051100
+        int w = fm.horizontalAdvance("x");
+#else
+        int w = fm.width("x");
+#endif
+        size.setWidth(w * 4); // 4 characters
         return size;
     }
 };
