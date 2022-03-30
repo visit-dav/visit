@@ -33,8 +33,7 @@ class EXPRESSION_API avtGhostZoneIdExpression : public avtSingleInputExpressionF
 
     virtual const char      *GetType(void) { return "avtGhostZoneIdExpression"; };
     virtual const char      *GetDescription(void)
-    // Q? is this a good description?
-                                { return "Assigning IDs."; };
+                                { return "Assigning Ghost Zone IDs."; };
     virtual void            PreExecute(void);
 
     void                    CreateGhostZoneIds(void) 
@@ -42,8 +41,6 @@ class EXPRESSION_API avtGhostZoneIdExpression : public avtSingleInputExpressionF
 
   protected:
     bool                        doGhostZoneIds;
-    // Q? do I need this?
-    bool                        haveIssuedWarning;
 
     virtual vtkDataArray    *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual avtContract_p   ModifyContract(avtContract_p);
