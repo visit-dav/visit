@@ -35,7 +35,6 @@
 avtGhostZoneIdExpression::avtGhostZoneIdExpression()
 {
     doGhostZoneIds = false;
-    haveIssuedWarning = false;
 }
 
 
@@ -61,7 +60,7 @@ avtGhostZoneIdExpression::~avtGhostZoneIdExpression()
 //  Method: avtGhostZoneIdExpression::PreExecute
 //
 //  Purpose:
-//      Reset haveIssuedWarning, so we can issue it only once per execution.
+//      Call parent PreExecute().
 //
 //  Programmer: Justin Privitera
 //  Creation:   Wed Mar 30 11:46:46 PDT 2022
@@ -72,7 +71,6 @@ void
 avtGhostZoneIdExpression::PreExecute(void)
 {
     avtSingleInputExpressionFilter::PreExecute();
-    haveIssuedWarning = false;
 }
 
 
@@ -84,7 +82,7 @@ avtGhostZoneIdExpression::PreExecute(void)
 //
 //  Arguments:
 //      vtkDataSet *in_ds        The input dataset.
-//      int currentDomainsIndex  TODO
+//      int currentDomainsIndex  unused integer
 //
 //  Returns:      TODO
 //
@@ -94,12 +92,10 @@ avtGhostZoneIdExpression::PreExecute(void)
 // ****************************************************************************
 
 vtkDataArray *
-avtGhostZoneIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
+avtGhostZoneIdExpression::DeriveVariable(vtkDataSet *in_ds, int /*currentDomainsIndex*/)
 {
     vtkIdType nvals = 0;
-    // Q? hmmm which is it? - have a look at dataidexpr for an idea
-    // nvals = in_ds->GetNumberOfCells();
-    nvals = in_ds->GetNumberOfPoints();
+    nvals = in_ds->GetNumberOfCells();
 
     vtkIntArray *rv = vtkIntArray::New();
     rv->SetNumberOfTuples(nvals);
@@ -107,30 +103,19 @@ avtGhostZoneIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIn
     vtkDataArray *arr = NULL;
     arr = in_ds->GetPointData()->GetArray("avtGhostZones");
 
-    // Q? could this ever be NULL? It doesn't look like it but I thought I should check
-    // if (arr == NULL)
-    // {
-    //     for (vtkIdType i = 0 ; i < nvals ; i++)
-    //         rv->SetValue(i, (int)i);
-    //     char standard_msg[1024] = "VisIt was not able to create the requested"
-    //             " ids.  Please see a VisIt developer.";
-    //     char globalmsg[1024] = "VisIt was not able to create global ids, most "
-    //             "likely because ids of this type were not stored in the file.";
-    //     if (!haveIssuedWarning)
-    //     {
-    //         avtCallback::IssueWarning(
-    //                            (doGlobalNumbering ? globalmsg : standard_msg));
-    //         haveIssuedWarning = true;
-    //     }
-
-    //     return rv;
-    // }
-
-    rv->SetNumberOfTuples(nvals);
-
-    for (vtkIdType i = 0 ; i < nvals ; i ++)
+    if (arr == NULL)
     {
-        rv->SetValue(i, (int)arr->GetComponent(i, 0));
+        for (vtkIdType i = 0 ; i < nvals ; i ++)
+        {
+            rv->SetValue(i, 0);
+        }
+    }
+    else
+    {
+        for (vtkIdType i = 0 ; i < nvals ; i ++)
+        {
+            rv->SetValue(i, (int)arr->GetComponent(i, 0));
+        }
     }
 
     return rv;
