@@ -52,7 +52,7 @@ function bv_blosc_depends_on
 function build_blosc
 {
     # TODO there is a chance it might need zlib? need to investigate further
-    echo "we are here 1"
+
     #
     # Blosc uses CMake  -- make sure we have it built.
     #
@@ -66,7 +66,6 @@ function build_blosc
             return 1
         fi
     fi
-    echo "we are here 2"
 
     #
     # Prepare build dir
@@ -77,19 +76,18 @@ function build_blosc
         warn "Unable to prepare Blosc build directory. Giving Up!"
         return 1
     fi
-    echo "we are here 3"
 
     cd $BLOSC_BUILD_DIR || error "Can't cd to BLOSC source dir."
 
-    cfg_opts="-DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/blosc/${BLOSC_VERSION}/${VISITARCH}"
+    blosc_install_path=${VISITDIR}/blosc/${BLOSC_VERSION}/${VISITARCH}
+    cfg_opts="-DCMAKE_INSTALL_PREFIX:PATH=${blosc_install_path}"
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
-    echo "we are here 4"
 
-    echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../${BLOSC_BUILD_DIR}/src > bv_run_cmake.sh
+    echo "\"${CMAKE_BIN}\"" ${cfg_opts} > bv_run_cmake.sh
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh
 
@@ -97,13 +95,34 @@ function build_blosc
         warn "Blosc configure failed.  Giving up"
         return 1
     fi
-    echo "we are here 5"
 
     #
     # Build Blosc
     #
     info "Building Blosc . . . (~5 minutes)"
-    echo "hooray you made it this far woo"
+    $MAKE $MAKE_OPT_FLAGS
+    if [[ $? != 0 ]] ; then
+        warn "Blosc build failed.  Giving up"
+        return 1
+    fi
+    
+    #
+    # Install into the VisIt third party location.
+    #
+    info "Installing Blosc"
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+        warn "Blosc install failed.  Giving up"
+        return 1
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+        chmod -R ug+w,a+rX "$VISITDIR/blosc"
+        chgrp -R ${GROUP} "$VISITDIR/blosc"
+    fi
+    cd "$START_DIR"
+    info "Done with Blosc"
+    return 0
 }
 
 # build the module
