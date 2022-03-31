@@ -139,7 +139,12 @@ def createContinuous():
 
 def createDiscreteUsingVTKNamedColors():
     # discrete1 {
-    import vtk # for vtk.vtkNamedColors
+    try:
+        import vtk # for vtk.vtkNamedColors
+    except:
+        print("Could not import vtk, skipping 'discrete_using_vtk' test.")
+        return
+
     # to see list of all color names available: 
     # print(vtk.vtkNamedColors.GetColorNames())
 
