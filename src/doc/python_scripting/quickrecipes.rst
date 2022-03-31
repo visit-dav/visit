@@ -948,7 +948,7 @@ Color tables can be modified by Adding or Removing ControlPoints, and by changin
     :start-after: # modifyTable5 {
     :end-before: # modifyTable5 }
 
-Here is the resulting plot, and how it changes as the color table it uses is modified: with original 'hot' color table; after removing control points; after changing colors; after using equal spacing and  after changing positions.
+In the set of images below we can see how the plot changes as the color table it uses is modified: with original 'hot' color table; after removing control points; after changing colors; after using equal spacing and  after changing positions.
 
 .. image:: ../../../test/baseline/quickrecipes/colortables/standard_hot_table.png
     :width: 15%
