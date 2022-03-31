@@ -407,7 +407,11 @@ QvisParallelCoordinatesWidget::drawAxisTitles(QPainter *painter)
         for (charNum = 0; charNum < titleCharCount; charNum++)
         {
             titleChar = axisTitle.substr(charNum, 1);
+#if QT_VERSION >= 0x051100
             charXPos = axisX - fontMetrics().horizontalAdvance(QChar(*(axisTitle.c_str())))/2;
+#else
+            charXPos = axisX - fontMetrics().width(QChar(*(axisTitle.c_str())))/2;
+#endif
             charYPos = (charNum+1)*charSpacing + axisBottomY;
 
             painter->drawText(charXPos, charYPos, QString(titleChar.c_str()));
