@@ -971,7 +971,7 @@ Creating a continous color table from scratch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Creating a continous color table is pretty straightforward.
-It involves creating a ``ColorControlPoint`` for each color you want, setting its ``colors`` and ``position`` fields, then adding them to a ``ColorControlPointList``.
+Creating a continuous color table involves creating a ``ColorControlPoint`` for each color you want, setting its ``colors`` and ``position`` fields and then adding them to a ``ColorControlPointList``.
 The ``ColorControlPointList`` is then passed as an argument to ``AddColorTable``.
 
 .. literalinclude:: ../../test/tests/quickrecipes/colortables.py
