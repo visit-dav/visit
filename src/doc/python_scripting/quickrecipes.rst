@@ -950,19 +950,19 @@ Color tables can be modified by Adding or Removing ControlPoints, and by changin
 
 In the set of images below we can see how the plot changes as the color table it uses is modified: with original 'hot' color table; after removing control points; after changing colors; after using equal spacing and  after changing positions.
 
-.. image:: ../../../test/baseline/quickrecipes/colortables/standard_hot_table.png
+.. image::  https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/quickrecipes/colortables/standard_hot_table.png 
     :width: 15%
 
-.. image:: ../../../test/baseline/quickrecipes/colortables/modified_hot_table_1.png
+.. image::  https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/quickrecipes/colortables/modified_hot_table_1.png 
     :width: 15%
 
-.. image:: ../../../test/baseline/quickrecipes/colortables/modified_hot_table_2.png
+.. image::  https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/quickrecipes/colortables/modified_hot_table_2.png 
     :width: 15%
 
-.. image:: ../../../test/baseline/quickrecipes/colortables/hot2.png
+.. image::  https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/quickrecipes/colortables/hot2.png 
     :width: 15%
 
-.. image:: ../../../test/baseline/quickrecipes/colortables/hot3.png
+.. image::  https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/quickrecipes/colortables/hot3.png 
     :width: 15%
 
 
@@ -979,7 +979,7 @@ The ``ColorControlPointList`` is then passed as an argument to ``AddColorTable``
     :start-after: # continuous1 {
     :end-before: # continuous1 }
 
-.. figure:: ../../../test/baseline/quickrecipes/colortables/rainbow_continuous.png
+.. figure::  https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/quickrecipes/colortables/rainbow_continuous.png 
 
     Pseudocolor plot resulting from using the "myrainbow" color table.
 
@@ -998,7 +998,7 @@ Here's an example of creating a discrete color table using named colors from the
     :start-after: # discrete1 {
     :end-before: # discrete1 }
 
-.. figure:: ../../../test/baseline/quickrecipes/colortables/discrete_using_vtk.png
+.. figure::  https://media.githubusercontent.com/media/visit-dav/visit/develop/test/baseline/quickrecipes/colortables/discrete_using_vtk.png
 
     Subset plot using the "mylevels" color table.
 
