@@ -921,6 +921,8 @@ For instance, for Pseudocolor plots, one must set the ``opacityType`` to ``Color
 
 The ``position`` field of the ``ControlPoint`` is in the range (0, 1) and should be in ascending order.
 
+General information on VisIt's color tables can be found in the :ref:`Color Tables <Color_tables>` section of `Using VisIt`.
+
 In all the examples below, ``silo_data_path()`` refers to a function specific to VisIt_ testing that returns the path to silo example data.  
 When copying the examples don't forget to modify that reference according you your needs.
 
@@ -1012,10 +1014,26 @@ Here's an example of creating a discrete color table using named colors from the
     Subset plot using the "mylevels" color table.
 
 
-Modifying the color table for the Volume Plot
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Plots with special handling of color tables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Volume plot is unique in that the ``ColorControlPointList`` is stored directly in the plot's attributes instead of being referenced via the color table name.
+:ref:`Contour <contour_plot_head>`, MultiCurve, :ref:`Volume <volume_plot_head>` and Well Bore plots all store a ``ColorControlPointList`` directly instead of being referenced via color table name.
+
+Contour, MultiCurve and Well Bore plots
+"""""""""""""""""""""""""""""""""""""""
+
+For :ref:`Contour <contour_plot_head>`, MultiCurve and Well Bore plots, the ``ColorControlPointList`` is discrete, and is named ``defaultPalette``. 
+The size varies with the plot type, and each provides convenience methods (SetMultiColor) for changing its contents as demonstrated below for the :ref:`Contour <contour_plot_head>` plot:
+
+.. literalinclude:: ../../test/tests/plots/contour.py
+    :language: Python
+    :start-after: # contourAtts {
+    :end-before: # contourAtts }
+
+Volume plot
+"""""""""""
+
+The :ref:`Volume <volume_plot_head>` plot's name for it's ``ColorControlPointList`` is ``colorControlPoints`` and there are no convenice methods.
 You must access this list directly as shown below:
 
 
