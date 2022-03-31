@@ -908,7 +908,17 @@ Existing color tables can retreived by name via ``GetColorTable`` as in: ::
     discreteFlag = 0
     categoryName = "Standard"
 
-The ``colors`` field of the ``ControlPoint`` is (R,G,B,A) in the range (0, 255).
+The ``colors`` field of the ``ControlPoint`` represent the (Red,Green,Blue,Alpha) channels of the color and must be in the range (0, 255).
+The numbers indicate the contribution each channel makes to the overall color. 
+Higher values mean higher saturation of the color.
+For example, `red` would be represented as `(255, 0, 0, 255)`, while `yellow` would be `(255, 255, 0, 255)`, an equal combination of red and green. 
+Playing with the ``Color selection dialog`` from the ``Popup color menu`` in the gui can help in determining RGBA values for desired colors. 
+See :numref:`Figure %s <fig-MakingItPretty-ColorSelectDialog>`.
+
+Alpha indicates the level of transparency of the color, with a value of 255 meaning fully opaque, and 0,  fully transparent.  
+Not all plots in VisIt make use of the Alpha channel of a color table.
+For instance, for Pseudocolor plots, one must set the ``opacityType`` to ``ColorTable`` in order for a Color table with semi-transparent colors to have any effect.
+
 The ``position`` field of the ``ControlPoint`` is in the range (0, 1) and should be in ascending order.
 
 In all the examples below, ``silo_data_path()`` refers to a function specific to VisIt_ testing that returns the path to silo example data.  
@@ -970,7 +980,6 @@ In the set of images below we can see how the plot changes as the color table it
 Creating a continous color table from scratch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Creating a continous color table is pretty straightforward.
 Creating a continuous color table involves creating a ``ColorControlPoint`` for each color you want, setting its ``colors`` and ``position`` fields and then adding them to a ``ColorControlPointList``.
 The ``ColorControlPointList`` is then passed as an argument to ``AddColorTable``.
 
@@ -987,8 +996,8 @@ The ``ColorControlPointList`` is then passed as an argument to ``AddColorTable``
 Creating a discrete color table from scratch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sometimes you may not want to figure out RGB values for colors you want to use.
-In that case you can import a color module that will give you the RGB values
+Sometimes you may not want to figure out RGBA values for colors you want to use.
+In that case you can import a color module that will give you the RGBA values
 for named colors that are part of the module.
 Here's an example of creating a discrete color table using named colors from the vtk module:
 
