@@ -911,7 +911,7 @@ Existing color tables can retreived by name via ``GetColorTable`` as in: ::
 The ``colors`` field of the ``ControlPoint`` is (R,G,B,A) in the range (0, 255).
 The ``position`` field of the ``ControlPoint`` is in the range (0, 1) and should be in ascending order.
 
-In all the examples below, ``silo_data_path`` refers to a function that returns the path to silo example data.  
+In all the examples below, ``silo_data_path()`` refers to a function specific to VisIt_ testing that returns the path to silo example data.  
 When copying the examples don't forget to modify that reference according you your needs.
 
 Modifying existing color tables
