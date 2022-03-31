@@ -620,6 +620,7 @@ avtPlainTextFileFormat::ReadFile()
         // generic values; and if it's too much, trim it
         for (int i=(int)variableNames.size(); i<ncolumns; i++)
         {
+            std::cout << variableNames[i] << std::endl;
             char str[20];
             sprintf(str, "var%02d", i);
             variableNames.push_back(str);
