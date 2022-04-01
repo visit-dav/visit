@@ -35,12 +35,12 @@ using     std::string;
 using     std::vector;
 
 string
-TrimLeadingandTrailingSpaces(string str)
+TrimLeadingandTrailingWhitespace(string str)
 {
-    auto start = str.find_first_not_of(" ");
+    auto start = str.find_first_not_of(" \t");
     if (start == string::npos)
         return "";
-    auto end = str.find_last_not_of(" ");
+    auto end = str.find_last_not_of(" \t");
     return str.substr(start, end - start + 1);
 }
 
@@ -469,7 +469,7 @@ avtPlainTextFileFormat::GetVectorVar(const char *varname)
 //    Switched to double precision for rows of data
 // 
 //    Justin Privitera, Fri Apr  1 11:18:38 PDT 2022
-//    Added TrimLeadingandTrailingSpaces function
+//    Added TrimLeadingandTrailingWhitespace function
 //    to remove whitespace from variable names
 //    as they are read.
 // 
@@ -530,7 +530,7 @@ avtPlainTextFileFormat::ReadFile()
                 if (firstRowIsHeader && firstRow)
                 {
                     variableNames.push_back(
-                        TrimLeadingandTrailingSpaces(start));
+                        TrimLeadingandTrailingWhitespace(start));
                 }
                 else
                 {
@@ -567,7 +567,7 @@ avtPlainTextFileFormat::ReadFile()
                     if (firstRowIsHeader && firstRow)
                     {
                         variableNames.push_back(
-                            TrimLeadingandTrailingSpaces(start));
+                            TrimLeadingandTrailingWhitespace(start));
                     }
                     else
                     {
