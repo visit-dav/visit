@@ -38,10 +38,16 @@ string
 TrimLeadingandTrailingWhitespace(string str)
 {
     size_t start = str.find_first_not_of(" \t");
-    if (start == string::npos)
-        return "";
     size_t end = str.find_last_not_of(" \t");
-    return str.substr(start, end - start + 1);
+    size_t range = end - start + 1;
+    if (start == string::npos || range <= 1)
+    {
+        static size_t cnt = 0;
+        char tmp[16];
+        snprintf(tmp, sizeof(tmp), "unknown_%zu", cnt ++);
+        return tmp;
+    }
+    return str.substr(start, range);
 }
 
 // ****************************************************************************
