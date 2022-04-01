@@ -85,7 +85,7 @@ LoadConduitOptions(const std::string &optString, conduit::Node &out)
     bool ok = false;
     TRY
     {
-        out.parse(optString, "json");
+        out.parse(optString, "yaml");
         ok = true;
     }
     CATCHALL
@@ -99,7 +99,7 @@ LoadConduitOptions(const std::string &optString, conduit::Node &out)
     {
         TRY
         {
-            out.parse(optString, "yaml");
+            out.parse(optString, "json");
             ok = true;
         }
         CATCHALL
@@ -165,6 +165,7 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
     // need to use it.
     std::string tmp(bp_err_oss.str());
     debug1 << tmp;
+
     BP_PLUGIN_EXCEPTION1(VisItException, tmp);
 }
 
@@ -182,9 +183,6 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
 //  Chris Laganella Wed Dec 15 17:57:09 EST 2021
 //  Add conditional compilation based on flatten/partition support
 //
-//  Brad Whitlock, Fri Apr  1 12:01:15 PDT 2022
-//  Install Conduit error handlers before using options.
-//
 // ****************************************************************************
 
 avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
@@ -193,11 +191,6 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
     m_nblocks = 0;
 
     m_op = BP_MESH_OP_NONE;
-    conduit::utils::set_info_handler(blueprint_writer_plugin_info_handler);
-    conduit::utils::set_warning_handler(blueprint_writer_plugin_warning_handler);
-    // this catches any uncaught conduit errors, logs them to debug 1
-    // and  converts them into a VisIt Exception
-    conduit::utils::set_error_handler(blueprint_writer_plugin_error_handler);
 
 #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(options)
@@ -232,6 +225,12 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
         }
     }
 #endif
+
+    conduit::utils::set_info_handler(blueprint_writer_plugin_info_handler);
+    conduit::utils::set_warning_handler(blueprint_writer_plugin_warning_handler);
+    // this catches any uncaught conduit errors, logs them to debug 1
+    // and  converts them into a VisIt Exception
+    conduit::utils::set_error_handler(blueprint_writer_plugin_error_handler);
 }
 
 
@@ -372,6 +371,9 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //  the function based off partition/flatten support since it is only used
 //  by the partition operation.
 //
+//  Brad Whitlock, Fri Apr  1 13:41:32 PDT 2022
+//  Removed /c0 since Conduit scalars are no longer mcarrays.
+//
 // ****************************************************************************
 #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
 static void
@@ -391,7 +393,7 @@ BuildSelections(Node &domains,
         const Node &avtGhostZones = m->fetch("fields/avtGhostZones");
 
         // This path should always be correct, the field is created by VisIt.
-        const Node &values = avtGhostZones.fetch_existing("values/c0");
+        const Node &values = avtGhostZones.fetch_existing("values");
         const DataType dt = DataType::index_t(values.dtype().number_of_elements());
 
         // Cast the ghost info to the correct type if necessary
