@@ -83,35 +83,37 @@ LoadConduitOptions(const std::string &optString, conduit::Node &out)
     }
 
     bool ok = false;
-    try
+    TRY
     {
         out.parse(optString, "json");
         ok = true;
     }
-    catch (...)
+    CATCHALL
     {
         ok = false;
         out.reset();
     }
+    ENDTRY
 
     if(!ok)
     {
-        try
+        TRY
         {
             out.parse(optString, "yaml");
             ok = true;
         }
-        catch (...)
+        CATCHALL
         {
             ok = false;
             out.reset();
         }
+        ENDTRY
     }
 
     if(!ok)
     {
         out.reset();
-        BP_PLUGIN_EXCEPTION1(InvalidVariableException, "Could not parse"
+        BP_PLUGIN_EXCEPTION1(VisItException, "Could not parse"
             " 'Flatten / Partition extra options' as either JSON or Yaml.");
     }
 }
@@ -158,15 +160,12 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
                                int line)
 {
     std::ostringstream bp_err_oss;
-    bp_err_oss << "[ERROR]"
-               << "File:"    << file << std::endl
-               << "Line:"    << line << std::endl
-               << "Message:" << msg  << std::endl;
-
-    debug1 << bp_err_oss.str();
-
-    BP_PLUGIN_EXCEPTION1(InvalidVariableException, bp_err_oss.str());
-
+    bp_err_oss << msg << std::endl << "  from " << file << ":" << line;
+    // Make a copy of the stream output so it is not empty the second time we
+    // need to use it.
+    std::string tmp(bp_err_oss.str());
+    debug1 << tmp;
+    BP_PLUGIN_EXCEPTION1(VisItException, tmp);
 }
 
 // ****************************************************************************
@@ -182,6 +181,10 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
 //
 //  Chris Laganella Wed Dec 15 17:57:09 EST 2021
 //  Add conditional compilation based on flatten/partition support
+//
+//  Brad Whitlock, Fri Apr  1 12:01:15 PDT 2022
+//  Install Conduit error handlers before using options.
+//
 // ****************************************************************************
 
 avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
@@ -190,6 +193,12 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
     m_nblocks = 0;
 
     m_op = BP_MESH_OP_NONE;
+    conduit::utils::set_info_handler(blueprint_writer_plugin_info_handler);
+    conduit::utils::set_warning_handler(blueprint_writer_plugin_warning_handler);
+    // this catches any uncaught conduit errors, logs them to debug 1
+    // and  converts them into a VisIt Exception
+    conduit::utils::set_error_handler(blueprint_writer_plugin_error_handler);
+
 #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(options)
     {
@@ -223,12 +232,6 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
         }
     }
 #endif
-
-    conduit::utils::set_info_handler(blueprint_writer_plugin_info_handler);
-    conduit::utils::set_warning_handler(blueprint_writer_plugin_warning_handler);
-    // this catches any uncaught conduit errors, logs them to debug 1
-    // and  converts them into a VisIt Exception
-    conduit::utils::set_error_handler(blueprint_writer_plugin_error_handler);
 }
 
 
@@ -704,7 +707,7 @@ avtBlueprintWriter::CloseFile(void)
     }
     else if(m_op == BP_MESH_OP_PARTITION)
     {
-        debug5 << "Parition options:\n" << m_options.to_string() << std::endl;
+        debug5 << "Partition options:\n" << m_options.to_string() << std::endl;
         int rank = 0;
         Node repart_mesh;
         {
