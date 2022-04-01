@@ -467,6 +467,12 @@ avtPlainTextFileFormat::GetVectorVar(const char *varname)
 //
 //    Mark C. Miller, Tue Dec  1 13:06:57 PST 2020
 //    Switched to double precision for rows of data
+// 
+//    Justin Privitera, Fri Apr  1 11:18:38 PDT 2022
+//    Added TrimLeadingandTrailingSpaces function
+//    to remove whitespace from variable names
+//    as they are read.
+// 
 // ****************************************************************************
 
 void
