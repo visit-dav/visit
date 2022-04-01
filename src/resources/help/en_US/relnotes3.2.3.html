@@ -22,7 +22,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Bugs fixed in version 3.2.3</font></b></p>
 <ul>
   <li>Fixed a bug with expression insert-function for constant expressions, so usage is clearer. </li>
-  <li>Fixed a bug with the Plaintext Reader. Previously, when reading CSV data, if the column names had leading or trailing whitespace, the plugin would fail to parse them correctly, and would keep the whitespace as part of the names. This has now been fixed.</li>
+  <li>Ensure variable names from PlainText reader have no leading or trailing whitespace.</li>
 </ul>
 
 <a name="Enhancements"></a>
