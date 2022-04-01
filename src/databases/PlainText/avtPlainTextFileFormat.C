@@ -34,6 +34,16 @@
 using     std::string;
 using     std::vector;
 
+string
+TrimLeadingandTrailingSpaces(string str)
+{
+    auto start = str.find_first_not_of(" ");
+    if (start == string::npos)
+        return "";
+    auto end = str.find_last_not_of(" ");
+    return str.substr(start, end - start + 1);
+}
+
 // ****************************************************************************
 //  Method: avtPlainTextFileFormat constructor
 //
@@ -513,7 +523,8 @@ avtPlainTextFileFormat::ReadFile()
                 *end = '\0';
                 if (firstRowIsHeader && firstRow)
                 {
-                    variableNames.push_back(start);
+                    variableNames.push_back(
+                        TrimLeadingandTrailingSpaces(start));
                 }
                 else
                 {
@@ -549,7 +560,8 @@ avtPlainTextFileFormat::ReadFile()
                 {
                     if (firstRowIsHeader && firstRow)
                     {
-                        variableNames.push_back(start);
+                        variableNames.push_back(
+                            TrimLeadingandTrailingSpaces(start));
                     }
                     else
                     {
@@ -620,7 +632,6 @@ avtPlainTextFileFormat::ReadFile()
         // generic values; and if it's too much, trim it
         for (int i=(int)variableNames.size(); i<ncolumns; i++)
         {
-            std::cout << variableNames[i] << std::endl;
             char str[20];
             sprintf(str, "var%02d", i);
             variableNames.push_back(str);
