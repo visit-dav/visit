@@ -1307,13 +1307,20 @@ VisitHotPointInteractor::OnTimer()
 //    I modified the interactor to ignore wheel movement while any of the
 //    mouse buttons are pressed to avoid strange behavior in some situations.
 //
+//    Kathleen Biagas, Thu Mar 17, 2022
+//    Use currentInteractor to check button status.
+//
 // ****************************************************************************
 
 void
 VisitHotPointInteractor::OnMouseWheelForward()
 {
-    if (!leftButtonDown && !middleButtonDown && !rightButtonDown)
+    if (!currentInteractor->LeftButtonIsDown() && 
+        !currentInteractor->MiddleButtonIsDown() && 
+        !currentInteractor->RightButtonIsDown())
+    {
         currentInteractor->OnMouseWheelForward();
+    }
 }
 
 
@@ -1333,13 +1340,20 @@ VisitHotPointInteractor::OnMouseWheelForward()
 //    I modified the interactor to ignore wheel movement while any of the
 //    mouse buttons are pressed to avoid strange behavior in some situations.
 //
+//    Kathleen Biagas, Thu Mar 17, 2022
+//    Use currentInteractor to check button status.
+//
 // ****************************************************************************
 
 void
 VisitHotPointInteractor::OnMouseWheelBackward()
 {
-    if (!leftButtonDown && !middleButtonDown && !rightButtonDown)
+    if (!currentInteractor->LeftButtonIsDown() && 
+        !currentInteractor->MiddleButtonIsDown() && 
+        !currentInteractor->RightButtonIsDown())
+    {
         currentInteractor->OnMouseWheelBackward();
+    }
 }
 
 // ****************************************************************************
