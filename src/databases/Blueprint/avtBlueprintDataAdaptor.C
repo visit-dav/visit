@@ -1956,24 +1956,49 @@ CopyTuple1(Node &node, vtkDataArray *da)
 }
 
 // ****************************************************************************
-void VTKDataArrayToNode(Node &node, vtkDataArray *arr)
+//  Method: VTKDataArrayToNode
+//
+//  Purpose:
+//      Wraps VTK data as a Conduit field.
+//
+//  Programmer: Matt Larsen
+//  Creation:   2019-02-25
+//
+//  Modifications:
+//
+//  Brad Whitlock, Fri Apr  1 13:41:32 PDT 2022
+//  Treat scalars specially so we do not make mcarrays out of them.
+//
+// ****************************************************************************
+
+void
+VTKDataArrayToNode(Node &node, vtkDataArray *arr)
 {
     int ncomps = arr->GetNumberOfComponents();
 
-    for(int i = 0; i < ncomps; ++i)
+    if(ncomps == 1)
     {
-      std::stringstream ss;
-      ss<<"/c"<<i;
+        if(arr->GetDataType() == VTK_DOUBLE)
+            CopyComponent64(node, arr, 0);
+        else
+            CopyComponent32(node, arr, 0);
+    }
+    else
+    {
+        for(int i = 0; i < ncomps; ++i)
+        {
+            std::stringstream ss;
+            ss<<"/c"<<i;
 
-      if(arr->GetDataType() == VTK_DOUBLE)
-      {
-         CopyComponent64(node[ss.str()], arr, i);
-      }
-      else
-      {
-         CopyComponent32(node[ss.str()], arr, i);
-      }
-
+            if(arr->GetDataType() == VTK_DOUBLE)
+            {
+                CopyComponent64(node[ss.str()], arr, i);
+            }
+            else
+            {
+                CopyComponent32(node[ss.str()], arr, i);
+            }
+        }
     }
 }
 
@@ -2089,7 +2114,7 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 }
 
 // ****************************************************************************
-//  Method: avtBlueprintDataAdapter::VTKFieldsToBlueprint
+//  Method: avtBlueprintDataAdapter::VTKFieldNameToBlueprint
 //
 //  Purpose:
 //      Replaces '/''s in input vtk_name with '_''s and stores the output in
