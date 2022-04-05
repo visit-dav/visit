@@ -61,30 +61,31 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
    timeStateFormat()
 {
     // Create the top layout that will contain the widgets.
-    QGridLayout *topLayout = new QGridLayout(this);
-    topLayout->setColumnStretch(0,1);
-    topLayout->setColumnStretch(1,10);
+    QVBoxLayout *topLayout = new QVBoxLayout(this);
+    topLayout->setSpacing(5);
     topLayout->setMargin(5);
 
     // Create the active time slider.
-    QGridLayout *tsLayout = new QGridLayout(0);
+    QHBoxLayout *tsLayout = new QHBoxLayout(0);
     tsLayout->setMargin(0);
-    topLayout->addLayout(tsLayout, 0, 0);
+    topLayout->addLayout(tsLayout);
     activeTimeSlider = new QComboBox(this);
-    activeTimeSlider->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
+    // Q? which should it be?
+    // activeTimeSlider->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
+    activeTimeSlider->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     connect(activeTimeSlider, SIGNAL(activated(int)),
             this, SLOT(changeActiveTimeSlider(int)));
     activeTimeSliderLabel = new QLabel(tr("Active time slider"), this);
-    tsLayout->addWidget(activeTimeSliderLabel, 0, 0);
+    tsLayout->addWidget(activeTimeSliderLabel);
     activeTimeSliderLabel->hide();
-    tsLayout->addWidget(activeTimeSlider, 1, 0);
+    tsLayout->addWidget(activeTimeSlider, 10);
     activeTimeSlider->hide();
 
     // Create the animation position slider bar
     QHBoxLayout *animationLayout = new QHBoxLayout(0);
     animationLayout->setMargin(0);
-    topLayout->addLayout(animationLayout, 2, 0);
-    // topLayout->setStretchFactor(animationLayout, 10);
+    topLayout->addLayout(animationLayout);
+    topLayout->setStretchFactor(animationLayout, 10);
     animationPosition = new QvisAnimationSlider(Qt::Horizontal, this);
     animationPosition->setEnabled(false);
     connect(animationPosition, SIGNAL(sliderPressed()),
@@ -112,7 +113,7 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
     connect(vcrControls, SIGNAL(stop()), this, SLOT(stop()));
     connect(vcrControls, SIGNAL(play()), this, SLOT(play()));
     connect(vcrControls, SIGNAL(nextFrame()), this, SLOT(forwardStep()));
-    topLayout->addWidget(vcrControls, 3, 0);
+    topLayout->addWidget(vcrControls);
 
     // Initialize the attached subjects
     windowInfo = NULL;
