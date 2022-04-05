@@ -61,28 +61,30 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
    timeStateFormat()
 {
     // Create the top layout that will contain the widgets.
-    QVBoxLayout *topLayout = new QVBoxLayout(this);
-    topLayout->setSpacing(5);
+    QGridLayout *topLayout = new QGridLayout(this);
+    topLayout->setColumnStretch(0,1);
+    topLayout->setColumnStretch(1,10);
     topLayout->setMargin(5);
 
     // Create the active time slider.
-    QHBoxLayout *tsLayout = new QHBoxLayout(0);
+    QGridLayout *tsLayout = new QGridLayout(0);
     tsLayout->setMargin(0);
-    topLayout->addLayout(tsLayout);
+    topLayout->addLayout(tsLayout, 0, 0);
     activeTimeSlider = new QComboBox(this);
+    activeTimeSlider->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
     connect(activeTimeSlider, SIGNAL(activated(int)),
             this, SLOT(changeActiveTimeSlider(int)));
     activeTimeSliderLabel = new QLabel(tr("Active time slider"), this);
-    tsLayout->addWidget(activeTimeSliderLabel);
+    tsLayout->addWidget(activeTimeSliderLabel, 0, 0);
     activeTimeSliderLabel->hide();
-    tsLayout->addWidget(activeTimeSlider, 10);
+    tsLayout->addWidget(activeTimeSlider, 1, 0);
     activeTimeSlider->hide();
 
     // Create the animation position slider bar
     QHBoxLayout *animationLayout = new QHBoxLayout(0);
     animationLayout->setMargin(0);
-    topLayout->addLayout(animationLayout);
-    topLayout->setStretchFactor(animationLayout, 10);
+    topLayout->addLayout(animationLayout, 2, 0);
+    // topLayout->setStretchFactor(animationLayout, 10);
     animationPosition = new QvisAnimationSlider(Qt::Horizontal, this);
     animationPosition->setEnabled(false);
     connect(animationPosition, SIGNAL(sliderPressed()),
@@ -110,7 +112,7 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
     connect(vcrControls, SIGNAL(stop()), this, SLOT(stop()));
     connect(vcrControls, SIGNAL(play()), this, SLOT(play()));
     connect(vcrControls, SIGNAL(nextFrame()), this, SLOT(forwardStep()));
-    topLayout->addWidget(vcrControls);
+    topLayout->addWidget(vcrControls, 3, 0);
 
     // Initialize the attached subjects
     windowInfo = NULL;
