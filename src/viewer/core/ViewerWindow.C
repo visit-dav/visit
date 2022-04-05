@@ -4430,6 +4430,9 @@ ViewerWindow::RecenterView2d(const double *limits)
 //    Eric Brugger, Wed Jan  8 16:52:11 PST 2014
 //    I added a multi resolution display capability for 3d.
 //
+//    Kathleen Biagas, Tue Mar 29 2022
+//    Make this a no-op for Flythrough mode.
+//
 // ****************************************************************************
 
 void
@@ -4466,6 +4469,20 @@ ViewerWindow::RecenterView3d(const double *limits)
         //
         visWindow->SetView3D(view3D);
 
+        return;
+    }
+
+
+    //
+    // Flythrough navigation mode doesn't use centerOfRotation
+    // and messing with any other view atts like focus will negate
+    // any changes made during rotation or pan.
+    //
+    InteractorAttributes::NavigationMode navigationMode =
+        visWindow->GetInteractorAtts()->GetNavigationMode();
+
+    if(navigationMode == InteractorAttributes::Flythrough)
+    {
         return;
     }
 
@@ -4972,6 +4989,10 @@ ViewerWindow::ResetView2d()
 //    Eric Brugger, Wed Jan  8 16:52:11 PST 2014
 //    I added a multi resolution display capability for 3d.
 //
+//    Kathleen Biagas, Thu Mar 17, 2022
+//    Changed '+=' to '=' when setting z-focus for Flythrough.
+//    Fixes bug where Multiple calls to ResetView made the plot disappear.
+//
 // ****************************************************************************
 
 void
@@ -5062,7 +5083,7 @@ ViewerWindow::ResetView3d()
     view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
     if (navigationMode == InteractorAttributes::Flythrough)
     {
-        view3D.focus[2] += (1.0 - 1.0 / 20.) * distance;
+        view3D.focus[2] = (1.0 - 1.0 / 20.) * distance;
     }
     else
     {
@@ -5207,6 +5228,11 @@ ViewerWindow::ResetViewAxisArray()
 //    I added code to set the center of rotation to handle the case where
 //    the navigation mode is dolly.
 //
+//    Kathleen Biagas, Wed Mar 23, 2022
+//    Account for Flythrough navigation mode when setting the z-focus,
+//    parallelScale and near/far clipping planes. Calculations based on
+//    those in ResetView3d.
+//
 // ****************************************************************************
 
 void
@@ -5222,6 +5248,9 @@ ViewerWindow::AdjustView3d(const double *limits)
         centeringValid3d = false;
         return;
     }
+
+    InteractorAttributes::NavigationMode navigationMode =
+        visWindow->GetInteractorAtts()->GetNavigationMode();
 
     //
     // Get the current view.
@@ -5276,23 +5305,38 @@ ViewerWindow::AdjustView3d(const double *limits)
     if( width == 0.0 )
       width = 0.001;
 
+    double distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
+
     view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2. +
                       panFactor[0] * width;
     view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2. +
                       panFactor[1] * width;
-    view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2. +
-                      panFactor[2] * width;
+
+    if (navigationMode == InteractorAttributes::Flythrough)
+    {
+        view3D.focus[2] = (1.0 - 1.0 / 20.) * distance;
+    }
+    else
+    {
+        view3D.focus[2] = (boundingBox3d[5] + boundingBox3d[4]) / 2. +
+                          panFactor[2] * width;
+    }
 
     //
-    // Calculate the new parallel scale.
+    // Calculate the new parallel scale and near and far clipping planes.
     //
-    view3D.parallelScale = width / zoomFactor;
-
-    //
-    // Calculate the near and far clipping planes.
-    //
-    view3D.nearPlane = - 2.0 * width;
-    view3D.farPlane  =   2.0 * width;
+    if (navigationMode == InteractorAttributes::Flythrough)
+    {
+        view3D.parallelScale = width / 20.;
+        view3D.nearPlane = - (1.0 / 20.) * distance * 0.99;
+        view3D.farPlane  = (1.0 - 1.0 / 20.) * distance + 2.0 * width;
+    }
+    else
+    {
+        view3D.parallelScale = width / zoomFactor;
+        view3D.nearPlane = - 2.0 * width;
+        view3D.farPlane  =   2.0 * width;
+    }
 
     //
     // Set the center of rotation if the user hasn't specified it.
@@ -5332,6 +5376,9 @@ ViewerWindow::AdjustView3d(const double *limits)
 //    differently from the trackball and dolly modes.  I added code to set
 //    the center of rotation to handle the case where the navigation mode
 //    is dolly.
+//
+//    Kathleen Biagas, Thu Mar 17, 2022
+//    Changed '+=' to '=' when setting z-focus for Flythrough.
 //
 // ****************************************************************************
 
@@ -5392,7 +5439,7 @@ ViewerWindow::SetInitialView3d()
     view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2.;
     if (navigationMode == InteractorAttributes::Flythrough)
     {
-        view3D.focus[2] += (1.0 - 1.0 / 20.) * distance;
+        view3D.focus[2] = (1.0 - 1.0 / 20.) * distance;
     }
     else
     {
@@ -10734,13 +10781,21 @@ ViewerWindow::Lineout(const bool fromDefault)
 //  Creation:   August 16, 2004 
 //   
 //  Modifications:
+//    Kathleen Biagas, Wed Mar 23, 2022
+//    Reset the view for 3D Navigation mode changes.
 //
 // ****************************************************************************
 
 void
 ViewerWindow::SetInteractorAtts(const InteractorAttributes *atts)
 {
+    bool modeChanged = atts->GetNavigationMode() !=
+                       visWindow->GetInteractorAtts()->GetNavigationMode();
     visWindow->SetInteractorAtts(atts);
+    if(modeChanged && GetWindowMode() == WINMODE_3D)
+    {
+        ViewerWindowManager::Instance()->ResetView(windowId);
+    }
 }
 
 // ****************************************************************************
