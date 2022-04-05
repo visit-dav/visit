@@ -128,7 +128,7 @@ avtPseudocolorFilter::Execute()
     //
     avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    int reporteDim = inAtts.GetTopologicalDimension();
+    int reportedDim = inAtts.GetTopologicalDimension();
     int actualDim = avtDatasetExaminer::GetTopologicalDim(tree, reportedDim);
     outAtts.SetTopologicalDimension(actualDim); 
 
@@ -165,9 +165,7 @@ avtPseudocolorFilter::Execute()
 void
 avtPseudocolorFilter::UpdateDataObjectInfo(void)
 {
-    avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-
 
     if( outAtts.GetTopologicalDimension() == 0 )
     {
