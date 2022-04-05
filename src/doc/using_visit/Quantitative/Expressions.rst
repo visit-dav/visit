@@ -708,6 +708,11 @@ IJ_Gradient Function: ``ij_gradient()`` :  ``ij_gradient(expr0)``
 IJK_Gradient Function: ``ijk_gradient()`` :  ``ijk_gradient(expr0)``
     No description available.
 
+.. _Laplacian_Expression_Function:
+
+Laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
+    No description available.
+
 .. _Surface_Normal_Expression_Function:
 
 Surface Normal Function: ``surface_normal()`` :  ``surface_normal(expr0)``
@@ -1917,11 +1922,6 @@ agrad Function: ``agrad()`` : ``agrad(expr0)``
 .. _Key_Aggregate_Expression_Function:
 
 key aggregate Function: ``key_aggregate()`` : ``key_aggregate(expr0)``
-    No description available.
-
-.. _Laplacian_Expression_Function:
-
-Laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
     No description available.
 
 .. _Rectilinear_Laplacian_Expression_Function:
