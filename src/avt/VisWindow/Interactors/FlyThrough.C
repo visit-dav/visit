@@ -283,3 +283,45 @@ FlyThrough::DisableSpinMode(void)
         shouldSpin = false;
     }
 }
+
+
+// ****************************************************************************
+//  Method: FlyThrough::OnMouseWheelForward
+//
+//  Purpose:
+//    Handles the mouse wheel turned forward.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   March 16, 2022
+//
+// ****************************************************************************
+
+void
+FlyThrough::OnMouseWheelForward()
+{
+    StartZoom();
+    DollyCameraAndFocus3D(MotionFactor * -0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
+    IssueViewCallback(true);
+}
+
+
+// ****************************************************************************
+//  Method: FlyThrough::OnMouseWheelBackward
+//
+//  Purpose:
+//    Handles the mouse wheel turned backward.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   March 16, 2022
+//
+// ****************************************************************************
+
+void
+FlyThrough::OnMouseWheelBackward()
+{
+    StartZoom();
+    DollyCameraAndFocus3D(MotionFactor * 0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
+    IssueViewCallback(true);
+}

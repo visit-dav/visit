@@ -1244,7 +1244,7 @@ avtBlueprintFileFormat::ReadRootIndexItems(const std::string &root_fname,
                                            conduit::Node &root_info)
 {
     // list of names we want to read from the root file
-    conduit:Node index_names;
+    conduit::Node index_names;
     index_names.append() = "blueprint_index";
     index_names.append() = "file_pattern";
     index_names.append() = "tree_pattern";
