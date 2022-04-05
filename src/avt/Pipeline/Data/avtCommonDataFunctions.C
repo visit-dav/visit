@@ -3726,3 +3726,126 @@ CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
     }
 }
 
+
+// ****************************************************************************
+//  Method: CGetTopologicalDimension
+//
+//  Purpose:
+//      Calculates topological dimension.
+//
+//  Arguments:
+//    data      The data from which to calculate topological dimension.
+//    info      Contains the reported topo dim and a place to store the
+//              actual topo dim.
+//    success   Indicates success or failure of this operation.
+//
+//  Notes:
+//      This method is designed to be used as the function parameter of
+//      avtDataTree::Iterate.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   April 5, 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+CGetTopologicalDim(avtDataRepresentation &data, void *info, bool &success)
+{
+    // for mixed topology data, this will report the largest
+    if (data.Valid())
+    {
+        typedef struct {const int *repDim; int *dim;} tmpstruct;
+        const int *reportedDim = ((tmpstruct*)info)->repDim;
+        int *newDim = ((tmpstruct*)info)->dim;
+
+        vtkDataSet *ds = data.GetDataVTK();
+
+        if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+        {
+            int localDim = -1;
+            vtkUnstructuredGrid *ug = vtkUnstructuredGrid::SafeDownCast(ds);
+            if (ug->GetNumberOfPoints() > 0)
+            {
+                if (ug->GetNumberOfCells() == 0)
+                {
+                    // assume point mesh
+                    localDim = 0;
+                }
+                else
+                {
+                    vtkCell *cell = ug->GetCell(0);
+                    localDim = cell->GetCellDimension();
+                    // 3 is max, so stop if we reach it
+                    for(vtkIdType i = 1; i < ug->GetNumberOfCells() && localDim < 3; ++i)
+                    {
+                        cell = ug->GetCell(i);
+                        if(cell->GetCellDimension() > localDim)
+                            localDim = cell->GetCellDimension();
+                    }
+                }
+                if(success)
+                {
+                    // merge previous results
+                    if(localDim > *newDim)
+                        *newDim = localDim;
+                }
+                else
+                {
+                    *newDim = localDim;
+                }
+                success = true;
+            }
+            else
+            {
+                success |= false;
+            }
+        }
+        else if (ds->GetDataObjectType() == VTK_POLY_DATA)
+        {
+            vtkPolyData *pd = vtkPolyData::SafeDownCast(ds);
+            int localDim = -1;
+            if(pd->GetNumberOfPolys() > 0 || pd->GetNumberOfStrips() > 0)
+            {
+                localDim = 2;
+            }
+            else if(pd->GetNumberOfLines() > 0)
+            {
+                localDim = 1;
+            }
+            else if(pd->GetNumberOfVerts() > 0)
+            {
+                localDim = 0;
+            }
+            else
+            {
+                success |= false;
+            }
+            if(localDim != -1)
+            {
+                if(success)
+                {
+                    // merge previous results
+                    if(localDim > *newDim)
+                        *newDim = localDim;
+                }
+                else
+                {
+                    *newDim = localDim;
+                }
+                success = true;
+            }
+        }
+        else
+        {
+            // assume reported dim is correct
+            success = true;
+            *newDim = *reportedDim;
+        }
+    }
+    else
+    {
+        success = false;
+    }
+}
