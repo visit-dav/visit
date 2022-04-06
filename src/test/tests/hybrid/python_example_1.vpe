@@ -1,6 +1,13 @@
 # ----------------------------------------------------------------------------
 # Example VisIt Python Expression
 #
+#                    ***WARNING***WARNING***WARNING***
+#
+# This script is referenced in the documentation. Update the line numbers
+# in src/doc/tutorials/PythonExpressions.rst if you modify this file.
+#
+#                    ***WARNING***WARNING***WARNING***
+#
 # Adds two scalar variables together.
 #
 #  Programmer: Eric Brugger
