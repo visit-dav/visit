@@ -77,14 +77,13 @@ avtGhostZoneIdExpression::PreExecute(void)
 // ****************************************************************************
 //  Method: avtGhostZoneIdExpression::DeriveVariable
 //
-//  Purpose:
-//      TODO
+//  Purpose:      Gets the ghost zone ids and copies them to a vtkDataArray.
 //
 //  Arguments:
 //      vtkDataSet *in_ds        The input dataset.
 //      int currentDomainsIndex  unused integer
 //
-//  Returns:      TODO
+//  Returns:      A vtkDataArray containing the ghost zone ids.
 //
 //  Programmer:   Justin Privitera
 //  Creation:     Wed Mar 30 11:50:02 PDT 2022
@@ -124,8 +123,8 @@ avtGhostZoneIdExpression::DeriveVariable(vtkDataSet *in_ds, int /*currentDomains
 // ****************************************************************************
 //  Method: avtGhostZoneIdExpression::ModifyContract
 //
-//  Purpose:
-//      TODO
+//  Purpose:      Adds a data request to get the ghost zone ids to the 
+//                avtContract pointer.
 //
 //  Programmer:   Justin Privitera
 //  Creation:     Wed Mar 30 11:50:02 PDT 2022

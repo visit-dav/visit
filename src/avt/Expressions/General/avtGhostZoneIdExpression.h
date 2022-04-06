@@ -18,7 +18,7 @@ class     vtkDataArray;
 //  Class: avtGhostZoneIdExpression
 //
 //  Purpose:
-//      TODO
+//      Provides an interface for requesting ghost zone ids.
 //          
 //  Programmer: Justin Privitera
 //  Creation:   Wed Mar 30 11:40:46 PDT 2022
