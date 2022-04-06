@@ -8,6 +8,7 @@
 #include <ViewerProxy.h>
 
 #include <QCheckBox>
+#include <QLabel>
 #include <QLayout>
 #include <QButtonGroup>
 #include <QRadioButton>
@@ -96,6 +97,10 @@ QvisInteractorWindow::~QvisInteractorWindow()
 //   Hank Childs, Sat Mar 13 19:03:03 PST 2010
 //   Add interface for bounding box mode.
 //
+//   Kathleen Biagas, Wed Mar 23, 2022
+//   Added QLabel for message stating that navigation mode changes will
+//   trigger automatic ResetView.
+//
 // ****************************************************************************
 
 void
@@ -147,6 +152,9 @@ QvisInteractorWindow::CreateWindowContents()
     QRadioButton *flythrough = new QRadioButton(tr("Flythrough"), navigationGroup);
     navigationMode->addButton(flythrough,2);
     navigationLayout->addWidget(flythrough, 1, 3);
+
+    QLabel *navMsg = new QLabel(tr("Changing mode will automatically trigger a View reset."), navigationGroup);
+    navigationLayout->addWidget(navMsg, 2, 1, 1, 3);
 
     QGroupBox *boundingBoxGroup = new QGroupBox(central);
     boundingBoxGroup->setTitle(tr("Switch to bounding box when changing views:"));

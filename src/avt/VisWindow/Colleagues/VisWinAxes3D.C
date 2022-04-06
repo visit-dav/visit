@@ -60,6 +60,9 @@
 //    Hank Childs, Mon May 23 13:26:09 PDT 2011
 //    Initialize boundsOverriden.
 //
+//    Kathleen Biagas, Fri Mar 25, 2022
+//    Added currentScaleFlag.
+//
 // ****************************************************************************
 
 VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p),
@@ -89,6 +92,7 @@ VisWinAxes3D::VisWinAxes3D(VisWindowColleagueProxy &p) : VisWinColleague(p),
     boundsOverridden = false;
     addedAxes3D = false;
 
+    currentScaleFlag = false;
     for (int i = 0; i < 3; i++)
         currentScaleFactors[i] = 1.0;
 
@@ -1437,19 +1441,25 @@ VisWinAxes3D::UpdateLabelTextAttributes(double fr, double fg, double fb)
 // Programmer:  Jeremy Meredith
 // Creation:    May 19, 2010
 //
+// Modifications:
+//   Kathleen Biagas, Fri Mar 25, 2022
+//   Consider currentScaleFlag in determining if dirty.
+//
 // ****************************************************************************
 void
 VisWinAxes3D::Set3DAxisScalingFactors(bool scale,
                                       const double s[3])
 {
     double newS[3] = {scale ?  s[0] : 1, scale ? s[1] : 1, scale ? s[2] : 1};
-    bool dirty = (s[0] != currentScaleFactors[0]) ||
+    bool dirty = (currentScaleFlag != scale) ||
+                 (s[0] != currentScaleFactors[0]) ||
                  (s[1] != currentScaleFactors[1]) ||
                  (s[2] != currentScaleFactors[2]);
     if (dirty)
     {
         SetBounds(currentBounds, newS);
     }
+    currentScaleFlag = scale;
 }
 
 // ****************************************************************************
