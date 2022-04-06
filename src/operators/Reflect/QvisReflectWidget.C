@@ -322,6 +322,9 @@ QvisReflectWidget::redrawScene(QPainter *painter)
 //   Hank Childs, Thu Jun  8 14:08:18 PDT 2006
 //   Fix compiler warnings for casting.
 //
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 
 void
@@ -365,7 +368,7 @@ QvisReflectWidget::redrawScene2D(QPainter *painter)
     painter->setPen(palette().windowText().color());
     const char *x = "+X";
     painter->drawText((int) x0.x, (int) (x0.y + h), "-X");
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int wx = fontMetrics().horizontalAdvance(x);
 #else
     int wx = fontMetrics().width(x);

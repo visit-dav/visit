@@ -673,6 +673,8 @@ QvisTimeSliderControlWidget::UpdateTimeFieldText(int timeState)
 // Creation:
 //
 // Modifications:
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //
 // ****************************************************************************
 
@@ -680,7 +682,7 @@ void
 QvisTimeSliderControlWidget::SetTimeFieldText(const QString &text)
 {
     int w  = timeField->width();
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int nw = timeField->fontMetrics().horizontalAdvance("  " + text);
 #else
     int nw = timeField->fontMetrics().width("  " + text);

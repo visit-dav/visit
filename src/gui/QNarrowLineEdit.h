@@ -17,6 +17,9 @@
 //    Eric Brugger, Mon Aug 31 10:26:57 PDT 2015
 //    I added QSixCharLineEdit.
 //
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 class QNarrowLineEdit : public QLineEdit
 {
@@ -33,7 +36,7 @@ class QNarrowLineEdit : public QLineEdit
     {
         QSize size = QLineEdit::sizeHint();
         QFontMetrics fm(font());
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
         int w = fm.horizontalAdvance("0");
 #else
         int w = fm.width("0");
@@ -58,7 +61,7 @@ class QSixCharLineEdit : public QLineEdit
     {
         QSize size = QLineEdit::sizeHint();
         QFontMetrics fm(font());
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
         int w = fm.horizontalAdvance("0");
 #else
         int w = fm.width("0");
