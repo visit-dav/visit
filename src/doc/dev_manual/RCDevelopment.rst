@@ -179,8 +179,9 @@ you merge into develop.
 
    The pull request with the abbreviated description.
 
-Now you go through the normal pull request process. Once you have merged
-your changes into develop you can delete the branch at GitHub and locally. ::
+Now you go through the normal pull request process.
+Unless major changes have been made since merging into the RC, requesting code reviews from other developers for a PR modifying develop is unnecessary, and is at your discretion.
+Once you have merged your changes into develop you can delete the branch at GitHub and locally. ::
 
     git remote prune origin
     git remote update
