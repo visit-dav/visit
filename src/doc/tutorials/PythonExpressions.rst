@@ -20,15 +20,16 @@ Python expressions are run on the compute engine and will run in parallel whenev
 Python expressions operate on ``vtkDataSets``, which provide access to mesh variables as well as the mesh coordinates and topology.
 Python expression also have access to VisIt_'s metadata as well as access to MPI when running in parallel.
 Python expressions return a ``vtkDataArray``, which allows returning new variables.
-It is not possible to change the mesh topology or coordinates.
-The functionality is available through the *GUI* and the *CLI*.
-When using the *GUI*, they can be created in the *Expressions* window. 
-When using the *CLI*, they can be created with the *DefinePythonExpression* function.
+It is not possible to change the mesh topology or coordinates *within* a Python expression.
+However, it is possible to *combine* Python expressions with :ref:`Cross Mesh Field Evaluation (CMFE) functions <Comparison_Expressions>`_ which can have the effect of changing mesh topology and coordinates.
+The functionality is available through the **GUI** and the **CLI**.
+When using the **GUI**, they can be created in the *Expressions* window. 
+When using the **CLI**, they can be created with the *DefinePythonExpression* function.
 
-Creating a Python Expression with the GUI
------------------------------------------
+Creating a Python Expression with the **GUI**
+---------------------------------------------
 
-We will now go through the steps required to create a Python expression using the GUI.
+We will now go through the steps required to create a Python expression using the **GUI**.
 
 Let us start by opening a file and creating a plot.
 
@@ -162,10 +163,10 @@ Once we have finished processing all the cells, we return the ``vtkDataArray``.
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
    :lines: 45
 
-Using your Python Expression with the CLI
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using your Python Expression with the **CLI**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Python expression we just created can also be used with the CLI.
+The Python expression we just created can also be used with the **CLI**.
 
 We will start by saving the script we just created.
 
@@ -248,10 +249,10 @@ Once we have finished processing all the cells, we return the ``vtkDataArray``.
 .. literalinclude:: ../../test/tests/hybrid/python_example_2.vpe
    :lines: 59
 
-Using your Python Expression with the CLI
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using your Python Expression with the **CLI**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This Python expression can also be used with the CLI, just as the one in the first example, except the specification of the variables to use is slightly different.
+This Python expression can also be used with the **CLI**, just as the one in the first example, except the specification of the variables to use is slightly different.
 Since you are only passing a single variable you would use ``("d")`` for the list of variables.
 
 .. code-block:: python
