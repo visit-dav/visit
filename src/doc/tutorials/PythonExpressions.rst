@@ -21,7 +21,7 @@ Python expressions operate on ``vtkDataSets``, which provide access to mesh vari
 Python expression also have access to VisIt_'s metadata as well as access to MPI when running in parallel.
 Python expressions return a ``vtkDataArray``, which allows returning new variables.
 It is not possible to change the mesh topology or coordinates *within* a Python expression.
-However, it is possible to *combine* Python expressions with :ref:`Cross Mesh Field Evaluation (CMFE) functions <Comparison_Expressions>`_ which can have the effect of changing mesh topology and coordinates.
+However, it is possible to *combine* Python expressions with :ref:`Cross Mesh Field Evaluation (CMFE) functions <Comparison_Expressions>` which can have the effect of changing mesh topology and coordinates.
 The functionality is available through the **GUI** and the **CLI**.
 When using the **GUI**, they can be created in the *Expressions* window. 
 When using the **CLI**, they can be created with the *DefinePythonExpression* function.
@@ -96,7 +96,8 @@ It demonstrates accessing multiple variables and performing simple operations wi
 Here is the example script.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
-   :lines: 18-47
+   :start-at: class MyExpression(SimplePythonExpression):
+   :end-at: py_filter = MyExpression
 
 Let us start off by creating a Pseudocolor plot from the expression.
 
@@ -119,49 +120,58 @@ The ``__init__`` method provides information about the expression, including
 * A flag that the output is a scalar.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
-   :lines: 19-24
+   :start-at: def __init__(self):
+   :end-before: def modify_contract(self,contract):
 
 The ``modify_contract`` method can be used to request special information for the expression from VisIt_.
 In this case it is a no-op.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
-   :lines: 25-26
+   :start-at: def modify_contract(self,contract):
+   :end-before: def derive_variable(self,ds_in,domain_id):
 
 The ``derive_variable`` method performs the real work of the expression.
 It is passed the input ``vtkDataSet`` and the ``domain_id``.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
-   :lines: 27-28
+   :start-at: def derive_variable(self,ds_in,domain_id):
+   :end-before: # Get the data array for the first variable
 
 The following lines get the ``vtkDataArrays`` for the cell values for the two variables and the number of cells.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
-   :lines: 29-34
+   :start-at: # Get the data array for the first variable
+   :end-before: # Create a scalar float array with ncells values for the result
 
 The following lines set the output ``vtkDataArray`` to be an array of floats with 1 component and ncells values.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
-   :lines: 35-38
+   :start-at: # Create a scalar float array with ncells values for the result
+   :end-before: for i in range(ncells):
 
 Now we loop over the cells, setting the output value for each cell.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
-   :lines: 39
+   :start-at: for i in range(ncells):
+   :end-before: # Add the i'th value from the first variable to the i'th
 
 The following lines add the two variables for the current cell.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
-   :lines: 40-42
+   :start-at: # Add the i'th value from the first variable to the i'th
+   :end-before: # Store the value in the i'th value in the result
 
 The following lines set the result value for the current cell.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
-   :lines: 43-44
+   :start-at: # Store the value in the i'th value in the result
+   :end-before: return res
 
 Once we have finished processing all the cells, we return the ``vtkDataArray``.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
-   :lines: 45
+   :start-at: return res
+   :end-at: return res
 
 Using your Python Expression with the **CLI**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -192,7 +202,8 @@ It demonstrates accessing the coordinates and topology of the mesh as well as a 
 Here is the example script.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_2.vpe
-   :lines: 18-61
+   :start-at: from math import sqrt
+   :end-at: py_filter = MyExpression
 
 Let us start off by creating a Pseudocolor plot from the expression.
 
@@ -207,47 +218,56 @@ Let us start off by creating a Pseudocolor plot from the expression.
 The ``__init__`` and ``modify_contract`` methods are the same as the previous example, so we will only look at the ``derive_variable`` method.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_2.vpe
-   :lines: 28-29
+   :start-at: def derive_variable(self,ds_in,domain_id):
+   :end-before: # Get the data array for the variable
 
 The following lines get the ``vtkDataArray`` for the cell values and the number of cells.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_2.vpe
-   :lines: 30-33
+   :start-at: # Get the data array for the variable
+   :end-before: # Create a scalar float array with ncells values for the result
 
 The following lines set the output ``vtkDataArray`` to be an array of floats with 1 component and ncells values.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_2.vpe
-   :lines: 34-37
+   :start-at: # Create a scalar float array with ncells values for the result
+   :end-before: for i in range(ncells):
 
 Now we loop over the cells, setting the output value for each cell.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_2.vpe
-   :lines: 38
+   :start-at: for i in range(ncells):
+   :end-before: # Get the i'th cell
 
 The following lines get the current cell and the number of edges in the cell.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_2.vpe
-   :lines: 39-42
+   :start-at: # Get the i'th cell
+   :end-before: # Sum up the lengths of the edges
 
 Now we loop over the edges, calculating the sum of the lengths of the edges.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_2.vpe
-   :lines: 43-45
+   :start-at: # Sum up the lengths of the edges
+   :end-before: # Get the j'th edge
 
 We calculate the length of the edge from the 3D coordinates of the end points of the edge, which we add to the sum.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_2.vpe
-   :lines: 46-54
+   :start-at: # Get the j'th edge
+   :end-before: # Multiply the sum by the i'th value of the variable
 
 Once we have summed the lengths of the edges we multiply the sum by the cell value and set it in the result.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_2.vpe
-   :lines: 55-58
+   :start-at: # Multiply the sum by the i'th value of the variable
+   :end-before: return res
 
 Once we have finished processing all the cells, we return the ``vtkDataArray``.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_2.vpe
-   :lines: 59
+   :start-at: return res
+   :end-at: return res
 
 Using your Python Expression with the **CLI**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
