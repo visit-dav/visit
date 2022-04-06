@@ -64,7 +64,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes in GUI behavior for version 3.3</font></b></p>
 <ul>
   <li>Custom titles for Legend annotation objects can now be set.</li> 
-  <li>GUI Change 2</li>
+  <li>Dolly and FlyThrough navigation modes now support mouse-wheel interaction for zooming.</li>
+  <li>Changing navigation mode (Trackball, Dolly, FlyThrough) will now trigger an automatic View reset.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -109,6 +110,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed bug where changing the 'Number format' for a Contour plot's legend would have no affect on the labels next to the tick marks.</li>
   <li>Fixed a bug that prevented users from comparing particular VisIt Python objects in the CLI with non-VisIt types.</li>
   <li>Fixed a crash with libsim when attempting to Export databases that have export options specified as enums.</li>
+  <li>Fixed a bug where Right-Clicking in the Viewer Window to access popup menu was preventing mouse-wheel navigation functionality until another mouse click was performed.</li>
+  <li>Fixed several bugs with 'Flythrough' navigation mode: multiple calls to ResetView would make the plot disappear; adding new plots would make them disappear from view; issuing a 'Recenter View' would move the camera inside the plot.</li>
+  <li>Fixed a bug where bounding box extents would not be reset when 'Scale 3D Axes' was turned off.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
