@@ -70,10 +70,6 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
     tsLayout->setMargin(0);
     topLayout->addLayout(tsLayout);
     activeTimeSlider = new QComboBox(this);
-    // Q? which should it be?
-    // check /usr/WS1/visit/visit/thirdparty_shared/3.2.0/toss3/qt/5.14.2/linux-x86_64_gcc-6.1/include/QtWidgets/qcombobox.h:136
-    // for more info
-    // activeTimeSlider->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
     activeTimeSlider->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     connect(activeTimeSlider, SIGNAL(activated(int)),
             this, SLOT(changeActiveTimeSlider(int)));
