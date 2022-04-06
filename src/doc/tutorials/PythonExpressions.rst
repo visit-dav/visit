@@ -83,7 +83,7 @@ Now you are ready to modify the script.
 Python Expression Example 1
 ---------------------------
 
-This example will operate on 2D meshes and takes the distance around the edges of each cell and multiplies it by the value of the cell.
+This example operates on 2D meshes and takes the distance around the edges of each cell and multiplies it by the value of the cell.
 It demonstrates accessing the coordinates and topology of the mesh as well as a variable.
 
 Here is the example script.
@@ -131,7 +131,7 @@ The following lines get the vtkDataArray for the cell values and the number of c
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
    :lines: 24-25
 
-The following lines set the output vtkDataArray to be an array of floats with 1 component and ncells.
+The following lines set the output vtkDataArray to be an array of floats with 1 component and ncells values.
 
 .. literalinclude:: ../../test/tests/hybrid/python_example_1.vpe
    :lines: 26-28
