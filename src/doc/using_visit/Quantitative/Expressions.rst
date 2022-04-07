@@ -1209,7 +1209,7 @@ Ghost Zoneid Function: ``ghost_zoneid()`` : ``ghost_zoneid(<Mesh>)``
     ZONE_NOT_APPLICABLE_TO_PROBLEM = 5
 
 :
-    where each flag represents a bit shift by the specified number of bits. So if a zone is not a ghost zone, the value returned would be 0, while if it was a ``DUPLICATED_ZONE_INTERNAL_TO_PROBLEM`` and a ``REFINED_ZONE_IN_AMR_GRID``, the value returned would be 1001 in binary, or 8 in decimal.
+    where each flag represents a bit shift by the specified number of bits. So if a zone is not a ghost zone, the value returned would be 0, while if it was a ``DUPLICATED_ZONE_INTERNAL_TO_PROBLEM`` and a ``REFINED_ZONE_IN_AMR_GRID``, the value returned would be 1001 in binary, or 9 in decimal.
 
 .. _Volume_Function:
 
