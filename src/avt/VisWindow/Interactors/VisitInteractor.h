@@ -90,6 +90,10 @@ typedef   void (*ViewCallback)(VisWindow *);
 //    Hank Childs, Tue Jan  8 11:22:44 PST 2008
 //    Disallow mouse wheel movements where they are not intended.
 //
+//    Katleen Biagas, Wed Mar 16, 2022
+//    Added new signatures with double argument for DollyCameraTowardFocus3D
+//    and DollyCameraAndFocus3D to aid in mouse wheel interaction.
+// 
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
@@ -110,8 +114,8 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
 
     // Define these to make sure they are no-ops, and that we don't get the
     // VTK behavior.  Derived classes are welcome to redefine them.
-    virtual void                OnMouseWheelForward() {;};
-    virtual void                OnMouseWheelBackward() {;};
+    virtual void                OnMouseWheelForward()  {;}
+    virtual void                OnMouseWheelBackward() {;}
 
     virtual void                OnMouseMove();
 
@@ -130,11 +134,11 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     virtual void                SetInteractor(vtkRenderWindowInteractor *);
 
     virtual bool                LeftButtonIsDown(void)
-                                                  { return leftButtonDown; };
+                                                  { return leftButtonDown; }
     virtual bool                MiddleButtonIsDown(void)
-                                                  { return middleButtonDown; };
+                                                  { return middleButtonDown; }
     virtual bool                RightButtonIsDown(void)
-                                                  { return rightButtonDown; };
+                                                  { return rightButtonDown; }
 
   protected:
     VisWindowInteractorProxy   &proxy;
@@ -167,7 +171,9 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     void                        PanCamera3D(const int, const int);
     void                        ZoomImage3D(double);
     void                        ZoomImage3D(const int, const int);
+    void                        DollyCameraTowardFocus3D(double);
     void                        DollyCameraTowardFocus3D(const int, const int);
+    void                        DollyCameraAndFocus3D(double);
     void                        DollyCameraAndFocus3D(const int, const int);
     void                        RotateAboutFocus3D(const int, const int,
                                     const bool);
