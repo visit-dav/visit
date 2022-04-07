@@ -1189,6 +1189,11 @@ Global Nodeid Function: ``global_nodeid()`` : ``global_nodeid(expr0)``
     node/vertex/point is the *global* index of a node, as specified by
     the data producer.
 
+.. _Ghost_Zoneid_Expression_Function:
+
+Ghost Zoneid Function: ``ghost_zoneid()`` : ``ghost_zoneid(<Mesh>)``
+    No description available.
+
 .. _Volume_Function:
 
 Volume Function: ``volume()`` : ``volume(<Mesh>)``
