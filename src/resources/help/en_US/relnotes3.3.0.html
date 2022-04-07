@@ -112,6 +112,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where Right-Clicking in the Viewer Window to access popup menu was preventing mouse-wheel navigation functionality until another mouse click was performed.</li>
   <li>Fixed several bugs with 'Flythrough' navigation mode: multiple calls to ResetView would make the plot disappear; adding new plots would make them disappear from view; issuing a 'Recenter View' would move the camera inside the plot.</li>
   <li>Fixed a bug where bounding box extents would not be reset when 'Scale 3D Axes' was turned off.</li>
+  <li>Fixed a cli crash when 'DeleteAllPlots' is called when there are not plots, and a callback has been registered for 'SetActivePlots'.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
