@@ -50,6 +50,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Blueprint export now supports flattening the mesh data on output. In the Blueprint export options, select "Flatten_CSV" to export the mesh data to vertex and element based CSV files, or "Flatten_HDF5" to export the data to a Blueprint "Table" node.</li>
   <li>The Flatten() function has been added to the CLI; this function uses the new avtFlattenQuery to return the active plot data as a tabular, numpy compatible, 2D array.</li>
   <li>Added new mesh expressions 'logical_nodeid', 'logical_zoneid', 'node_domain', 'zone_domain', and 'zone_centers'.</li>
+  <li>A tutorial on Python expressions was added to the tutorials section of the manual.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -112,6 +113,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where Right-Clicking in the Viewer Window to access popup menu was preventing mouse-wheel navigation functionality until another mouse click was performed.</li>
   <li>Fixed several bugs with 'Flythrough' navigation mode: multiple calls to ResetView would make the plot disappear; adding new plots would make them disappear from view; issuing a 'Recenter View' would move the camera inside the plot.</li>
   <li>Fixed a bug where bounding box extents would not be reset when 'Scale 3D Axes' was turned off.</li>
+  <li>Fixed a cli crash when 'DeleteAllPlots' is called when there are not plots, and a callback has been registered for 'SetActivePlots'.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
