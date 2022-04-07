@@ -204,12 +204,12 @@ As described above, there are typically two *active* branches where work may be 
 The common case is for developers to do work on the release candidate and then apply the same work to ``develop`` using the format-patch or cherry-pick workflows.
 As noted in the section just above, sometimes the reverse happens and the work is originally done on ``develop`` and then *backported* to the release candidate.
 
-In either case, the question arises, is a second review of the same work to another branch required?
+In either case, the question arises, is a second review of a pull-request of the same work to another branch required?
 The short answer is no.
-Work that was done and originally reviewed as a pull request to the release candidate does not then require a second review in the pull request and merge to ``develop``.
+Work that was done and originally reviewed as a pull request to the release candidate does not require a second review in the pull request and merge to ``develop``.
 This is true even when backporting from ``develop`` to the release candidate.
 
-However, there are cases where the release candidate and ``develop`` have diverged significantly enough that re-review of the work might be useful.
-A good indicator of this need is if *conflicts* are encountered when using the format-patch or cherry-pick workflows to merge the changes on a different branch.
+However, there are cases where the release candidate and ``develop`` branches have diverged significantly enough that re-review of the work might be needed.
+A good indicator of this need is if *conflicts* are encountered when using the format-patch or cherry-pick workflows to merge the changes to a different branch.
 When that happens, the developer should give some thought as to whether the changes necessary to resolve the conflicts are significant enough that re-review may be required.
 This is entirely up to the developer doing the work though other developers who may be watching are also free to make a request to re-review the pull request to the different branch.
