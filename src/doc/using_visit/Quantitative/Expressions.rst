@@ -1197,7 +1197,19 @@ Global Nodeid Function: ``global_nodeid()`` : ``global_nodeid(expr0)``
 .. _Ghost_Zoneid_Expression_Function:
 
 Ghost Zoneid Function: ``ghost_zoneid()`` : ``ghost_zoneid(<Mesh>)``
-    No description available.
+    Returns the ghost zone id of each zone in the mesh. The ghost zone id could be any combination of the following:
+
+::
+
+    DUPLICATED_ZONE_INTERNAL_TO_PROBLEM = 0,
+    ENHANCED_CONNECTIVITY_ZONE = 1,
+    REDUCED_CONNECTIVITY_ZONE = 2,
+    REFINED_ZONE_IN_AMR_GRID = 3,
+    ZONE_EXTERIOR_TO_PROBLEM = 4,
+    ZONE_NOT_APPLICABLE_TO_PROBLEM = 5
+
+:
+    where each flag represents a bit shift by the specified number of bits. So if a zone is not a ghost zone, the value returned would be 0, while if it was a ``DUPLICATED_ZONE_INTERNAL_TO_PROBLEM`` and a ``REFINED_ZONE_IN_AMR_GRID``, the value returned would be 1001 in binary, or 8 in decimal.
 
 .. _Volume_Function:
 
