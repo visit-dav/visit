@@ -10,7 +10,7 @@ You will receive notifications from GitHub for...
 
 * ...any activity *you initiate* (issue, discussion, pull request, etc.) 
 * ...any activity *types* you choose to *watch*.
-* ...when someone `mentions you <https://github.blog/2011-03-23-mention-somebody-they-re-notified/>`_.
+* ...when someone `@mentions you <https://github.blog/2011-03-23-mention-somebody-they-re-notified/>`_.
 
 In addition, GitHub provides controls for the types of activities for which you want to receive `notifications <https://docs.github.com/en/account-and-profile/managing-subscriptions-and-notifications-on-github/setting-up-notifications/configuring-notifications>`_.
 For example, users can configure their `watch <https://docs.github.com/en/account-and-profile/managing-subscriptions-and-notifications-on-github/setting-up-notifications/configuring-notifications#configuring-your-watch-settings-for-an-individual-repository>`_ settings on the `main VisIt repository <https://github.com/visit-dav/visit>`_ to be notified only when new releases are made.
