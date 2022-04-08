@@ -7,6 +7,7 @@
 #include <avtCoordinateExtremaExpression.h>
 #include <avtCylindricalRadiusExpression.h>
 #include <avtDataIdExpression.h>
+#include <avtGhostZoneIdExpression.h>
 #include <avtExpressionComponentMacro.h>
 #include <avtFindExternalExpression.h>
 #include <avtNeighborEvaluatorExpression.h>
@@ -50,6 +51,9 @@
 //
 //   Chris Laganella, Mon Jan 31 15:43:30 EST 2022
 //   Add logical node / zone id expressions.
+// 
+//   Justin Privitera, Wed Mar 30 12:47:07 PDT 2022
+//   Added ghost_zoneid expression.
 //
 // ****************************************************************************
 
@@ -80,6 +84,12 @@ avtFunctionExpr::CreateMeshFilters(const std::string &functionName) const
     {
         avtEdgeNormalExpression *ff = new avtEdgeNormalExpression;
         ff->DoPointNormals(false);
+        return ff;
+    }
+    else if (functionName == "ghost_zoneid")
+    {
+        avtGhostZoneIdExpression *ff = new avtGhostZoneIdExpression;
+        ff->CreateGhostZoneIds();
         return ff;
     }
     else if (functionName == "zoneid")
