@@ -75,6 +75,9 @@ numfig = True
 rst_epilog = """
 .. _VisIt: https://visit.llnl.gov
 .. _Silo: https://silo.llnl.gov
+.. |*nix| replace:: Linux variants (Centos, Debian, Fedora, Redhat, Ubuntu, SUSE, TOSS)
+.. |fs*nix| replace:: fully supported Linux variants (Redhat, Ubuntu, TOSS)
+.. |ps*nix| replace:: partially supported Linux variants (Centos, Debian, Fedora, SUSE)
 """
 
 # Add any paths that contain templates here, relative to this directory.
