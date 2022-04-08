@@ -5,7 +5,7 @@ Supported Platforms
 
 .. note::
 
-   Supported platforms periodically change due to any of a number of factors outside of control of the VisIt_ project including demand, developer access, technology obsolescence, and majority stakeholder requirements.
+   Supported platforms periodically change due to any of a number of factors outside the control of the VisIt_ project including demand, developer access, technology obsolescence, and majority stakeholder requirements.
 
 The platforms upon which the majority of contributors regularly develop and run VisIt_ and for which the resources exist to provide *full support* are determined primarily by our `host organization <https://wci.llnl.gov>`_.
 For these platforms, we are able to reproduce bugs, test bug-fixes, develop work-arounds and in general provide the highest quality support services.

@@ -179,7 +179,7 @@ failed and correct the issue and finish building and installing the package.
 You can then execute the ``build_visit`` command again to have it continue
 the build.
 
-Why can't I use the Qt, Python, VTK, Mesa/Gl, etc. that came on my system?
+Why can't I use the Qt, Python, VTK, Mesa/GL, etc. that came on my system?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As much as we might like to believe it, large, complex libraries like Qt, Python and VTK are rarely 100% compatible between newer or older versions.
