@@ -35,7 +35,7 @@ Method Privacy Requirements Preferred
 
 .. |llnl| replace:: Access to LLNL networks
 
-In general, coverage is during normal West Coast business hours, 8am-12pm and 1-5pm (GMT-8, San Francisco time zone), Monday through Friday excluding `LLNL holidays <https://supplychain.llnl.gov/poattach/pdf/llnl_holidays.pdf>`_.
-Response time may be as much as four hours due to team member's multi-tasking among many responsibilities.
+In general, **coverage** is during normal West Coast business hours, 8am-12pm and 1-5pm (GMT-8, San Francisco time zone), Monday through Friday excluding `LLNL holidays <https://supplychain.llnl.gov/poattach/pdf/llnl_holidays.pdf>`_.
+**Response time** may be as much as four hours due to team member's multi-tasking among many responsibilities.
 
 If you are so inclined, we welcome you to read more about the VisIt project's :ref:`Site Reliability Engineering <site_reliability_engineering>` processes to understand how we provide support.
