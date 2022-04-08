@@ -169,8 +169,11 @@
 //    and zone_centers under the Mesh menu
 // 
 //    Justin Privitera, Fri 04 Mar 2022 02:03:33 PM PST
-//    moved curl, divergence, gradient exprs, and laplacian
-//    from misc. submenu to vector submenu
+//    Moved curl, divergence, gradient exprs, and laplacian
+//    from misc. submenu to vector submenu.
+// 
+//    Justin Privitera, Wed Mar 30 12:50:59 PDT 2022
+//    Added "ghost_zoneid" expression under mesh submenu.
 //
 // ****************************************************************************
 
@@ -336,6 +339,7 @@ const char *expr_mesh[] = {
     "cylindrical_theta",
     "external_cell",
     "external_node",
+    "ghost_zoneid",
     "global_nodeid",
     "global_zoneid",
     "logical_nodeid",

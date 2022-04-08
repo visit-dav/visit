@@ -49,6 +49,9 @@
 #
 #    Eddie Rusu, Tue Sep 24 09:07:44 PDT 2019
 #    Added multiple input math expressions and smart divide.
+# 
+#    Justin Privitera, Wed Mar 30 12:45:19 PDT 2022
+#    Added avtGhostZoneIdExpression.
 #
 #****************************************************************************/
 
@@ -137,6 +140,7 @@ General/avtEdgeNormalExpression.C
 General/avtExpressionComponentMacro.C
 General/avtFindExternalExpression.C
 General/avtGeodesicVectorQuantizeExpression.C
+General/avtGhostZoneIdExpression.C
 General/avtGradientExpression.C
 General/avtHSVColorComposeExpression.C
 General/avtIsNaNExpression.C
