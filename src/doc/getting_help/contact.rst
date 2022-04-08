@@ -17,13 +17,13 @@ Method Privacy Requirements Preferred
 ====== ======= ============ =========
 
 .. |ghd| replace:: GitHub Discussion
-.. _ghd: https://github.com/visit-dav/visit/discussions>
+.. _ghd: https://github.com/visit-dav/visit/discussions
 
 .. |ghi| replace:: GitHub Issue
-.. _ghi: https://github.com/visit-dav/visit/issues>
+.. _ghi: https://github.com/visit-dav/visit/issues
 
 .. |mst| replace:: MS Teams
-.. _mst: https://teams.microsoft.com/l/team/19%3af2ed7be3682d40d1b8e038744e500a09%40thread.skype/conversations?groupId=70162982-9587-4bcc-ad53-20178c76fe11&tenantId=a722dec9-ae4e-4ae3-9d75-fd66e2680a63>
+.. _mst: https://teams.microsoft.com/l/team/19%3af2ed7be3682d40d1b8e038744e500a09%40thread.skype/conversations?groupId=70162982-9587-4bcc-ad53-20178c76fe11&tenantId=a722dec9-ae4e-4ae3-9d75-fd66e2680a63
 
 .. |call| replace:: Hotline Telephone Call
 .. |None| replace:: World discoverable / readable
