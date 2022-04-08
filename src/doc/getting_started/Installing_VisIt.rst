@@ -5,8 +5,8 @@ Installing and Starting VisIt_
 
 Pre-built binaries for VisIt_ are provided on the following platforms:
 
-* These |fs*nix|
-* These |ps*nix|
+* |fs*nix| (fully supported)
+* |ps*nix| (partially supported)
 * macOS
 * Microsoft Windows
 
