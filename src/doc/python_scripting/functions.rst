@@ -1016,8 +1016,8 @@ return type : CLI_return_t
 
     The ConstructDataBinning function creates a data binning function for the active
     plot. Data Binnings place data from a data set into bins and reduce that data.
-    They are used to either be incorporated with expressions to make new derived quantities
-    or to be directly visualized.
+    They are used to either be incorporated with expressions to make new derived
+    quantities or to be directly visualized.
 
 
 **Example:**
@@ -1510,38 +1510,56 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineArrayExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
     DefineArrayExpression creates new array variables.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
+    Array variables are a collection of scalar variables that are grouped
+    together. All the variables must have the same centering and only scalar
+    variables are supported, for example, no vector, tensor or material variables.
+    Array variables are used in the Label plot.
 
+    The variableName argument is a string that contains the name of the new
+    variable. You can pass the name of an existing expression if you want to
+    provide a new expression definition. The expression argument is a string
+    that contains the definition of the new variable in terms of
+    :ref:`built-in expressions <Built-in_expressions>` and pre-existing
+    variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read
+    the section on
+    :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
 **Example:**
 
 ::
 
   #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
+  OpenDatabase("/usr/gapps/visit/data/curv3d.silo")
+  DefineScalarExpression("d1", 'recenter(d, "zonal")')
+  DefineScalarExpression("p1", 'recenter(p, "zonal")')
+  # Define 2 array variables, each from 2 scalars. Here, we
+  # reuse the same scalars twice for illustrative purposes
+  # only. Normally, the scalars are different.
+  DefineArrayExpression("da", "array_compose(d1, d1)")
+  DefineArrayExpression("pa", "array_compose(p1, p1)")
+  # Create a plot to use for performing an XRay Image query.
+  AddPlot("Pseudocolor", "d1")
   DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
-  DrawPlots()
-
+  # Do the query.
+  params = GetQueryParameters("XRay Image")
+  params['output_type'] ="png"
+  params['divide_emis_by_absorb'] = 1
+  params['origin'] = (0.0, 2.5, 10.0)
+  params['up_vector'] = (0, 1, 0)
+  params['theta'] = 0
+  params['phi'] = 0
+  params['width'] = 10.
+  params['height'] = 10.
+  params['image_size'] = (300, 300)
+  params['vars'] = ("da", "pa")
+  Query("XRay Image", params)
 
 DefineCurveExpression
 ---------------------
@@ -1560,21 +1578,25 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineCurveExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
     DefineCurveExpression creates new curve variables.
-    Expression variables can be plotted like any other variable.
+    Curve variables are a collection of X - Y coordinates that form a curve.
+    Curve variables are used in the Curve, Parallel Coordinates, Scatter and
+    Spreadsheet plots.
+
     The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
+    variable. You can pass the name of an existing expression if you want to
+    provide a new expression definition. The expression argument is a string
+    that contains the definition of the new variable in terms of
+    :ref:`built-in expressions <Built-in_expressions>` and pre-existing
+    variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read
+    the section on
+    :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
 
 **Example:**
@@ -1582,14 +1604,11 @@ return type : CLI_return_t
 ::
 
   #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
+  OpenDatabase("/usr/gapps/visit/data/lines.curve")
+  # Define an expression to multiply the y value of the curve by 2.
+  DefineCurveExpression("myvar", "2 * curve1")
+  # Plot the curve variable.
+  AddPlot("Curve", "myvar")
   DrawPlots()
 
 
@@ -1610,37 +1629,16 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineMaterialExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineMaterialExpression function creates new material variables.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
-  DrawPlots()
+    DefineMaterialExpression creates new material variables.
+    Material variables are special variables that store material information for
+    mesh and scalar variables. Material variables are used by the Boundary and
+    Filled Boundary plots. Currently there are no built-in expressions that create
+    material variables.
 
 
 DefineMeshExpression
@@ -1660,37 +1658,15 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineMeshExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineMeshExpression creates new mesh variables.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
-  DrawPlots()
+    DefineMeshExpression creates new mesh variables.
+    Mesh variables define the coordinates and connectivity of a mesh.
+    Mesh variables are used by the Label, Mesh and Subset plots.
+    Currently there are no built-in expressions that create mesh variables.
 
 
 DefinePythonExpression
@@ -1748,23 +1724,23 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineScalarExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineScalarExpression function creates a new scalar variable based on
-    other variables from the open database.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
+    DefineScalarExpression creates new scalar variables.
+    Scalar variables define a scalar field over a mesh and are used by plots
+    that take scalar variables.
 
+    The variableName argument is a string that contains the name of the new
+    variable. You can pass the name of an existing expression if you want to
+    provide a new expression definition. The expression argument is a string
+    that contains the definition of the new variable in terms of
+    :ref:`built-in expressions <Built-in_expressions>` and pre-existing
+    variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read
+    the section on
 
 **Example:**
 
@@ -1773,12 +1749,8 @@ return type : CLI_return_t
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/globe.silo")
   DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
+  # Plot the scalar variable.
   AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
   DrawPlots()
 
 
@@ -1799,37 +1771,15 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineSpeciesExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineSpeciesExpression creates new species variables.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
-
-
-**Example:**
-
-::
-
-  #% visit -cli
-  OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
-  DrawPlots()
+    DefineSpeciesExpression creates new species variables.
+    Species variables are special variables that are associated with material
+    variables that store species information for scalar variables.
+    Currently there are no built-in expressions that create species variables.
 
 
 DefineTensorExpression
@@ -1849,22 +1799,29 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineTensorExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineTensorExpression creates new tensor variables.
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
+    DefineTensorExpression creates new tensor variables.
+    Tensor variables define a tensor field over a mesh and are used by
+    the Tensor plot. A 2D tensor would consist of a vector of 2 2-component
+    vectors. A 3D tensor would consist of a vector of 3 3-component vectors.
+    A symmetric tensor would need to provide 4 or 9 components even though a
+    2D tensor has 3 unique values and a 3D tensor has 6 unique values.
+    For a 2D symmetric tensor, the components would be supplied as
+    {{Sxx, Syx}, {Syx, Syy}}. For a 3D symmetric tensor, the components would
+    be supplied as {{Sxx, Syx, Szx}, {Syx, Syy, Szy}, {Szx, Szy, Szz}}.
 
+    The variableName argument is a string that contains the name of the new
+    variable. You can pass the name of an existing expression if you want to
+    provide a new expression definition. The expression argument is a string
+    that contains the definition of the new variable in terms of
+    :ref:`built-in expressions <Built-in_expressions>` and pre-existing
+    variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read
+    the section on
 
 **Example:**
 
@@ -1872,13 +1829,9 @@ return type : CLI_return_t
 
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
-  DefineVectorExpression("myvec", "{u,v,w}")
-  AddPlot("Vector", "myvec")
+  # Plot a tensor variable.
+  DefineTensorExpression("myten", "{{u,v,w},{u,v,w},{u,v,w}}")
+  AddPlot("Tensor", "myten")
   DrawPlots()
 
 
@@ -1899,22 +1852,26 @@ expression : string
     The expression definition as a string.
 
 return type : CLI_return_t
-    The DefineExpression functions return 1 on success and 0 on failure.
+    The DefineVectorExpression function returns 1 on success and 0 on failure.
 
 
 **Description:**
 
-    The DefineVectorExpression creates new vector variables
-    Expression variables can be plotted like any other variable.
-    The variableName argument is a string that contains the name of the new
-    variable. You can pass the name of an existing expression if you want
-    to provide a new expression definition.
-    The expression argument is a string that contains the definition of the
-    new variable in terms of math operators and pre-existing variable names
-    Reference the VisIt User's Manual if you want more information on
-    creating expressions, such as expression syntax, or a list of built-in
-    expression functions.
+    DefineVectorExpression creates new vector variables.
+    Vector variables define a vector field over a mesh and are used by the
+    Vector plot.
+    A 2D vector would consist of 2 components.
+    A 3D vector would consist of 3 components.
 
+    The variableName argument is a string that contains the name of the new
+    variable. You can pass the name of an existing expression if you want to
+    provide a new expression definition. The expression argument is a string
+    that contains the definition of the new variable in terms of
+    :ref:`built-in expressions <Built-in_expressions>` and pre-existing
+    variable names using VisIt_'s :ref:`expression grammar <Expression_grammar>`.
+    If you run into problems defining your expression you might want to read
+    the section on
+    :ref:`expression compatibility gotchas <Expression_Compatibility_Gotchas>`.
 
 **Example:**
 
@@ -1922,11 +1879,7 @@ return type : CLI_return_t
 
   #% visit -cli
   OpenDatabase("/usr/gapps/visit/data/globe.silo")
-  DefineScalarExpression("myvar", "sin(u) + cos(w)")
-  # Plot the scalar expression variable.
-  AddPlot("Pseudocolor", "myvar")
-  DrawPlots()
-  # Plot a vector expression variable.
+  # Plot a vector variable.
   DefineVectorExpression("myvec", "{u,v,w}")
   AddPlot("Vector", "myvec")
   DrawPlots()
@@ -3962,9 +3915,9 @@ return type : MeshmanagementAttributes object
 
 **Description:**
 
-    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes object
-    that contains VisIt's current mesh discretization settings.
-    You can set properties on the MeshManagementAttributes object and then pass it to
+    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes
+    object that contains VisIt's current mesh discretization settings. You can set
+    properties on the MeshManagementAttributes object and then pass it to
     SetMeshManagementAttributes to make VisIt use the new material attributes that
     you've specified:
 
@@ -4374,7 +4327,8 @@ return type : dictionary or value
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query.
     GetQueryOutputObject returns a dictionary of the output of the last query.
 
 
@@ -4406,7 +4360,8 @@ return type : string
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query.
     GetQueryOutputString returns a string containing the output of the last query.
 
 
@@ -4438,8 +4393,10 @@ return type : double, tuple of doubles
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
-    GetQueryOutputValue returns a single number or tuple of numbers, depending on the nature of the last query to be executed.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query. GetQueryOutputValue
+    returns a single number or tuple of numbers, depending on the nature of
+    the last query to be executed.
 
 
 **Example:**
@@ -4469,8 +4426,9 @@ return type : string
 
 **Description:**
 
-    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and GetQueryOutputXML all return output from the last query.
-    GetQueryOutputXML returns a XML string containing the output of the last query.
+    GetQueryOutputObject, GetQueryOutputString, GetQueryOutputValue and
+    GetQueryOutputXML all return output from the last query. GetQueryOutputXML
+    returns a XML string containing the output of the last query.
 
 
 **Example:**
@@ -7322,8 +7280,8 @@ clear : integer
     An integer flag indicating whether the host profile list should cleared first.
 
 return type : CLI_return_t
-    The ReadHostProfilesFromDirectory function returns an integer value of 1 for success and
-    0 for failure.
+    The ReadHostProfilesFromDirectory function returns an integer value of 1 for
+    success and 0 for failure.
 
 
 **Description:**
@@ -8759,7 +8717,8 @@ SetCreateMeshQualityExpressions
 
 
 val : integer
-    Either a zero (false) or non-zero (true) integer value to indicate ifMesh Quality expressions should be automatically created when a database is opened.
+    Either a zero (false) or non-zero (true) integer value to indicate if Mesh
+    Quality expressions should be automatically created when a database is opened.
 
 return type : CLI_return_t
     The SetCreateMeshQualityExpressions function returns 1 on success and 0 on failure.
@@ -8837,7 +8796,8 @@ SetCreateVectorMagnitudeExpressions
 
 val : integer
     Either a zero (false) or non-zero (true) integer value to indicate if
-    Vector magnitude expressions should be automatically created when a database is opened.
+    Vector magnitude expressions should be automatically created when a database
+    is opened.
 
 return type : CLI_return_t
     The SetCreateVectorMagnitudeExpressions function returns 1 on success
@@ -9165,11 +9125,11 @@ return type : MeshmanagementAttributes object
 
 **Description:**
 
-    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes object
-    that contains VisIt's current mesh discretization settings.
-    You can set properties on the MeshManagementAttributes object and then pass it to
-    SetMeshManagementAttributes to make VisIt use the new material attributes that
-    you've specified:
+    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes
+    object that contains VisIt's current mesh discretization settings. You can
+    set properties on the MeshManagementAttributes object and then pass it to
+    SetMeshManagementAttributes to make VisIt use the new material attributes
+    that you've specified:
 
 
 **Example:**
@@ -9526,8 +9486,8 @@ MachineProfile : MachineProfile object
 
 **Description:**
 
-    Sets the input machine profile in the HostProfileList, replaces if one already exists
-    Otherwise adds to the list
+    Sets the input machine profile in the HostProfileList, replaces if one already
+    exists. Otherwise adds to the list
 
 
 SetMaterialAttributes
@@ -9593,9 +9553,9 @@ return type : MeshmanagementAttributes object
 
 **Description:**
 
-    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes object
-    that contains VisIt's current mesh discretization settings.
-    You can set properties on the MeshManagementAttributes object and then pass it to
+    The GetMeshmanagementAttributes function returns a MeshmanagementAttributes
+    object that contains VisIt's current mesh discretization settings. You can
+    set properties on the MeshManagementAttributes object and then pass it to
     SetMeshManagementAttributes to make VisIt use the new material attributes that
     you've specified:
 
@@ -10635,11 +10595,11 @@ return type : CLI_return_t
     indicating if all databases should be treated as time varying or not. Ordinarily,
     VisIt tries to minimize file I/O and database interaction by avoiding re-reading
     metadata that is 'time-invariant' and, therefore, assumed to be the same in a
-    database from one time step to the next. However, sometimes, portions of the metadata,
-    such as the list of variable names and/or number of domains, does in fact vary. In this
-    case, VisIt can actually fail to acknowledge the existence of new variables in the file.
-    Turning this feature on forces VisIt to re-read metadata each time the time-state is
-    changed.
+    database from one time step to the next. However, sometimes, portions of the
+    metadata, such as the list of variable names and/or number of domains, does in
+    fact vary. In this case, VisIt can actually fail to acknowledge the existence of
+    new variables in the file. Turning this feature on forces VisIt to re-read metadata
+    each time the time-state is changed.
 
 
 **Example:**
@@ -11889,21 +11849,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnDomainsOff function turns domains off. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnDomainsOff function with no arguments, all domains would be turned
-    off. All functions can also take a string argument, which is the name of the set
-    to modify. For example, you could turn off domain 0 by calling the
-    TurnDomainsOff with a single argument of "domain0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**
@@ -11944,21 +11902,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnDomainsOn function turns domains on. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnDomainsOn function with no arguments, all domains would be turned
-    on. All functions can also take a string argument, which is the name of
-    the set to modify. For example, you could turn on domain 0 by calling the
-    TurnDomainsOn with a single argument of "domain0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**
@@ -11999,21 +11955,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnMaterialsOff function turns materials off. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnMaterialsOff function with no arguments, all materials would be turned
-    off. All functions can also take a string argument, which is the name of
-    the set to modify. For example, you could turn off material 0 by calling
-    TurnMaterialsOff with a single argument of "material0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**
@@ -12054,21 +12008,19 @@ return type : CLI_return_t
 
 **Description:**
 
-    The Turn functions are provided to simplify the removal of material or
-    domain subsets. Instead of creating a SILRestriction object, you can use
-    the Turn functions to turn materials or domains on or off. The
-    TurnMaterialsOn function turns materials on. All of the Turn functions have
-    three possible argument lists. When you do not provide any arguments, the
-    function applies to all subsets in the SIL so if you called the
-    TurnMaterialsOn function with no arguments, all materials would be turned
-    off. All functions can also take a string argument, which is the name of
-    the set to modify. For example, you could turn on material 0 by calling the
-    TurnMaterialsOn with a single argument of "material0" (or the appropriate
-    set name). All of the Turn functions can also be used to modify more than
-    one set if you provide a tuple of set names. After you use the Turn
-    functions to change the SIL restriction, you might want to call the
-    ListMaterials or ListDomains functions to make sure that the SIL
-    restriction was actually modified.
+    The TurnXXXOn|Off functions are provided to simplify the inclusion or
+    exclusion of material or domain subsets. Instead of manipulating a
+    SILRestriction object, you can use the TurnXXXOn|Off functions to turn
+    materials or domains on or off. The TurnXXXOn function turns materials
+    or domains on. All of the TurnXXXOn|Off functions have three possible
+    argument lists. When you do not provide any arguments, the function applies
+    to all subsets. For example, TurnMaterialsOn() with no arguments, turns all
+    materials on. All TurnXXXOn|Off functions can also take a single string as
+    an argument, which is the name of the set to modify. All of the TurnXXXOn|Off
+    functions can also be used to modify more than one set by providing a tuple
+    of set names. After you use the TurnXXXOn|Off functions, it might be useful
+    to call the ListMaterials or ListDomains functions to confirm the functions
+    had the intended effect.
 
 
 **Example:**

@@ -52,6 +52,10 @@ Postfix:
         LabelAttributesObject *LabelObj = (LabelAttributesObject *)self;
         FontAttributes font1 = LabelObj->data->GetTextFont1();
         FontAttributes font2 = LabelObj->data->GetTextFont2();
+
+        //
+        // Removed in 3.0.0
+        //
         if(strcmp(name, "textHeight1") == 0)
         {
             PyErr_WarnEx(NULL, "'textHeight1' is obsolete. Trying to accomodate.", 3);

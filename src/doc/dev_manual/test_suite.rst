@@ -4,8 +4,8 @@ Regression Testing
 Overview
 --------
 VisIt_ has a large and continually growing test suite.
-VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data in 7z archives in the top-level ``data`` directory and data generation sources in ``src/tools/data/datagen``.
-Regression tests are run on a nightly basis.
+VisIt_'s test suite involves a combination of python scripts in ``src/test``, raw data in archives in the top-level ``data`` directory and data generation sources in ``src/tools/data/datagen``.
+Regression tests are run on a nightly basis and results are posted to VisIt_'s `test dashboard <https://visit-dav.github.io/dashboard/>`_.
 Testing exercises VisIt_'s viewer, mdserver, engine and cli but not the GUI.
 
 
@@ -64,8 +64,8 @@ The list of tests must be the last entries on the command line. ::
 There are a number of additional command-line options to the test suite.
 ``./run_visit_test_suite.sh -help`` will give you details about these options.
 
-Accessing regression test results
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Accessing nightly regression test results
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The nightly test suite results are posted to `GitHub <https://visit-dav.github.io/dashboard/>`_.
 
 In the event of failure on the nightly run
@@ -89,54 +89,45 @@ For example, to run in ``scalable,parallel,icet`` mode use: ::
 
     ./run_visit_test_suite.sh -n 1 -m "scalable,parallel,icet"
 
-For simplicity, we maintain baselines only for one *blessed* platform which is conveniently accessible to the *core* development team. Running the test suite anywhere else requires the use of :ref:`fuzzy matching <Fuzzy Matching Thresholds>` to ignore minor differences.
+For simplicity, we maintain baselines only for one *blessed* platform which is conveniently accessible to the *core* development team. 
+Running the test suite anywhere else requires the use of :ref:`fuzzy matching <Fuzzy Matching Thresholds>` to ignore minor differences.
 Use of these options on platforms other than the currently adopted testing platform will facilitate filtering big differences (and probably real bugs that have been introduced) from differences due to platform or configuration.
 
-There are a number of different categories of tests. The test
-categories are the names of all the directories under
-``src/test/tests``. The .py files in this directory tree are all
-the actual test driver files that drive VisIt_'s CLI and
-generate images and text to compare with baselines. In addition,
-the ``src/test/visit_test_main.py`` file defines a number of helper Python
-functions that facilitate testing including two key functions;
-``Test()`` for testing image outputs and ``TestText()`` for testing text
-outputs. Of course, all the .py files in ``src/test/tests`` subtree
-are excellent examples of test scripts.
+There are a number of different categories of tests. 
+The test categories are the names of all the directories under ``src/test/tests``. 
+The .py files in this directory tree are all the actual test driver files that drive VisIt_'s CLI and generate images and text to compare with baselines. 
+In addition, the ``src/test/visit_test_main.py`` file defines a number of helper Python functions that facilitate testing including two key functions; ``Test()`` for testing image outputs and ``TestText()`` for testing text outputs. 
+Of course, all the .py files in ``src/test/tests`` subtree are excellent examples of test scripts.
 
-When the test suite 
-finishes, it will have created a web-browseable HTML tree in
-the html directory. The actual image and text raw results
-will be in the current directory and difference images will
-be in the diff directory. The difference images are essentially
-binary bitmaps of the pixels that are different and not the
-actual pixel differences themselves. This is to facilitate
-identifying the location and cause of the differences.
+When the test suite finishes, it will have created a web-browseable HTML tree in the html directory. 
+The actual image and text raw results will be in the current directory and difference images will be in the diff directory. 
+The difference images are essentially binary bitmaps of the pixels that are different and not the actual pixel differences themselves. 
+This is to facilitate identifying the location and cause of the differences.
 
-Adding a test involves a) adding a .py file to the appropriate
-subdirectory in ``src/test/tests``, b) adding the expected baselines
-to ``test/baselines`` and, depending on the test, c) adding
-any necessary input data files to ``src/testdata``. 
+Adding a test involves:
+
+a) adding a .py file to the appropriate subdirectory in ``src/test/tests``, 
+b) adding the expected baselines to ``test/baselines`` and, depending on the test, 
+c) adding any necessary input data files to ``src/testdata``. 
+
 The test suite will find your added .py files the next time it runs. 
 So, you don't have to do anything special other than adding the .py file.
 
-One subtlety about the current test modality is what we call
-*mode specific baselines*. In theory, it should not matter what
-mode VisIt_ is run in to produce an image. The image should be
-identical across modes. In practice there is a long list of
-things that can contribute to a handful of pixel differences
-in the same test images run in different modes. This has lead
-to mode specific baselines. In the baseline directory, there
-are subdirectories with names corresponding to modes we currently
-run. When it becomes necessary to add a mode specific baseline,
-the baseline file should be added to the appropriate baseline
-subdirectory.
+One subtlety about the current test modality is what we call *mode specific baselines*. 
+In theory, it should not matter what mode VisIt_ is run in to produce an image. 
+The image should be identical across modes. 
+In practice there is a long list of things that can contribute to a handful of pixel differences in the same test images run in different modes. 
+This has lead to mode specific baselines. 
+In the baseline directory, there are subdirectories with names corresponding to modes we currently run. 
+When it becomes necessary to add a mode specific baseline, the baseline file should be added to the appropriate baseline subdirectory.
 
-In some cases, we skip a test in one mode but
-not in others. Or, we temporarily disable a test by skipping it
-until a given problem in the code is resolved. This is handled
-by the ``--skiplist`` argument to the test suite. We maintained list of the
-tests we currently skip and update it as necessary.
+In some cases, we skip a test in one mode but not in others. 
+Or, we temporarily disable a test by skipping it until a given problem in the code is resolved. 
+This is handled by the ``--skiplist`` argument to the test suite. 
+We maintain a list of the tests we currently skip and update it as necessary.
 The default skip list file is ``src/test/skip.json``.
+
+.. _three_results_types:
 
 Three Types of Test Results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -146,48 +137,31 @@ to process and check results.
 
 * ``Test()`` which processes ``.png`` image files.
 * ``TestText()`` which process ``.txt`` text files.
-* ``TestValueXX()`` (where ``XX``==>``EQ``, ``LT``, ``LE``, etc.) which processes no files
-  and simply checks *actual* and *expected* values passed as arguments.
+* ``TestValueXX()`` (where ``XX``==>``EQ``, ``LT``, ``LE``, etc.) which processes no files and simply checks *actual* and *expected* values passed as arguments.
 
-The ``Test()`` and ``TestText()`` methods both take the name of a file. To process a
-test result, these methods output a file produced by the *current* test run and
-then compare it to a blessed *baseline* file stored in
+The ``Test()`` and ``TestText()`` methods both take the name of a file. 
+To process a test result, these methods output a file produced by the *current* test run and then compare it to a blessed *baseline* file stored in
 `test/baseline <https://github.com/visit-dav/visit/tree/develop/test/baseline>`_.
-When they can be used, the ``TestValueXX()`` are a little more convenient because
-they do not involve storing data in files and having to maintain separate
-baseline files. Instead the ``TestTextXX()`` methods take both an *actual*
-(current) and *expected* (baseline) result as arguments directly coded in the
-calling ``.py`` file.
+When they can be used, the ``TestValueXX()`` are a little more convenient because they do not involve storing data in files and having to maintain separate baseline files. 
+Instead the ``TestTextXX()`` methods take both an *actual* (current) and *expected* (baseline) result as arguments directly coded in the calling ``.py`` file.
 
-As VisIt_ testing has evolved over the past twenty years, understanding and
-improving productivity related to test design has not been a priority. As a 
-result, there are likely far more image test results than are truly needed to
-fully vet all of VisIt_'s plotting features. Or, image tests are used
-unecessarily to confirm non-visual behavior like that a given database reader
-is working. Some text tests are better handled as ``TestValueXX()`` tests and
-other text tests often contain 90% *noise* text unrelated to the functionality
-being tested. This has made maintaining and ensuring portability of the test
-suite more laborious.
+As VisIt_ testing has evolved over the past twenty years, understanding and improving productivity related to test design has not been a priority. 
+As a result, there are likely far more image test results than are truly needed to fully vet all of VisIt_'s plotting features. 
+Or, image tests are used unecessarily to confirm non-visual behavior like that a given database reader is working. 
+Some text tests are better handled as ``TestValueXX()`` tests and other text tests often contain 90% *noise* text unrelated to the functionality being tested. 
+This has made maintaining and ensuring portability of the test suite more laborious.
 
-Because image tests tend to be the most difficult to make portable, a better
-design would minimize image tests to only those needed to validate visual behaviors,
-text tests would involve only the *essenteial* text of the test and a majority
-of tests would involve *value* type tests.
+Because image tests tend to be the most difficult to make portable, a better design would minimize image tests to only those needed to validate visual behaviors, text tests would involve only the *essenteial* text of the test and a majority of tests would involve *value* type tests.
 
-The above explanation is offered as a rational to justify that whenever possible
-adding *new* tests to the test suite should use the ``TestValueXX()`` approach as
-much as practical.
+The above explanation is offered as a rational to justify that whenever possible adding *new* tests to the test suite should use the ``TestValueXX()`` approach as much as practical.
 
 More About TestValueXX Type Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``TestValueXX()`` methods are similar in spirit to ``Test()`` and
-``TestText()`` except operates on Python *values* passed as args both for the
-*current* (actual) and the *baseline* (expected) results. The values can be any
-Python object. When they are floats or ints or strings of floats or ints or
-lists/tuples of the same, these methods will round the arguments to the desired
-precision and do the comparisons numerically. Otherwise they will compare them as
-strings.
+The ``TestValueXX()`` methods are similar in spirit to ``Test()`` and ``TestText()`` except operates on Python *values* passed as args both for the *current* (actual) and the *baseline* (expected) results. 
+The values can be any Python object. 
+When they are floats or ints or strings of floats or ints or lists/tuples of the same, these methods will round the arguments to the desired precision and do the comparisons numerically. 
+Otherwise they will compare them as strings.
 
 ``TestValueEQ(case_name, actual, expected, prec=5)`` :
     Passes if ``actual == expected`` within specific precision otherwise fails.
@@ -211,81 +185,58 @@ strings.
     Passes if bucket *contains* expected according to ``eqoper`` equality operator.
     Fails otherwise.
 
-For some examples, see
-`test_values_simple.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/test_value_simple.py>`_.
+For some examples, see `test_values_simple.py <https://github.com/visit-dav/visit/blob/develop/src/test/tests/unit/test_value_simple.py>`_.
 
 Filtering Image Differences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-There are many alternative ways for both compiling and even running VisIt_ to
-produce any given image or textual output. Nonetheless, we expect results to
-be nearly if not perfectly identical. For example, we expect VisIt_ running on
-two different implementations of the GL library to produce by and large the same
-images. We expect VisIt_ running in serial or parallel to produce the same
-images. We expect VisIt_ running on Ubuntu Linux to produce the same images as
-it would running on Mac OSX. We expect VisIt_ running in client-server mode to
-produce the same images as VisIt_ running entirely remotely.
+There are many alternative ways for both compiling and even running VisIt_ to produce any given image or textual output. 
+Nonetheless, we expect results to be nearly if not perfectly identical. 
+For example, we expect VisIt_ running on two different implementations of the GL library to produce by and large the same images. 
+We expect VisIt_ running in serial or parallel to produce the same images. 
+We expect VisIt_ running on Ubuntu Linux to produce the same images as it would running on Mac OSX. 
+We expect VisIt_ running in client-server mode to produce the same images as VisIt_ running entirely remotely.
 
-In many cases, we expect outputs produced by these alternative approaches to be
-nearly the same but not always bit-for-bit identical. Minor variations such as
-single pixel shifts in position or slight variations in color are inevitable
-and ultimately unremarkable.
+In many cases, we expect outputs produced by these alternative approaches to be nearly the same but not always bit-for-bit identical. 
+Minor variations such as single pixel shifts in position or slight variations in color are inevitable and ultimately unremarkable.
 
-When testing, it would be nice to be able to ignore variations in results
-attributable to these causes. On the other hand, we would like to be alerted
-to variations in results attributable to changes made to the source code.
+When testing, it would be nice to be able to ignore variations in results attributable to these causes. 
+On the other hand, we would like to be alerted to variations in results attributable to changes made to the source code.
 
-To satisfy both of these goals, we use bit-for-bit identical matching to
-track the impact of changes to source code but *fuzzy* matching for anything
-else. We maintain a set of several thousand version-controlled, baseline results
-computed for a specific, fixed *configuration and test mode* of VisIt_. Nightly
-testing of key branches of development reveals any results that are not
-bit-for-bit identical to their baseline.
+To satisfy both of these goals, we use bit-for-bit identical matching to track the impact of changes to source code but *fuzzy* matching for anything else. 
+We maintain a set of several thousand version-controlled, baseline results computed for a specific, fixed *configuration and test mode* of VisIt_. 
+Nightly testing of key branches of development reveals any results that are not bit-for-bit identical to their baseline.
 
-These *failures* are then corrected in one of two ways. Either the new result
-is wrong and additional source code changes are required to ensure VisIt_
-continues to produce the original baseline. Or, the original baseline is wrong
-and it must be updated to the new result. In this latter situation, it is also
-prudent to justify the new result with a plausible explanation as to why it is
-expected, better or acceptable as well as to include such explanation in the
-commit comments.
+These *failures* are then corrected in one of two ways. 
+Either the new result is wrong and additional source code changes are required to ensure VisIt_ continues to produce the original baseline. 
+Or, the original baseline is wrong and it must be updated to the new result. 
+In this latter situation, it is also prudent to justify the new result with a plausible explanation as to why it is expected, better or acceptable as well as to include such explanation in the commit comments.
 
 Mode specific baselines
 """""""""""""""""""""""
-VisIt_ testing can be run in a variety of modes; serial, parallel,
-scalable-parallel, scalable-parallel-icet, client-server, etc. For a fixed
-configuration, in most cases baseline results computed in one mode agree
-bit-for-bit identically with the other modes. However, this is not always
-true. About 2% of results vary with the execution mode. To handle these cases,
-we also maintain *mode-specific* baseline results as the need arises.
+VisIt_ testing can be run in a variety of modes; serial, parallel, scalable-parallel, scalable-parallel-icet, client-server, etc. 
+For a fixed configuration, in most cases baseline results computed in one mode agree bit-for-bit identically with the other modes. 
+However, this is not always true. 
+About 2% of results vary with the execution mode. 
+To handle these cases, we also maintain *mode-specific* baseline results as the need arises.
 
 The need for a mode-specific baseline is discovered as new tests are added.
-When testing reveals that VisIt computes slightly different results in 
-different modes, a single mode-agnostic baseline will fail to match in all
-test modes. At that time, mode-specific baselines are added.
+When testing reveals that VisIt computes slightly different results in different modes, a single mode-agnostic baseline will fail to match in all test modes. 
+At that time, mode-specific baselines are added.
 
 Changing Baseline Configuration
 """""""""""""""""""""""""""""""
-One weakness with this approach to testing is revealed when it becomes
-necessary to change the configuration used to compute the baselines. For example,
-moving VisIt_'s testing system to a different hardware platform or updating to a
-newer compiler or third-party library such as VTK, may result in a slew of minor
-variations in the results. Under these circumstances, we are confronted with
-having to individually assess possibly thousands of *minor* image differences
-to rigorously determine whether the new result is in fact *good* or whether some
-kind of issue or bug is being revealed.
+One weakness with this approach to testing is revealed when it becomes necessary to change the configuration used to compute the baselines. 
+For example, moving VisIt_'s testing system to a different hardware platform or updating to a newer compiler or third-party library such as VTK, may result in a slew of minor variations in the results. 
+Under these circumstances, we are confronted with having to individually assess possibly thousands of *minor* image differences to rigorously determine whether the new result is in fact *good* or whether some kind of issue or bug is being revealed.
 
-In practice, we use fuzzy matching (see below) to filter out *minor* variations
-from *major* ones and then focus our efforts only on fully understanding the
-*major* cases. We summarily *accept* all minor variations as the *new*
-baselines.
+In practice, we use fuzzy matching (see below) to filter out *minor* variations from *major* ones and then focus our efforts only on fully understanding the *major* cases. 
+We summarily *accept* all minor variations as the *new* baselines.
 
 Promise of Machine Learning
 """""""""""""""""""""""""""
-In theory, we should be able to develop a machine-learning approach to
-filtering VisIt_'s test results that enable us to more effectily attribute
-variations in results to various causes. A challenge here is in developing
-a sufficiently large and fully labeled set of example results to prime the
-machine learning. This would make for a great summer project.
+In theory, we should be able to develop a machine-learning approach to filtering VisIt_'s test results that enable us to more effectily attribute variations in results to various causes. 
+A challenge here is in developing a sufficiently large and fully labeled set of example results to prime the machine learning. 
+This would make for a great summer project.
 
 Fuzzy Matching Metrics
 """"""""""""""""""""""
@@ -295,11 +246,9 @@ Total Pixels (``#pix``) :
     Count of all pixels in the test image
 
 Non-Background (``#nonbg``) :
-    Count of all pixels which are not background either by comparison to constant
-    background color or if a non-constant color background is used to same pixel in background
-    image produced by drawing with all plots hidden. Note that if a plot produces a pixel which
-    coincidentally winds up being the same color as the background, our accounting logic would
-    count it as *background*. We think this situation is rare enough as to not cause serious issues.
+    Count of all pixels which are not background either by comparison to constant background color or if a non-constant color background is used to same pixel in background image produced by drawing with all plots hidden. 
+    Note that if a plot produces a pixel which coincidentally winds up being the same color as the background, our accounting logic would count it as *background*. 
+    We think this situation is rare enough as to not cause serious issues.
 
 Different (``#diff``) :
     Count of all pixels that are different from the current baseline image.
@@ -308,83 +257,65 @@ Different (``#diff``) :
     The *precentage* of different pixels computed as ``100.0*#diff/#nonbg``
 
 Avg. Diff (``avgdiff``) :
-    The average *luminance* (gray-scale, obtained by weighting RGB channels by 1/3rd
-    and summing) difference. This is the sum of all pixel luminance differences
-    divided by ``#diff``.
+    The average *luminance* (gray-scale, obtained by weighting RGB channels by 1/3rd and summing) difference. 
+    This is the sum of all pixel luminance differences divided by ``#diff``.
 
 .. _Fuzzy Matching Thresholds:
 
 Fuzzy Matching Thresholds
 """""""""""""""""""""""""
 There are some command-line arguments to run tests that control *fuzzy* matching.
-When computed results match bit-for-bit with the baseline, a **PASS** is reported
-and it is colored green in the HTML reports. When a computed result fails the
-bit-for-bit match but passes the fuzzy match, a **PASS** is reported on the terminal
-and it is colored yellow in the HTML reports.
+When computed results match bit-for-bit with the baseline, a **PASS** is reported and it is colored green in the HTML reports. 
+When a computed result fails the bit-for-bit match but passes the fuzzy match, a **PASS** is reported on the terminal and it is colored yellow in the HTML reports.
 
 Pixel Difference Threshold (``--pixdiff``) :
     Specifies the acceptable threshold for the ``#diff`` metric as a *percent*. Default
     is zero which implies bit-for-bit identical results.
 
 Average Difference Threshold (``--avgdiff``) :
-    Specifies the acceptable threshold for the ``avgdiff`` metric. Note that this threshold
-    applies *only* if the ``--pixdiff`` threshold is non-zero. If a test is above the
-    ``pixdiff`` threshold but below the ``avgdiff`` threshold, it is considered a **PASS**.
-    The ``avgdiff`` option allows one to specify a second tolerance for the case when
-    the ``pixdiff`` tolerance is exceeded.
+    Specifies the acceptable threshold for the ``avgdiff`` metric. 
+    Note that this threshold applies *only* if the ``--pixdiff`` threshold is non-zero. 
+    If a test is above the ``pixdiff`` threshold but below the ``avgdiff`` threshold, it is considered a **PASS**.
+    The ``avgdiff`` option allows one to specify a second tolerance for the case when the ``pixdiff`` tolerance is exceeded.
 
 Numerical (textual) Difference Threshold (``--numdiff``) :
-    Specifies the acceptable *relative* numerical difference threshold in computed,
-    non-zero numerical results. The relative difference is computed as the ratio of the
-    magnitude of the difference between the current and baseline results and the minimum
-    magnitude value of the two results.
+    Specifies the acceptable *relative* numerical difference threshold in computed, non-zero numerical results. 
+    The relative difference is computed as the ratio of the magnitude of the difference between the current and baseline results and the minimum magnitude value of the two results.
 
-The command-line with ``--pixdiff=0.5 --avgdiff=0.1`` means that any result with *fewer*
-than 0.5% of pixels that are different is a **PASS** and anything with more than 0.5% of
-pixels different but where the average pixel gray-scale difference is less than .1 is
-still a **PASS**.
+The command-line with ``--pixdiff=0.5 --avgdiff=0.1`` means that any result with *fewer* than 0.5% of pixels that are different is a **PASS** and anything with more than 0.5% of pixels different but where the average pixel gray-scale difference is less than .1 is still a **PASS**.
 
 Testing on Non-Baseline Configurations
 """"""""""""""""""""""""""""""""""""""
 
-When running the test suite on platforms other than the currently adopted baseline
-platform or when running tests in modes other than the standard modes, the ``--pixdiff``
-and ``--avgdiff`` command-line options will be very useful.
+When running the test suite on platforms other than the currently adopted baseline platform or when running tests in modes other than the standard modes, the ``--pixdiff`` and ``--avgdiff`` command-line options will be very useful.
 
-For numerical textual results, there is also a ``--numdiff`` command-line option
-that specifies a *relative* numerical difference tolerance in numerical textual
-results. The command-line option ``--numdiff=0.01`` means that if a numerical
-result is different but the magnitude of the difference divided by the magnitude of
-the expected value is less than ``0.01`` it is considered a **Pass**.
+For numerical textual results, there is also a ``--numdiff`` command-line option that specifies a *relative* numerical difference tolerance in numerical textual results. 
+The command-line option ``--numdiff=0.01`` means that if a numerical result is different but the magnitude of the difference divided by the magnitude of the expected value is less than ``0.01`` it is considered a **Pass**.
 
-When specified on the command-line to a test suite run, the above tolerances wind
-up being applied to *all* test results computed during a test suite run. It is
-also possible to specify these tolerances in specific tests by passing them as
-arguments, for example ``Test(pixdiff=4.5)`` and ``TestText(numdiff=0.01)``, in
-the methods used to check test outputs.
+When specified on the command-line to a test suite run, the above tolerances wind up being applied to *all* test results computed during a test suite run. 
+It is also possible to specify these tolerances in specific tests by passing them as arguments, for example ``Test(pixdiff=4.5)`` and ``TestText(numdiff=0.01)``, in the methods used to check test outputs.
 
-Finally, it may make sense for developers to generate (though not ever commit) a
-complete and validated set of baselines on their target development platform and
-then use those (uncommitted) baselines to enable them to run tests and track code
-changes using an exact match methodology.
+Finally, it may make sense for developers to generate (though not ever commit) a complete and validated set of baselines on their target development platform and then use those (uncommitted) baselines to enable them to run tests and track code changes using an exact match methodology.
  
 Tips on writing regression tests 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Whenever possible, add only new ``TestValueXX()`` type tests.
 
-* Test images in which plots occupy a small portion of the total image are fraught with peril and should be avoided. Images with poor coverage are more likely to produce false positives (e.g. passes that should have failed) or to exhibit somewhat random differences as test scenario is varied.
+* Test images in which plots occupy a small portion of the total image are fraught with peril and should be avoided. 
+  Images with poor coverage are more likely to produce false positives (e.g. passes that should have failed) or to exhibit somewhat random differences as test scenario is varied.
 
-* Except in cases where annotations are being specifically tested, remember to call TurnOffAllAnnotations() as one of the first actions in your test script. Otherwise, you can wind up producing images containing machine-specific annotations which will produce differences on other platforms.
+* Except in cases where annotations are being specifically tested, remember to call TurnOffAllAnnotations() as one of the first actions in your test script. 
+  Otherwise, you can wind up producing images containing machine-specific annotations which will produce differences on other platforms.
 
 * When setting plot and operator options, take care to decide whether you need to work from *default* or *current* attributes.
-  Methods to obtain plot and operator attributes optionally take an additional ``1`` argument to indicate that *current*,
-  rather that *default* attributes are desired. For example ``CurveAttributes()`` returns *default* **Curve** plot
-  attributes wherease ``CurveAttributes(1)`` returns *current* **Curve** plot attributes which will be the currently
-  active plot, if it is a **Curve** plot or the first **Curve** plot in the plot list of the currently active window
-  whether it is active or hidden. If there is no **Curve** plot available, it will return the *default* attributes.
+  Methods to obtain plot and operator attributes optionally take an additional ``1`` argument to indicate that *current*, rather that *default* attributes are desired. 
+  For example ``CurveAttributes()`` returns *default* **Curve** plot attributes wherease ``CurveAttributes(1)`` returns *current* **Curve** plot attributes which will be the currently active plot, if it is a **Curve** plot or the first **Curve** plot in the plot list of the currently active window whether it is active or hidden. 
+  If there is no **Curve** plot available, it will return the *default* attributes.
 
-* When writing tests involving text differences and file pathnames, be sure that all pathnames in the text strings passed to ``TestText()`` are absolute. Internally, VisIt_ testing system will filter these out and replace the machine-specific part of the path with ``VISIT_TOP_DIR`` to facilitate comparison with baseline text. In fact, the .txt files that get generated in the *current* dir will have been filtered and all pathnames modified to have ``VISIT_TOP_DIR`` in them.
+* When writing tests involving text differences and file pathnames, be sure that all pathnames in the text strings passed to ``TestText()`` are absolute. 
+  Internally, VisIt_ testing system will filter these out and replace the machine-specific part of the path with ``VISIT_TOP_DIR`` to facilitate comparison with baseline text. 
+  In fact, the .txt files that get generated in the *current* dir will have been filtered and all pathnames modified to have ``VISIT_TOP_DIR`` in them.
 
 * Here is a table of python tests scripts which serve as examples of some interesting and lesser known VisIt_/Python scripting practices:
 
@@ -405,20 +336,91 @@ Tips on writing regression tests
 |tests/databases/xform_precision.py |  * uses test-specific enviornment variable settings                |
 +-----------------------------------+--------------------------------------------------------------------+
 
+.. _rebaselining_test_results:
 
 Rebaselining Test Results
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 A python script, ``rebase.py``, in the ``test/baseline`` dir can be used to rebaseline large numbers of results.
-In particular, this script enables a developer to rebase test results without requiring access to the test
-platform where testing is performed. This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test
-results dashboard are suitable for using as baseline results. To use this script, run ``./rebase.py --help.``
-Once you've completed using ``rebase.py`` to update image baselines, don't forget to commit your changes back
-to the repository.
+In particular, this script enables a developer to rebase test results without requiring access to the test platform where testing is performed. 
+This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test results dashboard are suitable for using as baseline results. 
+To use this script, run ``./rebase.py --help.``
+Once you've completed using ``rebase.py`` to update image baselines, don't forget to commit your changes back to the repository.
 
+Test data archives
+------------------
+Testing VisIt_ requires input data sets.
+Because of the wide variety of data formats and readers VisIt_ supports, we have a wide variety of `test data archives <https://github.com/visit-dav/visit/tree/develop/data>`_.
+A tar-compatible archive format using the *highest* and *commonly* available compression are the two basic requirements for data archives in our development workflow.
 
-Using VisIt_ Test Suite for Sim Code Testing
---------------------------------------------
-VisIt_'s testing infrastructure can also be used from a VisIt_ install by simulation codes that want to write their own Visit-based tests.
+Our practice is to store test data archives as maximally xz compressed, `tar-compatible <https://en.wikipedia.org/wiki/List_of_archive_formats#Archiving_and_compression>`_ archives.
+We use `xz (e.g. lzma2) compression <https://en.wikipedia.org/wiki/XZ_Utils>`_ instead of the more familiar `gzip compression <https://en.wikipedia.org/wiki/Gzip>`_ because ``xz`` is known to compress 2-3x smaller and because in most circumstances only VisIt_ developers (not users) are burdened with having to manage any additional tooling if needed.
+Any data archives for users, we make available in a choice of compressed formats which include the more familiar gzip compression.
+
+The ``CMakeLists.txt`` file in the top-level ``data`` directory is designed to be useable independently of the rest of the VisIt_ source code tree.
+After running ``cmake`` there, the command ``make help-archive`` explains how to use some convenient ``make`` targets for managing data archives.
+We define four convenient ``make`` targets for creating, expanding and listing data archives.
+The ``archive`` target uses python's tarfile module to create a *maximally* xz compressed archive.
+On some platforms, that operation may fail.
+If it does, an error message is reported informing the user to use the ``fbarchive`` target instead.
+
+The ``fbarchive`` target is a fall-back if the ``archive`` target fails.
+It uses CMake's `run a command-line tool <https://cmake.org/cmake/help/v3.23/manual/cmake.1.html#run-a-command-line-tool>`_ feature to run ``cmake -E tar cvfJ`` but may not compress the resultant archive as well.
+Users are not *required* to use these targets but they are highly recommended to ensure optimal compression and portability of the resulting data archives.
+
+Sometimes, bulk operations on all the test data archives may take a while and developers may desire better or faster tooling.
+In this case, developers may wish to manipulate the archive and compression tooling directly.
+For example, this command pipe on linux... ::
+
+   tar cvf - my_test_data | xz -9e -T0 - > my_test_data.tar.xz 
+
+...will create a *maximally* compressed (``-9e``) archive of ``my_test_data`` using multi-threaded xz compression where the number of threads will be chosen (``-T0``) equal to match the number of hardware cores.
+For more information about advanced archive and compression operations, readers are encouraged to have a look at the `tar <https://man7.org/linux/man-pages/man1/tar.1.html>`_ and `xz <https://linux.die.net/man/1/xz>`_ man pages.
+
+If users do use tar and compression tools directly to *create* data archives instead of through the convenient make targets, users are required to at least confirm that *expanding* the archives with the ``expand`` target does work.
+Doing so will ensure it will work for everyone everywhere.
+
+Adding test data
+~~~~~~~~~~~~~~~~
+
+Sometimes new data files need to be added to support the new tests.
+This involves adding either an entirely new data archive or adding a new file to an existing data archive.
+With names like ``hdf5_test_data.tar.xz``, all the data archives are named more or less for the data format(s) in which the data files they contain are stored.
+
+Adding new tests 
+~~~~~~~~~~~~~~~~
+
+* Add code to an existing ``.py`` file or create a new ``.py`` file copying the basic format of an existing one including boilerplat calls to functions like ``TurnOffAllAnnotations()``, using ``data_path()`` when opening a database file and ``Exit()`` when terminating a test.
+* If adding a new ``.py`` file, be careful to use the correct *category* directory.
+  For example, when writing tests for a new database format, add the ``.py`` file to the *databases* directory or when adding a new ``.py`` file to test a new plot, add it to the *plots* directory.
+  To see existing categories, have a look at the directory/folder names in the `tests <ihttps://github.com/visit-dav/visit/tree/develop/src/test/tests>`_ directory.
+  If an entirely new kind of category needs to be introduced, be sure to discuss this with other developers first.
+* From within a ``.py`` file, image results are generated with the ``Test()`` function and textual results with the ``TestText()`` function.
+  But, see :ref:`above <three_results_types>` for why ``TestValueXX()`` is preferred over image or text results.
+  
+Once logic to produce new test results via ``Test()``, ``TestText()`` or ``TestValueXX()`` are added to a ``.py`` file, the new tests can be run for the *first* time.
+
+``Test()`` and ``TestText()`` type tests will of course *fail* the first time because there are no associated baseline results defined for them.
+However, *current* results from ``Test()`` and ``TestText()`` type tests will be written to a directory name of the form ``output/current/<category>/<.py-file-name>/``.
+The new results should be inspected for correctness.
+If they are as expected, to create the baseline results simply copy the new ``.png`` or ``.txt`` file(s) to their respective place(s) in the ``test/baseline`` directory tree being careful to follow the same *category* and *pyfile* name as was introduced above.
+Of course, don't forget to ``git add`` them for eventual commit.
+
+Rebaselining for different configurations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Note that if you work on a machine or software configuration different from how VisIt_'s nightly testing is run, there is a chance the baseline results you create won't match, bit-for-bit, with those same results from nightly testing.
+Often there can be single-pixel shifts in position or rgb color values can be off by one or two values.
+Typically the differences are imperceptible except by direct, numerical comparison.
+Because only developers with access to `LLNL CZ systems <https://hpc.llnl.gov/documentation/user-guides/accessing-lc-systems#logging-in-to-LLNL-machines>`_ can *generate* baselines *guaranteed* to match nightly results there, our practice is to permit developers to commit potentially non-matching baselines and allow the nightly tests to run and maybe fail.
+Then, any developer can use the ``rebase.py`` `tool <https://github.com/visit-dav/visit/blob/develop/test/baseline/rebase.py>`_ in ``test/baseline`` (also see the :ref:`above paragraph about using rebase.py <rebaselining_test_results>`) to update the baselines to whatever nightly testing produced to create perfect matches.
+
+To make debugging a new test case easier, add the ``-v`` (-verbose flag) or ``-v --vargs "-debug 5"`` to the ``run_visit_test_suite.sh`` command, above.
+
+Finally, make sure to tag the test in a comment block with a space separated list of CLASSES and MODES the test supports.
+
+Using VisIt_'s test routines in other applications
+--------------------------------------------------
+VisIt_'s testing infrastructure can also be used from any VisIt_ installation by other applications that want to write their own Visit-based tests.
 For more details about this, see:  `Leveraging VisIt in Sim Code RegressionTesting <http://visitusers.org/index.php?title=Leveraging_VisIt_in_Sim_Code_Regression_Testing>`_.
 
 
@@ -441,6 +443,23 @@ The most likely culprit for errors is missing information in one of the followin
 * ``src/include/visit-cmake.h.in`` --  Holds all the #defines needed for a build (HAVE_LIBXXX, etc).
 * ``src/CMake/PluginVsInstall.cmake.in`` -- Ensures third-party include/library locations are correct for an install.
 * ``src/CMake/FilterDependnecies.cmake.in`` -- Filters library dependency paths to account for differences between locations of third-party libraries used in a build vs. where they are located within an installed version of VisIt.
+
+Regression testing on Windows
+-----------------------------
+Running the regression suite manually on Windows is a good way to detect Windows-specific run-time errors that may have been inadverently introduced.
+
+A dos-batch script (``run_visit_test_suite.bat``) is generated in the ``<build>/test`` directory, and is similar to the shell script created on Linux.
+The generated script turns on ``--lessverbose`` mode so that output can be viewed while the test is running. 
+Output can be redirected using this syntax: ::
+
+     run_visit_test_suite.bat > test_results.txt and 2> test_general_output.txt
+
+Windows-specific baselines are stored in the **testing_baselines** subdirectory in the `visit-deps repo <https://github.com/visit-dav/visit-deps>`_, and were generated from a Windows 10 system with NVIDIA Quadro P1000 graphics card.
+Most likely, running from a different system will yield a large number of failures due to minor pixel diffs.
+The use of :ref:`fuzzy matching <Fuzzy Matching Thresholds>` to ignore minor differences might be helpful here.
+
+When first running the test suite after new tests have been added, it is generally best to copy the baselines from ``visit/test/baselines`` to ``visit-deps/testing_baselines`` to have a good starting point for comparison.
+
 
 .. CYRUS NOTE: This info seems to old to be relevant, but keeping here commented out just in case. 
 .. 

@@ -97,7 +97,7 @@ def confirm_startup_dir():
     retval = True
 
     if not os.getcwd().split('/')[-1] == 'baseline':
-        print('"test" does not appear to be current working directory name.')
+        print('"baseline" does not appear to be current working directory name.')
         retval = False
 
     for subdir in ["databases", "plots", "operators"]:
@@ -106,13 +106,13 @@ def confirm_startup_dir():
             retval = False
 
     if not retval:
-        print("Run this script only from the root of the VisIt test dir tree")
+        print('Run this script only from the "baseline" dir of the VisIt repository.')
         sys.exit(1)
     return True
 
 def parse_args():
     """
-    Parses arguments to runtest.
+    Parses arguments.
     """
     parser = OptionParser(usage())
     parser.add_option("-c",

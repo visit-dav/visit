@@ -51,7 +51,7 @@ def encoders():
 def extract(ifile,opattern):
     """
     Extracts a sequence of images from a a movie.
-    Requires ipattern to use printf style # format like "file%04d.png".
+    Requires opattern to use printf style # format like "file%04d.png".
     """
     enc_bin = ffmpeg_bin()
     if not ffmpeg_bin is None:

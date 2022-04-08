@@ -1042,6 +1042,9 @@ PyBoundaryAttributes_getattr(PyObject *self, char *name)
                     "It's value is being ignored, " \
                     "please remove it from your script.\n", type);
 
+    //
+    // Changed in 2.13.0, made internal
+    //
     // boundaryType and it's possible enumerations
     bool boundaryTypeFound = false;
     if (strcmp(name, "boundaryType") == 0)
@@ -1132,12 +1135,18 @@ PyBoundaryAttributes_getattr(PyObject *self, char *name)
         DEPRECATED_MESSAGE("pointSizeVar");
         return PyInt_FromLong(0L);
     }
+    //
+    // Removed in 2.13.0
+    //
     else if (strcmp(name, "filledFlag") == 0)
     {
         DEPRECATED_MESSAGE("filledFlag");
         return PyInt_FromLong(0L);
     }
 
+    //
+    // Removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     bool lineStyleFound = false;
     if (strcmp(name, "lineStyle") == 0)

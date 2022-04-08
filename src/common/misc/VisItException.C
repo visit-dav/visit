@@ -52,6 +52,10 @@ VisItException::VisItException()
 //    Mark C. Miller, Thu May 24 20:29:35 PDT 2007
 //    Added filtering for component name
 //
+//    Brad Whitlock, Fri Apr  1 12:12:25 PDT 2022
+//    Added engine_ser and engine_par because otherwise if we get an exception
+//    from the engine sent to the viewer, we'd get "viewer: engine_ser: ...".
+//
 // ****************************************************************************
 
 VisItException::VisItException(const std::string &m)
@@ -65,6 +69,8 @@ VisItException::VisItException(const std::string &m)
         if (mtmp.find("avtprep:") == 0 ||
             mtmp.find("cli:") == 0 ||
             mtmp.find("engine:") == 0 ||
+            mtmp.find("engine_ser:") == 0 ||
+            mtmp.find("engine_par:") == 0 ||
             mtmp.find("gui:") == 0 ||
             mtmp.find("launcher:") == 0 ||
             mtmp.find("mdserver:") == 0 ||

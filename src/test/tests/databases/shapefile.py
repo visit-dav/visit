@@ -10,6 +10,8 @@
 #  Date:       Mon Mar 28 11:06:05 PDT 2005
 #
 #  Modifications:
+#    Kathleen Biagas, Wed Feb 16 09:15:45 PST 2022
+#    Replace use of meshatts 'foregroundFlag' with meshColorSource.
 #
 # ----------------------------------------------------------------------------
 
@@ -88,7 +90,7 @@ def test2():
     Test("shapefile_2_02")
     DeleteActivePlots()
     CloseDatabase(db)
-    
+
     # Look at another file.
     db = data_path("shapefile_test_data/prism0p020/prism0p020.shp")
     OpenDatabase(db)
@@ -100,7 +102,7 @@ def test2():
     AddPlot("Pseudocolor", "RANGE")
     DrawPlots()
     Test("shapefile_2_04")
-    
+
     # Zoom in on some interesting areas
     v = View2DAttributes()
     v.viewportCoords = (0.2, 0.95, 0.15, 0.95)
@@ -121,7 +123,7 @@ def test2():
 
 #
 # Test multiple plots showing different features.
-# 
+#
 def test3():
     TestSection("Test multiple files for showing different features")
     dbs = (data_path("shapefile_test_data/alameda/tgr06001lkA.shp"),
@@ -133,18 +135,18 @@ def test3():
     AddPlot("Mesh", "polyline")
     g = 180
     m = MeshAttributes()
-    m.foregroundFlag = 0
+    m.meshColorSource = m.MeshCustom
     m.meshColor = (g,g,g,255)
     m.legendFlag = 0
     SetPlotOptions(m)
     ResetView()
-    DrawPlots()    
+    DrawPlots()
 
     # Put the county outline on.
     OpenDatabase(dbs[1])
     AddPlot("Mesh", "polygon")
     m = MeshAttributes()
-    m.foregroundFlag = 0
+    m.meshColorSource = m.MeshCustom
     m.meshColor = (255,0,0,255)
     m.lineWidth = 1
     m.legendFlag = 0
@@ -155,7 +157,7 @@ def test3():
     OpenDatabase(dbs[2])
     AddPlot("Mesh", "polygon")
     m = MeshAttributes()
-    m.foregroundFlag = 0
+    m.meshColorSource = m.MeshCustom
     m.meshColor = (0,0,255,255)
     m.lineWidth = 1
     m.legendFlag = 0
@@ -166,7 +168,7 @@ def test3():
     OpenDatabase(dbs[3])
     AddPlot("Mesh", "polyline")
     m = MeshAttributes()
-    m.foregroundFlag = 0
+    m.meshColorSource = m.MeshCustom
     m.meshColor = (150,150,255,255)
     m.legendFlag = 0
     SetPlotOptions(m)

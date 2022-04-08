@@ -3945,13 +3945,10 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         return PseudocolorAttributes_GetPointColor(self, NULL);
 
     // Try and handle legacy fields in PseudocolorAttributes
-    if(strcmp(name, "useColorTableOpacity") == 0)
-    {
-        PseudocolorAttributesObject *meshObj = (PseudocolorAttributesObject *)self;
-        bool useCT = meshObj->data->GetOpacityType() == PseudocolorAttributes::ColorTable;
-        return PyInt_FromLong(useCT?1L:0L);
-    }
 
+    //
+    // Removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     bool lineStyleFound = false;
     if (strcmp(name, "lineStyle") == 0)
@@ -4114,21 +4111,10 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     if(obj == &NULL_PY_OBJ)
     {
         PseudocolorAttributesObject *PseudocolorObj = (PseudocolorAttributesObject *)self;
-        if(strcmp(name, "useColorTableOpacity") == 0)
-        {
-            PyErr_WarnEx(NULL, "'useColorTableOpacity' is obsolete. Use 'opacityType'", 3);
-            int ival = -1;
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if(ival == 0)
-                    PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Constant);
-                else
-                    PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::ColorTable);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
+
+        //
+        // Removed in 3.0.0
+        //
         if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);

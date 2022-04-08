@@ -706,21 +706,105 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 }
 
 // ****************************************************************************
+//  Method: UnstructuredTopologyToVTKUnstructuredGrid
+//
+//  Purpose:
+//   Constructs a vtkUnstructuredGrid from a Blueprint topology and coordset
+//
+//  Arguments:
+//   n_coords:  Blueprint Coordset
+//   n_topo:    Blueprint Topology
+//
+//  Modifications:
+//    Justin Privitera Wed Mar 9 2022
+//    added logic to check if topology is polyhedral or polygonal, and, if so,
+//    transform it to a tetrahedral or triangular topology, respectively.
+//
+//    Justin Privitera Tue Mar 15 18:01:14 PDT 2022
+//    now this function adds original element ids (avtOriginalCellNumbers)
+//    to the vtkDataSet it returns, if applicable (if the mesh was polyhedral
+//    or polygonal and was transformed; see above modification comment).
+//
+//    Justin Privitera Wed Mar 23 12:28:02 PDT 2022
+//    Added domain as first argument, which is used for orig elem ids.
+//
+//    Cyrus Harrison, Mon Mar 28 12:14:20 PDT 2022
+//    Use conduit version check for polytopal support.
+//
+// ****************************************************************************
 vtkDataSet *
-UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
+UnstructuredTopologyToVTKUnstructuredGrid(int domain,
+                                          const Node &n_coords,
                                           const Node &n_topo)
 {
-    vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords);
+    const Node *coords_ptr = &n_coords;
+    const Node *topo_ptr = &n_topo;
+
+    Node res; // Used as a destination for the generate sides call
 
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-    ugrid->SetPoints(points);
-    points->Delete();
+    vtkUnsignedIntArray *oca = NULL;
 
+    if (n_topo.has_path("elements/shape"))
+    {
+        if (n_topo["elements/shape"].as_string() == "polyhedral" || 
+            n_topo["elements/shape"].as_string() == "polygonal")
+        {
+            #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
+                Node s2dmap, d2smap, options;
+                blueprint::mesh::topology::unstructured::generate_sides(
+                    n_topo,
+                    res["topologies/" + n_topo.name()],
+                    res["coordsets/" + n_topo["coordset"].as_string()],
+                    s2dmap,
+                    d2smap);
+
+                unsigned_int_accessor values = d2smap["values"].value();
+
+                oca = vtkUnsignedIntArray::New();
+                oca->SetName("avtOriginalCellNumbers");
+                oca->SetNumberOfComponents(2);
+
+                for (int i = 0; i < values.number_of_elements(); i ++)
+                {
+                    unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
+                                              static_cast<unsigned int>(values[i])};
+                    oca->InsertNextTypedTuple(ocdata);
+                }
+
+                coords_ptr = res.fetch_ptr(
+                    "coordsets/" + n_topo["coordset"].as_string());
+                topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
+            #else
+                Node about;
+                conduit::about(about);
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                    "VisIt Blueprint Plugin requires Conduit >= 0.8.0 to read polytopal meshes."
+                    "VisIt was built with Conduit version:"  << about["version"].as_string());
+            #endif
+        }
+    }
+
+    // The coords could be changed in the call above, so this must happen
+    // after the conditionals
+    vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr);
+
+    ugrid->SetPoints(points);
+
+    if (oca != NULL)
+    {
+        ugrid->GetCellData()->AddArray(oca);
+        ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+        oca->Delete();
+    }
+
+    points->Delete();
+    
     //
     // Now, add explicit topology
     //
-    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, points->GetNumberOfPoints());
-    ugrid->SetCells(ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string()), ca);
+    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
+    ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), ca);
     ca->Delete();
 
     return ugrid;
@@ -729,7 +813,55 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
 
 // ****************************************************************************
 vtkDataSet *
-avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
+PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
+                                    const Node &n_topo)
+{
+    vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords);
+
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(points);
+    points->Delete();
+
+    int npoints = points->GetNumberOfPoints();
+
+    //
+    // Now, add explicit topology
+    //
+    vtkCellArray *ca = vtkCellArray::New();
+    vtkIdTypeArray *ida = vtkIdTypeArray::New();
+
+    ida->SetNumberOfTuples(npoints * 2);
+    // Create cell array that ranges from 0 to n-1.
+    for (int i = 0; i < npoints; i++)
+    {
+        ida->SetComponent(2 * i, 0, 1);
+        ida->SetComponent(2 * i + 1, 0, i);
+    }
+    ca->SetCells(npoints, ida);
+    ida->Delete();
+
+    ugrid->SetCells(VTK_VERTEX, ca);
+    ca->Delete();
+
+    return ugrid;
+}
+
+// ****************************************************************************
+//  Method: MeshToVTK
+//
+//  Modifications:
+//    Justin Privitera, Fri 04 Mar 2022 05:57:49 PM PST
+//    Added support for points topology type; see
+//    PointsTopologyToVTKUnstructuredGrid as well.
+// 
+//    Justin Privitera, Wed Mar 23 12:26:31 PDT 2022
+//    Added "domain" as first arg of MeshToVTK and passed it to
+//    UnstructuredTopologyToVTKUnstructuredGrid.
+//
+// ****************************************************************************
+vtkDataSet *
+avtBlueprintDataAdaptor::VTK::MeshToVTK(int domain,
+                                        const Node &n_mesh)
 {
     //NOTE: this assumes one coordset and one topo
     // that is the case for the blueprint plugin, but may not be the case
@@ -758,10 +890,15 @@ avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
             BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet StructuredTopologyToVTKStructuredGrid");
             res = StructuredTopologyToVTKStructuredGrid(n_coords, n_topo);
         }
+        else if (n_topo["type"].as_string() == "points")
+        {
+            BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet PointsTopologyToVTKUnstructuredGrid");
+            res = PointsTopologyToVTKUnstructuredGrid(n_coords, n_topo);
+        }
         else
         {
             BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet UnstructuredTopologyToVTKUnstructuredGrid");
-            res = UnstructuredTopologyToVTKUnstructuredGrid(n_coords, n_topo);
+            res = UnstructuredTopologyToVTKUnstructuredGrid(domain, n_coords, n_topo);
         }
     }
     else
@@ -1819,24 +1956,49 @@ CopyTuple1(Node &node, vtkDataArray *da)
 }
 
 // ****************************************************************************
-void VTKDataArrayToNode(Node &node, vtkDataArray *arr)
+//  Method: VTKDataArrayToNode
+//
+//  Purpose:
+//      Wraps VTK data as a Conduit field.
+//
+//  Programmer: Matt Larsen
+//  Creation:   2019-02-25
+//
+//  Modifications:
+//
+//  Brad Whitlock, Fri Apr  1 13:41:32 PDT 2022
+//  Treat scalars specially so we do not make mcarrays out of them.
+//
+// ****************************************************************************
+
+void
+VTKDataArrayToNode(Node &node, vtkDataArray *arr)
 {
     int ncomps = arr->GetNumberOfComponents();
 
-    for(int i = 0; i < ncomps; ++i)
+    if(ncomps == 1)
     {
-      std::stringstream ss;
-      ss<<"/c"<<i;
+        if(arr->GetDataType() == VTK_DOUBLE)
+            CopyComponent64(node, arr, 0);
+        else
+            CopyComponent32(node, arr, 0);
+    }
+    else
+    {
+        for(int i = 0; i < ncomps; ++i)
+        {
+            std::stringstream ss;
+            ss<<"/c"<<i;
 
-      if(arr->GetDataType() == VTK_DOUBLE)
-      {
-         CopyComponent64(node[ss.str()], arr, i);
-      }
-      else
-      {
-         CopyComponent32(node[ss.str()], arr, i);
-      }
-
+            if(arr->GetDataType() == VTK_DOUBLE)
+            {
+                CopyComponent64(node[ss.str()], arr, i);
+            }
+            else
+            {
+                CopyComponent32(node[ss.str()], arr, i);
+            }
+        }
     }
 }
 
@@ -1952,7 +2114,7 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 }
 
 // ****************************************************************************
-//  Method: avtBlueprintDataAdapter::VTKFieldsToBlueprint
+//  Method: avtBlueprintDataAdapter::VTKFieldNameToBlueprint
 //
 //  Purpose:
 //      Replaces '/''s in input vtk_name with '_''s and stores the output in

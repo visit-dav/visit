@@ -6,8 +6,10 @@
 
 # -- Path setup --------------------------------------------------------------
 
+# Attempt add_css_file only if the version of Sphinx actually supports it
 def setup(app):
-    app.add_css_file('custom.css')
+    if hasattr(app, 'add_css_file'):
+        app.add_css_file('custom.css')
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -35,6 +37,8 @@ release = '3.2.2'
 # ones.
 extensions = ['sphinx.ext.mathjax']
 
+# Force installation of any special stuff in the RTD virtual machine instance
+# needed to support any custom extensions.
 if os.environ.get('READTHEDOCS'):
     from subprocess import call
     call(['pip', 'install', 'sphinx-notfound-page'])
@@ -59,6 +63,7 @@ pygments_style = 'sphinx'
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
+suppress_warnings = ['image.nonlocal_uri']
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False

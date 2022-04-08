@@ -1636,6 +1636,9 @@ PyWellBoreAttributes_getattr(PyObject *self, char *name)
 
     // Try and handle legacy fields
 
+    //
+    //  Removed in 3.0.0
+    //
     // wellLineStyle and it's possible enumerations
     bool wellLineStyleFound = false;
     if (strcmp(name, "wellLineStyle") == 0)
@@ -1728,6 +1731,9 @@ PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
+        //
+        //  Removed in 3.0.0
+        //
         if(strcmp(name, "wellLineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'wellLineStyle' is obsolete. It is being ignored.", 3);

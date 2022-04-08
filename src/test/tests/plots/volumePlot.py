@@ -239,6 +239,8 @@ def TestVolumeAspect():
     SetPlotOptions(orig_atts)
 
 def TestVolumeColorControlPoints():
+    # the next comment and similar below bracket code to be 'literalincluded' in quickrecipes.rst
+    # volumeColorControlPoints {
     OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Volume", "hardyglobal")
@@ -256,6 +258,7 @@ def TestVolumeColorControlPoints():
     SetPlotOptions(v)
     DrawPlots()
     ResetView()
+    # volumeColorControlPoints }
     Test("volumeColors_01")
 
     # Start over with the colors.

@@ -14,6 +14,9 @@
 #    Added a test to ensure that variables containing parentheses
 #    are able to be visualized.
 #
+#    Justin Privitera Fri 04 Mar 2022 05:57:49 PM PST
+#    Added tests to test new implicit points topologies
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
 
@@ -22,6 +25,8 @@ from os.path import join as pjoin
 bp_test_dir = "blueprint_v0.3.1_test_data"
 bp_venn_test_dir = "blueprint_v0.7.0_venn_test_data"
 bp_mfem_test_dir = "blueprint_v0.3.1_mfem_test_data"
+bp_0_8_2_test_dir = "blueprint_v0.8.2_braid_examples_test_data"
+bp_poly_test_dir = "blueprint_v0.8.2_polytess_test_data"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -31,6 +36,16 @@ braid_3d_json_root = data_path(pjoin(bp_test_dir,"braid_3d_examples_json.root"))
 
 braid_2d_sidre_root = data_path(pjoin(bp_test_dir,"braid_2d_sidre_examples.root"))
 braid_3d_sidre_root = data_path(pjoin(bp_test_dir,"braid_3d_sidre_examples.root"))
+
+braid_2d_0_8_2_hdf5_root = data_path(pjoin(bp_0_8_2_test_dir,"braid_2d_examples_hdf5.root"))
+braid_3d_0_8_2_hdf5_root = data_path(pjoin(bp_0_8_2_test_dir,"braid_3d_examples_hdf5.root"))
+braid_2d_0_8_2_yaml_root = data_path(pjoin(bp_0_8_2_test_dir,"braid_2d_examples_yaml.root"))
+braid_3d_0_8_2_yaml_root = data_path(pjoin(bp_0_8_2_test_dir,"braid_3d_examples_yaml.root"))
+
+poly_2d_hdf5_root = data_path(pjoin(bp_poly_test_dir,"polytess_example_hdf5.root"))
+poly_2d_yaml_root = data_path(pjoin(bp_poly_test_dir,"polytess_example_yaml.root"))
+poly_3d_hdf5_root = data_path(pjoin(bp_poly_test_dir,"polytess_3d_example_hdf5.root"))
+poly_3d_yaml_root = data_path(pjoin(bp_poly_test_dir,"polytess_3d_example_yaml.root"))
 
 uniform_root = data_path(pjoin(bp_test_dir,"uniform.cycle_001038.root"))
 
@@ -59,6 +74,8 @@ venn_s_by_m_yaml_root  =  data_path(pjoin(bp_venn_test_dir,
 braid_2d_meshes = ["points", "uniform", "rect", "struct", "tris","quads"]
 braid_3d_meshes = ["points", "uniform", "rect", "struct", "tets","hexs"]
 
+braid_2d_meshes_0_8_2 = ["points", "uniform", "rect", "struct", "tris","quads", "points_implicit"]
+braid_3d_meshes_0_8_2 = ["points", "uniform", "rect", "struct", "tets","hexs", "points_implicit"]
 
 mfem_ex9_examples   = ["periodic_cube","star_q3","periodic_hexagon"]
 mfem_ex9_protocols = ["json","conduit_bin","conduit_json","hdf5"]
@@ -95,9 +112,32 @@ def set_3d_view():
     v.windowValid = 1
     SetView3D(v)
 
+def set_3d_poly_view():
+    v = View3DAttributes()
+    v.viewNormal = (-0.50151, -0.632781, 0.589979)
+    v.focus = (-2.46025e-13, 6.43929e-14, 4.5)
+    v.viewUp = (0.364523, 0.463898, 0.807416)
+    v.viewAngle = 30
+    v.parallelScale = 7.93494
+    v.nearPlane = -15.8699
+    v.farPlane = 15.8699
+    v.imagePan = (0, 0)
+    v.imageZoom = 1
+    v.perspective = 1
+    v.eyeAngle = 2
+    v.centerOfRotationSet = 0
+    v.centerOfRotation = (-2.46025e-13, 6.43929e-14, 4.5)
+    v.axis3DScaleFlag = 0
+    v.axis3DScales = (1, 1, 1)
+    v.shear = (0, 0, 1)
+    v.windowValid = 1
+    SetView3D(v)
+
 
 def set_test_view(tag_name):
-    if "3d" in tag_name:
+    if "3d" in tag_name and "poly" in tag_name:
+        set_3d_poly_view()
+    elif "3d" in tag_name:
         set_3d_view()
     else:
         ResetView()
@@ -120,6 +160,20 @@ def test(mesh_name,tag_name):
     set_test_view(tag_name)
     DrawPlots()
     Test(tag_name + "_" +  mesh_name + "_radial")
+    DeleteAllPlots()
+
+def test_poly(tag_name):
+    #
+    AddPlot("Mesh", "mesh_topo")
+    DrawPlots()
+    set_test_view(tag_name)
+    Test(tag_name + "_mesh_topo_mesh")
+    DeleteAllPlots()
+    #
+    AddPlot("Pseudocolor", "mesh_topo/level")
+    DrawPlots()
+    set_test_view(tag_name)
+    Test(tag_name + "_mesh_topo_level")
     DeleteAllPlots()
 
 def test_mfem(tag_name, example_name, protocol):
@@ -292,5 +346,51 @@ test_venn("venn_small_sparse_by_material", venn_s_by_m_root)
 test_venn("venn_small_full_yaml", venn_full_yaml_root)
 test_venn("venn_small_sparse_by_element_yaml", venn_s_by_e_yaml_root)
 test_venn("venn_small_sparse_by_material_yaml", venn_s_by_m_yaml_root)
+
+TestSection("2D Example HDF5 Mesh Files, 0.8.2")
+OpenDatabase(braid_2d_0_8_2_hdf5_root)
+for mesh_name in braid_2d_meshes_0_8_2:
+    test(mesh_name,"blueprint_2d_hdf5_0_8_2")
+CloseDatabase(braid_2d_0_8_2_hdf5_root)
+
+TestSection("2D Example YAML Mesh Files, 0.8.2")
+OpenDatabase(braid_2d_0_8_2_yaml_root)
+for mesh_name in braid_2d_meshes_0_8_2:
+    test(mesh_name,"blueprint_2d_yaml_0_8_2")
+CloseDatabase(braid_2d_0_8_2_yaml_root)
+
+TestSection("3D Example HDF5 Mesh Files, 0.8.2")
+OpenDatabase(braid_3d_0_8_2_hdf5_root)
+for mesh_name in braid_3d_meshes_0_8_2:
+    test(mesh_name,"blueprint_3d_hdf5_0_8_2")
+CloseDatabase(braid_3d_0_8_2_hdf5_root)
+
+TestSection("3D Example YAML Mesh Files, 0.8.2")
+OpenDatabase(braid_3d_0_8_2_yaml_root)
+for mesh_name in braid_3d_meshes_0_8_2:
+    test(mesh_name,"blueprint_3d_yaml_0_8_2")
+CloseDatabase(braid_3d_0_8_2_yaml_root)
+
+# test polygonal mesh
+TestSection("Polygonal 2D Example HDF5 Mesh Files, 0.8.2")
+OpenDatabase(poly_2d_hdf5_root)
+test_poly("blueprint_poly_2d_hdf5_0_8_2")
+CloseDatabase(poly_2d_hdf5_root)
+
+TestSection("Polygonal 2D Example YAML Mesh Files, 0.8.2")
+OpenDatabase(poly_2d_yaml_root)
+test_poly("blueprint_poly_2d_yaml_0_8_2")
+CloseDatabase(poly_2d_yaml_root)
+
+# test 3d polygonal mesh
+TestSection("Polygonal 3D Example HDF5 Mesh Files, 0.8.2")
+OpenDatabase(poly_3d_hdf5_root)
+test_poly("blueprint_poly_3d_hdf5_0_8_2")
+CloseDatabase(poly_3d_hdf5_root)
+
+TestSection("Polygonal 3D Example YAML Mesh Files, 0.8.2")
+OpenDatabase(poly_3d_yaml_root)
+test_poly("blueprint_poly_3d_yaml_0_8_2")
+CloseDatabase(poly_3d_yaml_root)
 
 Exit()

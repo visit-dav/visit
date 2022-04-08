@@ -1337,12 +1337,43 @@ VisitInteractor::ZoomImage3D(const int x, const int y)
 //  Purpose:
 //    Handle dollying the camera toward the focus in 3d.
 //
+//  Programmer: Kathleen Biagas
+//  Creation:   March 16, 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisitInteractor::DollyCameraTowardFocus3D(double f)
+{
+    double zoomFactor = pow((double)1.1, f);
+
+    //
+    // Calculate the new parallel scale.
+    //
+    VisWindow *vw = proxy;
+    avtView3D newView3D = vw->GetView3D();
+    newView3D.parallelScale = newView3D.parallelScale / zoomFactor;
+    vw->SetView3D(newView3D);
+}
+
+
+// ****************************************************************************
+//  Method: VisitInteractor::DollyCameraTowardFocus3D
+//
+//  Purpose:
+//    Handle dollying the camera toward the focus in 3d.
+//
 //  Programmer: Eric Brugger
 //  Creation:   December 27, 2004
 //
 //  Modifications:
 //    Eric Brugger, Thu May 26 12:37:11 PDT 2011
 //    Remove an unnecessary render call.
+//
+//    Kathleen Biagas, We Mar 16, 2022
+//    Moved bulk of code to new method of same name.
 //
 // ****************************************************************************
 
@@ -1356,23 +1387,45 @@ VisitInteractor::DollyCameraTowardFocus3D(const int x, const int y)
         //
         double dyf = MotionFactor * (double)(y - OldY) /
                          (double)(Center[1]);
-        double zoomFactor = pow((double)1.1, dyf);
 
-        //
-        // Calculate the new parallel scale.
-        //
-        VisWindow *vw = proxy;
-
-        avtView3D newView3D = vw->GetView3D();
-
-        newView3D.parallelScale = newView3D.parallelScale / zoomFactor;
+        DollyCameraTowardFocus3D(dyf);
 
         OldX = x;
         OldY = y;
-
-        vw->SetView3D(newView3D);
     }
 }
+
+
+// ****************************************************************************
+//  Method: VisitInteractor::DollyCameraAndFocus3D
+//
+//  Purpose:
+//    Handle dollying the camera and focus toward the focus in 3d.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   March 16, 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisitInteractor::DollyCameraAndFocus3D(double f)
+{
+    //
+    // Calculate the new focus.
+    //
+    VisWindow *vw = proxy;
+
+    avtView3D newView3D = vw->GetView3D();
+
+    newView3D.focus[0] += newView3D.normal[0] * newView3D.parallelScale * f;
+    newView3D.focus[1] += newView3D.normal[1] * newView3D.parallelScale * f;
+    newView3D.focus[2] += newView3D.normal[2] * newView3D.parallelScale * f;
+
+    vw->SetView3D(newView3D);
+}
+
 
 // ****************************************************************************
 //  Method: VisitInteractor::DollyCameraAndFocus3D
@@ -1387,6 +1440,9 @@ VisitInteractor::DollyCameraTowardFocus3D(const int x, const int y)
 //    Eric Brugger, Thu May 26 12:37:11 PDT 2011
 //    Remove an unnecessary render call.
 //
+//    Kathleen Biagas, We Mar 16, 2022
+//    Moved bulk of code to new method of same name.
+//
 // ****************************************************************************
 
 void
@@ -1400,24 +1456,10 @@ VisitInteractor::DollyCameraAndFocus3D(const int x, const int y)
         double dyf = -1.0 * MotionFactor * (double)(y - OldY) /
                          (double)(Center[1]);
 
-        //
-        // Calculate the new parallel scale.
-        //
-        VisWindow *vw = proxy;
-
-        avtView3D newView3D = vw->GetView3D();
-
-        newView3D.focus[0] +=
-            newView3D.normal[0] * newView3D.parallelScale * dyf;
-        newView3D.focus[1] +=
-            newView3D.normal[1] * newView3D.parallelScale * dyf;
-        newView3D.focus[2] +=
-            newView3D.normal[2] * newView3D.parallelScale * dyf;
+        DollyCameraAndFocus3D(dyf);
 
         OldX = x;
         OldY = y;
-
-        vw->SetView3D(newView3D);
     }
 }
 

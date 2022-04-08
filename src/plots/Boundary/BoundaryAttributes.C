@@ -1055,12 +1055,6 @@ BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
     if(searchNode == 0)
         return;
 
-    if (VersionLessThan(configVersion, "1.1.5"))
-    {
-        if (searchNode->GetNode("wireframe") != 0)
-            searchNode->RemoveNode("wireframe");
-    }
-
     if (VersionLessThan(configVersion, "2.13.0"))
     {
         if (searchNode->GetNode("boundaryType") != 0)
