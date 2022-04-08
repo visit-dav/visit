@@ -21,6 +21,10 @@ function bv_conduit_depends_on
         depends_on="hdf5"
     fi
 
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        depends_on="$depends_on zlib"
+    fi
+
     if [[ "$DO_PYTHON" == "yes" ]] ; then
         depends_on="$depends_on python"
     fi
@@ -248,6 +252,10 @@ function build_conduit
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
         cfg_opts="${cfg_opts} -DHDF5_DIR:STRING=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/"
+    fi
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        cfg_opts="${cfg_opts} -DZLIB_DIR:STRING=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/"
     fi
 
     if [[ "$DO_PYTHON" == "yes" ]] ; then
