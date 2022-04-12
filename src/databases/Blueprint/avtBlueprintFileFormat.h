@@ -128,6 +128,8 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
 
     std::map<std::string,bool> m_mfem_mesh_map;
 
+    bool                   m_new_refine;
+
 };
 
 

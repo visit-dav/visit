@@ -101,7 +101,8 @@ public:
     // mfem to vtk
     //-------------------------------------------------------------------------
     static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
-                                             int lod);
+                                             int lod,
+                                             bool new_refine);
 
     static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                      mfem::GridFunction *gf,

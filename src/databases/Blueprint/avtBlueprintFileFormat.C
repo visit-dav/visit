@@ -180,6 +180,16 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_tree_cache(NULL),
       m_selected_lod(0)
 {
+    // Q? what do I do - where is this set up
+    if (opts->GetEnumStrings("???") == "legcacy") // or new
+    {
+        m_new_refine = true;
+    }
+    else
+    {
+        m_new_refine = false;
+    }
+
     m_tree_cache = new avtBlueprintTreeCache();
 
     // these redirect conduit info and warnings to debug 5
@@ -1548,14 +1558,15 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
     BP_PLUGIN_INFO("mesh name: " << mesh_name);
     BP_PLUGIN_INFO("topo name: " << topo_name);
 
-
     // check for the mfem case
     if( m_mfem_mesh_map[topo_name] )
     {
         BP_PLUGIN_INFO("mesh  " << topo_name << " is a mfem mesh");
         // use mfem to refine and create a vtk dataset
         mfem::Mesh *mesh = avtBlueprintDataAdaptor::MFEM::MeshToMFEM(data);
-        res = avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mesh, m_selected_lod+1);
+        res = avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mesh, 
+                                                             m_selected_lod+1,
+                                                             m_new_refine);
 
         // cleanup the mfem mesh
         delete mesh;

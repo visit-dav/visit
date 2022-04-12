@@ -32,6 +32,11 @@ DBOptionsAttributes *
 GetBlueprintReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
+    vector<string> jusitnsvar;
+    jusitnsvar.push_back("legacy");
+    jusitnsvar.push_back("new");
+    rv->SetEnumStrings("???", jusitnsvar);
+
     return rv;
 /* EXAMPLE OF OPTIONS
     rv->SetBool("Binary format", true);
