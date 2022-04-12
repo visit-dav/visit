@@ -1646,44 +1646,52 @@ LowOrderMeshToVTK(mfem::Mesh *mesh,
                   const std::string &main_topology_name,
                   const std::string &boundary_topology_name)
 {
-   int dim = mesh->SpaceDimension();
+    int dim = mesh->SpaceDimension();
 
-   if(dim < 1 || dim > 3)
-   {
-    // Q? do we want these to be visit errors? is there something like bp plugin error?
-     VISIT_ERROR("invalid mesh dimension "<<dim);;
-   }
+    if(dim < 1 || dim > 3)
+    {
+        // Q? do we want these to be visit errors? is there something like bp plugin error?
+        VISIT_ERROR("invalid mesh dimension "<<dim);;
+    }
 
-   ////////////////////////////////////////////
-   // Setup main coordset
-   ////////////////////////////////////////////
+    ////////////////////////////////////////////
+    // Setup main coordset
+    ////////////////////////////////////////////
 
-   // Assumes  mfem::Vertex has the layout of a double array.
+    // Assumes  mfem::Vertex has the layout of a double array.
 
-   // this logic assumes an mfem vertex is always 3 doubles wide
-   int stride = sizeof(mfem::Vertex);
-   int num_vertices = mesh->GetNV();
+    // this logic assumes an mfem vertex is always 3 doubles wide
+    int stride = sizeof(mfem::Vertex);
+    int num_vertices = mesh->GetNV();
 
-   if(stride != 3 * sizeof(double) )
-   {
-     VISIT_ERROR("Unexpected stride for mfem vertex");
-   }
+    size_t doublesize = sizeof(double);
 
-   double *coords_ptr = mesh->GetVertex(0);
+    if(stride != 3 * doublesize )
+    {
+        VISIT_ERROR("Unexpected stride for mfem vertex");
+    }
 
-   vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    double *coords_ptr = mesh->GetVertex(0);
 
-   vtkPoints *points = vtkPoints::New();
-   points->SetDataTypeToDouble();
-   points->SetNumberOfPoints(num_vertices);
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
-   for (vtkIdType i = 0; i < num_vertices; i ++)
-   {
-       double x = *(coords_ptr + i * stride);
-       double y = dim >= 2 ? *(coords_ptr + i * stride + sizeof(double)) : 0;
-       double z = dim >= 3 ? *(coords_ptr + i * stride + 2 * sizeof(double)) : 0;
-       points->SetPoint(i, x, y, z);
-   }
+    vtkPoints *points = vtkPoints::New();
+    points->SetDataTypeToDouble();
+    points->SetNumberOfPoints(num_vertices);
+
+    for (vtkIdType i = 0; i < num_vertices; i ++)
+    {
+        int i_x_stride = i * stride;
+        double x = *(coords_ptr + i_x_stride);
+        double y = dim >= 2 ? *(coords_ptr + i_x_stride + doublesize) : 0;
+        double z = dim >= 3 ? *(coords_ptr + i_x_stride + 2 * doublesize) : 0;
+        points->SetPoint(i, x, y, z);
+    }
+
+    ugrid->SetPoints(points);
+
+    points->Delete();
+
 
    ///////////////////////////////
 
