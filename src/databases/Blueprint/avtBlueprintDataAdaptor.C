@@ -1639,10 +1639,9 @@ LegacyRefineMeshToVTK(mfem::Mesh *mesh,
 }
 
 //---------------------------------------------------------------------------//
-// TODO HEYJUSTIN start here and tear this apart
-void
+vtkDataSet * // TODO add return
 LowOrderMeshToVTK(mfem::Mesh *mesh,
-                  Node &n_mesh,
+                  Node &n_mesh, // TODO remove this
                   const std::string &coordset_name,
                   const std::string &main_topology_name,
                   const std::string &boundary_topology_name)
@@ -1651,7 +1650,8 @@ LowOrderMeshToVTK(mfem::Mesh *mesh,
 
    if(dim < 1 || dim > 3)
    {
-     ASCENT_ERROR("invalid mesh dimension "<<dim);;
+    // Q? do we want these to be visit errors? is there something like bp plugin error?
+     VISIT_ERROR("invalid mesh dimension "<<dim);;
    }
 
    ////////////////////////////////////////////
@@ -1666,34 +1666,49 @@ LowOrderMeshToVTK(mfem::Mesh *mesh,
 
    if(stride != 3 * sizeof(double) )
    {
-     ASCENT_ERROR("Unexpected stride for mfem vertex");
+     VISIT_ERROR("Unexpected stride for mfem vertex");
    }
-
-   Node &n_mesh_coords = n_mesh["coordsets"][coordset_name];
-   n_mesh_coords["type"] =  "explicit";
-
 
    double *coords_ptr = mesh->GetVertex(0);
 
-   n_mesh_coords["values/x"].set(coords_ptr,
-                                 num_vertices,
-                                 0,
-                                 stride);
+   vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
-   if (dim >= 2)
+   vtkPoints *points = vtkPoints::New();
+   points->SetDataTypeToDouble();
+   points->SetNumberOfPoints(num_vertices);
+
+   for (vtkIdType i = 0; i < num_vertices; i ++)
    {
-      n_mesh_coords["values/y"].set(coords_ptr,
-                                    num_vertices,
-                                    sizeof(double),
-                                    stride);
+       double x = *(coords_ptr + i * stride);
+       double y = dim >= 2 ? *(coords_ptr + i * stride + sizeof(double)) : 0;
+       double z = dim >= 3 ? *(coords_ptr + i * stride + 2 * sizeof(double)) : 0;
+       points->SetPoint(i, x, y, z);
    }
-   if (dim >= 3)
-   {
-      n_mesh_coords["values/z"].set(coords_ptr,
-                                    num_vertices,
-                                    sizeof(double) * 2,
-                                    stride);
-   }
+
+   ///////////////////////////////
+
+   // Node &n_mesh_coords = n_mesh["coordsets"][coordset_name];
+   // n_mesh_coords["type"] =  "explicit";
+
+   // n_mesh_coords["values/x"].set(coords_ptr,
+   //                               num_vertices,
+   //                               0,
+   //                               stride);
+
+   // if (dim >= 2)
+   // {
+   //    n_mesh_coords["values/y"].set(coords_ptr,
+   //                                  num_vertices,
+   //                                  sizeof(double),
+   //                                  stride);
+   // }
+   // if (dim >= 3)
+   // {
+   //    n_mesh_coords["values/z"].set(coords_ptr,
+   //                                  num_vertices,
+   //                                  sizeof(double) * 2,
+   //                                  stride);
+   // }
 
    ////////////////////////////////////////////
    // Setup main topo
