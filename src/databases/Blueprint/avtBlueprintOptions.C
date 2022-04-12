@@ -32,10 +32,10 @@ DBOptionsAttributes *
 GetBlueprintReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
-    vector<string> jusitnsvar;
-    jusitnsvar.push_back("legacy");
-    jusitnsvar.push_back("new");
-    rv->SetEnumStrings("???", jusitnsvar);
+    vector<string> mfem_lor_setting;
+    mfem_lor_setting.push_back("Legacy MFEM LOR");
+    mfem_lor_setting.push_back("New MFEM LOR");
+    rv->SetEnumStrings("MFEM LOR Setting", mfem_lor_setting);
 
     return rv;
 /* EXAMPLE OF OPTIONS
