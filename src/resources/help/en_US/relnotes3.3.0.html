@@ -114,6 +114,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed several bugs with 'Flythrough' navigation mode: multiple calls to ResetView would make the plot disappear; adding new plots would make them disappear from view; issuing a 'Recenter View' would move the camera inside the plot.</li>
   <li>Fixed a bug where bounding box extents would not be reset when 'Scale 3D Axes' was turned off.</li>
   <li>Fixed a cli crash when 'DeleteAllPlots' is called when there are not plots, and a callback has been registered for 'SetActivePlots'.</li>
+  <li>Fixed a bug in visit_composite where output formats like bmp, png could not be read back in by VisIt nor used to encode movies.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
