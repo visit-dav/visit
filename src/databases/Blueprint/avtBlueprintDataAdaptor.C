@@ -1639,7 +1639,7 @@ LegacyRefineMeshToVTK(mfem::Mesh *mesh,
 }
 
 //---------------------------------------------------------------------------//
-
+// TODO HEYJUSTIN start here and tear this apart
 void
 LowOrderMeshToVTK(mfem::Mesh *mesh,
                   Node &n_mesh,
