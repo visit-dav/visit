@@ -1546,119 +1546,10 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
 
-// ****************************************************************************
-//  Method: RefineMeshToVTK
-//
-//  Purpose:
-//    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
-//
-//  Arguments:
-//    mesh:      string with desired mesh name
-//    lod:       number of refinement steps
-//
-//  Programmer: Cyrus Harrison
-//  Creation:   Sat Jul  5 11:38:31 PDT 2014
-//
-// Notes: Adapted from avtMFEMFileFormat and MFEM examples.
-//
-//  Modifications:
-//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
-//    Casting geom to Geometry::Type where appropariate. This is required
-//    with the mfem upgrade to 4.0.
-//
-// ****************************************************************************
 vtkDataSet *
-avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
-                                               int lod,
-                                               bool new_refine)
+LegacyRefineMeshToVTK(mfem::Mesh *mesh,
+                      int lod)
 {
-    // TODO make this method call "legacyRefineMeshToVTK"
-    if (new_refine)
-    {
-        // TODO want to go directly from mfem to vtk
-        // so create vtk like how the conduit node is being created
-        
-        // TODO deprecate this
-        conduit::Node &n_dset = new Node();
-
-        // get the high order data
-        const mfem::FiniteElementSpace *fes_space = mesh->GetNodalFESpace();
-        const mfem::FiniteElementCollection *fes_col = fes_space->FEColl();
-
-        // refine the mesh and convert to blueprint
-        mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, mfem::BasisType::GaussLobatto);
-        // TODO need to do my own version
-        MeshToBlueprintMesh(lo_mesh, n_dset);
-
-        // TODO tackle later once mesh stuff is done
-
-        // int conn_size = n_dset["topologies/main/elements/connectivity"].dtype().number_of_elements();
-        // conduit::Node &n_fields = n_dset["fields"];
-        // // Q? again, how to get this?
-        // auto field_map = ho_domains->m_data_sets[i]->get_field_map();
-
-        // for(auto it = field_map.begin(); it != field_map.end(); ++ it)
-        // {
-        //     mfem::GridFunction *ho_gf = it->second;
-        //     std::string basis(ho_gf->FESpace()->FEColl()->Name());
-        //     // we only have L2 or H2 at this point
-        //     bool node_centered = basis.find("H1_") != std::string::npos;
-
-        //     mfem::FiniteElementSpace *ho_fes = ho_gf->FESpace();
-        //     if(ho_fes == nullptr)
-        //     {
-        //         // Q? we want this to be a visit error right?
-        //         VISIT_ERROR("Linearize: high order gf finite element space is null")
-        //     }
-        //     // create the low order grid function
-        //     mfem::FiniteElementCollection *lo_col = nullptr;
-        //     if(node_centered)
-        //     {
-        //         lo_col = new mfem::LinearFECollection;
-        //     }
-        //     else
-        //     {
-        //         int  p = 0; // single scalar
-        //         lo_col = new mfem::L2_FECollection(p, ho_mesh->Dimension(), 1);
-        //     }
-        //     mfem::FiniteElementSpace *lo_fes = new mfem::FiniteElementSpace(lo_mesh, lo_col, ho_fes->GetVDim());
-        //     mfem::GridFunction *lo_gf = new mfem::GridFunction(lo_fes);
-        //     // transform the higher order function to a low order function somehow
-        //     mfem::OperatorHandle hi_to_lo;
-        //     lo_fes->GetTransferOperator(*ho_fes, hi_to_lo);
-        //     hi_to_lo.Ptr()->Mult(*ho_gf, *lo_gf);
-        //     // extract field
-        //     conduit::Node &n_field = n_fields[it->first];
-        //     GridFunctionToBlueprintField(lo_gf, n_field);
-        //     // all supported grid functions coming out of mfem end up being associated with vertices
-        //     if(node_centered)
-        //     {
-        //         n_field["association"] = "vertex";
-        //     }
-        //     else
-        //     {
-        //         n_field["association"] = "element";
-        //     }
-
-        //     delete lo_col;
-        //     delete lo_fes;
-        //     delete lo_gf;
-        // }
-
-        // conduit::Node info;
-        // bool success = conduit::blueprint::verify("mesh",n_dset,info);
-        // if(!success)
-        // {
-        //     info.print();
-        //     // Q? same question here
-        //     VISIT_ERROR("Linearize: failed to build a blueprint conforming data set from mfem")
-        // }
-        // delete lo_mesh;
-
-        // Q? what is returned?
-        return something;
-    }
-    
     BP_PLUGIN_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
     // create output objects
@@ -1708,21 +1599,17 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
             pt_idx++;
         }
     }
-
     res_ds->SetPoints(res_pts);
     res_pts->Delete();
     // create the cells for the refined topology
     res_ds->Allocate(neles);
-
     pt_idx=0;
     for (int i = 0; i <  mesh->GetNE(); i++)
     {
         int geom       = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
         refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
-
         Array<int> &rg_idxs = refined_geo->RefGeoms;
-
         vtkCell *ele_cell = NULL;
         // rg_idxs contains all of the verts for the refined elements
         for (int j = 0; j < rg_idxs.Size(); )
@@ -1738,16 +1625,133 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
             // the are ele_nverts for each refined element
             for (int k = 0; k < ele_nverts; k++, j++)
                 ele_cell->GetPointIds()->SetId(k,pt_idx + rg_idxs[j]);
-
             res_ds->InsertNextCell(ele_cell->GetCellType(),
                                    ele_cell->GetPointIds());
             ele_cell->Delete();
         }
-
         pt_idx += refined_geo->RefPts.GetNPoints();
-   }
+    }
 
-   return res_ds;
+    return res_ds;
+}
+
+// ****************************************************************************
+//  Method: RefineMeshToVTK
+//
+//  Purpose:
+//    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
+//
+//  Arguments:
+//    mesh:      string with desired mesh name
+//    lod:       number of refinement steps
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014
+//
+// Notes: Adapted from avtMFEMFileFormat and MFEM examples.
+//
+//  Modifications:
+//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
+//    Casting geom to Geometry::Type where appropariate. This is required
+//    with the mfem upgrade to 4.0.
+// 
+//    Justin Privitera, TODO
+//    TODO
+//
+// ****************************************************************************
+vtkDataSet *
+avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
+                                               int lod,
+                                               bool new_refine)
+{
+    if (!new_refine)
+    {
+        return LegacyRefineMeshToVTK(mesh, lod);
+    }
+
+    // TODO want to go directly from mfem to vtk
+    // so create vtk like how the conduit node is being created
+    
+    // TODO deprecate this
+    conduit::Node &n_dset = new Node();
+
+    // get the high order data
+    const mfem::FiniteElementSpace *fes_space = mesh->GetNodalFESpace();
+    const mfem::FiniteElementCollection *fes_col = fes_space->FEColl();
+
+    // refine the mesh and convert to blueprint
+    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, mfem::BasisType::GaussLobatto);
+    // TODO need to do my own version
+    MeshToBlueprintMesh(lo_mesh, n_dset);
+
+    // TODO tackle later once mesh stuff is done
+
+    // int conn_size = n_dset["topologies/main/elements/connectivity"].dtype().number_of_elements();
+    // conduit::Node &n_fields = n_dset["fields"];
+    // // Q? again, how to get this?
+    // auto field_map = ho_domains->m_data_sets[i]->get_field_map();
+
+    // for(auto it = field_map.begin(); it != field_map.end(); ++ it)
+    // {
+    //     mfem::GridFunction *ho_gf = it->second;
+    //     std::string basis(ho_gf->FESpace()->FEColl()->Name());
+    //     // we only have L2 or H2 at this point
+    //     bool node_centered = basis.find("H1_") != std::string::npos;
+
+    //     mfem::FiniteElementSpace *ho_fes = ho_gf->FESpace();
+    //     if(ho_fes == nullptr)
+    //     {
+    //         // Q? we want this to be a visit error right?
+    //         VISIT_ERROR("Linearize: high order gf finite element space is null")
+    //     }
+    //     // create the low order grid function
+    //     mfem::FiniteElementCollection *lo_col = nullptr;
+    //     if(node_centered)
+    //     {
+    //         lo_col = new mfem::LinearFECollection;
+    //     }
+    //     else
+    //     {
+    //         int  p = 0; // single scalar
+    //         lo_col = new mfem::L2_FECollection(p, ho_mesh->Dimension(), 1);
+    //     }
+    //     mfem::FiniteElementSpace *lo_fes = new mfem::FiniteElementSpace(lo_mesh, lo_col, ho_fes->GetVDim());
+    //     mfem::GridFunction *lo_gf = new mfem::GridFunction(lo_fes);
+    //     // transform the higher order function to a low order function somehow
+    //     mfem::OperatorHandle hi_to_lo;
+    //     lo_fes->GetTransferOperator(*ho_fes, hi_to_lo);
+    //     hi_to_lo.Ptr()->Mult(*ho_gf, *lo_gf);
+    //     // extract field
+    //     conduit::Node &n_field = n_fields[it->first];
+    //     GridFunctionToBlueprintField(lo_gf, n_field);
+    //     // all supported grid functions coming out of mfem end up being associated with vertices
+    //     if(node_centered)
+    //     {
+    //         n_field["association"] = "vertex";
+    //     }
+    //     else
+    //     {
+    //         n_field["association"] = "element";
+    //     }
+
+    //     delete lo_col;
+    //     delete lo_fes;
+    //     delete lo_gf;
+    // }
+
+    // conduit::Node info;
+    // bool success = conduit::blueprint::verify("mesh",n_dset,info);
+    // if(!success)
+    // {
+    //     info.print();
+    //     // Q? same question here
+    //     VISIT_ERROR("Linearize: failed to build a blueprint conforming data set from mfem")
+    // }
+    // delete lo_mesh;
+
+    return TODO;
+    
+    
 }
 
 // ****************************************************************************
