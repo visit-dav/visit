@@ -1546,6 +1546,9 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
 
+// Q? should these helpers be class methods?
+// Q? do they need descriptions?
+
 vtkDataSet *
 LegacyRefineMeshToVTK(mfem::Mesh *mesh,
                       int lod)
@@ -1635,6 +1638,193 @@ LegacyRefineMeshToVTK(mfem::Mesh *mesh,
     return res_ds;
 }
 
+//---------------------------------------------------------------------------//
+
+void
+LowOrderMeshToVTK(mfem::Mesh *mesh,
+                  Node &n_mesh,
+                  const std::string &coordset_name,
+                  const std::string &main_topology_name,
+                  const std::string &boundary_topology_name)
+{
+   int dim = mesh->SpaceDimension();
+
+   if(dim < 1 || dim > 3)
+   {
+     ASCENT_ERROR("invalid mesh dimension "<<dim);;
+   }
+
+   ////////////////////////////////////////////
+   // Setup main coordset
+   ////////////////////////////////////////////
+
+   // Assumes  mfem::Vertex has the layout of a double array.
+
+   // this logic assumes an mfem vertex is always 3 doubles wide
+   int stride = sizeof(mfem::Vertex);
+   int num_vertices = mesh->GetNV();
+
+   if(stride != 3 * sizeof(double) )
+   {
+     ASCENT_ERROR("Unexpected stride for mfem vertex");
+   }
+
+   Node &n_mesh_coords = n_mesh["coordsets"][coordset_name];
+   n_mesh_coords["type"] =  "explicit";
+
+
+   double *coords_ptr = mesh->GetVertex(0);
+
+   n_mesh_coords["values/x"].set(coords_ptr,
+                                 num_vertices,
+                                 0,
+                                 stride);
+
+   if (dim >= 2)
+   {
+      n_mesh_coords["values/y"].set(coords_ptr,
+                                    num_vertices,
+                                    sizeof(double),
+                                    stride);
+   }
+   if (dim >= 3)
+   {
+      n_mesh_coords["values/z"].set(coords_ptr,
+                                    num_vertices,
+                                    sizeof(double) * 2,
+                                    stride);
+   }
+
+   ////////////////////////////////////////////
+   // Setup main topo
+   ////////////////////////////////////////////
+
+   Node &n_topo = n_mesh["topologies"][main_topology_name];
+
+   n_topo["type"]  = "unstructured";
+   n_topo["coordset"] = coordset_name;
+
+   mfem::Element::Type ele_type = static_cast<mfem::Element::Type>(mesh->GetElement(
+                                                          0)->GetType());
+
+   std::string ele_shape = ElementTypeToShapeName(ele_type);
+
+   n_topo["elements/shape"] = ele_shape;
+
+   mfem::GridFunction *gf_mesh_nodes = mesh->GetNodes();
+
+   if (gf_mesh_nodes != NULL)
+   {
+      n_topo["grid_function"] =  "mesh_nodes";
+   }
+
+   // connectivity
+   // TODO: generic case, i don't think we can zero-copy (mfem allocs
+   // an array per element) so we alloc our own contig array and
+   // copy out. Some other cases (sidre) may actually have contig
+   // allocation but I am  not sure how to detect this case from mfem
+   int num_ele = mesh->GetNE();
+   int geom = mesh->GetElementBaseGeometry(0);
+   int idxs_per_ele = mfem::Geometry::NumVerts[geom];
+   int num_conn_idxs =  num_ele * idxs_per_ele;
+
+   n_topo["elements/connectivity"].set(DataType::c_int(num_conn_idxs));
+
+   int *conn_ptr = n_topo["elements/connectivity"].value();
+
+   for (int i=0; i < num_ele; i++)
+   {
+      const mfem::Element *ele = mesh->GetElement(i);
+      const int *ele_verts = ele->GetVertices();
+
+      memcpy(conn_ptr, ele_verts, idxs_per_ele * sizeof(int));
+
+      conn_ptr += idxs_per_ele;
+   }
+
+   if (gf_mesh_nodes != NULL)
+   {
+      GridFunctionToBlueprintField(gf_mesh_nodes,
+                                   n_mesh["fields/mesh_nodes"],
+                                   main_topology_name);
+      n_mesh["fields/mesh_nodes/association"] = "vertex";
+   }
+
+   ////////////////////////////////////////////
+   // Setup mesh attribute
+   ////////////////////////////////////////////
+
+   Node &n_mesh_att = n_mesh["fields/element_attribute"];
+
+   n_mesh_att["association"] = "element";
+   n_mesh_att["topology"] = main_topology_name;
+   n_mesh_att["values"].set(DataType::c_int(num_ele));
+
+   int_array att_vals = n_mesh_att["values"].value();
+   for (int i = 0; i < num_ele; i++)
+   {
+      att_vals[i] = mesh->GetAttribute(i);
+   }
+
+   ////////////////////////////////////////////
+   // Setup bndry topo "boundary"
+   ////////////////////////////////////////////
+
+   // guard vs if we have boundary elements
+   if (mesh->GetNBE() > 0)
+   {
+      n_topo["boundary_topology"] = boundary_topology_name;
+
+      Node &n_bndry_topo = n_mesh["topologies"][boundary_topology_name];
+
+      n_bndry_topo["type"]     = "unstructured";
+      n_bndry_topo["coordset"] = coordset_name;
+
+      mfem::Element::Type bndry_ele_type = static_cast<mfem::Element::Type>(mesh->GetBdrElement(
+                                                                   0)->GetType());
+
+      std::string bndry_ele_shape = ElementTypeToShapeName(bndry_ele_type);
+
+      n_bndry_topo["elements/shape"] = bndry_ele_shape;
+
+
+      int num_bndry_ele = mesh->GetNBE();
+      int bndry_geom    = mesh->GetBdrElementBaseGeometry(0);
+      int bndry_idxs_per_ele  = mfem::Geometry::NumVerts[bndry_geom];
+      int num_bndry_conn_idxs =  num_bndry_ele * bndry_idxs_per_ele;
+
+      n_bndry_topo["elements/connectivity"].set(DataType::c_int(num_bndry_conn_idxs));
+
+      int *bndry_conn_ptr = n_bndry_topo["elements/connectivity"].value();
+
+      for (int i=0; i < num_bndry_ele; i++)
+      {
+         const mfem::Element *bndry_ele = mesh->GetBdrElement(i);
+         const int *bndry_ele_verts = bndry_ele->GetVertices();
+
+         memcpy(bndry_conn_ptr, bndry_ele_verts, bndry_idxs_per_ele  * sizeof(int));
+
+         bndry_conn_ptr += bndry_idxs_per_ele;
+      }
+
+      ////////////////////////////////////////////
+      // Setup bndry mesh attribute
+      ////////////////////////////////////////////
+
+      Node &n_bndry_mesh_att = n_mesh["fields/boundary_attribute"];
+
+      n_bndry_mesh_att["association"] = "element";
+      n_bndry_mesh_att["topology"] = boundary_topology_name;
+      n_bndry_mesh_att["values"].set(DataType::c_int(num_bndry_ele));
+
+      int_array bndry_att_vals = n_bndry_mesh_att["values"].value();
+      for (int i = 0; i < num_bndry_ele; i++)
+      {
+         bndry_att_vals[i] = mesh->GetBdrAttribute(i);
+      }
+   }
+}
+
 // ****************************************************************************
 //  Method: RefineMeshToVTK
 //
@@ -1671,8 +1861,8 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
 
     // TODO want to go directly from mfem to vtk
     // so create vtk like how the conduit node is being created
+    // and deprecate n_dset
     
-    // TODO deprecate this
     conduit::Node &n_dset = new Node();
 
     // get the high order data
@@ -1682,9 +1872,9 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     // refine the mesh and convert to blueprint
     mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, mfem::BasisType::GaussLobatto);
     // TODO need to do my own version
-    MeshToBlueprintMesh(lo_mesh, n_dset);
+    LowOrderMeshToVTK(lo_mesh, n_dset);
 
-    // TODO tackle later once mesh stuff is done
+    // TODO field stuff: tackle later once mesh stuff is done
 
     // int conn_size = n_dset["topologies/main/elements/connectivity"].dtype().number_of_elements();
     // conduit::Node &n_fields = n_dset["fields"];
