@@ -456,6 +456,9 @@ CGetNumberOfOriginalZones(avtDataRepresentation &data, void *arg, bool &)
 //    Kathleen Biagas, Fri Aug 28 07:46:40 PDT 2020
 //    Use vtkGeometryFilter, which handles higher-order elements.
 //
+//    Kathleen Biagas, Wed Apr 13 16:25:44 PDT 2022
+//    Don't use vtkGeometryFilter if input has no cells.
+//
 // ****************************************************************************
 
 void
@@ -467,14 +470,15 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *dataAndKey
     }
 
     vtkDataSet *ds = data.GetDataVTK();
-    if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    if (ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID &&
+        ds->GetNumberOfCells() > 0)
     {
         vtkNew<vtkGeometryFilter> geoFilter;
         geoFilter->SetInputData(ds);
         geoFilter->Update();
         vtkPolyData *out_pd = geoFilter->GetOutput();
         out_pd->Register(NULL);
-        
+
         avtDataRepresentation new_data(out_pd, data.GetDomain(), data.GetLabel());
         data = new_data;
     }
