@@ -45,6 +45,9 @@ class avtMaterial;
 // 
 //      Justin Privitera, Mon Apr 11 18:20:19 PDT 2022
 //      Added "new_refine" as an arg to RefineMeshToVTK.
+// 
+//      Justin Privitera, Wed Apr 13 13:49:43 PDT 2022
+//      Added LegacyRefineMeshToVTK and LowOrderMeshToVTK to MFEM class.
 //
 //-----------------------------------------------------------------------------
 class avtBlueprintDataAdaptor
@@ -103,9 +106,17 @@ public:
     //-------------------------------------------------------------------------
     // mfem to vtk
     //-------------------------------------------------------------------------
+    static vtkDataSet   *LegacyRefineMeshToVTK(mfem::Mesh *mesh,
+                                               int lod);
+
+    static vtkDataSet   *LowOrderMeshToVTK(mfem::Mesh *mesh,
+                                           const std::string &coordset_name,
+                                           const std::string &main_topology_name,
+                                           const std::string &boundary_topology_name);
+
     static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
-                                             int lod,
-                                             bool new_refine);
+                                         int lod,
+                                         bool new_refine);
 
     static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                      mfem::GridFunction *gf,

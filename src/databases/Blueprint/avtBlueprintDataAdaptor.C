@@ -1545,12 +1545,11 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
 
-// Q? should these helpers be class methods? - YES
 // Q? do they need descriptions? - MIGHT AS WELL
 
 vtkDataSet *
-LegacyRefineMeshToVTK(mfem::Mesh *mesh,
-                      int lod)
+avtBlueprintDataAdaptor::MFEM::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
+                                                     int lod)
 {
     BP_PLUGIN_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
@@ -1639,11 +1638,11 @@ LegacyRefineMeshToVTK(mfem::Mesh *mesh,
 
 //---------------------------------------------------------------------------//
 vtkDataSet * // TODO add return
-LowOrderMeshToVTK(mfem::Mesh *mesh,
-                  Node &n_mesh, // TODO remove this
-                  const std::string &coordset_name,
-                  const std::string &main_topology_name,
-                  const std::string &boundary_topology_name)
+avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh,
+                                                 Node &n_mesh, // TODO remove this
+                                                 const std::string &coordset_name,
+                                                 const std::string &main_topology_name,
+                                                 const std::string &boundary_topology_name)
 {
     int dim = mesh->SpaceDimension();
 
