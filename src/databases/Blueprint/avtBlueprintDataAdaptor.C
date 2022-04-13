@@ -797,13 +797,12 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
         ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
         oca->Delete();
     }
-
-    points->Delete();
     
     //
     // Now, add explicit topology
     //
     vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
+    points->Delete();
     ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), ca);
     ca->Delete();
 
@@ -1546,8 +1545,8 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
 
-// Q? should these helpers be class methods?
-// Q? do they need descriptions?
+// Q? should these helpers be class methods? - YES
+// Q? do they need descriptions? - MIGHT AS WELL
 
 vtkDataSet *
 LegacyRefineMeshToVTK(mfem::Mesh *mesh,
@@ -1650,8 +1649,8 @@ LowOrderMeshToVTK(mfem::Mesh *mesh,
 
     if(dim < 1 || dim > 3)
     {
-        // Q? do we want these to be visit errors? is there something like bp plugin error?
-        VISIT_ERROR("invalid mesh dimension "<<dim);;
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "invalid mesh dimension "<<dim);
     }
 
     ////////////////////////////////////////////
@@ -1668,7 +1667,8 @@ LowOrderMeshToVTK(mfem::Mesh *mesh,
 
     if(stride != 3 * doublesize )
     {
-        VISIT_ERROR("Unexpected stride for mfem vertex");
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "Unexpected stride for mfem vertex");
     }
 
     double *coords_ptr = mesh->GetVertex(0);
@@ -1692,31 +1692,7 @@ LowOrderMeshToVTK(mfem::Mesh *mesh,
 
     points->Delete();
 
-
-   ///////////////////////////////
-
-   // Node &n_mesh_coords = n_mesh["coordsets"][coordset_name];
-   // n_mesh_coords["type"] =  "explicit";
-
-   // n_mesh_coords["values/x"].set(coords_ptr,
-   //                               num_vertices,
-   //                               0,
-   //                               stride);
-
-   // if (dim >= 2)
-   // {
-   //    n_mesh_coords["values/y"].set(coords_ptr,
-   //                                  num_vertices,
-   //                                  sizeof(double),
-   //                                  stride);
-   // }
-   // if (dim >= 3)
-   // {
-   //    n_mesh_coords["values/z"].set(coords_ptr,
-   //                                  num_vertices,
-   //                                  sizeof(double) * 2,
-   //                                  stride);
-   // }
+    /////////////////////////
 
    ////////////////////////////////////////////
    // Setup main topo
@@ -1895,7 +1871,7 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     // refine the mesh and convert to blueprint
     mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, mfem::BasisType::GaussLobatto);
     // TODO need to do my own version
-    LowOrderMeshToVTK(lo_mesh, n_dset);
+    return LowOrderMeshToVTK(lo_mesh, n_dset);
 
     // TODO field stuff: tackle later once mesh stuff is done
 
@@ -1960,11 +1936,7 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     //     // Q? same question here
     //     VISIT_ERROR("Linearize: failed to build a blueprint conforming data set from mfem")
     // }
-    // delete lo_mesh;
-
-    return TODO;
-    
-    
+    // delete lo_mesh;    
 }
 
 // ****************************************************************************
