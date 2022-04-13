@@ -1770,14 +1770,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh,
       conn_ptr += idxs_per_ele;
    }
 
-   if (gf_mesh_nodes != NULL)
-   {
-      GridFunctionToBlueprintField(gf_mesh_nodes,
-                                   n_mesh["fields/mesh_nodes"],
-                                   main_topology_name);
-      n_mesh["fields/mesh_nodes/association"] = "vertex";
-   }
-
     // inspired by the following function
     // UnstructuredTopologyToVTKUnstructuredGrid: bp -> VTK
     // makes a cell array with HomogeneousShapeTopologyToVTKCellArray handing it the bp topo
@@ -1795,7 +1787,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh,
 
     int ctype = ElementShapeNameToVTKCellType(ele_shape);
     int csize = VTKCellTypeSize(ctype);
-    int ncells = num_conn_idxs / csize;
+    int ncells = num_conn_idxs / csize; // should be the same as num_ele
     ida->SetNumberOfTuples(ncells * (csize + 1));
 
            // Extract connectivity as int array, using 'to_int_array' if needed.
@@ -1815,91 +1807,9 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh,
 
     ca->SetCells(ncells, ida);
     ida->Delete();
-
-    // at this point ca is all done
-
-   /////////////////////
-
-    // UnstructuredTopologyToVTKUnstructuredGrid continued
-
     ugrid->SetCells(ctype, ca);
     ca->Delete();
-
-    ///////////////////////////////////
-
-   ////////////////////////////////////////////
-   // Setup mesh attribute
-   ////////////////////////////////////////////
-
-   Node &n_mesh_att = n_mesh["fields/element_attribute"];
-
-   n_mesh_att["association"] = "element";
-   n_mesh_att["topology"] = main_topology_name;
-   n_mesh_att["values"].set(DataType::c_int(num_ele));
-
-   int_array att_vals = n_mesh_att["values"].value();
-   for (int i = 0; i < num_ele; i++)
-   {
-      att_vals[i] = mesh->GetAttribute(i);
-   }
-
-   ////////////////////////////////////////////
-   // Setup bndry topo "boundary"
-   ////////////////////////////////////////////
-
-   // guard vs if we have boundary elements
-   if (mesh->GetNBE() > 0)
-   {
-      n_topo["boundary_topology"] = boundary_topology_name;
-
-      Node &n_bndry_topo = n_mesh["topologies"][boundary_topology_name];
-
-      n_bndry_topo["type"]     = "unstructured";
-      n_bndry_topo["coordset"] = coordset_name;
-
-      mfem::Element::Type bndry_ele_type = static_cast<mfem::Element::Type>(mesh->GetBdrElement(
-                                                                   0)->GetType());
-
-      std::string bndry_ele_shape = ElementTypeToShapeName(bndry_ele_type);
-
-      n_bndry_topo["elements/shape"] = bndry_ele_shape;
-
-
-      int num_bndry_ele = mesh->GetNBE();
-      int bndry_geom    = mesh->GetBdrElementBaseGeometry(0);
-      int bndry_idxs_per_ele  = mfem::Geometry::NumVerts[bndry_geom];
-      int num_bndry_conn_idxs =  num_bndry_ele * bndry_idxs_per_ele;
-
-      n_bndry_topo["elements/connectivity"].set(DataType::c_int(num_bndry_conn_idxs));
-
-      int *bndry_conn_ptr = n_bndry_topo["elements/connectivity"].value();
-
-      for (int i=0; i < num_bndry_ele; i++)
-      {
-         const mfem::Element *bndry_ele = mesh->GetBdrElement(i);
-         const int *bndry_ele_verts = bndry_ele->GetVertices();
-
-         memcpy(bndry_conn_ptr, bndry_ele_verts, bndry_idxs_per_ele  * sizeof(int));
-
-         bndry_conn_ptr += bndry_idxs_per_ele;
-      }
-
-      ////////////////////////////////////////////
-      // Setup bndry mesh attribute
-      ////////////////////////////////////////////
-
-      Node &n_bndry_mesh_att = n_mesh["fields/boundary_attribute"];
-
-      n_bndry_mesh_att["association"] = "element";
-      n_bndry_mesh_att["topology"] = boundary_topology_name;
-      n_bndry_mesh_att["values"].set(DataType::c_int(num_bndry_ele));
-
-      int_array bndry_att_vals = n_bndry_mesh_att["values"].value();
-      for (int i = 0; i < num_bndry_ele; i++)
-      {
-         bndry_att_vals[i] = mesh->GetBdrAttribute(i);
-      }
-   }
+    return ugrid;
 }
 
 // ****************************************************************************
