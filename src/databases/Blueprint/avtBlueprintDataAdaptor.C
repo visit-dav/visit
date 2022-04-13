@@ -1545,7 +1545,30 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
 
-// Q? do they need descriptions? - MIGHT AS WELL
+// ****************************************************************************
+//  Method: LegacyRefineMeshToVTK
+//
+//  Purpose:
+//    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
+//
+//  Arguments:
+//    mesh:      string with desired mesh name
+//    lod:       number of refinement steps
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014
+//
+// Notes: Adapted from avtMFEMFileFormat and MFEM examples.
+//
+//  Modifications:
+//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
+//    Casting geom to Geometry::Type where appropariate. This is required
+//    with the mfem upgrade to 4.0.
+// 
+//    Justin Privitera, Wed Apr 13 13:53:06 PDT 2022
+//    Renamed to LegacyRefineMeshToVTK from RefineMeshToVTK.
+//
+// ****************************************************************************
 
 vtkDataSet *
 avtBlueprintDataAdaptor::MFEM::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
@@ -1636,7 +1659,19 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
     return res_ds;
 }
 
-//---------------------------------------------------------------------------//
+// ****************************************************************************
+//  Method: LowOrderMeshToVTK
+//
+//  Purpose:
+//    TODO
+//
+//  Arguments:
+//    TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   Wed Apr 13 13:53:06 PDT 2022
+//
+// ****************************************************************************
 vtkDataSet * // TODO add return
 avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh,
                                                  Node &n_mesh, // TODO remove this
@@ -1874,21 +1909,15 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh,
 //    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
 //
 //  Arguments:
-//    mesh:      string with desired mesh name
-//    lod:       number of refinement steps
+//    mesh:        string with desired mesh name
+//    lod:         number of refinement steps
+//    new_refine:  switch for using the new LOR or legacy LOR
 //
-//  Programmer: Cyrus Harrison
-//  Creation:   Sat Jul  5 11:38:31 PDT 2014
+//  Programmer: Justin Privitera
+//  Creation:   Wed Apr 13 13:53:06 PDT 2022
 //
-// Notes: Adapted from avtMFEMFileFormat and MFEM examples.
-//
-//  Modifications:
-//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
-//    Casting geom to Geometry::Type where appropariate. This is required
-//    with the mfem upgrade to 4.0.
-// 
-//    Justin Privitera, TODO
-//    TODO
+// Notes: See LegacyRefineMeshToVTK for the function originally 
+//   with this name.
 //
 // ****************************************************************************
 vtkDataSet *
