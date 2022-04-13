@@ -1717,11 +1717,6 @@ LowOrderMeshToVTK(mfem::Mesh *mesh,
       n_topo["grid_function"] =  "mesh_nodes";
    }
 
-   // connectivity
-   // TODO: generic case, i don't think we can zero-copy (mfem allocs
-   // an array per element) so we alloc our own contig array and
-   // copy out. Some other cases (sidre) may actually have contig
-   // allocation but I am  not sure how to detect this case from mfem
    int num_ele = mesh->GetNE();
    int geom = mesh->GetElementBaseGeometry(0);
    int idxs_per_ele = mfem::Geometry::NumVerts[geom];
@@ -1731,7 +1726,7 @@ LowOrderMeshToVTK(mfem::Mesh *mesh,
 
    int *conn_ptr = n_topo["elements/connectivity"].value();
 
-   for (int i=0; i < num_ele; i++)
+   for (int i = 0; i < num_ele; i ++)
    {
       const mfem::Element *ele = mesh->GetElement(i);
       const int *ele_verts = ele->GetVertices();
@@ -1748,6 +1743,55 @@ LowOrderMeshToVTK(mfem::Mesh *mesh,
                                    main_topology_name);
       n_mesh["fields/mesh_nodes/association"] = "vertex";
    }
+
+    // inspired by the following function
+    // UnstructuredTopologyToVTKUnstructuredGrid: bp -> VTK
+    // makes a cell array with HomogeneousShapeTopologyToVTKCellArray handing it the bp topo
+    // sets the cells of the ugrid with the cell type and cell array
+
+   ///////////////////////////////
+
+    // TODO delete this
+    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
+    // HomogeneousShapeTopologyToVTKCellArray
+
+
+    vtkCellArray *ca = vtkCellArray::New();
+    vtkIdTypeArray *ida = vtkIdTypeArray::New();
+
+    int ctype = ElementShapeNameToVTKCellType(ele_shape);
+    int csize = VTKCellTypeSize(ctype);
+    int ncells = num_conn_idxs / csize;
+    ida->SetNumberOfTuples(ncells * (csize + 1));
+
+           // Extract connectivity as int array, using 'to_int_array' if needed.
+           int_array topo_conn;
+
+            topo_conn = n_topo["elements/connectivity"].as_int_array();
+
+           for (int i = 0; i < ncells; i ++)
+           {
+               ida->SetComponent((csize + 1) * i, 0, csize);
+               for (int j = 0; j < csize; j ++)
+               {
+                   ida->SetComponent((csize + 1) * i + j + 1, 0, topo_conn[i * csize + j]);
+               }
+           }
+
+
+    ca->SetCells(ncells, ida);
+    ida->Delete();
+
+    // at this point ca is all done
+
+   /////////////////////
+
+    // UnstructuredTopologyToVTKUnstructuredGrid continued
+
+    ugrid->SetCells(ctype, ca);
+    ca->Delete();
+
+    ///////////////////////////////////
 
    ////////////////////////////////////////////
    // Setup mesh attribute
