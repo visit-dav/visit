@@ -23,6 +23,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Fixed a bug with expression insert-function for constant expressions, so usage is clearer. </li>
   <li>Ensure variable names from PlainText reader have no leading or trailing whitespace.</li>
+  <li>Fixed a time slider widget window resize bug so that now the main gui window width is not locked and can be shrunk and expanded.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -37,6 +38,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added implicit points topology support to the Blueprint Plugin.</li>
   <li>Added the ability for users to specify the output precision when exporting Xmdv (.okc) files.</li>
   <li>Added polyhedral mesh support to the Blueprint Plugin. Now, if you ask visit to read a polyhedral mesh, it will automatically convert the mesh to a tetrahedral mesh, as well as convert the fields as needed. It will also keep track of original element ids so that you don't see the new lines from the resulting tetrahedra.</li>
+  <li>Added new <i>ghost_zoneid</i> function to the <i>Mesh</i> submenu in the Expressions window.</li>
 </ul>
 
 <a name="Dev_changes"></a>
