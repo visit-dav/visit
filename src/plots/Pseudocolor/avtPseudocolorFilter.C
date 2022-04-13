@@ -7,7 +7,6 @@
 // ************************************************************************* //
 
 #include <avtPseudocolorFilter.h>
-#include <avtDatasetExaminer.h>
 
 #include <string>
 
@@ -93,13 +92,15 @@ avtPseudocolorFilter::SetPlotAtts(const PseudocolorAttributes *atts)
 
 
 // ****************************************************************************
-//  Method: avtPseudocolorFilter::Execute
+//  Method: avtPseudocolorFilter::ExecuteData
 //
 //  Purpose:
-//      Calculates actual topological dimensions of the input.
+//      Returns input.
 //
-//  Notes:
-//      Input data tree is passed unchanged to the output.
+//  Arguments:
+//      inDR      The input data representation.
+//
+//  Returns:      The output data representation.
 //
 //  Programmer:   Kathleen Bonnell
 //  Creation:     October 29, 2004
@@ -108,32 +109,12 @@ avtPseudocolorFilter::SetPlotAtts(const PseudocolorAttributes *atts)
 //    Eric Brugger, Tue Aug 19 11:11:13 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
-//    Kathleen Biagas, Tue April 5, 2022
-//    Changed inheritance, so use Execute method instead of ExecuteData, for
-//    access to the entire input tree and ease of calculation of the actual
-//    topological dimension, which is important for the Pseudocolor plot.
-//
 // ****************************************************************************
 
-void
-avtPseudocolorFilter::Execute()
+avtDataRepresentation *
+avtPseudocolorFilter::ExecuteData(avtDataRepresentation *inDR)
 {
-    //
-    // Get the input data tree
-    //
-    avtDataTree_p tree = GetInputDataTree();
-
-    //
-    // Calculate the actual topological dimension
-    //
-    avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
-    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    int reportedDim = inAtts.GetTopologicalDimension();
-    int actualDim = avtDatasetExaminer::GetTopologicalDim(tree, reportedDim);
-    outAtts.SetTopologicalDimension(actualDim); 
-
-    // Set the output from the input
-    SetOutputDataTree(tree);
+    return inDR;
 }
 
 
@@ -155,19 +136,19 @@ avtPseudocolorFilter::Execute()
 //    or disallows transparency, we need to toggle this flag so that
 //    processor boundaries are not rendered.
 //
-//    Kathleen Biagas, Tue Apr 5, 2022
-//    Since the Execute method retrieves the actual topological dim from the
-//    input data tree and sets it in outAtts, use that for the test instead
-//    of what is stored in the inAtts.
-//
 // ****************************************************************************
 
 void
 avtPseudocolorFilter::UpdateDataObjectInfo(void)
 {
+    avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
 
-    if( outAtts.GetTopologicalDimension() == 0 )
+    int topoDim = inAtts.GetTopologicalDimension();
+
+    outAtts.SetTopologicalDimension(topoDim);
+
+    if( topoDim == 0 )
     {
       outAtts.SetKeepNodeZoneArrays(keepNodeZone);
 

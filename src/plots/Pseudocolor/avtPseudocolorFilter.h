@@ -9,7 +9,7 @@
 #ifndef AVT_PSEUDOCOLOR_FILTER_H
 #define AVT_PSEUDOCOLOR_FILTER_H
 
-#include <avtDatasetToDatasetFilter.h>
+#include <avtDataTreeIterator.h>
 
 #include <PseudocolorAttributes.h>
 
@@ -38,27 +38,24 @@
 //    Alister Maguire, Tue Jul 16 14:12:20 PDT 2019
 //    Added mustRemoveFacesBeforeGhosts.
 //
-//    Kathleen Biagas, Tue Apr 5, 2022
-//    Changed inheritance to avtDatasetToDatasetFilter.
-//
 // ****************************************************************************
 
-class avtPseudocolorFilter : public avtDatasetToDatasetFilter
+class avtPseudocolorFilter : public avtDataTreeIterator
 {
   public:
                               avtPseudocolorFilter();
     virtual                  ~avtPseudocolorFilter();
 
-    virtual const char       *GetType(void) { return "avtPseudocolorFilter"; }
+    virtual const char       *GetType(void)   { return "avtPseudocolorFilter"; };
     virtual const char       *GetDescription(void)
-                                  { return "Preparing Pseudocolor pipeline"; }
+                                  { return "Preparing pipeline"; };
     void                      SetPlotAtts(const PseudocolorAttributes *);
 
   protected:
     bool                      keepNodeZone;
     bool                      mustRemoveFacesBeforeGhosts;
 
-    virtual void              Execute(void);
+    virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
     virtual void              UpdateDataObjectInfo(void);
     virtual avtContract_p
                               ModifyContract(avtContract_p);
