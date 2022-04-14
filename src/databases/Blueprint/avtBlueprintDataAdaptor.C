@@ -1672,7 +1672,7 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
 //  Creation:   Wed Apr 13 13:53:06 PDT 2022
 //
 // ****************************************************************************
-vtkDataSet * // TODO add return
+vtkDataSet *
 avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh,
                                                  Node &n_mesh, // TODO remove this
                                                  const std::string &coordset_name,
@@ -1726,84 +1726,59 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh,
 
     points->Delete();
 
-    /////////////////////////
-
    ////////////////////////////////////////////
    // Setup main topo
    ////////////////////////////////////////////
 
-   Node &n_topo = n_mesh["topologies"][main_topology_name];
+    // Q? do I need to put this name in VTK?
+    // Node &n_topo = n_mesh["topologies"][main_topology_name];
 
-   n_topo["type"]  = "unstructured";
-   n_topo["coordset"] = coordset_name;
+    // Q? again, do I need this name?
+    // n_topo["coordset"] = coordset_name;
 
-   mfem::Element::Type ele_type = static_cast<mfem::Element::Type>(mesh->GetElement(
-                                                          0)->GetType());
+    mfem::Element::Type ele_type = static_cast<mfem::Element::Type>(
+        mesh->GetElement(0)->GetType());
 
-   std::string ele_shape = ElementTypeToShapeName(ele_type);
+    std::string ele_shape = ElementTypeToShapeName(ele_type);
 
-   n_topo["elements/shape"] = ele_shape;
-
-   mfem::GridFunction *gf_mesh_nodes = mesh->GetNodes();
-
-   if (gf_mesh_nodes != NULL)
-   {
-      n_topo["grid_function"] =  "mesh_nodes";
-   }
-
-   int num_ele = mesh->GetNE();
-   int geom = mesh->GetElementBaseGeometry(0);
-   int idxs_per_ele = mfem::Geometry::NumVerts[geom];
-   int num_conn_idxs =  num_ele * idxs_per_ele;
-
-   n_topo["elements/connectivity"].set(DataType::c_int(num_conn_idxs));
-
-   int *conn_ptr = n_topo["elements/connectivity"].value();
-
-   for (int i = 0; i < num_ele; i ++)
-   {
-      const mfem::Element *ele = mesh->GetElement(i);
-      const int *ele_verts = ele->GetVertices();
-
-      memcpy(conn_ptr, ele_verts, idxs_per_ele * sizeof(int));
-
-      conn_ptr += idxs_per_ele;
-   }
-
-    // inspired by the following function
-    // UnstructuredTopologyToVTKUnstructuredGrid: bp -> VTK
-    // makes a cell array with HomogeneousShapeTopologyToVTKCellArray handing it the bp topo
-    // sets the cells of the ugrid with the cell type and cell array
-
-   ///////////////////////////////
-
-    // TODO delete this
-    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
-    // HomogeneousShapeTopologyToVTKCellArray
-
+    // Q? do I need this stuff?
+    // mfem::GridFunction *gf_mesh_nodes = mesh->GetNodes();
+    // if (gf_mesh_nodes != NULL)
+    // {
+    //     n_topo["grid_function"] =  "mesh_nodes";
+    // }
 
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
+
+    int num_ele = mesh->GetNE();
+    int geom = mesh->GetElementBaseGeometry(0);
+    int idxs_per_ele = mfem::Geometry::NumVerts[geom];
+    int num_conn_idxs =  num_ele * idxs_per_ele;
 
     int ctype = ElementShapeNameToVTKCellType(ele_shape);
     int csize = VTKCellTypeSize(ctype);
     int ncells = num_conn_idxs / csize; // should be the same as num_ele
     ida->SetNumberOfTuples(ncells * (csize + 1));
 
-           // Extract connectivity as int array, using 'to_int_array' if needed.
-           int_array topo_conn;
+    // check equality
+    if (ncells != num_ele || idxs_per_ele != csize)
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "Expected equality of MFEM and VTK layout variables.");
+    }
 
-            topo_conn = n_topo["elements/connectivity"].as_int_array();
+    for (int i = 0; i < ncells; i ++)
+    {
+        const mfem::Element *ele = mesh->GetElement(i);
+        const int *ele_verts = ele->GetVertices();
 
-           for (int i = 0; i < ncells; i ++)
-           {
-               ida->SetComponent((csize + 1) * i, 0, csize);
-               for (int j = 0; j < csize; j ++)
-               {
-                   ida->SetComponent((csize + 1) * i + j + 1, 0, topo_conn[i * csize + j]);
-               }
-           }
-
+        ida->SetComponent((csize + 1) * i, 0, csize);
+        for (int j = 0; j < csize; j ++)
+        {
+            ida->SetComponent((csize + 1) * i + j + 1, 0, ele_verts[j]);
+        }
+    }
 
     ca->SetCells(ncells, ida);
     ida->Delete();
