@@ -186,16 +186,16 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_tree_cache(NULL),
       m_selected_lod(0)
 {
-    // TODO verify this works correctly
-    std::cout << opts->GetEnumStrings("MFEM LOR Setting") << std::endl;
-    if (opts->GetEnumStrings("MFEM LOR Setting") == "Legacy MFEM LOR")
-    {
+    // TODO verify this works correctly - fix it!
+    // std::cout << opts->GetEnumStrings("MFEM LOR Setting") << std::endl;
+    // if (opts->GetEnumStrings("MFEM LOR Setting") == "Legacy MFEM LOR")
+    // {
         m_new_refine = false;
-    }
-    else
-    {
+    // }
+    // else
+    // {
         m_new_refine = true;
-    }
+    // }
 
     m_tree_cache = new avtBlueprintTreeCache();
 

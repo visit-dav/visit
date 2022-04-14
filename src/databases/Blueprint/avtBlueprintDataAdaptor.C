@@ -1673,11 +1673,7 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
 //
 // ****************************************************************************
 vtkDataSet *
-avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh,
-                                                 Node &n_mesh, // TODO remove this
-                                                 const std::string &coordset_name,
-                                                 const std::string &main_topology_name,
-                                                 const std::string &boundary_topology_name)
+avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
 {
     int dim = mesh->SpaceDimension();
 
@@ -1730,12 +1726,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh,
    // Setup main topo
    ////////////////////////////////////////////
 
-    // Q? do I need to put this name in VTK?
-    // Node &n_topo = n_mesh["topologies"][main_topology_name];
-
-    // Q? again, do I need this name?
-    // n_topo["coordset"] = coordset_name;
-
     mfem::Element::Type ele_type = static_cast<mfem::Element::Type>(
         mesh->GetElement(0)->GetType());
 
@@ -1758,10 +1748,10 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh,
 
     int ctype = ElementShapeNameToVTKCellType(ele_shape);
     int csize = VTKCellTypeSize(ctype);
-    int ncells = num_conn_idxs / csize; // should be the same as num_ele
+    int ncells = num_conn_idxs / csize;
     ida->SetNumberOfTuples(ncells * (csize + 1));
 
-    // check equality
+    // check equality - these numbers really should be the same
     if (ncells != num_ele || idxs_per_ele != csize)
     {
         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
@@ -1814,13 +1804,7 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     {
         return LegacyRefineMeshToVTK(mesh, lod);
     }
-
-    // TODO want to go directly from mfem to vtk
-    // so create vtk like how the conduit node is being created
-    // and deprecate n_dset
     
-    conduit::Node &n_dset = new Node();
-
     // get the high order data
     const mfem::FiniteElementSpace *fes_space = mesh->GetNodalFESpace();
     const mfem::FiniteElementCollection *fes_col = fes_space->FEColl();
@@ -1828,7 +1812,7 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     // refine the mesh and convert to blueprint
     mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, mfem::BasisType::GaussLobatto);
     // TODO need to do my own version
-    return LowOrderMeshToVTK(lo_mesh, n_dset);
+    return LowOrderMeshToVTK(lo_mesh);
 
     // TODO field stuff: tackle later once mesh stuff is done
 

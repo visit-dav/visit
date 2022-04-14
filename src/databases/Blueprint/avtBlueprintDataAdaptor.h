@@ -109,10 +109,7 @@ public:
     static vtkDataSet   *LegacyRefineMeshToVTK(mfem::Mesh *mesh,
                                                int lod);
 
-    static vtkDataSet   *LowOrderMeshToVTK(mfem::Mesh *mesh,
-                                           const std::string &coordset_name,
-                                           const std::string &main_topology_name,
-                                           const std::string &boundary_topology_name);
+    static vtkDataSet   *LowOrderMeshToVTK(mfem::Mesh *mesh);
 
     static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
                                          int lod,
