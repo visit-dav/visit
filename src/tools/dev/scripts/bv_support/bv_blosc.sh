@@ -20,14 +20,14 @@ function bv_blosc_disable
 # Where to get the module, the version, etc...
 function bv_blosc_info
 {
-    export BLOSC_VERSION=${BLOSC_VERSION:-"2.0.4"}
-    export BLOSC_FILE=${BLOSC_FILE:-"c-blosc2-${BLOSC_VERSION}.tar.gz"}
+    export BLOSC_VERSION=${BLOSC_VERSION:-"1.21.1"}
+    export BLOSC_FILE=${BLOSC_FILE:-"c-blosc-${BLOSC_VERSION}.tar.gz"}
     # the URL is commented out because the filename is different in the blosc release
-    # there, the filename is v2.0.4.tar.gz.
-    # export BLOSC_URL=${BLOSC_URL:-"https://github.com/Blosc/c-blosc2/archive/refs/tags"}
-    export BLOSC_BUILD_DIR=${BLOSC_BUILD_DIR:-"c-blosc2-${BLOSC_VERSION}"}
-    export BLOSC_MD5_CHECKSUM="d427fcf68543f971dd7dd22974a47c74"
-    export BLOSC_SHA256_CHECKSUM="90c78edcc262759dd16d243141513310624bb4fda3d98ac34dcfb78255e151c1"
+    # there, the filename is v1.21.1.tar.gz.
+    # export BLOSC_URL=${BLOSC_URL:-"https://github.com/Blosc/c-blosc/archive/refs/tags"}
+    export BLOSC_BUILD_DIR=${BLOSC_BUILD_DIR:-"c-blosc-${BLOSC_VERSION}"}
+    export BLOSC_MD5_CHECKSUM="134b55813b1dca57019d2a2dc1f7a923"
+    export BLOSC_SHA256_CHECKSUM="f387149eab24efa01c308e4cba0f59f64ccae57292ec9c794002232f7903b55b"
 }
 
 # Ensure the module has been downloaded and extracted properly. Set and check variables here..
@@ -38,7 +38,7 @@ function bv_blosc_ensure
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_BLOSC="no"
-            error "Unable to build CBlosc2.  ${BLOSC_FILE} not found."
+            error "Unable to build c-blosc.  ${BLOSC_FILE} not found."
         fi
     fi
 }
