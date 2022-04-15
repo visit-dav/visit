@@ -393,4 +393,23 @@ OpenDatabase(poly_3d_yaml_root)
 test_poly("blueprint_poly_3d_yaml_0_8_2")
 CloseDatabase(poly_3d_yaml_root)
 
+
+# for later when I add a test of MFEM LOR
+
+# readOptions=GetDefaultFileOpenOptions("Blueprint")
+# # probably just want one of these?
+# readOptions["Legacy LOR"] = 0
+# readOptions["New LOR"] = 1
+# SetDefaultFileOpenOptions("Blueprint", readOptions)
+
+# we want to test a picture of a wireframe
+# old LOR leaves a wireframe
+# new LOR should only have the outer edge
+# AddPlot("Subset", "mesh_main")
+# SubsetAtts = SubsetAttributes()
+# SubsetAtts.wireframe = 1
+# SetPlotOptions(SubsetAtts)
+# DrawPlots()
+
+
 Exit()

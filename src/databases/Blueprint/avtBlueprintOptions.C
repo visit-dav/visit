@@ -37,8 +37,9 @@ GetBlueprintReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     std::vector<std::string> mfem_lor_setting;
-    mfem_lor_setting.push_back("Legacy MFEM LOR");
-    mfem_lor_setting.push_back("New MFEM LOR");
+    mfem_lor_setting.push_back("Legacy LOR");
+    mfem_lor_setting.push_back("MFEM LOR");
+    rv->SetEnum("MFEM LOR Setting", 1);
     rv->SetEnumStrings("MFEM LOR Setting", mfem_lor_setting);
 
     return rv;

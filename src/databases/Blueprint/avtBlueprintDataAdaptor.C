@@ -1731,13 +1731,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
 
     std::string ele_shape = ElementTypeToShapeName(ele_type);
 
-    // Q? do I need this stuff?
-    // mfem::GridFunction *gf_mesh_nodes = mesh->GetNodes();
-    // if (gf_mesh_nodes != NULL)
-    // {
-    //     n_topo["grid_function"] =  "mesh_nodes";
-    // }
-
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
 
