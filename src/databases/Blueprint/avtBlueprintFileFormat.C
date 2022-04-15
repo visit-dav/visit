@@ -186,16 +186,25 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_tree_cache(NULL),
       m_selected_lod(0)
 {
-    // TODO verify this works correctly - fix it!
-    // std::cout << opts->GetEnumStrings("MFEM LOR Setting") << std::endl;
-    // if (opts->GetEnumStrings("MFEM LOR Setting") == "Legacy MFEM LOR")
-    // {
+    // TODO verify this works correctly
+    // TODO remove the couts
+    int legacy_mfem_lor = 0;
+    int new_mfem_lor = 1;
+    if (opts->GetEnum("MFEM LOR Setting") == legacy_mfem_lor)
+    {
+        std::cout << "Legacy MFEM LOR Chosen" << std::endl;
         m_new_refine = false;
-    // }
-    // else
-    // {
+    }
+    else if (opts->GetEnum("MFEM LOR Setting") == new_mfem_lor)
+    {
+        std::cout << "New MFEM LOR Chosen" << std::endl;
         m_new_refine = true;
-    // }
+    }
+    else
+    {
+        std::cout << "disaster :(" << std::endl;
+        m_new_refine = false;
+    }
 
     m_tree_cache = new avtBlueprintTreeCache();
 
