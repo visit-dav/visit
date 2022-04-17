@@ -1,0 +1,88 @@
+###############################################################################
+# Class: JobSubmitter_srun_KAUST
+#
+# Purpose:    Custom "srun" job submitter for KAUST
+#
+# Programmer: James Kress
+# Date:       Sun Apr 17 2:48:36 PDT 2022
+#
+# Modifications
+#
+###############################################################################
+
+class JobSubmitter_srun_KAUST(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_bsub_ORNL, self).__init__(launcher)
+
+    def CreateFilename(self):
+        tdate = time.asctime()[11:19]
+        tuser = self.launcher.username()
+        return os.path.join("/tmp", "visit.%s.%s" % (tuser, tdate))
+
+    def TFileSetup(self, tfile):
+        print >> sys.stderr, 'TFileSetup', tfile
+        super(JobSubmitter_srun_KAUST, self).TFileSetup(tfile)
+        return
+
+    def TFileLoadModules(self, tfile):
+        print >> sys.stderr,  'Loading modules for summit'
+        tfile.write("source /etc/profile.d/olcf-env.sh\n")
+        tfile.write("source /etc/profile.d/lsf.sh\n")
+        #tfile.write("echo \"Evaluating ORNL tfile before launching visit\"\n")
+        tfile.write("module load DefApps\n")
+        print >>sys.stderr, 'creating tfile!', tfile
+
+
+###############################################################################
+# Class: KAUSTLauncher
+#
+# Purpose:    Custom launcher for KAUST
+#
+# Programmer: James Kress
+# Date:       Sun Apr 17 2:48:36 PDT 2022
+#
+# Modifications:
+#
+###############################################################################
+
+class KAUSTLauncher(MainLauncher):
+    def __init__(self):
+        super(KAUSTLauncher, self).__init__()
+        self.ibex = -1
+        self.shaheen = -1
+
+    def IsRunningOnIbex(self):
+        if self.ibex == -1:
+           self.ibex = 0
+           if self.parallelArgs.parallel and \
+              self.sectorname().startswith("login-") and \
+              self.domainname() == "ibex.kaust.eud.sa":
+              self.ibex = 1
+        return self.ibex
+
+    def IsRunningOnShaheen(self):
+        if self.shaheen == -1:
+           self.shaheen = 0
+           if self.parallelArgs.parallel and \
+              self.sectorname().startswith("login") and \
+              self.domainname() == "summit.olcf.ornl.gov":
+              self.shaheen = 1
+        return self.shaheen
+
+    def PrivatePlugins(self):
+        return super(KAUSTLauncher, self).PrivatePlugins()
+
+    #
+    # Override the JobSubmitterFactory method so the custom job submitter can
+    # be returned.
+    #
+    def JobSubmitterFactory(self, launch):
+        #print 'JobSubmitterFactory: ', launch, self.sectorname(), self.domainname()
+        if launch[:4] == "srun":
+            if self.domainname() == "ibex.kaust.edu.sa":
+                return JobSubmitter_srun_KAUST(self)
+        return super(KAUSTLauncher, self).JobSubmitterFactory(launch)
+
+# Launcher creation function
+def createlauncher():
+    return KAUSTLauncher()
