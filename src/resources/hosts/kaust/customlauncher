@@ -64,8 +64,8 @@ class KAUSTLauncher(MainLauncher):
         if self.shaheen == -1:
            self.shaheen = 0
            if self.parallelArgs.parallel and \
-              self.sectorname().startswith("login") and \
-              self.domainname() == "summit.olcf.ornl.gov":
+              self.sectorname().startswith("cd") and \
+              self.domainname() == "hpc.kaust.edu.sa":
               self.shaheen = 1
         return self.shaheen
 
@@ -77,7 +77,7 @@ class KAUSTLauncher(MainLauncher):
     # be returned.
     #
     def JobSubmitterFactory(self, launch):
-        #print 'JobSubmitterFactory: ', launch, self.sectorname(), self.domainname()
+        print 'JobSubmitterFactory kaust: ', launch, self.sectorname(), self.domainname()
         if launch[:4] == "srun":
             if self.domainname() == "ibex.kaust.edu.sa":
                 return JobSubmitter_srun_KAUST(self)
