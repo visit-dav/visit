@@ -12,7 +12,7 @@
 
 class JobSubmitter_srun_KAUST(JobSubmitter):
     def __init__(self, launcher):
-        super(JobSubmitter_bsub_ORNL, self).__init__(launcher)
+        super(JobSubmitter_srun_KAUST, self).__init__(launcher)
 
     def CreateFilename(self):
         tdate = time.asctime()[11:19]
@@ -55,7 +55,7 @@ class KAUSTLauncher(MainLauncher):
         if self.ibex == -1:
            self.ibex = 0
            if self.parallelArgs.parallel and \
-              self.sectorname().startswith("login-") and \
+              self.sectorname().startswith("login") and \
               self.domainname() == "ibex.kaust.eud.sa":
               self.ibex = 1
         return self.ibex
