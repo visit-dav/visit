@@ -17,7 +17,7 @@ class JobSubmitter_srun_KAUST(JobSubmitter):
     def CreateFilename(self):
         tdate = time.asctime()[11:19]
         tuser = self.launcher.username()
-        return os.path.join("/tmp", "visit.%s.%s" % (tuser, tdate))
+        return os.path.join("/tmp", "visit.kaust.%s.%s" % (tuser, tdate))
 
     def TFileSetup(self, tfile):
         print >> sys.stderr, 'TFileSetup', tfile
