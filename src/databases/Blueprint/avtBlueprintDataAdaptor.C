@@ -1690,18 +1690,16 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     // Assumes  mfem::Vertex has the layout of a double array.
 
     // this logic assumes an mfem vertex is always 3 doubles wide
-    int stride = sizeof(mfem::Vertex);
+    size_t stride = sizeof(mfem::Vertex);
     int num_vertices = mesh->GetNV();
 
     size_t doublesize = sizeof(double);
 
-    if(stride != 3 * doublesize )
+    if (stride != 3 * doublesize)
     {
         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
                              "Unexpected stride for mfem vertex");
     }
-
-    double *coords_ptr = mesh->GetVertex(0);
 
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
@@ -1709,13 +1707,13 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     points->SetDataTypeToDouble();
     points->SetNumberOfPoints(num_vertices);
 
-    for (vtkIdType i = 0; i < num_vertices; i ++)
+    double *coords_ptr = mesh->GetVertex(0);
+
+    for (int i = 0; i < num_vertices; i ++)
     {
-        int i_x_stride = i * stride;
-        double x = *(coords_ptr + i_x_stride);
-        double y = dim >= 2 ? *(coords_ptr + i_x_stride + doublesize) : 0;
-        double z = dim >= 3 ? *(coords_ptr + i_x_stride + 2 * doublesize) : 0;
-        std::cout << "(x,y,z)=(" << x << "," << y << "," << z << ")" << std::endl;
+        double x = coords_ptr[i * 3];
+        double y = dim >= 2 ? coords_ptr[i * 3 + 1] : 0;
+        double z = dim >= 3 ? coords_ptr[i * 3 + 2] : 0;
         points->SetPoint(i, x, y, z);
     }
 
@@ -1805,7 +1803,6 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
 
     // refine the mesh and convert to blueprint
     mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, mfem::BasisType::GaussLobatto);
-    // TODO need to do my own version
     return LowOrderMeshToVTK(lo_mesh);
 
     // TODO field stuff: tackle later once mesh stuff is done

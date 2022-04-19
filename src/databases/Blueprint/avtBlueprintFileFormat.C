@@ -1955,7 +1955,7 @@ void *
 avtBlueprintFileFormat::GetAuxiliaryData(const char *var,
                                          int domain,
                                          const char *type,
-                                         void * /* args (unused) ,
+                                         void * /* args (unused) */,
                                          DestructorFunction &df)
 {
     void *rv = NULL;
