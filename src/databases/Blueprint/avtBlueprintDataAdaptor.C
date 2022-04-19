@@ -1715,6 +1715,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
         double x = *(coords_ptr + i_x_stride);
         double y = dim >= 2 ? *(coords_ptr + i_x_stride + doublesize) : 0;
         double z = dim >= 3 ? *(coords_ptr + i_x_stride + 2 * doublesize) : 0;
+        std::cout << "(x,y,z)=(" << x << "," << y << "," << z << ")" << std::endl;
         points->SetPoint(i, x, y, z);
     }
 
