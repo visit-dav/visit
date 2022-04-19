@@ -385,18 +385,12 @@ QvisFileOpenWindow::UpdateWindow(bool doAll)
 //
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
+// 
+//   Justin Privitera, Tue Apr 19 12:07:06 PDT 2022
+//   Sorted the filetype names alphabetically so the lower case filetypes are 
+//   not at the end of the list.
 //
 // ****************************************************************************
-
-bool whichstringfirst(const QString &a, const QString &b)
-{
-    std::cout << "\tstart of whichstringfirst" << std::endl;
-    bool result;
-    std::cout << "\t\tcomparing " << a.toLocal8Bit().data() << " to " << b.toLocal8Bit().data() << std::endl;
-    result = a.compare(b, Qt::CaseInsensitive);
-    std::cout << "\tend of whichstringfirst" << std::endl;
-    return result;
-}
 
 void
 QvisFileOpenWindow::UpdateFileFormatComboBox()
@@ -416,7 +410,7 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
     fileFormatComboBox->addItem(tr("Guess from file name/extension"));
     FileOpenOptions *opts = GetViewerState()->GetFileOpenOptions();
 
-    std::vector<QString> filetypes;
+    QStringList *filetypes = new QStringList();
     
     for (int i = 0 ; i < nTypes ; i++)
     {
@@ -424,30 +418,17 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
         {
             if (opts->GetTypeNames()[j] == plugins.GetTypes()[i] && opts->GetEnabled()[j] )
             {
-                filetypes.push_back(plugins.GetTypes()[i].c_str());
+                filetypes->push_back(plugins.GetTypes()[i].c_str());
                 break;
             }
         }
     }
 
-    // for (int i = 0; i < filetypes.size(); i ++)
-    // {
-    //     std::cout << filetypes[i].toLocal8Bit().data() << std::endl;
-    // }
+    filetypes->sort(Qt::CaseInsensitive);
 
-    // std::cout << "checkpoint 1" << std::endl;
-
-    // // sort the names
-    // std::sort(filetypes.begin(), 
-    //           filetypes.end(),
-    //           whichstringfirst);
-    //           // [](QString a, QString b) { return a.compare(b, Qt::CaseInsensitive); });
-
-    // std::cout << "checkpoint 2" << std::endl;
-
-    for (int i = 0; i < filetypes.size(); i ++)
+    for (int i = 0; i < filetypes->size(); i ++)
     {
-        fileFormatComboBox->addItem(filetypes[i]);
+        fileFormatComboBox->addItem((*filetypes)[i]);
     }
 
     if (!oldtype.isNull())
