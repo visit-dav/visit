@@ -430,20 +430,20 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
         }
     }
 
-    for (int i = 0; i < filetypes.size(); i ++)
-    {
-        std::cout << filetypes[i].toLocal8Bit().data() << std::endl;
-    }
+    // for (int i = 0; i < filetypes.size(); i ++)
+    // {
+    //     std::cout << filetypes[i].toLocal8Bit().data() << std::endl;
+    // }
 
-    std::cout << "checkpoint 1" << std::endl;
+    // std::cout << "checkpoint 1" << std::endl;
 
-    // sort the names
-    std::sort(filetypes.begin(), 
-              filetypes.end(),
-              whichstringfirst);
-              // [](QString a, QString b) { return a.compare(b, Qt::CaseInsensitive); });
+    // // sort the names
+    // std::sort(filetypes.begin(), 
+    //           filetypes.end(),
+    //           whichstringfirst);
+    //           // [](QString a, QString b) { return a.compare(b, Qt::CaseInsensitive); });
 
-    std::cout << "checkpoint 2" << std::endl;
+    // std::cout << "checkpoint 2" << std::endl;
 
     for (int i = 0; i < filetypes.size(); i ++)
     {
