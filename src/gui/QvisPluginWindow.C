@@ -471,6 +471,9 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 
             databaseItems.push_back(item);
             databaseIndexes.push_back(i);
+            // so it looks like I will want to sort these
+            // make a vector of pairs
+            // and sort based on the string living inside of `item`
         }
         databaseOptionsSetButton->setEnabled(false);
         dbAddToPreferedButton->setEnabled(false);
