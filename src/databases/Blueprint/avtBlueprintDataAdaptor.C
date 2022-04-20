@@ -1680,7 +1680,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     if(dim < 1 || dim > 3)
     {
         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                             "invalid mesh dimension "<<dim);
+                             "invalid mesh dimension " << dim);
     }
 
     ////////////////////////////////////////////
@@ -1801,7 +1801,7 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     const mfem::FiniteElementSpace *fes_space = mesh->GetNodalFESpace();
     const mfem::FiniteElementCollection *fes_col = fes_space->FEColl();
 
-    // refine the mesh and convert to blueprint
+    // refine the mesh and convert to vtk
     mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, mfem::BasisType::GaussLobatto);
     return LowOrderMeshToVTK(lo_mesh);
 
