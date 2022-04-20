@@ -177,6 +177,10 @@ def test_poly(tag_name):
     DeleteAllPlots()
 
 def test_mfem(tag_name, example_name, protocol):
+    readOptions=GetDefaultFileOpenOptions("Blueprint")
+    readOptions["MFEM LOR Setting"] = "Legacy LOR"
+    SetDefaultFileOpenOptions("Blueprint", readOptions)
+
     dbfile =mfem_test_file(example_name,protocol)
     OpenDatabase(dbfile)
     #
@@ -198,12 +202,14 @@ def test_mfem(tag_name, example_name, protocol):
 
     CloseDatabase(dbfile)
 
+    # reset read options to default
+    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    SetDefaultFileOpenOptions("Blueprint", readOptions)
+
 def test_mfem_lor():
     readOptions=GetDefaultFileOpenOptions("Blueprint")
-    readOptions["Legacy LOR"] = 0
-    readOptions["New LOR"] = 1
+    readOptions["MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
-    # Q? how do I unset the default file open options
 
     dbfile = mfem_test_file("star_q3", "hdf5")
     OpenDatabase(dbfile)
@@ -222,6 +228,10 @@ def test_mfem_lor():
     DeleteAllPlots()
 
     CloseDatabase(dbfile)
+
+    # reset default read options
+    readOptions["MFEM LOR Setting"] = "Legacy LOR"
+    SetDefaultFileOpenOptions("Blueprint", readOptions)
 
 def test_venn(tag_name, venn_db_file):
     TestSection("Blueprint Matset Example Tests: {0} ".format(tag_name))
