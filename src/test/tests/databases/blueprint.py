@@ -206,12 +206,12 @@ def test_mfem(tag_name, example_name, protocol):
     readOptions["MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
-def test_mfem_lor():
+def test_mfem_lor(tag_name, example_name, protocol):
     readOptions=GetDefaultFileOpenOptions("Blueprint")
     readOptions["MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
-    dbfile = mfem_test_file("star_q3", "hdf5")
+    dbfile = mfem_test_file(example_name,protocol)
     OpenDatabase(dbfile)
 
     # we want to test a picture of a wireframe
@@ -223,7 +223,7 @@ def test_mfem_lor():
     SetPlotOptions(SubsetAtts)
     DrawPlots()
 
-    Test("mfem_lor_star")
+    Test(tag_name + "_" +  example_name + "_" + protocol + "_lor")
 
     DeleteAllPlots()
 
@@ -231,6 +231,26 @@ def test_mfem_lor():
 
     # reset default read options
     readOptions["MFEM LOR Setting"] = "Legacy LOR"
+    SetDefaultFileOpenOptions("Blueprint", readOptions)
+    OpenDatabase(dbfile)
+
+    # we want to test a picture of a wireframe
+    # old LOR leaves a wireframe
+    # new LOR should only have the outer edge
+    AddPlot("Subset", "mesh_main")
+    SubsetAtts = SubsetAttributes()
+    SubsetAtts.wireframe = 1
+    SetPlotOptions(SubsetAtts)
+    DrawPlots()
+
+    Test(tag_name + "_" +  example_name + "_" + protocol + "_legacy_lor")
+
+    DeleteAllPlots()
+
+    CloseDatabase(dbfile)
+
+    # restore default
+    readOptions["MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
 def test_venn(tag_name, venn_db_file):
@@ -364,7 +384,9 @@ for example_name in mfem_ex9_examples:
         test_mfem("blueprint_mfem", example_name, protocol)
 
 TestSection("MFEM LOR Blueprint Tests")
-test_mfem_lor()
+for example_name in mfem_ex9_examples:
+    for protocol in mfem_ex9_protocols:
+        test_mfem_lor("blueprint_mfem", example_name, protocol)
 
 TestSection("Blueprint Expressions")
 OpenDatabase(braid_2d_json_root)
