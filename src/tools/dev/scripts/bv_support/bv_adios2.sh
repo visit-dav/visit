@@ -65,14 +65,13 @@ function bv_adios2_initialize_vars
 
 function bv_adios2_info
 {
-    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.5.0"}
+    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.7.1"}
     export ADIOS2_FILE=${ADIOS2_FILE:-"adios2-${ADIOS2_VERSION}.tar.gz"}
     export ADIOS2_COMPATIBILITY_VERSION=${ADIOS2_COMPATIBILITY_VERSION:-"${ADIOS2_VERSION}"}
-    export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/archive/v2.5.0"}
+    export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/archive/refs/tags/v${ADIOS2_VERSION}"}
     export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
-    export ADIOS2_MD5_CHECKSUM="a50a6bcd02a0a296484a213dca7f9a11"
-    export ADIOS2_MD5_CHECKSUM=""
-    export ADIOS2_SHA256_CHECKSUM=""
+    export ADIOS2_MD5_CHECKSUM="b78e02946c4ff481679063220f9fc961"
+    export ADIOS2_SHA256_CHECKSUM="c8e237fd51f49d8a62a0660db12b72ea5067512aa7970f3fcf80b70e3f87ca3e"
 }
 
 function bv_adios2_print
