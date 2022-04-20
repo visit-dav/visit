@@ -198,6 +198,31 @@ def test_mfem(tag_name, example_name, protocol):
 
     CloseDatabase(dbfile)
 
+def test_mfem_lor():
+    readOptions=GetDefaultFileOpenOptions("Blueprint")
+    readOptions["Legacy LOR"] = 0
+    readOptions["New LOR"] = 1
+    SetDefaultFileOpenOptions("Blueprint", readOptions)
+    # Q? how do I unset the default file open options
+
+    dbfile = mfem_test_file("star_q3", "hdf5")
+    OpenDatabase(dbfile)
+
+    # we want to test a picture of a wireframe
+    # old LOR leaves a wireframe
+    # new LOR should only have the outer edge
+    AddPlot("Subset", "mesh_main")
+    SubsetAtts = SubsetAttributes()
+    SubsetAtts.wireframe = 1
+    SetPlotOptions(SubsetAtts)
+    DrawPlots()
+
+    Test("mfem_lor_star")
+
+    DeleteAllPlots()
+
+    CloseDatabase(dbfile)
+
 def test_venn(tag_name, venn_db_file):
     TestSection("Blueprint Matset Example Tests: {0} ".format(tag_name))
     OpenDatabase(venn_db_file)
@@ -328,6 +353,9 @@ for example_name in mfem_ex9_examples:
     for protocol in mfem_ex9_protocols:
         test_mfem("blueprint_mfem", example_name, protocol)
 
+TestSection("MFEM LOR Blueprint Tests")
+test_mfem_lor()
+
 TestSection("Blueprint Expressions")
 OpenDatabase(braid_2d_json_root)
 AddPlot("Pseudocolor", "uniform_mesh/scalar_expr")
@@ -392,24 +420,5 @@ TestSection("Polygonal 3D Example YAML Mesh Files, 0.8.2")
 OpenDatabase(poly_3d_yaml_root)
 test_poly("blueprint_poly_3d_yaml_0_8_2")
 CloseDatabase(poly_3d_yaml_root)
-
-
-# for later when I add a test of MFEM LOR
-
-# readOptions=GetDefaultFileOpenOptions("Blueprint")
-# # probably just want one of these?
-# readOptions["Legacy LOR"] = 0
-# readOptions["New LOR"] = 1
-# SetDefaultFileOpenOptions("Blueprint", readOptions)
-
-# we want to test a picture of a wireframe
-# old LOR leaves a wireframe
-# new LOR should only have the outer edge
-# AddPlot("Subset", "mesh_main")
-# SubsetAtts = SubsetAttributes()
-# SubsetAtts.wireframe = 1
-# SetPlotOptions(SubsetAtts)
-# DrawPlots()
-
 
 Exit()
