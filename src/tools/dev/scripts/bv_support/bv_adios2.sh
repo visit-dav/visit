@@ -158,6 +158,7 @@ function build_adios2
         warn "Unable to prepare ADIOS2 Build Directory. Giving Up"
         return 1
     fi
+
     #### begin parallel
 
     par_build_types="ser"
@@ -189,6 +190,7 @@ function build_adios2
             # This changes too many things, now we need to change specific things back.
 
             ${SED_CMD} "s/adios2_mpi/adios2/g" source/CMakeLists.txt
+            ${SED_CMD} "s/adios2_mpi/adios2/g" testing/CMakeLists.txt
             find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi.h/adios2.h/g" {} \;
             find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi\//adios2\//g" {} \;
             find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi_/adios2_/g" {} \;
