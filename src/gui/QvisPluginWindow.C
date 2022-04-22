@@ -429,6 +429,9 @@ QvisPluginWindow::Update(Subject *s)
 //
 //    Brad Whitlock, Thu Feb  4 16:54:47 PST 2010
 //    I rewrote the code for plots and operators so it uses a data model.
+// 
+//    Justin Privitera, Fri Apr 22 11:55:32 PDT 2022
+//    Added case-insensitive alphabetization of database plugin names.
 //
 // ****************************************************************************
 
