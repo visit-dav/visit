@@ -452,40 +452,47 @@ QvisPluginWindow::UpdateWindow(bool doAll)
     if (doAll || selectedSubject == fileOpenOptions)
     {
         listDatabases->clear();
-        listDatabases->setSortingEnabled(true);
-        listDatabases->sortByColumn(1, Qt::AscendingOrder);
+        listDatabases->setSortingEnabled(false);
+        // listDatabases->sortByColumn(1, Qt::AscendingOrder);
 
         databaseItems.clear();
         databaseIndexes.clear();
 
-        std::vector <std::pair <QTreeWidgetItem *, int >> plugins;
+        std::vector<std::pair<std::string, int>> plugins;
 
-        for (int i=0; i<fileOpenOptions->GetNumOpenOptions(); i++)
-        {            
+        for (int i = 0; i < fileOpenOptions->GetNumOpenOptions(); i ++)
+        {
+            std::string plugin_name = fileOpenOptions->GetTypeNames()[i].c_str();
+            std::transform(
+                plugin_name.begin(), 
+                plugin_name.end(), 
+                plugin_name.begin(),
+                [](unsigned char c) { return std::tolower(c); });
+            plugins.push_back(std::make_pair(plugin_name, i));
+        }
+
+        std::sort(plugins.begin(), plugins.end(),
+            [](std::pair<std::string, int> a, std::pair<std::string, int> b)
+            {
+                return a.first < b.first;
+            });
+
+        for (int i = 0; i < plugins.size(); i ++)
+        {
+            int index = plugins[i].second;
             QTreeWidgetItem *item = new QTreeWidgetItem(listDatabases);
-            item->setCheckState(0,fileOpenOptions->GetEnabled()[i] ? Qt::Checked : Qt::Unchecked);
+            item->setCheckState(0,fileOpenOptions->GetEnabled()[index] ? Qt::Checked : Qt::Unchecked);
 
-            item->setText(1,fileOpenOptions->GetTypeNames()[i].c_str());
+            item->setText(1,fileOpenOptions->GetTypeNames()[index].c_str());
 
-            if (fileOpenOptions->GetOpenOptions(i).GetNumberOfOptions() == 0)
+            if (fileOpenOptions->GetOpenOptions(index).GetNumberOfOptions() == 0)
                 item->setText(2, "  ");
             else
                 item->setText(2, tr("yes"));
 
-            std::cout << item->text(1).toLocal8Bit().data() << std::endl;
-
-            plugins.push_back(std::make_pair(item, i));
-
-            // databaseItems.push_back(item);
-            // databaseIndexes.push_back(i);
+            databaseItems.push_back(item);
+            databaseIndexes.push_back(index);
         }
-
-        for (int i = 0; i < plugins.size(); i ++)
-        {
-            databaseItems.push_back(plugins[i].first);
-            databaseIndexes.push_back(plugins[i].second);
-        }
-
 
         databaseOptionsSetButton->setEnabled(false);
         dbAddToPreferedButton->setEnabled(false);
