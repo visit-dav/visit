@@ -122,7 +122,7 @@ These files are stored in your ``~/.spack`` directory. ::
     .spack/<platform>/compilers.yaml
     .spack/packages.yaml
 
-The VisIt_ repository at GitHub contains ``compilers.yaml`` and ``packages.yaml`` files for popular systems.
+The VisIt_ repository at GitHub contains ``compilers.yaml`` and ``packages.yaml`` files for popular systems in the directory ``scripts/spack/configs``.
 
 Here are the ``compilers.yaml`` and ``packages.yaml`` files for ``spock.olcf.ornl.gov`` for VisIt_.
 
