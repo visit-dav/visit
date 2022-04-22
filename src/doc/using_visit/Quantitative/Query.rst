@@ -352,25 +352,29 @@ XRay Image
  
     The query performs the following integration as it traces the rays through the volume.
 
-    .. container:: header
+    .. container:: collapsible
 
-        **Show/Hide Code for** XRay Image Query
+        .. container:: header
 
-    .. literalinclude:: ../../../../src/avt/Filters/avtXRayFilter.C
-        :language: C++
-        :start-after: begin standard integration 
-        :end-before: end standard integration
+            **Show/Hide Code for** XRay Image Query
+
+        .. literalinclude:: ../../../../src/avt/Filters/avtXRayFilter.C
+            :language: C++
+            :start-after: begin standard integration 
+            :end-before: end standard integration
 
     If the ``divide_emis_by_absorb`` is set, then the following integration is performed.
 
-    .. container:: header
+    .. container:: collapsible
 
-        **Show/Hide Code for** XRay Image Query
+        .. container:: header
 
-    .. literalinclude:: ../../../../src/avt/Filters/avtXRayFilter.C
-        :language: C++
-        :start-after: begin absorbtivity-normalized integration
-        :end-before: end absorbtivity-normalized integration
+            **Show/Hide Code for** Absortivity-Normalized XRay Image Query 
+
+        .. literalinclude:: ../../../../src/avt/Filters/avtXRayFilter.C
+            :language: C++
+            :start-after: begin absorbtivity-normalized integration
+            :end-before: end absorbtivity-normalized integration
 
     When making a simulated radiograph the emissivity variable must contain non zero values or you will need to specify a background intensity using either *background_intensity* or *background_intensities*.
     If neither of these is the case you will get a very boring all white image.
