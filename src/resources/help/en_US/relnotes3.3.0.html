@@ -139,6 +139,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The programs qtviswinExample, qtvtkExample, qvtkopenglExample were added to help with debugging OpenGL issues.</li>
   <li>VisIt test data archive tooling was changed from 7z to tar with the same (lzma2) compression.</li>
   <li>The version of Conduit was upgraded to 0.8.2.</li>
+  <li>VisIt now calculates the topological dimension of the data tree after the data has been retrieved from the database, and after SIL and/or Material selection has been applied.  This should aid downstream filters that depend on an accurate topological dimension.  For mixed-topology datasets the largest topological dim is what gets reported. Filters that modify topological structure are still required to update the topological dim.
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

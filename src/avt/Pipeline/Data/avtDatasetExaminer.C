@@ -846,18 +846,22 @@ avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
 int
 avtDatasetExaminer::GetTopologicalDim(avtDataTree_p &dataTree, const int reportedDim)
 {
+    // Don't want an empty or NULL tree contributing
+    if (*dataTree == NULL)
+        return -1;
+
+    if (dataTree->IsEmpty())
+        return -1;
+
     int tDim = reportedDim;
-    if (*dataTree != NULL)
+    int newDim = tDim;
+    bool success = false;
+    // Create an info structure with the needed variables.
+    struct {const int *reportedDim; int *dim;} info = { &tDim, &newDim };
+    dataTree->Traverse(CGetTopologicalDim, &info, success);
+    if( success )
     {
-        int newDim = tDim;
-        bool success = false;
-        // Create an info structure with the needed variables.
-        struct {const int *reportedDim; int *dim;} info = { &tDim, &newDim };
-        dataTree->Traverse(CGetTopologicalDim, &info, success);
-        if( success )
-        {
-            tDim = newDim;
-        }
+        tDim = newDim;
     }
     return tDim;
 }
