@@ -302,20 +302,28 @@ behavior.
 
 
 Numerically Controlled Banded Coloring
-""""""""""""""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sometimes it is convenient to create numerically controlled *banded*
-coloring of smoothly varying data. A **Discrete** color table does indeed
-wind up *banding* smoothly varying data. However, the band boundaries are
-uniformly spaced in the variable's *range* and this may not always be
-desirable. Sometimes, it is desirable to have finely tuned banding around
-specific portions of the variable's range. This requires the coordination of
-a **Discrete** color table and an appropriately constructed
-:ref:`conditional expression <If_Expression_Function>`.
+Sometimes it is convenient to create *banded* coloring of smoothly varying data.
+For example, it is an easy way to create something akin to a contour plot.
+In VisIt_, it is possible to do this with either a **Continuous** or a **Discrete* color table.
+In general, it is much easier with a **Continuous** color table (with smoothing set to ``None``).
+Trying to do the same thing with a **Discrete** color table requires the creation of a *companion* :ref:`conditional expression <If_Expression_Function>` which implements the non-uniform banding.
+We des
 
-For example, given the a smoothly varying variable, ``u``, in the range
-``[-1...+1]`` shown in normal (e.g. ``hot``) **Pseudocolor** plot in
-:numref:`Fig. %s <fig-MakingItPretty-smooth-coloring>`.
+Banded Coloring with Continous Color Table
+""""""""""""""""""""""""""""""""""""""""""
+
+
+Banded Coloring with Discrete Color Table
+"""""""""""""""""""""""""""""""""""""""""
+
+A **Discrete** color table does indeed wind up *banding* smoothly varying data.
+However, the band boundaries are uniformly spaced in the variable's *range* and this may not always be desirable.
+Sometimes, it is desirable to have finely tuned banding around specific portions of the variable's range.
+This requires the coordination of a **Discrete** color table and an appropriately constructed :ref:`conditional expression <If_Expression_Function>`.
+
+For example, given the a smoothly varying variable, ``u``, in the range ``[-1...+1]`` shown in normal (e.g. ``hot``) **Pseudocolor** plot in :numref:`Fig. %s <fig-MakingItPretty-smooth-coloring>`.
 
 .. _fig-MakingItPretty-smooth-coloring:
 
@@ -323,9 +331,7 @@ For example, given the a smoothly varying variable, ``u``, in the range
 
    Smoothly colored variable using ``hot`` color table.
 
-
-we would like to produce a 4-color banded plot using the coloring logic in
-the table below...
+we would like to produce a 4-color banded plot using the coloring logic in the table below...
 
 ===============   =====================
 Values in Range   Map to this Hex Color
