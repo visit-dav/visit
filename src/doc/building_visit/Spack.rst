@@ -70,11 +70,11 @@ To build VisIt_ with the default compiler. ::
 
 To build VisIt_ with a specific compiler. ::
 
-    pack install visit%gcc@11.2.0 ^python+shared ^mesa+opengl
+    spack install visit%gcc@11.2.0 ^python+shared ^mesa+opengl
 
 To build VisIt_ and specify a specific version of a dependent library. ::
 
-    pack install visit%gcc@11.2.0 ^python+shared ^mesa+opengl ^llvm@11.0.1
+    spack install visit%gcc@11.2.0 ^python+shared ^mesa+opengl ^llvm@11.0.1
 
 To uninstall a package (the ``--dependents`` uninstalls all the packages that depend on the uninstalled packages). ::
 
