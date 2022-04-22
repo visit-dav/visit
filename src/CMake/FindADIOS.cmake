@@ -10,6 +10,9 @@
 #   Kathleen Biagas, Thu Sep 27 11:28:34 PDT 2018
 #   Added adiosread_nompi so it will get installed when necessary.
 #
+#   Justin Privitera, Fri Apr 22 13:07:34 PDT 2022
+#   Added logic so adios can build without MPI being enabled.
+#
 #****************************************************************************/
 
 # Use the ADIOS_DIR hint from the config-site .cmake file 
