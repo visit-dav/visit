@@ -343,34 +343,38 @@ Connected Component Weighted Variable Sum
     result is a list of values, one for each component.
 
 XRay Image
-    Generates a simulated radiograph by tracing rays through a volume using
-    an absorbtivity and emissivity variable. The absorbtivity and emmisivity
-    variables must be zone centered and can be either scalar variables or
-    array variables. If using an array variable it will generate an image
-    per array variable component.
+    Generates a simulated radiograph by tracing rays through a volume using an absorbtivity and emissivity variable.
+    The absorbtivity and emmisivity variables must be zone centered and can be either scalar variables or array variables.
+    If using an array variable it will generate an image per array variable component.
 
-    The query operates on 2D R-Z meshes and 3D meshes. In the case of 2D
-    R-Z meshes, the mesh is revolved around the Z axis.
+    The query operates on 2D R-Z meshes and 3D meshes.
+    In the case of 2D R-Z meshes, the mesh is revolved around the Z axis.
  
-    The query performs the following integration as it traces the rays through
-    the volume.
+    The query performs the following integration as it traces the rays through the volume.
 
-        decay[i] = exp(-a[i] * seglength[i]) |br|
-        intensity[i] = intensity[i-1] * decay[i] + e[i] * (1. - decay[i])
+    .. container:: header
 
-    If the *divide_emis_by_absorb* is set, then the following integration is
-    performed.
+        **Show/Hide Code for** XRay Image Query
 
-        decay[i] = exp(-a[i] * seglength[i]) |br|
-        intensity[i] = intensity[i-1] * decay[i] + (e[i] / a[i]) * (1. - decay[i])
+    .. literalinclude:: ../../../../src/avt/Filters/avtXRayFilter.C
+        :language: C++
+        :start-after: begin standard integration 
+        :end-before: end standard integration
 
-    When making a simulated radiograph the emissivity variable must contain
-    non zero values or you will need to specify a background intensity using
-    either *background_intensity* or *background_intensities*. If neither of
-    these is the case you will get a very boring all white image. A non zero
-    emissivity variable would correspond to an object emitting radiation
-    and a non zero background intensity would correspond to constant backlit
-    radiation, such as when x raying an object.
+    If the ``divide_emis_by_absorb`` is set, then the following integration is performed.
+
+    .. container:: header
+
+        **Show/Hide Code for** XRay Image Query
+
+    .. literalinclude:: ../../../../src/avt/Filters/avtXRayFilter.C
+        :language: C++
+        :start-after: begin absorbtivity-normalized integration
+        :end-before: end absorbtivity-normalized integration
+
+    When making a simulated radiograph the emissivity variable must contain non zero values or you will need to specify a background intensity using either *background_intensity* or *background_intensities*.
+    If neither of these is the case you will get a very boring all white image.
+    A non-zero emissivity variable would correspond to an object emitting radiation and a non zero background intensity would correspond to constant backlit radiation, such as when x raying an object.
 
     The query takes the following arguments:
 
