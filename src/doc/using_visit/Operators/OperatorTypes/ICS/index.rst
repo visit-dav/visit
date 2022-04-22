@@ -64,7 +64,7 @@ vector fields. Each operator provides the following options:
 
 .. warning::
 
-    Each options below besides "Default" requires the respective third party
+    Each option below besides "Default" requires the respective third party
     library.
 
 Default
