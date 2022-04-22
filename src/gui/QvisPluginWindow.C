@@ -457,6 +457,9 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 
         databaseItems.clear();
         databaseIndexes.clear();
+
+        std::vector <std::pair <QTreeWidgetItem *, int >> plugins;
+
         for (int i=0; i<fileOpenOptions->GetNumOpenOptions(); i++)
         {            
             QTreeWidgetItem *item = new QTreeWidgetItem(listDatabases);
@@ -469,12 +472,21 @@ QvisPluginWindow::UpdateWindow(bool doAll)
             else
                 item->setText(2, tr("yes"));
 
-            databaseItems.push_back(item);
-            databaseIndexes.push_back(i);
-            // so it looks like I will want to sort these
-            // make a vector of pairs
-            // and sort based on the string living inside of `item`
+            std::cout << item->text(1).toLocal8Bit().data() << std::endl;
+
+            plugins.push_back(std::make_pair(item, i));
+
+            // databaseItems.push_back(item);
+            // databaseIndexes.push_back(i);
         }
+
+        for (int i = 0; i < plugins.size(); i ++)
+        {
+            databaseItems.push_back(plugins[i].first);
+            databaseIndexes.push_back(plugins[i].second);
+        }
+
+
         databaseOptionsSetButton->setEnabled(false);
         dbAddToPreferedButton->setEnabled(false);
 
