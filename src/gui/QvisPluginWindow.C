@@ -453,15 +453,16 @@ QvisPluginWindow::UpdateWindow(bool doAll)
     {
         listDatabases->clear();
         listDatabases->setSortingEnabled(false);
-        // listDatabases->sortByColumn(1, Qt::AscendingOrder);
 
         databaseItems.clear();
         databaseIndexes.clear();
 
+        // Necessary to sort the plugin names so they appear in 
+        // alphabetical case-insensitive order.
         std::vector<std::pair<std::string, int>> plugins;
-
         for (int i = 0; i < fileOpenOptions->GetNumOpenOptions(); i ++)
         {
+            // Here we populate the list of plugin names.
             std::string plugin_name = fileOpenOptions->GetTypeNames()[i].c_str();
             std::transform(
                 plugin_name.begin(), 
@@ -479,6 +480,9 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 
         for (int i = 0; i < plugins.size(); i ++)
         {
+            // Now that we have the plugins in the correct order, we can 
+            // retrieve the required data and add items to `listDatabases` in
+            // the correct order.
             int index = plugins[i].second;
             QTreeWidgetItem *item = new QTreeWidgetItem(listDatabases);
             item->setCheckState(0,fileOpenOptions->GetEnabled()[index] ? Qt::Checked : Qt::Unchecked);
