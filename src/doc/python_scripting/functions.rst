@@ -8512,8 +8512,9 @@ SetAnimationTimeout
 
   SetAnimationTimeout(milliseconds) -> integer
 
-return type : CLI_return_t
-    The SetAnimationTimeout function returns 1 for success and 0 for failure.
+
+milliseconds : integer
+    A positive integer to specify the number of milliseconds.
 
 
 **Description:**
