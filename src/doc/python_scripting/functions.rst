@@ -10113,8 +10113,8 @@ SetPrecisionType
   SetPrecisionType(typeAsString)
 
 
-typeAsInt : double
-    Precision type specified as an integer. 0 = float 1 = native 2 = double
+typeAsInt : integer
+    Precision type specified as an integer. 0 = float 1 = native 2 = double.
 
 typeAsString : string
     Precision type specified as a string. Options are 'float', 'native',
