@@ -389,9 +389,9 @@ Then, plotting this expression using the 4-color **Discrete** color table, the d
 
 There is a noticeable difference between the result produced by the two approaches used here to create a banded coloring.
 The second approach using the combination of a **Discrete** color table and a conditional expression shows significantly more jagged banding.
-This to do with the ordering of operations of *interpolation* of the variable across mesh zones and then *mapping* of the variable values to colors.
-The first approach performs *interpolation* followed by mapping.
-The second approach effectively performs the *mapping* first through its use of the conditional expression replacing the smoothly varying variable with a highly discontinuous variable.
+This has to do with the ordering of operations of *interpolation* of the variable across mesh zones and then *mapping* of the variable values to colors.
+The first approach performs *interpolation* followed by *mapping*.
+The second approach effectively performs the *mapping* first through its use of the conditional expression replacing the smoothly varying variable with a highly discontinuous variable after which *interpolation* is performed.
 
 Converting color table types
 """"""""""""""""""""""""""""
