@@ -308,11 +308,11 @@ Numerically Controlled Banded Coloring
 
 Sometimes it is convenient to create *banded* coloring of smoothly varying data.
 For example, it is an easy way to create something akin to a contour plot.
-In VisIt_, it is possible to do this with either a **Continuous** or a **Discrete* color table.
+In VisIt_, it is possible to do this with either a **Continuous** or a **Discrete** color table.
 In general, it is much easier with a **Continuous** color table (with smoothing set to ``None``).
-Trying to do the same thing with a **Discrete** color table requires the creation of a *companion* :ref:`conditional expression <If_Expression_Function>` which implements the non-uniform banding.
+Trying to do the same thing with a **Discrete** color table requires an additional step to create a *companion* :ref:`conditional expression <If_Expression_Function>` which implements the non-uniform banding.
 
-For example, given the a smoothly varying variable, ``u``, in the range ``[-1...+1]`` shown in normal (e.g. ``hot``) **Pseudocolor** plot in :numref:`Fig. %s <fig-MakingItPretty-smooth-coloring>`.
+For example, given the smoothly varying variable, ``u``, in the range ``[-1...+1]`` shown in normal (e.g. ``hot``) **Pseudocolor** plot in :numref:`Fig. %s <fig-MakingItPretty-smooth-coloring>`.
 
 .. _fig-MakingItPretty-smooth-coloring:
 
