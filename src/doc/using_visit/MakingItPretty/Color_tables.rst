@@ -355,6 +355,9 @@ This results in the banded coloring in :numref:`Fig. %s <fig-MakingItPretty-cont
    The variable ``u`` plotted with a 4-color **Continuous** color table with ``None`` *smoothing*.
 
 To create the color table for this result, follow the instructions for :ref:`editing color control point positions numerically <editing_color_control_point_positions_numerically>`.
+After editing the color table, re-import it back into VisIt.
+Make sure the color table is **Continuous** and that the *smoothing* is set to ``None``.
+Apply this color table to the Pseudocolor plot used to plot the variable ``u`` and the same coloring as shown in the figure should be observed.
 
 Banded Coloring with Discrete Color Table
 """""""""""""""""""""""""""""""""""""""""
