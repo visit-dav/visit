@@ -9732,6 +9732,9 @@ SetPipelineCachingMode
 
   SetPipelineCachingMode(mode) -> integer
 
+mode : boolean
+    A boolean value to turn pipeline caching on or off.
+
 return type : CLI_return_t
     The SetPipelineCachingMode function returns 1 for success and 0 for
     failure.
