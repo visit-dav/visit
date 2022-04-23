@@ -6289,7 +6289,7 @@ OverlayDatabase
 databaseName : string
     The name of the new plot database.
 
-state
+state : integer
     The time state at which to open the database.
 
 return type : CLI_return_t
@@ -10062,9 +10062,8 @@ SetPlotSILRestriction
 silr : SIL restriction object
     A SIL restriction object.
 
-all
-    An optional argument that tells the function if the SIL restriction
-    should be applied to all plots in the plot list.
+all : integer
+    An optional argument that tells the function if the SIL restriction should be applied to all plots in the plot list (set all = 1) or not (set all = 0).
 
 return type : CLI_return_t
     The SetPlotSILRestriction function returns an integer value of 1 for
@@ -12175,15 +12174,42 @@ WriteConfigFile
 WriteScript
 -----------
 
+**Synopsis:**
+
+::
+
+  WriteScript(f)
+
+f : file
+    The python file object that will be written to.
+
+**Description:**
+
+    WriteScript is meant to be able to write out the current state of VisIt to a Python script that can be used later to reproduce a visualization. 
+    This is like using a session file but you can take the output of WriteScript and further customize it.
+
 
 **Example:**
 
 ::
 
-  f = open('script.py', 'wt')
+  #% visit -cli
+  f = open("script.py", "wt")
   WriteScript(f)
   f.close()
 
+The resulting script will contain commands to set up plots in any visualization window that contained plots when WriteScript was called. 
+You may want to edit the resulting script file since it may be verbose, depending on how many plots you have or the complexity of the data file. For example, you might want to remove the code related to setting a plot's SIL restriction.
+Once you have edited the script to your satisfaction, you can replay it in VisIt like this:
+
+::
+
+  visit -cli -s script.py
+
+Or, you can even use the script with VisIt's movie scripts as a means to set up your visualization: 
+
+::
+  visit -movie -format mpeg -geometry 800x800 -scriptfile script.py -output scriptmovie
 
 
 ZonePick
