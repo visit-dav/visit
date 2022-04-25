@@ -12223,6 +12223,7 @@ Once you have edited the script to your satisfaction, you can replay it in VisIt
 Or, you can even use the script with VisIt's movie scripts as a means to set up your visualization: 
 
 ::
+
   visit -movie -format mpeg -geometry 800x800 -scriptfile script.py -output scriptmovie
 
 
