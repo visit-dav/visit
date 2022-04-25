@@ -70,6 +70,7 @@ QvisTimeSliderControlWidget::QvisTimeSliderControlWidget(QWidget *parent) :
     tsLayout->setMargin(0);
     topLayout->addLayout(tsLayout);
     activeTimeSlider = new QComboBox(this);
+    activeTimeSlider->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     connect(activeTimeSlider, SIGNAL(activated(int)),
             this, SLOT(changeActiveTimeSlider(int)));
     activeTimeSliderLabel = new QLabel(tr("Active time slider"), this);

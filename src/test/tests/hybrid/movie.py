@@ -29,6 +29,10 @@
 #     add "--overlap" srun option.  This allows cinema test to succeed in
 #     parallel with recent changes to slurm.
 #
+#     Kathleen Biagas, Tue Apr 12 11:41:20 PDT 2022
+#     Removed the conversion from .bmp to .png in test5, since visit_composite
+#     output is now fixed. (see bug #2386).
+#
 # ----------------------------------------------------------------------------
 import os
 import subprocess
@@ -344,18 +348,7 @@ def test5():
     img = []
     for f in files:
         if f[0][-4:] == ".bmp":
-            #
-            # NOTE: I could not get ffmpeg to work with png output from visit-composite
-            # now that it uses VTK. I also could not get VisIt to read PNG, TIFF, or 
-            # BMP files made with that VTK export. The files looked okay on my Mac viewer
-            # but VisIt didn't like them. Maybe they had alpha.
-            #
-            bmp = f[0]
-            png = f[0][:-4] + ".png"
-            print("convert %s %s" % (bmp, png))
-            im1 = Image.open(bmp)
-            im1.save(png, "png")
-            img = img + [(png,0)]
+            img = img + [(f[0],0)]
     txt = "\n".join([x[0] for x in img])
     TestText("movie_5_00", txt)
 

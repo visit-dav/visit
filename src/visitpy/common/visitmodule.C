@@ -4466,6 +4466,9 @@ visit_DeleteActivePlots(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Dec 27 10:57:38 PDT 2002
 //   I made it use an intVector.
 //
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Don't do anything if there are no plots.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -4475,16 +4478,19 @@ visit_DeleteAllPlots(PyObject *self, PyObject *args)
     NO_ARGUMENTS();
 
     MUTEX_LOCK();
-        //
-        // First set all plots active.
-        //
         int nPlots = GetViewerState()->GetPlotList()->GetNumPlots();
-        intVector plots;
-        for(int i = 0; i < nPlots; ++i)
-            plots.push_back(i);
-        GetViewerMethods()->SetActivePlots(plots);
+        if(nPlots > 0)
+        {
+            //
+            // First set all plots active.
+            //
+            intVector plots;
+            for(int i = 0; i < nPlots; ++i)
+                plots.push_back(i);
+            GetViewerMethods()->SetActivePlots(plots);
 
-        GetViewerMethods()->DeleteActivePlots();
+            GetViewerMethods()->DeleteActivePlots();
+        }
     MUTEX_UNLOCK();
 
     // Return the success value.

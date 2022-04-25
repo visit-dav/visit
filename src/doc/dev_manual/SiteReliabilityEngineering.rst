@@ -1,3 +1,5 @@
+.. _site_reliability_engineering:
+
 Site Reliability Engineering (SRE)
 ==================================
 
@@ -293,6 +295,8 @@ feature to indicate an SRE discussion is resolved. In such circumstances, the
 adopted approach is to add a *new*, top-level comment with a link to whichever
 previous, embedded comment best answers the issue and then tag that new, top-level
 comment as the discussion's answer.
+
+.. _supported_methods_of_contact:
 
 Supported Methods of Contact
 ----------------------------
