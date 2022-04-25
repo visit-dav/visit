@@ -4495,6 +4495,10 @@ GetQueryParameters
 
   GetQueryParameters(name) -> dictionary
 
+
+name : string
+    The named query.
+
 return type : dictionary
     A python dictionary.
 
