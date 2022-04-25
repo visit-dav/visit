@@ -6062,6 +6062,9 @@ args : tuple
     Alternative arguments - MachineProfile object to load with
     OpenComputeEngine call
 
+MachineProfile : MachineProfile object
+    The Machine Profile of the computer on which to start the engine.
+
 return type : CLI_return_t
     The OpenComputeEngine function returns an integer value of 1 for success
     and 0 for failure.
