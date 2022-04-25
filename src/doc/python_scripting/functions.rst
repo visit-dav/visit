@@ -8523,6 +8523,9 @@ SetAnimationTimeout
 milliseconds : integer
     A positive integer to specify the number of milliseconds.
 
+return type : integer
+    The SetAnimationTimeout function returns 1 for success and 0 for failure.
+
 
 **Description:**
 
