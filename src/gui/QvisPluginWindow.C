@@ -27,6 +27,7 @@
 #include <QvisDBOptionsDialog.h>
 #include <QvisPluginManagerAttributesDataModel.h>
 
+#include <cctype>
 #include <string>
 #include <vector>
 
