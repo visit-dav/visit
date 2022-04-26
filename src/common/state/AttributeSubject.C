@@ -129,7 +129,7 @@ AttributeSubject::TypeName() const
 //
 // ****************************************************************************
 
-const std::string
+std::string
 AttributeSubject::DeprecationMessage(const std::string &oldField,
                                      const std::string &version) const
 {
@@ -160,7 +160,7 @@ AttributeSubject::DeprecationMessage(const std::string &oldField,
 //
 // ****************************************************************************
 
-const std::string
+std::string
 AttributeSubject::DeprecationMessage(const std::string &oldField,
                                      const std::string &newField,
                                      const std::string &version) const

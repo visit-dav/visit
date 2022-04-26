@@ -58,11 +58,11 @@ public:
     virtual bool VarChangeRequiresReset(void) { return false; }
 
     // Construct a deprecation message from type name and passed args.
-    const std::string DeprecationMessage(const std::string &oldField,
-                                         const std::string &version) const;
-    const std::string DeprecationMessage(const std::string &oldField,
-                                         const std::string &newField,
-                                         const std::string &version) const;
+    std::string DeprecationMessage(const std::string &oldField,
+                                   const std::string &version) const;
+    std::string DeprecationMessage(const std::string &oldField,
+                                   const std::string &newField,
+                                   const std::string &version) const;
 };
 
 #endif

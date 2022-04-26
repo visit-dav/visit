@@ -660,6 +660,7 @@ class CMakeGeneratorPlugin : public Plugin
             << viewerlibname << " " << ToString(libs) << ToString(vlibs)
             << ")" << endl;
         WriteCMake_ConditionalTargetLinks(out, name, "V", "Plot", "    ");
+        out << "    ADD_TARGET_DEFINITIONS(V"<<name<<"Plot VIEWER)" << endl;
         out << endl;
         out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<"Plot V"<<name<<"Plot)" << endl;
         out << endl;
