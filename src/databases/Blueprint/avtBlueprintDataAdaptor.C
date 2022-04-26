@@ -1704,6 +1704,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
     vtkPoints *points = vtkPoints::New();
+    // points->Allocate(num_vertices);
     points->SetDataTypeToDouble();
     points->SetNumberOfPoints(num_vertices);
 
@@ -1750,30 +1751,15 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
                              "Expected equality of MFEM and VTK layout variables.");
     }
 
-    // HAVE IT PRINT OUT THE FIRST ONE and see if the order is right... see the book
-
     for (int i = 0; i < ncells; i ++)
     {
         const mfem::Element *ele = mesh->GetElement(i);
         const int *ele_verts = ele->GetVertices();
 
-        if (i == 0)
-        {
-            std::cout << csize << std::endl;
-        }
-
         ida->SetComponent((csize + 1) * i, 0, csize);
         for (int j = 0; j < csize; j ++)
         {
             ida->SetComponent((csize + 1) * i + j + 1, 0, ele_verts[j]);
-            if (i == 0)
-            {
-                std::cout << ele_verts[j] << std::endl;
-                std::cout << "(x,y,z)=(";
-                std::cout << coords_ptr[ele_verts[j] * 3] << ",";
-                std::cout << coords_ptr[ele_verts[j] * 3 + 1] << ",";
-                std::cout << coords_ptr[ele_verts[j] * 3 + 2] << ")" << std::endl;
-            }
         }
     }
 
@@ -1815,6 +1801,8 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     // get the high order data
     const mfem::FiniteElementSpace *fes_space = mesh->GetNodalFESpace();
     const mfem::FiniteElementCollection *fes_col = fes_space->FEColl();
+
+    BP_PLUGIN_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
     // refine the mesh and convert to vtk
     mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, mfem::BasisType::GaussLobatto);
