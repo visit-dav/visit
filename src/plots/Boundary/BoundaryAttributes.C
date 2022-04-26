@@ -1055,27 +1055,63 @@ BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
     if(searchNode == 0)
         return;
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     if (VersionLessThan(configVersion, "2.13.0"))
     {
+        std::string v("3.3.1");
+ 
         if (searchNode->GetNode("boundaryType") != 0)
+        {
+            avtCallback::IssueWarning(DeprecationMessage("boundaryType", v));
             searchNode->RemoveNode("boundaryType");
+        }
         if (searchNode->GetNode("pointSize") != 0)
+        {
+            avtCallback::IssueWarning(DeprecationMessage("pointSize", v));
             searchNode->RemoveNode("pointSize");
+        }
         if (searchNode->GetNode("pointSizeVarEnabled") != 0)
+        {
+            avtCallback::IssueWarning(DeprecationMessage("pointSizeVarEnabled", v));
             searchNode->RemoveNode("pointSizeVarEnabled");
+        }
         if (searchNode->GetNode("pointSizeVar") != 0)
+        {
+            avtCallback::IssueWarning(DeprecationMessage("pointSizeVar", v));
             searchNode->RemoveNode("pointSizeVar");
+        }
         if (searchNode->GetNode("pointSizePixels") != 0)
+        {
+            avtCallback::IssueWarning(DeprecationMessage("pointSizePixels", v));
             searchNode->RemoveNode("pointSizePixels");
+        }
         if (searchNode->GetNode("pointType") != 0)
+        {
+            avtCallback::IssueWarning(DeprecationMessage("pointType", v));
             searchNode->RemoveNode("pointType");
+        }
         if (searchNode->GetNode("filledFlag") != 0)
+        {
+            avtCallback::IssueWarning(DeprecationMessage("filledFlag", v));
             searchNode->RemoveNode("filledFlag");
+        }
     }
+#endif
+
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
+
     if (VersionLessThan(configVersion, "3.0.0"))
     {
         if (searchNode->GetNode("lineStyle") != 0)
+        {
+            avtCallback::IssueWarning(DeprecationMessage("lineStyle", "3.3.2"));
             searchNode->RemoveNode("lineStyle");
+        }
     }
+#endif
 }
 
