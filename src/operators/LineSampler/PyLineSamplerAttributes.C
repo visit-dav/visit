@@ -2855,7 +2855,7 @@ LineSamplerAttributes_SetToroidalIntegration(PyObject *self, PyObject *args)
         ss << "Valid values are in the range [0,2]." << std::endl;
         ss << "You can also use the following symbolic names:";
         ss << " NoToroidalIntegration";
-        ss << ", ToroidalTimeSample";
+        ss << ", SampleToroidally";
         ss << ", IntegrateToroidally";
         return PyErr_Format(PyExc_ValueError, ss.str().c_str());
     }
