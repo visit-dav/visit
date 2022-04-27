@@ -82,6 +82,9 @@ QvisOutputWindow::~QvisOutputWindow()
 //   Set the minimum width based on part of a sample message from the viewer
 //   and the current font size.
 //
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 
 void
@@ -90,7 +93,7 @@ QvisOutputWindow::CreateWindowContents()
     // Create a multi line edit to display the text.
     outputText = new QTextEdit(central);
     QString msg("MESSAGE: Closed the compute engine on host");
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     outputText->setMinimumWidth(fontMetrics().horizontalAdvance(msg));
 #else
     outputText->setMinimumWidth(fontMetrics().width(msg));

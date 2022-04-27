@@ -84,6 +84,10 @@ QvisFileInformationWindow::~QvisFileInformationWindow()
 //   Mark C. Miller, Wed May  6 09:47:52 PDT 2009
 //   Made it set min 'size' instead of just width. Also, increased length of
 //   titleSeparator to achieve a bit larger size.
+//
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 
 void
@@ -91,7 +95,7 @@ QvisFileInformationWindow::CreateWindowContents()
 {
     // Create a multi line edit to display the text.
     outputText = new QTextEdit(central);
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int w = fontMetrics().horizontalAdvance(titleSeparator);
 #else
     int w = fontMetrics().width(titleSeparator);
