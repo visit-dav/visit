@@ -195,6 +195,9 @@ ParseCharacters(const QString &buff_input)
 //    Kathleen Biagas, Fri July 16, 2021
 //    Added support for WIN32DEFINES (preprocessor defines for Win32).
 //
+//    Kathleen Biagas, Wed April 27, 2022
+//    Added support for skipInfoGen flag in db plugin xml files.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -329,6 +332,7 @@ class XMLParser : public QXmlDefaultHandler
             QString createExpression = atts.value("createExpression");
             QString exprInType = atts.value("exprInType");
             QString exprOutType = atts.value("exprOutType");
+            QString skipInfoGen  = atts.value("skipInfoGen");
             currentPlugin = new Plugin(name, label, type, vartype,
                                        dbtype, version, iconFile,
                                        haswriter.isNull() ? false : Text2Bool(haswriter),
@@ -371,6 +375,10 @@ class XMLParser : public QXmlDefaultHandler
             if (!exprOutType.isNull())
             {
                 currentPlugin->exprOutType = exprOutType;
+            }
+            if (!skipInfoGen.isNull())
+            {
+                currentPlugin->skipInfoGen = Text2Bool(skipInfoGen);
             }
         }
         else if (tag == "Attribute")
