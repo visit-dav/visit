@@ -1497,6 +1497,8 @@ VolumeAttributes_GetCompactVariable(PyObject *self, PyObject *args)
 //    (list or tuple object) --  as long as it is numeric and has length
 //    of 256, will set the opacity values to the values in the list or tuple.
 //
+//    Mark C. Miller, Fri Jul 23 14:54:46 PDT 2021
+//    Handle args as a "wrapped" tuple or list
 // ****************************************************************************
 
 static PyObject *
