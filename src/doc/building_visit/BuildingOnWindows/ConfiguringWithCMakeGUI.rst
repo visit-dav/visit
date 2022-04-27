@@ -48,7 +48,7 @@ CMake generation should locate this directory automatically.
 
     Directory structure with source from a released version
 
-In order for CMake to locate the directory automatically for development build cloned or downloaded from the github repositories, *visit-deps* should be peer to *visit*. 
+In order for CMake to locate the directory automatically for a development build cloned or downloaded from the github repositories, *visit-deps* should be peer to *visit*. 
 :numref:`Figure %s<visit_dirs_from_github_repos_image>`
 
 .. _visit_dirs_from_github_repos_image:
@@ -87,7 +87,7 @@ The **Value:** should be a ';' separated list of database plugins names.
 Case must match the name of the folder in */src/databases*.
 
 The same procedure applies to plots and operators. 
-The VisIt CMake variables to limit plots and operator plugins are *VISIT_SELECTED_PLOT_PLUGINS* and *VISIT_SELECTED_OPERATOR_PLUGINS*, respectively.
+The VisIt_ CMake variables to limit plots and operator plugins are *VISIT_SELECTED_PLOT_PLUGINS* and *VISIT_SELECTED_OPERATOR_PLUGINS*, respectively.
 
 Click **OK** when finished.
 
@@ -180,7 +180,7 @@ Compile
 ~~~~~~~
 Open the generated *VisIt.sln* file with Visual Studio (it may take awhile to
 load all the project files). 
-Select desired Configuration and Build solution.
+Select the desired Configuration and Build the solution.
 
 **Note:** if VISIT_CREATE_XMLTOOLS_GEN_TARGETS is ON, choose the *ALL_BUILD* project to build instead of the *Solution* .
 More information on this variable can found in the :ref:`CMake Variables<CMake Variables>` section.

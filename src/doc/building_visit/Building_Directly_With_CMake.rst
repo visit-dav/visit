@@ -76,17 +76,17 @@ VISIT_BUILD_MINIMAL_PLUGINS : BOOL : OFF
 VISIT_SELECTED_DATABASE_PLUGINS : STRING
     ';' separated list of database plugins to build, eg: VTK;Silo
 
-     If not empty, will supercede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for database plugins.
+     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for database plugins.
 
 VISIT_SELECTED_OPERATOR_PLUGINS : STRING
     ';' separated list of operator plugins to build, eg: Slice;Lineout;Transform
 
-     If not empty, will supercede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for operator plugins.
+     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for operator plugins.
 
 VISIT_SELECTED_PLOT_PLUGINS : STRING
     ';' separated list of plot plugins to build, eg: Mesh;Pseudocolor
 
-     If not empty, will supercede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for plot plugins.
+     If not empty, will supersede the settings of VISIT_BUILD_MINIMAL_PLUGINS and VISIT_BUILD_ALL_PLUGINS for plot plugins.
 
 
 Controlling extra tools being built
@@ -117,7 +117,7 @@ Useful for developers
 
 
 VISIT_CREATE_SOCKET_RELAY_EXECUTABLE: BOOL : ON
-    Toggles creation of separate executble that forwards VisIt's socket conneciton between engine and component launcher.
+    Toggles creation of separate executable that forwards VisIt_'s socket connection between engine and component launcher.
 
 VISIT_CREATE_XMLTOOLS_GEN_TARGETS : BOOL : ON
     Toggles the creation of build targets to run xmltools code generation.
