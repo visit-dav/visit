@@ -266,6 +266,9 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   I moved the transfer function radio button creation to here and I 
 //   reorganized the code so we can create 1D/2D transfer function pages.
 //
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 
 void
@@ -273,7 +276,7 @@ QvisVolumePlotWindow::CreateWindowContents()
 {
     // Figure out the max width that we want to allow for some simple
     // line edit widgets.
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int maxWidth = fontMetrics().horizontalAdvance("1.0000000000");
 #else
     int maxWidth = fontMetrics().width("1.0000000000");
