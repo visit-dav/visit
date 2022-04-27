@@ -391,6 +391,10 @@ QvisFileOpenWindow::UpdateWindow(bool doAll)
 //
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
+// 
+//   Justin Privitera, Tue Apr 19 12:07:06 PDT 2022
+//   Sorted the filetype names alphabetically so the lower case filetypes are 
+//   not at the end of the list.
 //
 // ****************************************************************************
 
@@ -411,6 +415,8 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
     int nTypes = plugins.GetTypes().size();
     fileFormatComboBox->addItem(tr("Guess from file name/extension"));
     FileOpenOptions *opts = GetViewerState()->GetFileOpenOptions();
+
+    QStringList *filetypes = new QStringList();
     
     for (int i = 0 ; i < nTypes ; i++)
     {
@@ -418,10 +424,17 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
         {
             if (opts->GetTypeNames()[j] == plugins.GetTypes()[i] && opts->GetEnabled()[j] )
             {
-                fileFormatComboBox->addItem(plugins.GetTypes()[i].c_str());
+                filetypes->push_back(plugins.GetTypes()[i].c_str());
                 break;
             }
         }
+    }
+
+    filetypes->sort(Qt::CaseInsensitive);
+
+    for (int i = 0; i < filetypes->size(); i ++)
+    {
+        fileFormatComboBox->addItem((*filetypes)[i]);
     }
 
     if (!oldtype.isNull())
