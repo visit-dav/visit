@@ -2,9 +2,9 @@
 // Project developers.  See the top-level LICENSE file for dates and other
 // details.  No copyright assignment is required to contribute to VisIt.
 
-// ************************************************************************* //
+// ****************************************************************************
 //  File: TessellatePluginInfo.h
-// ************************************************************************* //
+// ****************************************************************************
 
 #ifndef TESSELLATE_PLUGIN_INFO_H
 #define TESSELLATE_PLUGIN_INFO_H
