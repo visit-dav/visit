@@ -153,3 +153,39 @@ if(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE AND NOT PYSIDE_IN_PYTHON)
     SYMLINK_PYSIDE(SHIBOKEN_PYTHON_MODULE_DIR)
 endif()
 
+if(VISIT_PYTHON_SCRIPTING AND CONDUIT_DIR)
+    # symlink conduit python module so it works during dev builds
+    message(STATUS "Adding Conduit python module to lib/site-packages/")
+
+    if(NOT WIN32)
+        set(CONDUIT_PY_MODULE ${CONDUIT_DIR}/python-modules/conduit)
+        if(NOT EXISTS ${CONDUIT_PY_MODULE})
+            message(WARNING "Failed to find Conduit Python Module at ${CONDUIT_PY_MODULE}")
+        endif()
+        
+        execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f
+                                ${CMAKE_CURRENT_BINARY_DIR}/site-packages/conduit
+                                 RESULT_VARIABLE CONDUIT_PY_SYM_REMOTE)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
+                                ${CONDUIT_PY_MODULE}
+                                ${CMAKE_CURRENT_BINARY_DIR}/site-packages/conduit
+                                RESULT_VARIABLE CONDUIT_PY_SYM_CREATE)
+
+        if(NOT "${CONDUIT_PY_SYM_CREATE}" STREQUAL "0")
+            message(WARNING "Failed to create Conduit Python module symlink in lib/site-packages/")
+        endif()
+
+    else() # NOT WIN32
+        # correct lib/${CFG} directory
+        add_custom_target(conduit_python_module ALL
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CONDUIT_PY_MODULE}
+                    ${VISIT_LIBRARY_DIR}/site-packages/conduit
+            COMMENT "Copying ${CONDUIT_PY_MODULE} to ${VISIT_LIBRARY_DIR}/site-packages/conduit"
+        )
+        if(VISIT_NO_ALLBUILD)
+            add_dependencies(visit_special_builds conduit_python_module)
+        endif()
+    endif()
+endif()
+
