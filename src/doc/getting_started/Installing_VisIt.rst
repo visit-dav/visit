@@ -3,16 +3,23 @@
 Installing and Starting VisIt_
 ------------------------------
 
-VisIt_ runs on the following platforms:
+Pre-built binaries for VisIt_ are provided on the following platforms:
 
-* Linux (including Centos, Debian, Fedora, Redhat, Ubuntu, SUSE, TOSS)
+* |fs*nix| (fully supported)
+* |ps*nix| (partially supported)
 * macOS
 * Microsoft Windows
 
-A new version of VisIt_ is usually released every 2-3 months, you can find VisIt_ release executables at the `VisIt releases page <https://visit-dav.github.io/visit-website/releases-as-tables/>`_. 
+For an explanation of what *fully* and *partially* supported mean, see our section on :ref:`supported platforms <supported_platforms>`.
 
-Download a binary release compatible with the machine you want to install VisIt_ on.
-If you are installing VisIt_ on Linux, also download the ``visit-install`` script.
+New versions are usually released every 2-3 months.
+Users can find releases at the `VisIt releases page <https://visit-dav.github.io/visit-website/releases-as-tables/>`_. 
+See our section on :ref:`managing GitHub notifications <managing_github_notifications>` to get notified of new releases.
+
+Download a binary release compatible with the machine on which you want to run VisIt_.
+If you are installing VisIt_ on Linux, you will also need to download and use the ``visit-install`` script.
+
+Installing VisIt_ on platforms other than those listed here requires :ref:`building VisIt from sources <Building>`.
 
 .. _MacOSX Installation Instructions:
 
@@ -22,6 +29,16 @@ Installing on macOS
 VisIt_ releases include an app-bundle for macOS packaged in a DMG image.
 Download and open the DMG file and copy the VisIt_ app-bundle to your applications directory or any other path.
 To run VisIt_ double click on the VisIt_ app-bundle.
+Alternatively, VisIt_ can be run on macOS from the ``Terminal`` using a command of the form:
+
+.. code:: bash
+
+  /Applications/VisIt.app/Contents/Resources/bin/visit
+
+.. note::
+
+   Running from the ``Terminal`` may work around issues accessing some folders on local storage or code signing and notarization.
+
 The ``visit-install`` script can also be used to install tarball packaged macOS binaries.
 For this case follow the Linux installation instructions. 
 

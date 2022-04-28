@@ -7,6 +7,7 @@ VisIt User Manual
    :maxdepth: 1 
 
    Getting Started <getting_started/index>
+   Getting Help <getting_help/index>
    Intro to VisIt <intro/index>
    Using VisIt <using_visit/index>
    Python Scripting <python_scripting/index>

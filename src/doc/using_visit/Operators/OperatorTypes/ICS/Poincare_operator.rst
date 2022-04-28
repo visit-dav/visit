@@ -47,7 +47,8 @@ Point List
     *Delete All Points*, the user can *Read Text File* that is formatted with
     one point per each line either as "X Y Z" or "X, Y, Z".
 
-.. warning:
+.. warning::
+
     If the Field is set to M3D-C1 integrator the point locations will be
     converted from Cartesian to Cylindrical coordinates. In the 2D case, phi
     will be set to 0. 
@@ -83,7 +84,8 @@ Puncture plot type
        * Period tolerance - when an integral curve punctures the plane, the
          period must be within the tolerance value. 
 
-.. warning:
+.. warning::
+
     When selecting “Toroidal” the “Analysis” must also be set to “Punctures
     only” as there is currently no analysis in the toroidal plane.
 

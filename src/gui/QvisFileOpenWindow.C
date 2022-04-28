@@ -185,6 +185,9 @@ QvisFileOpenWindow::SetFilename(const QString &f)
 //    Added a filename field if showFilename is true. For Session dialog.
 //    Also hide files if Session dialog.
 //
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 
 void
@@ -207,7 +210,7 @@ QvisFileOpenWindow::CreateWindowContents()
 
     directoryList = new QListWidget(directoryWidget);
     directoryVBox->addWidget(directoryList);
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int minColumnWidth = fontMetrics().horizontalAdvance("X");
 #else
     int minColumnWidth = fontMetrics().width("X");
@@ -388,6 +391,10 @@ QvisFileOpenWindow::UpdateWindow(bool doAll)
 //
 //   Cyrus Harrison, Tue Jun 24 11:15:28 PDT 2008
 //   Initial Qt4 Port.
+// 
+//   Justin Privitera, Tue Apr 19 12:07:06 PDT 2022
+//   Sorted the filetype names alphabetically so the lower case filetypes are 
+//   not at the end of the list.
 //
 // ****************************************************************************
 
@@ -408,6 +415,8 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
     int nTypes = plugins.GetTypes().size();
     fileFormatComboBox->addItem(tr("Guess from file name/extension"));
     FileOpenOptions *opts = GetViewerState()->GetFileOpenOptions();
+
+    QStringList *filetypes = new QStringList();
     
     for (int i = 0 ; i < nTypes ; i++)
     {
@@ -415,10 +424,17 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
         {
             if (opts->GetTypeNames()[j] == plugins.GetTypes()[i] && opts->GetEnabled()[j] )
             {
-                fileFormatComboBox->addItem(plugins.GetTypes()[i].c_str());
+                filetypes->push_back(plugins.GetTypes()[i].c_str());
                 break;
             }
         }
+    }
+
+    filetypes->sort(Qt::CaseInsensitive);
+
+    for (int i = 0; i < filetypes->size(); i ++)
+    {
+        fileFormatComboBox->addItem((*filetypes)[i]);
     }
 
     if (!oldtype.isNull())

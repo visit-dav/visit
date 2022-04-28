@@ -65,6 +65,12 @@
 //    Kathleen Biagas, Fri July 16, 2021
 //    Added windefs storage for WIN32DEFINES.
 //
+//    Kathleen Biagas, Tue April 27, 2022
+//    Added skipInfoGen, allowing plugins to specify that xml2info gen
+//    targets should not automatically created.
+//    For plugins that have custom code that isn't currently supported by
+//    generation tools.
+//
 // ****************************************************************************
 
 class PluginBase
@@ -87,6 +93,7 @@ public:
     bool    hasEngineSpecificCode;
     bool    onlyEnginePlugin;
     bool    noEnginePlugin;
+    bool    skipInfoGen;
 
     bool    createExpression;   // for Operator plugins
     QString exprInType;         // for Operator plugins
@@ -187,7 +194,8 @@ public:
           customvwfiles(false),
           vwfiles(),
           customjfiles(false),
-          jfiles()
+          jfiles(),
+          skipInfoGen(false)
     {
     }
 
