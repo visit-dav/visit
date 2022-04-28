@@ -16,6 +16,10 @@
 #
 #   Kathleen Biagas, Tues Oct 1 09:33:47 MST 2013
 #   On Windows, only look for adios2 and taustubs. 
+# 
+#   Justin Privitera, Wed Apr 27 17:46:52 PDT 2022
+#   Updated adios2 to 2.7.1 and added all the libraries it creates to the
+#   installation as well as additional logic for parallel building.
 #
 #****************************************************************************/
 
@@ -30,11 +34,13 @@ ELSE()
 ENDIF()
 
 if(NOT WIN32)
-    SET_UP_THIRD_PARTY(ADIOS2 ${LIB} include adios2 adios2_atl adios2_dill adios2_evpath adios2_ffs adios2_sst taustubs)
+    SET_UP_THIRD_PARTY(ADIOS2 ${LIB} include adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs adios2_taustubs adios2_cmenet adios2_cmzplenet adios2_cmepoll adios2_core adios2_cmfabric adios2_cmmulticast adios2_enet adios2_cmselect adios2_cxx11 adios2_cmsockets adios2_cmudp)
 else()
-    SET_UP_THIRD_PARTY(ADIOS2 ${LIB} include adios2 taustubs)
+    SET_UP_THIRD_PARTY(ADIOS2 ${LIB} include adios2_c adios2_taustubs)
 endif()
 
 IF(VISIT_PARALLEL)
-    SET_UP_THIRD_PARTY(ADIOS2_PAR ${LIB} include adios2_mpi)
+	SET(VISIT_PARALLEL_CFLAGS "-DADIOS2_USE_MPI ${VISIT_PARALLEL_CFLAGS}")
+	SET(VISIT_PARALLEL_CXXFLAGS "-DADIOS2_USE_MPI ${VISIT_PARALLEL_CXXFLAGS}")
+    SET_UP_THIRD_PARTY(ADIOS2_PAR ${LIB} include adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
 ENDIF(VISIT_PARALLEL)
