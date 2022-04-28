@@ -1720,7 +1720,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
 
     ugrid->SetPoints(points);
 
-    points->Delete();
+    // points->Delete();
 
    ////////////////////////////////////////////
    // Setup main topo
@@ -1741,26 +1741,79 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
 
     int ctype = ElementShapeNameToVTKCellType(ele_shape);
     int csize = VTKCellTypeSize(ctype);
-    int ncells = num_conn_idxs / csize;
+    // int ncells = num_conn_idxs / csize;
+    int ncells = 2;
     ida->SetNumberOfTuples(ncells * (csize + 1));
 
-    // check equality - these numbers really should be the same
-    if (ncells != num_ele || idxs_per_ele != csize)
-    {
-        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                             "Expected equality of MFEM and VTK layout variables.");
-    }
+    // // check equality - these numbers really should be the same
+    // if (ncells != num_ele || idxs_per_ele != csize)
+    // {
+    //     BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+    //                          "Expected equality of MFEM and VTK layout variables.");
+    // }
 
     for (int i = 0; i < ncells; i ++)
     {
         const mfem::Element *ele = mesh->GetElement(i);
         const int *ele_verts = ele->GetVertices();
 
+        // std::vector<int> thepts;
+
+        // // record the info
+        // for (int j = 0; j < csize; j ++)
+        // {
+        //     thepts.push_back(ele_verts[j]);
+        // }
+        // // write it
+
+        // Q? if there is in fact a problem w/ hexahedrons, how can I write
+        //    an arbitrary solution that will work for all kinds of vtk shapes?
+        //    Do I need to go case by case?
+
+        // // swapped and rotated - this renders for 1 cell
+        // ida->SetComponent((csize + 1) * i, 0, csize);
+        // ida->SetComponent((csize + 1) * i + 0 + 1, 0, ele_verts[6]);
+        // ida->SetComponent((csize + 1) * i + 1 + 1, 0, ele_verts[7]);
+        // ida->SetComponent((csize + 1) * i + 2 + 1, 0, ele_verts[4]);
+        // ida->SetComponent((csize + 1) * i + 3 + 1, 0, ele_verts[5]);
+        // ida->SetComponent((csize + 1) * i + 4 + 1, 0, ele_verts[2]);
+        // ida->SetComponent((csize + 1) * i + 5 + 1, 0, ele_verts[3]);
+        // ida->SetComponent((csize + 1) * i + 6 + 1, 0, ele_verts[0]);
+        // ida->SetComponent((csize + 1) * i + 7 + 1, 0, ele_verts[1]);
+
+        // just swapped - this renders for 1 cell
         ida->SetComponent((csize + 1) * i, 0, csize);
-        for (int j = 0; j < csize; j ++)
-        {
-            ida->SetComponent((csize + 1) * i + j + 1, 0, ele_verts[j]);
-        }
+        ida->SetComponent((csize + 1) * i + 0 + 1, 0, ele_verts[4]);
+        ida->SetComponent((csize + 1) * i + 1 + 1, 0, ele_verts[5]);
+        ida->SetComponent((csize + 1) * i + 2 + 1, 0, ele_verts[6]);
+        ida->SetComponent((csize + 1) * i + 3 + 1, 0, ele_verts[7]);
+        ida->SetComponent((csize + 1) * i + 4 + 1, 0, ele_verts[0]);
+        ida->SetComponent((csize + 1) * i + 5 + 1, 0, ele_verts[1]);
+        ida->SetComponent((csize + 1) * i + 6 + 1, 0, ele_verts[2]);
+        ida->SetComponent((csize + 1) * i + 7 + 1, 0, ele_verts[3]);
+
+        // // default - this renders for 1 cell
+        // ida->SetComponent((csize + 1) * i, 0, csize);
+        // ida->SetComponent((csize + 1) * i + 0 + 1, 0, ele_verts[0]);
+        // ida->SetComponent((csize + 1) * i + 1 + 1, 0, ele_verts[1]);
+        // ida->SetComponent((csize + 1) * i + 2 + 1, 0, ele_verts[2]);
+        // ida->SetComponent((csize + 1) * i + 3 + 1, 0, ele_verts[3]);
+        // ida->SetComponent((csize + 1) * i + 4 + 1, 0, ele_verts[4]);
+        // ida->SetComponent((csize + 1) * i + 5 + 1, 0, ele_verts[5]);
+        // ida->SetComponent((csize + 1) * i + 6 + 1, 0, ele_verts[6]);
+        // ida->SetComponent((csize + 1) * i + 7 + 1, 0, ele_verts[7]);
+
+        // for (int j = 0; j < csize; j ++)
+        // {
+        //     // ida->SetComponent((csize + 1) * i + j + 1, 0, ele_verts[j]);
+        //     // ida->SetComponent((csize + 1) * i + j + 1, 0, thepts[j]);
+        //     if (i == 0)
+        //     {
+        //         double pt[3];
+        //         points->GetPoint(ele_verts[j], pt);
+        //         std::cout << "pt" << j << ": (x,y,z)=(" << (10 * pt[0]) << "," << (10 * pt[1]) << "," << (10 * pt[2]) << ")" << std::endl;
+        //     }
+        // }
     }
 
     ca->SetCells(ncells, ida);
