@@ -20,6 +20,7 @@ function bv_blosc_disable
 # Where to get the module, the version, etc...
 function bv_blosc_info
 {
+    # note this is c-blosc, NOT c-blosc2
     export BLOSC_VERSION=${BLOSC_VERSION:-"1.21.1"}
     export BLOSC_FILE=${BLOSC_FILE:-"c-blosc-${BLOSC_VERSION}.tar.gz"}
     # the URL is commented out because the filename is different in the blosc release
@@ -51,8 +52,6 @@ function bv_blosc_depends_on
 
 function build_blosc
 {
-    # TODO there is a chance it might need zlib? need to investigate further
-
     #
     # Blosc uses CMake  -- make sure we have it built.
     #
