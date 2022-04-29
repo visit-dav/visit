@@ -2755,6 +2755,8 @@ return type : CLI_return_t
   e.db_type = "Silo"
   e.variables = ("u", "v")
   e.filename = "test_ex_db"
+  # Set the export directory
+  e.dirname = "."
   ExportDatabase(e)
 
 
