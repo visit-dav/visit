@@ -9,6 +9,10 @@
 #   Modifications:
 #     Paul Selby, Wed  4 Feb 17:30:32 GMT 2015
 #     Fixed name of _ensure function and check_if_installed call in _build
+# 
+#     Justin Privitera, Mon May  2 15:49:06 PDT 2022
+#     Removed dry run function.
+# 
 
 output=$1
 uppercase_out=`echo $1 | tr '[a-z]' '[A-Z]'`
