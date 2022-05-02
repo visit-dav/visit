@@ -12219,7 +12219,11 @@ or
 ::
 
     #% visit -cli  
-  f = open("script.py", "wt")
+  OpenDatabase("foo.silo")
+  AddPlot("Pseudocolor","dx")
+  DrawPlots()
+  ChangeActivePlotsVar("dy")
+  f = open("plot_dx_and_dy.py", "wt")
   WriteScript(f)
   f.close()
 
