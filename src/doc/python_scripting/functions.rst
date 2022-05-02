@@ -12200,7 +12200,7 @@ f : file
 **Description:**
 
     ``WriteScript()`` saves the current state of VisIt as a Python script that can be used later to reproduce a visualization. 
-    This is like using a session file but you can take the output of WriteScript and further customize it.
+    This is like saving a session file. But, the output of WriteScript can be further customized.
 
 
 **Example:**
