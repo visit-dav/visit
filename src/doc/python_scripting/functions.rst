@@ -12235,7 +12235,7 @@ Once the script is edited to satisfaction, it can be replayed it in VisIt like t
 
   visit -cli -s script.py
 
-Or, you can even use the script with VisIt's movie scripts as a means to set up your visualization: 
+Or, the script can even be used with VisIt's movie making scripts as a basis to set up the initial visualization: 
 
 ::
 
