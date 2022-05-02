@@ -67,13 +67,6 @@ function bv_xercesc_ensure
     fi
 }
 
-function bv_xercesc_dry_run
-{
-    if [[ "$DO_XERCESC" == "yes" ]] ; then
-        echo "Dry run option not set for Xerces-C"
-    fi
-}
-
 function build_xercesc
 {
 

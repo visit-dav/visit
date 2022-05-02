@@ -66,13 +66,6 @@ function bv_mili_ensure
     fi
 }
 
-function bv_mili_dry_run
-{
-    if [[ "$DO_MILI" == "yes" ]] ; then
-        echo "Dry run option not set for mili."
-    fi
-}
-
 # *************************************************************************** #
 #                          Function 8.2, build_mili                           #
 # *************************************************************************** #

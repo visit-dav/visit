@@ -99,13 +99,6 @@ function bv_${output}_ensure
     fi
 }
 
-#print what the module will do for building
-function bv_${output}_dry_run
-{
-   #print the build command..
-   echo \"${output} has no build commands set\"
-}
-
 function build_${output}
 {
     echo \"Build the module\"

@@ -558,13 +558,6 @@ function bv_python_ensure
     fi
 }
 
-function bv_python_dry_run
-{
-    if [[ "$DO_PYTHON" == "yes" ]] ; then
-        echo "Dry run option not set for python."
-    fi
-}
-
 function apply_python_osx104_patch
 {
     info "Patching Python: fix _environ issue for OS X 10.4"
