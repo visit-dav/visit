@@ -185,6 +185,9 @@ QvisFileOpenWindow::SetFilename(const QString &f)
 //    Added a filename field if showFilename is true. For Session dialog.
 //    Also hide files if Session dialog.
 //
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 
 void
@@ -207,7 +210,7 @@ QvisFileOpenWindow::CreateWindowContents()
 
     directoryList = new QListWidget(directoryWidget);
     directoryVBox->addWidget(directoryList);
-#if QT_VERSION >= 0x051100
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     int minColumnWidth = fontMetrics().horizontalAdvance("X");
 #else
     int minColumnWidth = fontMetrics().width("X");

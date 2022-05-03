@@ -159,6 +159,11 @@
 //    Removed hard-coded database preprocessor defines. Now specified by
 //    WIN32DEFINES in .xml file and parsed like other DEFINES.
 //
+//    Kathleen Biagas, Tue April 27, 2022 
+//    Add SKIP_INFO to ADD_DATABASE_CODE_GEN_TARGETS when skipInfoGen set in
+//    the plugin's .xml file.  Allows plugins with custom info code to not have
+//    their targets added to code gen targets.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -976,7 +981,10 @@ class CMakeGeneratorPlugin : public Plugin
         {
         out << "INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)" <<endl;
         out << endl;
-        out << "ADD_DATABASE_CODE_GEN_TARGETS(" << name << ")" << endl;
+        out << "ADD_DATABASE_CODE_GEN_TARGETS(" << name ;
+        if(skipInfoGen)
+            out << " SKIP_INFO";
+        out << ")" << endl;
         out << endl;
         }
         out << "SET(COMMON_SOURCES" << endl;
