@@ -12231,15 +12231,21 @@ or
   WriteScript(f)
   f.close()
 
-The resulting script will contain commands to set up plots in any visualization window that contained plots when WriteScript was called. 
-The resulting script may be more verbose than necessary. Users may find it useful to delete portions of the script that are not needed.  This will depend on how many plots there are or the complexity of the data. For example, it might useful to remove code related to setting a plot's SIL restriction.
-Once the script is edited to satisfaction, it can be replayed it in VisIt like this:
+The resulting script will contain commands to set up plots in any 
+visualization window that contained plots when WriteScript was called. 
+The resulting script may be more verbose than necessary. Users may find 
+it useful to delete portions of the script that are not needed.  This will 
+depend on how many plots there are or the complexity of the data. For 
+example, it might useful to remove code related to setting a plot's SIL 
+restriction. Once the script is edited to satisfaction, it can be replayed 
+it in VisIt like this:
 
 ::
 
   visit -cli -s script.py
 
-Or, the script can even be used with VisIt's movie making scripts as a basis to set up the initial visualization: 
+Or, the script can even be used with VisIt's movie making scripts as a basis 
+to set up the initial visualization: 
 
 ::
 
