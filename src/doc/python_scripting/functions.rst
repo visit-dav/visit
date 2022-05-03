@@ -12207,24 +12207,33 @@ f : file
     ``WriteScript()`` saves the current state of VisIt as a Python script 
     that can be used later to reproduce a visualization. This is like saving
     a session file. But, the output of WriteScript can be further customized.
+    The resulting script will contain commands to set up plots in any 
+    visualization window that contained plots when WriteScript was called. 
+    It may be more verbose than necessary, so users may find it useful to 
+    delete portions of the script that are not needed. This will depend on 
+    how many plots there are or the complexity of the data. For example, it 
+    might useful to remove code related to setting a plot's SIL restriction. 
+    Once the script is edited to satisfaction, it can be replayed it in VisIt.
+    See below.
 
 
 **Example:**
 
 ::
 
+  #
+  # First, create the script.
+  #
   #% visit -cli
   OpenDatabase("foo.silo")
   AddPlot("Pseudocolor","dx")
   DrawPlots()
   ChangeActivePlotsVar("dy")
   WriteScript("plot_dx_and_dy.py")
-
-or
-
-::
-
-    #% visit -cli  
+  #
+  # or
+  #
+  #% visit -cli  
   OpenDatabase("foo.silo")
   AddPlot("Pseudocolor","dx")
   DrawPlots()
@@ -12232,27 +12241,15 @@ or
   f = open("plot_dx_and_dy.py", "wt")
   WriteScript(f)
   f.close()
-
-The resulting script will contain commands to set up plots in any 
-visualization window that contained plots when WriteScript was called. 
-The resulting script may be more verbose than necessary. Users may find 
-it useful to delete portions of the script that are not needed.  This will 
-depend on how many plots there are or the complexity of the data. For 
-example, it might useful to remove code related to setting a plot's SIL 
-restriction. Once the script is edited to satisfaction, it can be replayed 
-it in VisIt like this:
-
-::
-
+  #
+  # Now run the script in a terminal to replay it in VisIt.
+  #
   visit -cli -s script.py
-
-Or, the script can even be used with VisIt's movie making scripts as a basis 
-to set up the initial visualization: 
-
-::
-
+  #
+  # Or, the script can be used with VisIt's movie making scripts as a 
+  # basis to set up the initial visualization: 
+  #
   visit -movie -format mpeg -geometry 800x800 -scriptfile script.py -output scriptmovie
-
 
 ZonePick
 --------
