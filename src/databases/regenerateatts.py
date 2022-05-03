@@ -17,6 +17,7 @@ def GetCreateNodeFiles():
     files = GetFilenames("grep -i CreateNode */*.code")
     retval = []
     for f in files:
+        #index = string.find(f, ':')
         index = f.find(':')
         if(index != -1):
             astr = f[:index]
@@ -40,17 +41,16 @@ def systemCommand(command):
 # Date:       Tue May 20 10:00:56 PDT 2003
 #
 # Modifications:
-#   Added optional tool argument, xml2atts is default if not provided.
-#   Fix find command for python 3. Support running on Windows via bash.
 #
 ###############################################################################
 
-def main(exeDir, tool):
+def main(exeDir):
     # Get the names of the XML files in this directory.
     files = GetFilenames("ls */*.xml")
 
     # Check out each XML file and regenerate the C and h files.
     for f in files:
+        #index = string.find(f, "/")
         index = f.find("/")
         dirName = ""
         if(index == -1):
@@ -60,10 +60,7 @@ def main(exeDir, tool):
             os.chdir(dirName)
 
         bname = f[index+1:-5]
-        if  sys.platform.startswith("win"):
-            command = "%s/visit.exe -%s -clobber %s.xml" % (exeDir,tool,bname)
-        else: 
-            command = "%s/%s -clobber %s.xml" % (exeDir,tool,bname)
+        command = "%s/visit.exe -xml2cmake -clobber %s.xml" % (exeDir,bname)
         systemCommand(command)
 
         # Go back up
@@ -84,10 +81,8 @@ def main(exeDir, tool):
 #
 # Call the main function
 #
-if len(sys.argv) > 2:
-    main(sys.argv[1], sys.argv[2])
-elif len(sys.argv) > 1:
-    main(sys.argv[1], "xml2atts")
+if len(sys.argv) > 1:
+    main(sys.argv[1])
 else:
-    print("usage: regenerateatts.py /path/to/xml2atts <tool>")
+    print("usage: regenerateatts.py /path/to/xml2atts")
 
