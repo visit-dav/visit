@@ -27,9 +27,6 @@
 #bv_<module>_print : prints info about the module
 #bv_<module>_print_usage : prints how to enable the module and any other relevant cmd line args
 #bv_<module>_host_profile : adds to config-site host profile cmake file
-#bv_<module>_dry_run : no clue what this does; it may have already been deprecated.
-#                      All modules at the time of writing (04/13/22) just print that they do not 
-#                      have a dry run option set.
 #bv_<module>_is_installed : returns true if the module is installed, and false otherwise
 #bv_<module>_is_enabled : returns true if the module is enabled, and false otherwise
 
@@ -46,9 +43,8 @@
 #7. bv_<module>_print prints info about the module
 #8. bv_<module>_print_usage prints how to enable the module and any other relevant cmd line args
 #9. bv_<module>_host_profile adds to config-site host profile cmake file
-#10. bv_<module>_dry_run see comment above about this function
-#11. bv_<module>_is_installed check if the module is properly installed
-#12. bv_<module>_is_enabled and finally check if it is enabled
+#10. bv_<module>_is_installed check if the module is properly installed
+#11. bv_<module>_is_enabled and finally check if it is enabled
 
 export VISIT_VERSION=${VISIT_VERSION:-"3.2.2"}
 
