@@ -130,7 +130,7 @@ ADD_TARGET_DEFINITIONS(EPseudocolorPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EPseudocolorPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EPseudocolorPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(EPseudocolorPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EPseudocolorPlot_par)
     ADD_TARGET_DEFINITIONS(EPseudocolorPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

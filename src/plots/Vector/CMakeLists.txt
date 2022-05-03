@@ -127,7 +127,7 @@ ADD_TARGET_DEFINITIONS(EVectorPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVectorPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EVectorPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(EVectorPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EVectorPlot_par)
     ADD_TARGET_DEFINITIONS(EVectorPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

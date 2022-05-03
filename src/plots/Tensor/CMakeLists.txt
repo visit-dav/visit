@@ -127,7 +127,7 @@ ADD_TARGET_DEFINITIONS(ETensorPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ETensorPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ETensorPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(ETensorPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ETensorPlot_par)
     ADD_TARGET_DEFINITIONS(ETensorPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

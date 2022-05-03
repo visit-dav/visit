@@ -127,7 +127,7 @@ ADD_TARGET_DEFINITIONS(ETruecolorPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ETruecolorPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ETruecolorPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(ETruecolorPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ETruecolorPlot_par)
     ADD_TARGET_DEFINITIONS(ETruecolorPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

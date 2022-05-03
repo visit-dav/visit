@@ -131,7 +131,7 @@ ADD_TARGET_DEFINITIONS(EHistogramPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EHistogramPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EHistogramPlot_par visitcommon avtpipeline_par  avtplotter_par avtexpressions_par )
+    TARGET_LINK_LIBRARIES(EHistogramPlot_par visitcommon avtpipeline_par avtplotter_par avtexpressions_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EHistogramPlot_par)
     ADD_TARGET_DEFINITIONS(EHistogramPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

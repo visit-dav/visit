@@ -125,7 +125,7 @@ ADD_TARGET_DEFINITIONS(EContourPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EContourPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EContourPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(EContourPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EContourPlot_par)
     ADD_TARGET_DEFINITIONS(EContourPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

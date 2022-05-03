@@ -133,7 +133,7 @@ ADD_TARGET_DEFINITIONS(EParallelCoordinatesPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EParallelCoordinatesPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EParallelCoordinatesPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(EParallelCoordinatesPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EParallelCoordinatesPlot_par)
     ADD_TARGET_DEFINITIONS(EParallelCoordinatesPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

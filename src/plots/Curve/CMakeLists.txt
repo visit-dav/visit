@@ -133,7 +133,7 @@ ADD_TARGET_DEFINITIONS(ECurvePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ECurvePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ECurvePlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(ECurvePlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ECurvePlot_par)
     ADD_TARGET_DEFINITIONS(ECurvePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

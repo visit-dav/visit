@@ -127,7 +127,7 @@ ADD_TARGET_DEFINITIONS(EBoundaryPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EBoundaryPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EBoundaryPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(EBoundaryPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EBoundaryPlot_par)
     ADD_TARGET_DEFINITIONS(EBoundaryPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

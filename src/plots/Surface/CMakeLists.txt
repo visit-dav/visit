@@ -127,7 +127,7 @@ ADD_TARGET_DEFINITIONS(ESurfacePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ESurfacePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ESurfacePlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(ESurfacePlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ESurfacePlot_par)
     ADD_TARGET_DEFINITIONS(ESurfacePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

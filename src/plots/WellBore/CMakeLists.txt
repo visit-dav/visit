@@ -129,7 +129,7 @@ ADD_TARGET_DEFINITIONS(EWellBorePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EWellBorePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EWellBorePlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(EWellBorePlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EWellBorePlot_par)
     ADD_TARGET_DEFINITIONS(EWellBorePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

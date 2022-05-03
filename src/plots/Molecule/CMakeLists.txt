@@ -132,7 +132,7 @@ ADD_TARGET_DEFINITIONS(EMoleculePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMoleculePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMoleculePlot_par visitcommon avtpipeline_par  avtplotter_par avtplotter_par )
+    TARGET_LINK_LIBRARIES(EMoleculePlot_par visitcommon avtpipeline_par avtplotter_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EMoleculePlot_par)
     ADD_TARGET_DEFINITIONS(EMoleculePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

@@ -130,7 +130,7 @@ ADD_TARGET_DEFINITIONS(ESubsetPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ESubsetPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ESubsetPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(ESubsetPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ESubsetPlot_par)
     ADD_TARGET_DEFINITIONS(ESubsetPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

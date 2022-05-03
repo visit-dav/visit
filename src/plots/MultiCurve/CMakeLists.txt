@@ -129,7 +129,7 @@ ADD_TARGET_DEFINITIONS(EMultiCurvePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMultiCurvePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMultiCurvePlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(EMultiCurvePlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EMultiCurvePlot_par)
     ADD_TARGET_DEFINITIONS(EMultiCurvePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

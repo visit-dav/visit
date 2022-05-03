@@ -155,7 +155,7 @@ ADD_TARGET_DEFINITIONS(EVolumePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVolumePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtpipeline_par  avtplotter_par avtexpressions_par vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
+    TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtpipeline_par avtplotter_par avtexpressions_par vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
     if(VISIT_OSPRAY)
         target_link_libraries(EVolumePlot_par ${OSPRAY_LIBRARIES})
     endif()

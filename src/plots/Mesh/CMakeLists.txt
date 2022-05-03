@@ -130,7 +130,7 @@ ADD_TARGET_DEFINITIONS(EMeshPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMeshPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMeshPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(EMeshPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EMeshPlot_par)
     ADD_TARGET_DEFINITIONS(EMeshPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

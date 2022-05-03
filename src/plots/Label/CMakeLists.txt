@@ -136,7 +136,7 @@ ADD_TARGET_DEFINITIONS(ELabelPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ELabelPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ELabelPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(ELabelPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ELabelPlot_par)
     ADD_TARGET_DEFINITIONS(ELabelPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

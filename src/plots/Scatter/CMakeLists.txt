@@ -133,7 +133,7 @@ ADD_TARGET_DEFINITIONS(EScatterPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EScatterPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EScatterPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(EScatterPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EScatterPlot_par)
     ADD_TARGET_DEFINITIONS(EScatterPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

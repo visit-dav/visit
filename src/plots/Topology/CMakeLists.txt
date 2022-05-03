@@ -127,7 +127,7 @@ ADD_TARGET_DEFINITIONS(ETopologyPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ETopologyPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ETopologyPlot_par visitcommon avtpipeline_par  avtplotter_par )
+    TARGET_LINK_LIBRARIES(ETopologyPlot_par visitcommon avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ETopologyPlot_par)
     ADD_TARGET_DEFINITIONS(ETopologyPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)
