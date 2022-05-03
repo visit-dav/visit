@@ -10133,7 +10133,7 @@ typeAsString : string
 
 **Description:**
 
-    The SetPrecisionType function sets the floating point pecision
+    The SetPrecisionType function sets the floating point precision
     used by VisIt's pipeline.  The function accepts a single argument
     either an integer or string representing the precision desired.
     0 = "float", 1 = "native", 2 = "double"
