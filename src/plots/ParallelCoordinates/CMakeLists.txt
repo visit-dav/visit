@@ -128,14 +128,14 @@ ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_D
 
 ADD_LIBRARY(EParallelCoordinatesPlot_ser ${LIBE_SOURCES})
 TARGET_LINK_LIBRARIES(EParallelCoordinatesPlot_ser visitcommon avtpipeline_ser avtplotter_ser )
-SET(INSTALLTARGETS ${INSTALLTARGETS} EParallelCoordinatesPlot_ser)
 ADD_TARGET_DEFINITIONS(EParallelCoordinatesPlot_ser ENGINE)
+SET(INSTALLTARGETS ${INSTALLTARGETS} EParallelCoordinatesPlot_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EParallelCoordinatesPlot_par ${LIBE_SOURCES})
     TARGET_LINK_LIBRARIES(EParallelCoordinatesPlot_par visitcommon avtpipeline_par avtplotter_par )
-    SET(INSTALLTARGETS ${INSTALLTARGETS} EParallelCoordinatesPlot_par)
     ADD_TARGET_DEFINITIONS(EParallelCoordinatesPlot_par ENGINE)
+    SET(INSTALLTARGETS ${INSTALLTARGETS} EParallelCoordinatesPlot_par)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})
