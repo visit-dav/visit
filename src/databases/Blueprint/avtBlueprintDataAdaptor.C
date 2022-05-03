@@ -1751,11 +1751,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
                              "Expected equality of MFEM and VTK layout variables.");
     }
 
-    // it looks like the number of cells is correct somehow
-    // and the connectivity of each element is totally distinct
-    // it looks like the number of vertices is correct too
-    // the new pts and legacy pts are the same for the 0 case and the 1 case
-
     for (int i = 0; i < ncells; i ++)
     {
         const mfem::Element *ele = mesh->GetElement(i);
@@ -1764,7 +1759,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
         // Q? if there is in fact a problem w/ hexahedrons, how can I write
         //    an arbitrary solution that will work for all kinds of vtk shapes?
         //    Do I need to go case by case?
-
+        ida->SetComponent((csize + 1) * i, 0, csize);
         for (int j = 0; j < csize; j ++)
         {
             ida->SetComponent((csize + 1) * i + j + 1, 0, ele_verts[j]);
