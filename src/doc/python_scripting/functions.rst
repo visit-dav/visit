@@ -12244,12 +12244,12 @@ f : file
   #
   # Now run the script in a terminal to replay it in VisIt.
   #
-  visit -cli -s script.py
+  # visit -cli -s script.py
   #
   # Or, the script can be used with VisIt's movie making scripts as a 
   # basis to set up the initial visualization: 
   #
-  visit -movie -format mpeg -geometry 800x800 -scriptfile script.py -output scriptmovie
+  # visit -movie -format mpeg -geometry 800x800 -scriptfile script.py -output scriptmovie
 
 
 ZonePick
