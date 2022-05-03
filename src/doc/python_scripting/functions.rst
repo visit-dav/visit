@@ -10126,11 +10126,12 @@ SetPrecisionType
 
 
 typeAsInt : integer
-    Precision type specified as an integer. 0 = float 1 = native 2 = double.
+    Precision type specified as an integer. Options are 0 for Float, 1
+    for Native, and 2 for Double. The default is 1.
 
 typeAsString : string
-    Precision type specified as a string. Options are 'float', 'native',
-    and 'double'.
+    Precision type specified as a string. Options are "Float", "Native",
+    and "Double". The default option is "Native."
 
 
 **Description:**
