@@ -486,6 +486,45 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
     }
 
+    void CMakeAdd_EngineTargets(QTextStream &out)
+    {
+        QString ptype = type;
+        ptype[0] = type[0].toUpper();
+        out << "ADD_LIBRARY(E"<<name<<ptype << "_ser ${LIBE_SOURCES}";
+        if (customwefiles)
+            out << " ${LIBE_WIN32_SOURCES}";
+        out << ")" << endl;
+        out << "TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_ser visitcommon avtpipeline_ser";
+        if(type == "plot")
+            out << " avtplotter_ser ";
+        else if (type == "operator")
+            out << " avtexpressions_ser avtfilters_ser ";
+        else
+            out << " avtdatabase_ser ";
+        out << ToString(libs) << ToString(elibsSer) << ")" << endl;
+        WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_ser"), "");
+        if (type != "operator" || hasEngineSpecificCode)
+            out << "ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_ser ENGINE)" << endl;
+        out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_ser)" << endl;
+        out << endl;
+        out << "IF(VISIT_PARALLEL)" << endl;
+        out << "    ADD_PARALLEL_LIBRARY(E"<<name<<ptype<<"_par ${LIBE_SOURCES})" << endl;
+        out << "    TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_par visitcommon avtpipeline_par";
+        if(type == "plot")
+            out << " avtplotter_par ";
+        else if (type == "operator")
+            out << " avtexpressions_par avtfilters_par ";
+        else
+            out << " avtdatabase_par ";
+        out << ToString(libs) << ToString(elibsPar) << ")" << endl;
+        WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_par"), "    ");
+        if (type != "operator" || hasEngineSpecificCode)
+            out << "    ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_par ENGINE)" << endl;
+        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_par)" << endl;
+        out << "ENDIF(VISIT_PARALLEL)" << endl;
+        out << endl;
+    }
+
     bool CustomFilesUseFortran(const std::vector<QString> &files) const
     {
         const char *ext[] = {".f", ".f77", ".f90", ".f95", ".for",
@@ -729,32 +768,8 @@ class CMakeGeneratorPlugin : public Plugin
         out << "ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
         out << endl;
 
-        out << "ADD_LIBRARY(E"<<name<<ptype << "_ser ${LIBE_SOURCES})" << endl;
-        out << "TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_ser visitcommon avtpipeline_ser";
-        if(type == "plot")
-            out << " avtplotter_ser ";
-        else
-            out << " avtexpressions_ser avtfilters_ser ";
-        out << ToString(libs) << ToString(elibsSer) << ")" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_ser"), "");
-        out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_ser)" << endl;
-        if(type == "plot" || hasEngineSpecificCode)
-            out << "ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_ser ENGINE)" << endl;
-        out << endl;
-        out << "IF(VISIT_PARALLEL)" << endl;
-        out << "    ADD_PARALLEL_LIBRARY(E"<<name<<ptype<<"_par ${LIBE_SOURCES})" << endl;
-        out << "    TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_par visitcommon avtpipeline_par";
-        if(type == "plot")
-            out << " avtplotter_par ";
-        else
-            out << " avtexpressions_par avtfilters_par ";
-        out << ToString(libs) << ToString(elibsPar) << ")" << endl;
-        WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_par"), "    ");
-        out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<ptype<<"_par)" << endl;
-        if(type == "plot" || hasEngineSpecificCode)
-            out << "    ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_par ENGINE)" << endl;
-        out << "ENDIF(VISIT_PARALLEL)" << endl;
-        out << endl;
+        CMakeAdd_EngineTargets(out);
+
         out << "VISIT_INSTALL_" << type.toUpper() << "_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_RTOD(" << type << "s ${INSTALLTARGETS})" << endl;
         if (using_dev)
@@ -983,23 +998,7 @@ class CMakeGeneratorPlugin : public Plugin
         }
         if(!noEnginePlugin)
         {
-            out << "ADD_LIBRARY(E"<<name<<"Database_ser ${LIBE_SOURCES}";
-            if (customwefiles)
-                out << " ${LIBE_WIN32_SOURCES}";
-            out << ")" << endl;
-            out << "TARGET_LINK_LIBRARIES(E"<<name<<"Database_ser visitcommon avtdatabase_ser avtpipeline_ser " << ToString(libs) << ToString(elibsSer) << ")" << endl;
-            WriteCMake_ConditionalTargetLinks(out, name, "E", "Database_ser", "");
-            out << "ADD_TARGET_DEFINITIONS(E"<<name<<"Database_ser ENGINE)" << endl;
-            out << "SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Database_ser)" << endl;
-            out << endl;
-            out << "IF(VISIT_PARALLEL)" << endl;
-            out << "    ADD_PARALLEL_LIBRARY(E"<<name<<"Database_par ${LIBE_SOURCES})" << endl;
-            out << "    TARGET_LINK_LIBRARIES(E"<<name<<"Database_par visitcommon avtdatabase_par avtpipeline_par " << ToString(libs) << ToString(elibsPar) << ")" << endl;
-            WriteCMake_ConditionalTargetLinks(out, name, "E", "Database_par", "    ");
-            out << "    ADD_TARGET_DEFINITIONS(E"<<name<<"Database_par ENGINE)" << endl;
-            out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} E"<<name<<"Database_par)" << endl;
-            out << "ENDIF(VISIT_PARALLEL)" << endl;
-            out << endl;
+            CMakeAdd_EngineTargets(out);
         }
         out << "VISIT_INSTALL_DATABASE_PLUGINS(${INSTALLTARGETS})" << endl;
         out << "VISIT_PLUGIN_TARGET_RTOD(databases ${INSTALLTARGETS})" << endl;
