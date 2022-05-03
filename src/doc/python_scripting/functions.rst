@@ -10077,7 +10077,9 @@ silr : SIL restriction object
     A SIL restriction object.
 
 all : integer
-    An optional argument that tells the function if the SIL restriction should be applied to all plots in the plot list (set all = 1) or not (set all = 0).
+    An optional argument that tells the function if the SIL restriction 
+    should be applied to all plots in the plot list (set all = 1) or not 
+    (set all = 0).
 
 return type : CLI_return_t
     The SetPlotSILRestriction function returns an integer value of 1 for
