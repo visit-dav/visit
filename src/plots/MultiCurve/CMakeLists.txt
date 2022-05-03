@@ -123,13 +123,13 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EMultiCurvePlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EMultiCurvePlot_ser visitcommon avtplotter_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EMultiCurvePlot_ser visitcommon avtpipeline_ser avtplotter_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EMultiCurvePlot_ser)
 ADD_TARGET_DEFINITIONS(EMultiCurvePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMultiCurvePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMultiCurvePlot_par visitcommon avtplotter_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EMultiCurvePlot_par visitcommon avtpipeline_par  avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EMultiCurvePlot_par)
     ADD_TARGET_DEFINITIONS(EMultiCurvePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

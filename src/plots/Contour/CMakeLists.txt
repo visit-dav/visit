@@ -119,13 +119,13 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EContourPlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EContourPlot_ser visitcommon avtplotter_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EContourPlot_ser visitcommon avtpipeline_ser avtplotter_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EContourPlot_ser)
 ADD_TARGET_DEFINITIONS(EContourPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EContourPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EContourPlot_par visitcommon avtplotter_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EContourPlot_par visitcommon avtpipeline_par  avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EContourPlot_par)
     ADD_TARGET_DEFINITIONS(EContourPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

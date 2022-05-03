@@ -124,13 +124,13 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ESubsetPlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(ESubsetPlot_ser visitcommon avtplotter_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(ESubsetPlot_ser visitcommon avtpipeline_ser avtplotter_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} ESubsetPlot_ser)
 ADD_TARGET_DEFINITIONS(ESubsetPlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ESubsetPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ESubsetPlot_par visitcommon avtplotter_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(ESubsetPlot_par visitcommon avtpipeline_par  avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ESubsetPlot_par)
     ADD_TARGET_DEFINITIONS(ESubsetPlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)
