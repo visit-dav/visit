@@ -166,6 +166,8 @@
 //
 //    Kathleen Biagas, Tue May 3, 2022
 //    Consolidate Plot and Operator code into one method.
+//    Consolidate engine target creation into one method.
+//    Add support for component-specific CXXFLAGS.
 //
 // ****************************************************************************
 
@@ -294,6 +296,49 @@ class CMakeGeneratorPlugin : public Plugin
         return retval;
     }
 #endif
+
+    QString
+    IncludesToString(const std::vector<QString> &vec, bool withNewline=false, bool atBeg=false) const
+    {
+        QString s;
+        QString sep;
+        if(withNewline)
+            sep="\n";
+        else 
+            sep=" ";
+
+        for(size_t i = 0; i < vec.size(); ++i)
+        {
+            if(atBeg)
+                s += sep;
+            if(vec[i].startsWith("${"))
+                s += (ConvertToProperVisItIncludeDir(vec[i]));
+            else if(vec[i].startsWith("$("))
+                s += (ConvertToProperVisItIncludeDir(ConvertDollarParenthesis(vec[i])));
+            else if(vec[i].startsWith("-I"))
+                s += (ConvertToProperVisItIncludeDir(vec[i].right(vec[i].size()-2)));
+            else
+                s += (ConvertToProperVisItIncludeDir(vec[i]));
+            if(!atBeg)
+                s += sep;
+        }
+        return s;
+    }
+
+    void
+    CMakeWrite_TargetIncludes(QTextStream &out, 
+                              const char *indent,
+                              const char *comp,
+                              const char *suffix,
+                              const std::vector<QString> &inc)
+    {
+        QString ptype = type;
+        ptype[0] = type[0].toUpper();
+        out << indent << "TARGET_INCLUDE_DIRECTORIES(" << comp << name;
+        out << ptype << suffix << " PRIVATE";
+        out << IncludesToString(inc, false, true);
+        out << ")" << endl;
+    }
 
     bool
     GetCondition(const QString &c, QStringList &cond, QStringList &val) const
@@ -494,6 +539,10 @@ class CMakeGeneratorPlugin : public Plugin
         if (customwefiles)
             out << " ${LIBE_WIN32_SOURCES}";
         out << ")" << endl;
+        if(!ecxxflagsSer.empty())
+        {
+            CMakeWrite_TargetIncludes(out, "", "E", "_ser", ecxxflagsSer);
+        }
         out << "TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_ser visitcommon avtpipeline_ser";
         if(type == "plot")
             out << " avtplotter_ser ";
@@ -509,6 +558,10 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
         out << "IF(VISIT_PARALLEL)" << endl;
         out << "    ADD_PARALLEL_LIBRARY(E"<<name<<ptype<<"_par ${LIBE_SOURCES})" << endl;
+        if(!ecxxflagsPar.empty())
+        {
+            CMakeWrite_TargetIncludes(out, "    ", "E", "_par", ecxxflagsPar);
+        }
         out << "    TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_par visitcommon avtpipeline_par";
         if(type == "plot")
             out << " avtplotter_par ";
@@ -989,6 +1042,10 @@ class CMakeGeneratorPlugin : public Plugin
             if (customwmfiles)
                 out << "     ${LIBM_WIN32_SOURCES}";
             out << ")" << endl;
+            if(!mcxxflags.empty())
+            {
+                CMakeWrite_TargetIncludes(out, "    ", "M", "", mcxxflags);
+            }
             out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser " << ToString(libs) << ToString(mlibs) << ")" << endl;
             WriteCMake_ConditionalTargetLinks(out, name, "M", "Database", "    ");
             out << "    ADD_TARGET_DEFINITIONS(M"<<name<<"Database MDSERVER)" << endl;

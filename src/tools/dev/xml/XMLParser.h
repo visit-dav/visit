@@ -198,6 +198,9 @@ ParseCharacters(const QString &buff_input)
 //    Kathleen Biagas, Wed April 27, 2022
 //    Added support for skipInfoGen flag in db plugin xml files.
 //
+//    Kathleen Biagas, Tue May 3, 2022
+//    Added support for component-specific CXXFLAGS.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -280,7 +283,15 @@ class XMLParser : public QXmlDefaultHandler
             }
             else if (currentTag == "CXXFLAGS")
             {
-                currentPlugin->cxxflags.push_back(strings[i]);
+                if (currentCxxFlagsComponents & COMP_MDSERVER)
+                    currentPlugin->mcxxflags.push_back(strings[i]);
+                if (currentCxxFlagsComponents & COMP_ENGINESER)
+                    currentPlugin->ecxxflagsSer.push_back(strings[i]);
+                if (currentCxxFlagsComponents & COMP_ENGINEPAR)
+                    currentPlugin->ecxxflagsPar.push_back(strings[i]);
+                // case with no flags (libs for all components)
+                if (currentCxxFlagsComponents & COMP_ALL)
+                    currentPlugin->cxxflags.push_back(strings[i]);
             }
             else if (currentTag == "DEFINES")
             {
@@ -511,6 +522,42 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "CXXFLAGS")
         {
+            currentCxxFlagsComponents = COMP_NONE;
+            // if we have a "components" attribute, we need to find out
+            // which component the libs are for.
+            // if not, we have libs for all comps
+            if(atts.index("components") == -1)
+            {
+                currentCxxFlagsComponents = COMP_ALL;
+            }
+            else
+            {
+                QString comps         = atts.value("components");
+                std::vector<QString> comps_split = SplitValues(comps);
+                int comps_current = COMP_NONE;
+
+                for (size_t i=0; i<comps_split.size(); i++)
+                {
+                    if (comps_split[i] == "M")
+                    {
+                        currentPlugin->mcxxflags.clear();
+                        comps_current |= COMP_MDSERVER;
+                    }
+                    else if (comps_split[i] == "ESer")
+                    {
+                        currentPlugin->ecxxflagsSer.clear();
+                        comps_current |= COMP_ENGINESER;
+                    }
+                    else if (comps_split[i] == "EPar")
+                    {
+                        currentPlugin->ecxxflagsPar.clear();
+                        comps_current |= COMP_ENGINEPAR;
+                    }
+                    else
+                        throw QString("invalid file '%1' for components attribute of CXXFLAGS tag").arg(comps_split[i]);
+                }
+                currentCxxFlagsComponents = comps_current;
+            }
         }
         else if (tag == "DEFINES")
         {
@@ -803,6 +850,7 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "CXXFLAGS")
         {
+            currentCxxFlagsComponents = COMP_NONE;
         }
         else if (tag == "DEFINES")
         {
@@ -842,6 +890,7 @@ class XMLParser : public QXmlDefaultHandler
   private:
     int             currentFileComponents;
     int             currentLibComponents;
+    int             currentCxxFlagsComponents;
     Include        *currentInclude;
     Constant      **currentConstants;
     Function      **currentFunctions;
