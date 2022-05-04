@@ -40,5 +40,7 @@
       ADIOS2HelperFuncs.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ADIOS2.code">
+      <Function name="ADIOS2CommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>
