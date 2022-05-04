@@ -126,15 +126,15 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EMoleculePlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EMoleculePlot_ser visitcommon avtplotter_ser avtpipeline_ser avtplotter_ser )
-SET(INSTALLTARGETS ${INSTALLTARGETS} EMoleculePlot_ser)
+TARGET_LINK_LIBRARIES(EMoleculePlot_ser visitcommon avtpipeline_ser avtplotter_ser avtplotter_ser )
 ADD_TARGET_DEFINITIONS(EMoleculePlot_ser ENGINE)
+SET(INSTALLTARGETS ${INSTALLTARGETS} EMoleculePlot_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMoleculePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMoleculePlot_par visitcommon avtplotter_par avtpipeline_par avtplotter_par )
-    SET(INSTALLTARGETS ${INSTALLTARGETS} EMoleculePlot_par)
+    TARGET_LINK_LIBRARIES(EMoleculePlot_par visitcommon avtpipeline_par avtplotter_par avtplotter_par )
     ADD_TARGET_DEFINITIONS(EMoleculePlot_par ENGINE)
+    SET(INSTALLTARGETS ${INSTALLTARGETS} EMoleculePlot_par)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})

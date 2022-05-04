@@ -71,6 +71,9 @@
 //    For plugins that have custom code that isn't currently supported by
 //    generation tools.
 //
+//    Kathleen Biagas, Tue May 3, 2022
+//    Added support for component-specific CXXFLAGS, LDFLAGS and DEFINES.
+//
 // ****************************************************************************
 
 class PluginBase
@@ -123,14 +126,23 @@ public:
     std::vector<QString> wmfiles;    // mdserver files for windows
     bool custommlibs;
     std::vector<QString> mlibs;      // mdserver libs
+    std::vector<QString> mcxxflags;  // mdserver cxxflags
+    std::vector<QString> mldflags;   // mdserver ldflags
+    std::vector<QString> mdefs;      // mdserver defines
     bool customefiles;
     std::vector<QString> efiles;     // engine files
     bool customwefiles;
     std::vector<QString> wefiles;    // engine files for windows
     bool customelibsSer;
-    std::vector<QString> elibsSer;      // engine libs
+    std::vector<QString> elibsSer;      // serial engine libs
+    std::vector<QString> ecxxflagsSer;  // serial engine cxxflags
+    std::vector<QString> eldflagsSer;   // serial engine ldflags
+    std::vector<QString> edefsSer;      // serial engine defines
     bool customelibsPar;
-    std::vector<QString> elibsPar;      // engine libs
+    std::vector<QString> elibsPar;      // parallel engine libs
+    std::vector<QString> ecxxflagsPar;  // parallel engine cxxflags
+    std::vector<QString> eldflagsPar;   // parallel engine ldflags
+    std::vector<QString> edefsPar;      // parallel engine defines
     bool customwfiles;
     std::vector<QString> wfiles;     // widgets
     bool customvwfiles;
@@ -181,14 +193,23 @@ public:
           wmfiles(),
           custommlibs(false),
           mlibs(),
+          mcxxflags(),
+          mldflags(),
+          mdefs(),
           customefiles(false),
           efiles(),
           customwefiles(false),
           wefiles(),
           customelibsSer(false),
           elibsSer(),
+          ecxxflagsSer(),
+          eldflagsSer(),
+          edefsSer(),
           customelibsPar(false),
           elibsPar(),
+          ecxxflagsPar(),
+          eldflagsPar(),
+          edefsPar(),
           customwfiles(false),
           wfiles(),
           customvwfiles(false),

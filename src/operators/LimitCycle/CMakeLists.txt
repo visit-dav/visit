@@ -103,6 +103,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 
     ADD_LIBRARY(VLimitCycleOperator ${LIBV_SOURCES})
     TARGET_LINK_LIBRARIES(VLimitCycleOperator visitcommon viewer )
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} GLimitCycleOperator VLimitCycleOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -129,12 +130,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ELimitCycleOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(ELimitCycleOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser avtivp_ser )
+TARGET_LINK_LIBRARIES(ELimitCycleOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser avtivp_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} ELimitCycleOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ELimitCycleOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ELimitCycleOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par avtivp_par )
+    TARGET_LINK_LIBRARIES(ELimitCycleOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par avtivp_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ELimitCycleOperator_par)
 ENDIF(VISIT_PARALLEL)
 
