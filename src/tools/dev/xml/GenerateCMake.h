@@ -350,7 +350,7 @@ class CMakeGeneratorPlugin : public Plugin
         QString ptype = type;
         ptype[0] = type[0].toUpper();
         out << indent << "TARGET_LINK_DIRECTORIES(" << comp << name;
-        out << ptype << suffix << " PRIVATE" << ToString(ld)<< ")" << endl;
+        out << ptype << suffix << " PRIVATE " << ToString(ld)<< ")" << endl;
     }
 
     bool
