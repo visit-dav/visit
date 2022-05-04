@@ -167,7 +167,7 @@
 //    Kathleen Biagas, Tue May 3, 2022
 //    Consolidate Plot and Operator code into one method.
 //    Consolidate engine target creation into one method.
-//    Add support for component-specific CXXFLAGS and LDFLAGS.
+//    Add support for component-specific CXXFLAGS, LDFLAGS and DEFINES.
 //
 // ****************************************************************************
 
@@ -351,6 +351,19 @@ class CMakeGeneratorPlugin : public Plugin
         ptype[0] = type[0].toUpper();
         out << indent << "TARGET_LINK_DIRECTORIES(" << comp << name;
         out << ptype << suffix << " PRIVATE " << ToString(ld)<< ")" << endl;
+    }
+
+    void
+    CMakeWrite_TargetDefines(QTextStream &out, 
+                              const char *indent,
+                              const char *comp,
+                              const char *suffix,
+                              const std::vector<QString> &def)
+    {
+        QString ptype = type;
+        ptype[0] = type[0].toUpper();
+        out << indent << "TARGET_COMPILE_DEFINITIONS(" << comp << name;
+        out << ptype << suffix << " PRIVATE " << ToString(def)<< ")" << endl;
     }
 
     bool
@@ -552,6 +565,10 @@ class CMakeGeneratorPlugin : public Plugin
         if (customwefiles)
             out << " ${LIBE_WIN32_SOURCES}";
         out << ")" << endl;
+        if(!edefsSer.empty())
+        {
+            CMakeWrite_TargetDefines(out, "", "E", "_ser", edefsSer);
+        }
         if(!ecxxflagsSer.empty())
         {
             CMakeWrite_TargetIncludes(out, "", "E", "_ser", ecxxflagsSer);
@@ -575,6 +592,10 @@ class CMakeGeneratorPlugin : public Plugin
         out << endl;
         out << "IF(VISIT_PARALLEL)" << endl;
         out << "    ADD_PARALLEL_LIBRARY(E"<<name<<ptype<<"_par ${LIBE_SOURCES})" << endl;
+        if(!edefsPar.empty())
+        {
+            CMakeWrite_TargetDefines(out, "    ", "E", "_par", edefsPar);
+        }
         if(!ecxxflagsPar.empty())
         {
             CMakeWrite_TargetIncludes(out, "    ", "E", "_par", ecxxflagsPar);
@@ -1063,6 +1084,10 @@ class CMakeGeneratorPlugin : public Plugin
             if (customwmfiles)
                 out << "     ${LIBM_WIN32_SOURCES}";
             out << ")" << endl;
+            if(!mdefs.empty())
+            {
+                CMakeWrite_TargetDefines(out, "    ", "M", "", mdefs);
+            }
             if(!mcxxflags.empty())
             {
                 CMakeWrite_TargetIncludes(out, "    ", "M", "", mcxxflags);

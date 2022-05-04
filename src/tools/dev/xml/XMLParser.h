@@ -302,7 +302,15 @@ class XMLParser : public QXmlDefaultHandler
             }
             else if (currentTag == "DEFINES")
             {
-                currentPlugin->defs.push_back(strings[i]);
+                if (currentDefComponents & COMP_MDSERVER)
+                    currentPlugin->mdefs.push_back(strings[i]);
+                if (currentDefComponents & COMP_ENGINESER)
+                    currentPlugin->edefsSer.push_back(strings[i]);
+                if (currentDefComponents & COMP_ENGINEPAR)
+                    currentPlugin->edefsPar.push_back(strings[i]);
+                // case with no flags (libs for all components)
+                if (currentDefComponents & COMP_ALL)
+                    currentPlugin->defs.push_back(strings[i]);
             }
             else if (currentTag == "WIN32DEFINES")
             {
@@ -576,6 +584,42 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "DEFINES")
         {
+            currentDefComponents = COMP_NONE;
+            // if we have a "components" attribute, we need to find out
+            // which component the libs are for.
+            // if not, we have libs for all comps
+            if(atts.index("components") == -1)
+            {
+                currentDefComponents = COMP_ALL;
+            }
+            else
+            {
+                QString comps = atts.value("components");
+                std::vector<QString> comps_split = SplitValues(comps);
+                int comps_current = COMP_NONE;
+
+                for (size_t i=0; i<comps_split.size(); i++)
+                {
+                    if (comps_split[i] == "M")
+                    {
+                        currentPlugin->mdefs.clear();
+                        comps_current |= COMP_MDSERVER;
+                    }
+                    else if (comps_split[i] == "ESer")
+                    {
+                        currentPlugin->edefsSer.clear();
+                        comps_current |= COMP_ENGINESER;
+                    }
+                    else if (comps_split[i] == "EPar")
+                    {
+                        currentPlugin->edefsPar.clear();
+                        comps_current |= COMP_ENGINEPAR;
+                    }
+                    else
+                        throw QString("invalid file '%1' for components attribute of DEFINES tag").arg(comps_split[i]);
+                }
+                currentDefComponents = comps_current;
+            }
         }
         else if (tag == "WIN32DEFINES")
         {
@@ -905,6 +949,7 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "DEFINES")
         {
+            currentDefComponents = COMP_NONE;
         }
         else if (tag == "WIN32DEFINES")
         {
@@ -944,6 +989,7 @@ class XMLParser : public QXmlDefaultHandler
     int             currentLibComponents;
     int             currentCxxFlagsComponents;
     int             currentLdFlagsComponents;
+    int             currentDefComponents;
     Include        *currentInclude;
     Constant      **currentConstants;
     Function      **currentFunctions;

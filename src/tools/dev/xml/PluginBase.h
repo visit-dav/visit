@@ -72,7 +72,7 @@
 //    generation tools.
 //
 //    Kathleen Biagas, Tue May 3, 2022
-//    Added support for component-specific CXXFLAGS and LDFLAGS.
+//    Added support for component-specific CXXFLAGS, LDFLAGS and DEFINES.
 //
 // ****************************************************************************
 
@@ -128,6 +128,7 @@ public:
     std::vector<QString> mlibs;      // mdserver libs
     std::vector<QString> mcxxflags;  // mdserver cxxflags
     std::vector<QString> mldflags;   // mdserver ldflags
+    std::vector<QString> mdefs;      // mdserver defines
     bool customefiles;
     std::vector<QString> efiles;     // engine files
     bool customwefiles;
@@ -136,10 +137,12 @@ public:
     std::vector<QString> elibsSer;      // serial engine libs
     std::vector<QString> ecxxflagsSer;  // serial engine cxxflags
     std::vector<QString> eldflagsSer;   // serial engine ldflags
+    std::vector<QString> edefsSer;      // serial engine defines
     bool customelibsPar;
     std::vector<QString> elibsPar;      // parallel engine libs
     std::vector<QString> ecxxflagsPar;  // parallel engine cxxflags
     std::vector<QString> eldflagsPar;   // parallel engine ldflags
+    std::vector<QString> edefsPar;      // parallel engine defines
     bool customwfiles;
     std::vector<QString> wfiles;     // widgets
     bool customvwfiles;
@@ -192,6 +195,7 @@ public:
           mlibs(),
           mcxxflags(),
           mldflags(),
+          mdefs(),
           customefiles(false),
           efiles(),
           customwefiles(false),
@@ -200,10 +204,12 @@ public:
           elibsSer(),
           ecxxflagsSer(),
           eldflagsSer(),
+          edefsSer(),
           customelibsPar(false),
           elibsPar(),
           ecxxflagsPar(),
           eldflagsPar(),
+          edefsPar(),
           customwfiles(false),
           wfiles(),
           customvwfiles(false),

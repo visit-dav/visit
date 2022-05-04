@@ -95,7 +95,8 @@
 //    Added hl argument for haslicense.
 //
 //    Kathleen Biagas, Tue May 3, 2022
-//    Added component-specific CXXFLAGS, LDFLAGS and LIBS support to Print.
+//    Added component-specific CXXFLAGS, LDFLAGS, LIBS and DEFINES support
+//    to Print.
 //
 // ****************************************************************************
 
@@ -292,6 +293,30 @@ class Plugin : public PluginBase
         {
             WriteOpenTag(out, "DEFINES", indent);
             WriteValues(out, defs, indent);
+            WriteCloseTag(out, "DEFINES", indent);
+        }
+        if (mdefs.size() > 0)
+        {
+            StartOpenTag(out, "DEFINES", indent);
+            WriteTagAttr(out, "components", "M");
+            FinishOpenTag(out);
+            WriteValues(out, mdefs, indent);
+            WriteCloseTag(out, "DEFINES", indent);
+        }
+        if (edefsSer.size() > 0)
+        {
+            StartOpenTag(out, "DEFINES", indent);
+            WriteTagAttr(out, "components", "ESer");
+            FinishOpenTag(out);
+            WriteValues(out, edefsSer, indent);
+            WriteCloseTag(out, "DEFINES", indent);
+        }
+        if (edefsPar.size() > 0)
+        {
+            StartOpenTag(out, "DEFINES", indent);
+            WriteTagAttr(out, "components", "EPar");
+            FinishOpenTag(out);
+            WriteValues(out, edefsPar, indent);
             WriteCloseTag(out, "DEFINES", indent);
         }
 
