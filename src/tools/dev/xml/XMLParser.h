@@ -41,6 +41,7 @@ ParseCharacters(const QString &buff_input)
 
     // split one string into a list of strings when delimited by whitespace
     // or quotation marks, e.g.   <string1  "string two"  ""  string4>
+    // if a quote is escaped, it will be kept
     QString buff(buff_input.trimmed());
     bool quote=false;
     QString tmp="";
@@ -61,6 +62,11 @@ ParseCharacters(const QString &buff_input)
             quote = false;
             output.push_back(tmp);
             tmp="";
+        }
+        else if (buff[i] == '\\' && i < buff.length()-1 && buff[i+1] == '"')
+        {
+            ++i;
+            tmp += buff[i];
         }
         else
         {
@@ -200,6 +206,7 @@ ParseCharacters(const QString &buff_input)
 //
 //    Kathleen Biagas, Tue May 3, 2022
 //    Added support for component-specific CXXFLAGS.
+//    Add ability for escaped quotes to be retained.
 //
 // ****************************************************************************
 
