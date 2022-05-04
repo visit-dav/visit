@@ -167,7 +167,7 @@
 //    Kathleen Biagas, Tue May 3, 2022
 //    Consolidate Plot and Operator code into one method.
 //    Consolidate engine target creation into one method.
-//    Add support for component-specific CXXFLAGS.
+//    Add support for component-specific CXXFLAGS and LDFLAGS.
 //
 // ****************************************************************************
 
@@ -338,6 +338,19 @@ class CMakeGeneratorPlugin : public Plugin
         out << ptype << suffix << " PRIVATE";
         out << IncludesToString(inc, false, true);
         out << ")" << endl;
+    }
+
+    void
+    CMakeWrite_TargetLinkDirs(QTextStream &out, 
+                              const char *indent,
+                              const char *comp,
+                              const char *suffix,
+                              const std::vector<QString> &ld)
+    {
+        QString ptype = type;
+        ptype[0] = type[0].toUpper();
+        out << indent << "TARGET_LINK_DIRECTORIES(" << comp << name;
+        out << ptype << suffix << " PRIVATE" << ToString(ld)<< ")" << endl;
     }
 
     bool
@@ -543,6 +556,10 @@ class CMakeGeneratorPlugin : public Plugin
         {
             CMakeWrite_TargetIncludes(out, "", "E", "_ser", ecxxflagsSer);
         }
+        if(!ecxxflagsSer.empty())
+        {
+            CMakeWrite_TargetLinkDirs(out, "", "E", "_ser", eldflagsSer);
+        }
         out << "TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_ser visitcommon avtpipeline_ser";
         if(type == "plot")
             out << " avtplotter_ser ";
@@ -561,6 +578,10 @@ class CMakeGeneratorPlugin : public Plugin
         if(!ecxxflagsPar.empty())
         {
             CMakeWrite_TargetIncludes(out, "    ", "E", "_par", ecxxflagsPar);
+        }
+        if(!eldflagsPar.empty())
+        {
+            CMakeWrite_TargetLinkDirs(out, "    ", "E", "_par", eldflagsPar);
         }
         out << "    TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_par visitcommon avtpipeline_par";
         if(type == "plot")
@@ -1045,6 +1066,10 @@ class CMakeGeneratorPlugin : public Plugin
             if(!mcxxflags.empty())
             {
                 CMakeWrite_TargetIncludes(out, "    ", "M", "", mcxxflags);
+            }
+            if(!mldflags.empty())
+            {
+                CMakeWrite_TargetLinkDirs(out, "    ", "M", "", mldflags);
             }
             out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser " << ToString(libs) << ToString(mlibs) << ")" << endl;
             WriteCMake_ConditionalTargetLinks(out, name, "M", "Database", "    ");

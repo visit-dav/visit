@@ -8,6 +8,14 @@
       ${MOAB_MPI_INCLUDE_DIR}
       ${HDF5_MPI_INCLUDE_DIR}
     </CXXFLAGS>
+    <LDFLAGS components="M,ESer">
+      ${MOAB_LIBRARY_DIR}
+      ${HDF5_LIBRARY_DIR}
+    </LDFLAGS>
+    <LDFLAGS components="EPar">
+      ${MOAB_MPI_LIBRARY_DIR}
+      ${HDF5_MPI_LIBRARY_DIR}
+    </LDFLAGS>
     <LIBS components="M,ESer">
       ${MOAB_LIB}
       ${HDF5_LIB}

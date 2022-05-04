@@ -205,7 +205,7 @@ ParseCharacters(const QString &buff_input)
 //    Added support for skipInfoGen flag in db plugin xml files.
 //
 //    Kathleen Biagas, Tue May 3, 2022
-//    Added support for component-specific CXXFLAGS.
+//    Added support for component-specific CXXFLAGS and LDFLAGS.
 //    Add ability for escaped quotes to be retained.
 //
 // ****************************************************************************
@@ -310,7 +310,15 @@ class XMLParser : public QXmlDefaultHandler
             }
             else if (currentTag == "LDFLAGS")
             {
-                currentPlugin->ldflags.push_back(strings[i]);
+                if (currentLdFlagsComponents & COMP_MDSERVER)
+                    currentPlugin->mldflags.push_back(strings[i]);
+                if (currentLdFlagsComponents & COMP_ENGINESER)
+                    currentPlugin->eldflagsSer.push_back(strings[i]);
+                if (currentLdFlagsComponents & COMP_ENGINEPAR)
+                    currentPlugin->eldflagsPar.push_back(strings[i]);
+                // case with no flags (libs for all components)
+                if (currentLdFlagsComponents & COMP_ALL)
+                    currentPlugin->ldflags.push_back(strings[i]);
             }
             else if (currentTag == "FilePatterns")
             {
@@ -539,7 +547,7 @@ class XMLParser : public QXmlDefaultHandler
             }
             else
             {
-                QString comps         = atts.value("components");
+                QString comps = atts.value("components");
                 std::vector<QString> comps_split = SplitValues(comps);
                 int comps_current = COMP_NONE;
 
@@ -574,6 +582,42 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "LDFLAGS")
         {
+            currentLdFlagsComponents = COMP_NONE;
+            // if we have a "components" attribute, we need to find out
+            // which component the libs are for.
+            // if not, we have libs for all comps
+            if(atts.index("components") == -1)
+            {
+                currentLdFlagsComponents = COMP_ALL;
+            }
+            else
+            {
+                QString comps = atts.value("components");
+                std::vector<QString> comps_split = SplitValues(comps);
+                int comps_current = COMP_NONE;
+
+                for (size_t i=0; i<comps_split.size(); i++)
+                {
+                    if (comps_split[i] == "M")
+                    {
+                        currentPlugin->mldflags.clear();
+                        comps_current |= COMP_MDSERVER;
+                    }
+                    else if (comps_split[i] == "ESer")
+                    {
+                        currentPlugin->eldflagsSer.clear();
+                        comps_current |= COMP_ENGINESER;
+                    }
+                    else if (comps_split[i] == "EPar")
+                    {
+                        currentPlugin->eldflagsPar.clear();
+                        comps_current |= COMP_ENGINEPAR;
+                    }
+                    else
+                        throw QString("invalid file '%1' for components attribute of LDFLAGS tag").arg(comps_split[i]);
+                }
+                currentLdFlagsComponents = comps_current;
+            }
         }
         else if (tag == "FilePatterns")
         {
@@ -867,6 +911,7 @@ class XMLParser : public QXmlDefaultHandler
         }
         else if (tag == "LDFLAGS")
         {
+            currentLdFlagsComponents = COMP_NONE;
         }
         else if (tag == "LIBS")
         {
@@ -898,6 +943,7 @@ class XMLParser : public QXmlDefaultHandler
     int             currentFileComponents;
     int             currentLibComponents;
     int             currentCxxFlagsComponents;
+    int             currentLdFlagsComponents;
     Include        *currentInclude;
     Constant      **currentConstants;
     Function      **currentFunctions;
