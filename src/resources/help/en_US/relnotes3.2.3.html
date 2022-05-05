@@ -41,6 +41,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added polyhedral mesh support to the Blueprint Plugin. Now, if you ask visit to read a polyhedral mesh, it will automatically convert the mesh to a tetrahedral mesh, as well as convert the fields as needed. It will also keep track of original element ids so that you don't see the new lines from the resulting tetrahedra.</li>
   <li>Added new <i>ghost_zoneid</i> function to the <i>Mesh</i> submenu in the Expressions window.</li>
   <li>In the file open window, next to "Open file as type:" when you click "Guess from file name/extension", the list of file types is now sorted in alphabetical case-insensitive order. The same change has been made in the list of Databases in the Plugin Manager.</li>
+  <li>VisIt-generated expressions are no longer included in VTK, Blueprint, and Silo exports.</li>
 </ul>
 
 <a name="Dev_changes"></a>

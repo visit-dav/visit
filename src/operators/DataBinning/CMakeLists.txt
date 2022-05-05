@@ -104,6 +104,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 
     ADD_LIBRARY(VDataBinningOperator ${LIBV_SOURCES})
     TARGET_LINK_LIBRARIES(VDataBinningOperator visitcommon viewer )
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} GDataBinningOperator VDataBinningOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -130,12 +131,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EDataBinningOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EDataBinningOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EDataBinningOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EDataBinningOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EDataBinningOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EDataBinningOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EDataBinningOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EDataBinningOperator_par)
 ENDIF(VISIT_PARALLEL)
 

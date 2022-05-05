@@ -65,6 +65,7 @@
       ${HDF5_LIB}
     </LIBS>
     <FilePatterns>
+      *.tvsh5
       *vsh5
       *.h5
     </FilePatterns>
