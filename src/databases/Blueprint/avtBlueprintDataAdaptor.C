@@ -1708,7 +1708,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     points->SetDataTypeToDouble();
     points->SetNumberOfPoints(num_vertices);
 
-    double *coords_ptr = mesh->GetVertex(0);
+    double *coords_ptr = mesh->GetNodes()->GetData();
 
     for (int i = 0; i < num_vertices; i ++)
     {
@@ -1809,7 +1809,39 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
 
     // refine the mesh and convert to vtk
     mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, mfem::BasisType::GaussLobatto);
+    
+
+    // Check if the mesh is periodic.
+    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
+                                     (mesh->GetNodes()->FESpace()->FEColl());
+    if (L2_coll == NULL)
+    {
+        // periodic mesh
+        std::cout << "I'm not periodic" << std::endl;
+    }
+    else
+    {
+        FiniteElementCollection *fec_sub = NULL;
+        FiniteElementSpace *fes_sub = NULL;;
+        GridFunction *xsub = NULL;
+
+        // non period mesh
+        std::cout << "I am periodic :)" << std::endl;
+
+        lo_mesh->SetCurvature(1, true);
+        const int dim = mesh->Dimension();
+
+        fec_sub = new L2_FECollection(1, dim, BasisType::ClosedUniform);
+        fes_sub = new FiniteElementSpace(lo_mesh, fec_sub, dim);
+        xsub = new GridFunction(fes_sub);
+        lo_mesh->SetNodalGridFunction(xsub);
+        GridFunction *coarse = mesh->GetNodes();
+        InterpolationGridTransfer transf(*coarse->FESpace(), *fes_sub);
+        transf.ForwardOperator().Mult(*coarse, *xsub);
+    }
+
     return LowOrderMeshToVTK(lo_mesh);
+
 
     // TODO field stuff: tackle later once mesh stuff is done
 
