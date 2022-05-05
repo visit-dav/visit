@@ -91,13 +91,6 @@ function bv_conduit_ensure
     fi
 }
 
-function bv_conduit_dry_run
-{
-    if [[ "$DO_CONDUIT" == "yes" ]] ; then
-        echo "Dry run option not set for Conduit."
-    fi
-}
-
 # Fix problem in Conduit 0.8.0 where it includes component names in the 
 # scalars that it writes to CSV files.
 function apply_relay_csv_patch
@@ -142,7 +135,6 @@ function apply_conduit_patch
 
     return 0
 }
-
 
 # *************************************************************************** #
 # build_conduit

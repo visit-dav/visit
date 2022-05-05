@@ -84,13 +84,6 @@ function bv_vtkm_ensure
     fi
 }
 
-function bv_vtkm_dry_run
-{
-    if [[ "$DO_VTKM" == "yes" ]] ; then
-        echo "Dry run option not set for VTKm"
-    fi
-}
-
 # *************************************************************************** #
 #                            Function 8, build_vtkm
 #
