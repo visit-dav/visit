@@ -156,13 +156,6 @@ function bv_ospray_initialize_vars
     fi
 }
 
-function bv_ospray_dry_run
-{
-    if [[ "$DO_OSPRAY" == "yes" ]] ; then
-        echo "Dry run option not set for ospray."
-    fi
-}
-
 function bv_ospray_is_installed
 {
     if [[ "$USE_SYSTEM_OSPRAY" == "yes" ]]; then   
