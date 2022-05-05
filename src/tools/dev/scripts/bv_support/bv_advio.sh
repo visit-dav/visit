@@ -67,13 +67,6 @@ function bv_advio_ensure
     fi
 }
 
-function bv_advio_dry_run
-{
-    if [[ "$DO_ADVIO" == "yes" ]] ; then
-        echo "Dry run option not set for advio."
-    fi
-}
-
 function apply_advio_12_mavericks_patch
 {
     patch -p0 << \EOF

@@ -99,13 +99,6 @@ function bv_mfem_ensure
     fi
 }
 
-function bv_mfem_dry_run
-{
-    if [[ "$DO_MFEM" == "yes" ]] ; then
-        echo "Dry run option not set for mfem."
-    fi
-}
-
 function apply_mfem_patch
 {
     # On IBM PPC systems the system defines "__VSX__" but some of the

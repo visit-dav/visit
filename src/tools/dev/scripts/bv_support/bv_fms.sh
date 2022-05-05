@@ -76,13 +76,6 @@ function bv_fms_ensure
     fi
 }
 
-function bv_fms_dry_run
-{
-    if [[ "$DO_FMS" == "yes" ]] ; then
-        echo "Dry run option not set for FMS."
-    fi
-}
-
 # *************************************************************************** #
 #                            Function 8, build_fms
 # *************************************************************************** #

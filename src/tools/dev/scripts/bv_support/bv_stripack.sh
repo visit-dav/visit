@@ -62,13 +62,6 @@ function bv_stripack_ensure
     fi
 }
 
-function bv_stripack_dry_run
-{
-    if [[ "$DO_STRIPACK" == "yes" ]] ; then
-        echo "Dry run option not set for stripack."
-    fi
-}
-
 function stripack_license_prompt
 {
     STRIPACK_LIC_MSG="This script will build the stripack library. stripack is ACM\
