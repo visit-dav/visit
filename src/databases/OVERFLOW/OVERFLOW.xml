@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="OVERFLOW" type="database" label="OVERFLOW" version="1.0" enabled="true" mdspecificcode="false" dbtype="STMD" haswriter="false">
+  <Plugin name="OVERFLOW" type="database" label="OVERFLOW" version="1.0" enabled="true" mdspecificcode="false" dbtype="STMD" haswriter="false" skipInfoGen="true">
     <FilePatterns>
       *.dat
       *.save

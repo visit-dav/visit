@@ -3,7 +3,7 @@ PROJECT(Image_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
-ADD_DATABASE_CODE_GEN_TARGETS(Image)
+ADD_DATABASE_CODE_GEN_TARGETS(Image SKIP_INFO)
 
 SET(COMMON_SOURCES
 ImagePluginInfo.C
@@ -69,13 +69,13 @@ IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EImageDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EImageDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EImageDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser )
 ADD_TARGET_DEFINITIONS(EImageDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EImageDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EImageDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EImageDatabase_par visitcommon avtdatabase_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EImageDatabase_par visitcommon avtpipeline_par avtdatabase_par )
     ADD_TARGET_DEFINITIONS(EImageDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EImageDatabase_par)
 ENDIF(VISIT_PARALLEL)

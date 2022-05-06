@@ -1,3 +1,11 @@
+// Copyright (c) Lawrence Livermore National Security, LLC and other VisIt
+// Project developers.  See the top-level LICENSE file for dates and other
+// details.  No copyright assignment is required to contribute to VisIt.
+
+// ****************************************************************************
+//  ffpPluginInfo.h
+// ****************************************************************************
+
 #ifndef FFP_PLUGIN_INFO_H
 #define FFP_PLUGIN_INFO_H
 #include <DatabasePluginInfo.h>

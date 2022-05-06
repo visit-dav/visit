@@ -107,13 +107,6 @@ function bv_qwt_ensure
     fi
 }
 
-function bv_qwt_dry_run
-{
-    if [[ "$DO_QWT" == "yes" ]] ; then
-        echo "Dry run option not set for qwt."
-    fi
-}
-
 function apply_qwt_linux_patch
 {
     PATCHFILE="./patchfile.patch"
