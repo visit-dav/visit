@@ -15,8 +15,10 @@
 #include <vector>
 
 #include <avtDatasetDatabase.h>
+#include <avtDatasetExaminer.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDataset.h>
+#include <avtParallel.h>
 #include <avtSILRestriction.h>
 #include <avtSILRestrictionTraverser.h>
 #include <avtVariableCache.h>
@@ -162,6 +164,9 @@ avtSourceFromDatabase::~avtSourceFromDatabase()
 //    Hank Childs, Tue Jan 11 10:35:35 PST 2011
 //    Set the output data set's time index. 
 //
+//    Kathleen Biagas, Wed Apr 13, 2022
+//    Call avtDatasetExaminer to caclulate the actual topological dimension. 
+//
 // ****************************************************************************
 
 bool
@@ -267,6 +272,17 @@ avtSourceFromDatabase::FetchDataset(avtDataRequest_p spec,
         }
         atts.SetFilename(string(greatest));
     }
+
+    // Calculate the topological dimension, which may not have been reported
+    // accurately by the DB Plugin.  The function being called currently only
+    // calculates for Unstructured Grids and PolyData, otherwise accepts the
+    // current reportedDimension as set in atts (unless the passed in tree is
+    // null or empty, in which case it returns -1.)
+
+    int reportedDim = atts.GetTopologicalDimension();
+    int actualDim = avtDatasetExaminer::GetTopologicalDim(tree, reportedDim);
+    actualDim = UnifyMaximumValue(actualDim);
+    atts.SetTopologicalDimension(actualDim);
 
     // '5723 BEGIN
     bool addBoundarySurf = false;
