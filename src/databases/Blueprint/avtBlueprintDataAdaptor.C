@@ -1708,7 +1708,8 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     points->SetDataTypeToDouble();
     points->SetNumberOfPoints(num_vertices);
 
-    double *coords_ptr = mesh->GetNodes()->GetData();
+    // double *coords_ptr = mesh->GetNodes()->GetData();
+    double *coords_ptr = mesh->GetVertex(0);
 
     for (int i = 0; i < num_vertices; i ++)
     {
@@ -1814,31 +1815,30 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     // Check if the mesh is periodic.
     const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
                                      (mesh->GetNodes()->FESpace()->FEColl());
-    if (L2_coll == NULL)
+    if (L2_coll != NULL)
     {
-        // periodic mesh
-        std::cout << "I'm not periodic" << std::endl;
-    }
-    else
-    {
-        FiniteElementCollection *fec_sub = NULL;
-        FiniteElementSpace *fes_sub = NULL;;
-        GridFunction *xsub = NULL;
+        // FiniteElementCollection *fec_sub = NULL;
+        // FiniteElementSpace *fes_sub = NULL;;
+        // GridFunction *xsub = NULL;
 
         // non period mesh
         std::cout << "I am periodic :)" << std::endl;
+        BP_PLUGIN_INFO("High Order Mesh is periodic.");
+        return LegacyRefineMeshToVTK(mesh, lod);
 
-        lo_mesh->SetCurvature(1, true);
-        const int dim = mesh->Dimension();
+        // lo_mesh->SetCurvature(1, true);
+        // const int dim = mesh->Dimension();
 
-        fec_sub = new L2_FECollection(1, dim, BasisType::ClosedUniform);
-        fes_sub = new FiniteElementSpace(lo_mesh, fec_sub, dim);
-        xsub = new GridFunction(fes_sub);
-        lo_mesh->SetNodalGridFunction(xsub);
-        GridFunction *coarse = mesh->GetNodes();
-        InterpolationGridTransfer transf(*coarse->FESpace(), *fes_sub);
-        transf.ForwardOperator().Mult(*coarse, *xsub);
+        // fec_sub = new L2_FECollection(1, dim, BasisType::ClosedUniform);
+        // fes_sub = new FiniteElementSpace(lo_mesh, fec_sub, dim);
+        // xsub = new GridFunction(fes_sub);
+        // lo_mesh->SetNodalGridFunction(xsub);
+        // GridFunction *coarse = mesh->GetNodes();
+        // InterpolationGridTransfer transf(*coarse->FESpace(), *fes_sub);
+        // transf.ForwardOperator().Mult(*coarse, *xsub);
     }
+
+    BP_PLUGIN_INFO("High Order Mesh is not periodic.");
 
     return LowOrderMeshToVTK(lo_mesh);
 
@@ -1939,6 +1939,8 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     BP_PLUGIN_INFO("Creating Refined MFEM Field with lod:" << lod);
     int npts=0;
     int neles=0;
+
+    // run LOR here again for now :(
 
     RefinedGeometry *refined_geo;
     Vector           scalar_vals;
