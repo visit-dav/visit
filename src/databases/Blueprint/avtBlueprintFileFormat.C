@@ -1829,7 +1829,8 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         // refine the grid function into a vtk data array
         res =  avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mesh,
                                                                       gf,
-                                                                      m_selected_lod+1);
+                                                                      m_selected_lod+1,
+                                                                      m_new_refine);
 
         // cleanup mfem data
         delete gf;

@@ -1566,7 +1566,7 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 //    with the mfem upgrade to 4.0.
 // 
 //    Justin Privitera, Wed Apr 13 13:53:06 PDT 2022
-//    Renamed to LegacyRefineMeshToVTK from RefineMeshToVTK.
+//    Renamed RefineMeshToVTK to LegacyRefineMeshToVTK.
 //
 // ****************************************************************************
 
@@ -1822,8 +1822,7 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
         // GridFunction *xsub = NULL;
 
         // non period mesh
-        std::cout << "I am periodic :)" << std::endl;
-        BP_PLUGIN_INFO("High Order Mesh is periodic.");
+        BP_PLUGIN_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
         return LegacyRefineMeshToVTK(mesh, lod);
 
         // lo_mesh->SetCurvature(1, true);
@@ -1910,7 +1909,7 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
 }
 
 // ****************************************************************************
-//  Method: RefineGridFunctionToVTK
+//  Method: LegacyRefineGridFunctionToVTK
 //
 //  Purpose:
 //   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
@@ -1929,18 +1928,19 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
 //    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
 //    Casting geom to Geometry::Type where appropariate. This is required
 //    with the mfem upgrade to 4.0.
+// 
+//    Justin Privitera, Fri May  6 15:23:56 PDT 2022
+//    Renamed RefineGridFunctionToVTK to LegacyRefineGridFunctionToVTK.
 //
 // ****************************************************************************
 vtkDataArray *
-avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
+avtBlueprintDataAdaptor::MFEM::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                        mfem::GridFunction *gf,
                                                        int lod)
 {
     BP_PLUGIN_INFO("Creating Refined MFEM Field with lod:" << lod);
     int npts=0;
     int neles=0;
-
-    // run LOR here again for now :(
 
     RefinedGeometry *refined_geo;
     Vector           scalar_vals;
@@ -2004,6 +2004,38 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     }
 
     return rv;
+}
+
+// ****************************************************************************
+//  Method: RefineGridFunctionToVTK
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
+//
+//  Arguments:
+//   mesh:         MFEM mesh for the field
+//   gf:           MFEM Grid Function for the field
+//   lod:          number of refinement steps
+//   new_refine:   switch for using the new LOR or legacy LOR
+//
+//  Programmer: Justin Privitera
+//  Creation:   Fri May  6 15:23:56 PDT 2022
+//
+//
+// ****************************************************************************
+vtkDataArray *
+avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                       mfem::GridFunction *gf,
+                                                       int lod,
+                                                       bool new_refine)
+{
+    if (!new_refine)
+    {
+        return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
+    }
+
+    // for now...
+    return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
 }
 
 // ****************************************************************************

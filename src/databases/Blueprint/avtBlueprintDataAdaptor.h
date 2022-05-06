@@ -115,9 +115,14 @@ public:
                                          int lod,
                                          bool new_refine);
 
+    static vtkDataArray *LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                       mfem::GridFunction *gf,
+                                                       int lod);
+
     static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
-                                                     mfem::GridFunction *gf,
-                                                     int lod);
+                                                 mfem::GridFunction *gf,
+                                                 int lod,
+                                                 bool new_refine);
 
     static vtkDataArray *RefineElementColoringToVTK(mfem::Mesh *mesh,
                                                     int domain_id,
