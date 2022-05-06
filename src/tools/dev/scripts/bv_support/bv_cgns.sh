@@ -80,13 +80,6 @@ function bv_cgns_ensure
     fi
 }
 
-function bv_cgns_dry_run
-{
-    if [[ "$DO_CGNS" == "yes" ]] ; then
-        echo "Dry run option not set for cgns."
-    fi
-}
-
 function apply_cgns_410_patch
 {
     info "Patching CGNS 4.1.0"
