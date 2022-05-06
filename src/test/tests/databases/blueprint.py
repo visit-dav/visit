@@ -27,6 +27,7 @@ bp_venn_test_dir = "blueprint_v0.7.0_venn_test_data"
 bp_mfem_test_dir = "blueprint_v0.3.1_mfem_test_data"
 bp_0_8_2_test_dir = "blueprint_v0.8.2_braid_examples_test_data"
 bp_poly_test_dir = "blueprint_v0.8.2_polytess_test_data"
+bp_warbly_cube_test_dir = "blueprint_v0.8.2_warbly_cube_test_data"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -90,6 +91,9 @@ def full_var_name(mesh_name,var_name):
 
 def mfem_test_file(name, protocol):
     return data_path(pjoin(bp_mfem_test_dir,"bp_mfem_ex9_%s_%s_000000.root" % ( name, protocol)))
+
+def warbly_cube_test_file(name):
+    return data_path(pjoin(bp_mfem_test_dir, name + "_000000.root"))
 
 def set_3d_view():
     v = View3DAttributes()
@@ -211,7 +215,10 @@ def test_mfem_lor(tag_name, example_name, protocol):
     readOptions["MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
-    dbfile = mfem_test_file(example_name,protocol)
+    if (example_name == "warbly_cube" and protocol == ""):
+        dbfile = warbly_cube_test_file(example_name)
+    else:
+        dbfile = mfem_test_file(example_name,protocol)
     OpenDatabase(dbfile)
 
     # we want to test a picture of a wireframe
@@ -387,6 +394,7 @@ TestSection("MFEM LOR Blueprint Tests")
 for example_name in mfem_ex9_examples:
     for protocol in mfem_ex9_protocols:
         test_mfem_lor("blueprint_mfem", example_name, protocol)
+test_mfem_lor("blueprint_mfem", "warbly_cube", "")
 
 TestSection("Blueprint Expressions")
 OpenDatabase(braid_2d_json_root)
