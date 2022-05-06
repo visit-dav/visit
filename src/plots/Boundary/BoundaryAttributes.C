@@ -4,8 +4,6 @@
 
 #include <BoundaryAttributes.h>
 #include <DataNode.h>
-#include <avtCallback.h>
-#include <visit-config.h>
 
 //
 // Enum conversion methods for BoundaryAttributes::ColoringMethod
@@ -1046,11 +1044,15 @@ BoundaryAttributes::VarChangeRequiresReset()
 //    pointSize, pointSizeVarEnabled, pointSizeVar, pointSizePixels, pointType.
 //
 // ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
 void
 BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
                                        const char *configVersion)
 {
-#ifdef VIEWER 
     if(parentNode == 0)
         return;
 
@@ -1067,37 +1069,51 @@ BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
  
         if (searchNode->GetNode("boundaryType") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("boundaryType", v).c_str());
+#endif
             searchNode->RemoveNode("boundaryType");
         }
         if (searchNode->GetNode("pointSize") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("pointSize", v).c_str());
+#endif
             searchNode->RemoveNode("pointSize");
         }
         if (searchNode->GetNode("pointSizeVarEnabled") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("pointSizeVarEnabled", v).c_str());
+#endif
             searchNode->RemoveNode("pointSizeVarEnabled");
         }
         if (searchNode->GetNode("pointSizeVar") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("pointSizeVar", v).c_str());
+#endif
             searchNode->RemoveNode("pointSizeVar");
         }
         if (searchNode->GetNode("pointSizePixels") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("pointSizePixels", v).c_str());
+#endif
             searchNode->RemoveNode("pointSizePixels");
         }
         if (searchNode->GetNode("pointType") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("pointType", v).c_str());
+#endif
             searchNode->RemoveNode("pointType");
         }
         if (searchNode->GetNode("filledFlag") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("filledFlag", v).c_str());
+#endif
             searchNode->RemoveNode("filledFlag");
         }
     }
@@ -1111,11 +1127,12 @@ BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
     {
         if (searchNode->GetNode("lineStyle") != 0)
         {
-            avtCallback::IssueWarning(DeprecationMessage("lineStyle", "3.3.2").c_str());
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("lineStyle", "3.3.2"));
+#endif
             searchNode->RemoveNode("lineStyle");
         }
     }
-#endif
 #endif
 }
 

@@ -106,6 +106,12 @@ avtCallback::IssueWarning(const char *msg)
     }
 }
 
+bool
+avtCallback::IssueWarning(const std::string &msg)
+{
+    return IssueWarning(msg.c_str());
+}
+
 
 // ****************************************************************************
 //  Method: avtCallback::RegisterResetTimeoutCallback

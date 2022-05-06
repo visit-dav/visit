@@ -1265,6 +1265,9 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "opacity") == 0)
         return MeshAttributes_GetOpacity(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in MeshAttributes
 
     //
@@ -1300,6 +1303,7 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1352,6 +1356,9 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "opacity") == 0)
         obj = MeshAttributes_SetOpacity(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in MeshAttributes
     if(obj == &NULL_PY_OBJ)
     {
@@ -1366,6 +1373,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 

@@ -121,6 +121,9 @@ typedef int WidgetID;
 //    Kathleen Biagas, Fri Mar  2 14:53:14 MST 2018
 //    Removed Tuvok.
 //
+//    Kathleen Biagas, Tue Apr 26 2022
+//    Removed ProcessOldVersions.
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -134,7 +137,6 @@ public:
     virtual ~QvisVolumePlotWindow();
     virtual void CreateWindowContents();
 
-    virtual void ProcessOldVersions(DataNode *node, const char *configVersion);
 public slots:
     virtual void apply();
     virtual void makeDefault();

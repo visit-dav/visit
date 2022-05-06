@@ -3944,6 +3944,9 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointColor") == 0)
         return PseudocolorAttributes_GetPointColor(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in PseudocolorAttributes
 
     //
@@ -3979,6 +3982,7 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -4107,6 +4111,9 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "pointColor") == 0)
         obj = PseudocolorAttributes_SetPointColor(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in PseudocolorAttributes
     if(obj == &NULL_PY_OBJ)
     {
@@ -4122,6 +4129,7 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 

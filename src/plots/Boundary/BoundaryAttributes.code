@@ -49,11 +49,15 @@ Definition:
 //    pointSize, pointSizeVarEnabled, pointSizeVar, pointSizePixels, pointType.
 //
 // ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
 void
 BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
                                        const char *configVersion)
 {
-#ifdef VIEWER 
     if(parentNode == 0)
         return;
 
@@ -70,37 +74,51 @@ BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
  
         if (searchNode->GetNode("boundaryType") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("boundaryType", v).c_str());
+#endif
             searchNode->RemoveNode("boundaryType");
         }
         if (searchNode->GetNode("pointSize") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("pointSize", v).c_str());
+#endif
             searchNode->RemoveNode("pointSize");
         }
         if (searchNode->GetNode("pointSizeVarEnabled") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("pointSizeVarEnabled", v).c_str());
+#endif
             searchNode->RemoveNode("pointSizeVarEnabled");
         }
         if (searchNode->GetNode("pointSizeVar") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("pointSizeVar", v).c_str());
+#endif
             searchNode->RemoveNode("pointSizeVar");
         }
         if (searchNode->GetNode("pointSizePixels") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("pointSizePixels", v).c_str());
+#endif
             searchNode->RemoveNode("pointSizePixels");
         }
         if (searchNode->GetNode("pointType") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("pointType", v).c_str());
+#endif
             searchNode->RemoveNode("pointType");
         }
         if (searchNode->GetNode("filledFlag") != 0)
         {
+#ifdef VIEWER
             avtCallback::IssueWarning(DeprecationMessage("filledFlag", v).c_str());
+#endif
             searchNode->RemoveNode("filledFlag");
         }
     }
@@ -114,11 +132,12 @@ BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
     {
         if (searchNode->GetNode("lineStyle") != 0)
         {
-            avtCallback::IssueWarning(DeprecationMessage("lineStyle", "3.3.2").c_str());
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("lineStyle", "3.3.2"));
+#endif
             searchNode->RemoveNode("lineStyle");
         }
     }
-#endif
 #endif
 }
 
@@ -133,6 +152,9 @@ Postfix:
                     "It's value is being ignored, " \
                     "please remove it from your script.\n", type);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     //
     // Changed in 2.13.0, made internal
     //
@@ -234,7 +256,11 @@ Postfix:
         DEPRECATED_MESSAGE("filledFlag");
         return PyInt_FromLong(0L);
     }
+#endif
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     //
     // Removed in 3.0.0
     //
@@ -265,61 +291,71 @@ Postfix:
         DEPRECATED_MESSAGE("lineStyle");
         return PyInt_FromLong(0L);
     }
+#endif
 
 Code: PyBoundaryAttributes_setattr
 Prefix:
 Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
         if(strcmp(name, "filledFlag") == 0)
         {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "boundaryType") == 0)
         {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "pointType") == 0)
         {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "pointSize") == 0)
         {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "pointSizePixels") == 0)
         {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "pointSizeVarEnabled") == 0)
         {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
         else if(strcmp(name, "pointSizeVar") == 0)
         {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
+#endif
+
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
         else if(strcmp(name, "lineStyle") == 0)
         {
-            PyErr_WarnFormat(NULL, 3, "'%s' is obsolute. It is being ignored", name);
+            PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored", name);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
+#endif
     }
 
 
