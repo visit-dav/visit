@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GThresholdOperator visitcommon gui )
 
     ADD_LIBRARY(VThresholdOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VThresholdOperator VIEWER)
     TARGET_LINK_LIBRARIES(VThresholdOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GThresholdOperator VThresholdOperator)

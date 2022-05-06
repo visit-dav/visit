@@ -93,8 +93,8 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GBoundaryPlot visitcommon gui )
 
     ADD_LIBRARY(VBoundaryPlot ${LIBV_SOURCES})
-    TARGET_LINK_LIBRARIES(VBoundaryPlot visitcommon viewer )
     ADD_TARGET_DEFINITIONS(VBoundaryPlot VIEWER)
+    TARGET_LINK_LIBRARIES(VBoundaryPlot visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GBoundaryPlot VBoundaryPlot)
 

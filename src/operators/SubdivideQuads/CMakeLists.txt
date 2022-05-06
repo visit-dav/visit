@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GSubdivideQuadsOperator visitcommon gui )
 
     ADD_LIBRARY(VSubdivideQuadsOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VSubdivideQuadsOperator VIEWER)
     TARGET_LINK_LIBRARIES(VSubdivideQuadsOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GSubdivideQuadsOperator VSubdivideQuadsOperator)

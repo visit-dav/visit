@@ -93,6 +93,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GFilledBoundaryPlot visitcommon gui )
 
     ADD_LIBRARY(VFilledBoundaryPlot ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VFilledBoundaryPlot VIEWER)
     TARGET_LINK_LIBRARIES(VFilledBoundaryPlot visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GFilledBoundaryPlot VFilledBoundaryPlot)

@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GConnectedComponentsOperator visitcommon gui )
 
     ADD_LIBRARY(VConnectedComponentsOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VConnectedComponentsOperator VIEWER)
     TARGET_LINK_LIBRARIES(VConnectedComponentsOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GConnectedComponentsOperator VConnectedComponentsOperator)
