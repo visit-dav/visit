@@ -96,13 +96,6 @@ function bv_boost_ensure
     fi
 }
 
-function bv_boost_dry_run
-{
-    if [[ "$DO_BOOST" == "yes" ]] ; then
-        echo "Dry run option not set for boost."
-    fi
-}
-
 function apply_boost_ppc_rounding_control_patch
 {
    # resolves a C++11 narrowing error

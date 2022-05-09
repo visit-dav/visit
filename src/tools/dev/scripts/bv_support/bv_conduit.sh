@@ -91,19 +91,10 @@ function bv_conduit_ensure
     fi
 }
 
-function bv_conduit_dry_run
-{
-    if [[ "$DO_CONDUIT" == "yes" ]] ; then
-        echo "Dry run option not set for Conduit."
-    fi
-}
-
-
 function apply_conduit_patch
 {
     return 0
 }
-
 
 # *************************************************************************** #
 # build_conduit

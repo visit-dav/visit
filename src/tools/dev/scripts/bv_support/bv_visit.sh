@@ -105,13 +105,6 @@ function bv_visit_ensure_built_or_ready
     fi
 }
 
-function bv_visit_dry_run
-{
-    if [[ "$DO_VISIT" == "yes" ]] ; then
-        echo "Dry run option not set for VisIt"
-    fi
-}
-
 
 function bv_visit_print_build_command
 {

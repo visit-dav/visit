@@ -44,6 +44,9 @@ class QCheckBox;
 //    Kathleen Biagas, Thu Nov  6 11:18:22 PST 2014
 //    Added DEFINES.
 //
+//    Kathleen Biagas, Wed May 4, 2022
+//    Added support for component-specific DEFINES, CXXFLAGS, and LDFLAGS.
+//
 // ****************************************************************************
 class XMLEditMakefile : public QFrame
 {
@@ -85,6 +88,19 @@ class XMLEditMakefile : public QFrame
     void customvwfilesChanged();
     void mdSpecificCodeChanged();
     void engSpecificCodeChanged();
+
+    void mcxxflagsTextChanged(const QString&);
+    void mldflagsTextChanged(const QString&);
+    void mdefsTextChanged(const QString&);
+
+    void ecxxflagsSerTextChanged(const QString&);
+    void eldflagsSerTextChanged(const QString&);
+    void edefsSerTextChanged(const QString&);
+
+    void ecxxflagsParTextChanged(const QString&);
+    void eldflagsParTextChanged(const QString&);
+    void edefsParTextChanged(const QString&);
+
   private:
     XMLDocument     *xmldoc;
 
@@ -116,6 +132,19 @@ class XMLEditMakefile : public QFrame
     QLineEdit       *MLibs;
     QCheckBox       *customVLibs;
     QLineEdit       *VLibs;
+
+    QLineEdit       *MCXXFlags;
+    QLineEdit       *MLDFlags;
+    QLineEdit       *MDefines;
+
+    QLineEdit       *ECXXFlagsSer;
+    QLineEdit       *ELDFlagsSer;
+    QLineEdit       *EDefinesSer;
+
+    QLineEdit       *ECXXFlagsPar;
+    QLineEdit       *ELDFlagsPar;
+    QLineEdit       *EDefinesPar;
+
     QCheckBox       *mdSpecificCode;
     QCheckBox       *engSpecificCode;
 };

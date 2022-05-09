@@ -103,6 +103,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 
     ADD_LIBRARY(VDualMeshOperator ${LIBV_SOURCES})
     TARGET_LINK_LIBRARIES(VDualMeshOperator visitcommon viewer )
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} GDualMeshOperator VDualMeshOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -129,12 +130,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EDualMeshOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EDualMeshOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EDualMeshOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EDualMeshOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EDualMeshOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EDualMeshOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EDualMeshOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EDualMeshOperator_par)
 ENDIF(VISIT_PARALLEL)
 

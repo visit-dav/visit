@@ -103,6 +103,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 
     ADD_LIBRARY(VExternalSurfaceOperator ${LIBV_SOURCES})
     TARGET_LINK_LIBRARIES(VExternalSurfaceOperator visitcommon viewer )
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} GExternalSurfaceOperator VExternalSurfaceOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -129,12 +130,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EExternalSurfaceOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EExternalSurfaceOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EExternalSurfaceOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EExternalSurfaceOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EExternalSurfaceOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EExternalSurfaceOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EExternalSurfaceOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EExternalSurfaceOperator_par)
 ENDIF(VISIT_PARALLEL)
 

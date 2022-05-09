@@ -100,13 +100,6 @@ function bv_osmesa_ensure
     fi
 }
 
-function bv_osmesa_dry_run
-{
-    if [[ "$DO_OSMESA" == "yes" ]] ; then
-        echo "Dry run option not set for osmesa."
-    fi
-}
-
 function apply_osmesa_patch
 {
     patch -p0 << \EOF

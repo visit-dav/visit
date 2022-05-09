@@ -77,7 +77,7 @@ IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EBlueprintDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EBlueprintDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${CONDUIT_LIB} ${MFEM_LIB} )
+TARGET_LINK_LIBRARIES(EBlueprintDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${CONDUIT_LIB} ${MFEM_LIB} )
 ADD_TARGET_DEFINITIONS(EBlueprintDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EBlueprintDatabase_ser)
 

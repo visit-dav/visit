@@ -83,13 +83,6 @@ function bv_vtkh_ensure
     fi
 }
 
-function bv_vtkh_dry_run
-{
-    if [[ "$DO_VTKH" == "yes" ]] ; then
-        echo "Dry run option not set for VTKh"
-    fi
-}
-
 # *************************************************************************** #
 #                            Function 8, build_vtkh
 #

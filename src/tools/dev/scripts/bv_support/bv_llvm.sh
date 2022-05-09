@@ -100,13 +100,6 @@ function bv_llvm_ensure
     fi
 }
 
-function bv_llvm_dry_run
-{
-    if [[ "$DO_LLVM" == "yes" ]] ; then
-        echo "Dry run option not set for llvm."
-    fi
-}
-
 function apply_llvm_patch
 {
     info "Currently no patches for llvm"

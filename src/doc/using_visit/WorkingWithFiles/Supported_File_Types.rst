@@ -42,7 +42,9 @@ More than one ``-fallback_format`` option can be specified on the command-line a
 
 Finally, you can also specify the plugin to use to open a file as part of the ``-o`` command-line option.
 For example, to open the file ``foobar.gorfo`` as a Silo file, you can specify ``-o foobar.gorfo,Silo_1.0`` on the command-line when starting VisIt_.
-Note this feature of the ``-o`` option *requires* the plugin name (in correct case) followed by an underscore (``_``) and then its version number which is almost always ``1.0``.
+Note this feature of the ``-o`` option *requires* the plugin name (in correct case) followed by an underscore (``_``) and then its version number which is almost always ``1.0``. 
+If you want to see the plugin name options as well as their version numbers, go to **Options --> Plugin Manager...** and then the **Databases** tab. 
+Adding plugins to the list of *Preferred Database Plugins* will display their names and version numbers.
 
 Example Data Files
 ~~~~~~~~~~~~~~~~~~
