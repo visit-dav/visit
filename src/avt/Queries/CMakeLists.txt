@@ -25,7 +25,11 @@
 #
 #    Cyrus Harrison, Tue Dec 10 08:51:21 PST 2019
 #    Add xml tools code gen targets
+#
+#    Cyrus Harrison, Mon May  9 14:01:56 PDT 2022
+#    Added logic to use and link conduit in queries
 #****************************************************************************/
+
 
 
 # Add XML Code Gen Targets
@@ -204,6 +208,13 @@ ENDIF(VISIT_PYTHON_FILTERS)
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
+if(CONDUIT_FOUND)
+    # we will use conduit in queries
+    INCLUDE_DIRECTORIES(${CONDUIT_INCLUDE_DIR})
+    LINK_DIRECTORIES(${CONDUIT_LIBRARY_DIR})
+endif()
+
+
 IF(VISIT_PYTHON_FILTERS)
     LINK_DIRECTORIES(${PYTHON_LIBRARY_DIRS})
 ENDIF(VISIT_PYTHON_FILTERS)
@@ -214,6 +225,11 @@ TARGET_LINK_LIBRARIES(avtquery_ser visitcommon avtmath avtshapelets avtexpressio
 IF(VISIT_PYTHON_FILTERS)
     TARGET_LINK_LIBRARIES(avtquery_ser avtpythonfilters_ser)
 ENDIF(VISIT_PYTHON_FILTERS)
+# optionally link conduit
+if(CONDUIT_FOUND)
+    TARGET_LINK_LIBRARIES(avtquery_ser ${CONDUIT_LIB})
+endif()
+
 VISIT_INSTALL_TARGETS(avtquery_ser)
 
 #********************************* PARALLEL **********************************
@@ -223,5 +239,9 @@ IF(VISIT_PARALLEL)
     IF(VISIT_PYTHON_FILTERS)
         TARGET_LINK_LIBRARIES(avtquery_par avtpythonfilters_par)
     ENDIF(VISIT_PYTHON_FILTERS)
+    # optionally link conduit
+    if(CONDUIT_FOUND)
+        TARGET_LINK_LIBRARIES(avtquery_ser ${CONDUIT_LIB} ${CONDUIT_MPI_LIB})
+    endif()
     VISIT_INSTALL_TARGETS(avtquery_par)
 ENDIF(VISIT_PARALLEL)

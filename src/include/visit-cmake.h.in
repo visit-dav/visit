@@ -74,6 +74,10 @@
 /* Define if you have the EGL */
 #cmakedefine HAVE_EGL
 
+/* Define if you have Conduit. */
+#cmakedefine HAVE_CONDUIT
+
+
 /*******************************************************************************
  * Header file checks
  ******************************************************************************/

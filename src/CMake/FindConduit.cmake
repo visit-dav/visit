@@ -47,6 +47,8 @@ if(EXISTS ${CONDUIT_DIR}/python-modules/conduit)
                 )
 endif()
 
+set(HAVE_CONDUIT TRUE CACHE BOOL "Have Conduit libraries")
+
 # Temporary, allow users to build VisIt with older Conduit
 #  and disable partition/flatten support conditionally
 set(CONDUIT_HAVE_PARTITION_FLATTEN 0)
@@ -55,4 +57,5 @@ if(DEFINED CONDUIT_VERSION)
         set(CONDUIT_HAVE_PARTITION_FLATTEN 1)
     endif()
 endif()
+
 message(STATUS "Conduit has partition/flatten functionality? ${CONDUIT_HAVE_PARTITION_FLATTEN}")
