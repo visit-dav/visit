@@ -48,6 +48,10 @@ class avtMaterial;
 // 
 //      Justin Privitera, Wed Apr 13 13:49:43 PDT 2022
 //      Added LegacyRefineMeshToVTK and LowOrderMeshToVTK to MFEM class.
+// 
+//      Justin Privitera, Mon May  9 14:35:18 PDT 2022
+//      Added LegacyRefineGridFunctionToVTK and LowOrderGridFunctionToVTK to 
+//      MFEM class and added "new_refine" as an arg to RefineGridFunctionToVTK.
 //
 //-----------------------------------------------------------------------------
 class avtBlueprintDataAdaptor
@@ -118,6 +122,8 @@ public:
     static vtkDataArray *LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                        mfem::GridFunction *gf,
                                                        int lod);
+
+    static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf);
 
     static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                  mfem::GridFunction *gf,
