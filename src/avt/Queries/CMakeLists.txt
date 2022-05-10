@@ -241,7 +241,7 @@ IF(VISIT_PARALLEL)
     ENDIF(VISIT_PYTHON_FILTERS)
     # optionally link conduit
     if(CONDUIT_FOUND)
-        TARGET_LINK_LIBRARIES(avtquery_ser ${CONDUIT_LIB} ${CONDUIT_MPI_LIB})
+        TARGET_LINK_LIBRARIES(avtquery_par ${CONDUIT_LIB} ${CONDUIT_MPI_LIB})
     endif()
     VISIT_INSTALL_TARGETS(avtquery_par)
 ENDIF(VISIT_PARALLEL)
