@@ -5,8 +5,7 @@ XML Tools
 
 Overview
 --------
-VisIt_ developers use several xml-based code generation tools to implement
-VisIt_'s features. 
+VisIt_ developers use several xml-based code generation tools to implement VisIt_'s features. 
 The source core for these tools is kept in ``src/tools/dev/xml/`` and ``src/tools/dev/xmledit/``.
 
 Types Managed by XML Tools
@@ -47,8 +46,7 @@ For more details, please see `this issue <https://github.com/visit-dav/visit/iss
 CMake Integration
 --------------------
 
-We rely on xml code generation to keep our State object, Attribute, and Plugin
-APIs up-to-date. 
+We rely on xml code generation to keep our State object, Attribute, and Plugin APIs up-to-date. 
 To automate the process we provide CMake targets that call our xml code generation tools for each object or plugin registered. 
 Individual code gen targets are all wired into top level targets that allow you to apply the code gen tools to categories of code gen tasks.  
 These targets replace older tools such as regen-ajp and various regenerateatts.py scripts. 
