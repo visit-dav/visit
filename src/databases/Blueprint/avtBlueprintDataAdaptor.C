@@ -2106,9 +2106,24 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, 
                                          mfem::BasisType::GaussLobatto);
 
+
+
     std::string basis(gf->FESpace()->FEColl()->Name());
     // we only have L2 or H2 at this point
-    bool node_centered = basis.find("H1_") != std::string::npos;
+    bool node_centered = basis.find("H1_") == std::string::npos;
+
+    // the original ascent code had this logic:
+    // if it is H1, then it is node_centered -> vertex associated
+    // if it is L2, then it is now node_centered -> element associated
+
+    // I was told h1 is element centered; l2 is vertex centered
+
+    // I need it to be vertex associated
+    // The question is, what does node_centered mean? I can switch the 
+    // if-statement cases and leave node_centered as is meaning node_centered == vertex assoc
+    // or I can reverse the def'n of node_centered to be elem assoc
+
+    // for now I have done the latter to fix my bug
 
     mfem::FiniteElementSpace *ho_fes = gf->FESpace();
     if(ho_fes == nullptr)
@@ -2145,7 +2160,7 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     GridFunctionToBlueprintField(lo_gf, n_field);
     // all supported grid functions coming out of mfem end up being associtated with vertices
     
-    // Q? does this matter for VTK?
+    // Q? does this matter for VTK? - no
     if(node_centered)
     {
         n_field["association"] = "vertex";
