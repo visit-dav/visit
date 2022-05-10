@@ -29,6 +29,9 @@ function bv_blosc_info
     export BLOSC_BUILD_DIR=${BLOSC_BUILD_DIR:-"c-blosc-${BLOSC_VERSION}"}
     export BLOSC_MD5_CHECKSUM="134b55813b1dca57019d2a2dc1f7a923"
     export BLOSC_SHA256_CHECKSUM="f387149eab24efa01c308e4cba0f59f64ccae57292ec9c794002232f7903b55b"
+    # for use externally once installed
+    export BLOSC_INCLUDE_DIR="${VISITDIR}/blosc/${BLOSC_VERSION}/${VISITARCH}/include"
+    export BLOSC_LIBRARY="${VISITDIR}/blosc/${BLOSC_VERSION}/${VISITARCH}/lib/libblosc.so"
 }
 
 # Ensure the module has been downloaded and extracted properly. Set and check variables here..
