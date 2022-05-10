@@ -124,35 +124,7 @@ VISIT_CREATE_XMLTOOLS_GEN_TARGETS : BOOL : ON
 
     **Be careful on Windows**, *all of the codegen targets will be built unless you tell Visual Studio to build the ALL_BUILD project (instead of the Solution). This will cause a lot of source files to be regenerated and can cause problems with the build.* 
 
-    The following is a list of the types of targets created
-
-        *gen_cmake_XXX* for regenerating CMakeLists.txt for plugins, where *XXX* is a plugin name.
-
-        *gen_cpp_XXX* for regenerating cpp attribute files, where *XXX* is a plugin or state object name.
-
-        *gen_info_XXX* for regenerating plugin info files, where *XXX* is a plugin name.
-
-        *gen_java_XXX* for regenerating java attribute files, where *XXX* is a plugin or state object name.
-
-        *gen_java_XXX* for regenerating java attribute files, where *XXX* is a plugin or state object name.
-
-        *gen_plugin_XXX* for regenerating all of a plugin's files, where *XXX* is a plugin name.
-
-        *gen_python_XXX* for regenerating python attribute files, where *XXX* is a plugin or state object name.
-
-    There will also be group targets: 
-
-        *gen_cmake_all*:  regenerate CMakeLists.txt for all plugins.
-
-        *gen_cpp_all*:    regenerate cpp attribute files for all plugins and state objects.
-
-        *gen_info_all*:   regenerate info files for all plugins.
-
-        *gen_java_all*:   regenerate java attribute files for all plugins and state objects.
-
-        *gen_plugin_all*: regenerate plugin files for all plugins.
-
-        *gen_python_all*: regenerate python attribute files for all plugins and state objects.
+    More information can be found in the :ref:`XML Tools<XML Tools>` section of the *Developer Manual*
 
 
 VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH : BOOL : OFF
