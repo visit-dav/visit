@@ -107,13 +107,6 @@ function bv_embree_ensure
     fi
 }
 
-function bv_embree_dry_run
-{
-    if [[ "$DO_EMBREE" == "yes" ]] ; then
-        echo "Dry run option not set for embree."
-    fi
-}
-
 # ***************************************************************************
 # build_embree
 #

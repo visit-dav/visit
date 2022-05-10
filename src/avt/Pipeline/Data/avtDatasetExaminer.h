@@ -63,6 +63,9 @@ class     vtkDataArray;
 //    Kathleen Biagas, Wed Nov 18 2020
 //    Replace VISIT_LONG_LONG with long long.
 //
+//    Kathleen Biagas, Tue Apr 5, 2022
+//    Added GetTopologicalDim methods (2).
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetExaminer
@@ -92,6 +95,8 @@ class PIPELINE_API avtDatasetExaminer
                                                  const std::string &var,
                                                  double min, double max,
                                                  std::vector<long long> &);
+    static int               GetTopologicalDim(avtDataset_p &);
+    static int               GetTopologicalDim(avtDataTree_p &, const int);
 };
 
 

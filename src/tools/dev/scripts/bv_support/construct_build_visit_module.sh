@@ -9,6 +9,10 @@
 #   Modifications:
 #     Paul Selby, Wed  4 Feb 17:30:32 GMT 2015
 #     Fixed name of _ensure function and check_if_installed call in _build
+# 
+#     Justin Privitera, Mon May  2 15:49:06 PDT 2022
+#     Removed dry run function.
+# 
 
 output=$1
 uppercase_out=`echo $1 | tr '[a-z]' '[A-Z]'`
@@ -97,13 +101,6 @@ function bv_${output}_ensure
             error \"Unable to build ${uppercase_out}.  \${${uppercase_out}_FILE} not found.\"
         fi
     fi
-}
-
-#print what the module will do for building
-function bv_${output}_dry_run
-{
-   #print the build command..
-   echo \"${output} has no build commands set\"
 }
 
 function build_${output}

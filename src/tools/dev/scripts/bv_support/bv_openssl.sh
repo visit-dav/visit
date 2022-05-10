@@ -66,13 +66,6 @@ function bv_openssl_ensure
     fi
 }
 
-function bv_openssl_dry_run
-{
-    if [[ "$DO_OPENSSL" == "yes" ]] ; then
-        echo "Dry run option not set for openssl."
-    fi
-}
-
 # *************************************************************************** #
 #                            Function 8, build_openssl
 # *************************************************************************** #
