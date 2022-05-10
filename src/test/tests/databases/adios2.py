@@ -16,9 +16,7 @@ RequiredDatabasePlugin("ADIOS2")
 from os.path import join as pjoin
 
 adios2_test_dir = "adios2_v2.7.1_test_data"
-
-# TODO change name
-brill_data = data_path(pjoin(adios2_test_dir,"brill-lindquist-write.it00000000.bp"))
+cube_data = data_path(pjoin(adios2_test_dir,"interesting_cube00000000.bp"))
 
 def set_3d_view():
     v = View3DAttributes()
@@ -78,10 +76,10 @@ def test(mesh_name, tag_name):
     DeleteAllPlots()
 
 TestSection("Adios2 test")
-OpenDatabase(brill_data, 0, "ADIOS2_1.0")
+OpenDatabase(cube_data, 0, "ADIOS2_1.0")
 mesh_name = "mesh71x71x71"
 tag_name = "adios2_3d_bp"
 test(mesh_name, tag_name)
-CloseDatabase(brill_data)
+CloseDatabase(cube_data)
 
 Exit()
