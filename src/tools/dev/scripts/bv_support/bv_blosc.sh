@@ -1,7 +1,6 @@
-# Initialize any variables you may want to export
+# by default, turn blosc off
 function bv_blosc_initialize
 {
-    # by default, turn blosc off
     export DO_BLOSC="no"
 }
 
@@ -26,12 +25,13 @@ function bv_blosc_info
     # the URL is commented out because the filename is different in the blosc release
     # there, the filename is v1.21.1.tar.gz.
     # export BLOSC_URL=${BLOSC_URL:-"https://github.com/Blosc/c-blosc/archive/refs/tags"}
+    # to use that download you'd need to rename the file once downloaded.
     export BLOSC_BUILD_DIR=${BLOSC_BUILD_DIR:-"c-blosc-${BLOSC_VERSION}"}
     export BLOSC_MD5_CHECKSUM="134b55813b1dca57019d2a2dc1f7a923"
     export BLOSC_SHA256_CHECKSUM="f387149eab24efa01c308e4cba0f59f64ccae57292ec9c794002232f7903b55b"
 }
 
-# Ensure the module has been downloaded and extracted properly. Set and check variables here..
+# Ensure the module has been downloaded and extracted properly.
 function bv_blosc_ensure
 {
     if [[ "$DO_BLOSC" == "yes" ]] ; then
@@ -44,7 +44,7 @@ function bv_blosc_ensure
     fi
 }
 
-# What other modules does this module depend on. Example "adios" returns string "mxml"
+# What other modules does c-blosc depend on.
 function bv_blosc_depends_on
 {
     echo "cmake"
@@ -52,6 +52,11 @@ function bv_blosc_depends_on
 
 function build_blosc
 {
+    # for use externally once installed
+    export BLOSC_DIR="${VISITDIR}/blosc/${BLOSC_VERSION}/${VISITARCH}"
+    export BLOSC_INCLUDE_DIR="${BLOSC_DIR}/include"
+    export BLOSC_LIBRARY="${BLOSC_DIR}/lib/libblosc.so"
+
     #
     # Blosc uses CMake  -- make sure we have it built.
     #
@@ -78,8 +83,7 @@ function build_blosc
 
     cd $BLOSC_BUILD_DIR || error "Can't cd to BLOSC source dir."
 
-    blosc_install_path=${VISITDIR}/blosc/${BLOSC_VERSION}/${VISITARCH}
-    cfg_opts="-DCMAKE_INSTALL_PREFIX:PATH=${blosc_install_path}"
+    cfg_opts="-DCMAKE_INSTALL_PREFIX:PATH=${BLOSC_DIR}"
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     if test -e bv_run_cmake.sh ; then
