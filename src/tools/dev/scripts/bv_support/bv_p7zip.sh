@@ -69,13 +69,6 @@ function bv_p7zip_ensure
     fi
 }
 
-function bv_p7zip_dry_run
-{
-    if [[ "$DO_P7ZIP" == "yes" ]] ; then
-        echo "Dry run option not set for p7zip."
-    fi
-}
-
 function apply_p7zip_patch
 {
     # Apply a patch to fix a narrowing error with gcc 10.3.

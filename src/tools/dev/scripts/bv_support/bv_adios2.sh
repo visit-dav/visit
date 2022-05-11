@@ -126,13 +126,6 @@ function bv_adios2_ensure
     fi
 }
 
-function bv_adios2_dry_run
-{
-    if [[ "$DO_ADIOS2" == "yes" ]] ; then
-        echo "Dry run option not set for adios2."
-    fi
-}
-
 function build_adios2
 {
     #
@@ -213,8 +206,6 @@ function build_adios2
 
         # Use Blosc?
         if [[ "$DO_BLOSC" == "yes" ]] ; then
-            BLOSC_INCLUDE_DIR="${VISITDIR}/blosc/${BLOSC_VERSION}/${VISITARCH}/include"
-            BLOSC_LIBRARY="${VISITDIR}/blosc/${BLOSC_VERSION}/${VISITARCH}/lib/libblosc.so"
             cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc:BOOL=ON"
             cfg_opts="${cfg_opts} -DBLOSC_INCLUDE_DIR=${BLOSC_INCLUDE_DIR}"
             cfg_opts="${cfg_opts} -DBLOSC_LIBRARY=${BLOSC_LIBRARY}"

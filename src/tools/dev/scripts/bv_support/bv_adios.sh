@@ -130,13 +130,6 @@ function bv_adios_ensure
     fi
 }
 
-function bv_adios_dry_run
-{
-    if [[ "$DO_ADIOS" == "yes" ]] ; then
-        echo "Dry run option not set for adios."
-    fi
-}
-
 # ***************************************************************************
 #                         Function 8.22, build_ADIOS
 #
@@ -319,8 +312,7 @@ function build_adios
 
     # blosc support
     if [[ "$DO_BLOSC" == "yes" ]]; then
-        export BLOSCROOT="$VISITDIR/blosc/$BLOSC_VERSION/$VISITARCH"
-        WITH_BLOSC_ARGS="--with-blosc=$BLOSCROOT"
+        WITH_BLOSC_ARGS="--with-blosc=$BLOSCDIR"
     else
         WITH_BLOSC_ARGS="--without-blosc"
     fi

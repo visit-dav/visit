@@ -40,6 +40,9 @@ class avtMaterial;
 //  Modifications:
 //      Matt Larsen, Feb 15, 2019 -- adding conversions from vtk to bp
 //
+//      Justin Privitera, Wed Mar 23 12:26:31 PDT 2022
+//      Added "domain" as first arg of MeshToVTK.
+//
 //-----------------------------------------------------------------------------
 class avtBlueprintDataAdaptor
 {
@@ -50,7 +53,8 @@ public:
   class VTK
   {
     public:
-      static vtkDataSet*    MeshToVTK(const conduit::Node &mesh);
+      static vtkDataSet*    MeshToVTK(int domain, 
+                                      const conduit::Node &mesh);
       static vtkDataArray*  FieldToVTK(const conduit::Node &field);
 
   };

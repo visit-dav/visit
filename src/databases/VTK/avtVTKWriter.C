@@ -216,6 +216,9 @@ avtVTKWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Kathleen Biagas, Fri Mar 12, 2021
 //    Remove deletion of ds when tetrahedralizing, as it causes engine to
 //    crash when deleting plots after an export.
+// 
+//    Justin Privitera, Mon Apr 25 15:57:29 PDT 2022
+//    Removed the expression output.
 //
 // ****************************************************************************
 
@@ -254,40 +257,6 @@ avtVTKWriter::WriteChunk(vtkDataSet *ds, int chunk)
         mn->SetNumberOfValues(1);
         mn->SetValue(0, time);
         mn->SetName("TIME");
-        ds->GetFieldData()->AddArray(mn);
-        mn->Delete();
-    }
-
-    // Write any non-operator, non-auto expressions
-    if (exprList.GetNumExpressions())
-    {
-        vtkStringArray *mn = vtkStringArray::New();
-        mn->SetNumberOfValues(exprList.GetNumExpressions());
-        int used = 0;
-        for (int i = 0; i < exprList.GetNumExpressions(); i++)
-        {
-            Expression const expr = exprList.GetExpressions(i);
-
-            if (expr.GetFromOperator()) continue;
-            if (expr.GetAutoExpression()) continue;
-
-            string vtypestr = "unknown";
-            switch (expr.GetType())
-            {
-                case Expression::CurveMeshVar:  vtypestr = "curve";    break;
-                case Expression::ScalarMeshVar: vtypestr = "scalar";   break;
-                case Expression::VectorMeshVar: vtypestr = "vector";   break;
-                case Expression::TensorMeshVar: vtypestr = "tensor";   break;
-                case Expression::ArrayMeshVar:  vtypestr = "array";    break;
-                case Expression::Material:      vtypestr = "material"; break;
-                case Expression::Species:       vtypestr = "species";  break;
-                default: break;
-            }
-
-            mn->SetValue(used++, expr.GetName() + ";" + vtypestr + ";" + expr.GetDefinition());
-        }
-        mn->SetNumberOfValues(used);
-        mn->SetName("VisItExpressions");
         ds->GetFieldData()->AddArray(mn);
         mn->Delete();
     }
