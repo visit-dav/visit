@@ -137,13 +137,6 @@ function bv_hdf5_ensure
     fi
 }
 
-function bv_hdf5_dry_run
-{
-    if [[ "$DO_HDF5" == "yes" ]] ; then
-        echo "Dry run option not set for hdf5."
-    fi
-}
-
 function apply_hdf5_1814_static_patch
 {
     info "Patching hdf5 1.8.14 for static build"

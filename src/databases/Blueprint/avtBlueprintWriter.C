@@ -282,6 +282,10 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //
 //  Mark C. Miller, Thu May  7 15:04:11 PDT 2020
 //  Add expressions output
+// 
+//  Justin Privitera, Wed Apr 27 22:56:31 PDT 2022
+//  Removed expressions output.
+// 
 // ****************************************************************************
 void
 avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
@@ -315,36 +319,6 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
                                     "",
                                     m_nblocks,
                                     bp_idx["mesh"]);
-
-    // handle expressions 
-    for (int i = 0; i < exprList.GetNumExpressions(); i++)
-    {
-        Expression const expr = exprList.GetExpressions(i);
-
-        if (expr.GetFromOperator()) continue;
-        if (expr.GetAutoExpression()) continue;
-        if (expr.GetHidden()) continue;
-
-        std::string ename = expr.GetName();
-        // Replace any slash chars in expr name with underscores.
-        // If we don't, Conduit interprets slash chars as new nodes.
-        for (std::string::size_type j = 0; j < ename.size(); j++)
-            if (ename[j] == '/') ename[j] = '_';
-        std::string expr_path = "mesh/expressions/" + ename;
-        bp_idx[expr_path + "/topology"] = "topo";
-        int ncomps = 1;
-        switch (expr.GetType())
-        {
-            case Expression::CurveMeshVar:  ncomps = 1;    break;
-            case Expression::ScalarMeshVar: ncomps = 1;   break;
-            case Expression::VectorMeshVar: ncomps = ndims;   break;
-            case Expression::SymmetricTensorMeshVar: ncomps = (ndims == 2 ? 3 : 6);   break;
-            case Expression::TensorMeshVar: ncomps = ndims * ndims;   break;
-            default: break;
-        }
-        bp_idx[expr_path + "/number_of_components"] = ncomps;
-        bp_idx[expr_path + "/definition"] = expr.GetDefinition();
-    }
 
     // work around conduit bug
     if(mesh.has_path("state/cycle"))
