@@ -3,7 +3,9 @@
 #
 #  Test Case:  adios2.py 
 #
-#  Tests:      TODO
+#  Tests:      mesh      - 3D single domain
+#              plots     - Pseudocolor
+#              operators - Clip
 #
 #  Programmer: Justin Privitera
 #  Date:       Mon May  9 18:05:05 PDT 2022
