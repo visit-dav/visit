@@ -77,6 +77,7 @@ def test(mesh_name, tag_name):
     Test(tag_name + "_" +  mesh_name + "_mesh")
     DeleteAllPlots()
 
+# requires adios2 to be built with c-blosc support
 TestSection("Adios2 Blosc Test")
 OpenDatabase(cube_data, 0, "ADIOS2_1.0")
 mesh_name = "mesh71x71x71"
