@@ -319,8 +319,7 @@ function build_adios
 
     # blosc support
     if [[ "$DO_BLOSC" == "yes" ]]; then
-        export BLOSCROOT="$VISITDIR/blosc/$BLOSC_VERSION/$VISITARCH"
-        WITH_BLOSC_ARGS="--with-blosc=$BLOSCROOT"
+        WITH_BLOSC_ARGS="--with-blosc=$BLOSCDIR"
     else
         WITH_BLOSC_ARGS="--without-blosc"
     fi
