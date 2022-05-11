@@ -15,7 +15,7 @@
 #   so that this script can be improved in the future.
 #
 
-# To create your own modular file these 13 functions need to be implemented..
+# To create your own modular file these 12 functions need to be implemented...
 #filename: bv_<module>.sh
 #bv_<module>_initialize : Initialize any variables you may want to export
 #bv_<module>_enable : Enables the module
@@ -35,7 +35,7 @@
 
 #order of execution
 #1. bv_<module>_initialize anything to intialize the module
-#2. bv_<module>_info runs to setup download locations,directories,etc..
+#2. bv_<module>_info runs to setup download locations,directories,etc...
 #3. bv_<module>_[enable|disable] runs next to enable or disable the module
 #4. bv_<module>_ensure runs to ensure module is setup properly and variables are initialized
 #5  bv_<module>_depends_on [not implemented yet], also may be removed in favor of xml structure
