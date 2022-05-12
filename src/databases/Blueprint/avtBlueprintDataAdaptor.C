@@ -1969,14 +1969,11 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     int vdim  = gf->FESpace()->GetVDim();
     int ndofs = gf->FESpace()->GetNDofs();
 
-    DataType vals_dtype;
-
     const double * values = gf->HostRead();
     if (vdim == 1) // scalar case
     {
         n_field["values"].set(values,
                              ndofs);
-        vals_dtype = n_field["values"].dtype();
     }
     else // vector case
     {
@@ -2001,18 +1998,13 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
                                           stride);
             offset +=  sizeof(double) * vdim_stride;
         }
-
-        vals_dtype = n_field["values"][0].dtype();
     }
 
     // all supported grid functions coming out of mfem end up being associated with vertices
 
     vtkDataArray *retval = NULL;
 
-    // get the number of tuples
-    int ntuples = (int) vals_dtype.number_of_elements();
-
-    BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ntuples << " "
+    BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ndofs << " "
                     << " num_comps = " << vdim);
 
     retval = vtkDoubleArray::New();
@@ -2023,7 +2015,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     else
         retval->SetNumberOfComponents(vdim);
     // set number of tuples
-    retval->SetNumberOfTuples(ntuples);
+    retval->SetNumberOfTuples(ndofs);
 
     // handle multi-component case
     if(n_field["values"].number_of_children() > 0)
@@ -2032,7 +2024,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
         {
             conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"][c].value();;
 
-            for (vtkIdType i = 0; i < ntuples; i++)
+            for (vtkIdType i = 0; i < ndofs; i++)
             {
                 retval->SetComponent(i, c, (double) vals_array[i]);
 
@@ -2047,7 +2039,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     else
     {
         conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"].value();
-        for (vtkIdType i = 0; i < ntuples; i++)
+        for (vtkIdType i = 0; i < ndofs; i++)
         {
             retval->SetComponent(i,0, (double) vals_array[i]);
         }
