@@ -1874,8 +1874,8 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
 // ****************************************************************************
 vtkDataArray *
 avtBlueprintDataAdaptor::MFEM::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
-                                                       mfem::GridFunction *gf,
-                                                       int lod)
+                                                             mfem::GridFunction *gf,
+                                                             int lod)
 {
     BP_PLUGIN_INFO("Creating Refined MFEM Field with lod:" << lod);
     int npts=0;
@@ -1945,26 +1945,6 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
     return rv;
 }
 
-// ****************************************************************************
-//  Method: LowOrderGridFunctionToVTK
-//
-//  Purpose:
-//   TODO
-//
-//  Arguments:
-//   TODO
-//
-//  Programmer: Justin Privitera
-//  Creation:   Fri May  6 15:23:56 PDT 2022
-//
-//
-// ****************************************************************************
-
-vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
-{
-    
-}
-
 // TODO delete this function since we will go directly from mfem to vtk
 void
 GridFunctionToBlueprintField(mfem::GridFunction *gf,
@@ -2015,95 +1995,26 @@ GridFunctionToBlueprintField(mfem::GridFunction *gf,
 }
 
 // ****************************************************************************
-//  Method: RefineGridFunctionToVTK
+//  Method: LowOrderGridFunctionToVTK
 //
 //  Purpose:
-//   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
+//   TODO
 //
 //  Arguments:
-//   mesh:         MFEM mesh for the field
-//   gf:           MFEM Grid Function for the field
-//   lod:          number of refinement steps
-//   new_refine:   switch for using the new LOR or legacy LOR
+//   TODO
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri May  6 15:23:56 PDT 2022
 //
 //
 // ****************************************************************************
+
 vtkDataArray *
-avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
-                                                       mfem::GridFunction *gf,
-                                                       int lod,
-                                                       bool new_refine)
+avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf, bool node_centered)
 {
-    if (!new_refine)
-    {
-        return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
-    }
-
-    // Check if the mesh is periodic.
-    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
-                                     (mesh->GetNodes()->FESpace()->FEColl());
-    if (L2_coll != NULL)
-    {
-        BP_PLUGIN_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
-        return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
-    }
-
-    BP_PLUGIN_INFO("High Order Mesh is not periodic.");
-
-    
-
-    // // for now...
-    // return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
-
-    ///////////////////////////////////////
-
-    // refine the mesh and convert to vtk
-    // it would be nice if this was cached somewhere but we will do it again
-    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, 
-                                         mfem::BasisType::GaussLobatto);
-
-
-
-    std::string basis(gf->FESpace()->FEColl()->Name());
-    // we only have L2 or H2 at this point
-    bool node_centered = basis.find("H1_") == std::string::npos;
-
-    mfem::FiniteElementSpace *ho_fes = gf->FESpace();
-    if(ho_fes == nullptr)
-    {
-        BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
-            "RefineGridFunctionToVTK: high order gf finite element space is null");
-    }
-    // create the low order grid function
-    mfem::FiniteElementCollection *lo_col = nullptr;
-    if(node_centered)
-    {
-        lo_col = new mfem::LinearFECollection;
-    }
-    else
-    {
-        int  p = 0; // single scalar
-        lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
-    }
-    mfem::FiniteElementSpace *lo_fes = new mfem::FiniteElementSpace(lo_mesh, lo_col, ho_fes->GetVDim());
-    mfem::GridFunction *lo_gf = new mfem::GridFunction(lo_fes);
-    // transform the higher order function to a low order function somehow
-    mfem::OperatorHandle hi_to_lo;
-    lo_fes->GetTransferOperator(*ho_fes, hi_to_lo);
-    hi_to_lo.Ptr()->Mult(*gf, *lo_gf);
-
-
-    //////////
-    // here we go
-
-
-
     // extract field
     conduit::Node n_field;
-    GridFunctionToBlueprintField(lo_gf, n_field);
+    GridFunctionToBlueprintField(gf, n_field);
     // all supported grid functions coming out of mfem end up being associtated with vertices
     
     // Q? does this matter for VTK? - no
@@ -2115,10 +2026,6 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     {
         n_field["association"] = "element";
     }
-
-    delete lo_col;
-    delete lo_fes;
-    delete lo_gf;
 
     vtkDataArray *retval = NULL;
 
@@ -2191,7 +2098,94 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         }
     }
 
-    return retval;    
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: RefineGridFunctionToVTK
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
+//
+//  Arguments:
+//   mesh:         MFEM mesh for the field
+//   gf:           MFEM Grid Function for the field
+//   lod:          number of refinement steps
+//   new_refine:   switch for using the new LOR or legacy LOR
+//
+//  Programmer: Justin Privitera
+//  Creation:   Fri May  6 15:23:56 PDT 2022
+//
+//
+// ****************************************************************************
+vtkDataArray *
+avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                       mfem::GridFunction *gf,
+                                                       int lod,
+                                                       bool new_refine)
+{
+    if (!new_refine)
+    {
+        return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
+    }
+
+    // Check if the mesh is periodic.
+    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
+                                     (mesh->GetNodes()->FESpace()->FEColl());
+    if (L2_coll != NULL)
+    {
+        BP_PLUGIN_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
+        return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
+    }
+
+    BP_PLUGIN_INFO("High Order Mesh is not periodic.");
+
+    // refine the mesh and convert to vtk
+    // it would be nice if this was cached somewhere but we will do it again
+    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, 
+                                         mfem::BasisType::GaussLobatto);
+
+
+
+    std::string basis(gf->FESpace()->FEColl()->Name());
+    // we only have L2 or H2 at this point
+    bool node_centered = basis.find("H1_") == std::string::npos;
+    
+    // Q? get help to figure this out
+    // essentially, examples only work if this is true
+    node_centered = true;
+
+    mfem::FiniteElementSpace *ho_fes = gf->FESpace();
+    if(ho_fes == nullptr)
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+            "RefineGridFunctionToVTK: high order gf finite element space is null");
+    }
+    // create the low order grid function
+    mfem::FiniteElementCollection *lo_col = nullptr;
+    if(node_centered)
+    {
+        lo_col = new mfem::LinearFECollection;
+    }
+    else
+    {
+        int  p = 0; // single scalar
+        lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
+    }
+    mfem::FiniteElementSpace *lo_fes = new mfem::FiniteElementSpace(lo_mesh, lo_col, ho_fes->GetVDim());
+    mfem::GridFunction *lo_gf = new mfem::GridFunction(lo_fes);
+    // transform the higher order function to a low order function somehow
+    mfem::OperatorHandle hi_to_lo;
+    lo_fes->GetTransferOperator(*ho_fes, hi_to_lo);
+    hi_to_lo.Ptr()->Mult(*gf, *lo_gf);
+
+    vtkDataArray *retval = LowOrderGridFunctionToVTK(lo_gf, node_centered);
+    
+    delete lo_col;
+    delete lo_fes;
+    delete lo_gf;
+
+    return retval;
 }
 
 // ****************************************************************************
