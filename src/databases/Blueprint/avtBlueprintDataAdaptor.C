@@ -1969,11 +1969,14 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     int vdim  = gf->FESpace()->GetVDim();
     int ndofs = gf->FESpace()->GetNDofs();
 
+    DataType vals_dtype;
+
     const double * values = gf->HostRead();
     if (vdim == 1) // scalar case
     {
-       n_field["values"].set(values,
+        n_field["values"].set(values,
                              ndofs);
+        vals_dtype = n_field["values"].dtype();
     }
     else // vector case
     {
@@ -1998,29 +2001,16 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
                                           stride);
             offset +=  sizeof(double) * vdim_stride;
         }
+
+        vals_dtype = n_field["values"][0].dtype();
     }
 
     // all supported grid functions coming out of mfem end up being associated with vertices
 
     vtkDataArray *retval = NULL;
 
-    int ntuples = 0;
-
-    DataType vals_dtype;
-
-    if(vdim > 1) // n_field["values"] is a mcarray w/ children that hold the vals
-    {
-        // in this case, each child is a component of the array
-        // This assumes all children have the same leaf type
-        vals_dtype = n_field["values"][0].dtype();
-    }
-    else // n_field["values"] is an array, holds the vals
-    {
-        vals_dtype = n_field["values"].dtype();
-    }
-
     // get the number of tuples
-    ntuples = (int) vals_dtype.number_of_elements();
+    int ntuples = (int) vals_dtype.number_of_elements();
 
     BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ntuples << " "
                     << " num_comps = " << vdim);
