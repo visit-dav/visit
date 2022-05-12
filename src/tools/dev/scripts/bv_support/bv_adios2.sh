@@ -49,6 +49,7 @@ function bv_adios2_depends_on
         fi
 
         if [[ "$DO_BLOSC" == "yes" ]] ; then
+            # note that at the time of writing (may 2022) ADIOS2 only supports c-blosc1, NOT c-blosc2.
             depends_on="$depends_on blosc"
         fi
 
