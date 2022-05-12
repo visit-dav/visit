@@ -123,7 +123,7 @@ public:
                                                        mfem::GridFunction *gf,
                                                        int lod);
 
-    static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf, bool node_centered);
+    static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf);
 
     static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                  mfem::GridFunction *gf,

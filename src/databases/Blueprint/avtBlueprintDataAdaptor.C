@@ -1961,7 +1961,7 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 // ****************************************************************************
 
 vtkDataArray *
-avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf, bool node_centered)
+avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 {
     // extract field
     conduit::Node n_field;
@@ -1975,8 +1975,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf,
     const double * values = gf->HostRead();
     if (vdim == 1) // scalar case
     {
-       //n_field["values"].set_external(gf->GetData(),
-       //                               ndofs);
        n_field["values"].set(values,
                              ndofs);
     }
@@ -1997,10 +1995,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf,
             std::ostringstream oss;
             oss << "v" << d;
             std::string comp_name = oss.str();
-            //n_field["values"][comp_name].set_external(gf->GetData(),
-            //                                          ndofs,
-            //                                          offset,
-            //                                          stride);
             n_field["values"][comp_name].set(values,
                                           ndofs,
                                           offset,
@@ -2009,17 +2003,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf,
         }
     }
 
-    // all supported grid functions coming out of mfem end up being associtated with vertices
-    
-    // Q? does this matter for VTK? - no
-    if(node_centered)
-    {
-        n_field["association"] = "vertex";
-    }
-    else
-    {
-        n_field["association"] = "element";
-    }
+    // all supported grid functions coming out of mfem end up being associated with vertices
 
     vtkDataArray *retval = NULL;
 
@@ -2173,7 +2157,7 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     lo_fes->GetTransferOperator(*ho_fes, hi_to_lo);
     hi_to_lo.Ptr()->Mult(*gf, *lo_gf);
 
-    vtkDataArray *retval = LowOrderGridFunctionToVTK(lo_gf, node_centered);
+    vtkDataArray *retval = LowOrderGridFunctionToVTK(lo_gf);
     
     delete lo_col;
     delete lo_fes;
