@@ -1969,11 +1969,29 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     int vdim  = gf->FESpace()->GetVDim();
     int ndofs = gf->FESpace()->GetNDofs();
 
+    // all supported grid functions coming out of mfem end up being associated with vertices
+
+    BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ndofs << " "
+                    << " num_comps = " << vdim);
+
+    vtkDataArray *retval = NULL;
+    retval = vtkDoubleArray::New();
+    // vtk reqs us to set number of comps before number of tuples
+    retval->SetNumberOfComponents(vdim == 2 ? 3 : vdim);
+    // set number of tuples
+    retval->SetNumberOfTuples(ndofs);
+
     const double * values = gf->HostRead();
     if (vdim == 1) // scalar case
     {
         n_field["values"].set(values,
-                             ndofs);
+                              ndofs);
+
+        conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"].value();
+        for (vtkIdType i = 0; i < ndofs; i++)
+        {
+            retval->SetComponent(i,0, (double) vals_array[i]);
+        }
     }
     else // vector case
     {
@@ -1998,28 +2016,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
                                           stride);
             offset +=  sizeof(double) * vdim_stride;
         }
-    }
 
-    // all supported grid functions coming out of mfem end up being associated with vertices
-
-    vtkDataArray *retval = NULL;
-
-    BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ndofs << " "
-                    << " num_comps = " << vdim);
-
-    retval = vtkDoubleArray::New();
-
-    // vtk reqs us to set number of comps before number of tuples
-    if( vdim == 2) // we need 3 comps for vectors
-        retval->SetNumberOfComponents(3);
-    else
-        retval->SetNumberOfComponents(vdim);
-    // set number of tuples
-    retval->SetNumberOfTuples(ndofs);
-
-    // handle multi-component case
-    if(n_field["values"].number_of_children() > 0)
-    {
         for(vtkIdType c=0; c < vdim; c++)
         {
             conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"][c].value();;
@@ -2033,15 +2030,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
                     retval->SetComponent(i, 2, 0.0);
                 }
             }
-        }
-    }
-    // single array case
-    else
-    {
-        conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"].value();
-        for (vtkIdType i = 0; i < ndofs; i++)
-        {
-            retval->SetComponent(i,0, (double) vals_array[i]);
         }
     }
 
