@@ -1945,11 +1945,27 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
     return rv;
 }
 
-// TODO delete this function since we will go directly from mfem to vtk
-void
-GridFunctionToBlueprintField(mfem::GridFunction *gf,
-                             Node &n_field)
+// ****************************************************************************
+//  Method: LowOrderGridFunctionToVTK
+//
+//  Purpose:
+//   TODO
+//
+//  Arguments:
+//   TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   Fri May  6 15:23:56 PDT 2022
+//
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf, bool node_centered)
 {
+    // extract field
+    conduit::Node n_field;
+    
     n_field["basis"] = gf->FESpace()->FEColl()->Name();
     n_field["topology"] = "main";
 
@@ -1992,29 +2008,7 @@ GridFunctionToBlueprintField(mfem::GridFunction *gf,
             offset +=  sizeof(double) * vdim_stride;
         }
     }
-}
 
-// ****************************************************************************
-//  Method: LowOrderGridFunctionToVTK
-//
-//  Purpose:
-//   TODO
-//
-//  Arguments:
-//   TODO
-//
-//  Programmer: Justin Privitera
-//  Creation:   Fri May  6 15:23:56 PDT 2022
-//
-//
-// ****************************************************************************
-
-vtkDataArray *
-avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf, bool node_centered)
-{
-    // extract field
-    conduit::Node n_field;
-    GridFunctionToBlueprintField(gf, n_field);
     // all supported grid functions coming out of mfem end up being associtated with vertices
     
     // Q? does this matter for VTK? - no
