@@ -42,20 +42,23 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
 #  x_LIB
 #  x_FOUND
 #
-#  assumes headers are in ${x_DIR}/${incextensiondir}
-#  assumes libs are in ${x_DIR}/${libextensiondir}
+#
+#  assumes headers are in ${x_DIR}/include unless INCDIR argument is used
+#  assumes libs are in ${x_DIR}/lib64 or ${x_DIR}/lib unless LIBDIR argument is used
 #
 #
 #  pkg is the name used to specify the x_DIR (generally upper case name
 #  of pkg)
-#  libdirextensions are the paths beyond x_DIR where the libs may be found.
-#  incdirextension is the path beyond x_DIR where the includes may be found.
-#  libs is the list of library names for this package
+#
+#  keyword arguments:
+#  LIBS (required) is the list of library names for this package
+#  LIBDIR (optional) are the paths beyond x_DIR where the libs may be found.
+#  INCDIR (optional) is the path beyond x_DIR where the includes may be found.
 #
 #  uses path specified by pkg_DIR as base path for the files
 #
 
-FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
+FUNCTION(SET_UP_THIRD_PARTY pkg)
     MESSAGE(STATUS "Looking for ${pkg}")
     SET(base_dir "${pkg}_DIR")
     SET(base_dir_val "${${base_dir}}")
@@ -77,6 +80,35 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
         RETURN()
     ENDIF (NOT (EXISTS "${base_dir_val}"))
 
+
+    cmake_parse_arguments(PARSE_ARGV 1 sutp "" "LIBDIR;INCDIR" "LIBS")
+    if(NOT DEFINED sutp_LIBS)
+        if(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
+            message(STATUS "  LIBS for ${pkg} have not been defined.")
+        else()
+            message(FATAL_ERROR "  LIBS for ${pkg} have not been defined.")
+        endif()
+    else()
+        set(libs ${sutp_LIBS})
+    endif()
+        
+
+    if(DEFINED sutp_LIBDIR)
+        set(libdir ${sutp_LIBDIREXT})
+    else()
+        if(EXISTS ${base_dir_val}/lib64)
+            set(libdir "lib64")
+        else() 
+            set(libdir "lib")
+        endif()
+    endif()
+
+    if(DEFINED sutp_INCDIREXT)
+        set(incdir ${sutp_INCDIREXT})
+    else()
+        set(incdir "include")
+    endif()
+
     SET(inc_dir_var "${pkg}_INCLUDE_DIR")
     SET(lib_dir_var "${pkg}_LIBRARY_DIR")
     SET(lib_var "${pkg}_LIB")
@@ -91,7 +123,7 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
     UNSET("${tp_found}")
     UNSET("${have_tp}")
     SET("${lib_var}" "")
-    SET("${inc_dir_var}" "${base_dir_val}/${incdirextension}")
+    SET("${inc_dir_var}" "${base_dir_val}/${incdir}")
 
     IF(NOT EXISTS ${${inc_dir_var}})
         IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
@@ -102,14 +134,14 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
         RETURN()
     ENDIF(NOT EXISTS ${${inc_dir_var}})
     ##
-    # Set lib dir to fitst existing of base_dir/extensions
+    # Set lib dir to first existing of base_dir/libdir
     # Minimal intrusion on existing logic, but one might wnat
     # to allow libs to exist in multiple directories, as
     # they do for Qt.
     ##
     SET(${lib_dir_var} "")
     IF(NOT "${libs}" STREQUAL "NO_LIBS")
-        FOREACH(X ${libdirextensions})
+        FOREACH(X ${libdir})
             IF(EXISTS ${base_dir_val}/${X} AND "${${lib_dir_var}}" STREQUAL "")
                 SET(${lib_dir_var} ${base_dir_val}/${X})
             ENDIF()
@@ -131,9 +163,9 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
         #
         IF("${${lib_dir_var}}" STREQUAL "")
             IF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-                MESSAGE(STATUS "\n** \n** \n** None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
+                MESSAGE(STATUS "\n** \n** \n** None of library directories for ${pkg} (${base_dir_val}/${libdir}) exist.\n**\n**")
             ELSE(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
-                MESSAGE(FATAL_ERROR "   None of library directories for ${pkg} (${base_dir_val}/${libdirextensions}) exist.\n**\n**")
+                MESSAGE(FATAL_ERROR "   None of library directories for ${pkg} (${base_dir_val}/${libdir}) exist.\n**\n**")
             ENDIF(IGNORE_THIRD_PARTY_LIB_PROBLEMS)
             RETURN()
         ENDIF()
@@ -148,12 +180,12 @@ FUNCTION(SET_UP_THIRD_PARTY pkg libdirextensions incdirextension libs)
             ENDIF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
         ENDIF(${${lib_skip_install}})
 
-        SET(all_libs ${libs})
-        FOREACH (X ${ARGN})
-            SET(all_libs ${all_libs} ${X})
-        ENDFOREACH (X ${ARGN})
+        #SET(all_libs ${libs})
+        #FOREACH (X ${ARGN})
+        #    SET(all_libs ${all_libs} ${X})
+        #ENDFOREACH (X ${ARGN})
 
-        FOREACH (X ${all_libs})
+        FOREACH (X ${libs})
             FIND_LIBRARY(full_lib_path ${X}
                          PATHS ${${lib_dir_var}}
                          NO_DEFAULT_PATH

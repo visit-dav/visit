@@ -39,5 +39,5 @@ ENDIF()
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(XDMF lib include Xdmf)
+SET_UP_THIRD_PARTY(XDMF LIBS Xdmf)
 

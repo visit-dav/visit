@@ -20,9 +20,9 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 if(WIN32)
-  SET_UP_THIRD_PARTY(CGNS lib include cgnsdll)
+  SET_UP_THIRD_PARTY(CGNS LIBS cgnsdll)
   set(CGNS_WIN32_DEFINES "USE_DLL")
 else()
-  SET_UP_THIRD_PARTY(CGNS lib include cgns)
+  SET_UP_THIRD_PARTY(CGNS LIBS cgns)
 endif()
 

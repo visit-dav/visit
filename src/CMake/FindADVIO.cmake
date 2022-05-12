@@ -13,6 +13,6 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(ADVIO lib include AdvDocIO AdvFileIO AdvBase)
+SET_UP_THIRD_PARTY(ADVIO LIBS AdvDocIO AdvFileIO AdvBase)
 
 

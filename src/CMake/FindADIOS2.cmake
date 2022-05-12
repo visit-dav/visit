@@ -23,18 +23,12 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF(EXISTS ${VISIT_ADIOS2_DIR}/lib64)
-    SET(LIB lib64)
-ELSE()
-    SET(LIB lib)
-ENDIF()
-
 if(NOT WIN32)
-    SET_UP_THIRD_PARTY(ADIOS2 ${LIB} include adios2 adios2_atl adios2_dill adios2_evpath adios2_ffs adios2_sst taustubs)
+    SET_UP_THIRD_PARTY(ADIOS2 LIBS adios2 adios2_atl adios2_dill adios2_evpath adios2_ffs adios2_sst taustubs)
 else()
-    SET_UP_THIRD_PARTY(ADIOS2 ${LIB} include adios2 taustubs)
+    SET_UP_THIRD_PARTY(ADIOS2 LIBS adios2 taustubs)
 endif()
 
 IF(VISIT_PARALLEL)
-    SET_UP_THIRD_PARTY(ADIOS2_PAR ${LIB} include adios2_mpi)
+    SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS adios2_mpi)
 ENDIF(VISIT_PARALLEL)

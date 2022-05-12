@@ -34,9 +34,9 @@ include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 if (WIN32)
     if(ZLIB_LIB_NAME)
-        SET_UP_THIRD_PARTY(ZLIB lib include ${ZLIB_LIB_NAME})
+        SET_UP_THIRD_PARTY(ZLIB LIBS ${ZLIB_LIB_NAME})
     else()
-        SET_UP_THIRD_PARTY(ZLIB lib include zlib1)
+        SET_UP_THIRD_PARTY(ZLIB LIBS zlib1)
     endif()
     if (ZLIB_FOUND)
         # use full path here, instead of just lib file.
