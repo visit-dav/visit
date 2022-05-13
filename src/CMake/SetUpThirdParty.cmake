@@ -94,8 +94,10 @@ FUNCTION(SET_UP_THIRD_PARTY pkg)
         
 
     if(DEFINED sutp_LIBDIR)
-        set(libdir ${sutp_LIBDIREXT})
+        set(libdir ${sutp_LIBDIR})
     else()
+        # is this a better test?  It was used by our FindZlib.cmake
+        #  if (LINUX AND CMAKE_SIZEOF_VOID_P EQUAL 8 AND EXISTS ${base_dir_val}/lib64)
         if(EXISTS ${base_dir_val}/lib64)
             set(libdir "lib64")
         else() 
@@ -103,8 +105,8 @@ FUNCTION(SET_UP_THIRD_PARTY pkg)
         endif()
     endif()
 
-    if(DEFINED sutp_INCDIREXT)
-        set(incdir ${sutp_INCDIREXT})
+    if(DEFINED sutp_INCDIR)
+        set(incdir ${sutp_INCDIR})
     else()
         set(incdir "include")
     endif()

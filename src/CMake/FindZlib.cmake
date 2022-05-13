@@ -49,11 +49,7 @@ if (WIN32)
 else (WIN32)
     # Have we told VisIt where to look for zlib?
     if (VISIT_ZLIB_DIR)
-        if (LINUX AND CMAKE_SIZEOF_VOID_P EQUAL 8 AND EXISTS ${ZLIB_DIR}/lib64)
-            SET_UP_THIRD_PARTY(ZLIB lib64 include z)
-        else ()
-            SET_UP_THIRD_PARTY(ZLIB lib include z)
-        endif ()
+        SET_UP_THIRD_PARTY(ZLIB LIBS z)
         if (ZLIB_FOUND)
         # use full path here, instead of just lib file.
             set(ZLIB_LIBRARY "${ZLIB_LIBRARY_DIR}/${ZLIB_LIB}" CACHE STRING "zlib library" FORCE)
