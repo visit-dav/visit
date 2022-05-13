@@ -1984,13 +1984,13 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     const double * values = gf->HostRead();
     if (vdim == 1) // scalar case
     {
-        n_field["values"].set(values,
-                              ndofs);
+        // n_field["values"].set(values,
+        //                       ndofs);
 
-        conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"].value();
+        // conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"].value();
         for (vtkIdType i = 0; i < ndofs; i ++)
         {
-            retval->SetComponent(i, 0, (double) vals_array[i]);
+            retval->SetComponent(i, 0, (double) values[i]);
         }
     }
     else // vector case
@@ -2011,14 +2011,11 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
             oss << "v" << i;
             std::string comp_name = oss.str();
             n_field["values"][comp_name].set(values,
-                                          ndofs,
-                                          offset,
-                                          stride);
+                                             ndofs,
+                                             offset,
+                                             stride);
             offset +=  sizeof(double) * vdim_stride;
-        }
 
-        for(vtkIdType i = 0; i < vdim; i ++)
-        {
             conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"][i].value();;
 
             for (vtkIdType j = 0; j < ndofs; j ++)
