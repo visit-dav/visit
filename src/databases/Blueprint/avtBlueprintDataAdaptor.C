@@ -1965,7 +1965,8 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     int vdim  = gf->FESpace()->GetVDim();
     int ndofs = gf->FESpace()->GetNDofs();
 
-    // all supported grid functions coming out of mfem end up being associated with vertices
+    // all supported grid functions coming out of mfem end up being 
+    // associated with vertices
 
     BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ndofs << " "
                     << " num_comps = " << vdim);
@@ -2026,7 +2027,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
             //     points->SetPoint(i, x, y, z);
             // }
 
-            conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"][i].value();;
+            conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"][i].value();
 
             for (vtkIdType j = 0; j < ndofs; j ++)
             {
@@ -2087,16 +2088,6 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, 
                                          mfem::BasisType::GaussLobatto);
 
-
-
-    std::string basis(gf->FESpace()->FEColl()->Name());
-    // we only have L2 or H2 at this point
-    bool node_centered = basis.find("H1_") == std::string::npos;
-    
-    // Q? get help to figure this out
-    // essentially, examples only work if this is true
-    node_centered = true;
-
     mfem::FiniteElementSpace *ho_fes = gf->FESpace();
     if(ho_fes == nullptr)
     {
@@ -2105,15 +2096,22 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     }
     // create the low order grid function
     mfem::FiniteElementCollection *lo_col = nullptr;
-    if(node_centered)
-    {
-        lo_col = new mfem::LinearFECollection;
-    }
-    else
-    {
-        int  p = 0; // single scalar
-        lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
-    }
+
+    // Note: The following is commented out because it appears that
+    // MFEM's LOR always gives us back node centered data,
+    // no matter if the input is H1 or L2.
+    // std::string basis(gf->FESpace()->FEColl()->Name());
+    // // we only have L2 or H1 at this point
+    // bool node_centered = basis.find("H1_") == std::string::npos;
+    // if(node_centered)
+    // {
+    lo_col = new mfem::LinearFECollection;
+    // }
+    // else
+    // {
+    //     int  p = 0; // single scalar
+    //     lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
+    // }
     mfem::FiniteElementSpace *lo_fes = new mfem::FiniteElementSpace(lo_mesh, lo_col, ho_fes->GetVDim());
     mfem::GridFunction *lo_gf = new mfem::GridFunction(lo_fes);
     // transform the higher order function to a low order function somehow
