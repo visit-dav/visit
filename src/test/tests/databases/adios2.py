@@ -79,7 +79,7 @@ def test(mesh_name, tag_name):
 
 # requires adios2 to be built with c-blosc support
 TestSection("Adios2 Blosc Test")
-OpenDatabase(cube_data, 0, "ADIOS2_1.0")
+OpenDatabase(cube_data, dbPluginName = "ADIOS2_1.0")
 mesh_name = "mesh71x71x71"
 tag_name = "adios2_3d_bp"
 test(mesh_name, tag_name)
