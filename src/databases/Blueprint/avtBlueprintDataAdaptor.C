@@ -1709,7 +1709,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     points->SetDataTypeToDouble();
     points->SetNumberOfPoints(num_vertices);
 
-    // double *coords_ptr = mesh->GetNodes()->GetData();
     double *coords_ptr = mesh->GetVertex(0);
 
     for (int i = 0; i < num_vertices; i ++)
@@ -1963,9 +1962,6 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 vtkDataArray *
 avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 {
-    // extract field
-    conduit::Node n_field;
-
     int vdim  = gf->FESpace()->GetVDim();
     int ndofs = gf->FESpace()->GetNDofs();
 
@@ -1984,10 +1980,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     const double * values = gf->HostRead();
     if (vdim == 1) // scalar case
     {
-        // n_field["values"].set(values,
-        //                       ndofs);
-
-        // conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"].value();
         for (vtkIdType i = 0; i < ndofs; i ++)
         {
             retval->SetComponent(i, 0, (double) values[i]);
@@ -2005,6 +1997,9 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
         index_t offset = 0;
         index_t stride = sizeof(double) * entry_stride;
 
+        // TODO remove bp from here
+        conduit::Node n_field;
+
         for (int i = 0;  i < vdim; i ++)
         {
             std::ostringstream oss;
@@ -2015,6 +2010,21 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
                                              offset,
                                              stride);
             offset +=  sizeof(double) * vdim_stride;
+ 
+            // ideas
+            // for i in range 0 ndofs
+            // the_ptr[i * stride + offset]
+
+            // copied from above
+            // double *the_ptr = mesh->GetVertex(0);
+
+            // for (int i = 0; i < num_vertices; i ++)
+            // {
+            //     double x = the_ptr[i * 3];
+            //     double y = dim >= 2 ? the_ptr[i * 3 + 1] : 0;
+            //     double z = dim >= 3 ? the_ptr[i * 3 + 2] : 0;
+            //     points->SetPoint(i, x, y, z);
+            // }
 
             conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"][i].value();;
 
