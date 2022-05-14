@@ -1574,8 +1574,6 @@ vtkDataSet *
 avtBlueprintDataAdaptor::MFEM::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
                                                      int lod)
 {
-    BP_PLUGIN_INFO("Creating Refined MFEM Mesh with lod:" << lod);
-
     // create output objects
     vtkUnstructuredGrid *res_ds  = vtkUnstructuredGrid::New();
     vtkPoints           *res_pts = vtkPoints::New();
@@ -1675,6 +1673,8 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
 vtkDataSet *
 avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
 {
+    BP_PLUGIN_INFO("Converting Low Order Mesh to VTK.");
+
     int dim = mesh->SpaceDimension();
 
     if(dim < 1 || dim > 3)
@@ -1773,7 +1773,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     ca->Delete();
     return ugrid;
 
-    // TODO need any deletes?
+    // TODO need any more deletes?
 }
 
 // ****************************************************************************
@@ -1799,8 +1799,11 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
                                                int lod,
                                                bool new_refine)
 {
+    BP_PLUGIN_INFO("Creating Refined MFEM Mesh with lod:" << lod);
+
     if (!new_refine)
     {
+        BP_PLUGIN_INFO("Using Legacy LOR to refine mesh.");
         return LegacyRefineMeshToVTK(mesh, lod);
     }
     
@@ -1876,7 +1879,6 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                              mfem::GridFunction *gf,
                                                              int lod)
 {
-    BP_PLUGIN_INFO("Creating Refined MFEM Field with lod:" << lod);
     int npts=0;
     int neles=0;
 
@@ -1962,6 +1964,8 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 vtkDataArray *
 avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 {
+    BP_PLUGIN_INFO("Converting Low Order Grid Function To VTK");
+
     int vdim  = gf->FESpace()->GetVDim();
     int ndofs = gf->FESpace()->GetNDofs();
 
@@ -1979,7 +1983,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     retval->SetNumberOfTuples(ndofs);
 
     const double * values = gf->HostRead();
-    
+
     if (vdim == 1) // scalar case
     {
         for (vtkIdType i = 0; i < ndofs; i ++)
@@ -2028,6 +2032,8 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 //  Programmer: Justin Privitera
 //  Creation:   Fri May  6 15:23:56 PDT 2022
 //
+//  Notes: See LegacyRefineGridFunctionToVTK for the function originally 
+//   with this name.
 //
 // ****************************************************************************
 vtkDataArray *
@@ -2036,8 +2042,11 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                        int lod,
                                                        bool new_refine)
 {
+    BP_PLUGIN_INFO("Creating Refined MFEM Field with lod:" << lod);
+
     if (!new_refine)
     {
+        BP_PLUGIN_INFO("Using Legacy LOR to refine grid function.");
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
     }
 
