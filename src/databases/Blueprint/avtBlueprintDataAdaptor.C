@@ -1809,6 +1809,10 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
                                      (mesh->GetNodes()->FESpace()->FEColl());
     if (L2_coll != NULL)
     {
+        // The commented code in this case is related to handling periodic 
+        // meshes, which we are currently unable to do. We may add this 
+        // functionality at a later date.
+
         // FiniteElementCollection *fec_sub = NULL;
         // FiniteElementSpace *fes_sub = NULL;;
         // GridFunction *xsub = NULL;
@@ -1832,13 +1836,8 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     BP_PLUGIN_INFO("High Order Mesh is not periodic.");
 
     vtkDataSet *retval = LowOrderMeshToVTK(lo_mesh);
-
-    delete L2_coll;
     delete lo_mesh;
-
     return retval;
-
-    // TODO need any more deletes?
 }
 
 // ****************************************************************************
@@ -2094,6 +2093,7 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 
     vtkDataArray *retval = LowOrderGridFunctionToVTK(lo_gf);
     
+    delete lo_mesh;
     delete lo_col;
     delete lo_fes;
     delete lo_gf;
