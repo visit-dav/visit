@@ -1677,7 +1677,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
 
     int dim = mesh->SpaceDimension();
 
-    if(dim < 1 || dim > 3)
+    if (dim < 1 || dim > 3)
     {
         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
                              "invalid mesh dimension " << dim);
@@ -1768,8 +1768,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     ugrid->SetCells(ctype, ca);
     ca->Delete();
     return ugrid;
-
-    // TODO need any more deletes?
 }
 
 // ****************************************************************************
@@ -1802,16 +1800,9 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
         BP_PLUGIN_INFO("Using Legacy LOR to refine mesh.");
         return LegacyRefineMeshToVTK(mesh, lod);
     }
-    
-    // get the high order data
-    const mfem::FiniteElementSpace *fes_space = mesh->GetNodalFESpace();
-    const mfem::FiniteElementCollection *fes_col = fes_space->FEColl();
-
-    BP_PLUGIN_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
     // refine the mesh and convert to vtk
     mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, mfem::BasisType::GaussLobatto);
-    
 
     // Check if the mesh is periodic.
     const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
@@ -1840,9 +1831,14 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
 
     BP_PLUGIN_INFO("High Order Mesh is not periodic.");
 
-    return LowOrderMeshToVTK(lo_mesh);
+    vtkDataSet *retval = LowOrderMeshToVTK(lo_mesh);
 
-    // TODO need any deletes?
+    delete L2_coll;
+    delete lo_mesh;
+
+    return retval;
+
+    // TODO need any more deletes?
 }
 
 // ****************************************************************************
@@ -2071,9 +2067,12 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     // create the low order grid function
     mfem::FiniteElementCollection *lo_col = nullptr;
 
-    // Note: The following is commented out because it appears that
-    // MFEM's LOR always gives us back node centered data,
-    // no matter if the input is H1 or L2.
+    /*Note: The following code is commented out because it appears that
+    MFEM's LOR always gives us back node centered data,
+    no matter if the input is H1 or L2. However,
+    this logic may be relevant if the mesh is periodic,
+    which is currently unsupported, but may be in the future.*/
+
     // std::string basis(gf->FESpace()->FEColl()->Name());
     // // we only have L2 or H1 at this point
     // bool node_centered = basis.find("H1_") == std::string::npos;
