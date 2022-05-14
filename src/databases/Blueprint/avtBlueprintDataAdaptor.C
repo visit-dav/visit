@@ -1552,7 +1552,7 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 //    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
 //
 //  Arguments:
-//    mesh:      string with desired mesh name
+//    mesh:      mesh to be refined
 //    lod:       number of refinement steps
 //
 //  Programmer: Cyrus Harrison
@@ -1661,10 +1661,10 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
 //  Method: LowOrderMeshToVTK
 //
 //  Purpose:
-//    TODO
+//    Converts a low order MFEM mesh to a VTK unstructured grid.
 //
 //  Arguments:
-//    TODO
+//    mesh:         MFEM mesh for the field
 //
 //  Programmer: Justin Privitera
 //  Creation:   Wed Apr 13 13:53:06 PDT 2022
@@ -1687,8 +1687,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     // Setup main coordset
     ////////////////////////////////////////////
 
-    // Assumes  mfem::Vertex has the layout of a double array.
-
+    // Assumes mfem::Vertex has the layout of a double array.
     // this logic assumes an mfem vertex is always 3 doubles wide
     size_t stride = sizeof(mfem::Vertex);
     int num_vertices = mesh->GetNV();
@@ -1757,9 +1756,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
         const mfem::Element *ele = mesh->GetElement(i);
         const int *ele_verts = ele->GetVertices();
 
-        // Q? if there is in fact a problem w/ hexahedrons, how can I write
-        //    an arbitrary solution that will work for all kinds of vtk shapes?
-        //    Do I need to go case by case?
         ida->SetComponent((csize + 1) * i, 0, csize);
         for (int j = 0; j < csize; j ++)
         {
@@ -1783,7 +1779,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
 //
 //  Arguments:
-//    mesh:        string with desired mesh name
+//    mesh:        MFEM mesh for the field
 //    lod:         number of refinement steps
 //    new_refine:  switch for using the new LOR or legacy LOR
 //
@@ -1950,10 +1946,10 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 //  Method: LowOrderGridFunctionToVTK
 //
 //  Purpose:
-//   TODO
+//   Converts a low order MFEM grid function to a vtkDataArray.
 //
 //  Arguments:
-//   TODO
+//   gf:           MFEM Grid Function for the field
 //
 //  Programmer: Justin Privitera
 //  Creation:   Fri May  6 15:23:56 PDT 2022
