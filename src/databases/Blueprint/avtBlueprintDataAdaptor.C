@@ -1979,6 +1979,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     retval->SetNumberOfTuples(ndofs);
 
     const double * values = gf->HostRead();
+    
     if (vdim == 1) // scalar case
     {
         for (vtkIdType i = 0; i < ndofs; i ++)
@@ -1989,55 +1990,23 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     else // vector case
     {
         // deal with striding of all components
-
         mfem::Ordering::Type ordering = gf->FESpace()->GetOrdering();
-
-        int entry_stride = (ordering == mfem::Ordering::byNODES ? 1 : vdim);
+        int stride = (ordering == mfem::Ordering::byNODES ? 1 : vdim);
         int vdim_stride  = (ordering == mfem::Ordering::byNODES ? ndofs : 1);
-
         index_t offset = 0;
-        index_t stride = sizeof(double) * entry_stride;
-
-        // TODO remove bp from here
-        conduit::Node n_field;
 
         for (int i = 0;  i < vdim; i ++)
         {
-            std::ostringstream oss;
-            oss << "v" << i;
-            std::string comp_name = oss.str();
-            n_field["values"][comp_name].set(values,
-                                             ndofs,
-                                             offset,
-                                             stride);
-            offset +=  sizeof(double) * vdim_stride;
- 
-            // ideas
-            // for i in range 0 ndofs
-            // the_ptr[i * stride + offset]
-
-            // copied from above
-            // double *the_ptr = mesh->GetVertex(0);
-
-            // for (int i = 0; i < num_vertices; i ++)
-            // {
-            //     double x = the_ptr[i * 3];
-            //     double y = dim >= 2 ? the_ptr[i * 3 + 1] : 0;
-            //     double z = dim >= 3 ? the_ptr[i * 3 + 2] : 0;
-            //     points->SetPoint(i, x, y, z);
-            // }
-
-            conduit::DataArray<CONDUIT_NATIVE_DOUBLE> vals_array = n_field["values"][i].value();
-
             for (vtkIdType j = 0; j < ndofs; j ++)
             {
-                retval->SetComponent(j, i, (double) vals_array[j]);
+                retval->SetComponent(j, i, values[offset + j * stride]);
 
                 if(vdim == 2)
                 {
                     retval->SetComponent(j, 2, 0.0);
                 }
             }
+            offset += vdim_stride;
         }
     }
 
