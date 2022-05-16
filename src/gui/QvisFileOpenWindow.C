@@ -246,6 +246,11 @@ QvisFileOpenWindow::CreateWindowContents()
     QLabel *openFileAsTypeLabel = new QLabel(tr("Open file as type:"));
     fileFormatLayout->addWidget(openFileAsTypeLabel);
     fileFormatComboBox = new QComboBox(central);
+    fileFormatComboBox->setEditable(true);
+    fileFormatComboBox->setInsertPolicy(QComboBox::NoInsert);
+    fileFormatComboBox->setMaxVisibleItems(50);
+    // needs qt 5.15; at the time of writing we use qt 5.14
+    // fileFormatComboBox->setPlaceholderText("Guess from file name/extension");
     fileFormatLayout->addWidget(fileFormatComboBox, 10);
     setDefaultOptionsForFormatButton = new QPushButton(
            tr("Set default open options..."), central);
