@@ -1722,9 +1722,9 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
 
     points->Delete();
 
-   ////////////////////////////////////////////
-   // Setup main topo
-   ////////////////////////////////////////////
+    ////////////////////////////////////////////
+    // Setup main topo
+    ////////////////////////////////////////////
 
     mfem::Element::Type ele_type = static_cast<mfem::Element::Type>(
         mesh->GetElement(0)->GetType());
