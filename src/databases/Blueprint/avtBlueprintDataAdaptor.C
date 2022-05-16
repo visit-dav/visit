@@ -1703,8 +1703,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
     vtkPoints *points = vtkPoints::New();
-    // TODO do I need the next line?
-    // points->Allocate(num_vertices);
     points->SetDataTypeToDouble();
     points->SetNumberOfPoints(num_vertices);
 
