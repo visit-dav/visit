@@ -184,6 +184,18 @@ QvisFileOpenWindow::SetFilename(const QString &f)
 //    David Camp, Thu Aug 27 09:40:00 PDT 2015
 //    Added a filename field if showFilename is true. For Session dialog.
 //    Also hide files if Session dialog.
+// 
+//   Justin Privitera, Tue May 17 11:06:11 PDT 2022
+//   1) Fixed an issue where the list of plugins in the file open window could 
+//   disappear when selecting plugins from the list multiple times.
+//   2) In the plugin selection in the file open window, users can now delete 
+//   the text that is there and start typing the name of the plugin that they 
+//   wish to open files with, and VisIt will autocomplete the entered text to 
+//   select a plugin. This was accomplished by making the fileFormatComboBox
+//   "editable", but making its "insertPolicy" be "NoInsert". In this way,
+//   users can type whatever they need in the box and the box will attempt
+//   to autocomplete what they are typing, but they cannot add new entries to
+//   the plugin list.
 //
 // ****************************************************************************
 
