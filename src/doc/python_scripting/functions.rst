@@ -5954,7 +5954,7 @@ return type : CLI_return_t
   DrawPlots()
   print("There are %d color tables." % NumColorTableNames())
   for ct in ColorTableNames():
-      SetActiveContinuousColorTable(ct)
+      SetDefaultContinuousColorTable(ct)
       SaveWindow()
 
 
@@ -8290,14 +8290,14 @@ argument
     simulation to send the command to.
 
 
-SetActiveContinuousColorTable
+SetDefaultContinuousColorTable
 -----------------------------
 
 **Synopsis:**
 
 ::
 
-  SetActiveContinuousColorTable(name) -> integer
+  SetDefaultContinuousColorTable(name) -> integer
 
 
 name : string
@@ -8333,17 +8333,17 @@ return type : CLI_return_t
   OpenDatabase("/usr/gapps/visit/data/noise.silo")
   AddPlot("Contour", "hgslice")
   DrawPlots()
-  SetActiveDiscreteColorTable("levels")
+  SetDefaultDiscreteColorTable("levels")
 
 
-SetActiveDiscreteColorTable
+SetDefaultDiscreteColorTable
 ---------------------------
 
 **Synopsis:**
 
 ::
 
-  SetActiveDiscreteColorTable(name) -> integer
+  SetDefaultDiscreteColorTable(name) -> integer
 
 
 name : string
@@ -8379,7 +8379,7 @@ return type : CLI_return_t
   OpenDatabase("/usr/gapps/visit/data/noise.silo")
   AddPlot("Contour", "hgslice")
   DrawPlots()
-  SetActiveDiscreteColorTable("levels")
+  SetDefaultDiscreteColorTable("levels")
 
 
 SetActivePlots

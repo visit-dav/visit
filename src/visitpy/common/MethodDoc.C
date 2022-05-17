@@ -2778,13 +2778,13 @@ const char *visit_Flatten_doc =
 "if \"zoneTable\" in data:\n"
 "  print(numpy.asarray(data[\"zoneTable\"]))\n"
 ;
-const char *visit_GetActiveContinuousColorTable_doc = 
-"GetActiveContinuousColorTable\n"
+const char *visit_GetDefaultContinuousColorTable_doc = 
+"GetDefaultContinuousColorTable\n"
 "\n"
 "\n"
 "Synopsis:\n"
 "\n"
-"GetActiveContinuousColorTable() -> string\n"
+"GetDefaultContinuousColorTable() -> string\n"
 "\n"
 "\n"
 "Returns:\n"
@@ -2805,24 +2805,24 @@ const char *visit_GetActiveContinuousColorTable_doc =
 "notion of default continuous and default discrete color tables so plots can\n"
 "just use the \"default\" color table. This lets you change the color table\n"
 "used by many plots by just changing the \"default\" color table. The\n"
-"GetActiveContinuousColorTable function returns the name of the default\n"
-"continuous color table. The GetActiveDiscreteColorTable function returns\n"
+"GetDefaultContinuousColorTable function returns the name of the default\n"
+"continuous color table. The GetDefaultDiscreteColorTable function returns\n"
 "the name of the default discrete color table.\n"
 "\n"
 "\n"
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print(\"Default continuous color table: %s\" % GetActiveContinuousColorTable())\n"
-"print(\"Default discrete color table: %s\" % GetActiveDiscreteColorTable())\n"
+"print(\"Default continuous color table: %s\" % GetDefaultContinuousColorTable())\n"
+"print(\"Default discrete color table: %s\" % GetDefaultDiscreteColorTable())\n"
 ;
-const char *visit_GetActiveDiscreteColorTable_doc = 
-"GetActiveDiscreteColorTable\n"
+const char *visit_GetDefaultDiscreteColorTable_doc = 
+"GetDefaultDiscreteColorTable\n"
 "\n"
 "\n"
 "Synopsis:\n"
 "\n"
-"GetActiveDiscreteColorTable() -> string\n"
+"GetDefaultDiscreteColorTable() -> string\n"
 "\n"
 "\n"
 "Returns:\n"
@@ -2843,16 +2843,16 @@ const char *visit_GetActiveDiscreteColorTable_doc =
 "notion of default continuous and default discrete color tables so plots can\n"
 "just use the \"default\" color table. This lets you change the color table\n"
 "used by many plots by just changing the \"default\" color table. The\n"
-"GetActiveContinuousColorTable function returns the name of the default\n"
-"continuous color table. The GetActiveDiscreteColorTable function returns\n"
+"GetDefaultContinuousColorTable function returns the name of the default\n"
+"continuous color table. The GetDefaultDiscreteColorTable function returns\n"
 "the name of the default discrete color table.\n"
 "\n"
 "\n"
 "Example:\n"
 "\n"
 "#% visit -cli\n"
-"print(\"Default continuous color table: %s\" % GetActiveContinuousColorTable())\n"
-"print(\"Default discrete color table: %s\" % GetActiveDiscreteColorTable())\n"
+"print(\"Default continuous color table: %s\" % GetDefaultContinuousColorTable())\n"
+"print(\"Default discrete color table: %s\" % GetDefaultDiscreteColorTable())\n"
 ;
 const char *visit_GetActiveTimeSlider_doc = 
 "GetActiveTimeSlider\n"
@@ -5678,7 +5678,7 @@ const char *visit_NumColorTableNames_doc =
 "DrawPlots()\n"
 "print(\"There are %d color tables.\" % NumColorTableNames())\n"
 "for ct in ColorTableNames():\n"
-"    SetActiveContinuousColorTable(ct)\n"
+"    SetDefaultContinuousColorTable(ct)\n"
 "    SaveWindow()\n"
 ;
 const char *visit_NumOperatorPlugins_doc = 
@@ -7891,13 +7891,13 @@ const char *visit_SendSimulationCommand_doc =
 "running. The simulation argument is a string that contains the name of the\n"
 "simulation to send the command to.\n"
 ;
-const char *visit_SetActiveContinuousColorTable_doc = 
-"SetActiveContinuousColorTable\n"
+const char *visit_SetDefaultContinuousColorTable_doc = 
+"SetDefaultContinuousColorTable\n"
 "\n"
 "\n"
 "Synopsis:\n"
 "\n"
-"SetActiveContinuousColorTable(name) -> integer\n"
+"SetDefaultContinuousColorTable(name) -> integer\n"
 "\n"
 "\n"
 "Arguments:\n"
@@ -7935,15 +7935,15 @@ const char *visit_SetActiveContinuousColorTable_doc =
 "OpenDatabase(\"/usr/gapps/visit/data/noise.silo\")\n"
 "AddPlot(\"Contour\", \"hgslice\")\n"
 "DrawPlots()\n"
-"SetActiveDiscreteColorTable(\"levels\")\n"
+"SetDefaultDiscreteColorTable(\"levels\")\n"
 ;
-const char *visit_SetActiveDiscreteColorTable_doc = 
-"SetActiveDiscreteColorTable\n"
+const char *visit_SetDefaultDiscreteColorTable_doc = 
+"SetDefaultDiscreteColorTable\n"
 "\n"
 "\n"
 "Synopsis:\n"
 "\n"
-"SetActiveDiscreteColorTable(name) -> integer\n"
+"SetDefaultDiscreteColorTable(name) -> integer\n"
 "\n"
 "\n"
 "Arguments:\n"
@@ -7981,7 +7981,7 @@ const char *visit_SetActiveDiscreteColorTable_doc =
 "OpenDatabase(\"/usr/gapps/visit/data/noise.silo\")\n"
 "AddPlot(\"Contour\", \"hgslice\")\n"
 "DrawPlots()\n"
-"SetActiveDiscreteColorTable(\"levels\")\n"
+"SetDefaultDiscreteColorTable(\"levels\")\n"
 ;
 const char *visit_SetActivePlots_doc = 
 "SetActivePlots\n"

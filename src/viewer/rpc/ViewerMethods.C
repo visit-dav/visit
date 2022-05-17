@@ -3584,7 +3584,7 @@ ViewerMethods::ResetPickAttributes()
 
 
 // ****************************************************************************
-// Method: ViewerMethods::SetActiveContinuousColorTable
+// Method: ViewerMethods::SetDefaultContinuousColorTable
 //
 // Purpose: 
 //   Sets the active continuous color table. This is the color table that
@@ -3601,12 +3601,12 @@ ViewerMethods::ResetPickAttributes()
 // ****************************************************************************
 
 void
-ViewerMethods::SetActiveContinuousColorTable(const std::string &colorTableName)
+ViewerMethods::SetDefaultContinuousColorTable(const std::string &colorTableName)
 {
     // If it's a valid color table name, make it active.
     if(state->GetColorTableAttributes()->GetColorTableIndex(colorTableName) != -1)
     {
-        state->GetColorTableAttributes()->SetActiveContinuous(colorTableName);
+        state->GetColorTableAttributes()->SetDefaultContinuous(colorTableName);
         state->GetColorTableAttributes()->Notify();
 
         // Update the color table. This has the effect of making all plots
@@ -3617,7 +3617,7 @@ ViewerMethods::SetActiveContinuousColorTable(const std::string &colorTableName)
 }
 
 // ****************************************************************************
-// Method: ViewerMethods::SetActiveDiscreteColorTable
+// Method: ViewerMethods::SetDefaultDiscreteColorTable
 //
 // Purpose: 
 //   Sets the active discrete color table. This is the color table that
@@ -3634,12 +3634,12 @@ ViewerMethods::SetActiveContinuousColorTable(const std::string &colorTableName)
 // ****************************************************************************
 
 void
-ViewerMethods::SetActiveDiscreteColorTable(const std::string &colorTableName)
+ViewerMethods::SetDefaultDiscreteColorTable(const std::string &colorTableName)
 {
     // If it's a valid color table name, make it active.
     if(state->GetColorTableAttributes()->GetColorTableIndex(colorTableName) != -1)
     {
-        state->GetColorTableAttributes()->SetActiveDiscrete(colorTableName);
+        state->GetColorTableAttributes()->SetDefaultDiscrete(colorTableName);
         state->GetColorTableAttributes()->Notify();
     }
 }

@@ -60,7 +60,7 @@
 //   Added initialization of an observer.
 //
 //   Brad Whitlock, Wed Nov 20 16:04:01 PST 2002
-//   Added initialization of activeCT.
+//   Added initialization of defaultCT.
 //
 //   Brad Whitlock, Wed Feb 26 10:59:45 PDT 2003
 //   Initialized colorTableTypeGroup.
@@ -147,7 +147,7 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   I changed smoothing method to a combo box.
 //
 //   Kathleen Biagas, Mon Aug  4 15:45:44 PDT 2014
-//   Added a groupToggle. Change discrete/active buttons to color table
+//   Added a groupToggle. Change discrete/default buttons to color table
 //   buttons.
 //
 //   Kathleen Biagas, Wed Jun  8 17:10:30 PDT 2016
@@ -168,35 +168,35 @@ QvisColorTableWindow::~QvisColorTableWindow()
 void
 QvisColorTableWindow::CreateWindowContents()
 {
-    // Create the widgets needed to set the active color tables.
+    // Create the widgets needed to set the default color tables.
     topLayout->setMargin(2);
-    activeGroup = new QGroupBox(central);
-    activeGroup->setTitle(tr("Active color table"));
-    topLayout->addWidget(activeGroup, 5);
+    defaultGroup = new QGroupBox(central);
+    defaultGroup->setTitle(tr("Default color table"));
+    topLayout->addWidget(defaultGroup, 5);
 
-    QVBoxLayout *innerActiveTopLayout = new QVBoxLayout(activeGroup);
-    QGridLayout *innerActiveLayout = new QGridLayout();
-    innerActiveTopLayout->addLayout(innerActiveLayout);
-    innerActiveLayout->setColumnMinimumWidth(1, 10);
+    QVBoxLayout *innerDefaultTopLayout = new QVBoxLayout(defaultGroup);
+    QGridLayout *innerDefaultLayout = new QGridLayout();
+    innerDefaultTopLayout->addLayout(innerDefaultLayout);
+    innerDefaultLayout->setColumnMinimumWidth(1, 10);
 
-    activeContinuous = new QvisNoDefaultColorTableButton(activeGroup);
-    connect(activeContinuous, SIGNAL(selectedColorTable(const QString &)),
-            this, SLOT(setActiveContinuous(const QString &)));
-    innerActiveLayout->addWidget(activeContinuous, 0, 1);
-    activeContinuousLabel = new QLabel(tr("Continuous"),activeGroup);
-    innerActiveLayout->addWidget(activeContinuousLabel, 0, 0);
+    defaultContinuous = new QvisNoDefaultColorTableButton(defaultGroup);
+    connect(defaultContinuous, SIGNAL(selectedColorTable(const QString &)),
+            this, SLOT(setDefaultContinuous(const QString &)));
+    innerDefaultLayout->addWidget(defaultContinuous, 0, 1);
+    defaultContinuousLabel = new QLabel(tr("Continuous"),defaultGroup);
+    innerDefaultLayout->addWidget(defaultContinuousLabel, 0, 0);
 
-    activeDiscrete = new QvisNoDefaultColorTableButton(activeGroup);
-    connect(activeDiscrete, SIGNAL(selectedColorTable(const QString &)),
-            this, SLOT(setActiveDiscrete(const QString &)));
-    innerActiveLayout->addWidget(activeDiscrete, 1, 1);
-    activeDiscreteLabel = new QLabel(tr("Discrete"),activeGroup);
-    innerActiveLayout->addWidget(activeDiscreteLabel, 1, 0);
+    defaultDiscrete = new QvisNoDefaultColorTableButton(defaultGroup);
+    connect(defaultDiscrete, SIGNAL(selectedColorTable(const QString &)),
+            this, SLOT(setDefaultDiscrete(const QString &)));
+    innerDefaultLayout->addWidget(defaultDiscrete, 1, 1);
+    defaultDiscreteLabel = new QLabel(tr("Discrete"),defaultGroup);
+    innerDefaultLayout->addWidget(defaultDiscreteLabel, 1, 0);
 
-    groupToggle = new QCheckBox(tr("Group tables by Category"), activeGroup);
+    groupToggle = new QCheckBox(tr("Group tables by Category"), defaultGroup);
     connect(groupToggle, SIGNAL(toggled(bool)),
             this, SLOT(groupingToggled(bool)));
-    innerActiveLayout->addWidget(groupToggle, 2, 1);
+    innerDefaultLayout->addWidget(groupToggle, 2, 1);
 
     // Create the widget group that contains all of the color table
     // management stuff.
@@ -471,7 +471,7 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
     if(winNode == 0)
         return;
 
-    // Get the active tab and show it.
+    // Get the default tab and show it.
     DataNode *node;
     if((node = winNode->GetNode("currentColorTable")) != 0)
     {
@@ -507,7 +507,7 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //
 //   Brad Whitlock, Mon Mar 6 10:18:18 PDT 2006
 //   I changed the code so it only uses the first colortable name as a last
-//   resort if the active color table is set to something invalid.
+//   resort if the default color table is set to something invalid.
 //
 //   Brad Whitlock, Fri Dec 14 16:59:58 PST 2007
 //   Made it use ids.
@@ -519,7 +519,7 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //   Avoid use of temporaries that was referencing freed memory.
 //
 //   Kathleen Biagas, Mon Aug  4 15:45:44 PDT 2014
-//   Handle new groupingFlag, change in active/discrete button types.
+//   Handle new groupingFlag, change in default/discrete button types.
 //
 // ****************************************************************************
 
@@ -530,7 +530,7 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
     bool updateColorPoints = false;
 
     //
-    // If our active color table, for some reason, does not appear in the
+    // If our default color table, for some reason, does not appear in the
     // list of color tables then we should choose a new colortable. Note that
     // if we've not set the color table yet, it will be "none" and it will get
     // set here, if possible.
@@ -539,8 +539,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
     bool invalidCt = true;
     QString ctNames[4];
     ctNames[0] = currentColorTable;
-    ctNames[1] = colorAtts->GetActiveContinuous().c_str();
-    ctNames[2] = colorAtts->GetActiveDiscrete().c_str();
+    ctNames[1] = colorAtts->GetDefaultContinuous().c_str();
+    ctNames[2] = colorAtts->GetDefaultDiscrete().c_str();
     if(colorAtts->GetNames().size() > 0)
     {
         ctNames[3] = colorAtts->GetNames()[0].c_str();
@@ -583,15 +583,15 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
         case ColorTableAttributes::ID_colorTables:
             updateColorPoints = true;
             break;
-        case ColorTableAttributes::ID_activeContinuous:
-            activeContinuous->blockSignals(true);
-            activeContinuous->setColorTable(colorAtts->GetActiveContinuous().c_str());
-            activeContinuous->blockSignals(false);
+        case ColorTableAttributes::ID_defaultContinuous:
+            defaultContinuous->blockSignals(true);
+            defaultContinuous->setColorTable(colorAtts->GetDefaultContinuous().c_str());
+            defaultContinuous->blockSignals(false);
             break;
-        case ColorTableAttributes::ID_activeDiscrete:
-            activeDiscrete->blockSignals(true);
-            activeDiscrete->setColorTable(colorAtts->GetActiveDiscrete().c_str());
-            activeDiscrete->blockSignals(false);
+        case ColorTableAttributes::ID_defaultDiscrete:
+            defaultDiscrete->blockSignals(true);
+            defaultDiscrete->setColorTable(colorAtts->GetDefaultDiscrete().c_str());
+            defaultDiscrete->blockSignals(false);
             break;
         case ColorTableAttributes::ID_groupingFlag:
             groupToggle->blockSignals(true);
@@ -646,7 +646,7 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
 void
 QvisColorTableWindow::UpdateEditor()
 {
-    ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
 
     if(ccpl)
     {
@@ -720,8 +720,8 @@ void
 QvisColorTableWindow::UpdateNames()
 {
     nameListBox->blockSignals(true);
-    activeDiscrete->blockSignals(true);
-    activeContinuous->blockSignals(true);
+    defaultDiscrete->blockSignals(true);
+    defaultContinuous->blockSignals(true);
 
     // Clear out the existing names.
     nameListBox->clear();
@@ -780,7 +780,7 @@ QvisColorTableWindow::UpdateNames()
         }
     }
 
-    // Select the active color table.
+    // Select the default color table.
     int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
     if(index >= 0)
     {
@@ -795,27 +795,27 @@ QvisColorTableWindow::UpdateNames()
             }
             ++it;
         }
-        // Set the text of the active color table into the name line edit.
+        // Set the text of the default color table into the name line edit.
         nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
         categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
     }
 
     nameListBox->blockSignals(false);
-    activeContinuous->blockSignals(false);
-    activeDiscrete->blockSignals(false);
+    defaultContinuous->blockSignals(false);
+    defaultDiscrete->blockSignals(false);
 
     // Set the enabled state of the delete button.
     deleteButton->setEnabled(colorAtts->GetNumColorTables() > 1);
 }
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::GetActiveColorControlPoints
+// Method: QvisColorTableWindow::GetDefaultColorControlPoints
 //
 // Purpose:
-//   Returns a const pointer to the color control points of our active
+//   Returns a const pointer to the color control points of our default
 //   color table.
 //
-// Returns:    A const pointer to the color control points of our active
+// Returns:    A const pointer to the color control points of our default
 //             color table.
 //
 // Programmer: Brad Whitlock
@@ -826,19 +826,19 @@ QvisColorTableWindow::UpdateNames()
 // ****************************************************************************
 
 const ColorControlPointList *
-QvisColorTableWindow::GetActiveColorControlPoints() const
+QvisColorTableWindow::GetDefaultColorControlPoints() const
 {
     return colorAtts->GetColorControlPoints(currentColorTable.toStdString());
 }
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::GetActiveColorControlPoints
+// Method: QvisColorTableWindow::GetDefaultColorControlPoints
 //
 // Purpose:
-//   Returns a pointer to the color control points of our active
+//   Returns a pointer to the color control points of our default
 //   color table.
 //
-// Returns:    A pointer to the color control points of our active
+// Returns:    A pointer to the color control points of our default
 //             color table.
 //
 // Programmer: Brad Whitlock
@@ -849,7 +849,7 @@ QvisColorTableWindow::GetActiveColorControlPoints() const
 // ****************************************************************************
 
 ColorControlPointList *
-QvisColorTableWindow::GetActiveColorControlPoints()
+QvisColorTableWindow::GetDefaultColorControlPoints()
 {
     return (ColorControlPointList *)colorAtts->GetColorControlPoints(currentColorTable.toStdString());
 }
@@ -875,8 +875,8 @@ QvisColorTableWindow::GetActiveColorControlPoints()
 void
 QvisColorTableWindow::UpdateColorControlPoints()
 {
-    // Get a pointer to the active color table's control points.
-    const ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    // Get a pointer to the default color table's control points.
+    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
 
     if(ccpl)
     {
@@ -996,8 +996,8 @@ QvisColorTableWindow::UpdateColorControlPoints()
 void
 QvisColorTableWindow::UpdateDiscreteSettings()
 {
-    // Get a pointer to the active color table's control points.
-    ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    // Get a pointer to the default color table's control points.
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl && ccpl->GetDiscreteFlag())
     {
         bool doNotify = false;
@@ -1133,7 +1133,7 @@ QvisColorTableWindow::ShowSelectedColor(const QColor &c)
 {
     int i;
 
-    const ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     bool updateDiscrete = (ccpl && ccpl->GetDiscreteFlag());
 
     // Update the color
@@ -1179,7 +1179,7 @@ QvisColorTableWindow::ShowSelectedColor(const QColor &c)
 // Method: QvisColorTableWindow::ChangeSelectedColor
 //
 // Purpose:
-//   Change the active discrete color to the specified color.
+//   Change the default discrete color to the specified color.
 //
 // Arguments:
 //   c : the new color.
@@ -1200,7 +1200,7 @@ void
 QvisColorTableWindow::ChangeSelectedColor(const QColor &c)
 {
     // Change the color in the colorAtts.
-    ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
         int index;
@@ -1355,8 +1355,8 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
             cpts.SetCategoryName(categoryName.toStdString());
         }
 
-        // Get a pointer to the active color table's control points.
-        ColorControlPointList *ccpl = GetActiveColorControlPoints();
+        // Get a pointer to the default color table's control points.
+        ColorControlPointList *ccpl = GetDefaultColorControlPoints();
         if(ccpl)
         {
             ColorControlPointList &activeControlPoints = *ccpl;
@@ -1364,7 +1364,7 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Get the name of the active color table. If it differs from the active
+    // Get the name of the default color table. If it differs from the default
     // color table in the state object, set it into the state object.
     if(which_widget == 1 || which_widget == -1)
     {
@@ -1507,7 +1507,7 @@ QvisColorTableWindow::controlPointMoved(int, float)
 //   needs to be activated in order to select a new color.
 //
 // Arguments:
-//   index : The index of the active color control point.
+//   index : The index of the default color control point.
 //   p     : The point that was clicked.
 //
 // Programmer: Brad Whitlock
@@ -1581,7 +1581,7 @@ QvisColorTableWindow::selectedColor(const QColor &color)
     {
         if(popupMode == SELECT_FOR_CONTINUOUS)
         {
-            // Set the color of the active color control point.
+            // Set the color of the default color control point.
             spectrumBar->setControlPointColor(spectrumBar->activeControlPoint(),
                                               color);
 
@@ -1592,7 +1592,7 @@ QvisColorTableWindow::selectedColor(const QColor &color)
         }
         else
         {
-            // Change the active discrete color to the new color.
+            // Change the default discrete color to the new color.
             ChangeSelectedColor(color);
         }
     }
@@ -1617,8 +1617,8 @@ QvisColorTableWindow::selectedColor(const QColor &color)
 void
 QvisColorTableWindow::smoothingMethodChanged(int val)
 {
-    // Get a pointer to the active color table's control points.
-    ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    // Get a pointer to the default color table's control points.
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
 
     if(ccpl)
     {
@@ -1665,8 +1665,8 @@ QvisColorTableWindow::showIndexHintsToggled(bool val)
 void
 QvisColorTableWindow::equalSpacingToggled(bool)
 {
-    // Get a pointer to the active color table's control points.
-    ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    // Get a pointer to the default color table's control points.
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
 
     if(ccpl)
     {
@@ -1689,7 +1689,7 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // Modifications:
 //   Brad Whitlock, Wed Nov 20 17:11:36 PST 2002
 //   I changed the code so discrete color tables are supported. I also
-//   removed the code to make the new color table the active color table.
+//   removed the code to make the new color table the default color table.
 //
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
@@ -1705,8 +1705,8 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 void
 QvisColorTableWindow::addColorTable()
 {
-    // Get a pointer to the active color table's control points.
-    ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    // Get a pointer to the default color table's control points.
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
 
     // Get the name of the new colortable. This stores a new name into
     // the currentColorTable variable.
@@ -1718,14 +1718,14 @@ QvisColorTableWindow::addColorTable()
         // Add the new colortable to colorAtts.
         if(ccpl)
         {
-            // Copy the active color table into the new color table.
+            // Copy the default color table into the new color table.
             ColorControlPointList cpts(*ccpl);
             cpts.SetCategoryName(categoryName.toStdString());
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
         else
         {
-            // There is no active color table so create a default color table
+            // There is no default color table so create a default color table
             // and add it with the specified name.
             ColorControlPointList cpts;
             cpts.AddControlPoints(ColorControlPoint(0., 255,0,0,255));
@@ -1787,7 +1787,7 @@ QvisColorTableWindow::deleteColorTable()
 //
 // Purpose:
 //   This is a Qt slot function that is called when a color table is
-//   highligted. It serves to make the highlighted plot the new active color
+//   highligted. It serves to make the highlighted plot the new default color
 //   table.
 //
 // Arguments:
@@ -1847,7 +1847,7 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 void
 QvisColorTableWindow::setColorTableType(int index)
 {
-    ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
         ccpl->SetDiscreteFlag(index == 1);
@@ -1888,7 +1888,7 @@ QvisColorTableWindow::activateContinuousColor(int index)
 //
 // Purpose:
 //   This is a Qt slot function that is called when we click on a discrete
-//   color thus making it active.
+//   color thus making it default.
 //
 // Arguments:
 //   c      : The color value.
@@ -1912,7 +1912,7 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 // Method: QvisColorTableWindow::redValueChanged
 //
 // Purpose:
-//   This is a Qt slot function that is called when the active discrete color
+//   This is a Qt slot function that is called when the default discrete color
 //   changes due to the red slider or spin box.
 //
 // Arguments:
@@ -1930,7 +1930,7 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 void
 QvisColorTableWindow::redValueChanged(int r)
 {
-    const ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
         QColor c;
@@ -1949,7 +1949,7 @@ QvisColorTableWindow::redValueChanged(int r)
 // Method: QvisColorTableWindow::greenValueChanged
 //
 // Purpose:
-//   This is a Qt slot function that is called when the active discrete color
+//   This is a Qt slot function that is called when the default discrete color
 //   changes due to the green slider or spin box.
 //
 // Arguments:
@@ -1967,7 +1967,7 @@ QvisColorTableWindow::redValueChanged(int r)
 void
 QvisColorTableWindow::greenValueChanged(int g)
 {
-    const ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
         QColor c;
@@ -1986,7 +1986,7 @@ QvisColorTableWindow::greenValueChanged(int g)
 // Method: QvisColorTableWindow::blueValueChanged
 //
 // Purpose:
-//   This is a Qt slot function that is called when the active discrete color
+//   This is a Qt slot function that is called when the default discrete color
 //   changes due to the blue slider or spin box.
 //
 // Arguments:
@@ -2004,7 +2004,7 @@ QvisColorTableWindow::greenValueChanged(int g)
 void
 QvisColorTableWindow::blueValueChanged(int b)
 {
-    const ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
         QColor c;
@@ -2023,7 +2023,7 @@ QvisColorTableWindow::blueValueChanged(int b)
 // Method: QvisColorTableWindow::alphaValueChanged
 //
 // Purpose:
-//   This is a Qt slot function that is called when the active discrete color
+//   This is a Qt slot function that is called when the default discrete color
 //   changes due to the alpha slider or spin box.
 //
 // Arguments:
@@ -2039,7 +2039,7 @@ QvisColorTableWindow::blueValueChanged(int b)
 void
 QvisColorTableWindow::alphaValueChanged(int a)
 {
-    const ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
         QColor c;
@@ -2098,13 +2098,13 @@ QvisColorTableWindow::sliderReleased()
 }
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::setActiveContinuous
+// Method: QvisColorTableWindow::setDefaultContinuous
 //
 // Purpose:
-//   This is Qt slot function that sets the active continuous color table.
+//   This is Qt slot function that sets the default continuous color table.
 //
 // Arguments:
-//   ct : The name of the new active color table.
+//   ct : The name of the new default color table.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Nov 25 10:55:53 PDT 2002
@@ -2114,20 +2114,20 @@ QvisColorTableWindow::sliderReleased()
 // ****************************************************************************
 
 void
-QvisColorTableWindow::setActiveContinuous(const QString &ct)
+QvisColorTableWindow::setDefaultContinuous(const QString &ct)
 {
-    colorAtts->SetActiveContinuous(ct.toStdString());
+    colorAtts->SetDefaultContinuous(ct.toStdString());
     Apply();
 }
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::setActiveDiscrete
+// Method: QvisColorTableWindow::setDefaultDiscrete
 //
 // Purpose:
-//   This is Qt slot function that sets the active discrete color table.
+//   This is Qt slot function that sets the default discrete color table.
 //
 // Arguments:
-//   ct : The name of the new active color table.
+//   ct : The name of the new default color table.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Nov 25 10:55:53 PDT 2002
@@ -2137,9 +2137,9 @@ QvisColorTableWindow::setActiveContinuous(const QString &ct)
 // ****************************************************************************
 
 void
-QvisColorTableWindow::setActiveDiscrete(const QString &ct)
+QvisColorTableWindow::setDefaultDiscrete(const QString &ct)
 {
-    colorAtts->SetActiveDiscrete(ct.toStdString());
+    colorAtts->SetDefaultDiscrete(ct.toStdString());
     Apply();
 }
 
@@ -2168,7 +2168,7 @@ QvisColorTableWindow::setActiveDiscrete(const QString &ct)
 void
 QvisColorTableWindow::resizeColorTable(int size)
 {
-    ColorControlPointList *ccpl = GetActiveColorControlPoints();
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
         int i;
@@ -2316,7 +2316,7 @@ QvisColorTableWindow::ApplyCategoryChange()
     GetCurrentValues(2);
     if(!categoryName.isEmpty())
     {
-        ColorControlPointList *ccpl = GetActiveColorControlPoints();
+        ColorControlPointList *ccpl = GetDefaultColorControlPoints();
         if(ccpl)
         {
             if (categoryName.toStdString() != ccpl->GetCategoryName())

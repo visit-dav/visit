@@ -10291,7 +10291,7 @@ visit_NumColorTables(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
-// Function: visit_SetActiveContinuousColorTable
+// Function: visit_SetDefaultContinuousColorTable
 //
 // Purpose:
 //   Tells the viewer to set a new active continuous colortable.
@@ -10308,7 +10308,7 @@ visit_NumColorTables(PyObject *self, PyObject *args)
 // ****************************************************************************
 
 STATIC PyObject *
-visit_SetActiveContinuousColorTable(PyObject *self, PyObject *args)
+visit_SetDefaultContinuousColorTable(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
@@ -10320,14 +10320,14 @@ visit_SetActiveContinuousColorTable(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        GetViewerMethods()->SetActiveContinuousColorTable(ctName);
+        GetViewerMethods()->SetDefaultContinuousColorTable(ctName);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
-// Function: visit_SetActiveDiscreteColorTable
+// Function: visit_SetDefaultDiscreteColorTable
 //
 // Purpose:
 //   Tells the viewer to set a new active discrete colortable.
@@ -10342,7 +10342,7 @@ visit_SetActiveContinuousColorTable(PyObject *self, PyObject *args)
 // ****************************************************************************
 
 STATIC PyObject *
-visit_SetActiveDiscreteColorTable(PyObject *self, PyObject *args)
+visit_SetDefaultDiscreteColorTable(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
@@ -10354,14 +10354,14 @@ visit_SetActiveDiscreteColorTable(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        GetViewerMethods()->SetActiveDiscreteColorTable(ctName);
+        GetViewerMethods()->SetDefaultDiscreteColorTable(ctName);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
-// Function: visit_GetActiveContinuousColorTable
+// Function: visit_GetDefaultContinuousColorTable
 //
 // Purpose:
 //   Returns the active continuous colortable.
@@ -10376,18 +10376,18 @@ visit_SetActiveDiscreteColorTable(PyObject *self, PyObject *args)
 // ****************************************************************************
 
 STATIC PyObject *
-visit_GetActiveContinuousColorTable(PyObject *self, PyObject *args)
+visit_GetDefaultContinuousColorTable(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    const std::string &ct = GetViewerState()->GetColorTableAttributes()->GetActiveContinuous();
+    const std::string &ct = GetViewerState()->GetColorTableAttributes()->GetDefaultContinuous();
     PyObject *retval = PyString_FromString(ct.c_str());
 
     return retval;
 }
 
 // ****************************************************************************
-// Function: visit_GetActiveDiscreteColorTable
+// Function: visit_GetDefaultDiscreteColorTable
 //
 // Purpose:
 //   Returns the active discrete colortable.
@@ -10402,12 +10402,12 @@ visit_GetActiveContinuousColorTable(PyObject *self, PyObject *args)
 // ****************************************************************************
 
 STATIC PyObject *
-visit_GetActiveDiscreteColorTable(PyObject *self, PyObject *args)
+visit_GetDefaultDiscreteColorTable(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    const std::string &ct = GetViewerState()->GetColorTableAttributes()->GetActiveDiscrete();
+    const std::string &ct = GetViewerState()->GetColorTableAttributes()->GetDefaultDiscrete();
     PyObject *retval = PyString_FromString(ct.c_str());
 
     return retval;
@@ -18316,14 +18316,14 @@ AddProxyMethods()
                                                     visit_ColorTableNames_doc);
     AddMethod("NumColorTableNames", visit_NumColorTables,
                                                  visit_NumColorTableNames_doc);
-    AddMethod("SetActiveContinuousColorTable", visit_SetActiveContinuousColorTable,
-                                                visit_SetActiveContinuousColorTable_doc);
-    AddMethod("SetActiveDiscreteColorTable", visit_SetActiveDiscreteColorTable,
-                                                visit_SetActiveDiscreteColorTable_doc);
-    AddMethod("GetActiveContinuousColorTable", visit_GetActiveContinuousColorTable,
-                                                visit_GetActiveContinuousColorTable_doc);
-    AddMethod("GetActiveDiscreteColorTable", visit_GetActiveDiscreteColorTable,
-                                                visit_GetActiveDiscreteColorTable_doc);
+    AddMethod("SetDefaultContinuousColorTable", visit_SetDefaultContinuousColorTable,
+                                                visit_SetDefaultContinuousColorTable_doc);
+    AddMethod("SetDefaultDiscreteColorTable", visit_SetDefaultDiscreteColorTable,
+                                                visit_SetDefaultDiscreteColorTable_doc);
+    AddMethod("GetDefaultContinuousColorTable", visit_GetDefaultContinuousColorTable,
+                                                visit_GetDefaultContinuousColorTable_doc);
+    AddMethod("GetDefaultDiscreteColorTable", visit_GetDefaultDiscreteColorTable,
+                                                visit_GetDefaultDiscreteColorTable_doc);
     AddMethod("GetNumPlots", visit_GetNumPlots, visit_GetNumPlots_doc);
     AddMethod("Argv", visit_Argv, NULL);
     AddMethod("UpdateMouseActions", visit_UpdateMouseActions, NULL);

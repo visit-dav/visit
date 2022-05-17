@@ -56,7 +56,7 @@ public class TryQuery extends RunViewer implements SimpleObserver
             viewer.GetViewerMethods().DrawPlots();
 
             // Set the colortable to one that has white at the bottom values.
-            viewer.GetViewerMethods().SetActiveContinuousColorTable("calewhite");
+            viewer.GetViewerMethods().SetDefaultContinuousColorTable("calewhite");
 
             // Create the variable list.
             Vector vars = new Vector();

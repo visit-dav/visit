@@ -71,9 +71,9 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
         if(index == 0)
             str += "#colorTables does not contain any ColorControlPointList objects.\n";
     }
-    snprintf(tmpStr, 1000, "%sactiveContinuous = \"%s\"\n", prefix, atts->GetActiveContinuous().c_str());
+    snprintf(tmpStr, 1000, "%sdefaultContinuous = \"%s\"\n", prefix, atts->GetDefaultContinuous().c_str());
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%sactiveDiscrete = \"%s\"\n", prefix, atts->GetActiveDiscrete().c_str());
+    snprintf(tmpStr, 1000, "%sdefaultDiscrete = \"%s\"\n", prefix, atts->GetDefaultDiscrete().c_str());
     str += tmpStr;
     if(atts->GetGroupingFlag())
         snprintf(tmpStr, 1000, "%sgroupingFlag = 1\n", prefix);
@@ -263,7 +263,7 @@ ColorTableAttributes_ClearColorTables(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ColorTableAttributes_SetActiveContinuous(PyObject *self, PyObject *args)
+ColorTableAttributes_SetDefaultContinuous(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
 
@@ -296,23 +296,23 @@ ColorTableAttributes_SetActiveContinuous(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the activeContinuous in the object.
-    obj->data->SetActiveContinuous(cval);
+    // Set the DefaultContinuous in the object.
+    obj->data->SetDefaultContinuous(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ColorTableAttributes_GetActiveContinuous(PyObject *self, PyObject *args)
+ColorTableAttributes_GetDefaultContinuous(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetActiveContinuous().c_str());
+    PyObject *retval = PyString_FromString(obj->data->GetDefaultContinuous().c_str());
     return retval;
 }
 
 /*static*/ PyObject *
-ColorTableAttributes_SetActiveDiscrete(PyObject *self, PyObject *args)
+ColorTableAttributes_SetDefaultDiscrete(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
 
@@ -345,18 +345,18 @@ ColorTableAttributes_SetActiveDiscrete(PyObject *self, PyObject *args)
 
     Py_XDECREF(packaged_args);
 
-    // Set the activeDiscrete in the object.
-    obj->data->SetActiveDiscrete(cval);
+    // Set the defaultDiscrete in the object.
+    obj->data->SetDefaultDiscrete(cval);
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ColorTableAttributes_GetActiveDiscrete(PyObject *self, PyObject *args)
+ColorTableAttributes_GetDefaultDiscrete(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetActiveDiscrete().c_str());
+    PyObject *retval = PyString_FromString(obj->data->GetDefaultDiscrete().c_str());
     return retval;
 }
 
@@ -431,10 +431,10 @@ PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
     {"AddColorTables", ColorTableAttributes_AddColorTables, METH_VARARGS},
     {"RemoveColorTables", ColorTableAttributes_RemoveColorTables, METH_VARARGS},
     {"ClearColorTables", ColorTableAttributes_ClearColorTables, METH_VARARGS},
-    {"SetActiveContinuous", ColorTableAttributes_SetActiveContinuous, METH_VARARGS},
-    {"GetActiveContinuous", ColorTableAttributes_GetActiveContinuous, METH_VARARGS},
-    {"SetActiveDiscrete", ColorTableAttributes_SetActiveDiscrete, METH_VARARGS},
-    {"GetActiveDiscrete", ColorTableAttributes_GetActiveDiscrete, METH_VARARGS},
+    {"SetDefaultContinuous", ColorTableAttributes_SetDefaultContinuous, METH_VARARGS},
+    {"GetDefaultContinuous", ColorTableAttributes_GetDefaultContinuous, METH_VARARGS},
+    {"SetDefaultDiscrete", ColorTableAttributes_SetDefaultDiscrete, METH_VARARGS},
+    {"GetDefaultDiscrete", ColorTableAttributes_GetDefaultDiscrete, METH_VARARGS},
     {"SetGroupingFlag", ColorTableAttributes_SetGroupingFlag, METH_VARARGS},
     {"GetGroupingFlag", ColorTableAttributes_GetGroupingFlag, METH_VARARGS},
     {NULL, NULL}
@@ -462,10 +462,10 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
         return ColorTableAttributes_GetNames(self, NULL);
     if(strcmp(name, "colorTables") == 0)
         return ColorTableAttributes_GetColorTables(self, NULL);
-    if(strcmp(name, "activeContinuous") == 0)
-        return ColorTableAttributes_GetActiveContinuous(self, NULL);
-    if(strcmp(name, "activeDiscrete") == 0)
-        return ColorTableAttributes_GetActiveDiscrete(self, NULL);
+    if(strcmp(name, "DefaultContinuous") == 0)
+        return ColorTableAttributes_GetDefaultContinuous(self, NULL);
+    if(strcmp(name, "defaultDiscrete") == 0)
+        return ColorTableAttributes_GetDefaultDiscrete(self, NULL);
     if(strcmp(name, "groupingFlag") == 0)
         return ColorTableAttributes_GetGroupingFlag(self, NULL);
 
@@ -492,10 +492,10 @@ PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "names") == 0)
         obj = ColorTableAttributes_SetNames(self, args);
-    else if(strcmp(name, "activeContinuous") == 0)
-        obj = ColorTableAttributes_SetActiveContinuous(self, args);
-    else if(strcmp(name, "activeDiscrete") == 0)
-        obj = ColorTableAttributes_SetActiveDiscrete(self, args);
+    else if(strcmp(name, "defaultContinuous") == 0)
+        obj = ColorTableAttributes_SetDefaultContinuous(self, args);
+    else if(strcmp(name, "defaultDiscrete") == 0)
+        obj = ColorTableAttributes_SetDefaultDiscrete(self, args);
     else if(strcmp(name, "groupingFlag") == 0)
         obj = ColorTableAttributes_SetGroupingFlag(self, args);
 
