@@ -387,12 +387,6 @@ CHECK_THIRDPARTY_SATISFIED(H5Part H5PART)
 IF(VISIT_STATIC)
     SET(ALL_THIRDPARTY_IO_LIBRARY_DIR ${TMP_THIRDPARTY_IO_LIBRARY_DIR} CACHE INTERNAL "List of all I/O lib dirs")
     SET(ALL_THIRDPARTY_IO_LIB ${TMP_THIRDPARTY_IO_LIB} CACHE INTERNAL "List of all I/O libs")
-else()
-    if(CONDUIT_FOUND)
-        # even if we aren't static, we want to link conduit, so we want it to be in link dirs
-        # for various components
-        SET(ALL_THIRDPARTY_IO_LIBRARY_DIR ${CONDUIT_LIBRARY_DIR} CACHE INTERNAL "List of all I/O lib dirs")
-    endif()
 ENDIF(VISIT_STATIC)
 
 # If we're not building statically, add SimV2 and XDB if enabled.
