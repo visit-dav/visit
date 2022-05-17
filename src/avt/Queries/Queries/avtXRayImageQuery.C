@@ -1056,6 +1056,15 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 }
             }
         }
+        // TODO define constants for each output type
+        else if (outputType == BLUEPRINT)
+        {
+            
+        }
+        else
+        {
+            // Q? error?
+        }
 
         //
         // Output the result message.
