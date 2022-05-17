@@ -158,7 +158,7 @@ public class RunViewer
             viewer.GetViewerMethods().SetAnnotationAttributes();
 
             // Change the active color table
-            viewer.GetViewerMethods().SetActiveContinuousColorTable("rainbow");
+            viewer.GetViewerMethods().SetDefaultContinuousColorTable("rainbow");
 
             viewer.GetViewerMethods().SetActivePlot(0);
             viewer.GetViewerMethods().ChangeActivePlotsVar("v");

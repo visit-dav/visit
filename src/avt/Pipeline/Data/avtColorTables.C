@@ -640,10 +640,10 @@ avtColorTables::avtColorTables()
         ctAtts->AddColorTable(predef_ct_names[i], ccpl);
     }
 
-    // Set the active continuous color table to "hot".
-    ctAtts->SetActiveContinuous("hot");
-    // Set the active discrete color table to "levels".
-    ctAtts->SetActiveDiscrete("levels");
+    // Set the default continuous color table to "hot".
+    ctAtts->SetDefaultContinuous("hot");
+    // Set the default discrete color table to "levels".
+    ctAtts->SetDefaultDiscrete("levels");
 }
 
 // ****************************************************************************
@@ -712,7 +712,7 @@ avtColorTables::Instance()
 const std::string &
 avtColorTables::GetDefaultContinuousColorTable() const
 {
-    return ctAtts->GetActiveContinuous();
+    return ctAtts->GetDefaultContinuous();
 }
 
 // ****************************************************************************
@@ -733,7 +733,7 @@ avtColorTables::GetDefaultContinuousColorTable() const
 const std::string &
 avtColorTables::GetDefaultDiscreteColorTable() const
 {
-    return ctAtts->GetActiveDiscrete();
+    return ctAtts->GetDefaultDiscrete();
 }
 
 // ****************************************************************************
@@ -815,7 +815,7 @@ avtColorTables::SetDefaultContinuousColorTable(const std::string &ctName)
 {
     if(ColorTableExists(ctName))
     {
-        ctAtts->SetActiveContinuous(ctName);
+        ctAtts->SetDefaultContinuous(ctName);
     }
 }
 
@@ -840,7 +840,7 @@ avtColorTables::SetDefaultDiscreteColorTable(const std::string &ctName)
 {
     if(ColorTableExists(ctName))
     {
-        ctAtts->SetActiveDiscrete(ctName);
+        ctAtts->SetDefaultDiscrete(ctName);
     }
 }
 

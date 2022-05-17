@@ -282,8 +282,8 @@ public:
     void SetOperatorOptions(int oper);
     void ResetOperatorOptions(int type);
 
-    void SetActiveContinuousColorTable(const std::string &colorTableName);
-    void SetActiveDiscreteColorTable(const std::string &colorTableName);
+    void SetDefaultContinuousColorTable(const std::string &colorTableName);
+    void SetDefaultDiscreteColorTable(const std::string &colorTableName);
     void DeleteColorTable(const std::string &colorTableName);
     void UpdateColorTable(const std::string &colorTableName);
     void ExportColorTable(const std::string &colorTableName);

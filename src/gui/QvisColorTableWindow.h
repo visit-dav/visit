@@ -101,8 +101,8 @@ protected:
     void UpdateNames();
     void Apply(bool ignore = false);
     void GetCurrentValues(int which_widget);
-    const ColorControlPointList *GetActiveColorControlPoints() const;
-          ColorControlPointList *GetActiveColorControlPoints();
+    const ColorControlPointList *GetDefaultColorControlPoints() const;
+          ColorControlPointList *GetDefaultColorControlPoints();
     void ShowSelectedColor(const QColor &c);
     void ChangeSelectedColor(const QColor &c);
     void PopupColorSelect(const QColor &, const QPoint &p);
@@ -121,8 +121,8 @@ private slots:
     void chooseDiscreteColor(const QColor &, int, int, const QPoint &);
     void sliderPressed();
     void sliderReleased();
-    void setActiveContinuous(const QString &ct);
-    void setActiveDiscrete(const QString &ct);
+    void setDefaultContinuous(const QString &ct);
+    void setDefaultDiscrete(const QString &ct);
 
     void alignControlPoints();
     void controlPointMoved(int index, float position);
@@ -145,11 +145,11 @@ private:
     bool                     sliding;
 
     // Widgets and layouts.
-    QGroupBox                *activeGroup;
-    QvisNoDefaultColorTableButton *activeContinuous;
-    QLabel                   *activeContinuousLabel;
-    QvisNoDefaultColorTableButton *activeDiscrete;
-    QLabel                   *activeDiscreteLabel;
+    QGroupBox                *defaultGroup;
+    QvisNoDefaultColorTableButton *defaultContinuous;
+    QLabel                   *defaultContinuousLabel;
+    QvisNoDefaultColorTableButton *defaultDiscrete;
+    QLabel                   *defaultDiscreteLabel;
     QCheckBox                *groupToggle;
 
     QGroupBox                *colorTableWidgetGroup;

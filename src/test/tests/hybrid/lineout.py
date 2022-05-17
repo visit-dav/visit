@@ -122,7 +122,7 @@ def TestLineout2D(time, suffix):
     DrawPlots()
 
     # Set the colortable to one that has white at the bottom values.
-    SetActiveContinuousColorTable("calewhite")
+    SetDefaultContinuousColorTable("calewhite")
 
     # Create the variable list.
     vars = ("default")
@@ -170,7 +170,7 @@ def TestLineout2D(time, suffix):
         TestText("Lineout2d_output_15", s)
 
     # Reset the CT to 'hot'
-    SetActiveContinuousColorTable("hot")
+    SetDefaultContinuousColorTable("hot")
     # Delete the second window.
     DeleteWindow()
     DeleteAllPlots()
@@ -258,7 +258,7 @@ def TestSAMRAI(time, suffix):
     DrawPlots()
 
     # Set the colortable to one that has white at the bottom values.
-    SetActiveContinuousColorTable("rainbow")
+    SetDefaultContinuousColorTable("rainbow")
 
     AddOperator("Slice", 1)
     slice = SliceAttributes()
@@ -296,7 +296,7 @@ def TestSAMRAI(time, suffix):
 
     ResetPickLetter()
     ResetLineoutColor()
-    SetActiveContinuousColorTable("hot")
+    SetDefaultContinuousColorTable("hot")
 
 def TestSpecifyLineoutWindow(time, suffix):
     #window 1

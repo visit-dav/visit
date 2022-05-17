@@ -76,7 +76,7 @@ public class TryLighting extends RunViewer implements SimpleObserver
             viewer.GetViewerMethods().DrawPlots();
 
             // Set the colortable to one that has white at the bottom values.
-            viewer.GetViewerMethods().SetActiveContinuousColorTable("calewhite");
+            viewer.GetViewerMethods().SetDefaultContinuousColorTable("calewhite");
 
             // Set the view
             View3DAttributes v = viewer.GetViewerState().GetView3DAttributes();
