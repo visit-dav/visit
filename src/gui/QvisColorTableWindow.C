@@ -1883,6 +1883,8 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 // Creation:   Wed Feb 26 11:10:52 PDT 2003
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1966,6 +1968,9 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -2003,6 +2008,9 @@ QvisColorTableWindow::redValueChanged(int r)
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -2040,6 +2048,9 @@ QvisColorTableWindow::greenValueChanged(int g)
 // Modifications:
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -2075,6 +2086,8 @@ QvisColorTableWindow::blueValueChanged(int b)
 // Creation:   February 20, 2009
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -2152,6 +2165,9 @@ QvisColorTableWindow::sliderReleased()
 // Creation:   Mon Nov 25 10:55:53 PDT 2002
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the name of the function.
 //
 // ****************************************************************************
 
@@ -2175,6 +2191,9 @@ QvisColorTableWindow::setDefaultContinuous(const QString &ct)
 // Creation:   Mon Nov 25 10:55:53 PDT 2002
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the name of the function.
 //
 // ****************************************************************************
 
@@ -2204,6 +2223,9 @@ QvisColorTableWindow::setDefaultDiscrete(const QString &ct)
 //
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -2349,6 +2371,8 @@ QvisColorTableWindow::groupingToggled(bool val)
 // Creation:   August 8, 2013
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
