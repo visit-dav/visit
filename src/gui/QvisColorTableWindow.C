@@ -162,6 +162,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //
 //   Kathleen Biagas, Thu Jan 21, 2021
 //   Remove unused var 'QString n'.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -471,7 +474,7 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
     if(winNode == 0)
         return;
 
-    // Get the default tab and show it.
+    // Get the active tab and show it.
     DataNode *node;
     if((node = winNode->GetNode("currentColorTable")) != 0)
     {
@@ -520,6 +523,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //
 //   Kathleen Biagas, Mon Aug  4 15:45:44 PDT 2014
 //   Handle new groupingFlag, change in default/discrete button types.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -641,6 +647,10 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
 //
 //   Mark C. Miller, Wed Feb 28 14:28:01 PST 2018
 //   Handle "smoothing" label correctly.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+// 
 // ****************************************************************************
 
 void
@@ -713,6 +723,9 @@ QvisColorTableWindow::UpdateEditor()
 //
 //   Kathleen Biagas, Mon Aug  4 15:46:54 PDT 2014
 //   Handle grouping if requested.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -822,6 +835,9 @@ QvisColorTableWindow::UpdateNames()
 // Creation:   Thu Nov 21 14:19:43 PST 2002
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case renamed the function.
 //
 // ****************************************************************************
 
