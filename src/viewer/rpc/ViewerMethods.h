@@ -151,6 +151,9 @@ class ViewerState;
 //
 //   Alister Maguire, Mon Oct 16 15:41:23 PDT 2017
 //   Added RemovePicks.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
