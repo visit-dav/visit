@@ -8291,7 +8291,7 @@ argument
 
 
 SetDefaultContinuousColorTable
------------------------------
+------------------------------
 
 **Synopsis:**
 
@@ -8337,7 +8337,7 @@ return type : CLI_return_t
 
 
 SetDefaultDiscreteColorTable
----------------------------
+----------------------------
 
 **Synopsis:**
 
