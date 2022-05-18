@@ -76,6 +76,10 @@ class QvisNoDefaultColorTableButton;
 //
 //   Mark C. Miller, Wed Feb 28 14:56:09 PST 2018
 //   Handling "smoothing" label correctly.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
