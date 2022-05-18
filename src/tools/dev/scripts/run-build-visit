@@ -26,6 +26,8 @@ rzansel=false
 version=undefined
 build_visit_script=undefined
 
+ran_build_visit=false
+
 #
 # The loop is executed once for each symbol on the execute line. This means
 # that $1 may be blank for later executions of the loop if any "shift 2"
@@ -100,6 +102,7 @@ fi
 if [ $kickit_mesagl = true ]
 then
    echo "Building using mesagl on kickit"
+   ran_build_visit=true
    if [ ! -d /usr/gapps/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/gapps/visit/thirdparty_shared/$version
@@ -122,6 +125,7 @@ fi
 if [ $kickit_opengl = true ]
 then
    echo "Building using opengl on kickit"
+   ran_build_visit=true
    if [ ! -d /usr/gapps/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/gapps/visit/thirdparty_shared/$version
@@ -144,6 +148,7 @@ fi
 if [ $quartz = true ]
 then
    echo "Building on quartz"
+   ran_build_visit=true
    if [ ! -d /usr/workspace/wsa/visit/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/workspace/wsa/visit/visit/thirdparty_shared/$version
@@ -165,6 +170,7 @@ fi
 if [ $lassen = true ]
 then
    echo "Building on lassen"
+   ran_build_visit=true
    if [ ! -d /usr/workspace/wsa/visit/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/workspace/wsa/visit/visit/thirdparty_shared/$version
@@ -189,6 +195,7 @@ fi
 if [ $rztrona = true ]
 then
    echo "Building on rztrona"
+   ran_build_visit=true
    if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
@@ -210,6 +217,7 @@ fi
 if [ $rzansel = true ]
 then
    echo "Building on rzansel"
+   ran_build_visit=true
    if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
@@ -226,4 +234,21 @@ then
        --no-boxlib --no-hdf4 --no-openexr --no-embree --no-ispc --no-tbb \
        --no-ospray --parallel --no-visit \
        --thirdparty-path /usr/workspace/visit/visit/thirdparty_shared/$version/blueos --makeflags -j16
+fi
+
+#
+# Check that build_visit was run.
+#
+if [ $ran_build_visit = false ]
+then
+   echo "Invalid or missing machine name."
+   echo "Usage: +<machine name> -v <version> -s <build_visit_script>"
+   echo "Valid machine names:"
+   echo "    kickit_mesagl (B-Div, Linux, x86_64, mesagl),"
+   echo "    kickit_opengl (B-Div, Linux, x86_64, opengl),"
+   echo "    quartz (LC, Linux, x86_64),"
+   echo "    lassen (LC, Linux, power9),"
+   echo "    rztrona (LC, Linux, x86_64),"
+   echo "    rzansel (LC, Linux, power9),"
+   exit
 fi
