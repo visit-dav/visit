@@ -1044,6 +1044,11 @@ BoundaryAttributes::VarChangeRequiresReset()
 //    pointSize, pointSizeVarEnabled, pointSizeVar, pointSizePixels, pointType.
 //
 // ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
 void
 BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
                                        const char *configVersion)
@@ -1055,27 +1060,79 @@ BoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
     if(searchNode == 0)
         return;
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     if (VersionLessThan(configVersion, "2.13.0"))
     {
+        std::string v("3.3.1");
+ 
         if (searchNode->GetNode("boundaryType") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("boundaryType", v).c_str());
+#endif
             searchNode->RemoveNode("boundaryType");
+        }
         if (searchNode->GetNode("pointSize") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("pointSize", v).c_str());
+#endif
             searchNode->RemoveNode("pointSize");
+        }
         if (searchNode->GetNode("pointSizeVarEnabled") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("pointSizeVarEnabled", v).c_str());
+#endif
             searchNode->RemoveNode("pointSizeVarEnabled");
+        }
         if (searchNode->GetNode("pointSizeVar") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("pointSizeVar", v).c_str());
+#endif
             searchNode->RemoveNode("pointSizeVar");
+        }
         if (searchNode->GetNode("pointSizePixels") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("pointSizePixels", v).c_str());
+#endif
             searchNode->RemoveNode("pointSizePixels");
+        }
         if (searchNode->GetNode("pointType") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("pointType", v).c_str());
+#endif
             searchNode->RemoveNode("pointType");
+        }
         if (searchNode->GetNode("filledFlag") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("filledFlag", v).c_str());
+#endif
             searchNode->RemoveNode("filledFlag");
+        }
     }
+#endif
+
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
+
     if (VersionLessThan(configVersion, "3.0.0"))
     {
         if (searchNode->GetNode("lineStyle") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("lineStyle", "3.3.2"));
+#endif
             searchNode->RemoveNode("lineStyle");
+        }
     }
+#endif
 }
 

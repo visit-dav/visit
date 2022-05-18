@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GSurfaceNormalOperator visitcommon gui )
 
     ADD_LIBRARY(VSurfaceNormalOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VSurfaceNormalOperator VIEWER)
     TARGET_LINK_LIBRARIES(VSurfaceNormalOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GSurfaceNormalOperator VSurfaceNormalOperator)

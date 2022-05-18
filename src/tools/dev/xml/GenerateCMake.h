@@ -813,6 +813,7 @@ class CMakeGeneratorPlugin : public Plugin
         if (customvwfiles)
             out << "    QT_WRAP_CPP(V" << name << ptype << " LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
         out << "    ADD_LIBRARY(V"<<name<<ptype<<" ${LIBV_SOURCES})" << endl;
+        out << "    ADD_TARGET_DEFINITIONS(V"<<name<<ptype<<" VIEWER)" << endl;
         out << "    TARGET_LINK_LIBRARIES(V" << name << ptype << " visitcommon "
             << viewerlibname << " " << ToString(libs) << ToString(vlibs)
             << ")" << endl;

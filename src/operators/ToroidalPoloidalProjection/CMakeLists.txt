@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GToroidalPoloidalProjectionOperator visitcommon gui )
 
     ADD_LIBRARY(VToroidalPoloidalProjectionOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VToroidalPoloidalProjectionOperator VIEWER)
     TARGET_LINK_LIBRARIES(VToroidalPoloidalProjectionOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GToroidalPoloidalProjectionOperator VToroidalPoloidalProjectionOperator)

@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GTessellateOperator visitcommon gui )
 
     ADD_LIBRARY(VTessellateOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VTessellateOperator VIEWER)
     TARGET_LINK_LIBRARIES(VTessellateOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GTessellateOperator VTessellateOperator)

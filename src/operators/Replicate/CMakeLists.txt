@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GReplicateOperator visitcommon gui )
 
     ADD_LIBRARY(VReplicateOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VReplicateOperator VIEWER)
     TARGET_LINK_LIBRARIES(VReplicateOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GReplicateOperator VReplicateOperator)
