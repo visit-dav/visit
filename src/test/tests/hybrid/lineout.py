@@ -72,9 +72,12 @@
 #    Kathleen Biagas, Wed Feb 24 10:11:35 PST 2021
 #    Remove setting of Pseudocolor colorTableName name to 'Default', as
 #    that is now the default anyways.
-#    Reset active continuous color table to 'hot' after a test that changes
+#    Reset default continuous color table to 'hot' after a test that changes
 #    it is finished, so that other tests aren't affected.
 #
+#    Justin Privitera, Wed May 18 11:25:46 PDT 2022
+#    Changed *active* to *default* for everything related to color tables.
+# 
 # ----------------------------------------------------------------------------
 
 def GetOutputArray(plotID = -1, winID = -1):

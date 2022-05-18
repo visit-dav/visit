@@ -3597,6 +3597,9 @@ ViewerMethods::ResetPickAttributes()
 // Creation:   Wed Jun 13 16:55:21 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the function name.
 //   
 // ****************************************************************************
 
@@ -3630,6 +3633,9 @@ ViewerMethods::SetDefaultContinuousColorTable(const std::string &colorTableName)
 // Creation:   Wed Jun 13 16:55:21 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the function name.
 //   
 // ****************************************************************************
 
