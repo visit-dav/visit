@@ -2883,14 +2883,14 @@ forceNoSharedMemory:
     print(numpy.asarray(data["zoneTable"]))
 
 
-GetActiveContinuousColorTable
+GetDefaultContinuousColorTable
 -----------------------------
 
 **Synopsis:**
 
 ::
 
-  GetActiveContinuousColorTable() -> string
+  GetDefaultContinuousColorTable() -> string
 
 
 return type : string
@@ -2910,8 +2910,8 @@ return type : string
     notion of default continuous and default discrete color tables so plots can
     just use the "default" color table. This lets you change the color table
     used by many plots by just changing the "default" color table. The
-    GetActiveContinuousColorTable function returns the name of the default
-    continuous color table. The GetActiveDiscreteColorTable function returns
+    GetDefaultContinuousColorTable function returns the name of the default
+    continuous color table. The GetDefaultDiscreteColorTable function returns
     the name of the default discrete color table.
 
 
@@ -2920,18 +2920,18 @@ return type : string
 ::
 
   #% visit -cli
-  print("Default continuous color table: %s" % GetActiveContinuousColorTable())
-  print("Default discrete color table: %s" % GetActiveDiscreteColorTable())
+  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
+  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
 
 
-GetActiveDiscreteColorTable
+GetDefaultDiscreteColorTable
 ---------------------------
 
 **Synopsis:**
 
 ::
 
-  GetActiveDiscreteColorTable() -> string
+  GetDefaultDiscreteColorTable() -> string
 
 
 return type : string
@@ -2951,8 +2951,8 @@ return type : string
     notion of default continuous and default discrete color tables so plots can
     just use the "default" color table. This lets you change the color table
     used by many plots by just changing the "default" color table. The
-    GetActiveContinuousColorTable function returns the name of the default
-    continuous color table. The GetActiveDiscreteColorTable function returns
+    GetDefaultContinuousColorTable function returns the name of the default
+    continuous color table. The GetDefaultDiscreteColorTable function returns
     the name of the default discrete color table.
 
 
@@ -2961,8 +2961,8 @@ return type : string
 ::
 
   #% visit -cli
-  print("Default continuous color table: %s" % GetActiveContinuousColorTable())
-  print("Default discrete color table: %s" % GetActiveDiscreteColorTable())
+  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
+  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
 
 
 GetActiveTimeSlider
