@@ -985,6 +985,8 @@ ColorTableAttributes::operator [] (int i) const
 // Creation:   omitted
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1014,6 +1016,8 @@ ColorTableAttributes::GetFieldName(int index) const
 // Creation:   omitted
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1043,6 +1047,8 @@ ColorTableAttributes::GetFieldType(int index) const
 // Creation:   omitted
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1072,6 +1078,8 @@ ColorTableAttributes::GetFieldTypeName(int index) const
 // Creation:   omitted
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1249,6 +1257,9 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 //   Hank Childs, Thu Jan 17 16:41:34 PST 2008
 //   Preserve the default continuous/discrete status if a color table is
 //   being replaced.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1333,6 +1344,9 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 // Modifications:
 //   Brad Whitlock, Wed Nov 20 12:08:18 PDT 2002
 //   Made it work with the new discrete color tables.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
