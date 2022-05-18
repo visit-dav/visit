@@ -113,6 +113,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GVolumePlot visitcommon gui )
 
     ADD_LIBRARY(VVolumePlot ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VVolumePlot VIEWER)
     TARGET_LINK_LIBRARIES(VVolumePlot visitcommon viewer vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
     if(VISIT_OSPRAY)
         target_link_libraries(VVolumePlot ${OSPRAY_LIBRARIES})

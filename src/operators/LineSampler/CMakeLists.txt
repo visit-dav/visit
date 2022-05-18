@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GLineSamplerOperator visitcommon gui )
 
     ADD_LIBRARY(VLineSamplerOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VLineSamplerOperator VIEWER)
     TARGET_LINK_LIBRARIES(VLineSamplerOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GLineSamplerOperator VLineSamplerOperator)

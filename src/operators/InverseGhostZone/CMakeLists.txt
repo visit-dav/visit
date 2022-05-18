@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GInverseGhostZoneOperator visitcommon gui )
 
     ADD_LIBRARY(VInverseGhostZoneOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VInverseGhostZoneOperator VIEWER)
     TARGET_LINK_LIBRARIES(VInverseGhostZoneOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GInverseGhostZoneOperator VInverseGhostZoneOperator)

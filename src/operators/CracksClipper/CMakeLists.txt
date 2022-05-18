@@ -111,6 +111,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GCracksClipperOperator visitcommon gui )
 
     ADD_LIBRARY(VCracksClipperOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VCracksClipperOperator VIEWER)
     TARGET_LINK_LIBRARIES(VCracksClipperOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GCracksClipperOperator VCracksClipperOperator)

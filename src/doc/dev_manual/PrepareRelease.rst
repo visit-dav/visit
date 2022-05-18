@@ -21,6 +21,9 @@ updating a few files. These consist of ::
     INSTALL_NOTES
     gui/Splashscreen.C
 
+A ticket should be created and assigned so that the release can be tested for any obsolete code that should be removed.
+Testing for obsolete code involves configuring with the CMake var **VISIT_REMOVE_OBSOLETE_CODE** turned on, then compiling and looking for compile errors of the form:  *This code is obsolete in this version. Please remove it.*
+
 Preparing for a Minor Release
 -----------------------------
 

@@ -103,6 +103,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GMultiresControlOperator visitcommon gui )
 
     ADD_LIBRARY(VMultiresControlOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VMultiresControlOperator VIEWER)
     TARGET_LINK_LIBRARIES(VMultiresControlOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GMultiresControlOperator VMultiresControlOperator)

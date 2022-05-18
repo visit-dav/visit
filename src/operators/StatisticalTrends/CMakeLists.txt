@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GStatisticalTrendsOperator visitcommon gui )
 
     ADD_LIBRARY(VStatisticalTrendsOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VStatisticalTrendsOperator VIEWER)
     TARGET_LINK_LIBRARIES(VStatisticalTrendsOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GStatisticalTrendsOperator VStatisticalTrendsOperator)

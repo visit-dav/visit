@@ -4136,7 +4136,10 @@ IntegralCurveAttributes::ChangesRequireRecalculation(const IntegralCurveAttribut
 // Modifications:
 //
 // ****************************************************************************
-
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
 void
 IntegralCurveAttributes::ProcessOldVersions(DataNode *parentNode,
     const char *configVersion)
@@ -4144,6 +4147,9 @@ IntegralCurveAttributes::ProcessOldVersions(DataNode *parentNode,
     if(parentNode == 0)
         return;
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error  This code is obsolete in this version. Please remove it.
+#else
     if (VersionLessThan(configVersion, "2.11.0"))
     {
         DataNode *searchNode = parentNode->GetNode("IntegralCurveAttributes");
@@ -4154,6 +4160,9 @@ IntegralCurveAttributes::ProcessOldVersions(DataNode *parentNode,
         if(sourceNode == 0)
             return;
 
+#ifdef VIEWER
+        avtCallback::IssueWarning(DeprecationMessage("sourceType", "3.3.1"));
+#endif
         std::string mode = sourceNode->AsString();
 
         if (mode == "Point")
@@ -4182,5 +4191,6 @@ IntegralCurveAttributes::ProcessOldVersions(DataNode *parentNode,
           searchNode->AddNode(new DataNode("sourceType", SourceType_ToString(IntegralCurveAttributes::SpecifiedSphere)));
         }
     }
+#endif
 }
 

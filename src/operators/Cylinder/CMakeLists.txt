@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GCylinderOperator visitcommon gui )
 
     ADD_LIBRARY(VCylinderOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VCylinderOperator VIEWER)
     TARGET_LINK_LIBRARIES(VCylinderOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GCylinderOperator VCylinderOperator)

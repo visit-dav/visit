@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GDisplaceOperator visitcommon gui )
 
     ADD_LIBRARY(VDisplaceOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VDisplaceOperator VIEWER)
     TARGET_LINK_LIBRARIES(VDisplaceOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GDisplaceOperator VDisplaceOperator)

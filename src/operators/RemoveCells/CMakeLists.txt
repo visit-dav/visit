@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GRemoveCellsOperator visitcommon gui )
 
     ADD_LIBRARY(VRemoveCellsOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VRemoveCellsOperator VIEWER)
     TARGET_LINK_LIBRARIES(VRemoveCellsOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GRemoveCellsOperator VRemoveCellsOperator)

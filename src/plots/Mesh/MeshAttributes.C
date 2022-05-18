@@ -1402,11 +1402,18 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
 //   Removed processing versions older than 2.10.0.
 //
 // ****************************************************************************
-#include <Utility.h>
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
 void
 MeshAttributes::ProcessOldVersions(DataNode *parentNode,
     const char *configVersion)
 {
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     if(parentNode == 0)
         return;
 
@@ -1417,7 +1424,13 @@ MeshAttributes::ProcessOldVersions(DataNode *parentNode,
     if(VersionLessThan(configVersion, "3.0.0"))
     {
         if (searchNode->GetNode("lineStyle") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("lineStyle", "3.3.2"));
+#endif
             searchNode->RemoveNode("lineStyle");
+        }
     }
+#endif
 }
 
