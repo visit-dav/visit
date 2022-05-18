@@ -861,6 +861,9 @@ QvisColorTableWindow::GetDefaultColorControlPoints() const
 // Creation:   Thu Nov 21 14:19:43 PST 2002
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the name of the function.
 //
 // ****************************************************************************
 
@@ -886,6 +889,9 @@ QvisColorTableWindow::GetDefaultColorControlPoints()
 //   Brad Whitlock, Fri Apr 27 15:09:27 PDT 2012
 //   I added more smoothing types.
 //
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+// 
 // ****************************************************************************
 
 void
@@ -1006,6 +1012,9 @@ QvisColorTableWindow::UpdateColorControlPoints()
 //
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1141,6 +1150,9 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
 //
 //   Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //   Added alpha channel support.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1209,6 +1221,9 @@ QvisColorTableWindow::ShowSelectedColor(const QColor &c)
 //
 //    Jeremy Meredith, Fri Feb 20 15:03:25 EST 2009
 //    Added alpha channel support.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1321,6 +1336,9 @@ QvisColorTableWindow::GetNextColor()
 //
 //   Kathleen Biagas, Fri Aug 8 08:43:49 PDT 2014
 //   Handle category.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1627,6 +1645,9 @@ QvisColorTableWindow::selectedColor(const QColor &color)
 // Modifications:
 //   Brad Whitlock, Fri Apr 27 15:14:20 PDT 2012
 //   Added more types of smoothing.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1675,6 +1696,8 @@ QvisColorTableWindow::showIndexHintsToggled(bool val)
 // Creation:   Mon Jun 11 15:38:06 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1715,6 +1738,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 //
 //    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
 //    Handle category.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
