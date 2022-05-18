@@ -10304,6 +10304,10 @@ visit_NumColorTables(PyObject *self, PyObject *args)
 // Modifications:
 //   Brad Whitlock, Tue Dec 3 11:07:48 PDT 2002
 //   Renamed the function.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the name of the function.
 //
 // ****************************************************************************
 
@@ -10338,6 +10342,9 @@ visit_SetDefaultContinuousColorTable(PyObject *self, PyObject *args)
 // Creation:   Tue Dec 3 11:08:02 PDT 2002
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the name of the function.
 //
 // ****************************************************************************
 
@@ -10372,6 +10379,9 @@ visit_SetDefaultDiscreteColorTable(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the name of the function.
 //
 // ****************************************************************************
 
@@ -10398,6 +10408,9 @@ visit_GetDefaultContinuousColorTable(PyObject *self, PyObject *args)
 // Creation:   Tue Dec 3 11:10:10 PDT 2002
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the name of the function.
 //
 // ****************************************************************************
 
@@ -17816,6 +17829,9 @@ AddMethod(const char *methodName,
 //
 //   Kathleen Biagas, Mon Dec 22 10:29:52 PST 2014
 //   Added SetRemoveDuplicateNodes to Proxy methods.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
