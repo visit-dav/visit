@@ -157,11 +157,12 @@ if(VISIT_PYTHON_SCRIPTING AND CONDUIT_DIR)
     # symlink conduit python module so it works during dev builds
     message(STATUS "Adding Conduit python module to lib/site-packages/")
 
+    
+    set(CONDUIT_PY_MODULE ${CONDUIT_DIR}/python-modules/conduit)
+    if(NOT EXISTS ${CONDUIT_PY_MODULE})
+        message(WARNING "Failed to find Conduit Python Module at ${CONDUIT_PY_MODULE}")
+    endif()
     if(NOT WIN32)
-        set(CONDUIT_PY_MODULE ${CONDUIT_DIR}/python-modules/conduit)
-        if(NOT EXISTS ${CONDUIT_PY_MODULE})
-            message(WARNING "Failed to find Conduit Python Module at ${CONDUIT_PY_MODULE}")
-        endif()
         
         execute_process(COMMAND ${CMAKE_COMMAND} -E remove -f
                                 ${CMAKE_CURRENT_BINARY_DIR}/site-packages/conduit
