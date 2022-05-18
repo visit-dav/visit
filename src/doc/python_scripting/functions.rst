@@ -2884,7 +2884,7 @@ forceNoSharedMemory:
 
 
 GetDefaultContinuousColorTable
------------------------------
+------------------------------
 
 **Synopsis:**
 
@@ -2894,7 +2894,7 @@ GetDefaultContinuousColorTable
 
 
 return type : string
-    Both functions return a string object containing the name of a color table.
+    Returns a string object containing the name of a color table.
 
 
 **Description:**
@@ -2925,7 +2925,7 @@ return type : string
 
 
 GetDefaultDiscreteColorTable
----------------------------
+----------------------------
 
 **Synopsis:**
 
@@ -2935,7 +2935,7 @@ GetDefaultDiscreteColorTable
 
 
 return type : string
-    Both functions return a string object containing the name of a color table.
+    Returns a string object containing the name of a color table.
 
 
 **Description:**
