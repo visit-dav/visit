@@ -104,6 +104,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GIsovolumeOperator visitcommon gui )
 
     ADD_LIBRARY(VIsovolumeOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VIsovolumeOperator VIEWER)
     TARGET_LINK_LIBRARIES(VIsovolumeOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GIsovolumeOperator VIsovolumeOperator)

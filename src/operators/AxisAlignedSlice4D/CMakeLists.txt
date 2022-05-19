@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GAxisAlignedSlice4DOperator visitcommon gui )
 
     ADD_LIBRARY(VAxisAlignedSlice4DOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VAxisAlignedSlice4DOperator VIEWER)
     TARGET_LINK_LIBRARIES(VAxisAlignedSlice4DOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GAxisAlignedSlice4DOperator VAxisAlignedSlice4DOperator)

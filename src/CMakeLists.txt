@@ -836,6 +836,9 @@ OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # O
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
 SET(VISIT_DEFAULT_SILO_DRIVER "PDB" CACHE STRING "Default driver for generating silo data. Valid values are PDB, HDF5 or empty. An empty value means driver can be specified via make on the command line." )
 
+# flag to turn on preprocessor errors related to obsolete code.
+OPTION(VISIT_REMOVE_OBSOLETE_CODE "Enable compiler errors for removal of oboslete code." OFF)
+
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
     set(cache_type ${ARGN})
     if(NOT cache_type)

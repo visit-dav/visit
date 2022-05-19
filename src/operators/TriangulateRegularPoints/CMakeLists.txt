@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GTriangulateRegularPointsOperator visitcommon gui )
 
     ADD_LIBRARY(VTriangulateRegularPointsOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VTriangulateRegularPointsOperator VIEWER)
     TARGET_LINK_LIBRARIES(VTriangulateRegularPointsOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GTriangulateRegularPointsOperator VTriangulateRegularPointsOperator)

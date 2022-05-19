@@ -2522,45 +2522,6 @@ QvisVolumePlotWindow::Apply(bool ignore)
         volumeAtts->Notify();
 }
 
-// ****************************************************************************
-// Method: QvisVolumePlotWindow::ProcessOldVersions
-//
-// Purpose: 
-//   Massage the data node before we use it to SetFromNode.
-//
-// Arguments:
-//   parentNode : The node that contains the window's node.
-//   configVersion : The version of the config file.
-//
-// Returns:    
-//
-// Note:       We're using this method to remove the width and height values
-//             from old config files so the windows don't get resized to the
-//             old tall values.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Aug 27 16:31:43 PDT 2010
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisVolumePlotWindow::ProcessOldVersions(DataNode *parentNode, const char *configVersion)
-{
-    DataNode *winNode = parentNode->GetNode(windowTitle().toStdString());
-    if(winNode != 0)
-    {
-        if(VersionGreaterThan("2.1.0", configVersion))
-        {
-            // If configVersion < 2.1.0 then remove the width and height since the
-            // window has changed a lot.
-            winNode->RemoveNode("width", true);
-            winNode->RemoveNode("height", true);
-        }
-    }
-}
-
 //
 // Qt Slot functions...
 //

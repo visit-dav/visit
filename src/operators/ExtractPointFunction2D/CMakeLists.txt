@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GExtractPointFunction2DOperator visitcommon gui )
 
     ADD_LIBRARY(VExtractPointFunction2DOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VExtractPointFunction2DOperator VIEWER)
     TARGET_LINK_LIBRARIES(VExtractPointFunction2DOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GExtractPointFunction2DOperator VExtractPointFunction2DOperator)
