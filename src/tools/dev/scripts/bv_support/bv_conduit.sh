@@ -38,12 +38,12 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.8.2"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.8.3"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
     export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.8.0"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    export CONDUIT_MD5_CHECKSUM="a451c8609c04310d403b658a9b1f67a6"
-    export CONDUIT_SHA256_CHECKSUM="928eb8496bc50f6d8404f5bfa70220250876645d68d4f35ce0b99ecb85546284"
+    export CONDUIT_MD5_CHECKSUM="f799fedf6d2abb2b27a249c756cd320f"
+    export CONDUIT_SHA256_CHECKSUM="a9e60945366f3b8c37ee6a19f62d79a8d5888be7e230eabc31af2f837283ed1a"
 }
 
 function bv_conduit_print
@@ -91,48 +91,8 @@ function bv_conduit_ensure
     fi
 }
 
-# Fix problem in Conduit 0.8.0 where it includes component names in the 
-# scalars that it writes to CSV files.
-function apply_relay_csv_patch
-{
-    patch -p0 << \EOF
-diff -c src/libs/relay/conduit_relay_io_csv.cpp.orig src/libs/relay/conduit_relay_io_csv.cpp
-*** src/libs/relay/conduit_relay_io_csv.cpp.orig	2022-03-29 18:30:38.720107376 -0700
---- src/libs/relay/conduit_relay_io_csv.cpp	2022-03-29 18:21:20.080832252 -0700
-***************
-*** 79,85 ****
-          const Node &value = values[col];
-          const std::string base_name = value.name();
-          const index_t nc = value.number_of_children();
-!         if(nc > 0)
-          {
-              // Each column is "base_name/comp_name"
-              for(index_t c = 0; c < nc; c++)
---- 79,85 ----
-          const Node &value = values[col];
-          const std::string base_name = value.name();
-          const index_t nc = value.number_of_children();
-!         if(nc > 1)
-          {
-              // Each column is "base_name/comp_name"
-              for(index_t c = 0; c < nc; c++)
-EOF
-
-    if [[ $? != 0 ]] ; then
-      warn "Conduit patch for CSV output failed."
-      return 1
-    fi
-
-    return 0
-}
-
 function apply_conduit_patch
 {
-    apply_relay_csv_patch
-    if [[ $? != 0 ]] ; then
-       return 1
-    fi
-
     return 0
 }
 
