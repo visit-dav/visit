@@ -35,8 +35,7 @@
       avtBlueprintOptions.C
     </Files>
     <LIBS components="EPar">
-      conduit_blueprint_mpi
-      conduit_relay_mpi
+      ${CONDUIT_MPI_LIB}
     </LIBS>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>

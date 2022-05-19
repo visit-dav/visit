@@ -19,6 +19,10 @@
 #include <avtSourceFromAVTDataset.h>
 #include <avtXRayFilter.h>
 
+#ifdef HAVE_CONDUIT
+    #include <conduit.hpp>
+#endif
+
 #include <vectortypes.h>
 
 #include <visitstream.h>
@@ -32,6 +36,7 @@
 
 #include <string>
 #include <vector>
+
 
 int avtXRayImageQuery::iFileFamily = 0;
 
