@@ -35,6 +35,41 @@
 
 int avtXRayImageQuery::iFileFamily = 0;
 
+const int MIN_OUT = 0;
+const int BMP_OUT = 0;
+const int JPEG_OUT = 1;
+const int PNG_OUT = 2;
+const int TIF_OUT = 3;
+const int RAWFLOATS_OUT = 4;
+const int BOV_OUT = 5;
+const int BLUEPRINT_JSON_OUT = 6;
+const int BLUEPRINT_HDF5_OUT = 7;
+const int BLUEPRINT_CONDUIT_JSON_OUT = 8;
+const int BLUEPRINT_CONDUIT_BIN_OUT = 9;
+const int MAX_OUT = 9;
+
+inline bool outputTypeValid(int otype)
+{
+    return otype >= MIN_OUT && otype <= MAX_OUT;
+}
+
+inline bool outputTypeIsBmpJpegPngOrTif(int otype)
+{
+    return otype == BMP_OUT || otype == JPEG_OUT || 
+        otype == PNG_OUT || otype == TIF_OUT;
+}
+
+inline bool outputTypeIsRawfloatsOrBov(int otype)
+{
+    return otype == RAWFLOATS_OUT || otype == BOV_OUT;
+}
+
+inline bool outputTypeIsBlueprint(int otype)
+{
+    return otype == BLUEPRINT_HDF5_OUT || otype == BLUEPRINT_JSON_OUT || 
+        otype == BLUEPRINT_CONDUIT_JSON_OUT || otype == BLUEPRINT_CONDUIT_BIN_OUT;
+}
+
 // ****************************************************************************
 //  Method: avtXRayImageQuery::avtXRayImageQuery
 //
@@ -92,7 +127,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     nBackgroundIntensities = 0;
     debugRay = -1;
     familyFiles = false;
-    outputType = 2; // png
+    outputType = PNG_OUT;
     useSpecifiedUpVector = true;
     useOldView = true;
 
@@ -691,7 +726,10 @@ avtXRayImageQuery::SetFamilyFiles(const bool &flag)
 void
 avtXRayImageQuery::SetOutputType(int type)
 {
-    outputType = type;
+    if (outputTypeValid(outputType))
+        outputType = type;
+    else
+        EXCEPTION1(VisItException, "bad type given in " + type);
 }
 
 // ****************************************************************************
@@ -706,24 +744,34 @@ avtXRayImageQuery::SetOutputType(int type)
 //  Modifications:
 //    Eric Brugger, Mon May 14 10:35:27 PDT 2012
 //    I added the bov output type.
-//
+// 
 // ****************************************************************************
 
 void
 avtXRayImageQuery::SetOutputType(const std::string &type)
 {
     if      (type == "bmp")
-        outputType = 0;
+        outputType = BMP_OUT;
     else if (type == "jpeg")
-        outputType = 1;
+        outputType = JPEG_OUT;
     else if (type == "png")
-        outputType = 2;
+        outputType = PNG_OUT;
     else if (type == "tif")
-        outputType = 3;
+        outputType = TIF_OUT;
     else if (type == "rawfloats")
-        outputType = 4;
+        outputType = RAWFLOATS_OUT;
     else if (type == "bov")
-        outputType = 5;
+        outputType = BOV_OUT;
+    else if (type == "blueprint_hdf5")
+        outputType = BLUEPRINT_HDF5_OUT;
+    else if (type == "blueprint_json")
+        outputType = BLUEPRINT_JSON_OUT;
+    else if (type == "blueprint_conduit_bin")
+        outputType = BLUEPRINT_CONDUIT_BIN_OUT;
+    else if (type == "blueprint_conduit_json")
+        outputType = BLUEPRINT_CONDUIT_JSON_OUT;
+    else
+        EXCEPTION1(VisItException, "bad type given in " + type);
 }
 
 // ****************************************************************************
@@ -973,7 +1021,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
         vtkDataArray *intensity;
         vtkDataArray *pathLength;
-        if (outputType >= 0 && outputType <=3)
+        if (outputTypeIsBmpJpegPngOrTif(outputType))
         {
             for (int i = 0; i < numBins; i++)
             {
@@ -989,7 +1037,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                         (int*) intensity->GetVoidPointer(0));
             }
         }
-        else if (outputType == 4)
+        else if (outputType == RAWFLOATS_OUT)
         {
             for (int i = 0; i < numBins; i++)
             {
@@ -1018,7 +1066,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 }
             }
         }
-        else if (outputType == 5)
+        else if (outputType == BOV_OUT)
         {
             for (int i = 0; i < numBins; i++)
             {
@@ -1056,37 +1104,40 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 }
             }
         }
-        // TODO define constants for each output type
-        else if (outputType == BLUEPRINT)
+        else if (outputTypeIsBlueprint(outputType))
         {
             
         }
         else
         {
-            // Q? error?
+            EXCEPTION1(VisItException, "Bad outputType in " + outputType)
         }
 
         //
         // Output the result message.
         //
-        if (outputType >=0 && outputType <= 5)
+        if (outputTypeValid(outputType))
         {
             std::string msg = "";
             char buf[512];
     
-            if (numBins == 1 && outputType < 4)
+            if (numBins == 1 && outputTypeIsBmpJpegPngOrTif(outputType))
             {
                 snprintf(buf, 512, "The x ray image query results were "
                          "written to the file %s00.%s\n", baseName,
                          exts[outputType]);
             }
             else
-                if (outputType < 4)
+                if (outputTypeIsRawfloatsOrBov(outputType))
                 {
                     snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
                         baseName, exts[outputType], baseName, numBins - 1,
                         exts[outputType]);
+                }
+                else if (outputTypeIsBlueprint(outputType))
+                {
+
                 }
                 else
                 {
@@ -1277,7 +1328,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         ipixel++;
     }
 
-    if (outputType == 0)
+    if (outputType == BMP_OUT)
     {
         vtkImageWriter *writer = vtkBMPWriter::New();
         char fileName[24];
@@ -1287,7 +1338,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         writer->Write();
         writer->Delete();
     }
-    else if (outputType == 1)
+    else if (outputType == JPEG_OUT)
     {
         vtkImageWriter *writer = vtkJPEGWriter::New();
         char fileName[24];
@@ -1297,7 +1348,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         writer->Write();
         writer->Delete();
     }
-    else if (outputType == 2)
+    else if (outputType == PNG_OUT)
     {
         vtkImageWriter *writer = vtkPNGWriter::New();
         char fileName[24];
@@ -1307,7 +1358,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         writer->Write();
         writer->Delete();
     }
-    else if (outputType == 3)
+    else if (outputType == TIF_OUT)
     {
         vtkImageWriter *writer = vtkTIFFWriter::New();
         char fileName[24];
