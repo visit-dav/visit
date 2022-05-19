@@ -12,6 +12,9 @@
 #include <query_exports.h>
 #include <avtDatasetQuery.h>
 #include <avtXRayFilter.h>
+// #ifdef HAVE_CONDUIT
+#include <conduit.hpp>
+// #endif
 
 #include <string>
 #include <vector>
