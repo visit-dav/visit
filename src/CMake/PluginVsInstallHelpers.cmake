@@ -14,6 +14,10 @@
 #   Added logic for retrieving and filtering VTKm includes that come from
 #   interface libraries.
 #
+#   Cyrus Harrison, Thu May 19 11:42:31 PDT 2022
+#   Add PYTHON_FOUND guard for python path related logic to avoid
+#   error with empty path passed to get_filename_component
+#
 #******************************************************************************
 
 
@@ -289,8 +293,12 @@ if(UNIX)
    # python3's include dir has an 'm' after the version. For ease of 
    # use with future versions, and to save having to figure this out again
    # get and use the last part of the PYTHON_INCLUDE_DIR
-   get_filename_component(py_inc_base ${PYTHON_INCLUDE_DIR} NAME)
-   set(python_include_relative_path "/python/include/${py_inc_base}")
+   if(PYTHON_FOUND)
+       get_filename_component(py_inc_base ${PYTHON_INCLUDE_DIR} NAME)
+       set(python_include_relative_path "/python/include/${py_inc_base}")
+   else()
+       set(python_include_relative_path "")
+   endif()
    set(exodusii_include_relative_path "/exodusii/inc")
    set(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 else(UNIX)
