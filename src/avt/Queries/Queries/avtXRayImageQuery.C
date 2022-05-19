@@ -1106,7 +1106,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
         else if (outputTypeIsBlueprint(outputType))
         {
-            
+            EXCEPTION1(VisItException, "Not yet implemented lol");
+            // conduit::Node mynode;
+            // conduit::Node &img_coords = mynode["coordsets/image_coords"];
+            // img_coords["type"] = "rectilinear";
         }
         else
         {
