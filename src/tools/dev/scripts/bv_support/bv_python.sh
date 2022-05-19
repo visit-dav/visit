@@ -218,8 +218,7 @@ function bv_python_depends_on
 {
      pydep=""
      if [[ $USE_SYSTEM_PYTHON == "no" ]] ; then
-        # we always need openssl b/c of requests.
-        pydep="openssl zlib"
+        pydep="zlib"
      fi
      echo $pydep
 }
@@ -280,20 +279,6 @@ function bv_python_info
         export PYPARSING_BUILD_DIR="pyparsing-2.4.6"
         export PYPARSING_MD5_CHECKSUM="29733ea8cbee0291aad121c69c6e51a1"
         export PYPARSING_SHA256_CHECKSUM="4c830582a84fb022400b85429791bc551f1f4871c33f23e44f353119e92f969f"
-    fi
-
-    if [[ "$DO_PYTHON2" == "yes" ]] ; then
-        export PYREQUESTS_URL=""
-        export PYREQUESTS_FILE="requests-2.5.1.tar.gz"
-        export PYREQUESTS_BUILD_DIR="requests-2.5.1"
-        export PYREQUESTS_MD5_CHECKSUM="a89558d5dd35a5cb667e9a6e5d4f06f1"
-        export PYREQUESTS_SHA256_CHECKSUM="1e5ea203d49273be90dcae2b98120481b2ecfc9f2ae512ce545baab96f57b58c"
-    else
-        export PYREQUESTS_URL=""
-        export PYREQUESTS_FILE="requests-2.22.0.tar.gz"
-        export PYREQUESTS_BUILD_DIR="requests-2.22.0"
-        export PYREQUESTS_MD5_CHECKSUM="ee28bee2de76e9198fc41e48f3a7dd47"
-        export PYREQUESTS_SHA256_CHECKSUM="11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4"
     fi
 
     if [[ "$DO_PYTHON2" == "yes" ]] ; then
@@ -433,30 +418,6 @@ function bv_python_info
     export SIX_BUILD_DIR="six-1.13.0"
     export SIX_MD5_CHECKSUM="e92c23c882c7d5564ce5773fe31b2771"
     export SIX_SHA256_CHECKSUM="30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66"
-
-    export URLLIB3_URL=""
-    export URLLIB3_FILE="urllib3-1.25.7.tar.gz"
-    export URLLIB3_BUILD_DIR="urllib3-1.25.7"
-    export URLLIB3_MD5_CHECKSUM="85e1e3925f8c1095172bff343f3312ed"
-    export URLLIB3_SHA256_CHECKSUM="f3c5fd51747d450d4dcf6f923c81f78f811aab8205fda64b0aba34a4e48b0745"
-
-    export IDNA_URL=""
-    export IDNA_FILE="idna-2.8.tar.gz"
-    export IDNA_BUILD_DIR="idna-2.8"
-    export IDNA_MD5_CHECKSUM="2e9ae0b4a0b26d1747c6127cdb060bc1"
-    export IDNA_SHA256_CHECKSUM="c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407"
-
-    export CHARDET_URL=""
-    export CHARDET_FILE="chardet-3.0.4.tar.gz"
-    export CHARDET_BUILD_DIR="chardet-3.0.4"
-    export CHARDET_MD5_CHECKSUM="7dd1ba7f9c77e32351b0a0cfacf4055c"
-    export CHARDET_SHA256_CHECKSUM="84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae"
-
-    export CERTIFI_URL=""
-    export CERTIFI_FILE="certifi-2019.11.28.tar.gz"
-    export CERTIFI_BUILD_DIR="certifi-2019.11.28"
-    export CERTIFI_MD5_CHECKSUM="4d5229c4d9f0a4a79106f9e2c2cfd381"
-    export CERTIFI_SHA256_CHECKSUM="25b64c7da4cd7479594d035c08c2d809eb4aab3a26e5a990ea98cc450c320f1f"
 
     export PYTZ_URL=""
     export PYTZ_FILE="pytz-2019.3.tar.gz"
@@ -792,13 +753,6 @@ function build_python
         fi
     fi
 
-    if [[ "$DO_OPENSSL" == "yes" ]]; then
-        OPENSSL_INCLUDE="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/include"
-        OPENSSL_LIB="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/lib"
-        PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${OPENSSL_LIB}"
-        PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${OPENSSL_INCLUDE}"
-    fi
-
     PY_ZLIB_INCLUDE="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
     PY_ZLIB_LIB="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
     PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${PY_ZLIB_LIB}"
@@ -962,161 +916,6 @@ function build_pyparsing
     fi
 
     info "Done with pyparsing."
-    return 0
-}
-
-# *************************************************************************** #
-#                            Function 7.3, build_requests                     #
-# *************************************************************************** #
-function build_requests
-{
-
-    if [[ "$DO_PYTHON2" == "no" ]] ; then
-        # python 3: Requests depends on certifi, urllib3, idna, chardet
-        if ! test -f ${CERTIFI_FILE} ; then
-            download_file ${CERTIFI_FILE} "${CERTIFI_URL}"
-            if [[ $? != 0 ]] ; then
-                warn "Could not download ${CERTIFI_FILE}"
-                return 1
-            fi
-        fi
-
-        if ! test -f ${URLLIB3_FILE} ; then
-            download_file ${URLLIB3_FILE} "${URLLIB3_URL}"
-            if [[ $? != 0 ]] ; then
-                warn "Could not download ${URLLIB3_FILE}"
-                return 1
-            fi
-        fi
-        
-        if ! test -f ${IDNA_FILE} ; then
-            download_file ${IDNA_FILE} "${IDNA_URL}"
-            if [[ $? != 0 ]] ; then
-                warn "Could not download ${IDNA_FILE}"
-                return 1
-            fi
-        fi
-
-        if ! test -f ${CHARDET_FILE} ; then
-            download_file ${CHARDET_FILE} "${CHARDET_URL}"
-            if [[ $? != 0 ]] ; then
-                warn "Could not download ${CHARDET_FILE}"
-                return 1
-            fi
-        fi
-
-        if ! test -d ${CERTIFI_BUILD_DIR} ; then
-            info "Extracting certifi ..."
-            uncompress_untar ${CERTIFI_FILE}
-            if test $? -ne 0 ; then
-                warn "Could not extract ${CERTIFI_FILE}"
-                return 1
-            fi
-        fi
-
-        if ! test -d ${URLLIB3_BUILD_DIR} ; then
-            info "Extracting urllib3 ..."
-            uncompress_untar ${URLLIB3_FILE}
-            if test $? -ne 0 ; then
-                warn "Could not extract ${URLLIB3_FILE}"
-                return 1
-            fi
-        fi
-
-        if ! test -d ${IDNA_BUILD_DIR} ; then
-            info "Extracting idna ..."
-            uncompress_untar ${IDNA_FILE}
-            if test $? -ne 0 ; then
-                warn "Could not extract ${IDNA_FILE}"
-                return 1
-            fi
-        fi
-
-        if ! test -d ${CHARDET_BUILD_DIR} ; then
-            info "Extracting chardet ..."
-            uncompress_untar ${CHARDET_FILE}
-            if test $? -ne 0 ; then
-                warn "Could not extract ${CHARDET_FILE}"
-                return 1
-            fi
-        fi
-        
-        pushd $CERTIFI_BUILD_DIR > /dev/null
-        info "Installing certifi ..."
-        ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-        if test $? -ne 0 ; then
-            popd > /dev/null
-            warn "Could not install certifi"
-            return 1
-        fi
-        popd > /dev/null
-
-        pushd $URLLIB3_BUILD_DIR > /dev/null
-        info "Installing urllib3 ..."
-        ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-        if test $? -ne 0 ; then
-            popd > /dev/null
-            warn "Could not install urllib3"
-            return 1
-        fi
-        popd > /dev/null
-
-        pushd $IDNA_BUILD_DIR > /dev/null
-        info "Installing idna ..."
-        ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-        if test $? -ne 0 ; then
-            popd > /dev/null
-            warn "Could not install idna"
-            return 1
-        fi
-        popd > /dev/null
-
-        pushd $CHARDET_BUILD_DIR > /dev/null
-        info "Installing chardet ..."
-        ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-        if test $? -ne 0 ; then
-            popd > /dev/null
-            warn "Could not install chardet"
-            return 1
-        fi
-        popd > /dev/null
-    fi
-
-    if ! test -f ${PYREQUESTS_FILE} ; then
-        download_file ${PYREQUESTS_FILE}
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${PYREQUESTS_FILE}"
-            return 1
-        fi
-    fi
-
-    if ! test -d ${PYREQUESTS_BUILD_DIR} ; then
-        info "Extracting python requests module ..."
-        uncompress_untar ${PYREQUESTS_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${PYREQUESTS_FILE}"
-            return 1
-        fi
-    fi
-
-    pushd $PYREQUESTS_BUILD_DIR > /dev/null
-    info "Installing python requests module ..."
-    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
-    if test $? -ne 0 ; then
-        popd > /dev/null
-        warn "Could not install requests module"
-        return 1
-    fi
-    popd > /dev/null
-
-    # installs into site-packages dir of VisIt's Python.
-    # Simply re-execute the python perms command.
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/python"
-        chgrp -R ${GROUP} "$VISITDIR/python"
-    fi
-
-    info "Done with python requests module."
     return 0
 }
 
@@ -1285,14 +1084,6 @@ function build_sphinx
         fi
     fi
 
-    if ! test -f ${REQUESTS_FILE} ; then
-        download_file ${REQUESTS_FILE} "${REQUESTS_URL}"
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${REQUESTS_FILE}"
-            return 1
-        fi
-    fi
-
     if ! test -f ${IMAGESIZE_FILE} ; then
         download_file ${IMAGESIZE_FILE} "${IMAGESIZE_URL}"
         if [[ $? != 0 ]] ; then
@@ -1452,15 +1243,6 @@ function build_sphinx
         uncompress_untar ${SETUPTOOLS_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${SETUPTOOLS_FILE}"
-            return 1
-        fi
-    fi
-
-    if ! test -d ${PYREQUESTS_BUILD_DIR} ; then
-        info "Extracting requests ..."
-        uncompress_untar ${PYREQUESTS_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${PYREQUESTS_FILE}"
             return 1
         fi
     fi
@@ -1940,14 +1722,6 @@ function bv_python_is_installed
         PY_OK=0
     fi
 
-    check_if_py_module_installed "requests"
-    if [[ $? != 0 ]] ; then
-        if [[ $PY_CHECK_ECHO != 0 ]] ; then
-            info "python module requests is not installed"
-        fi
-        PY_OK=0
-    fi
-
     check_if_py_module_installed "pyparsing"
     if [[ $? != 0 ]] ; then
         if [[ $PY_CHECK_ECHO != 0 ]] ; then
@@ -2071,15 +1845,6 @@ function bv_python_build
                     error "pyparsing build failed. Bailing out."
                 fi
                 info "Done building the pyparsing module."
-            fi
-
-            check_if_py_module_installed "requests"
-            if [[ $? != 0 ]] ; then
-                build_requests
-                if [[ $? != 0 ]] ; then
-                    error "requests python module build failed. Bailing out."
-                fi
-                info "Done building the requests python module."
             fi
 
             if [[ "$BUILD_SPHINX" == "yes" ]]; then

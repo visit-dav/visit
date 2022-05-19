@@ -128,11 +128,11 @@ Here are the ``compilers.yaml`` and ``packages.yaml`` files for ``spock.olcf.orn
 
 ``compilers.yaml``
 
-.. literalinclude:: ../../../scripts/spack/configs/olcf/compilers.yaml
+.. literalinclude:: ../../../scripts/spack/configs/olcf/spock/compilers.yaml
 
 ``packages.yaml``
 
-.. literalinclude:: ../../../scripts/spack/configs/olcf/packages.yaml
+.. literalinclude:: ../../../scripts/spack/configs/olcf/spock/packages.yaml
 
 Debugging a spack package
 -------------------------

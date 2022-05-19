@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GLimitCycleOperator visitcommon gui )
 
     ADD_LIBRARY(VLimitCycleOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VLimitCycleOperator VIEWER)
     TARGET_LINK_LIBRARIES(VLimitCycleOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GLimitCycleOperator VLimitCycleOperator)

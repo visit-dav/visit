@@ -106,6 +106,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GPoincareOperator visitcommon gui )
 
     ADD_LIBRARY(VPoincareOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VPoincareOperator VIEWER)
     TARGET_LINK_LIBRARIES(VPoincareOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GPoincareOperator VPoincareOperator)

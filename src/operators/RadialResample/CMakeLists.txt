@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GRadialResampleOperator visitcommon gui )
 
     ADD_LIBRARY(VRadialResampleOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VRadialResampleOperator VIEWER)
     TARGET_LINK_LIBRARIES(VRadialResampleOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GRadialResampleOperator VRadialResampleOperator)

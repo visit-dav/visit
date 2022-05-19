@@ -99,6 +99,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GParallelCoordinatesPlot visitcommon gui )
 
     ADD_LIBRARY(VParallelCoordinatesPlot ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VParallelCoordinatesPlot VIEWER)
     TARGET_LINK_LIBRARIES(VParallelCoordinatesPlot visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GParallelCoordinatesPlot VParallelCoordinatesPlot)

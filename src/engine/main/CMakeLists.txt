@@ -120,11 +120,7 @@ if(HAVE_OSMESA OR HAVE_EGL)
 endif()
 
 # Add link directories
-link_directories(
-  ${LIBRARY_OUTPUT_DIRECTORY}
-  ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
-)
-
+link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${AVT_REQUIRED_LIB_DIR})
 
 #********************************* SERIAL ************************************
 add_library(engine_ser ${LIBENGINE_SOURCES})
