@@ -8,13 +8,17 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(CONDUIT INCDIR include/conduit LIBS conduit conduit_relay conduit_blueprint)
+SET_UP_THIRD_PARTY(CONDUIT
+    INCDIR include/conduit
+    LIBS conduit conduit_relay conduit_blueprint)
 
 # par engine needs conduit relay's mpi lib, find it using setup_third_party
 # so it will be installed properly
 if(VISIT_PARALLEL)
     set(CONDUIT_MPI_DIR ${CONDUIT_DIR})
-    SET_UP_THIRD_PARTY(CONDUIT_MPI INCDIR include/conduit LIBS conduit_relay_mpi conduit_blueprint_mpi)
+    SET_UP_THIRD_PARTY(CONDUIT_MPI
+        INCDIR include/conduit
+        LIBS conduit_relay_mpi conduit_blueprint_mpi)
 endif()
 
 
@@ -41,6 +45,8 @@ if(EXISTS ${CONDUIT_DIR}/python-modules/conduit)
                 )
 endif()
 
+set(HAVE_CONDUIT TRUE CACHE BOOL "Have Conduit libraries")
+
 # Temporary, allow users to build VisIt with older Conduit
 #  and disable partition/flatten support conditionally
 set(CONDUIT_HAVE_PARTITION_FLATTEN 0)
@@ -49,4 +55,5 @@ if(DEFINED CONDUIT_VERSION)
         set(CONDUIT_HAVE_PARTITION_FLATTEN 1)
     endif()
 endif()
+
 message(STATUS "Conduit has partition/flatten functionality? ${CONDUIT_HAVE_PARTITION_FLATTEN}")

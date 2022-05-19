@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GSurfCompPrepOperator visitcommon gui )
 
     ADD_LIBRARY(VSurfCompPrepOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VSurfCompPrepOperator VIEWER)
     TARGET_LINK_LIBRARIES(VSurfCompPrepOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GSurfCompPrepOperator VSurfCompPrepOperator)

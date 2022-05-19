@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GLagrangianOperator visitcommon gui )
 
     ADD_LIBRARY(VLagrangianOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VLagrangianOperator VIEWER)
     TARGET_LINK_LIBRARIES(VLagrangianOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GLagrangianOperator VLagrangianOperator)

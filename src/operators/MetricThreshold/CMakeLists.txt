@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GMetricThresholdOperator visitcommon gui )
 
     ADD_LIBRARY(VMetricThresholdOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VMetricThresholdOperator VIEWER)
     TARGET_LINK_LIBRARIES(VMetricThresholdOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GMetricThresholdOperator VMetricThresholdOperator)

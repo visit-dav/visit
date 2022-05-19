@@ -1357,6 +1357,10 @@ FilledBoundaryAttributes::VarChangeRequiresReset()
 // Modifications:
 //
 // ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
 
 void
 FilledBoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
@@ -1369,17 +1373,41 @@ FilledBoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
     if(searchNode == 0)
         return;
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     if (VersionLessThan(configVersion, "2.13.0"))
     {
         if (searchNode->GetNode("boundaryType") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("boundaryType", "3.3.1"));
+#endif
             searchNode->RemoveNode("boundaryType");
+        }
         if (searchNode->GetNode("filledFlag") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("boundaryType", "3.3.1"));
+#endif
             searchNode->RemoveNode("filledFlag");
+        }
     }
+#endif
+
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     if (VersionLessThan(configVersion, "3.0.0"))
     {
         if (searchNode->GetNode("lineStyle") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("boundaryType", "3.3.2"));
+#endif
             searchNode->RemoveNode("lineStyle");
+        }
     }
+#endif
 }
 

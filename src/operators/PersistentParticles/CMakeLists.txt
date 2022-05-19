@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GPersistentParticlesOperator visitcommon gui )
 
     ADD_LIBRARY(VPersistentParticlesOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VPersistentParticlesOperator VIEWER)
     TARGET_LINK_LIBRARIES(VPersistentParticlesOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GPersistentParticlesOperator VPersistentParticlesOperator)

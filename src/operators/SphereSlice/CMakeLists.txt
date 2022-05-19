@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GSphereSliceOperator visitcommon gui )
 
     ADD_LIBRARY(VSphereSliceOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VSphereSliceOperator VIEWER)
     TARGET_LINK_LIBRARIES(VSphereSliceOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GSphereSliceOperator VSphereSliceOperator)

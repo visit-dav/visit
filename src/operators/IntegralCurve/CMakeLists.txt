@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GIntegralCurveOperator visitcommon gui )
 
     ADD_LIBRARY(VIntegralCurveOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VIntegralCurveOperator VIEWER)
     TARGET_LINK_LIBRARIES(VIntegralCurveOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GIntegralCurveOperator VIntegralCurveOperator)

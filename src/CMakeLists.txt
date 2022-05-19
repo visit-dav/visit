@@ -836,6 +836,9 @@ OPTION(VISIT_ENABLE_XDB "Enable Intelligent Light XDB database plugin." OFF) # O
 SET(VISIT_INSTALL_PROFILES_TO_HOSTS "" CACHE STRING "Install specified host profiles (no action if empty)." )
 SET(VISIT_DEFAULT_SILO_DRIVER "PDB" CACHE STRING "Default driver for generating silo data. Valid values are PDB, HDF5 or empty. An empty value means driver can be specified via make on the command line." )
 
+# flag to turn on preprocessor errors related to obsolete code.
+OPTION(VISIT_REMOVE_OBSOLETE_CODE "Enable compiler errors for removal of oboslete code." OFF)
+
 MACRO(VISIT_3RDPARTY_VAR libvar comment)
     set(cache_type ${ARGN})
     if(NOT cache_type)
@@ -2072,6 +2075,30 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}"
 #-----------------------------------------------------------------------------
 # Top-level subdirectories
 #-----------------------------------------------------------------------------
+
+
+#
+# We pull in a few libs using VisIt's setup third party logic
+# that we want to use in the engine beyond the just DB plugins.
+#
+# Conduit and MFEM are examples of this.
+#
+# The the libsim runtime and engine example programs all need to follow
+# the same linking rules as the engine. Specifically, they need
+# the linking dirs for any dependencies introduced. 
+# (For example, for conduit this includes conduit, hdf5, zlib, etc dirs)
+#
+# To simplify the logic needed downstream, we provide AVT_REQUIRED_LIB_DIR
+
+# Ideally in the future with proper imported cmake targets,
+# we would simply rely on cmake to propgate transitive dependency details.
+#
+
+set(AVT_REQUIRED_LIB_DIR "" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
+if(CONDUIT_FOUND)
+    set(AVT_REQUIRED_LIB_DIR ${CONDUIT_LIBRARY_DIR} CACHE INTERNAL "Engine AVT Required I/O lib dirs")
+endif()
+
 
 FUNCTION(CREATE_PLUGIN_DEPENDENCIES target comp type)
     FOREACH(P ${ARGN})

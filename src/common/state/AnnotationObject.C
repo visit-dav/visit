@@ -4,6 +4,7 @@
 
 #include <AnnotationObject.h>
 #include <DataNode.h>
+#include <visit-config.h>
 
 //
 // Enum conversion methods for AnnotationObject::AnnotationType
@@ -1415,6 +1416,9 @@ void
 AnnotationObject::ProcessOldVersions(DataNode *parentNode,
     const char *configVersion)
 {
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+ #error This code is obsolete in this version. Please remove it.
+#else
     if (!VersionLessThan(configVersion, "3.0.0") || parentNode == 0)
     {
         return;
@@ -1436,6 +1440,7 @@ AnnotationObject::ProcessOldVersions(DataNode *parentNode,
         ProcessOldLine2D(searchNode);
     else if (node->AsString() == "Text3D")
         ProcessOldText3D(searchNode);
+#endif
 }
 
 // ****************************************************************************

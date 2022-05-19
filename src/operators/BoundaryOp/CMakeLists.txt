@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GBoundaryOpOperator visitcommon gui )
 
     ADD_LIBRARY(VBoundaryOpOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VBoundaryOpOperator VIEWER)
     TARGET_LINK_LIBRARIES(VBoundaryOpOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GBoundaryOpOperator VBoundaryOpOperator)

@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GResampleOperator visitcommon gui )
 
     ADD_LIBRARY(VResampleOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VResampleOperator VIEWER)
     TARGET_LINK_LIBRARIES(VResampleOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GResampleOperator VResampleOperator)

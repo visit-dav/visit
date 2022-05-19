@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GDelaunayOperator visitcommon gui )
 
     ADD_LIBRARY(VDelaunayOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VDelaunayOperator VIEWER)
     TARGET_LINK_LIBRARIES(VDelaunayOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GDelaunayOperator VDelaunayOperator)

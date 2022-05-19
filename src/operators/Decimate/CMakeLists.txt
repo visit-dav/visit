@@ -102,6 +102,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GDecimateOperator visitcommon gui )
 
     ADD_LIBRARY(VDecimateOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VDecimateOperator VIEWER)
     TARGET_LINK_LIBRARIES(VDecimateOperator visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GDecimateOperator VDecimateOperator)
