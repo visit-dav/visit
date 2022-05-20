@@ -2006,7 +2006,7 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     // Check if the mesh is periodic.
     const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
                                      (mesh->GetNodes()->FESpace()->FEColl());
-    if (L2_coll != NULL)
+    if (L2_coll)
     {
         BP_PLUGIN_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
@@ -2014,13 +2014,8 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 
     BP_PLUGIN_INFO("High Order Mesh is not periodic.");
 
-    // refine the mesh and convert to vtk
-    // it would be nice if this was cached somewhere but we will do it again
-    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, 
-                                         mfem::BasisType::GaussLobatto);
-
     mfem::FiniteElementSpace *ho_fes = gf->FESpace();
-    if(ho_fes == nullptr)
+    if(!ho_fes)
     {
         BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
             "RefineGridFunctionToVTK: high order gf finite element space is null");
@@ -2046,6 +2041,11 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     //     int  p = 0; // single scalar
     //     lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
     // }
+    
+    // refine the mesh and convert to vtk
+    // it would be nice if this was cached somewhere but we will do it again
+    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, 
+                                         mfem::BasisType::GaussLobatto);
     mfem::FiniteElementSpace *lo_fes = new mfem::FiniteElementSpace(lo_mesh, lo_col, ho_fes->GetVDim());
     mfem::GridFunction *lo_gf = new mfem::GridFunction(lo_fes);
     // transform the higher order function to a low order function somehow
