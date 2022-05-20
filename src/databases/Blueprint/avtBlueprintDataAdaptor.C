@@ -1920,8 +1920,9 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 {
     BP_PLUGIN_INFO("Converting Low Order Grid Function To VTK");
 
-    int vdim  = gf->FESpace()->GetVDim();
-    int ndofs = gf->FESpace()->GetNDofs();
+    mfem::FiniteElementSpace *fespace = gf->FESpace();
+    int vdim = fespace->GetVDim();
+    int ndofs = fespace->GetNDofs();
 
     // all supported grid functions coming out of mfem end up being 
     // associated with vertices
@@ -1929,14 +1930,13 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ndofs << " "
                     << " num_comps = " << vdim);
 
-    vtkDataArray *retval = NULL;
-    retval = vtkDoubleArray::New();
+    vtkDataArray *retval = vtkDoubleArray::New();
     // vtk reqs us to set number of comps before number of tuples
     retval->SetNumberOfComponents(vdim == 2 ? 3 : vdim);
     // set number of tuples
     retval->SetNumberOfTuples(ndofs);
 
-    const double * values = gf->HostRead();
+    const double *values = gf->HostRead();
 
     if (vdim == 1) // scalar case
     {
@@ -1948,17 +1948,16 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     else // vector case
     {
         // deal with striding of all components
-        mfem::Ordering::Type ordering = gf->FESpace()->GetOrdering();
-        int stride = (ordering == mfem::Ordering::byNODES ? 1 : vdim);
-        int vdim_stride  = (ordering == mfem::Ordering::byNODES ? ndofs : 1);
-        index_t offset = 0;
+        bool bynodes = fespace->GetOrdering() == mfem::Ordering::byNODES;
+        int stride = bynodes ? 1 : vdim;
+        int vdim_stride = bynodes ? ndofs : 1;
+        int offset = 0;
 
         for (int i = 0;  i < vdim; i ++)
         {
             for (vtkIdType j = 0; j < ndofs; j ++)
             {
                 retval->SetComponent(j, i, values[offset + j * stride]);
-
                 if(vdim == 2)
                 {
                     retval->SetComponent(j, 2, 0.0);
