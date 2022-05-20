@@ -596,6 +596,7 @@ function initialize_build_visit()
     export CREATE_RPM="no"
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
+    export DO_QT510="no"
     DOWNLOAD_ONLY="no"
 
 
@@ -1223,6 +1224,7 @@ function run_build_visit()
             --thirdparty-path) next_arg="thirdparty-path";;
             --version) next_arg="version";;
             --xdb) DO_XDB="yes";;
+            --qt510) DO_QT510="yes";;
             --console) ;;
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
             *)
