@@ -1758,7 +1758,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
 //
 //  Arguments:
-//    mesh:        MFEM mesh for the field
+//    mesh:        MFEM mesh to be refined
 //    lod:         number of refinement steps
 //    new_refine:  switch for using the new LOR or legacy LOR
 //
@@ -1782,39 +1782,21 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
         return LegacyRefineMeshToVTK(mesh, lod);
     }
 
-    // refine the mesh and convert to vtk
-    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, mfem::BasisType::GaussLobatto);
-
     // Check if the mesh is periodic.
     const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
                                      (mesh->GetNodes()->FESpace()->FEColl());
-    if (L2_coll != NULL)
+    if (L2_coll)
     {
-        // The commented code in this case is related to handling periodic 
-        // meshes, which we are currently unable to do. We may add this 
-        // functionality at a later date.
-
-        // FiniteElementCollection *fec_sub = NULL;
-        // FiniteElementSpace *fes_sub = NULL;;
-        // GridFunction *xsub = NULL;
-
-        // non period mesh
         BP_PLUGIN_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
         return LegacyRefineMeshToVTK(mesh, lod);
-
-        // lo_mesh->SetCurvature(1, true);
-        // const int dim = mesh->Dimension();
-
-        // fec_sub = new L2_FECollection(1, dim, BasisType::ClosedUniform);
-        // fes_sub = new FiniteElementSpace(lo_mesh, fec_sub, dim);
-        // xsub = new GridFunction(fes_sub);
-        // lo_mesh->SetNodalGridFunction(xsub);
-        // GridFunction *coarse = mesh->GetNodes();
-        // InterpolationGridTransfer transf(*coarse->FESpace(), *fes_sub);
-        // transf.ForwardOperator().Mult(*coarse, *xsub);
     }
 
     BP_PLUGIN_INFO("High Order Mesh is not periodic.");
+
+    // refine the mesh
+    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, 
+                                         lod, 
+                                         mfem::BasisType::GaussLobatto);
 
     vtkDataSet *retval = LowOrderMeshToVTK(lo_mesh);
     delete lo_mesh;
