@@ -18,6 +18,8 @@ Definition:
 // Creation:   Sat Jun 16 20:32:23 PST 2001
 //
 // Modifications:
+//  Justin Privitera, Fri May 20 11:02:45 PDT 2022
+//  Replaced *active* w/ *default* for everything color tables.
 //
 // ****************************************************************************
 
