@@ -21,6 +21,7 @@
 
 #ifdef HAVE_CONDUIT
     #include <conduit.hpp>
+    #include <conduit_blueprint.hpp>
 #endif
 
 #include <vectortypes.h>
@@ -281,10 +282,16 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
 
     if (params.HasEntry("output_type"))
     {
+        std::cout << "here" << std::endl;
         if (params.GetEntry("output_type")->TypeName() == "int")
             SetOutputType(params.GetEntry("output_type")->AsInt());
         else if (params.GetEntry("output_type")->TypeName() == "string")
+        {
+            std::cout << "success" << std::endl;
             SetOutputType(params.GetEntry("output_type")->AsString());
+        }
+        else
+            std::cout << "bad news" << std::endl;
     }
 
     // this is not a normal parameter, it is set by the cli when the query
@@ -769,6 +776,7 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
         outputType = BOV_OUT;
     else if (type == "blueprint_hdf5")
         outputType = BLUEPRINT_HDF5_OUT;
+    // TODO add yaml as well
     else if (type == "blueprint_json")
         outputType = BLUEPRINT_JSON_OUT;
     else if (type == "blueprint_conduit_bin")
@@ -1111,10 +1119,59 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
         else if (outputTypeIsBlueprint(outputType))
         {
-            EXCEPTION1(VisItException, "Not yet implemented lol");
-            conduit::Node mynode;
-            // conduit::Node &img_coords = mynode["coordsets/image_coords"];
-            // img_coords["type"] = "rectilinear";
+            EXCEPTION1(VisItException, "Not yet implemented.");
+            conduit::Node data_out;
+
+            // set up coords
+            data_out["coordsets/image_coords/type"] = "rectilinear";
+
+            data_out["coordsets/image_coords/values/x"].set(nx);
+            int *xvals = data_out["coordsets/image_coords/values/x"].value();
+            for (int i = 0; i < nx; i ++) { xvals[i] = i; }
+
+            data_out["coordsets/image_coords/values/y"].set(ny);
+            int *yvals = data_out["coordsets/image_coords/values/y"].value();
+            for (int i = 0; i < ny; i ++) { yvals[i] = i; }
+
+            data_out["coordsets/image_coords/values/z"].set(numBins);
+            int *zvals = data_out["coordsets/image_coords/values/z"].value();
+            for (int i = 0; i < numBins; i ++) { zvals[i] = i; }
+
+            // data_out["coordsets/image_coords/units/x"] = "cm";
+            // data_out["coordsets/image_coords/units/y"] = "cm";
+            // data_out["coordsets/image_coords/units/z"] = "kev";
+
+            data_out["coordsets/image_coords/labels/x"] = "width";
+            data_out["coordsets/image_coords/labels/y"] = "height";
+            data_out["coordsets/image_coords/labels/z"] = "energy_group";
+
+            // set up topology
+            data_out["topologies/image_topo/coordset"] = "image_coords";
+            data_out["topologies/image_topo/type"] = "rectilinear";
+
+            // set up fields
+            data_out["fields/intensities/topology"] = "image_topo";
+            data_out["fields/intensities/association"] = "element";
+            int numfieldvals = (nx - 1) * (ny - 1) * (numBins - 1);
+            data_out["fields/intensities/values"].set(numfieldvals);
+            int *fieldvals = data_out["fields/intensities/values"].value();
+            for (int i = 0; i < numfieldvals; i ++)
+            {
+                fieldvals[i] = i;
+            }
+            
+            conduit::Node verify_info;
+            if(!conduit::blueprint::mesh::verify(data_out, verify_info))
+            {
+                std::cout << "Verify failed!" << std::endl;
+                verify_info.print();
+            }
+
+            data_out.print();
+
+            std::cout << "success" << std::endl;
+
+
         }
         else
         {
@@ -1145,7 +1202,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 }
                 else if (outputTypeIsBlueprint(outputType))
                 {
-
+                    // TODO
+                    EXCEPTION1(VisItException, "Not yet implemented.");
                 }
                 else
                 {

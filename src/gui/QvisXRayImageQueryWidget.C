@@ -69,6 +69,10 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     imageFormat->addItem(tr("tiff"));
     imageFormat->addItem(tr("rawfloats"));
     imageFormat->addItem(tr("bov"));
+    imageFormat->addItem(tr("blueprint_json"));
+    imageFormat->addItem(tr("blueprint_hdf5"));
+    imageFormat->addItem(tr("blueprint_conduit_json"));
+    imageFormat->addItem(tr("blueprint_conduit_bin"));
     imageFormat->setCurrentIndex(2);
     topLayout->addWidget(imageFormat, 0, 1);
 
