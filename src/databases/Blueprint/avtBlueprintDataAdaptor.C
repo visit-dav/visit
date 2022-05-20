@@ -1552,7 +1552,7 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 //    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
 //
 //  Arguments:
-//    mesh:      mesh to be refined
+//    mesh:      MFEM mesh to be refined
 //    lod:       number of refinement steps
 //
 //  Programmer: Cyrus Harrison
@@ -1664,7 +1664,7 @@ avtBlueprintDataAdaptor::MFEM::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
 //    Converts a low order MFEM mesh to a VTK unstructured grid.
 //
 //  Arguments:
-//    mesh:         MFEM mesh for the field
+//    mesh:         MFEM mesh to be refined
 //
 //  Programmer: Justin Privitera
 //  Creation:   Wed Apr 13 13:53:06 PDT 2022
@@ -1676,7 +1676,6 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     BP_PLUGIN_INFO("Converting Low Order Mesh to VTK.");
 
     int dim = mesh->SpaceDimension();
-
     if (dim < 1 || dim > 3)
     {
         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
@@ -1687,27 +1686,13 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
     // Setup main coordset
     ////////////////////////////////////////////
 
-    // Assumes mfem::Vertex has the layout of a double array.
-    // this logic assumes an mfem vertex is always 3 doubles wide
-    size_t stride = sizeof(mfem::Vertex);
     int num_vertices = mesh->GetNV();
-
-    size_t doublesize = sizeof(double);
-
-    if (stride != 3 * doublesize)
-    {
-        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                             "Unexpected stride for mfem vertex");
-    }
-
-    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
     vtkPoints *points = vtkPoints::New();
     points->SetDataTypeToDouble();
     points->SetNumberOfPoints(num_vertices);
 
     double *coords_ptr = mesh->GetVertex(0);
-
     for (int i = 0; i < num_vertices; i ++)
     {
         double x = coords_ptr[i * 3];
@@ -1716,44 +1701,42 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
         points->SetPoint(i, x, y, z);
     }
 
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
     ugrid->SetPoints(points);
-
     points->Delete();
 
     ////////////////////////////////////////////
     // Setup main topo
     ////////////////////////////////////////////
 
-    mfem::Element::Type ele_type = static_cast<mfem::Element::Type>(
-        mesh->GetElement(0)->GetType());
-
-    std::string ele_shape = ElementTypeToShapeName(ele_type);
-
     vtkCellArray *ca = vtkCellArray::New();
     vtkIdTypeArray *ida = vtkIdTypeArray::New();
 
-    int num_ele = mesh->GetNE();
+    int ncells = mesh->GetNE();
     int geom = mesh->GetElementBaseGeometry(0);
     int idxs_per_ele = mfem::Geometry::NumVerts[geom];
-    int num_conn_idxs =  num_ele * idxs_per_ele;
 
+    mfem::Element::Type ele_type = static_cast<mfem::Element::Type>(
+        mesh->GetElement(0)->GetType());
+    std::string ele_shape = ElementTypeToShapeName(ele_type);
     int ctype = ElementShapeNameToVTKCellType(ele_shape);
     int csize = VTKCellTypeSize(ctype);
-    int ncells = num_conn_idxs / csize;
     ida->SetNumberOfTuples(ncells * (csize + 1));
 
-    // check equality - these numbers really should be the same
-    if (ncells != num_ele || idxs_per_ele != csize)
+    // check our assumptions
+    if (idxs_per_ele != csize)
     {
+        // Note:
+        // ncells = mesh->GetNE() * idxs_per_ele / csize
+        // but since the latter two are equal, we can safely
+        // say ncells = mesh->GetNE()
         BP_PLUGIN_EXCEPTION1(InvalidVariableException,
                              "Expected equality of MFEM and VTK layout variables.");
     }
 
     for (int i = 0; i < ncells; i ++)
     {
-        const mfem::Element *ele = mesh->GetElement(i);
-        const int *ele_verts = ele->GetVertices();
-
+        const int *ele_verts = mesh->GetElement(i)->GetVertices();
         ida->SetComponent((csize + 1) * i, 0, csize);
         for (int j = 0; j < csize; j ++)
         {
