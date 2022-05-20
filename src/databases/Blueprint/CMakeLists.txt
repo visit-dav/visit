@@ -61,7 +61,6 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 )
 
-
 ADD_DEFINITIONS(-DCONDUIT_HAVE_PARTITION_FLATTEN=${CONDUIT_HAVE_PARTITION_FLATTEN})
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${MFEM_LIBRARY_DIR} ${CONDUIT_LIBRARY_DIR} )
@@ -78,13 +77,13 @@ IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EBlueprintDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EBlueprintDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser ${CONDUIT_LIB} ${MFEM_LIB} )
+TARGET_LINK_LIBRARIES(EBlueprintDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${CONDUIT_LIB} ${MFEM_LIB} )
 ADD_TARGET_DEFINITIONS(EBlueprintDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EBlueprintDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EBlueprintDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EBlueprintDatabase_par visitcommon avtdatabase_par avtpipeline_par ${CONDUIT_LIB} ${MFEM_LIB} conduit_blueprint_mpi conduit_relay_mpi )
+    TARGET_LINK_LIBRARIES(EBlueprintDatabase_par visitcommon avtdatabase_par avtpipeline_par ${CONDUIT_LIB} ${MFEM_LIB} ${CONDUIT_MPI_LIB} )
     ADD_TARGET_DEFINITIONS(EBlueprintDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EBlueprintDatabase_par)
 ENDIF(VISIT_PARALLEL)

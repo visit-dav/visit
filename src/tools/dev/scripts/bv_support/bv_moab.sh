@@ -82,13 +82,6 @@ function bv_moab_ensure
     fi
 }
 
-function bv_moab_dry_run
-{
-    if [[ "$DO_MOAB" == "yes" ]] ; then
-        echo "Dry run option not set for moab."
-    fi
-}
-
 # *************************************************************************** #
 #                            Function 8, build_moab
 # *************************************************************************** #

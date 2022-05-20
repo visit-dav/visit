@@ -102,7 +102,9 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GThreeSliceOperator visitcommon gui )
 
     ADD_LIBRARY(VThreeSliceOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VThreeSliceOperator VIEWER)
     TARGET_LINK_LIBRARIES(VThreeSliceOperator visitcommon viewer )
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} GThreeSliceOperator VThreeSliceOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -129,12 +131,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EThreeSliceOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EThreeSliceOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EThreeSliceOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EThreeSliceOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EThreeSliceOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EThreeSliceOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EThreeSliceOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EThreeSliceOperator_par)
 ENDIF(VISIT_PARALLEL)
 

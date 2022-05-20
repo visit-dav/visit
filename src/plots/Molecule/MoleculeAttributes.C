@@ -1586,11 +1586,18 @@ MoleculeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // Modifications:
 //
 // ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
 
 void
 MoleculeAttributes::ProcessOldVersions(DataNode *parentNode,
                                     const char *configVersion)
 {
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     if(parentNode == 0)
         return;
 
@@ -1601,8 +1608,14 @@ MoleculeAttributes::ProcessOldVersions(DataNode *parentNode,
     if (VersionLessThan(configVersion, "3.0.0"))
     {
         if (searchNode->GetNode("bondLineStyle") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("bondLineStyle", "3.3.2"));
+#endif
             searchNode->RemoveNode("bondLineStyle");
+        }
     }
+#endif
 }
 
 bool

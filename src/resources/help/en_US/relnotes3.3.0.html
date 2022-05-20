@@ -115,6 +115,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed several bugs with 'Flythrough' navigation mode: multiple calls to ResetView would make the plot disappear; adding new plots would make them disappear from view; issuing a 'Recenter View' would move the camera inside the plot.</li>
   <li>Fixed a bug where bounding box extents would not be reset when 'Scale 3D Axes' was turned off.</li>
   <li>Fixed a cli crash when 'DeleteAllPlots' is called when there are not plots, and a callback has been registered for 'SetActivePlots'.</li>
+  <li>Fixed a bug in visit_composite where output formats like bmp, png could not be read back in by VisIt nor used to encode movies.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
@@ -127,7 +128,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Build_features"></a>
 <p><b><font size="4">Build features added in version 3.3</font></b></p>
 <ul>
-  <li>Build Feature 1</li>
+  <li>Build_visit was modified to do an out-of-source build for Qt.</li>
   <li>Build Feature 2</li>
 </ul>
 
@@ -139,6 +140,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The programs qtviswinExample, qtvtkExample, qvtkopenglExample were added to help with debugging OpenGL issues.</li>
   <li>VisIt test data archive tooling was changed from 7z to tar with the same (lzma2) compression.</li>
   <li>The version of Conduit was upgraded to 0.8.2.</li>
+  <li>VisIt now calculates the topological dimension of the data tree after the data has been retrieved from the database, and after SIL and/or Material selection has been applied. This should aid downstream filters that depend on an accurate topological dimension. For mixed-topology datasets the largest topological dim is what gets reported. Filters that modify topological structure are still required to update the topological dim.</li>
+  <li>The DEFINES, CXXFLAGS and LDFLAGS tags in the xml files for plugins now support an optional "components" attribute specifying for which component(s) the tag applies. Currently valid for MDServer("M"), serial Engine ("ESer") and parallel Engine("EPar"). Multiple components may be specified, separated by commas. See ADIOS2.xml or MOAB.xml for an example.</li>
+  <li>The DEFINES tag now supports surrounding definitions in quotes if the quotes are important to be carried through. They must be escaped with a '\'. See uintah.xml for an example.</li>
+  <li>The version of MFEM was upgraded to 4.4.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

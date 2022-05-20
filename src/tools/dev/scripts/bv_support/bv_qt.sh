@@ -165,13 +165,6 @@ function bv_qt_ensure
     fi
 }
 
-function bv_qt_dry_run
-{
-    if [[ "$DO_QT" == "yes" ]] ; then
-        echo "Dry run option not set for qt."
-    fi
-}
-
 # *************************************************************************** #
 #                          Function 4, build_qt                               #
 # *************************************************************************** #
@@ -478,6 +471,20 @@ function build_qt
         fi
     fi
 
+    # move back up to the start dir
+    cd "$START_DIR"
+
+    # Make a build directory for an out-of-source build. Change the
+    # QT_BUILD_DIR variable to represent the out-of-source build directory.
+    QT_SRC_DIR=$QT_BUILD_DIR
+    QT_BUILD_DIR="${QT_SRC_DIR}-build"
+    if [[ ! -d $QT_BUILD_DIR ]] ; then
+        echo "Making build directory $QT_BUILD_DIR"
+        mkdir $QT_BUILD_DIR
+    fi
+
+    cd ${QT_BUILD_DIR}
+
     #
     # Handle case where python doesn't exist.
     # The magic to determine if python exist comes from
@@ -617,7 +624,7 @@ function build_qt
     info "Configuring ${QT_VER_MSG}: "
     set -x
     (echo "o"; echo "yes") | CFLAGS="${QT_CFLAGS}" CXXFLAGS="${QT_CXXFLAGS}"  \
-                                   ./configure -prefix ${QT_INSTALL_DIR} \
+                                   ../${QT_SRC_DIR}/configure -prefix ${QT_INSTALL_DIR} \
                                    -platform ${QT_PLATFORM} \
                                    -make libs -make tools -no-separate-debug-info \
                                    ${qt_flags} | tee qt.config.out

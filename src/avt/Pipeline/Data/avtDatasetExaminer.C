@@ -825,3 +825,53 @@ avtDatasetExaminer::CalculateHistogram(avtDataset_p &ds,
 
     return err;
 }
+
+
+// ****************************************************************************
+//  Method: avtDatasetExaminer::GetToplogicalDim
+//
+//  Purpose:
+//      Calculates topological dim by examing the contents of the data tree.
+//
+//  Returns:     The overall topological dimension
+//               (largest in mixed-topology case).
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    April 5, 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtDatasetExaminer::GetTopologicalDim(avtDataTree_p &dataTree, const int reportedDim)
+{
+    // Don't want an empty or NULL tree contributing
+    if (*dataTree == NULL)
+        return -1;
+
+    if (dataTree->IsEmpty())
+        return -1;
+
+    int tDim = reportedDim;
+    int newDim = tDim;
+    bool success = false;
+    // Create an info structure with the needed variables.
+    struct {const int *reportedDim; int *dim;} info = { &tDim, &newDim };
+    dataTree->Traverse(CGetTopologicalDim, &info, success);
+    if( success )
+    {
+        tDim = newDim;
+    }
+    return tDim;
+}
+
+int
+avtDatasetExaminer::GetTopologicalDim(avtDataset_p &ds)
+{
+    avtDataAttributes &atts = ds->GetInfo().GetAttributes();
+    int tDim = atts.GetTopologicalDimension();
+    avtDataTree_p dataTree = ds->dataTree;
+
+    return avtDatasetExaminer::GetTopologicalDim(dataTree, tDim);
+}

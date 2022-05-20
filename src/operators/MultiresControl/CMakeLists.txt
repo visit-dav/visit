@@ -103,7 +103,9 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GMultiresControlOperator visitcommon gui )
 
     ADD_LIBRARY(VMultiresControlOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VMultiresControlOperator VIEWER)
     TARGET_LINK_LIBRARIES(VMultiresControlOperator visitcommon viewer )
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} GMultiresControlOperator VMultiresControlOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -130,12 +132,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EMultiresControlOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EMultiresControlOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EMultiresControlOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EMultiresControlOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMultiresControlOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMultiresControlOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EMultiresControlOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EMultiresControlOperator_par)
 ENDIF(VISIT_PARALLEL)
 
