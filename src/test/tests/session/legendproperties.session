@@ -48,8 +48,8 @@
                 <Field name="advancedMultiWindowSave" type="bool">false</Field>
             </Object>
             <Object name="ColorTableAttributes">
-                <Field name="activeContinuous" type="string">hot</Field>
-                <Field name="activeDiscrete" type="string">levels</Field>
+                <Field name="defaultContinuous" type="string">hot</Field>
+                <Field name="defaultDiscrete" type="string">levels</Field>
                 <Field name="groupingFlag" type="bool">false</Field>
                 <Object name="table00">
                     <Field name="ctName" type="string">amino_rasmol</Field>
