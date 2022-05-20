@@ -137,7 +137,7 @@ Definition:
 //   before adding the new color table.
 //
 //   Hank Childs, Thu Jan 17 16:41:34 PST 2008
-//   Preserve the active continuous/discrete status if a color table is
+//   Preserve the default continuous/discrete status if a color table is
 //   being replaced.
 //
 // ****************************************************************************
@@ -146,12 +146,12 @@ void
 ColorTableAttributes::AddColorTable(const std::string &name,
     const ColorControlPointList &cpts)
 {
-    bool activeContinuous = false;
-    if (GetActiveContinuous() == name)
-        activeContinuous = true;
-    bool activeDiscrete = false;
-    if (GetActiveDiscrete() == name)
-        activeDiscrete = true;
+    bool defaultContinuous = false;
+    if (GetDefaultContinuous() == name)
+        defaultContinuous = true;
+    bool defaultDiscrete = false;
+    if (GetDefaultDiscrete() == name)
+        defaultDiscrete = true;
 
     // Remove the color table if it already exists in the list.
     int index = GetColorTableIndex(name);
@@ -177,10 +177,10 @@ ColorTableAttributes::AddColorTable(const std::string &name,
         colorTables[i] = pos->second;
     }
 
-    if (activeContinuous)
-        SetActiveContinuous(name);
-    if (activeDiscrete)
-        SetActiveDiscrete(name);
+    if (defaultContinuous)
+        SetDefaultContinuous(name);
+    if (defaultDiscrete)
+        SetDefaultDiscrete(name);
 
     Select(0, (void *)&names);
 }
@@ -240,10 +240,10 @@ ColorTableAttributes::RemoveColorTable(int index)
 {
     if(index >= 0 && (size_t)index < names.size())
     {
-        // Determine if the color table is active.
-        bool isActiveContinuous, isActiveDiscrete;
-        isActiveContinuous = (names[index] == activeContinuous);
-        isActiveDiscrete = (names[index] == activeDiscrete);
+        // Determine if the color table is default.
+        bool isDefaultContinuous, isDefaultDiscrete;
+        isDefaultContinuous = (names[index] == defaultContinuous);
+        isDefaultDiscrete = (names[index] == defaultDiscrete);
 
         // Iterate through the vector "index" times.
         stringVector::iterator pos = names.begin();
@@ -262,21 +262,21 @@ ColorTableAttributes::RemoveColorTable(int index)
         // erase the color table from the vector.
         RemoveColorTables(index);
 
-        // If it is the active color table that was removed, reset the
-        // active color table to the first element.
-        if(isActiveContinuous)
+        // If it is the default color table that was removed, reset the
+        // default color table to the first element.
+        if(isDefaultContinuous)
         {
             if(names.size() > 0)
-                SetActiveContinuous(names[0]);
+                SetDefaultContinuous(names[0]);
             else
-                SetActiveContinuous(std::string(""));
+                SetDefaultContinuous(std::string(""));
         }
-        if(isActiveDiscrete)
+        if(isDefaultDiscrete)
         {
             if(names.size() > 0)
-                SetActiveDiscrete(names[0]);
+                SetDefaultDiscrete(names[0]);
             else
-                SetActiveDiscrete(std::string(""));
+                SetDefaultDiscrete(std::string(""));
         }
     }
 }
@@ -335,8 +335,8 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 
     // Create a node for ColorTableAttributes.
     DataNode *node = new DataNode("ColorTableAttributes");
-    node->AddNode(new DataNode("activeContinuous", activeContinuous));
-    node->AddNode(new DataNode("activeDiscrete", activeDiscrete));
+    node->AddNode(new DataNode("defaultContinuous", defaultContinuous));
+    node->AddNode(new DataNode("defaultDiscrete", defaultDiscrete));
     node->AddNode(new DataNode("groupingFlag", groupingFlag));
 
     // Add each color table specially.
@@ -498,18 +498,18 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         } // end for i
     }
 
-    if((node = searchNode->GetNode("activeContinuous")) != 0)
-        SetActiveContinuous(node->AsString());
+    if((node = searchNode->GetNode("defaultContinuous")) != 0)
+        SetDefaultContinuous(node->AsString());
 
-    if((node = searchNode->GetNode("activeDiscrete")) != 0)
-        SetActiveDiscrete(node->AsString());
+    if((node = searchNode->GetNode("defaultDiscrete")) != 0)
+        SetDefaultDiscrete(node->AsString());
 
     if((node = searchNode->GetNode("groupingFlag")) != 0)
         SetGroupingFlag(node->AsBool());
 
     // For older version compatibility...
-    if((node = searchNode->GetNode("activeColorTable")) != 0)
-        SetActiveContinuous(node->AsString());
+    if((node = searchNode->GetNode("defaultColorTable")) != 0)
+        SetDefaultContinuous(node->AsString());
 }
 
 Target: xml2java
@@ -555,12 +555,12 @@ Definition:
             return null;
     }
 
-Function: GetActiveColorControlPoints
-Declaration: GetActiveColorControlPoints
+Function: GetDefaultColorControlPoints
+Declaration: GetDefaultColorControlPoints
 Definition:
-    public ColorControlPointList GetActiveColorControlPoints()
+    public ColorControlPointList GetDefaultColorControlPoints()
     {
-        int index = GetColorTableIndex(activeContinuous);
+        int index = GetColorTableIndex(defaultContinuous);
         if(index >= 0 && index < colorTables.size())
             return (ColorControlPointList)colorTables.elementAt(index);
         else
@@ -594,8 +594,8 @@ Definition:
         if(index >= 0 && index < names.size())
         {
             String nameAt = (String)names.elementAt(index);
-            boolean isActiveContinuous = nameAt.equals(activeContinuous);
-            boolean isActiveDiscrete = nameAt.equals(activeDiscrete);
+            boolean isDefaultContinuous = nameAt.equals(defaultContinuous);
+            boolean isDefaultDiscrete = nameAt.equals(defaultDiscrete);
 
             // Remove the name from the vector.
             names.remove(index);
@@ -604,27 +604,27 @@ Definition:
             // Remove the color table from the vector.
             RemoveColorTables(index);
 
-            // If it is the active color table that was removed, reset the
-            // active color table to the first element.
-            if(isActiveContinuous)
+            // If it is the default color table that was removed, reset the
+            // default color table to the first element.
+            if(isDefaultContinuous)
             {
                 if(names.size() > 0)
                 {
                     nameAt = (String)names.elementAt(0);
-                    SetActiveContinuous(nameAt);
+                    SetDefaultContinuous(nameAt);
                 }
                 else
-                    SetActiveContinuous("");
+                    SetDefaultContinuous("");
             }
-            if(isActiveDiscrete)
+            if(isDefaultDiscrete)
             {
                 if(names.size() > 0)
                 {
                     nameAt = (String)names.elementAt(0);
-                    SetActiveDiscrete(nameAt);
+                    SetDefaultDiscrete(nameAt);
                 }
                 else
-                    SetActiveDiscrete("");
+                    SetDefaultDiscrete("");
             }
         }
     }

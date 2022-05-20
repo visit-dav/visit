@@ -20,8 +20,6 @@
 // Creation:   omitted
 //
 // Modifications:
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -46,8 +44,6 @@ void ColorTableAttributes::Init()
 // Creation:   omitted
 //
 // Modifications:
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -228,8 +224,6 @@ ColorTableAttributes::operator = (const ColorTableAttributes &obj)
 // Creation:   omitted
 //
 // Modifications:
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -388,19 +382,17 @@ ColorTableAttributes::NewInstance(bool copy) const
 // Creation:   omitted
 //
 // Modifications:
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
 void
 ColorTableAttributes::SelectAll()
 {
-    Select(ID_names,            (void *)&names);
-    Select(ID_colorTables,      (void *)&colorTables);
+    Select(ID_names,             (void *)&names);
+    Select(ID_colorTables,       (void *)&colorTables);
     Select(ID_defaultContinuous, (void *)&defaultContinuous);
     Select(ID_defaultDiscrete,   (void *)&defaultDiscrete);
-    Select(ID_groupingFlag,     (void *)&groupingFlag);
+    Select(ID_groupingFlag,      (void *)&groupingFlag);
 }
 
 // ****************************************************************************
@@ -467,9 +459,6 @@ ColorTableAttributes::CreateSubAttributeGroup(int)
 //
 //   Brad Whitlock, Fri Apr 27 14:16:01 PDT 2012
 //   Change smoothing.
-// 
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -551,9 +540,6 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 //
 //   Hank Childs, Thu Jul  1 14:20:26 PDT 2010
 //   Add support for opacities.
-// 
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -985,8 +971,6 @@ ColorTableAttributes::operator [] (int i) const
 // Creation:   omitted
 //
 // Modifications:
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -995,11 +979,11 @@ ColorTableAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_names:            return "names";
-    case ID_colorTables:      return "colorTables";
+    case ID_names:             return "names";
+    case ID_colorTables:       return "colorTables";
     case ID_defaultContinuous: return "defaultContinuous";
     case ID_defaultDiscrete:   return "defaultDiscrete";
-    case ID_groupingFlag:     return "groupingFlag";
+    case ID_groupingFlag:      return "groupingFlag";
     default:  return "invalid index";
     }
 }
@@ -1016,8 +1000,6 @@ ColorTableAttributes::GetFieldName(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1026,11 +1008,11 @@ ColorTableAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_names:            return FieldType_stringVector;
-    case ID_colorTables:      return FieldType_attVector;
+    case ID_names:             return FieldType_stringVector;
+    case ID_colorTables:       return FieldType_attVector;
     case ID_defaultContinuous: return FieldType_string;
     case ID_defaultDiscrete:   return FieldType_string;
-    case ID_groupingFlag:     return FieldType_bool;
+    case ID_groupingFlag:      return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1047,8 +1029,6 @@ ColorTableAttributes::GetFieldType(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1057,11 +1037,11 @@ ColorTableAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_names:            return "stringVector";
-    case ID_colorTables:      return "attVector";
+    case ID_names:             return "stringVector";
+    case ID_colorTables:       return "attVector";
     case ID_defaultContinuous: return "string";
     case ID_defaultDiscrete:   return "string";
-    case ID_groupingFlag:     return "bool";
+    case ID_groupingFlag:      return "bool";
     default:  return "invalid index";
     }
 }
@@ -1078,8 +1058,6 @@ ColorTableAttributes::GetFieldTypeName(int index) const
 // Creation:   omitted
 //
 // Modifications:
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1257,9 +1235,6 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 //   Hank Childs, Thu Jan 17 16:41:34 PST 2008
 //   Preserve the default continuous/discrete status if a color table is
 //   being replaced.
-// 
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -1344,9 +1319,6 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 // Modifications:
 //   Brad Whitlock, Wed Nov 20 12:08:18 PDT 2002
 //   Made it work with the new discrete color tables.
-// 
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
