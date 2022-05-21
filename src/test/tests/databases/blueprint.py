@@ -93,7 +93,7 @@ def mfem_test_file(name, protocol):
     return data_path(pjoin(bp_mfem_test_dir,"bp_mfem_ex9_%s_%s_000000.root" % ( name, protocol)))
 
 def warbly_cube_test_file(name):
-    return data_path(pjoin(bp_mfem_test_dir, name + "_000000.root"))
+    return data_path(pjoin(bp_warbly_cube_test_dir, name + "_000000.root"))
 
 def set_3d_view():
     v = View3DAttributes()
@@ -394,7 +394,7 @@ TestSection("MFEM LOR Blueprint Tests")
 for example_name in mfem_ex9_examples:
     for protocol in mfem_ex9_protocols:
         test_mfem_lor("blueprint_mfem", example_name, protocol)
-# test_mfem_lor("blueprint_mfem", "warbly_cube", "")
+test_mfem_lor("blueprint_mfem", "warbly_cube", "")
 
 TestSection("Blueprint Expressions")
 OpenDatabase(braid_2d_json_root)
