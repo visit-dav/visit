@@ -210,12 +210,12 @@ def test_mfem(tag_name, example_name, protocol):
     readOptions["MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
-def test_mfem_lor(tag_name, example_name, protocol):
+def test_mfem_lor(tag_name, example_name, protocol, devilray = False):
     readOptions = GetDefaultFileOpenOptions("Blueprint")
     readOptions["MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
-    if (example_name == "warbly_cube" and protocol == ""):
+    if (devilray):
         dbfile = devilray_mfem_test_file(example_name)
     else:
         dbfile = mfem_test_file(example_name,protocol)
@@ -394,71 +394,75 @@ TestSection("MFEM LOR Blueprint Tests")
 for example_name in mfem_ex9_examples:
     for protocol in mfem_ex9_protocols:
         test_mfem_lor("blueprint_mfem", example_name, protocol)
-test_mfem_lor("blueprint_mfem", "warbly_cube", "")
+test_mfem_lor("blueprint_mfem", "warbly_cube", "", True)
+# test_mfem_lor("blueprint_mfem", "esher", "", True)
+# TODO what is going on here? esher produces the strangest wireframe image...
+# is it periodic? what is the issue?
+test_mfem_lor("blueprint_mfem", "tri_beam", "", True)
 
-TestSection("Blueprint Expressions")
-OpenDatabase(braid_2d_json_root)
-AddPlot("Pseudocolor", "uniform_mesh/scalar_expr")
-AddPlot("Vector", "uniform_mesh/vector_expr")
-DrawPlots()
-Test("blueprint_expressions")
-DeleteAllPlots()
-CloseDatabase(braid_2d_json_root)
+# TestSection("Blueprint Expressions")
+# OpenDatabase(braid_2d_json_root)
+# AddPlot("Pseudocolor", "uniform_mesh/scalar_expr")
+# AddPlot("Vector", "uniform_mesh/vector_expr")
+# DrawPlots()
+# Test("blueprint_expressions")
+# DeleteAllPlots()
+# CloseDatabase(braid_2d_json_root)
 
-test_paren_vars()
+# test_paren_vars()
 
-test_venn("venn_small_full", venn_full_root)
-test_venn("venn_small_sparse_by_element", venn_s_by_e_root)
-test_venn("venn_small_sparse_by_material", venn_s_by_m_root)
+# test_venn("venn_small_full", venn_full_root)
+# test_venn("venn_small_sparse_by_element", venn_s_by_e_root)
+# test_venn("venn_small_sparse_by_material", venn_s_by_m_root)
 
-test_venn("venn_small_full_yaml", venn_full_yaml_root)
-test_venn("venn_small_sparse_by_element_yaml", venn_s_by_e_yaml_root)
-test_venn("venn_small_sparse_by_material_yaml", venn_s_by_m_yaml_root)
+# test_venn("venn_small_full_yaml", venn_full_yaml_root)
+# test_venn("venn_small_sparse_by_element_yaml", venn_s_by_e_yaml_root)
+# test_venn("venn_small_sparse_by_material_yaml", venn_s_by_m_yaml_root)
 
-TestSection("2D Example HDF5 Mesh Files, 0.8.2")
-OpenDatabase(braid_2d_0_8_2_hdf5_root)
-for mesh_name in braid_2d_meshes_0_8_2:
-    test(mesh_name,"blueprint_2d_hdf5_0_8_2")
-CloseDatabase(braid_2d_0_8_2_hdf5_root)
+# TestSection("2D Example HDF5 Mesh Files, 0.8.2")
+# OpenDatabase(braid_2d_0_8_2_hdf5_root)
+# for mesh_name in braid_2d_meshes_0_8_2:
+#     test(mesh_name,"blueprint_2d_hdf5_0_8_2")
+# CloseDatabase(braid_2d_0_8_2_hdf5_root)
 
-TestSection("2D Example YAML Mesh Files, 0.8.2")
-OpenDatabase(braid_2d_0_8_2_yaml_root)
-for mesh_name in braid_2d_meshes_0_8_2:
-    test(mesh_name,"blueprint_2d_yaml_0_8_2")
-CloseDatabase(braid_2d_0_8_2_yaml_root)
+# TestSection("2D Example YAML Mesh Files, 0.8.2")
+# OpenDatabase(braid_2d_0_8_2_yaml_root)
+# for mesh_name in braid_2d_meshes_0_8_2:
+#     test(mesh_name,"blueprint_2d_yaml_0_8_2")
+# CloseDatabase(braid_2d_0_8_2_yaml_root)
 
-TestSection("3D Example HDF5 Mesh Files, 0.8.2")
-OpenDatabase(braid_3d_0_8_2_hdf5_root)
-for mesh_name in braid_3d_meshes_0_8_2:
-    test(mesh_name,"blueprint_3d_hdf5_0_8_2")
-CloseDatabase(braid_3d_0_8_2_hdf5_root)
+# TestSection("3D Example HDF5 Mesh Files, 0.8.2")
+# OpenDatabase(braid_3d_0_8_2_hdf5_root)
+# for mesh_name in braid_3d_meshes_0_8_2:
+#     test(mesh_name,"blueprint_3d_hdf5_0_8_2")
+# CloseDatabase(braid_3d_0_8_2_hdf5_root)
 
-TestSection("3D Example YAML Mesh Files, 0.8.2")
-OpenDatabase(braid_3d_0_8_2_yaml_root)
-for mesh_name in braid_3d_meshes_0_8_2:
-    test(mesh_name,"blueprint_3d_yaml_0_8_2")
-CloseDatabase(braid_3d_0_8_2_yaml_root)
+# TestSection("3D Example YAML Mesh Files, 0.8.2")
+# OpenDatabase(braid_3d_0_8_2_yaml_root)
+# for mesh_name in braid_3d_meshes_0_8_2:
+#     test(mesh_name,"blueprint_3d_yaml_0_8_2")
+# CloseDatabase(braid_3d_0_8_2_yaml_root)
 
-# test polygonal mesh
-TestSection("Polygonal 2D Example HDF5 Mesh Files, 0.8.2")
-OpenDatabase(poly_2d_hdf5_root)
-test_poly("blueprint_poly_2d_hdf5_0_8_2")
-CloseDatabase(poly_2d_hdf5_root)
+# # test polygonal mesh
+# TestSection("Polygonal 2D Example HDF5 Mesh Files, 0.8.2")
+# OpenDatabase(poly_2d_hdf5_root)
+# test_poly("blueprint_poly_2d_hdf5_0_8_2")
+# CloseDatabase(poly_2d_hdf5_root)
 
-TestSection("Polygonal 2D Example YAML Mesh Files, 0.8.2")
-OpenDatabase(poly_2d_yaml_root)
-test_poly("blueprint_poly_2d_yaml_0_8_2")
-CloseDatabase(poly_2d_yaml_root)
+# TestSection("Polygonal 2D Example YAML Mesh Files, 0.8.2")
+# OpenDatabase(poly_2d_yaml_root)
+# test_poly("blueprint_poly_2d_yaml_0_8_2")
+# CloseDatabase(poly_2d_yaml_root)
 
-# test 3d polygonal mesh
-TestSection("Polygonal 3D Example HDF5 Mesh Files, 0.8.2")
-OpenDatabase(poly_3d_hdf5_root)
-test_poly("blueprint_poly_3d_hdf5_0_8_2")
-CloseDatabase(poly_3d_hdf5_root)
+# # test 3d polygonal mesh
+# TestSection("Polygonal 3D Example HDF5 Mesh Files, 0.8.2")
+# OpenDatabase(poly_3d_hdf5_root)
+# test_poly("blueprint_poly_3d_hdf5_0_8_2")
+# CloseDatabase(poly_3d_hdf5_root)
 
-TestSection("Polygonal 3D Example YAML Mesh Files, 0.8.2")
-OpenDatabase(poly_3d_yaml_root)
-test_poly("blueprint_poly_3d_yaml_0_8_2")
-CloseDatabase(poly_3d_yaml_root)
+# TestSection("Polygonal 3D Example YAML Mesh Files, 0.8.2")
+# OpenDatabase(poly_3d_yaml_root)
+# test_poly("blueprint_poly_3d_yaml_0_8_2")
+# CloseDatabase(poly_3d_yaml_root)
 
 Exit()
