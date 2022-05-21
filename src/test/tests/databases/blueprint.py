@@ -211,7 +211,7 @@ def test_mfem(tag_name, example_name, protocol):
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
 def test_mfem_lor(tag_name, example_name, protocol):
-    readOptions=GetDefaultFileOpenOptions("Blueprint")
+    readOptions = GetDefaultFileOpenOptions("Blueprint")
     readOptions["MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
@@ -394,7 +394,7 @@ TestSection("MFEM LOR Blueprint Tests")
 for example_name in mfem_ex9_examples:
     for protocol in mfem_ex9_protocols:
         test_mfem_lor("blueprint_mfem", example_name, protocol)
-test_mfem_lor("blueprint_mfem", "warbly_cube", "")
+# test_mfem_lor("blueprint_mfem", "warbly_cube", "")
 
 TestSection("Blueprint Expressions")
 OpenDatabase(braid_2d_json_root)
