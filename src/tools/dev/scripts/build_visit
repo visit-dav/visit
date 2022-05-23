@@ -531,7 +531,7 @@ function bv_write_unified_file
     echo "check_default_args \"\$@\"" >> $OUTPUT_bv_FILE
 
     #write command to run and execute VisIt
-    echo "initialize_build_visit" >> $OUTPUT_bv_FILE
+    echo "initialize_build_visit \"\$@\"" >> $OUTPUT_bv_FILE
     echo "run_build_visit \"\$@\"" >> $OUTPUT_bv_FILE
     chmod 755 $OUTPUT_bv_FILE
     cd $OLDPWD
@@ -552,7 +552,7 @@ configure_support_files
 check_default_args "$@"
 
 #initialize all build visit variables
-initialize_build_visit
+initialize_build_visit "$@"
 
 #run all build visit
 run_build_visit "$@"
