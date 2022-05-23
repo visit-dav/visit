@@ -14,3 +14,16 @@ visit.build_visit.docker.src.tar
 build-mb-*
 _logs
 *.vscode
+.gitignore_backup
+Changestobecommitted:
+newfile:test/baseline/databases/blueprint/blueprint_mfem_esher__legacy_lor.png
+newfile:test/baseline/databases/blueprint/blueprint_mfem_esher__lor.png
+build/
+src/GIT_VERSION
+src/config-site/rztopaz229.cmake
+src/config-site/rztopaz369.cmake
+src/test/py_src/
+src/visitpy/common/.nfs804502a3011cfa3800000094
+Changestobecommitted:
+newfile:test/baseline/databases/blueprint/blueprint_mfem_esher__legacy_lor.png
+newfile:test/baseline/databases/blueprint/blueprint_mfem_esher__lor.png
