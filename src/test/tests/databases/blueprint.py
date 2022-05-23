@@ -92,8 +92,8 @@ def full_var_name(mesh_name,var_name):
 def mfem_test_file(name, protocol):
     return data_path(pjoin(bp_mfem_test_dir,"bp_mfem_ex9_%s_%s_000000.root" % ( name, protocol)))
 
-def devilray_mfem_test_file(name):
-    return data_path(pjoin(bp_devilray_mfem_test_dir, name + "_000000.root"))
+def devilray_mfem_test_file(name, number):
+    return data_path(pjoin(bp_devilray_mfem_test_dir, name + "_" + number + ".root"))
 
 def set_3d_view():
     v = View3DAttributes()
@@ -210,19 +210,18 @@ def test_mfem(tag_name, example_name, protocol):
     readOptions["MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
-def test_mfem_lor(tag_name, example_name, protocol, devilray = False):
+def test_mfem_lor_mesh(tag_name, example_name, protocol, devilray = False, number = "000000"):
     readOptions = GetDefaultFileOpenOptions("Blueprint")
     readOptions["MFEM LOR Setting"] = "MFEM LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
 
     if (devilray):
-        dbfile = devilray_mfem_test_file(example_name)
+        dbfile = devilray_mfem_test_file(example_name, number)
     else:
-        dbfile = mfem_test_file(example_name,protocol)
+        dbfile = mfem_test_file(example_name, protocol)
     OpenDatabase(dbfile)
 
     # we want to test a picture of a wireframe
-    # old LOR leaves a wireframe
     # new LOR should only have the outer edge
     AddPlot("Subset", "mesh_main")
     SubsetAtts = SubsetAttributes()
@@ -236,14 +235,12 @@ def test_mfem_lor(tag_name, example_name, protocol, devilray = False):
 
     CloseDatabase(dbfile)
 
-    # reset default read options
+    # examine legacy
     readOptions["MFEM LOR Setting"] = "Legacy LOR"
     SetDefaultFileOpenOptions("Blueprint", readOptions)
     OpenDatabase(dbfile)
 
-    # we want to test a picture of a wireframe
-    # old LOR leaves a wireframe
-    # new LOR should only have the outer edge
+    # old LOR leaves a busy wireframe
     AddPlot("Subset", "mesh_main")
     SubsetAtts = SubsetAttributes()
     SubsetAtts.wireframe = 1
@@ -393,12 +390,10 @@ for example_name in mfem_ex9_examples:
 TestSection("MFEM LOR Blueprint Tests")
 for example_name in mfem_ex9_examples:
     for protocol in mfem_ex9_protocols:
-        test_mfem_lor("blueprint_mfem", example_name, protocol)
-test_mfem_lor("blueprint_mfem", "warbly_cube", "", True)
-# test_mfem_lor("blueprint_mfem", "esher", "", True)
-# TODO what is going on here? esher produces the strangest wireframe image...
-# is it periodic? what is the issue?
-test_mfem_lor("blueprint_mfem", "tri_beam", "", True)
+        test_mfem_lor_mesh("blueprint_mfem", example_name, protocol)
+test_mfem_lor_mesh("blueprint_mfem", "warbly_cube", "", devilray = True)
+test_mfem_lor_mesh("blueprint_mfem", "esher", "", devilray = True)
+test_mfem_lor_mesh("blueprint_mfem", "tri_beam", "", devilray = True)
 
 TestSection("Blueprint Expressions")
 OpenDatabase(braid_2d_json_root)
