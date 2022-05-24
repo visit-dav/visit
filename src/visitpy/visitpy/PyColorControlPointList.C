@@ -37,7 +37,7 @@ struct ColorControlPointListObject
 //
 static PyObject *NewColorControlPointList(int);
 std::string
-PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *prefix)
+PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -50,7 +50,7 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
             const ColorControlPoint *current = (const ColorControlPoint *)(*pos);
             snprintf(tmpStr, 1000, "GetControlPoints(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyColorControlPoint_ToString(current, objPrefix.c_str());
+            str += PyColorControlPoint_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#controlPoints does not contain any ColorControlPoint objects.\n";
@@ -541,7 +541,7 @@ static int
 ColorControlPointList_print(PyObject *v, FILE *fp, int flags)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)v;
-    fprintf(fp, "%s", PyColorControlPointList_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyColorControlPointList_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -549,7 +549,7 @@ PyObject *
 ColorControlPointList_str(PyObject *v)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)v;
-    return PyString_FromString(PyColorControlPointList_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyColorControlPointList_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -701,7 +701,7 @@ PyColorControlPointList_GetLogString()
 {
     std::string s("ColorControlPointList = ColorControlPointList()\n");
     if(currentAtts != 0)
-        s += PyColorControlPointList_ToString(currentAtts, "ColorControlPointList.");
+        s += PyColorControlPointList_ToString(currentAtts, "ColorControlPointList.", true);
     return s;
 }
 
@@ -714,7 +714,7 @@ PyColorControlPointList_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ColorControlPointList = ColorControlPointList()\n");
-        s += PyColorControlPointList_ToString(currentAtts, "ColorControlPointList.");
+        s += PyColorControlPointList_ToString(currentAtts, "ColorControlPointList.", true);
         cb(s);
     }
 }

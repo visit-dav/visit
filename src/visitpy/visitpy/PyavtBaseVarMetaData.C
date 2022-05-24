@@ -36,7 +36,7 @@ struct avtBaseVarMetaDataObject
 //
 static PyObject *NewavtBaseVarMetaData(int);
 std::string
-PyavtBaseVarMetaData_ToString(const avtBaseVarMetaData *atts, const char *prefix)
+PyavtBaseVarMetaData_ToString(const avtBaseVarMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -432,7 +432,7 @@ static int
 avtBaseVarMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtBaseVarMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtBaseVarMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -440,7 +440,7 @@ PyObject *
 avtBaseVarMetaData_str(PyObject *v)
 {
     avtBaseVarMetaDataObject *obj = (avtBaseVarMetaDataObject *)v;
-    return PyString_FromString(PyavtBaseVarMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtBaseVarMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -592,7 +592,7 @@ PyavtBaseVarMetaData_GetLogString()
 {
     std::string s("avtBaseVarMetaData = avtBaseVarMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtBaseVarMetaData_ToString(currentAtts, "avtBaseVarMetaData.");
+        s += PyavtBaseVarMetaData_ToString(currentAtts, "avtBaseVarMetaData.", true);
     return s;
 }
 
@@ -605,7 +605,7 @@ PyavtBaseVarMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtBaseVarMetaData = avtBaseVarMetaData()\n");
-        s += PyavtBaseVarMetaData_ToString(currentAtts, "avtBaseVarMetaData.");
+        s += PyavtBaseVarMetaData_ToString(currentAtts, "avtBaseVarMetaData.", true);
         cb(s);
     }
 }

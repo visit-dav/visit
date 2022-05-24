@@ -40,7 +40,7 @@ struct MultiCurveAttributesObject
 //
 static PyObject *NewMultiCurveAttributes(int);
 std::string
-PyMultiCurveAttributes_ToString(const MultiCurveAttributes *atts, const char *prefix)
+PyMultiCurveAttributes_ToString(const MultiCurveAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -48,7 +48,7 @@ PyMultiCurveAttributes_ToString(const MultiCurveAttributes *atts, const char *pr
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "defaultPalette.";
-        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str());
+        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str(), forLogging);
     }
     {   const unsignedCharVector &changedColors = atts->GetChangedColors();
         snprintf(tmpStr, 1000, "%schangedColors = (", prefix);
@@ -1453,7 +1453,7 @@ static int
 MultiCurveAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)v;
-    fprintf(fp, "%s", PyMultiCurveAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMultiCurveAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1461,7 +1461,7 @@ PyObject *
 MultiCurveAttributes_str(PyObject *v)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)v;
-    return PyString_FromString(PyMultiCurveAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMultiCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1613,7 +1613,7 @@ PyMultiCurveAttributes_GetLogString()
 {
     std::string s("MultiCurveAtts = MultiCurveAttributes()\n");
     if(currentAtts != 0)
-        s += PyMultiCurveAttributes_ToString(currentAtts, "MultiCurveAtts.");
+        s += PyMultiCurveAttributes_ToString(currentAtts, "MultiCurveAtts.", true);
     return s;
 }
 
@@ -1626,7 +1626,7 @@ PyMultiCurveAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MultiCurveAtts = MultiCurveAttributes()\n");
-        s += PyMultiCurveAttributes_ToString(currentAtts, "MultiCurveAtts.");
+        s += PyMultiCurveAttributes_ToString(currentAtts, "MultiCurveAtts.", true);
         cb(s);
     }
 }

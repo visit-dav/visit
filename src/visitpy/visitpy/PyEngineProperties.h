@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyEngineProperties_Wrap(const EngineProperties *attr)
 void VISITPY_API           PyEngineProperties_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyEngineProperties_SetDefaults(const EngineProperties *atts);
 std::string VISITPY_API    PyEngineProperties_GetLogString();
-std::string VISITPY_API    PyEngineProperties_ToString(const EngineProperties *, const char *);
+std::string VISITPY_API    PyEngineProperties_ToString(const EngineProperties *, const char *, const bool=false);
 VISITPY_API PyObject *     PyEngineProperties_getattr(PyObject *self, char *name);
 int VISITPY_API            PyEngineProperties_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyEngineProperties_methods[ENGINEPROPERTIES_NMETH];

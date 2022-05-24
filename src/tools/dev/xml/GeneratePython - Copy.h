@@ -2068,6 +2068,14 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
     {
         c << "    { // new scope" << Endl;
         c << "        int index = 0;" << Endl;
+        //if(HasFunction(QString("SetNum"+Name)))
+        {
+            c << "    if (forLogging)" << Endl;
+            c << "    {" << Endl;
+            c << "        snprintf(tmpStr, 1000, \"SetNum" << Name << "(%d)\", atts->GetNum" << Name << "());" << Endl;
+            c << "        s += (prefix + std::string(tmpStr);" << Endl;
+            c << "    }" << Endl;
+        }
         c << "        // Create string representation of " << name << " from atts." << Endl;
         if(accessType == Field::AccessPublic)
             c << "        for(AttributeGroupVector::const_iterator pos = atts->" << name << ".begin(); pos != atts->" << name << ".end(); ++pos, ++index)" << Endl;
@@ -2827,7 +2835,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         h << "void "<<api<<"          Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << Endl;
         h << "void "<<api<<"          Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << Endl;
         h << "std::string "<<api<<"   Py"<<name<<"_GetLogString();" << Endl;
-        h << "std::string "<<api<<"   Py"<<name<<"_ToString(const " << name << " *, const char *, const bool=false);" << Endl;
+        h << "std::string "<<api<<"   Py"<<name<<"_ToString(const " << name << " *, const char *, const bool);" << Endl;
         h << api << "PyObject * "<<"    Py"<<name<<"_getattr(PyObject *self, char *name);" << Endl;
         h << "int "<<api<<"           Py"<<name<<"_setattr(PyObject *self, char *name, PyObject *args);" << Endl;
         h << api << "extern PyMethodDef Py"<<name<<"_methods["<<name.toUpper()<<"_NMETH];" << Endl;
@@ -3139,7 +3147,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << Endl;
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
-        c << "    fprintf(fp, \"%s\", Py" << name << "_ToString(obj->data, \"\",false).c_str());" << Endl;
+        c << "    fprintf(fp, \"%s\", Py" << name << "_ToString(obj->data, \"\").c_str(), false);" << Endl;
         if(HasCode(mName, 1))
             PrintCode(c, mName, 1);
         c << "    return 0;" << Endl;
@@ -3196,7 +3204,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << mName << "(PyObject *v)" << Endl;
         c << "{" << Endl;
         c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << Endl;
-        c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\", false).c_str());" << Endl;
+        c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\").c_str(), forLogging);" << Endl;
         c << "}" << endl << Endl;
     }
 

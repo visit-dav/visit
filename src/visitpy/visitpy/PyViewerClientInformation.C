@@ -37,7 +37,7 @@ struct ViewerClientInformationObject
 //
 static PyObject *NewViewerClientInformation(int);
 std::string
-PyViewerClientInformation_ToString(const ViewerClientInformation *atts, const char *prefix)
+PyViewerClientInformation_ToString(const ViewerClientInformation *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -50,7 +50,7 @@ PyViewerClientInformation_ToString(const ViewerClientInformation *atts, const ch
             const ViewerClientInformationElement *current = (const ViewerClientInformationElement *)(*pos);
             snprintf(tmpStr, 1000, "GetVars(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyViewerClientInformationElement_ToString(current, objPrefix.c_str());
+            str += PyViewerClientInformationElement_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#vars does not contain any ViewerClientInformationElement objects.\n";
@@ -332,7 +332,7 @@ static int
 ViewerClientInformation_print(PyObject *v, FILE *fp, int flags)
 {
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)v;
-    fprintf(fp, "%s", PyViewerClientInformation_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewerClientInformation_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -340,7 +340,7 @@ PyObject *
 ViewerClientInformation_str(PyObject *v)
 {
     ViewerClientInformationObject *obj = (ViewerClientInformationObject *)v;
-    return PyString_FromString(PyViewerClientInformation_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewerClientInformation_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -492,7 +492,7 @@ PyViewerClientInformation_GetLogString()
 {
     std::string s("ViewerClientInformation = ViewerClientInformation()\n");
     if(currentAtts != 0)
-        s += PyViewerClientInformation_ToString(currentAtts, "ViewerClientInformation.");
+        s += PyViewerClientInformation_ToString(currentAtts, "ViewerClientInformation.", true);
     return s;
 }
 
@@ -505,7 +505,7 @@ PyViewerClientInformation_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewerClientInformation = ViewerClientInformation()\n");
-        s += PyViewerClientInformation_ToString(currentAtts, "ViewerClientInformation.");
+        s += PyViewerClientInformation_ToString(currentAtts, "ViewerClientInformation.", true);
         cb(s);
     }
 }

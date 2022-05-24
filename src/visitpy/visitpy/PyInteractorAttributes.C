@@ -36,7 +36,7 @@ struct InteractorAttributesObject
 //
 static PyObject *NewInteractorAttributes(int);
 std::string
-PyInteractorAttributes_ToString(const InteractorAttributes *atts, const char *prefix)
+PyInteractorAttributes_ToString(const InteractorAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -601,7 +601,7 @@ static int
 InteractorAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     InteractorAttributesObject *obj = (InteractorAttributesObject *)v;
-    fprintf(fp, "%s", PyInteractorAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyInteractorAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -609,7 +609,7 @@ PyObject *
 InteractorAttributes_str(PyObject *v)
 {
     InteractorAttributesObject *obj = (InteractorAttributesObject *)v;
-    return PyString_FromString(PyInteractorAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyInteractorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -761,7 +761,7 @@ PyInteractorAttributes_GetLogString()
 {
     std::string s("InteractorAtts = InteractorAttributes()\n");
     if(currentAtts != 0)
-        s += PyInteractorAttributes_ToString(currentAtts, "InteractorAtts.");
+        s += PyInteractorAttributes_ToString(currentAtts, "InteractorAtts.", true);
     return s;
 }
 
@@ -774,7 +774,7 @@ PyInteractorAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("InteractorAtts = InteractorAttributes()\n");
-        s += PyInteractorAttributes_ToString(currentAtts, "InteractorAtts.");
+        s += PyInteractorAttributes_ToString(currentAtts, "InteractorAtts.", true);
         cb(s);
     }
 }

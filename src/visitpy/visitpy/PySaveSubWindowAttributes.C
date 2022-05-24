@@ -36,7 +36,7 @@ struct SaveSubWindowAttributesObject
 //
 static PyObject *NewSaveSubWindowAttributes(int);
 std::string
-PySaveSubWindowAttributes_ToString(const SaveSubWindowAttributes *atts, const char *prefix)
+PySaveSubWindowAttributes_ToString(const SaveSubWindowAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -528,7 +528,7 @@ static int
 SaveSubWindowAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)v;
-    fprintf(fp, "%s", PySaveSubWindowAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySaveSubWindowAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -536,7 +536,7 @@ PyObject *
 SaveSubWindowAttributes_str(PyObject *v)
 {
     SaveSubWindowAttributesObject *obj = (SaveSubWindowAttributesObject *)v;
-    return PyString_FromString(PySaveSubWindowAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySaveSubWindowAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -688,7 +688,7 @@ PySaveSubWindowAttributes_GetLogString()
 {
     std::string s("SaveSubWindowAtts = SaveSubWindowAttributes()\n");
     if(currentAtts != 0)
-        s += PySaveSubWindowAttributes_ToString(currentAtts, "SaveSubWindowAtts.");
+        s += PySaveSubWindowAttributes_ToString(currentAtts, "SaveSubWindowAtts.", true);
     return s;
 }
 
@@ -701,7 +701,7 @@ PySaveSubWindowAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SaveSubWindowAtts = SaveSubWindowAttributes()\n");
-        s += PySaveSubWindowAttributes_ToString(currentAtts, "SaveSubWindowAtts.");
+        s += PySaveSubWindowAttributes_ToString(currentAtts, "SaveSubWindowAtts.", true);
         cb(s);
     }
 }

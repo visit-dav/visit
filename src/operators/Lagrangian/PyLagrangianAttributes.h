@@ -22,7 +22,7 @@ PyObject *     PyLagrangianAttributes_Wrap(const LagrangianAttributes *attr);
 void           PyLagrangianAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyLagrangianAttributes_SetDefaults(const LagrangianAttributes *atts);
 std::string    PyLagrangianAttributes_GetLogString();
-std::string    PyLagrangianAttributes_ToString(const LagrangianAttributes *, const char *);
+std::string    PyLagrangianAttributes_ToString(const LagrangianAttributes *, const char *, const bool=false);
 PyObject *     PyLagrangianAttributes_getattr(PyObject *self, char *name);
 int            PyLagrangianAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyLagrangianAttributes_methods[LAGRANGIANATTRIBUTES_NMETH];

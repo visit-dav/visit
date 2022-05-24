@@ -22,7 +22,7 @@ PyObject *     PyPDFAttributes_Wrap(const PDFAttributes *attr);
 void           PyPDFAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyPDFAttributes_SetDefaults(const PDFAttributes *atts);
 std::string    PyPDFAttributes_GetLogString();
-std::string    PyPDFAttributes_ToString(const PDFAttributes *, const char *);
+std::string    PyPDFAttributes_ToString(const PDFAttributes *, const char *, const bool=false);
 PyObject *     PyPDFAttributes_getattr(PyObject *self, char *name);
 int            PyPDFAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyPDFAttributes_methods[PDFATTRIBUTES_NMETH];

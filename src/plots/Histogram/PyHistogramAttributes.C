@@ -38,7 +38,7 @@ struct HistogramAttributesObject
 //
 static PyObject *NewHistogramAttributes(int);
 std::string
-PyHistogramAttributes_ToString(const HistogramAttributes *atts, const char *prefix)
+PyHistogramAttributes_ToString(const HistogramAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1656,7 +1656,7 @@ static int
 HistogramAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)v;
-    fprintf(fp, "%s", PyHistogramAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyHistogramAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1664,7 +1664,7 @@ PyObject *
 HistogramAttributes_str(PyObject *v)
 {
     HistogramAttributesObject *obj = (HistogramAttributesObject *)v;
-    return PyString_FromString(PyHistogramAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyHistogramAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1816,7 +1816,7 @@ PyHistogramAttributes_GetLogString()
 {
     std::string s("HistogramAtts = HistogramAttributes()\n");
     if(currentAtts != 0)
-        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.");
+        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.", true);
     return s;
 }
 
@@ -1829,7 +1829,7 @@ PyHistogramAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("HistogramAtts = HistogramAttributes()\n");
-        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.");
+        s += PyHistogramAttributes_ToString(currentAtts, "HistogramAtts.", true);
         cb(s);
     }
 }

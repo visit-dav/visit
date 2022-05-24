@@ -36,7 +36,7 @@ struct StatisticalTrendsAttributesObject
 //
 static PyObject *NewStatisticalTrendsAttributes(int);
 std::string
-PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, const char *prefix)
+PyStatisticalTrendsAttributes_ToString(const StatisticalTrendsAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -819,7 +819,7 @@ static int
 StatisticalTrendsAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)v;
-    fprintf(fp, "%s", PyStatisticalTrendsAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyStatisticalTrendsAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -827,7 +827,7 @@ PyObject *
 StatisticalTrendsAttributes_str(PyObject *v)
 {
     StatisticalTrendsAttributesObject *obj = (StatisticalTrendsAttributesObject *)v;
-    return PyString_FromString(PyStatisticalTrendsAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyStatisticalTrendsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -979,7 +979,7 @@ PyStatisticalTrendsAttributes_GetLogString()
 {
     std::string s("StatisticalTrendsAtts = StatisticalTrendsAttributes()\n");
     if(currentAtts != 0)
-        s += PyStatisticalTrendsAttributes_ToString(currentAtts, "StatisticalTrendsAtts.");
+        s += PyStatisticalTrendsAttributes_ToString(currentAtts, "StatisticalTrendsAtts.", true);
     return s;
 }
 
@@ -992,7 +992,7 @@ PyStatisticalTrendsAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("StatisticalTrendsAtts = StatisticalTrendsAttributes()\n");
-        s += PyStatisticalTrendsAttributes_ToString(currentAtts, "StatisticalTrendsAtts.");
+        s += PyStatisticalTrendsAttributes_ToString(currentAtts, "StatisticalTrendsAtts.", true);
         cb(s);
     }
 }

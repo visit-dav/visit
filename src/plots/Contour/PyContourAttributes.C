@@ -40,7 +40,7 @@ struct ContourAttributesObject
 //
 static PyObject *NewContourAttributes(int);
 std::string
-PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix)
+PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -48,7 +48,7 @@ PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "defaultPalette.";
-        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str());
+        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str(), forLogging);
     }
     {   const unsignedCharVector &changedColors = atts->GetChangedColors();
         snprintf(tmpStr, 1000, "%schangedColors = (", prefix);
@@ -1803,7 +1803,7 @@ static int
 ContourAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)v;
-    fprintf(fp, "%s", PyContourAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyContourAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1811,7 +1811,7 @@ PyObject *
 ContourAttributes_str(PyObject *v)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)v;
-    return PyString_FromString(PyContourAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyContourAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1963,7 +1963,7 @@ PyContourAttributes_GetLogString()
 {
     std::string s("ContourAtts = ContourAttributes()\n");
     if(currentAtts != 0)
-        s += PyContourAttributes_ToString(currentAtts, "ContourAtts.");
+        s += PyContourAttributes_ToString(currentAtts, "ContourAtts.", true);
     return s;
 }
 
@@ -1976,7 +1976,7 @@ PyContourAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ContourAtts = ContourAttributes()\n");
-        s += PyContourAttributes_ToString(currentAtts, "ContourAtts.");
+        s += PyContourAttributes_ToString(currentAtts, "ContourAtts.", true);
         cb(s);
     }
 }

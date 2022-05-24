@@ -37,7 +37,7 @@ struct PickAttributesObject
 //
 static PyObject *NewPickAttributes(int);
 std::string
-PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
+PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2478,7 +2478,7 @@ static int
 PickAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     PickAttributesObject *obj = (PickAttributesObject *)v;
-    fprintf(fp, "%s", PyPickAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPickAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2486,7 +2486,7 @@ PyObject *
 PickAttributes_str(PyObject *v)
 {
     PickAttributesObject *obj = (PickAttributesObject *)v;
-    return PyString_FromString(PyPickAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPickAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //

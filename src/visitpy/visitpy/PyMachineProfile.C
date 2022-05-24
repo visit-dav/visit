@@ -37,7 +37,7 @@ struct MachineProfileObject
 //
 static PyObject *NewMachineProfile(int);
 std::string
-PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
+PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -142,7 +142,7 @@ PyMachineProfile_ToString(const MachineProfile *atts, const char *prefix)
             const LaunchProfile *current = (const LaunchProfile *)(*pos);
             snprintf(tmpStr, 1000, "GetLaunchProfiles(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyLaunchProfile_ToString(current, objPrefix.c_str());
+            str += PyLaunchProfile_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#launchProfiles does not contain any LaunchProfile objects.\n";
@@ -1656,7 +1656,7 @@ static int
 MachineProfile_print(PyObject *v, FILE *fp, int flags)
 {
     MachineProfileObject *obj = (MachineProfileObject *)v;
-    fprintf(fp, "%s", PyMachineProfile_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMachineProfile_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1664,7 +1664,7 @@ PyObject *
 MachineProfile_str(PyObject *v)
 {
     MachineProfileObject *obj = (MachineProfileObject *)v;
-    return PyString_FromString(PyMachineProfile_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMachineProfile_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1816,7 +1816,7 @@ PyMachineProfile_GetLogString()
 {
     std::string s("MachineProfile = MachineProfile()\n");
     if(currentAtts != 0)
-        s += PyMachineProfile_ToString(currentAtts, "MachineProfile.");
+        s += PyMachineProfile_ToString(currentAtts, "MachineProfile.", true);
     return s;
 }
 
@@ -1829,7 +1829,7 @@ PyMachineProfile_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MachineProfile = MachineProfile()\n");
-        s += PyMachineProfile_ToString(currentAtts, "MachineProfile.");
+        s += PyMachineProfile_ToString(currentAtts, "MachineProfile.", true);
         cb(s);
     }
 }

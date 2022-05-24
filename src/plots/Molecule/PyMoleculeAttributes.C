@@ -38,7 +38,7 @@ struct MoleculeAttributesObject
 //
 static PyObject *NewMoleculeAttributes(int);
 std::string
-PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix)
+PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1777,7 +1777,7 @@ static int
 MoleculeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)v;
-    fprintf(fp, "%s", PyMoleculeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMoleculeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1785,7 +1785,7 @@ PyObject *
 MoleculeAttributes_str(PyObject *v)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)v;
-    return PyString_FromString(PyMoleculeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMoleculeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1937,7 +1937,7 @@ PyMoleculeAttributes_GetLogString()
 {
     std::string s("MoleculeAtts = MoleculeAttributes()\n");
     if(currentAtts != 0)
-        s += PyMoleculeAttributes_ToString(currentAtts, "MoleculeAtts.");
+        s += PyMoleculeAttributes_ToString(currentAtts, "MoleculeAtts.", true);
     return s;
 }
 
@@ -1950,7 +1950,7 @@ PyMoleculeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MoleculeAtts = MoleculeAttributes()\n");
-        s += PyMoleculeAttributes_ToString(currentAtts, "MoleculeAtts.");
+        s += PyMoleculeAttributes_ToString(currentAtts, "MoleculeAtts.", true);
         cb(s);
     }
 }

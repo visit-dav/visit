@@ -39,7 +39,7 @@ struct LabelAttributesObject
 //
 static PyObject *NewLabelAttributes(int);
 std::string
-PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
+PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -107,12 +107,12 @@ PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "textFont1.";
-        str += PyFontAttributes_ToString(&atts->GetTextFont1(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetTextFont1(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "textFont2.";
-        str += PyFontAttributes_ToString(&atts->GetTextFont2(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetTextFont2(), objPrefix.c_str(), forLogging);
     }
     const char *horizontalJustification_names = "HCenter, Left, Right";
     switch (atts->GetHorizontalJustification())
@@ -1246,7 +1246,7 @@ static int
 LabelAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)v;
-    fprintf(fp, "%s", PyLabelAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLabelAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1254,7 +1254,7 @@ PyObject *
 LabelAttributes_str(PyObject *v)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)v;
-    return PyString_FromString(PyLabelAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLabelAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1406,7 +1406,7 @@ PyLabelAttributes_GetLogString()
 {
     std::string s("LabelAtts = LabelAttributes()\n");
     if(currentAtts != 0)
-        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.");
+        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.", true);
     return s;
 }
 
@@ -1419,7 +1419,7 @@ PyLabelAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LabelAtts = LabelAttributes()\n");
-        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.");
+        s += PyLabelAttributes_ToString(currentAtts, "LabelAtts.", true);
         cb(s);
     }
 }
