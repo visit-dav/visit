@@ -176,7 +176,7 @@ sanitize_var_name(const std::string &varname)
 //    Justin Privitera, Mon Apr 11 18:20:19 PDT 2022
 //    Added query to check MFEM LOR Setting. If it is set to legacy, the 
 //    constructor sets `m_new_refine` to false, and if it is set to new,
-//    the opposite.
+//    the opposite. It is set to new by default.
 //
 // ****************************************************************************
 avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAttributes *opts)
@@ -186,22 +186,16 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
       m_tree_cache(NULL),
       m_selected_lod(0)
 {
-    int legacy_mfem_lor = 0;
-    int new_mfem_lor = 1;
-    if (opts->GetEnum("MFEM LOR Setting") == legacy_mfem_lor)
+    if (opts->GetEnum("MFEM LOR Setting") == 0)
     {
+        // legacy LOR was requested
         m_new_refine = false;
-    }
-    else if (opts->GetEnum("MFEM LOR Setting") == new_mfem_lor)
-    {
-        m_new_refine = true;
     }
     else
     {
-        // Q? is this a problem
-        m_new_refine = false;
-    }
-    
+        // new LOR was requested
+        m_new_refine = true;
+    }    
 
     m_tree_cache = new avtBlueprintTreeCache();
 
@@ -1628,6 +1622,10 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
 //    Cyrus Harrison, Mon Mar 28 12:14:20 PDT 2022
 //    Use conduit version check for polytopal support.
 //
+//    Justin Privitera, Mon May 23 20:19:52 PDT 2022
+//    `m_new_refine` is passed to `RefineGridFunctionToVTK` so it can choose
+//    the appropriate MFEM LOR scheme.
+// 
 // ****************************************************************************
 
 vtkDataArray *
