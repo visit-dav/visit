@@ -7,6 +7,9 @@
       md.idx
       md.0
     </FilePatterns>
+    <DEFINES components="EPar">
+      ADIOS2_USE_MPI
+    </DEFINES>
     <CXXFLAGS components="M,ESer">
       $(ADIOS2_INCLUDE_DIR)
     </CXXFLAGS>
