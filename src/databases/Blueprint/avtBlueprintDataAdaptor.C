@@ -730,6 +730,9 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 //
 //    Cyrus Harrison, Mon Mar 28 12:14:20 PDT 2022
 //    Use conduit version check for polytopal support.
+// 
+//    Justin Privitera, Mon May 23 20:28:42 PDT 2022
+//    Moved the deletion of points to lower in the function.
 //
 // ****************************************************************************
 vtkDataSet *
