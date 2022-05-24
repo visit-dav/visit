@@ -1,21 +1,21 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.0/toss3/cmake/3.14.7/linux-x86_64_gcc-6.1/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.3/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake
 ##
-## ./build_visit3_2_0 generated host.cmake
-## created: Mon Mar  8 08:59:54 PST 2021
-## system: Linux quartz764 3.10.0-1160.15.2.1chaos.ch6.x86_64 #1 SMP Wed Feb 3 11:45:24 PST 2021 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_2_2 generated host.cmake
+## created: Mon May  2 20:05:24 PDT 2022
+## system: Linux quartz1922 3.10.0-1160.53.1.1chaos.ch6.x86_64 #1 SMP Tue Jan 25 12:06:24 PST 2022 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.0/toss3)
-SET(VISITARCH linux-x86_64_gcc-6.1)
+SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.3/toss3)
+SET(VISITARCH linux-x86_64_gcc-7.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER /usr/tce/packages/gcc/gcc-6.1.0/bin/gcc TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/tce/packages/gcc/gcc-6.1.0/bin/g++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER /usr/tce/packages/gcc/gcc-7.3.0/bin/gcc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/tce/packages/gcc/gcc-7.3.0/bin/g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-std=c++11  -m64 -fPIC -fvisibility=hidden" TYPE STRING)
@@ -24,11 +24,11 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-std=c++11  -m64 -fPIC -fvisibility=hidden
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/lib" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/lib")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/lib")
 
 ##
 ## VisIt Thread Option
@@ -138,6 +138,11 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib z TYPE STRING)
 
 ##
+## BLOSC
+##
+VISIT_OPTION_DEFAULT(VISIT_BLOSC_DIR ${VISITHOME}/blosc/1.21.1/${VISITARCH})
+
+##
 ## ADIOS
 ## (configured w/ mpi compiler wrapper)
 ##
@@ -147,7 +152,7 @@ VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR ${VISITHOME}/adios/${ADIOS_VERSION}/${VISIT
 ##
 ## ADIOS2
 ##
-SETUP_APP_VERSION(ADIOS2 2.5.0)
+SETUP_APP_VERSION(ADIOS2 2.7.1)
 VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR ${VISITHOME}/adios2-ser/${ADIOS2_VERSION}/${VISITARCH})
 ## (configured w/ mpi compiler wrapper)
 VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR ${VISITHOME}/adios2-par/${ADIOS2_VERSION}/${VISITARCH})
