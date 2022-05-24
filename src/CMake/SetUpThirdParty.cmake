@@ -96,8 +96,6 @@ FUNCTION(SET_UP_THIRD_PARTY pkg)
     if(DEFINED sutp_LIBDIR)
         set(libdir ${sutp_LIBDIR})
     else()
-        # is this a better test?  It was used by our FindZlib.cmake
-        #  if (LINUX AND CMAKE_SIZEOF_VOID_P EQUAL 8 AND EXISTS ${base_dir_val}/lib64)
         if(EXISTS ${base_dir_val}/lib64)
             set(libdir "lib64")
         else() 
