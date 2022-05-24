@@ -111,6 +111,8 @@ For example, starting from the point of having successfully downloaded the ``Pyt
 
 Note that change in case of the file name.
 Doing this will cause Spack to go get the file you manually downloaded.
+The first step to add the mirror is only needed once.
+To add additional files for which recurring download failures are occurring, just copy them into the mirror following the Spack naming conventions for packages.
 
 The spack environment files
 ---------------------------
