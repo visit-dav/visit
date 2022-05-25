@@ -29,6 +29,10 @@ class     DBOptionsAttributes;
 //    Cyrus Harrison, Wed Feb 17 10:43:50 PST 2021
 //    Added GetAuxiliaryData() to support material volume fractions 
 //    and mixed-var data.
+// 
+//    Justin Privitera, Mon Apr 11 18:20:19 PDT 2022
+//    Added `m_new_refine`, a boolean to toggle between using new MFEM LOR or 
+//    legacy MFEM LOR. When true, the new scheme is enabled.
 //
 // ****************************************************************************
 
@@ -127,6 +131,8 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     conduit::Node          m_matset_info;
 
     std::map<std::string,bool> m_mfem_mesh_map;
+
+    bool                   m_new_refine;
 
 };
 
