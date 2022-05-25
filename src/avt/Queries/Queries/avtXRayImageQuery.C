@@ -1150,14 +1150,22 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["topologies/image_topo/type"] = "rectilinear";
 
             // set up fields
+            int numfieldvals = (x_coords_dim - 1) * (y_coords_dim - 1) * (z_coords_dim - 1);
+
             data_out["fields/intensities/topology"] = "image_topo";
             data_out["fields/intensities/association"] = "element";
-            int numfieldvals = (x_coords_dim - 1) * (y_coords_dim - 1) * (z_coords_dim - 1);
             // set to float64 regardless of vtk data types
-            data_out["fields/intensities/values"].set(
-                conduit::DataType::float64(numfieldvals));
+            data_out["fields/intensities/values"].set(conduit::DataType::float64(numfieldvals));
             conduit::float64 *intensity_vals = data_out["fields/intensities/values"].value();
+
+            data_out["fields/optical_depth/topology"] = "image_topo";
+            data_out["fields/optical_depth/association"] = "element";
+            // set to float64 regardless of vtk data types
+            data_out["fields/optical_depth/values"].set(conduit::DataType::float64(numfieldvals));
+            conduit::float64 *depth_vals = data_out["fields/optical_depth/values"].value();
+
             int datatype = leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType();
+
             int field_index = 0;
             for (int i = 0; i < numBins; i ++)
             {
@@ -1170,6 +1178,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                     for (int j = 0; j < numPixels; j ++)
                     {
                         intensity_vals[field_index] = intensity_ptr[j];
+                        depth_vals[field_index] = path_length_ptr[j];
                         field_index ++;
                     }
                 }
@@ -1180,6 +1189,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                     for (int j = 0; j < numPixels; j ++)
                     {
                         intensity_vals[field_index] = intensity_ptr[j];
+                        depth_vals[field_index] = path_length_ptr[j];
                         field_index ++;
                     }
                 }
@@ -1190,6 +1200,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                     for (int j = 0; j < numPixels; j ++)
                     {
                         intensity_vals[field_index] = intensity_ptr[j];
+                        depth_vals[field_index] = path_length_ptr[j];
                         field_index ++;
                     }
                 }
@@ -1245,7 +1256,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 {
                     // TODO more descriptive message
                     snprintf(buf, 512, "The x ray image query results were "
-                             "written to a file");
+                             "written to a blueprint file");
                 }
                 else
                 {
