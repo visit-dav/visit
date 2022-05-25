@@ -44,6 +44,14 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
 
     { // new scope
         int index = 0;
+        if (forLogging)
+        {
+            // this is needed in case the current NumControlPoints is greater
+            // than the default set up by the containing class.
+            snprintf(tmpStr, 1000, "SetNumControlPoints(%d)\n",
+                atts->GetNumControlPoints());
+            str += (prefix + std::string(tmpStr));
+        }
         // Create string representation of controlPoints from atts.
         for(AttributeGroupVector::const_iterator pos = atts->GetControlPoints().begin(); pos != atts->GetControlPoints().end(); ++pos, ++index)
         {
@@ -436,6 +444,18 @@ ColorControlPointList_GetCategoryName(PyObject *self, PyObject *args)
 }
 
 
+PyObject *
+ColorControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
+{
+    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    int numItems = -1;
+    if(!PyArg_ParseTuple(args, "i", &numItems))
+        return PyErr_Format(PyExc_TypeError, "Expecting integer argument");
+    obj->data->SetNumControlPoints(numItems);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 
 PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
     {"Notify", ColorControlPointList_Notify, METH_VARARGS},
@@ -452,6 +472,7 @@ PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
     {"GetDiscreteFlag", ColorControlPointList_GetDiscreteFlag, METH_VARARGS},
     {"SetCategoryName", ColorControlPointList_SetCategoryName, METH_VARARGS},
     {"GetCategoryName", ColorControlPointList_GetCategoryName, METH_VARARGS},
+    {"SetNumControlPoints", ColorControlPointList_SetNumControlPoints, METH_VARARGS},
     {NULL, NULL}
 };
 

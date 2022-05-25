@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define GAUSSIANCONTROLPOINTLIST_NMETH 7
+#define GAUSSIANCONTROLPOINTLIST_NMETH 8
 void VISITPY_API           PyGaussianControlPointList_StartUp(GaussianControlPointList *subj, void *data);
 void VISITPY_API           PyGaussianControlPointList_CloseDown();
 VISITPY_API PyMethodDef *  PyGaussianControlPointList_GetMethodTable(int *nMethods);

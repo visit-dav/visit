@@ -44,6 +44,14 @@ PyGaussianControlPointList_ToString(const GaussianControlPointList *atts, const 
 
     { // new scope
         int index = 0;
+        if (forLogging)
+        {
+            // this is needed in case the current NumControlPoints is greater
+            // than the default set up by the containing class.
+            snprintf(tmpStr, 1000, "SetNumControlPoints(%d)\n",
+                atts->GetNumControlPoints());
+            str += (prefix + std::string(tmpStr));
+        }
         // Create string representation of controlPoints from atts.
         for(AttributeGroupVector::const_iterator pos = atts->GetControlPoints().begin(); pos != atts->GetControlPoints().end(); ++pos, ++index)
         {
@@ -169,6 +177,18 @@ GaussianControlPointList_ClearControlPoints(PyObject *self, PyObject *args)
 }
 
 
+PyObject *
+GaussianControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
+{
+    GaussianControlPointListObject *obj = (GaussianControlPointListObject *)self;
+    int numItems = -1;
+    if(!PyArg_ParseTuple(args, "i", &numItems))
+        return PyErr_Format(PyExc_TypeError, "Expecting integer numItems");
+    obj->data->SetNumControlPoints(numItems);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 
 PyMethodDef PyGaussianControlPointList_methods[GAUSSIANCONTROLPOINTLIST_NMETH] = {
     {"Notify", GaussianControlPointList_Notify, METH_VARARGS},
@@ -177,6 +197,7 @@ PyMethodDef PyGaussianControlPointList_methods[GAUSSIANCONTROLPOINTLIST_NMETH] =
     {"AddControlPoints", GaussianControlPointList_AddControlPoints, METH_VARARGS},
     {"RemoveControlPoints", GaussianControlPointList_RemoveControlPoints, METH_VARARGS},
     {"ClearControlPoints", GaussianControlPointList_ClearControlPoints, METH_VARARGS},
+    {"SetNumControlPoints", GaussianControlPointList_SetNumControlPoints, METH_VARARGS},
     {NULL, NULL}
 };
 

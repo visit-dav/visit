@@ -146,6 +146,10 @@ inline char toupper(char c)
 //    Cyrus Harrison, Wed Jun  3 09:51:31 PDT 2020
 //    Update code gen to support both Python 2 and 3.
 //
+//    Kathleen Biagas, Wed May 25, 2022
+//    Added 'forLogging' arg to _ToString method so that AttVector's can call
+//    'SetNum' (if available) when being logged.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -2068,6 +2072,17 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
     {
         c << "    { // new scope" << Endl;
         c << "        int index = 0;" << Endl;
+        if(codeFile && codeFile->HasFunction(QString("SetNum")+Name))
+        {
+            c << "        if (forLogging)" << Endl;
+            c << "        {" << Endl;
+            c << "            // this is needed in case the current Num" << Name << " is greater" << Endl;
+            c << "            // than the default set up by the containing class." << Endl;
+            c << "            snprintf(tmpStr, 1000, \"SetNum" << Name << "(%d)\\n\"," << Endl;
+            c << "                atts->GetNum" << Name << "());" << Endl;
+            c << "            str += (prefix + std::string(tmpStr));" << Endl;
+            c << "        }" << Endl;
+        }
         c << "        // Create string representation of " << name << " from atts." << Endl;
         if(accessType == Field::AccessPublic)
             c << "        for(AttributeGroupVector::const_iterator pos = atts->" << name << ".begin(); pos != atts->" << name << ".end(); ++pos, ++index)" << Endl;
@@ -3113,10 +3128,10 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    if (obj == &NULL_PY_OBJ)" << Endl;
         c << "    {" << Endl;
         c << "        obj = NULL;" << Endl;
-        c << "        PyErr_Format(PyExc_NameError, \"name '\%s' is not defined\", name);" << Endl;
+        c << "        PyErr_Format(PyExc_NameError, \"name '%s' is not defined\", name);" << Endl;
         c << "    }" << Endl;
         c << "    else if (obj == NULL && !PyErr_Occurred())" << Endl;
-        c << "        PyErr_Format(PyExc_RuntimeError, \"unknown problem with '\%s'\", name);" << Endl;
+        c << "        PyErr_Format(PyExc_RuntimeError, \"unknown problem with '%s'\", name);" << Endl;
         c << Endl;
         c << "    return (obj != NULL) ? 0 : -1;" << Endl;
         c << "}" << Endl;
