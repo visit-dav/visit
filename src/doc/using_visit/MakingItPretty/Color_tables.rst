@@ -329,7 +329,7 @@ Values in Range   Map to this Color
 -0.95...0              cyan
 0...+0.95              green
 +0.95...+inf           red
-===============   =====================
+===============   =================
 
 Banded Coloring with Continous Color Table
 """"""""""""""""""""""""""""""""""""""""""
