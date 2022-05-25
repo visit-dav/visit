@@ -282,16 +282,13 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
 
     if (params.HasEntry("output_type"))
     {
-        std::cout << "here" << std::endl;
         if (params.GetEntry("output_type")->TypeName() == "int")
             SetOutputType(params.GetEntry("output_type")->AsInt());
         else if (params.GetEntry("output_type")->TypeName() == "string")
-        {
-            std::cout << "success" << std::endl;
             SetOutputType(params.GetEntry("output_type")->AsString());
-        }
         else
-            std::cout << "bad news" << std::endl;
+            EXCEPTION1(VisItException, "Bad datatype given for output_type:"
+                " " + params.GetEntry("output_type")->TypeName());
     }
 
     // this is not a normal parameter, it is set by the cli when the query
@@ -1119,21 +1116,19 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
         else if (outputTypeIsBlueprint(outputType))
         {
-            EXCEPTION1(VisItException, "Not yet implemented.");
-            conduit::Node data_out;
+            conduit::Node data_out = conduit::Node();
 
             // set up coords
             data_out["coordsets/image_coords/type"] = "rectilinear";
-
-            data_out["coordsets/image_coords/values/x"].set(nx);
+            data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(nx));
             int *xvals = data_out["coordsets/image_coords/values/x"].value();
             for (int i = 0; i < nx; i ++) { xvals[i] = i; }
 
-            data_out["coordsets/image_coords/values/y"].set(ny);
+            data_out["coordsets/image_coords/values/y"].set(conduit::DataType::int32(ny));
             int *yvals = data_out["coordsets/image_coords/values/y"].value();
             for (int i = 0; i < ny; i ++) { yvals[i] = i; }
 
-            data_out["coordsets/image_coords/values/z"].set(numBins);
+            data_out["coordsets/image_coords/values/z"].set(conduit::DataType::int32(numBins));
             int *zvals = data_out["coordsets/image_coords/values/z"].value();
             for (int i = 0; i < numBins; i ++) { zvals[i] = i; }
 
@@ -1152,9 +1147,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             // set up fields
             data_out["fields/intensities/topology"] = "image_topo";
             data_out["fields/intensities/association"] = "element";
+            // Q? what to do when numBins is 1?
             int numfieldvals = (nx - 1) * (ny - 1) * (numBins - 1);
-            data_out["fields/intensities/values"].set(numfieldvals);
+            // TODO find the right data type
+            data_out["fields/intensities/values"].set(
+                conduit::DataType::int32(numfieldvals));
             int *fieldvals = data_out["fields/intensities/values"].value();
+            // todo put in the right values
             for (int i = 0; i < numfieldvals; i ++)
             {
                 fieldvals[i] = i;
@@ -1163,8 +1162,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             conduit::Node verify_info;
             if(!conduit::blueprint::mesh::verify(data_out, verify_info))
             {
-                std::cout << "Verify failed!" << std::endl;
                 verify_info.print();
+                EXCEPTION1(VisItException, "blueprint mesh verify failed!");
             }
 
             data_out.print();
@@ -1203,7 +1202,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 else if (outputTypeIsBlueprint(outputType))
                 {
                     // TODO
-                    EXCEPTION1(VisItException, "Not yet implemented.");
+                    EXCEPTION1(VisItException, "Not yet implemented 2222.");
                 }
                 else
                 {
