@@ -1153,11 +1153,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["fields/intensities/topology"] = "image_topo";
             data_out["fields/intensities/association"] = "element";
             int numfieldvals = (x_coords_dim - 1) * (y_coords_dim - 1) * (z_coords_dim - 1);
-
             // set to float64 regardless of vtk data types
             data_out["fields/intensities/values"].set(
-                conduit::DataType::float32(numfieldvals));
-            float *intensity_vals = data_out["fields/intensities/values"].value();
+                conduit::DataType::float64(numfieldvals));
+            conduit::float64 *intensity_vals = data_out["fields/intensities/values"].value();
             int datatype = leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType();
             int field_index = 0;
             for (int i = 0; i < numBins; i ++)
@@ -1202,18 +1201,18 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 }
             }
             
+            // verify
             conduit::Node verify_info;
             if(!conduit::blueprint::mesh::verify(data_out, verify_info))
             {
                 verify_info.print();
-                EXCEPTION1(VisItException, "blueprint mesh verify failed!");
+                EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
             }
 
-            data_out.print();
-
-            std::cout << "success" << std::endl;
-
-
+            // save out
+            conduit::relay::io::blueprint::save_mesh(data_out,
+                                                     "mymesh",
+                                                     "hdf5");
         }
         else
         {
@@ -1244,9 +1243,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 }
                 else if (outputTypeIsBlueprint(outputType))
                 {
-                    conduit::relay::io::blueprint::save_mesh(data_out,
-                                                             "mymesh",
-                                                             "hdf5");
                     // TODO more descriptive message
                     snprintf(buf, 512, "The x ray image query results were "
                              "written to a file");
