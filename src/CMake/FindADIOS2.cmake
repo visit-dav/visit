@@ -28,11 +28,11 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 if(NOT WIN32)
-    SET_UP_THIRD_PARTY(ADIOS2 LIBS include adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs adios2_taustubs adios2_cmenet adios2_cmzplenet adios2_cmepoll adios2_core adios2_cmmulticast adios2_enet adios2_cmselect adios2_cxx11 adios2_cmsockets adios2_cmudp)
+    SET_UP_THIRD_PARTY(ADIOS2 LIBS adios2_c adios2_atl adios2_dill adios2_evpath adios2_ffs adios2_taustubs adios2_cmenet adios2_cmzplenet adios2_cmepoll adios2_core adios2_cmmulticast adios2_enet adios2_cmselect adios2_cxx11 adios2_cmsockets adios2_cmudp)
 else()
-    SET_UP_THIRD_PARTY(ADIOS2 LIBS include adios2_c adios2_taustubs)
+    SET_UP_THIRD_PARTY(ADIOS2 LIBS adios2_c adios2_core adios2_cxx11 adios2_taustubs)
 endif()
 
 IF(VISIT_PARALLEL)
-    SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS include adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
+    SET_UP_THIRD_PARTY(ADIOS2_PAR LIBS adios2_c_mpi adios2_cxx11_mpi adios2_core_mpi)
 ENDIF(VISIT_PARALLEL)
