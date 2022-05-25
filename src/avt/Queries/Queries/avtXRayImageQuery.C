@@ -22,6 +22,7 @@
 #ifdef HAVE_CONDUIT
     #include <conduit.hpp>
     #include <conduit_blueprint.hpp>
+    #include <conduit_relay.hpp>
 #endif
 
 #include <vectortypes.h>
@@ -1029,6 +1030,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         int numBins = numLeaves / 2;
 
+        conduit::Node data_out;
         vtkDataArray *intensity;
         vtkDataArray *pathLength;
         if (outputTypeIsBmpJpegPngOrTif(outputType))
@@ -1116,21 +1118,23 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
         else if (outputTypeIsBlueprint(outputType))
         {
-            conduit::Node data_out = conduit::Node();
+            const int x_coords_dim = nx + 1;
+            const int y_coords_dim = ny + 1;
+            const int z_coords_dim = numBins + 1;
 
             // set up coords
             data_out["coordsets/image_coords/type"] = "rectilinear";
-            data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(nx));
+            data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(x_coords_dim));
             int *xvals = data_out["coordsets/image_coords/values/x"].value();
-            for (int i = 0; i < nx; i ++) { xvals[i] = i; }
+            for (int i = 0; i < x_coords_dim; i ++) { xvals[i] = i; }
 
-            data_out["coordsets/image_coords/values/y"].set(conduit::DataType::int32(ny));
+            data_out["coordsets/image_coords/values/y"].set(conduit::DataType::int32(y_coords_dim));
             int *yvals = data_out["coordsets/image_coords/values/y"].value();
-            for (int i = 0; i < ny; i ++) { yvals[i] = i; }
+            for (int i = 0; i < y_coords_dim; i ++) { yvals[i] = i; }
 
-            data_out["coordsets/image_coords/values/z"].set(conduit::DataType::int32(numBins));
+            data_out["coordsets/image_coords/values/z"].set(conduit::DataType::int32(z_coords_dim));
             int *zvals = data_out["coordsets/image_coords/values/z"].value();
-            for (int i = 0; i < numBins; i ++) { zvals[i] = i; }
+            for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
 
             // TODO get units piped through
             // data_out["coordsets/image_coords/units/x"] = "cm";
@@ -1148,16 +1152,54 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             // set up fields
             data_out["fields/intensities/topology"] = "image_topo";
             data_out["fields/intensities/association"] = "element";
-            // Q? what to do when numBins is 1?
-            int numfieldvals = (nx - 1) * (ny - 1) * (numBins - 1);
-            // TODO find the right data type
+            int numfieldvals = (x_coords_dim - 1) * (y_coords_dim - 1) * (z_coords_dim - 1);
+
+            // set to float64 regardless of vtk data types
             data_out["fields/intensities/values"].set(
-                conduit::DataType::int32(numfieldvals));
-            int *fieldvals = data_out["fields/intensities/values"].value();
-            // todo put in the right values
-            for (int i = 0; i < numfieldvals; i ++)
+                conduit::DataType::float32(numfieldvals));
+            float *intensity_vals = data_out["fields/intensities/values"].value();
+            int datatype = leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType();
+            int field_index = 0;
+            for (int i = 0; i < numBins; i ++)
             {
-                fieldvals[i] = i;
+                intensity = leaves[i]->GetPointData()->GetArray("Intensity");
+                pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
+                if (datatype == VTK_FLOAT)
+                {
+                    float *intensity_ptr = (float *) intensity->GetVoidPointer(0);
+                    float *path_length_ptr = (float *) pathLength->GetVoidPointer(0);
+                    for (int j = 0; j < numPixels; j ++)
+                    {
+                        intensity_vals[field_index] = intensity_ptr[j];
+                        field_index ++;
+                    }
+                }
+                else if (datatype == VTK_DOUBLE)
+                {
+                    double *intensity_ptr = (double *) intensity->GetVoidPointer(0);
+                    double *path_length_ptr = (double *) pathLength->GetVoidPointer(0);
+                    for (int j = 0; j < numPixels; j ++)
+                    {
+                        intensity_vals[field_index] = intensity_ptr[j];
+                        field_index ++;
+                    }
+                }
+                else if (datatype == VTK_INT)
+                {
+                    int *intensity_ptr = (int *) intensity->GetVoidPointer(0);
+                    int *path_length_ptr = (int *) pathLength->GetVoidPointer(0);
+                    for (int j = 0; j < numPixels; j ++)
+                    {
+                        intensity_vals[field_index] = intensity_ptr[j];
+                        field_index ++;
+                    }
+                }
+                else
+                {
+                    char msg[256];
+                    snprintf(msg, 256, "VTKDataType %d is not supported.", datatype);
+                    EXCEPTION1(VisItException, msg);
+                }
             }
             
             conduit::Node verify_info;
@@ -1175,7 +1217,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
         else
         {
-            EXCEPTION1(VisItException, "Bad outputType in " + outputType)
+            EXCEPTION1(VisItException, "Bad outputType in " + outputType);
         }
 
         //
@@ -1202,8 +1244,12 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 }
                 else if (outputTypeIsBlueprint(outputType))
                 {
-                    // TODO
-                    EXCEPTION1(VisItException, "Not yet implemented 2222.");
+                    conduit::relay::io::blueprint::save_mesh(data_out,
+                                                             "mymesh",
+                                                             "hdf5");
+                    // TODO more descriptive message
+                    snprintf(buf, 512, "The x ray image query results were "
+                             "written to a file");
                 }
                 else
                 {
