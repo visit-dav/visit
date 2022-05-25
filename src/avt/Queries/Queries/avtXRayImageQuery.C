@@ -1132,6 +1132,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             int *zvals = data_out["coordsets/image_coords/values/z"].value();
             for (int i = 0; i < numBins; i ++) { zvals[i] = i; }
 
+            // TODO get units piped through
             // data_out["coordsets/image_coords/units/x"] = "cm";
             // data_out["coordsets/image_coords/units/y"] = "cm";
             // data_out["coordsets/image_coords/units/z"] = "kev";
