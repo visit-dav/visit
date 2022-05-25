@@ -70,9 +70,9 @@ function check_minimum_compiler_version()
    if [[ "$CXX_COMPILER" == "g++" ]] ; then
         VERSION=$(get_version_digits g++)
         echo "g++ version $VERSION"
-        testvercomp $VERSION 6.0 '<'
+        testvercomp $VERSION 7.3 '<'
         if [[ $? == 0 ]] ; then
-            echo "Need g++ version >= 6.0"
+            echo "Need g++ version >= 7.3"
             exit 1
         fi
     elif [[ "$OPSYS" == "Darwin"  &&  "$CXX_COMPILER" == "clang++" ]] ; then 
