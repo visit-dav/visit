@@ -460,6 +460,9 @@ ColorTableAttributes::CreateSubAttributeGroup(int)
 //   Brad Whitlock, Fri Apr 27 14:16:01 PDT 2012
 //   Change smoothing.
 //
+//  Justin Privitera, Fri May 20 11:02:45 PDT 2022
+//  Replaced *active* w/ *default* for everything color tables.
+//
 // ****************************************************************************
 
 bool
@@ -540,6 +543,9 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 //
 //   Hank Childs, Thu Jul  1 14:20:26 PDT 2010
 //   Add support for opacities.
+//
+//  Justin Privitera, Fri May 20 11:02:45 PDT 2022
+//  Replaced *active* w/ *default* for everything color tables.
 //
 // ****************************************************************************
 
@@ -1236,6 +1242,9 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 //   Preserve the default continuous/discrete status if a color table is
 //   being replaced.
 //
+//  Justin Privitera, Fri May 20 11:02:45 PDT 2022
+//  Replaced *active* w/ *default* for everything color tables.
+//
 // ****************************************************************************
 
 void
@@ -1320,6 +1329,9 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 //   Brad Whitlock, Wed Nov 20 12:08:18 PDT 2002
 //   Made it work with the new discrete color tables.
 //
+//  Justin Privitera, Fri May 20 11:02:45 PDT 2022
+//  Replaced *active* w/ *default* for everything color tables.
+//
 // ****************************************************************************
 
 void
@@ -1366,5 +1378,60 @@ ColorTableAttributes::RemoveColorTable(int index)
                 SetDefaultDiscrete(std::string(""));
         }
     }
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Justin Privitera
+// Creation:   May 26 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+ColorTableAttributes::ProcessOldVersions(DataNode *parentNode,
+                                         const char *configVersion)
+{
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ColorTableAttributes");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.3.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("activeContinuous")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
+#endif
+            searchNode->AddNode(new DataNode("defaultContinuous", k->AsString()));
+            searchNode->RemoveNode(k);
+        }
+        if ((k = searchNode->GetNode("activeDiscrete")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("activeDiscrete", "3.5.0"));
+#endif
+            searchNode->AddNode(new DataNode("defaultDiscrete", k->AsString()));
+            searchNode->RemoveNode(k);
+        }
+    }
+#endif
 }
 
