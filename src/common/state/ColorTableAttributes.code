@@ -584,7 +584,7 @@ ColorTableAttributes::ProcessOldVersions(DataNode *parentNode,
 }
 
 Target: xml2python
-Code: PyVectorAttributes_getattr
+Code: PyColorTableAttributes_getattr
 Prefix:
 Postfix:
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
@@ -610,7 +610,7 @@ Postfix:
 #endif
 
 Target: xml2python
-Code: PyVectorAttributes_setattr
+Code: PyColorTableAttributes_setattr
 Prefix:
 Postfix:
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
