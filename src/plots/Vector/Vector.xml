@@ -122,5 +122,8 @@
       </Function>
       <Function name="VectorViewerEnginePluginInfo::AnimationStep" user="false" member="true">
       </Function>
+      <Include file="source" quoted="false" target="xml2python">
+        visit-config.h
+      </Include>
     </Attribute>
   </Plugin>

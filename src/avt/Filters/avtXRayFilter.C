@@ -2739,21 +2739,25 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 
         if (divideEmisByAbsorb)
         {
+            // begin absorbtivity-normalized integration
             for (int j = 0 ; j < numBins ; j++)
             {
                 double tmp = exp(-a[j] * segLength);
                 intensityBins[j] = intensityBins[j] * tmp + (e[j] / a[j]) * (1.0 - tmp);
                 pathBins[j] = pathBins[j] + a[j] * segLength;
             }
+            // end absorbtivity-normalized integration
         }
         else
         {
+            // begin standard integration
             for (int j = 0 ; j < numBins ; j++)
             {
                 double tmp = exp(-a[j] * segLength);
                 intensityBins[j] = intensityBins[j] * tmp + e[j] * (1.0 - tmp);
                 pathBins[j] = pathBins[j] + a[j] * segLength;
             }
+            // end standard integration
         }
     }
 

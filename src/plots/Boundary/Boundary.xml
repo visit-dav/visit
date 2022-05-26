@@ -52,5 +52,8 @@
       </Function>
       <Function name="BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
       </Function>
+      <Include file="source" quoted="false" target="xml2python">
+        visit-config.h
+      </Include>
     </Attribute>
   </Plugin>

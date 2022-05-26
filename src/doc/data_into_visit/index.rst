@@ -1,3 +1,5 @@
+.. _Getting Data into VisIt_:
+
 Getting Data into VisIt_
 ========================
 

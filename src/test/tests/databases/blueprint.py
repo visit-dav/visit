@@ -15,7 +15,13 @@
 #    are able to be visualized.
 #
 #    Justin Privitera Fri 04 Mar 2022 05:57:49 PM PST
-#    Added tests to test new implicit points topologies
+#    Added tests to test new implicit points topologies.
+# 
+#    Justin Privitera, Mon May 23 17:53:56 PDT 2022
+#    Added polytopal tests.
+# 
+#    Justin Privitera, Mon May 23 17:53:56 PDT 2022
+#    Added mfem lor tests.
 #
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin("Blueprint")
@@ -27,6 +33,7 @@ bp_venn_test_dir = "blueprint_v0.7.0_venn_test_data"
 bp_mfem_test_dir = "blueprint_v0.3.1_mfem_test_data"
 bp_0_8_2_test_dir = "blueprint_v0.8.2_braid_examples_test_data"
 bp_poly_test_dir = "blueprint_v0.8.2_polytess_test_data"
+bp_devilray_mfem_test_dir = "blueprint_v0.8.3_devilray_mfem_test_data"
 
 braid_2d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_hdf5_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
@@ -80,7 +87,19 @@ braid_3d_meshes_0_8_2 = ["points", "uniform", "rect", "struct", "tets","hexs", "
 mfem_ex9_examples   = ["periodic_cube","star_q3","periodic_hexagon"]
 mfem_ex9_protocols = ["json","conduit_bin","conduit_json","hdf5"]
 
+class devilray_mfem_example:
+    def __init__(self, name, number, pseudo_fields, vector_fields):
+        self.name = name
+        self.number = number
+        self.pseudo_fields = pseudo_fields
+        self.vector_fields = vector_fields
 
+devilray_mfem_examples = []
+devilray_mfem_examples.append(devilray_mfem_example("esher", "000000", ["mesh_nodes_magnitude"], []))
+devilray_mfem_examples.append(devilray_mfem_example("laghos_tg.cycle", "000350", ["mesh_nodes_magnitude", "density", "specific_internal_energy", "velocity_magnitude"], ["velocity"]))
+devilray_mfem_examples.append(devilray_mfem_example("taylor_green.cycle", "001860", ["mesh_nodes_magnitude", "density", "specific_internal_energy", "velocity_magnitude"], ["velocity"]))
+devilray_mfem_examples.append(devilray_mfem_example("tri_beam", "000000", ["mesh_nodes_magnitude"], ["mesh_nodes"]))
+devilray_mfem_examples.append(devilray_mfem_example("warbly_cube", "000000", ["mesh_nodes_magnitude"], []))
 
 def full_mesh_name(mesh_name):
     return mesh_name + "_mesh"
@@ -90,6 +109,9 @@ def full_var_name(mesh_name,var_name):
 
 def mfem_test_file(name, protocol):
     return data_path(pjoin(bp_mfem_test_dir,"bp_mfem_ex9_%s_%s_000000.root" % ( name, protocol)))
+
+def devilray_mfem_test_file(name, number):
+    return data_path(pjoin(bp_devilray_mfem_test_dir, name + "_" + number + ".root"))
 
 def set_3d_view():
     v = View3DAttributes()
@@ -177,6 +199,10 @@ def test_poly(tag_name):
     DeleteAllPlots()
 
 def test_mfem(tag_name, example_name, protocol):
+    readOptions=GetDefaultFileOpenOptions("Blueprint")
+    readOptions["MFEM LOR Setting"] = "Legacy LOR"
+    SetDefaultFileOpenOptions("Blueprint", readOptions)
+
     dbfile =mfem_test_file(example_name,protocol)
     OpenDatabase(dbfile)
     #
@@ -195,6 +221,88 @@ def test_mfem(tag_name, example_name, protocol):
     Test(tag_name + "_" +  example_name + "_" + protocol + "_ele_att")
     #
     DeleteAllPlots()
+
+    CloseDatabase(dbfile)
+
+    # reset read options to default
+    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    SetDefaultFileOpenOptions("Blueprint", readOptions)
+
+def test_mfem_lor_mesh(tag_name, example_name, protocol, devilray = False, number = "000000"):
+    readOptions = GetDefaultFileOpenOptions("Blueprint")
+    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    SetDefaultFileOpenOptions("Blueprint", readOptions)
+
+    if (devilray):
+        dbfile = devilray_mfem_test_file(example_name, number)
+    else:
+        dbfile = mfem_test_file(example_name, protocol)
+    OpenDatabase(dbfile)
+
+    # we want to test a picture of a wireframe
+    # new LOR should only have the outer edge
+    AddPlot("Subset", "mesh_main")
+    SubsetAtts = SubsetAttributes()
+    SubsetAtts.wireframe = 1
+    SetPlotOptions(SubsetAtts)
+    DrawPlots()
+
+    Test(tag_name + "_" +  example_name + "_" + protocol + "_lor")
+
+    DeleteAllPlots()
+
+    CloseDatabase(dbfile)
+
+    # examine legacy
+    readOptions["MFEM LOR Setting"] = "Legacy LOR"
+    SetDefaultFileOpenOptions("Blueprint", readOptions)
+    OpenDatabase(dbfile)
+
+    # old LOR leaves a busy wireframe
+    AddPlot("Subset", "mesh_main")
+    SubsetAtts = SubsetAttributes()
+    SubsetAtts.wireframe = 1
+    SetPlotOptions(SubsetAtts)
+    DrawPlots()
+
+    Test(tag_name + "_" +  example_name + "_" + protocol + "_legacy_lor")
+
+    DeleteAllPlots()
+
+    CloseDatabase(dbfile)
+
+    # restore default
+    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    SetDefaultFileOpenOptions("Blueprint", readOptions)
+
+def test_mfem_lor_field(tag_name, name, number, pseudocolor_fields, vector_fields):
+    readOptions = GetDefaultFileOpenOptions("Blueprint")
+    readOptions["MFEM LOR Setting"] = "MFEM LOR"
+    SetDefaultFileOpenOptions("Blueprint", readOptions)
+    dbfile = devilray_mfem_test_file(name, number)
+    OpenDatabase(dbfile)
+    
+    for field in pseudocolor_fields:
+        AddPlot("Pseudocolor", "mesh_main/" + field, 1, 1)
+        AddOperator("MultiresControl", 1)
+        SetActivePlots(0)
+        MultiresControlAtts = MultiresControlAttributes()
+        MultiresControlAtts.resolution = 3
+        SetOperatorOptions(MultiresControlAtts, 0, 1)
+        DrawPlots()
+        Test(tag_name + "_" + name + "_pseudocolor_" + field + "_lor")
+        DeleteAllPlots()
+
+    for field in vector_fields:
+        AddPlot("Vector", "mesh_main/" + field, 1, 1)  
+        AddOperator("MultiresControl", 1)
+        SetActivePlots(0)
+        MultiresControlAtts = MultiresControlAttributes()
+        MultiresControlAtts.resolution = 3
+        SetOperatorOptions(MultiresControlAtts, 0, 1)
+        DrawPlots()
+        Test(tag_name + "_" + name + "_vector_" + field + "_lor")
+        DeleteAllPlots()
 
     CloseDatabase(dbfile)
 
@@ -327,6 +435,17 @@ TestSection("MFEM Blueprint Example Data Tests")
 for example_name in mfem_ex9_examples:
     for protocol in mfem_ex9_protocols:
         test_mfem("blueprint_mfem", example_name, protocol)
+
+TestSection("MFEM LOR Mesh Blueprint Tests")
+for example_name in mfem_ex9_examples:
+    for protocol in mfem_ex9_protocols:
+        test_mfem_lor_mesh("blueprint_mfem", example_name, protocol)
+for example in devilray_mfem_examples:
+    test_mfem_lor_mesh("blueprint_mfem", example.name, "", devilray = True, number = example.number)
+
+TestSection("MFEM LOR Field Blueprint Tests")
+for example in devilray_mfem_examples:
+    test_mfem_lor_field("blueprint_mfem", example.name, example.number, example.pseudo_fields, example.vector_fields)
 
 TestSection("Blueprint Expressions")
 OpenDatabase(braid_2d_json_root)

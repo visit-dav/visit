@@ -233,3 +233,4 @@ MeshViewerEnginePluginInfo::SetAutonomousColors(AttributeSubject *atts,
     if (attsChanged)
         SetClientAtts(atts);
 }
+

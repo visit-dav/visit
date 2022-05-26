@@ -343,34 +343,42 @@ Connected Component Weighted Variable Sum
     result is a list of values, one for each component.
 
 XRay Image
-    Generates a simulated radiograph by tracing rays through a volume using
-    an absorbtivity and emissivity variable. The absorbtivity and emmisivity
-    variables must be zone centered and can be either scalar variables or
-    array variables. If using an array variable it will generate an image
-    per array variable component.
+    Generates a simulated radiograph by tracing rays through a volume using an absorbtivity and emissivity variable.
+    The absorbtivity and emmisivity variables must be zone centered and can be either scalar variables or array variables.
+    If using an array variable it will generate an image per array variable component.
 
-    The query operates on 2D R-Z meshes and 3D meshes. In the case of 2D
-    R-Z meshes, the mesh is revolved around the Z axis.
+    The query operates on 2D R-Z meshes and 3D meshes.
+    In the case of 2D R-Z meshes, the mesh is revolved around the Z axis.
  
-    The query performs the following integration as it traces the rays through
-    the volume.
+    The query performs the following integration as it traces the rays through the volume.
 
-        decay[i] = exp(-a[i] * seglength[i]) |br|
-        intensity[i] = intensity[i-1] * decay[i] + e[i] * (1. - decay[i])
+    .. container:: collapsible
 
-    If the *divide_emis_by_absorb* is set, then the following integration is
-    performed.
+        .. container:: header
 
-        decay[i] = exp(-a[i] * seglength[i]) |br|
-        intensity[i] = intensity[i-1] * decay[i] + (e[i] / a[i]) * (1. - decay[i])
+            **Show/Hide Code for** XRay Image Query
 
-    When making a simulated radiograph the emissivity variable must contain
-    non zero values or you will need to specify a background intensity using
-    either *background_intensity* or *background_intensities*. If neither of
-    these is the case you will get a very boring all white image. A non zero
-    emissivity variable would correspond to an object emitting radiation
-    and a non zero background intensity would correspond to constant backlit
-    radiation, such as when x raying an object.
+        .. literalinclude:: ../../../../src/avt/Filters/avtXRayFilter.C
+            :language: C++
+            :start-after: begin standard integration 
+            :end-before: end standard integration
+
+    If the ``divide_emis_by_absorb`` is set, then the following integration is performed.
+
+    .. container:: collapsible
+
+        .. container:: header
+
+            **Show/Hide Code for** Absortivity-Normalized XRay Image Query 
+
+        .. literalinclude:: ../../../../src/avt/Filters/avtXRayFilter.C
+            :language: C++
+            :start-after: begin absorbtivity-normalized integration
+            :end-before: end absorbtivity-normalized integration
+
+    When making a simulated radiograph the emissivity variable must contain non zero values or you will need to specify a background intensity using either *background_intensity* or *background_intensities*.
+    If neither of these is the case you will get a very boring all white image.
+    A non-zero emissivity variable would correspond to an object emitting radiation and a non zero background intensity would correspond to constant backlit radiation, such as when x raying an object.
 
     The query takes the following arguments:
 
@@ -396,8 +404,8 @@ XRay Image
     +------+-------------------+----------------------------------------------+
     |      | "tif" or 3        | TIFF image format.                           |
     +------+-------------------+----------------------------------------------+
-    |      | "rawfloats" or 4  | File of 32 bit floating point values in IEEE |
-    |      |                   | format.                                      |
+    |      | "rawfloats" or 4  | File of 32 or 64 bit floating point values   |
+    |      |                   | in IEEE format.                              |
     +------+-------------------+----------------------------------------------+
     |      | "bov" or 5        | BOV (Brick Of Values) format, which consists |
     |      |                   | of a text header |br| file describing a      |
@@ -405,13 +413,14 @@ XRay Image
     +------+-------------------+----------------------------------------------+
     | *family_files*           | A flag indicating if the output files should |
     |                          | be familied. The default is |br| off. If it  |
-    |                          | is off then the output file is output.ext,   |
-    |                          | where "ext" is the file |br| extension. If   |
-    |                          | the file exists it will overwrite the file.  |
-    |                          | If it is on, then |br| the output file is    |
-    |                          | outputXXXX.ext, where XXXX is chosen to be   |
-    |                          | the |br| smallest integer not to overwrite   |
-    |                          | any existing files.                          |
+    |                          | is off then the output file is               |
+    |                          | ``output.ext``, where ``ext`` is the file    |
+    |                          | |br| extension. If the file exists it will   |
+    |                          | overwrite the file. If it is on, then |br|   |
+    |                          | the output file is ``outputXXXX.ext``,       |
+    |                          | where ``XXXX`` is chosen                     |
+    |                          | to be the |br| smallest integer not to       |
+    |                          | overwrite any existing files.                |
     +------+-------------------+----------------------------------------------+
     | *image_size*             | The width and height of the image in pixels. |
     |                          | The default is 200 x 200.                    |
@@ -422,9 +431,27 @@ XRay Image
     +------+-------------------+----------------------------------------------+
     | *output_ray_bounds*      | Output the ray bounds as a bounding box in a |
     |                          | VTK file. The default is off. |br| The name  |
-    |                          | of the file is "ray_bounds.vtk".             |
+    |                          | of the file is ``ray_bounds.vtk``.           |
     +------+-------------------+----------------------------------------------+
     
+    When specifying "bov" or "rawfloats" output, the value can be either 32 or 64 bit floating point values.
+    The number of bits is determined by the number of bits in the data being processed.
+
+    When specifying "bov" output, 2 files are created for each variable.
+    One contains the ``intensity`` and the other the ``path_length``.
+    The files are named ``outputXX.bof`` and ``outputXX.bov`` with ``XX`` being a sequence number.
+    The ``intensity`` variables are first followed by the ``path_length`` variables in the sequence.
+    For example, if the input array variables were composed of 2 scalar variables, the files would be named as follows:
+
+    * output00.bof
+    * output00.bov - ``intensity`` from the first variable of the array variable.
+    * output01.bof
+    * output01.bov - ``intensity`` from the second variable of the array variable.
+    * output02.bof
+    * output02.bov - ``path_length`` from the first variable of the array variable.
+    * output03.bof
+    * output03.bov - ``path_length`` from the second variable of the array variable.
+
     The query also takes arguments that specify the orientation of the camera
     in 3 dimensions. This can take 2 forms. The first is a simplified
     specification that gives limited control over the camera and a complete

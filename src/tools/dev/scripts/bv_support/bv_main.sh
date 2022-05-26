@@ -70,9 +70,9 @@ function check_minimum_compiler_version()
    if [[ "$CXX_COMPILER" == "g++" ]] ; then
         VERSION=$(get_version_digits g++)
         echo "g++ version $VERSION"
-        testvercomp $VERSION 6.0 '<'
+        testvercomp $VERSION 7.3 '<'
         if [[ $? == 0 ]] ; then
-            echo "Need g++ version >= 6.0"
+            echo "Need g++ version >= 7.3"
             exit 1
         fi
     elif [[ "$OPSYS" == "Darwin"  &&  "$CXX_COMPILER" == "clang++" ]] ; then 
@@ -651,7 +651,6 @@ function initialize_build_visit()
 
     WRITE_UNIFIED_FILE=""
     VISIT_INSTALLATION_BUILD_DIR=""
-    VISIT_DRY_RUN="no"
     DO_SUPER_BUILD="no"
     DO_MANGLED_LIBRARIES="no"
 }
@@ -1178,7 +1177,6 @@ function run_build_visit()
             --installation-build-dir) next_arg="installation-build-dir";;
             --write-unified-file) next_arg="write-unified-file";;
             --parallel-build) DO_SUPER_BUILD="yes";;
-            --dry-run) VISIT_DRY_RUN="yes";;
             --arch) next_arg="arch";;
             --build-mode) next_arg="build-mode";;
             --cflag) next_arg="append-cflags";;
@@ -1360,26 +1358,6 @@ function run_build_visit()
     #TODO: handle them seperately
     info "enabling any dependent libraries"
     enable_dependent_libraries
-
-    # At this point we are after the command line and the visual selection
-    # dry run, don't execute anything just run the enabled stuff..
-    # happens before any downloads have taken place..
-    if [[ $VISIT_DRY_RUN == "yes" ]]; then
-        for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
-        do
-            initializeFunc="bv_${reqlibs[$bv_i]}_dry_run"
-            $initializeFunc
-        done
-
-        for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
-        do
-            initializeFunc="bv_${optlibs[$bv_i]}_dry_run"
-            $initializeFunc
-        done
-
-        bv_visit_dry_run
-        exit 0
-    fi
 
     START_DIR="$PWD"
 

@@ -1839,11 +1839,18 @@ CurveAttributes::ChangesRequireRecalculation(const CurveAttributes &obj) const
 //   Removed processing of version < 2.1.0.
 //
 // ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
 
 void
 CurveAttributes::ProcessOldVersions(DataNode *parentNode,
                                          const char *configVersion)
 {
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     if (parentNode == 0)
         return;
 
@@ -1854,7 +1861,13 @@ CurveAttributes::ProcessOldVersions(DataNode *parentNode,
     if (VersionLessThan(configVersion, "3.0.0"))
     {
        if (searchNode->GetNode("lineStyle") != 0)
+       {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("lineStyle", "3.3.2").c_str());
+#endif
             searchNode->RemoveNode("lineStyle");
+       }
     }
+#endif
 }
 

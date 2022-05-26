@@ -104,13 +104,6 @@ function bv_ispc_ensure
     fi
 }
 
-function bv_ispc_dry_run
-{
-    if [[ "$DO_ISPC" == "yes" ]] ; then
-        echo "Dry run option not set for ISPC."
-    fi
-}
-
 # ***************************************************************************
 # build_ispc
 #

@@ -58,6 +58,10 @@ Definition:
 // Modifications:
 //
 // ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
 
 void
 FilledBoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
@@ -70,24 +74,51 @@ FilledBoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
     if(searchNode == 0)
         return;
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     if (VersionLessThan(configVersion, "2.13.0"))
     {
         if (searchNode->GetNode("boundaryType") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("boundaryType", "3.3.1"));
+#endif
             searchNode->RemoveNode("boundaryType");
+        }
         if (searchNode->GetNode("filledFlag") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("boundaryType", "3.3.1"));
+#endif
             searchNode->RemoveNode("filledFlag");
+        }
     }
+#endif
+
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     if (VersionLessThan(configVersion, "3.0.0"))
     {
         if (searchNode->GetNode("lineStyle") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("boundaryType", "3.3.2"));
+#endif
             searchNode->RemoveNode("lineStyle");
+        }
     }
+#endif
 }
 
 Target: xml2python
 Code: PyFilledBoundaryAttributes_getattr
 Prefix:
 Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
 
     //
@@ -124,8 +155,11 @@ Postfix:
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
-    //
+#endif
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Removed in 3.0.0
     //
     // lineStyle and it's possible enumerations
@@ -165,6 +199,7 @@ Postfix:
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
 
 Code: PyFilledBoundaryAttributes_setattr
@@ -173,6 +208,9 @@ Postfix:
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
         if(strcmp(name, "filledFlag") == 0)
         {
             PyErr_WarnEx(NULL, "'filledFlag' is obsolete. It is being ignored.", 3);
@@ -185,12 +223,17 @@ Postfix:
             Py_INCREF(Py_None);
             obj = Py_None;
         }
+#endif
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
         else if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
+#endif
     }
 
 

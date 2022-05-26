@@ -102,7 +102,9 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GZoneDumpOperator visitcommon gui )
 
     ADD_LIBRARY(VZoneDumpOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VZoneDumpOperator VIEWER)
     TARGET_LINK_LIBRARIES(VZoneDumpOperator visitcommon viewer )
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} GZoneDumpOperator VZoneDumpOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -129,12 +131,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EZoneDumpOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EZoneDumpOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EZoneDumpOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EZoneDumpOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EZoneDumpOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EZoneDumpOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EZoneDumpOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EZoneDumpOperator_par)
 ENDIF(VISIT_PARALLEL)
 
