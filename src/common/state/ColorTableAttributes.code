@@ -524,6 +524,125 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         SetDefaultContinuous(node->AsString());
 }
 
+Target: xml2atts
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Justin Privitera
+// Creation:   May 26 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+ColorTableAttributes::ProcessOldVersions(DataNode *parentNode,
+                                         const char *configVersion)
+{
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ColorTableAttributes");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.3.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("activeContinuous")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
+#endif
+            searchNode->AddNode(new DataNode("defaultContinuous", k->AsString()));
+            searchNode->RemoveNode(k);
+        }
+        if ((k = searchNode->GetNode("activeDiscrete")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("activeDiscrete", "3.5.0"));
+#endif
+            searchNode->AddNode(new DataNode("defaultDiscrete", k->AsString()));
+            searchNode->RemoveNode(k);
+        }
+    }
+#endif
+}
+
+Target: xml2python
+Code: PyVectorAttributes_getattr
+Prefix:
+Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorTableAttributes
+
+    //
+    // Removed in 3.5.0
+    //
+    if(strcmp(name, "activeContinuous") == 0)
+    {
+        ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
+        std::string defaultContinuous = ColorTableObj->data->GetDefaultContinuous();
+        return PyString_FromString(defaultContinuous);
+    }
+    if(strcmp(name, "activeDiscrete") == 0)
+    {
+        ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
+        std::string defaultDiscrete = ColorTableObj->data->GetDefaultDiscrete();
+        return PyString_FromString(defaultDiscrete);
+    }
+#endif
+
+Target: xml2python
+Code: PyVectorAttributes_setattr
+Prefix:
+Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+   // Try and handle legacy fields in ColorTableAttributes
+    if(obj == &NULL_PY_OBJ)
+    {
+        ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
+
+        //
+        // Removed in 3.3.0
+        //
+        if(strcmp(name, "activeContinuous") == 0)
+        {
+            const std::string defaultCont = PyString_AsString(args);
+            PyErr_WarnEx(NULL, "'activeContinuous' is obsolete. Use 'defaultContinuous'.", 3);
+            ColorTableObj->data->SetDefaultContinuous(defaultCont);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        if(strcmp(name, "activeDiscrete") == 0)
+        {
+            const std::string defaultDisc = PyString_AsString(args);
+            PyErr_WarnEx(NULL, "'activeDiscrete' is obsolete. Use 'defaultDiscrete'.", 3);
+            ColorTableObj->data->SetDefaultDiscrete(defaultDisc);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
+
 Target: xml2java
 Function: GetColorTableIndex
 Declaration: GetColorTableIndex

@@ -14,6 +14,7 @@
     <Function name="RemoveColorTable2"            user="true"></Function>
     <Function name="CreateNode"                   user="false"></Function>
     <Function name="SetFromNode"                  user="false"></Function>
+    <Function name="ProcessOldVersions" user="true" member="true"></Function>
     <Include file="source">ColorControlPoint.h</Include>
     <Include file="source">map</Include>
   </Attribute>
