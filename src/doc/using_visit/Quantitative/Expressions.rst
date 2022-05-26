@@ -137,6 +137,8 @@ for any other expressions that use the deleted expression. If a plot uses
 an expression with unresolved references, VisIt_ will not be able to generate
 it until the user resolves the reference.
 
+.. _Expression_grammar:
+
 Expression grammar
 ~~~~~~~~~~~~~~~~~~
 
@@ -706,6 +708,11 @@ IJ_Gradient Function: ``ij_gradient()`` :  ``ij_gradient(expr0)``
 IJK_Gradient Function: ``ijk_gradient()`` :  ``ijk_gradient(expr0)``
     No description available.
 
+.. _Laplacian_Expression_Function:
+
+Laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
+    No description available.
+
 .. _Surface_Normal_Expression_Function:
 
 Surface Normal Function: ``surface_normal()`` :  ``surface_normal(expr0)``
@@ -1186,6 +1193,23 @@ Global Nodeid Function: ``global_nodeid()`` : ``global_nodeid(expr0)``
     :term:`node-centered` *scalar* variable where the value for each
     node/vertex/point is the *global* index of a node, as specified by
     the data producer.
+
+.. _Ghost_Zoneid_Expression_Function:
+
+Ghost Zoneid Function: ``ghost_zoneid()`` : ``ghost_zoneid(<Mesh>)``
+    Returns the ghost zone id of each zone in the mesh. The ghost zone id could be any combination of the following:
+
+::
+
+    DUPLICATED_ZONE_INTERNAL_TO_PROBLEM = 0,
+    ENHANCED_CONNECTIVITY_ZONE = 1,
+    REDUCED_CONNECTIVITY_ZONE = 2,
+    REFINED_ZONE_IN_AMR_GRID = 3,
+    ZONE_EXTERIOR_TO_PROBLEM = 4,
+    ZONE_NOT_APPLICABLE_TO_PROBLEM = 5
+
+:
+    where each flag represents a bit shift by the specified number of bits. So if a zone is not a ghost zone, the value returned would be 0, while if it was a ``DUPLICATED_ZONE_INTERNAL_TO_PROBLEM`` and a ``REFINED_ZONE_IN_AMR_GRID``, the value returned would be 1001 in binary, or 9 in decimal.
 
 .. _Volume_Function:
 
@@ -1917,11 +1941,6 @@ agrad Function: ``agrad()`` : ``agrad(expr0)``
 key aggregate Function: ``key_aggregate()`` : ``key_aggregate(expr0)``
     No description available.
 
-.. _Laplacian_Expression_Function:
-
-Laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
-    No description available.
-
 .. _Rectilinear_Laplacian_Expression_Function:
 
 rectilinear Laplacian Function: ``rectilinear_laplacian()`` : ``rectilinear_laplacian(expr0)``
@@ -2146,6 +2165,8 @@ neighbor average Function: ``neighbor_average()`` : ``neighbor_average(expr0)``
 
 Displacement Function: ``displacement()`` : ``displacement(expr0)``
     No description available.
+
+.. _Expression_Compatibility_Gotchas:
 
 Expression Compatibility Gotchas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

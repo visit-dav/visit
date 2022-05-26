@@ -183,11 +183,7 @@ use of Sphinx as we move forward. These are discussed at the
     For example, if you have one `example <http://www.llnl.gov>`__ and
     another `example <http://www.llnl.gov>`__.
 
-* If you are having trouble getting the formatting for a section worked
-  out and the time involved to re-gen the documentation is too much, you
-  could try an
-  `on-line, real-time reStructuredText Renderer <http://rst.ninjs.org>`_
-  to quickly try different things and see how they work.
+* If you are having trouble getting the formatting for a section worked out and the time involved to re-gen the documentation is too much, you could try temporarily editing a `new GitHub Wiki Page <https://github.com/visit-dav/visit/wiki/_new>`_ with format set to reStructuredText to quickly try different things and hit the **Preview** button there to see how they work.
 
 .. _contributing_line_length:
 
@@ -203,7 +199,7 @@ There are many advantages to using a single sentence per line mostly having to d
 This practice, of course, does not apply to source code.
 It applies only to ascii files that are intended to represent, more or less, human readable prose.
 Going forward, we will not reformat existing documentation to a sentence per line en masse.
-However, when updates to documentation are made we will encourage developers to follow this practice and request changes in PRs when it is not followed.
+However, when updating any *existing* paragraph or adding new paragraphs, we will encourage developers to follow this practice for the *whole* paragraph and request changes in PRs when it is not followed.
 
 .. _contributing_images:
 

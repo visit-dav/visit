@@ -10,7 +10,7 @@
 #  Date:       August 23, 2006
 #
 #  Modifications:
-# 
+#
 #    Hank Childs, Sun Aug 27 16:52:07 PDT 2006
 #    Added testing for expected value, mass from boundary.
 #
@@ -21,7 +21,10 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 #
 #    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
-#    Use named arguments. 
+#    Use named arguments.
+#
+#    Kathleen Biagas, Wed Feb 16 13:11:57 PST 2022
+#    Replaced Curve atts 'cycleColors' with 'curveColorSource'.
 #
 # ----------------------------------------------------------------------------
 
@@ -29,12 +32,12 @@ import os
 
 
 ca=CurveAttributes()
-ca.cycleColors = 0
+ca.curveColorSource = ca.Custom
 SetDefaultPlotOptions(ca)
 
 def TestOne(index, filename, varname, meshname, absvar, emisvar, numlines, x, y, z, radius, theta, phi):
     # Because the queries we are testing output to the file system, we need to
-    # delete previous outputs before running.  If we don't do this, then the 
+    # delete previous outputs before running.  If we don't do this, then the
     # queries will output files to names that are continuously incrementing.
     list = os.listdir(".")
     for i in range(len(list)):
@@ -52,7 +55,7 @@ def TestOne(index, filename, varname, meshname, absvar, emisvar, numlines, x, y,
     test_name = "hf_%d_%d" %(index,0)
     TestText(test_name, s)
     DeleteAllPlots()
-    
+
     # Now test the outputs
     OpenDatabase("hf0.ult")
     ReOpenDatabase("hf0.ult")  # Flush out cached version
@@ -82,7 +85,7 @@ DefineArrayExpression("a2", "array_compose(<mesh_quality/mesh/jacobian>, \
                       <mesh_quality/mesh/area>, <mesh_quality/mesh/oddy>)")
 DefineArrayExpression("e2", "array_compose(<mesh_quality/mesh/aspect>, \
                       <mesh_quality/mesh/shape>, <mesh_quality/mesh/skew>)")
-TestOne(2, data_path("KullLite_test_data/tagtest_rz_3.pdb"), 
+TestOne(2, data_path("KullLite_test_data/tagtest_rz_3.pdb"),
         "mesh_quality/mesh/area", "mesh",
         "a2", "e2", 333, 0,0,1, 0.5,0,0)
 DeleteExpression("a2")

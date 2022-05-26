@@ -167,6 +167,14 @@
 //    Chris Laganella, Fri Feb  4 19:18:01 EST 2022
 //    Added logical_nodeid, logial_zoneid, node_domain, zone_domain,
 //    and zone_centers under the Mesh menu
+// 
+//    Justin Privitera, Fri 04 Mar 2022 02:03:33 PM PST
+//    Moved curl, divergence, gradient exprs, and laplacian
+//    from misc. submenu to vector submenu.
+// 
+//    Justin Privitera, Wed Mar 30 12:50:59 PDT 2022
+//    Added "ghost_zoneid" expression under mesh submenu.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -277,8 +285,14 @@ const char *expr_vector[] = {
     "color4",
     "colorlookup",
     "cross",
+    "curl",
+    "divergence",
     "dot",
+    "gradient",
     "hsvcolor",
+    "ij_gradient",
+    "ijk_gradient",
+    "Laplacian",
     "magnitude",
     "normalize",
     NULL
@@ -325,6 +339,7 @@ const char *expr_mesh[] = {
     "cylindrical_theta",
     "external_cell",
     "external_node",
+    "ghost_zoneid",
     "global_nodeid",
     "global_zoneid",
     "logical_nodeid",
@@ -352,20 +367,14 @@ const char *expr_misc[] = {
     "bin",
     "cell_constant",
     "conn_components",
-    "curl",
     "curve_domain",
     "curve_integrate",
     "curve_swapxy",
     "cycle",
-    "divergence",
     "enumerate",
     "gauss_curvature",
-    "gradient",
-    "ij_gradient",
-    "ijk_gradient",
     "isnan",
     "lambda2",
-    "Laplacian",
     "map",
     "mean_curvature",
     "nodal_constant",

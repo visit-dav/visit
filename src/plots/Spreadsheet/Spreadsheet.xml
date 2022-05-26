@@ -117,8 +117,6 @@
       </Function>
       <Function name="SpreadsheetViewerEnginePluginInfo::Permits2DViewScaling" user="false" member="true">
       </Function>
-      <Function name="ProcessOldVersions" user="true" member="true">
-      </Function>
       <Include file="header" quoted="false">
         PlaneAttributes.h
       </Include>

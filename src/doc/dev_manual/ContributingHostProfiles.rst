@@ -12,6 +12,8 @@ There is a script and a couple of helper files in the 'hosts' directory that all
 * Note that if run on Windows, the generated **networks.json** file will have dos-style line endings.
   Convert it to Unix style before committing.
 
+* If you want to specify a default host configuration for a center, edit **default_configs.dat**.
+
 
 Steps for creating host profiles can be found in :ref:`Host Profiles<host_profiles>`.
 

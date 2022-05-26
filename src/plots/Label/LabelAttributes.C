@@ -1384,11 +1384,19 @@ LabelAttributes::VarChangeRequiresReset()
 // Modifications:
 //
 // ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
 
 void
 LabelAttributes::ProcessOldVersions(DataNode *parentNode,
                                     const char *configVersion)
 {
+
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     if(parentNode == 0)
         return;
 
@@ -1401,30 +1409,50 @@ LabelAttributes::ProcessOldVersions(DataNode *parentNode,
         DataNode *k = 0;
         if ((k = searchNode->GetNode("specifyTextColor1")) != 0)
         {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("specifyTextColor",
+                "textFont1.ueForegroundColor", "3.3.2"));
+#endif
             bool specifyTextColor = k->AsBool();
             searchNode->RemoveNode(k, true);
             textFont1.SetUseForegroundColor(!specifyTextColor);
         }
         if ((k = searchNode->GetNode("specifyTextColor2")) != 0)
         {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("specifyTextColor2",
+                "textFont2.useForegroundColor", "3.3.2"));
+#endif
             bool specifyTextColor = k->AsBool();
             searchNode->RemoveNode(k, true);
             textFont2.SetUseForegroundColor(!specifyTextColor);
         }
         if ((k = searchNode->GetNode("textHeight1")) != 0)
         {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("textHeight1",
+                "textFont1.scale", "3.3.2"));
+#endif
             float height = k->AsFloat();
             searchNode->RemoveNode(k, true);
             textFont1.SetScale((double) (height+0.02)*100);
         }
         if ((k = searchNode->GetNode("textHeight2")) != 0)
         {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("textHeight2",
+                "textFont2.scale", "3.3.2"));
+#endif
             float height = k->AsFloat();
             searchNode->RemoveNode(k, true);
             textFont2.SetScale((double) (height+0.02)*100);
         }
         if ((k = searchNode->GetNode("textColor1")) != 0)
         {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("textColor1",
+                "textFont1.color", "3.3.2"));
+#endif
             ColorAttribute c1;
             c1.SetFromNode(k);
             textFont1.SetColor(c1);
@@ -1432,6 +1460,10 @@ LabelAttributes::ProcessOldVersions(DataNode *parentNode,
         }
         if ((k = searchNode->GetNode("textColor2")) != 0)
         {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("textColor2",
+                "textFont2.color", "3.3.2"));
+#endif
             ColorAttribute c2;
             c2.SetFromNode(k);
             textFont2.SetColor(c2);
@@ -1448,5 +1480,6 @@ LabelAttributes::ProcessOldVersions(DataNode *parentNode,
         else
             delete textFont2Node;
     }
+#endif
 }
 

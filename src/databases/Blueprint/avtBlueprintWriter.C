@@ -83,35 +83,37 @@ LoadConduitOptions(const std::string &optString, conduit::Node &out)
     }
 
     bool ok = false;
-    try
+    TRY
     {
-        out.parse(optString, "json");
+        out.parse(optString, "yaml");
         ok = true;
     }
-    catch (...)
+    CATCHALL
     {
         ok = false;
         out.reset();
     }
+    ENDTRY
 
     if(!ok)
     {
-        try
+        TRY
         {
-            out.parse(optString, "yaml");
+            out.parse(optString, "json");
             ok = true;
         }
-        catch (...)
+        CATCHALL
         {
             ok = false;
             out.reset();
         }
+        ENDTRY
     }
 
     if(!ok)
     {
         out.reset();
-        BP_PLUGIN_EXCEPTION1(InvalidVariableException, "Could not parse"
+        BP_PLUGIN_EXCEPTION1(VisItException, "Could not parse"
             " 'Flatten / Partition extra options' as either JSON or Yaml.");
     }
 }
@@ -158,15 +160,13 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
                                int line)
 {
     std::ostringstream bp_err_oss;
-    bp_err_oss << "[ERROR]"
-               << "File:"    << file << std::endl
-               << "Line:"    << line << std::endl
-               << "Message:" << msg  << std::endl;
+    bp_err_oss << msg << std::endl << "  from " << file << ":" << line;
+    // Make a copy of the stream output so it is not empty the second time we
+    // need to use it.
+    std::string tmp(bp_err_oss.str());
+    debug1 << tmp;
 
-    debug1 << bp_err_oss.str();
-
-    BP_PLUGIN_EXCEPTION1(InvalidVariableException, bp_err_oss.str());
-
+    BP_PLUGIN_EXCEPTION1(VisItException, tmp);
 }
 
 // ****************************************************************************
@@ -182,6 +182,7 @@ blueprint_writer_plugin_error_handler(const std::string &msg,
 //
 //  Chris Laganella Wed Dec 15 17:57:09 EST 2021
 //  Add conditional compilation based on flatten/partition support
+//
 // ****************************************************************************
 
 avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
@@ -190,6 +191,7 @@ avtBlueprintWriter::avtBlueprintWriter(DBOptionsAttributes *options) :m_stem(),
     m_nblocks = 0;
 
     m_op = BP_MESH_OP_NONE;
+
 #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
     if(options)
     {
@@ -369,6 +371,9 @@ avtBlueprintWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //  the function based off partition/flatten support since it is only used
 //  by the partition operation.
 //
+//  Brad Whitlock, Fri Apr  1 13:41:32 PDT 2022
+//  Removed /c0 since Conduit scalars are no longer mcarrays.
+//
 // ****************************************************************************
 #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
 static void
@@ -388,7 +393,7 @@ BuildSelections(Node &domains,
         const Node &avtGhostZones = m->fetch("fields/avtGhostZones");
 
         // This path should always be correct, the field is created by VisIt.
-        const Node &values = avtGhostZones.fetch_existing("values/c0");
+        const Node &values = avtGhostZones.fetch_existing("values");
         const DataType dt = DataType::index_t(values.dtype().number_of_elements());
 
         // Cast the ghost info to the correct type if necessary
@@ -527,6 +532,10 @@ avtBlueprintWriter::CreateOutputDir()
 //
 //  Mark C. Miller, Thu May  7 15:04:11 PDT 2020
 //  Add expressions output
+// 
+//  Justin Privitera, Wed Apr 27 22:56:31 PDT 2022
+//  Removed expressions output.
+// 
 // ****************************************************************************
 void
 avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
@@ -562,36 +571,6 @@ avtBlueprintWriter::GenRootNode(conduit::Node &mesh,
                                     "",
                                     m_nblocks,
                                     bp_idx["mesh"]);
-
-    // handle expressions 
-    for (int i = 0; i < exprList.GetNumExpressions(); i++)
-    {
-        Expression const expr = exprList.GetExpressions(i);
-
-        if (expr.GetFromOperator()) continue;
-        if (expr.GetAutoExpression()) continue;
-        if (expr.GetHidden()) continue;
-
-        std::string ename = expr.GetName();
-        // Replace any slash chars in expr name with underscores.
-        // If we don't, Conduit interprets slash chars as new nodes.
-        for (std::string::size_type j = 0; j < ename.size(); j++)
-            if (ename[j] == '/') ename[j] = '_';
-        std::string expr_path = "mesh/expressions/" + ename;
-        bp_idx[expr_path + "/topology"] = "topo";
-        int ncomps = 1;
-        switch (expr.GetType())
-        {
-            case Expression::CurveMeshVar:  ncomps = 1;    break;
-            case Expression::ScalarMeshVar: ncomps = 1;   break;
-            case Expression::VectorMeshVar: ncomps = ndims;   break;
-            case Expression::SymmetricTensorMeshVar: ncomps = (ndims == 2 ? 3 : 6);   break;
-            case Expression::TensorMeshVar: ncomps = ndims * ndims;   break;
-            default: break;
-        }
-        bp_idx[expr_path + "/number_of_components"] = ncomps;
-        bp_idx[expr_path + "/definition"] = expr.GetDefinition();
-    }
 
     // work around conduit bug
     if(mesh.has_path("state/cycle"))
@@ -704,7 +683,7 @@ avtBlueprintWriter::CloseFile(void)
     }
     else if(m_op == BP_MESH_OP_PARTITION)
     {
-        debug5 << "Parition options:\n" << m_options.to_string() << std::endl;
+        debug5 << "Partition options:\n" << m_options.to_string() << std::endl;
         int rank = 0;
         Node repart_mesh;
         {

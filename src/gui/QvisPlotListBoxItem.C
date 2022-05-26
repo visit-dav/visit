@@ -223,13 +223,19 @@ QvisPlotListBoxItem::height(const QListWidget *lb) const
 // Creation:   Mon Sep 11 11:45:01 PDT 2000
 //
 // Modifications:
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //
 // ****************************************************************************
 
 int
 QvisPlotListBoxItem::width(const QListWidget *lb) const
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     return lb ? lb->fontMetrics().horizontalAdvance(text()) + 6 : 0;
+#else
+    return lb ? lb->fontMetrics().width(text()) + 6 : 0;
+#endif
 }
 
 // ****************************************************************************
@@ -304,6 +310,9 @@ QvisPlotListBoxItem::textX() const
 //   Brad Whitlock, Thu Mar 14 15:12:45 PDT 2013
 //   Take into account more criteria when determining whether an operator will
 //   be highlighted.
+//
+//   Kathleen Biagas, Wed Apr 6, 2022
+//   Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
 //
 // ****************************************************************************
 
@@ -437,7 +446,11 @@ void QvisPlotListBoxItem::paint(QPainter *painter)
             // The prefix is a database name.
             dbName = prefix;
         }
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
         int expandX = x + fm.horizontalAdvance("9") / 2;
+#else
+        int expandX = x + fm.width("9") / 2;
+#endif
         int expandY = y2 + 2;
 
         // Draw the database name and the variable.

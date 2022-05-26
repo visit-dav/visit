@@ -706,21 +706,107 @@ HomogeneousShapeTopologyToVTKCellArray(const Node &n_topo,
 }
 
 // ****************************************************************************
+//  Method: UnstructuredTopologyToVTKUnstructuredGrid
+//
+//  Purpose:
+//   Constructs a vtkUnstructuredGrid from a Blueprint topology and coordset
+//
+//  Arguments:
+//   n_coords:  Blueprint Coordset
+//   n_topo:    Blueprint Topology
+//
+//  Modifications:
+//    Justin Privitera Wed Mar 9 2022
+//    added logic to check if topology is polyhedral or polygonal, and, if so,
+//    transform it to a tetrahedral or triangular topology, respectively.
+//
+//    Justin Privitera Tue Mar 15 18:01:14 PDT 2022
+//    now this function adds original element ids (avtOriginalCellNumbers)
+//    to the vtkDataSet it returns, if applicable (if the mesh was polyhedral
+//    or polygonal and was transformed; see above modification comment).
+//
+//    Justin Privitera Wed Mar 23 12:28:02 PDT 2022
+//    Added domain as first argument, which is used for orig elem ids.
+//
+//    Cyrus Harrison, Mon Mar 28 12:14:20 PDT 2022
+//    Use conduit version check for polytopal support.
+// 
+//    Justin Privitera, Mon May 23 20:28:42 PDT 2022
+//    Moved the deletion of points to lower in the function.
+//
+// ****************************************************************************
 vtkDataSet *
-UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
+UnstructuredTopologyToVTKUnstructuredGrid(int domain,
+                                          const Node &n_coords,
                                           const Node &n_topo)
 {
-    vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords);
+    const Node *coords_ptr = &n_coords;
+    const Node *topo_ptr = &n_topo;
+
+    Node res; // Used as a destination for the generate sides call
 
     vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-    ugrid->SetPoints(points);
-    points->Delete();
+    vtkUnsignedIntArray *oca = NULL;
 
+    if (n_topo.has_path("elements/shape"))
+    {
+        if (n_topo["elements/shape"].as_string() == "polyhedral" || 
+            n_topo["elements/shape"].as_string() == "polygonal")
+        {
+            #if CONDUIT_HAVE_PARTITION_FLATTEN == 1
+                Node s2dmap, d2smap, options;
+                blueprint::mesh::topology::unstructured::generate_sides(
+                    n_topo,
+                    res["topologies/" + n_topo.name()],
+                    res["coordsets/" + n_topo["coordset"].as_string()],
+                    s2dmap,
+                    d2smap);
+
+                unsigned_int_accessor values = d2smap["values"].value();
+
+                oca = vtkUnsignedIntArray::New();
+                oca->SetName("avtOriginalCellNumbers");
+                oca->SetNumberOfComponents(2);
+
+                for (int i = 0; i < values.number_of_elements(); i ++)
+                {
+                    unsigned int ocdata[2] = {static_cast<unsigned int>(domain), 
+                                              static_cast<unsigned int>(values[i])};
+                    oca->InsertNextTypedTuple(ocdata);
+                }
+
+                coords_ptr = res.fetch_ptr(
+                    "coordsets/" + n_topo["coordset"].as_string());
+                topo_ptr = res.fetch_ptr("topologies/" + n_topo.name());
+            #else
+                Node about;
+                conduit::about(about);
+                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                    "VisIt Blueprint Plugin requires Conduit >= 0.8.0 to read polytopal meshes."
+                    "VisIt was built with Conduit version:"  << about["version"].as_string());
+            #endif
+        }
+    }
+
+    // The coords could be changed in the call above, so this must happen
+    // after the conditionals
+    vtkPoints *points = ExplicitCoordsToVTKPoints(*coords_ptr);
+
+    ugrid->SetPoints(points);
+
+    if (oca != NULL)
+    {
+        ugrid->GetCellData()->AddArray(oca);
+        ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+        oca->Delete();
+    }
+    
     //
     // Now, add explicit topology
     //
-    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(n_topo, points->GetNumberOfPoints());
-    ugrid->SetCells(ElementShapeNameToVTKCellType(n_topo["elements/shape"].as_string()), ca);
+    vtkCellArray *ca = HomogeneousShapeTopologyToVTKCellArray(*topo_ptr, points->GetNumberOfPoints());
+    points->Delete();
+    ugrid->SetCells(ElementShapeNameToVTKCellType(topo_ptr->fetch("elements/shape").as_string()), ca);
     ca->Delete();
 
     return ugrid;
@@ -729,7 +815,55 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
 
 // ****************************************************************************
 vtkDataSet *
-avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
+PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
+                                    const Node &n_topo)
+{
+    vtkPoints *points = ExplicitCoordsToVTKPoints(n_coords);
+
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(points);
+    points->Delete();
+
+    int npoints = points->GetNumberOfPoints();
+
+    //
+    // Now, add explicit topology
+    //
+    vtkCellArray *ca = vtkCellArray::New();
+    vtkIdTypeArray *ida = vtkIdTypeArray::New();
+
+    ida->SetNumberOfTuples(npoints * 2);
+    // Create cell array that ranges from 0 to n-1.
+    for (int i = 0; i < npoints; i++)
+    {
+        ida->SetComponent(2 * i, 0, 1);
+        ida->SetComponent(2 * i + 1, 0, i);
+    }
+    ca->SetCells(npoints, ida);
+    ida->Delete();
+
+    ugrid->SetCells(VTK_VERTEX, ca);
+    ca->Delete();
+
+    return ugrid;
+}
+
+// ****************************************************************************
+//  Method: MeshToVTK
+//
+//  Modifications:
+//    Justin Privitera, Fri 04 Mar 2022 05:57:49 PM PST
+//    Added support for points topology type; see
+//    PointsTopologyToVTKUnstructuredGrid as well.
+// 
+//    Justin Privitera, Wed Mar 23 12:26:31 PDT 2022
+//    Added "domain" as first arg of MeshToVTK and passed it to
+//    UnstructuredTopologyToVTKUnstructuredGrid.
+//
+// ****************************************************************************
+vtkDataSet *
+avtBlueprintDataAdaptor::VTK::MeshToVTK(int domain,
+                                        const Node &n_mesh)
 {
     //NOTE: this assumes one coordset and one topo
     // that is the case for the blueprint plugin, but may not be the case
@@ -758,10 +892,15 @@ avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
             BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet StructuredTopologyToVTKStructuredGrid");
             res = StructuredTopologyToVTKStructuredGrid(n_coords, n_topo);
         }
+        else if (n_topo["type"].as_string() == "points")
+        {
+            BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet PointsTopologyToVTKUnstructuredGrid");
+            res = PointsTopologyToVTKUnstructuredGrid(n_coords, n_topo);
+        }
         else
         {
             BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet UnstructuredTopologyToVTKUnstructuredGrid");
-            res = UnstructuredTopologyToVTKUnstructuredGrid(n_coords, n_topo);
+            res = UnstructuredTopologyToVTKUnstructuredGrid(domain, n_coords, n_topo);
         }
     }
     else
@@ -1410,13 +1549,13 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 //---------------------------------------------------------------------------//
 
 // ****************************************************************************
-//  Method: RefineMeshToVTK
+//  Method: LegacyRefineMeshToVTK
 //
 //  Purpose:
 //    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
 //
 //  Arguments:
-//    mesh:      string with desired mesh name
+//    mesh:      MFEM mesh to be refined
 //    lod:       number of refinement steps
 //
 //  Programmer: Cyrus Harrison
@@ -1428,14 +1567,16 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
 //    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
 //    Casting geom to Geometry::Type where appropariate. This is required
 //    with the mfem upgrade to 4.0.
+// 
+//    Justin Privitera, Wed Apr 13 13:53:06 PDT 2022
+//    Renamed RefineMeshToVTK to LegacyRefineMeshToVTK.
 //
 // ****************************************************************************
-vtkDataSet *
-avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
-                                               int lod)
-{
-    BP_PLUGIN_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
+vtkDataSet *
+avtBlueprintDataAdaptor::MFEM::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
+                                                     int lod)
+{
     // create output objects
     vtkUnstructuredGrid *res_ds  = vtkUnstructuredGrid::New();
     vtkPoints           *res_pts = vtkPoints::New();
@@ -1462,7 +1603,6 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     // create the points for the refined topoloy
     res_pts->Allocate(npts);
     res_pts->SetNumberOfPoints((vtkIdType) npts);
-
     // create the points for the refined topoloy
     int pt_idx=0;
     for (int i = 0; i < mesh->GetNE(); i++)
@@ -1483,21 +1623,18 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
             pt_idx++;
         }
     }
-
     res_ds->SetPoints(res_pts);
     res_pts->Delete();
     // create the cells for the refined topology
     res_ds->Allocate(neles);
-
     pt_idx=0;
+
     for (int i = 0; i <  mesh->GetNE(); i++)
     {
         int geom       = mesh->GetElementBaseGeometry(i);
         int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
         refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
-
         Array<int> &rg_idxs = refined_geo->RefGeoms;
-
         vtkCell *ele_cell = NULL;
         // rg_idxs contains all of the verts for the refined elements
         for (int j = 0; j < rg_idxs.Size(); )
@@ -1513,20 +1650,164 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
             // the are ele_nverts for each refined element
             for (int k = 0; k < ele_nverts; k++, j++)
                 ele_cell->GetPointIds()->SetId(k,pt_idx + rg_idxs[j]);
-
             res_ds->InsertNextCell(ele_cell->GetCellType(),
                                    ele_cell->GetPointIds());
             ele_cell->Delete();
         }
-
         pt_idx += refined_geo->RefPts.GetNPoints();
-   }
+    }
 
-   return res_ds;
+    return res_ds;
 }
 
 // ****************************************************************************
-//  Method: RefineGridFunctionToVTK
+//  Method: LowOrderMeshToVTK
+//
+//  Purpose:
+//    Converts a low order MFEM mesh to a VTK unstructured grid.
+//
+//  Arguments:
+//    mesh:         MFEM mesh to be refined
+//
+//  Programmer: Justin Privitera
+//  Creation:   Wed Apr 13 13:53:06 PDT 2022
+//
+// ****************************************************************************
+vtkDataSet *
+avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
+{
+    BP_PLUGIN_INFO("Converting Low Order Mesh to VTK.");
+
+    int dim = mesh->SpaceDimension();
+    if (dim < 1 || dim > 3)
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "invalid mesh dimension " << dim);
+    }
+
+    ////////////////////////////////////////////
+    // Setup main coordset
+    ////////////////////////////////////////////
+
+    int num_vertices = mesh->GetNV();
+
+    vtkPoints *points = vtkPoints::New();
+    points->SetDataTypeToDouble();
+    points->SetNumberOfPoints(num_vertices);
+
+    double *coords_ptr = mesh->GetVertex(0);
+    for (int i = 0; i < num_vertices; i ++)
+    {
+        double x = coords_ptr[i * 3];
+        double y = dim >= 2 ? coords_ptr[i * 3 + 1] : 0;
+        double z = dim >= 3 ? coords_ptr[i * 3 + 2] : 0;
+        points->SetPoint(i, x, y, z);
+    }
+
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(points);
+    points->Delete();
+
+    ////////////////////////////////////////////
+    // Setup main topo
+    ////////////////////////////////////////////
+
+    vtkCellArray *ca = vtkCellArray::New();
+    vtkIdTypeArray *ida = vtkIdTypeArray::New();
+
+    int ncells = mesh->GetNE();
+    int geom = mesh->GetElementBaseGeometry(0);
+    int idxs_per_ele = mfem::Geometry::NumVerts[geom];
+
+    mfem::Element::Type ele_type = static_cast<mfem::Element::Type>(
+        mesh->GetElement(0)->GetType());
+    std::string ele_shape = ElementTypeToShapeName(ele_type);
+    int ctype = ElementShapeNameToVTKCellType(ele_shape);
+    int csize = VTKCellTypeSize(ctype);
+    ida->SetNumberOfTuples(ncells * (csize + 1));
+
+    // check our assumptions
+    if (idxs_per_ele != csize)
+    {
+        // Note:
+        // ncells = mesh->GetNE() * idxs_per_ele / csize
+        // but since the latter two are equal, we can safely
+        // say ncells = mesh->GetNE()
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "Expected equality of MFEM and VTK layout variables.");
+    }
+
+    for (int i = 0; i < ncells; i ++)
+    {
+        const int *ele_verts = mesh->GetElement(i)->GetVertices();
+        ida->SetComponent((csize + 1) * i, 0, csize);
+        for (int j = 0; j < csize; j ++)
+        {
+            ida->SetComponent((csize + 1) * i + j + 1, 0, ele_verts[j]);
+        }
+    }
+
+    ca->SetCells(ncells, ida);
+    ida->Delete();
+    ugrid->SetCells(ctype, ca);
+    ca->Delete();
+    return ugrid;
+}
+
+// ****************************************************************************
+//  Method: RefineMeshToVTK
+//
+//  Purpose:
+//    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
+//
+//  Arguments:
+//    mesh:        MFEM mesh to be refined
+//    lod:         number of refinement steps
+//    new_refine:  switch for using the new LOR or legacy LOR
+//
+//  Programmer: Justin Privitera
+//  Creation:   Wed Apr 13 13:53:06 PDT 2022
+//
+// Notes: See LegacyRefineMeshToVTK for the function originally 
+//   with this name.
+//
+// ****************************************************************************
+vtkDataSet *
+avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
+                                               int lod,
+                                               bool new_refine)
+{
+    BP_PLUGIN_INFO("Creating Refined MFEM Mesh with lod:" << lod);
+
+    if (!new_refine)
+    {
+        BP_PLUGIN_INFO("Using Legacy LOR to refine mesh.");
+        return LegacyRefineMeshToVTK(mesh, lod);
+    }
+
+    // Check if the mesh is periodic.
+    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
+                                     (mesh->GetNodes()->FESpace()->FEColl());
+    if (L2_coll)
+    {
+        BP_PLUGIN_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
+        return LegacyRefineMeshToVTK(mesh, lod);
+    }
+
+    BP_PLUGIN_INFO("High Order Mesh is not periodic.");
+
+    // refine the mesh
+    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, 
+                                         lod, 
+                                         mfem::BasisType::GaussLobatto);
+
+    vtkDataSet *retval = LowOrderMeshToVTK(lo_mesh);
+    delete lo_mesh;
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: LegacyRefineGridFunctionToVTK
 //
 //  Purpose:
 //   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
@@ -1545,14 +1826,16 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
 //    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
 //    Casting geom to Geometry::Type where appropariate. This is required
 //    with the mfem upgrade to 4.0.
+// 
+//    Justin Privitera, Fri May  6 15:23:56 PDT 2022
+//    Renamed RefineGridFunctionToVTK to LegacyRefineGridFunctionToVTK.
 //
 // ****************************************************************************
 vtkDataArray *
-avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
-                                                       mfem::GridFunction *gf,
-                                                       int lod)
+avtBlueprintDataAdaptor::MFEM::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                             mfem::GridFunction *gf,
+                                                             int lod)
 {
-    BP_PLUGIN_INFO("Creating Refined MFEM Field with lod:" << lod);
     int npts=0;
     int neles=0;
 
@@ -1618,6 +1901,171 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     }
 
     return rv;
+}
+
+// ****************************************************************************
+//  Method: LowOrderGridFunctionToVTK
+//
+//  Purpose:
+//   Converts a low order MFEM grid function to a vtkDataArray.
+//
+//  Arguments:
+//   gf:           MFEM Grid Function for the field
+//
+//  Programmer: Justin Privitera
+//  Creation:   Fri May  6 15:23:56 PDT 2022
+//
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
+{
+    BP_PLUGIN_INFO("Converting Low Order Grid Function To VTK");
+
+    mfem::FiniteElementSpace *fespace = gf->FESpace();
+    int vdim = fespace->GetVDim();
+    int ndofs = fespace->GetNDofs();
+
+    // all supported grid functions coming out of mfem end up being 
+    // associated with vertices
+
+    BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ndofs << " "
+                    << " num_comps = " << vdim);
+
+    vtkDataArray *retval = vtkDoubleArray::New();
+    // vtk reqs us to set number of comps before number of tuples
+    retval->SetNumberOfComponents(vdim == 2 ? 3 : vdim);
+    // set number of tuples
+    retval->SetNumberOfTuples(ndofs);
+
+    const double *values = gf->HostRead();
+
+    if (vdim == 1) // scalar case
+    {
+        for (vtkIdType i = 0; i < ndofs; i ++)
+        {
+            retval->SetComponent(i, 0, (double) values[i]);
+        }
+    }
+    else // vector case
+    {
+        // deal with striding of all components
+        bool bynodes = fespace->GetOrdering() == mfem::Ordering::byNODES;
+        int stride = bynodes ? 1 : vdim;
+        int vdim_stride = bynodes ? ndofs : 1;
+        int offset = 0;
+
+        for (int i = 0;  i < vdim; i ++)
+        {
+            for (vtkIdType j = 0; j < ndofs; j ++)
+            {
+                retval->SetComponent(j, i, values[offset + j * stride]);
+                if(vdim == 2)
+                {
+                    retval->SetComponent(j, 2, 0.0);
+                }
+            }
+            offset += vdim_stride;
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: RefineGridFunctionToVTK
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
+//
+//  Arguments:
+//   mesh:         MFEM mesh for the field
+//   gf:           MFEM Grid Function for the field
+//   lod:          number of refinement steps
+//   new_refine:   switch for using the new LOR or legacy LOR
+//
+//  Programmer: Justin Privitera
+//  Creation:   Fri May  6 15:23:56 PDT 2022
+//
+//  Notes: See LegacyRefineGridFunctionToVTK for the function originally 
+//   with this name.
+//
+// ****************************************************************************
+vtkDataArray *
+avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                       mfem::GridFunction *gf,
+                                                       int lod,
+                                                       bool new_refine)
+{
+    BP_PLUGIN_INFO("Creating Refined MFEM Field with lod:" << lod);
+
+    if (!new_refine)
+    {
+        BP_PLUGIN_INFO("Using Legacy LOR to refine grid function.");
+        return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
+    }
+
+    // Check if the mesh is periodic.
+    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
+                                     (mesh->GetNodes()->FESpace()->FEColl());
+    if (L2_coll)
+    {
+        BP_PLUGIN_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
+        return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
+    }
+
+    BP_PLUGIN_INFO("High Order Mesh is not periodic.");
+
+    mfem::FiniteElementSpace *ho_fes = gf->FESpace();
+    if(!ho_fes)
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+            "RefineGridFunctionToVTK: high order gf finite element space is null");
+    }
+    // create the low order grid function
+    mfem::FiniteElementCollection *lo_col = new mfem::LinearFECollection;
+
+#if 0
+    /*Note: The following code is commented out because it appears that
+    MFEM's LOR always gives us back node centered data,
+    no matter if the input is H1 or L2. However,
+    this logic may be relevant if the mesh is periodic,
+    which is currently unsupported, but may be in the future.*/
+
+    std::string basis(gf->FESpace()->FEColl()->Name());
+    // we only have L2 or H1 at this point
+    bool node_centered = basis.find("H1_") == std::string::npos;
+    if(node_centered)
+    {
+        lo_col = new mfem::LinearFECollection;
+    }
+    else
+    {
+        int  p = 0; // single scalar
+        lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
+    }
+#endif
+    
+    // refine the mesh and convert to vtk
+    // it would be nice if this was cached somewhere but we will do it again
+    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, 
+                                         mfem::BasisType::GaussLobatto);
+    mfem::FiniteElementSpace *lo_fes = new mfem::FiniteElementSpace(lo_mesh, lo_col, ho_fes->GetVDim());
+    mfem::GridFunction *lo_gf = new mfem::GridFunction(lo_fes);
+    // transform the higher order function to a low order function somehow
+    mfem::OperatorHandle hi_to_lo;
+    lo_fes->GetTransferOperator(*ho_fes, hi_to_lo);
+    hi_to_lo.Ptr()->Mult(*gf, *lo_gf);
+
+    vtkDataArray *retval = LowOrderGridFunctionToVTK(lo_gf);
+    
+    delete lo_mesh;
+    delete lo_col;
+    delete lo_fes;
+    delete lo_gf;
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -1819,24 +2267,49 @@ CopyTuple1(Node &node, vtkDataArray *da)
 }
 
 // ****************************************************************************
-void VTKDataArrayToNode(Node &node, vtkDataArray *arr)
+//  Method: VTKDataArrayToNode
+//
+//  Purpose:
+//      Wraps VTK data as a Conduit field.
+//
+//  Programmer: Matt Larsen
+//  Creation:   2019-02-25
+//
+//  Modifications:
+//
+//  Brad Whitlock, Fri Apr  1 13:41:32 PDT 2022
+//  Treat scalars specially so we do not make mcarrays out of them.
+//
+// ****************************************************************************
+
+void
+VTKDataArrayToNode(Node &node, vtkDataArray *arr)
 {
     int ncomps = arr->GetNumberOfComponents();
 
-    for(int i = 0; i < ncomps; ++i)
+    if(ncomps == 1)
     {
-      std::stringstream ss;
-      ss<<"/c"<<i;
+        if(arr->GetDataType() == VTK_DOUBLE)
+            CopyComponent64(node, arr, 0);
+        else
+            CopyComponent32(node, arr, 0);
+    }
+    else
+    {
+        for(int i = 0; i < ncomps; ++i)
+        {
+            std::stringstream ss;
+            ss<<"/c"<<i;
 
-      if(arr->GetDataType() == VTK_DOUBLE)
-      {
-         CopyComponent64(node[ss.str()], arr, i);
-      }
-      else
-      {
-         CopyComponent32(node[ss.str()], arr, i);
-      }
-
+            if(arr->GetDataType() == VTK_DOUBLE)
+            {
+                CopyComponent64(node[ss.str()], arr, i);
+            }
+            else
+            {
+                CopyComponent32(node[ss.str()], arr, i);
+            }
+        }
     }
 }
 
@@ -1952,7 +2425,7 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 }
 
 // ****************************************************************************
-//  Method: avtBlueprintDataAdapter::VTKFieldsToBlueprint
+//  Method: avtBlueprintDataAdapter::VTKFieldNameToBlueprint
 //
 //  Purpose:
 //      Replaces '/''s in input vtk_name with '_''s and stores the output in

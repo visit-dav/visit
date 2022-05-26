@@ -57,3 +57,9 @@ Here are the steps involved in *recording* a macro.
    ``visitrc`` file.
 #. Click the new button in the **Macros** window whenever you want to replay the
    recorded set of commands.
+
+.. warning::
+
+    Users should be aware that VisIt_'s macro recording feature records only those operations that use methods in VisIt_'s *python* interface.
+    Any operations that would not ordinarily *require* VisIt_'s python methods to complete are not recorded.
+    In particular, operations involving interaction with the file system such as changing the current working directory and creating a directory (or folder) are not recorded.

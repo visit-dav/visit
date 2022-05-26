@@ -40,6 +40,19 @@ class avtMaterial;
 //  Modifications:
 //      Matt Larsen, Feb 15, 2019 -- adding conversions from vtk to bp
 //
+//      Justin Privitera, Wed Mar 23 12:26:31 PDT 2022
+//      Added "domain" as first arg of MeshToVTK.
+// 
+//      Justin Privitera, Mon Apr 11 18:20:19 PDT 2022
+//      Added "new_refine" as an arg to RefineMeshToVTK.
+// 
+//      Justin Privitera, Wed Apr 13 13:49:43 PDT 2022
+//      Added LegacyRefineMeshToVTK and LowOrderMeshToVTK to MFEM class.
+// 
+//      Justin Privitera, Mon May  9 14:35:18 PDT 2022
+//      Added LegacyRefineGridFunctionToVTK and LowOrderGridFunctionToVTK to 
+//      MFEM class and added "new_refine" as an arg to RefineGridFunctionToVTK.
+//
 //-----------------------------------------------------------------------------
 class avtBlueprintDataAdaptor
 {
@@ -50,7 +63,8 @@ public:
   class VTK
   {
     public:
-      static vtkDataSet*    MeshToVTK(const conduit::Node &mesh);
+      static vtkDataSet*    MeshToVTK(int domain, 
+                                      const conduit::Node &mesh);
       static vtkDataArray*  FieldToVTK(const conduit::Node &field);
 
   };
@@ -96,12 +110,25 @@ public:
     //-------------------------------------------------------------------------
     // mfem to vtk
     //-------------------------------------------------------------------------
+    static vtkDataSet   *LegacyRefineMeshToVTK(mfem::Mesh *mesh,
+                                               int lod);
+
+    static vtkDataSet   *LowOrderMeshToVTK(mfem::Mesh *mesh);
+
     static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
-                                             int lod);
+                                         int lod,
+                                         bool new_refine);
+
+    static vtkDataArray *LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                       mfem::GridFunction *gf,
+                                                       int lod);
+
+    static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf);
 
     static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
-                                                     mfem::GridFunction *gf,
-                                                     int lod);
+                                                 mfem::GridFunction *gf,
+                                                 int lod,
+                                                 bool new_refine);
 
     static vtkDataArray *RefineElementColoringToVTK(mfem::Mesh *mesh,
                                                     int domain_id,

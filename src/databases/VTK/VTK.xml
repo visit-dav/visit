@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="VTK" type="database" label="VTK" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true">
+  <Plugin name="VTK" type="database" label="VTK" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true" skipInfoGen="true">
     <FilePatterns>
       *.vtk
       *.vti

@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
 #include <ColorAttribute.h>
@@ -1614,8 +1615,14 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointSizePixels") == 0)
         return FilledBoundaryAttributes_GetPointSizePixels(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
 
+    //
+    // Removed in 2.13.0
+    //
     bool boundaryTypeFound = false;
     bool lineStyleFound = false;
     // boundaryType and it's possible enumerations
@@ -1647,6 +1654,13 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
+
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     else if (strcmp(name, "lineStyle") == 0)
     {
@@ -1684,6 +1698,7 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1747,6 +1762,9 @@ PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
         if(strcmp(name, "filledFlag") == 0)
         {
             PyErr_WarnEx(NULL, "'filledFlag' is obsolete. It is being ignored.", 3);
@@ -1759,12 +1777,17 @@ PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
             Py_INCREF(Py_None);
             obj = Py_None;
         }
+#endif
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
         else if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
+#endif
     }
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

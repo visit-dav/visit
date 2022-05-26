@@ -102,7 +102,9 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GRadialResampleOperator visitcommon gui )
 
     ADD_LIBRARY(VRadialResampleOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VRadialResampleOperator VIEWER)
     TARGET_LINK_LIBRARIES(VRadialResampleOperator visitcommon viewer )
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} GRadialResampleOperator VRadialResampleOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -129,12 +131,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ERadialResampleOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(ERadialResampleOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser avtivp_ser )
+TARGET_LINK_LIBRARIES(ERadialResampleOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser avtivp_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} ERadialResampleOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ERadialResampleOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ERadialResampleOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par avtivp_par )
+    TARGET_LINK_LIBRARIES(ERadialResampleOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par avtivp_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} ERadialResampleOperator_par)
 ENDIF(VISIT_PARALLEL)
 

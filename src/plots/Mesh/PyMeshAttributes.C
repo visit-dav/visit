@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <GlyphTypes.h>
@@ -1265,20 +1266,14 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "opacity") == 0)
         return MeshAttributes_GetOpacity(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in MeshAttributes
-    if(strcmp(name, "backgroundFlag") == 0)
-    {
-        MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
-        bool backgroundFlag = meshObj->data->GetOpaqueColorSource() == MeshAttributes::Background;
-        return PyInt_FromLong(backgroundFlag?1L:0L);
-    }
-    else if(strcmp(name, "foregroundFlag") == 0)
-    {
-        MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
-        bool foregroundFlag = meshObj->data->GetMeshColorSource() == MeshAttributes::Foreground;
-        return PyInt_FromLong(foregroundFlag?1L:0L);
-    }
 
+    //
+    // Removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     bool lineStyleFound = false;
     if (strcmp(name, "lineStyle") == 0)
@@ -1309,6 +1304,7 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1361,47 +1357,24 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "opacity") == 0)
         obj = MeshAttributes_SetOpacity(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in MeshAttributes
     if(obj == &NULL_PY_OBJ)
     {
         MeshAttributesObject *meshObj = (MeshAttributesObject *)self;
-        if(strcmp(name, "backgroundFlag") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'backgroundFlag' is obsolete. Use 'opaqueColor'.", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                    meshObj->data->SetOpaqueColorSource(MeshAttributes::OpaqueCustom);
-                else 
-                    meshObj->data->SetOpaqueColorSource(MeshAttributes::Background);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "foregroundFlag") == 0)
-        {
-            int ival = -1;
-            PyErr_WarnEx(NULL, "'foregroundFlag' is obsolete. Use 'meshColor'.", 3);
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if (ival == 0)
-                    meshObj->data->SetMeshColorSource(MeshAttributes::MeshCustom);
-                else
-                    meshObj->data->SetMeshColorSource(MeshAttributes::Foreground);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
-        else if(strcmp(name, "lineStyle") == 0)
+        //
+        // Removed in 3.0.0
+        //
+        if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
             Py_INCREF(Py_None);
             obj = Py_None;
         }
     }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 

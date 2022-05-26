@@ -12,7 +12,7 @@
 # TO USE A NEW CONTAINER, UPDATE TAG NAME HERE AS PART OF YOUR PR!
 #####
 variables:
-  container_tag: visitdav/visit-ci-develop:2022-02-10-sha5a28f8
+  container_tag: visitdav/visit-ci-develop:2022-05-19-sha135d90
 
 # only build merge target pr to develop
 trigger: none
@@ -86,28 +86,30 @@ stages:
            # fetch subset of test data (silo + blueprint)
            #################################
            cd data
-           git lfs pull --include silo_amr_test_data.7z
-           git lfs pull --include silo_ghost_test_data.7z
-           git lfs pull --include silo_hdf5_test_data.7z
-           git lfs pull --include silo_pdb_test_data.7z
-           git lfs pull --include silo_sph_test_data.7z
-           git lfs pull --include blueprint_v0.3.1_test_data.7z
-           git lfs pull --include blueprint_v0.3.1_mfem_test_data.7z
-           git lfs pull --include blueprint_v0.7.0_venn_test_data.7z
+           git lfs pull --include silo_amr_test_data.tar.xz
+           git lfs pull --include silo_ghost_test_data.tar.xz
+           git lfs pull --include silo_hdf5_test_data.tar.xz
+           git lfs pull --include silo_pdb_test_data.tar.xz
+           git lfs pull --include silo_sph_test_data.tar.xz
+           git lfs pull --include blueprint_v0.3.1_test_data.tar.xz
+           git lfs pull --include blueprint_v0.3.1_mfem_test_data.tar.xz
+           git lfs pull --include blueprint_v0.7.0_venn_test_data.tar.xz
+           git lfs pull --include blueprint_v0.8.2_braid_examples_test_data.tar.xz
+           git lfs pull --include blueprint_v0.8.2_polytess_test_data.tar.xz
            cd ../
            git lfs pull  --include test/baseline/databases/silo
            git lfs pull  --include test/baseline/databases/blueprint
            cd build/testdata/
-           export P7ZIP_BIN_DIR=`ls -d ${TPLS_PATH}/p7zip/*/ci/bin/`
-           export PATH=$PATH:$P7ZIP_BIN_DIR
-           7za x -y ../../data/silo_amr_test_data.7z
-           7za x -y ../../data/silo_ghost_test_data.7z
-           7za x -y ../../data/silo_hdf5_test_data.7z
-           7za x -y ../../data/silo_pdb_test_data.7z
-           7za x -y ../../data/silo_sph_test_data.7z
-           7za x -y ../../data/blueprint_v0.3.1_test_data.7z
-           7za x -y ../../data/blueprint_v0.3.1_mfem_test_data.7z
-           7za x -y ../../data/blueprint_v0.7.0_venn_test_data.7z
+           tar xvf ../../data/silo_amr_test_data.tar.xz
+           tar xvf ../../data/silo_ghost_test_data.tar.xz
+           tar xvf ../../data/silo_hdf5_test_data.tar.xz
+           tar xvf ../../data/silo_pdb_test_data.tar.xz
+           tar xvf ../../data/silo_sph_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.3.1_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.3.1_mfem_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.7.0_venn_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.8.2_braid_examples_test_data.tar.xz
+           tar xvf ../../data/blueprint_v0.8.2_polytess_test_data.tar.xz
 
         displayName: 'Prep Test Data'
 

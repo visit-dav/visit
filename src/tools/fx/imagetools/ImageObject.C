@@ -101,6 +101,9 @@ ImageObject::~ImageObject()
 //    Kathleen Biagas, Mon Jan 12 16:36:30 PST 2015
 //    Add 'format' argument. Use VTK to write non-ppm formats.
 //
+//    Kathleen Biagas, Tue Apr 12 08:59:13 PDT 2022
+//    Fix strcmp test.
+//
 // ****************************************************************************
 
 bool
@@ -116,24 +119,24 @@ ImageObject::Write(const char *filename, const char *format)
     if (format && strcmp(format, "ppm") != 0)
     {
         vtkImageWriter *writer = NULL;
-        if(strcmp(format, "tiff") != 0)
+        if(strcmp(format, "tiff") == 0)
         {
             writer = vtkTIFFWriter::New();
         }
-        else if(strcmp(format, "jpeg") != 0)
+        else if(strcmp(format, "jpeg") == 0)
         {
             writer = vtkJPEGWriter::New();
             // quality? progressive?
         }
-        else if(strcmp(format, "bmp") != 0)
+        else if(strcmp(format, "bmp") == 0)
         {
             writer = vtkBMPWriter::New();
         }
-        else if(strcmp(format, "rgb") != 0)
+        else if(strcmp(format, "rgb") == 0)
         {
             writer = vtkRGBWriter::New();
         }
-        else if(strcmp(format, "png") != 0)
+        else if(strcmp(format, "png") == 0)
         {
             writer = vtkPNGWriter::New();
         }

@@ -93,6 +93,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GFilledBoundaryPlot visitcommon gui )
 
     ADD_LIBRARY(VFilledBoundaryPlot ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VFilledBoundaryPlot VIEWER)
     TARGET_LINK_LIBRARIES(VFilledBoundaryPlot visitcommon viewer )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GFilledBoundaryPlot VFilledBoundaryPlot)
@@ -121,15 +122,15 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EFilledBoundaryPlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EFilledBoundaryPlot_ser visitcommon avtplotter_ser avtpipeline_ser )
-SET(INSTALLTARGETS ${INSTALLTARGETS} EFilledBoundaryPlot_ser)
+TARGET_LINK_LIBRARIES(EFilledBoundaryPlot_ser visitcommon avtpipeline_ser avtplotter_ser )
 ADD_TARGET_DEFINITIONS(EFilledBoundaryPlot_ser ENGINE)
+SET(INSTALLTARGETS ${INSTALLTARGETS} EFilledBoundaryPlot_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EFilledBoundaryPlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EFilledBoundaryPlot_par visitcommon avtplotter_par avtpipeline_par )
-    SET(INSTALLTARGETS ${INSTALLTARGETS} EFilledBoundaryPlot_par)
+    TARGET_LINK_LIBRARIES(EFilledBoundaryPlot_par visitcommon avtpipeline_par avtplotter_par )
     ADD_TARGET_DEFINITIONS(EFilledBoundaryPlot_par ENGINE)
+    SET(INSTALLTARGETS ${INSTALLTARGETS} EFilledBoundaryPlot_par)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})

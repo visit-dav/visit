@@ -33,11 +33,18 @@ Definition:
 // Modifications:
 //
 // ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
 
 void
 MoleculeAttributes::ProcessOldVersions(DataNode *parentNode,
                                     const char *configVersion)
 {
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     if(parentNode == 0)
         return;
 
@@ -48,8 +55,14 @@ MoleculeAttributes::ProcessOldVersions(DataNode *parentNode,
     if (VersionLessThan(configVersion, "3.0.0"))
     {
         if (searchNode->GetNode("bondLineStyle") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("bondLineStyle", "3.3.2"));
+#endif
             searchNode->RemoveNode("bondLineStyle");
+        }
     }
+#endif
 }
 
 
@@ -57,8 +70,14 @@ Target: xml2python
 Code: PyMoleculeAttributes_getattr
 Prefix:
 Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
 
+    //
+    // Removed in 3.0.0
+    //
     // bondLineStyle and it's possible enumerations
     bool bondLineStyleFound = false;
     if (strcmp(name, "bondLineStyle") == 0)
@@ -89,14 +108,21 @@ Postfix:
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
 
 Code: PyMoleculeAttributes_setattr
 Prefix:
 Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
+        //
+        // Removed in 3.0.0
+        //
         if(strcmp(name, "bondLineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'bondLineStyle' is obsolete. It is being ignored.", 3);
@@ -104,5 +130,6 @@ Postfix:
             obj = Py_None;
         }
     }
+#endif
 
 

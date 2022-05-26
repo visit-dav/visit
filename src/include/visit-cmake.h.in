@@ -74,6 +74,10 @@
 /* Define if you have the EGL */
 #cmakedefine HAVE_EGL
 
+/* Define if you have Conduit. */
+#cmakedefine HAVE_CONDUIT
+
+
 /*******************************************************************************
  * Header file checks
  ******************************************************************************/
@@ -384,4 +388,15 @@ logic here to cause compilation failure if this logic seems to be failing.
 
 #define DEBUG_MEMORY_LEAKS
 */
+
+// Turn on compile errors for obsolete code. 
+#cmakedefine VISIT_REMOVE_OBSOLETE_CODE
+
+// Wrappers for obosolete code
+#ifdef VISIT_REMOVE_OBSOLETE_CODE
+  #define VISIT_OBSOLETE_AT_VERSION(A,B,C) VISIT_VERSION_GE(A,B,C)
+#else
+  #define VISIT_OBSOLETE_AT_VERSION(A,B,C) 0
+#endif
+
 

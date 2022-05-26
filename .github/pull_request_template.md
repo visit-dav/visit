@@ -4,14 +4,18 @@ Resolves # <!-- If this PR is unrelated to a ticket, please erase this line -->
 
 <!-- Please include a summary of the change and any other information and instructions to help reviewers understand the work -->
 
+<!-- Note that all the checklist items in various bulleted lists below end with ~~ characters.
+     This is to facilitate striking them out when they do not apply.
+     One just has to add ~~ characters just before the opening square bracket [ -->
+
 ### Type of change
 
 <!-- Please check one of the boxes below -->
 
-* [ ] Bug fix
-* [ ] New feature
-* [ ] Documentation update
-* [ ] Other <!-- please explain with a note below -->
+* [ ] Bug fix~~
+* [ ] New feature~~
+* [ ] Documentation update~~
+* [ ] Other~~ <!-- please explain with a note below -->
 
 ### How Has This Been Tested?
 

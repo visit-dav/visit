@@ -30,11 +30,18 @@ Definition:
 // Modifications:
 //
 // ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
 
 void
 TopologyAttributes::ProcessOldVersions(DataNode *parentNode,
                                     const char *configVersion)
 {
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     if(parentNode == 0)
         return;
 
@@ -45,8 +52,14 @@ TopologyAttributes::ProcessOldVersions(DataNode *parentNode,
     if (VersionLessThan(configVersion, "3.0.0"))
     {
         if (searchNode->GetNode("lineStyle") != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("lineStyle", "3.3.2"));
+#endif
             searchNode->RemoveNode("lineStyle");
+        }
     }
+#endif
 }
 
 
@@ -55,8 +68,14 @@ Target: xml2python
 Code: PyTopologyAttributes_getattr
 Prefix:
 Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
 
+    //
+    // Removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     bool lineStyleFound = false;
     if (strcmp(name, "lineStyle") == 0)
@@ -87,15 +106,22 @@ Postfix:
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
 
 
 Code: PyTopologyAttributes_setattr
 Prefix:
 Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
+        //
+        // Removed in 3.0.0
+        //
         if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'lineStyle' is obsolete.", 2);
@@ -103,6 +129,7 @@ Postfix:
             obj = Py_None;
         }
     }
+#endif
 
 
 

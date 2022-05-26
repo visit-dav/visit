@@ -21,6 +21,10 @@ function bv_conduit_depends_on
         depends_on="hdf5"
     fi
 
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        depends_on="$depends_on zlib"
+    fi
+
     if [[ "$DO_PYTHON" == "yes" ]] ; then
         depends_on="$depends_on python"
     fi
@@ -34,12 +38,12 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.8.0"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.8.3"}
     export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
     export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.8.0"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    export CONDUIT_MD5_CHECKSUM="a69bfff0e13de6fb6741770e3ed44ba5"
-    export CONDUIT_SHA256_CHECKSUM="0607dcf9ced44f95e0b9549f5bbf7a332afd84597c52e293d7ca8d83117b5119"
+    export CONDUIT_MD5_CHECKSUM="f799fedf6d2abb2b27a249c756cd320f"
+    export CONDUIT_SHA256_CHECKSUM="a9e60945366f3b8c37ee6a19f62d79a8d5888be7e230eabc31af2f837283ed1a"
 }
 
 function bv_conduit_print
@@ -87,11 +91,9 @@ function bv_conduit_ensure
     fi
 }
 
-function bv_conduit_dry_run
+function apply_conduit_patch
 {
-    if [[ "$DO_CONDUIT" == "yes" ]] ; then
-        echo "Dry run option not set for Conduit."
-    fi
+    return 0
 }
 
 # *************************************************************************** #
@@ -113,8 +115,7 @@ function build_conduit
             return 1
         fi
     fi
-    
-    
+
     #
     # Prepare build dir
     #
@@ -124,7 +125,28 @@ function build_conduit
         warn "Unable to prepare Conduit build directory. Giving Up!"
         return 1
     fi
-    
+
+    #
+    # Apply patches
+    #
+    info "Patching Conduit . . ."
+    cd $CONDUIT_BUILD_DIR || error "Can't cd to Conduit build dir."
+    apply_conduit_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_conduit == 1 ]] ; then
+            warn "Giving up on Conduit build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    # move back up to the start dir
+    cd "$START_DIR"
+
     #
     # Call configure
     #
@@ -182,6 +204,10 @@ function build_conduit
 
     if [[ "$DO_HDF5" == "yes" ]] ; then
         cfg_opts="${cfg_opts} -DHDF5_DIR:STRING=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/"
+    fi
+
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        cfg_opts="${cfg_opts} -DZLIB_DIR:STRING=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/"
     fi
 
     if [[ "$DO_PYTHON" == "yes" ]] ; then

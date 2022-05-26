@@ -4,6 +4,7 @@
 
 #include <AnnotationObject.h>
 #include <DataNode.h>
+#include <visit-config.h>
 
 //
 // Enum conversion methods for AnnotationObject::AnnotationType
@@ -1415,6 +1416,9 @@ void
 AnnotationObject::ProcessOldVersions(DataNode *parentNode,
     const char *configVersion)
 {
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+ #error This code is obsolete in this version. Please remove it.
+#else
     if (!VersionLessThan(configVersion, "3.0.0") || parentNode == 0)
     {
         return;
@@ -1434,6 +1438,9 @@ AnnotationObject::ProcessOldVersions(DataNode *parentNode,
         ProcessOldLine3D(searchNode);
     else if (node->AsString() == "Line2D")
         ProcessOldLine2D(searchNode);
+    else if (node->AsString() == "Text3D")
+        ProcessOldText3D(searchNode);
+#endif
 }
 
 // ****************************************************************************
@@ -1455,25 +1462,6 @@ AnnotationObject::ProcessOldLegend(DataNode *searchNode, const char *configVersi
 {
     // what follows is for Legends only
     DataNode *node = NULL;
-    if (VersionLessThan(configVersion, "2.0.0"))
-    {
-        node = searchNode->GetNode("intAttribute1");
-        if (node != 0)
-        {
-            int n = node->AsInt();
-
-            if ((n & (1 << 2)) != 0) // DrawLabels is set, change it to DrawValues
-            {
-                n -= 4;   // DrawLabels
-                n += 512; // DrawValues
-            }
-            // other new legend enums, default to on, and sum to 384
-            n += 384;
-            node->SetInt(n);
-        }
-
-        // new numTics attribute, default setting is 5
-    }
 
     // pre 3.0.0
     MapNode options;
@@ -1483,20 +1471,11 @@ AnnotationObject::ProcessOldLegend(DataNode *searchNode, const char *configVersi
         options["numTicks"] = node->AsInt();
         searchNode->RemoveNode("intAttribute2");
     }
-    else // pre 2.0.0
-    {
-        options["numTicks"] = 5; // default
-    }
-
     node = searchNode->GetNode("intAttribute3");
     if (node != 0)
     {
         options["legendType"] = node->AsInt();
         searchNode->RemoveNode("intAttribute3");
-    }
-    else // pre 2.0.0
-    {
-        options["legendType"] = 0; // default "Variable" type
     }
     node = searchNode->GetNode("stringVector1");
     if (node != 0)

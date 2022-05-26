@@ -105,13 +105,6 @@ function bv_visit_ensure_built_or_ready
     fi
 }
 
-function bv_visit_dry_run
-{
-    if [[ "$DO_VISIT" == "yes" ]] ; then
-        echo "Dry run option not set for VisIt"
-    fi
-}
-
 
 function bv_visit_print_build_command
 {
@@ -352,12 +345,20 @@ function build_visit
         FEATURES="${FEATURES} -DCPACK_RPM_SPEC_MORE_DEFINE:STRING=\"%global_python_bytecompile_errors_terminate_build 0\""
     fi
 
-    issue_command "${CMAKE_BIN}" ${FEATURES} ../src
+    # Several platforms have had problems with the cmake configure command
+    # issued simply via "issue_command".  This was first discovered on
+    # BGQ and then showed up in random cases for both OSX and Linux machines.
+    # Brad resolved this on BGQ  with a simple work around - we write a simple
+    # script that we invoke with bash which calls cmake with all of the
+    # arguments. We are now using this strategy for all platforms.
+    #
 
-    if [[ $? != 0 ]] ; then
-        echo "VisIt configure failed.  Giving up"
-        return 1
+    if test -e bv_run_cmake.sh ; then
+        rm -f bv_run_cmake.sh
     fi
+    echo "\"${CMAKE_BIN}\"" ${FEATURES} ../src > bv_run_cmake.sh
+    cat bv_run_cmake.sh
+    issue_command bash bv_run_cmake.sh || error "VisIt configuration failed."
 
     #
     # Some platforms like to modify the generated Makefiles.

@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <GlyphTypes.h>
@@ -3944,14 +3945,14 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointColor") == 0)
         return PseudocolorAttributes_GetPointColor(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in PseudocolorAttributes
-    if(strcmp(name, "useColorTableOpacity") == 0)
-    {
-        PseudocolorAttributesObject *meshObj = (PseudocolorAttributesObject *)self;
-        bool useCT = meshObj->data->GetOpacityType() == PseudocolorAttributes::ColorTable;
-        return PyInt_FromLong(useCT?1L:0L);
-    }
 
+    //
+    // Removed in 3.0.0
+    //
     // lineStyle and it's possible enumerations
     bool lineStyleFound = false;
     if (strcmp(name, "lineStyle") == 0)
@@ -3982,6 +3983,7 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -4110,25 +4112,17 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "pointColor") == 0)
         obj = PseudocolorAttributes_SetPointColor(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in PseudocolorAttributes
     if(obj == &NULL_PY_OBJ)
     {
         PseudocolorAttributesObject *PseudocolorObj = (PseudocolorAttributesObject *)self;
-        if(strcmp(name, "useColorTableOpacity") == 0)
-        {
-            PyErr_WarnEx(NULL, "'useColorTableOpacity' is obsolete. Use 'opacityType'", 3);
-            int ival = -1;
-            ival = (int) PyLong_AsLong(args);
-            if (ival != -1)
-            {
-                if(ival == 0)
-                    PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Constant);
-                else
-                    PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::ColorTable);
-            }
-            Py_INCREF(Py_None);
-            obj = Py_None;
-        }
+
+        //
+        // Removed in 3.0.0
+        //
         if(strcmp(name, "lineStyle") == 0)
         {
             PyErr_WarnEx(NULL, "'lineStyle' is obsolete. It is being ignored.", 3);
@@ -4136,6 +4130,7 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 

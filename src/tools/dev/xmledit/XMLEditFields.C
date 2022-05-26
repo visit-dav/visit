@@ -30,6 +30,10 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    September 25, 2001
 //
+//  Modifications:
+//    Kathleen Biagas, Wed Apr 6, 2022
+//    Fix QT_VERSION test to use Qt's QT_VERSION_CHECK.
+//
 // ****************************************************************************
 class QNarrowLineEdit : public QLineEdit
 {
@@ -46,8 +50,12 @@ class QNarrowLineEdit : public QLineEdit
     {
         QSize size = QLineEdit::sizeHint();
         QFontMetrics fm(font());
-        int w = fm.horizontalAdvance('x') * 4; // 4 characters
-        size.setWidth(w);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+        int w = fm.horizontalAdvance("x");
+#else
+        int w = fm.width("x");
+#endif
+        size.setWidth(w * 4); // 4 characters
         return size;
     }
 };
