@@ -458,6 +458,7 @@ static PyObject *ColorTableAttributes_richcompare(PyObject *self, PyObject *othe
 PyObject *
 PyColorTableAttributes_getattr(PyObject *self, char *name)
 {
+#include <visit-config.h>
     if(strcmp(name, "names") == 0)
         return ColorTableAttributes_GetNames(self, NULL);
     if(strcmp(name, "colorTables") == 0)
@@ -481,13 +482,13 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
     {
         ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
         std::string defaultContinuous = ColorTableObj->data->GetDefaultContinuous();
-        return PyString_FromString(defaultContinuous);
+        return PyString_FromString(defaultContinuous.c_str());
     }
     if(strcmp(name, "activeDiscrete") == 0)
     {
         ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
         std::string defaultDiscrete = ColorTableObj->data->GetDefaultDiscrete();
-        return PyString_FromString(defaultDiscrete);
+        return PyString_FromString(defaultDiscrete.c_str());
     }
 #endif
 
@@ -508,6 +509,7 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
 int
 PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
 {
+#include <visit-config.h>
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
 

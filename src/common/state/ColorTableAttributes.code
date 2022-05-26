@@ -586,6 +586,7 @@ ColorTableAttributes::ProcessOldVersions(DataNode *parentNode,
 Target: xml2python
 Code: PyColorTableAttributes_getattr
 Prefix:
+#include <visit-config.h>
 Postfix:
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
 #error This code is obsolete in this version. Please remove it.
@@ -599,19 +600,20 @@ Postfix:
     {
         ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
         std::string defaultContinuous = ColorTableObj->data->GetDefaultContinuous();
-        return PyString_FromString(defaultContinuous);
+        return PyString_FromString(defaultContinuous.c_str());
     }
     if(strcmp(name, "activeDiscrete") == 0)
     {
         ColorTableAttributesObject *ColorTableObj = (ColorTableAttributesObject *)self;
         std::string defaultDiscrete = ColorTableObj->data->GetDefaultDiscrete();
-        return PyString_FromString(defaultDiscrete);
+        return PyString_FromString(defaultDiscrete.c_str());
     }
 #endif
 
 Target: xml2python
 Code: PyColorTableAttributes_setattr
 Prefix:
+#include <visit-config.h>
 Postfix:
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
 #error This code is obsolete in this version. Please remove it.
