@@ -57,9 +57,6 @@ TakeQueryAttributesResults(QueryAttributes &qA, float *buff)
 {
     // Move the vector in so that it gets destroyed at the end of the function
     std::vector<float> results = std::move(qA.GetFloatResultsValue());
-    std::cout << "Taking float query attribute results!" << std::endl;
-    if(results.size() == 3)
-        std::cout << results[0] << ", " << results[1] << ", " << results[2] << std::endl;
     memcpy(buff, results.data(), results.size() * sizeof(float));
 }
 
