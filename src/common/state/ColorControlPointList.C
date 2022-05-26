@@ -1740,13 +1740,14 @@ void ColorControlPointList::SetNumControlPoints(const int n)
             {0, 0, 0, 255},
             {255, 255, 255, 255}};
 
-        // positions will be aligned throughout the whole list
+        // re-align current points so new points added below can have reasonable positions
         float delta = 1.f/float(n-1);
         float pos = 0.f;
         for (int i = 0; i < currentSize; ++i, pos += delta)
         {
             ((ColorControlPoint*)(controlPoints[i]))->SetPosition(pos);
         }
+        // set the new size and add new points
         controlPoints.resize(n);
         for(int i = currentSize; i < n; ++i, pos+=delta)
         {
