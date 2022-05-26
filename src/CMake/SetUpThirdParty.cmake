@@ -180,11 +180,6 @@ FUNCTION(SET_UP_THIRD_PARTY pkg)
             ENDIF(NOT ${${inc_dir_var}} STREQUAL ${${lib_dir_var}})
         ENDIF(${${lib_skip_install}})
 
-        #SET(all_libs ${libs})
-        #FOREACH (X ${ARGN})
-        #    SET(all_libs ${all_libs} ${X})
-        #ENDFOREACH (X ${ARGN})
-
         FOREACH (X ${libs})
             FIND_LIBRARY(full_lib_path ${X}
                          PATHS ${${lib_dir_var}}
