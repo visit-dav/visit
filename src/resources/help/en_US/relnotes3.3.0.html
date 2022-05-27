@@ -131,6 +131,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where bounding box extents would not be reset when 'Scale 3D Axes' was turned off.</li>
   <li>Fixed a cli crash when 'DeleteAllPlots' is called when there are not plots, and a callback has been registered for 'SetActivePlots'.</li>
   <li>Fixed a bug in visit_composite where output formats like bmp, png could not be read back in by VisIt nor used to encode movies.</li>
+  <li>Fixed a bug with the Python CLI where the PySide2 module wouldn't load when running one of the pre-built binaries.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
@@ -163,6 +164,14 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The DEFINES tag now supports surrounding definitions in quotes if the quotes are important to be carried through. They must be escaped with a '\'. See uintah.xml for an example.</li>
   <li>The version of MFEM was upgraded to 4.4.</li>
   <li>Corrected a bug with the regression test suite where the image difference metrics were reported incorrectly in the HTML and JSON output.</li>
+  <li>The signature for the SET_UP_THIRD_PARTY function for Find modules was modified to utilize keyword arguments:
+    <ul>
+     <li><b>LIBS</b> (required) -- the list of libraries to be found</li>
+     <li><b>LIBDIR</b> (optional) -- use when libs are located in an extension other than <i>lib64</i> or <i>lib</i></li>
+     <li><b>INCDIR</b> (optional) -- use when the headers are located in an extension other than <i>include</i></li>
+    </ul>
+    The first argument still must be the name of the package.
+  </li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

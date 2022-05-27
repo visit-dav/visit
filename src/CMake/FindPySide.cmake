@@ -33,6 +33,11 @@
 #   Updates for pyside2 5.14.2, also, look for pyside within python first,
 #   then the stand-alone way via VISIT_PYSIDE_DIR.
 #
+#   Eric Brugger, Thu May 26 14:29:34 PDT 2022
+#   Added the path of the shiboken2 SONAME to SET_UP_THIRD_PARTY so that
+#   Python could find the shiboken2 module when the directory containing
+#   the PySide2 build was no longer accessible.
+#
 #****************************************************************************/
 
 
@@ -189,8 +194,10 @@ if(NOT PySide_FOUND)
                 if(TARGET Shiboken2::libshiboken)
                     get_target_property(SHIBOKEN_INCLUDE_DIR Shiboken2::libshiboken INTERFACE_INCLUDE_DIRECTORIES)
                     get_target_property(SHIBOKEN_LIBRARY Shiboken2::libshiboken IMPORTED_LOCATION_RELEASE)
+                    get_target_property(SHIBOKEN_LIBRARY_SO Shiboken2::libshiboken IMPORTED_SONAME_RELEASE)
                     message("SHIBOKEN_INCLUDE: ${SHIBOKEN_INCLUDE_DIR}")
                     message("SHIBOKEN_LIBRARY: ${SHIBOKEN_LIBRARY}")
+                    message("SHIBOKEN_LIBRARY_SO: ${SHIBOKEN_LIBRARY_SO}")
                 else()
                     message(" no shiboken2 library target")
                 endif()
@@ -230,7 +237,7 @@ if(NOT PySide_FOUND)
             get_filename_component(shiboken_lib_name ${SHIBOKEN_LIBRARY} NAME)
 
             # Is this call to SET_UP_THIRD_PARTY still needed?
-            SET_UP_THIRD_PARTY(PYSIDE lib include ${pyside_lib_name} ${shiboken_lib_name})
+            SET_UP_THIRD_PARTY(PYSIDE LIBS ${pyside_lib_name} ${shiboken_lib_name} ${SHIBOKEN_LIBRARY_SO})
 
             # Install the pyside and shiboken python site-packages
             install(DIRECTORY ${PYSIDE_PYTHONPATH}
