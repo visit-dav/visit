@@ -13,5 +13,5 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(CFITSIO lib include cfitsio)
+SET_UP_THIRD_PARTY(CFITSIO LIBS cfitsio)
 

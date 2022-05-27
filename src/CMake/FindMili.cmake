@@ -6,5 +6,5 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(MILI lib include mili)
+SET_UP_THIRD_PARTY(MILI LIBS mili)
 

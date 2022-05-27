@@ -6,6 +6,6 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(MFEM lib include mfem)
+SET_UP_THIRD_PARTY(MFEM LIBS mfem)
 
 

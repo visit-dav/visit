@@ -51,6 +51,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Flatten() function has been added to the CLI; this function uses the new avtFlattenQuery to return the active plot data as a tabular, numpy compatible, 2D array.</li>
   <li>Added new mesh expressions 'logical_nodeid', 'logical_zoneid', 'node_domain', 'zone_domain', and 'zone_centers'.</li>
   <li>A tutorial on Python expressions was added to the tutorials section of the manual.</li>
+  <li>Upgraded ADIOS and ADIOS2 to build with c-blosc, so blosc-compressed ADIOS-based files can now be read by VisIt.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -74,6 +75,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Xolotl reader was updated to support phase-space.<li>
   <li>SW4 reader was renamed as sw4img to fix static builds.<li>
   <li>NASTRAN reader was adjusted to reduce verbosity of debugX outputs and handle DOS line endings.<li>
+  <li>The Blueprint reader now supports the option to choose between two different MFEM low order refinement schemes. The Legacy option is the original LOR scheme used by VisIt, and the new option preserves the continuity of meshes. The new option is enabled by default.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -115,6 +117,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug where bounding box extents would not be reset when 'Scale 3D Axes' was turned off.</li>
   <li>Fixed a cli crash when 'DeleteAllPlots' is called when there are not plots, and a callback has been registered for 'SetActivePlots'.</li>
   <li>Fixed a bug in visit_composite where output formats like bmp, png could not be read back in by VisIt nor used to encode movies.</li>
+  <li>Fixed a bug with the Python CLI where the PySide2 module wouldn't load when running one of the pre-built binaries.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
@@ -129,6 +132,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Build_visit was modified to do an out-of-source build for Qt.</li>
   <li>Enhanced build_visit to optionally build Qt 5.10.1 instead of Qt 5.14.2. To enable building Qt 5.10.1, add <i>--qt510</i> to the command line.</li>
+  <li>Build_visit was enhanced to patch Xdmf so that it builds with gcc 11.2.</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -143,6 +147,15 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The DEFINES, CXXFLAGS and LDFLAGS tags in the xml files for plugins now support an optional "components" attribute specifying for which component(s) the tag applies. Currently valid for MDServer("M"), serial Engine ("ESer") and parallel Engine("EPar"). Multiple components may be specified, separated by commas. See ADIOS2.xml or MOAB.xml for an example.</li>
   <li>The DEFINES tag now supports surrounding definitions in quotes if the quotes are important to be carried through. They must be escaped with a '\'. See uintah.xml for an example.</li>
   <li>The version of MFEM was upgraded to 4.4.</li>
+  <li>Corrected a bug with the regression test suite where the image difference metrics were reported incorrectly in the HTML and JSON output.</li>
+  <li>The signature for the SET_UP_THIRD_PARTY function for Find modules was modified to utilize keyword arguments:
+    <ul>
+     <li><b>LIBS</b> (required) -- the list of libraries to be found</li>
+     <li><b>LIBDIR</b> (optional) -- use when libs are located in an extension other than <i>lib64</i> or <i>lib</i></li>
+     <li><b>INCDIR</b> (optional) -- use when the headers are located in an extension other than <i>include</i></li>
+    </ul>
+    The first argument still must be the name of the package.
+  </li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

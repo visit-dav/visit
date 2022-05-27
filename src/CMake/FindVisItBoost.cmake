@@ -21,7 +21,7 @@ IF(NEKTAR++_FOUND)
    boost_program_options)
 ENDIF()
 
-SET_UP_THIRD_PARTY(BOOST lib include ${BOOST_LIBS} )
+SET_UP_THIRD_PARTY(BOOST LIBS ${BOOST_LIBS} )
 
 if(BOOST_FOUND)
     set(HAVE_BOOST true CACHE BOOL "Have boost ")

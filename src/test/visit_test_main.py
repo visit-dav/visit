@@ -763,14 +763,21 @@ def LogImageTestResult(case_name,
                         tPixs, pPixs,dPixs, dpix, davg)
 
 # ----------------------------------------------------------------------------
-#  Method: LogImageTestResult
+#  Method: JSONImageTestResult
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#   Eric Brugger, Mon May 23 16:32:45 PDT 2022
+#   Move dpix in the argument list since it was in the wrong spot
+#   relative to the where it was when it was called. This caused it
+#   and several other arguments to be incorrect.
+#
 # ----------------------------------------------------------------------------
 def JSONImageTestResult(case_name, status,
                         diffState, modeSpecific,
-                        dpix, tPixs, pPixs, dPixs, davg):
+                        tPixs, pPixs, dPixs, dpix, davg):
     res = json_results_load()
     t_res = {'name':          case_name,
              'status':        status,
@@ -1031,11 +1038,16 @@ def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
 #   I added the modeSpecific argument, which causes the text next to the
 #   baseline image to indicate if it is a mode specific image or not.
 #
+#   Eric Brugger, Mon May 23 16:32:45 PDT 2022
+#   Move dpix in the argument list since it was in the wrong spot
+#   relative to the where it was when it was called. This caused it
+#   and several other arguments to be incorrect.
+#
 # ----------------------------------------------------------------------------
 
 def HTMLImageTestResult(case_name,status,
                         diffState, modeSpecific,
-                        dpix, tPixs, pPixs, dPixs, davg):
+                        tPixs, pPixs, dPixs, dpix, davg):
     """
     Writes HTML entry for a single test image.
     """
