@@ -21,12 +21,14 @@ include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 if(APPLE)
     if(VISIT_STATIC)
-        SET_UP_THIRD_PARTY(QWT lib include qwt)
+        SET_UP_THIRD_PARTY(QWT LIBS qwt)
     else()
-        SET_UP_THIRD_PARTY(QWT lib lib/qwt.framework/Versions/Current/Headers qwt)
+        SET_UP_THIRD_PARTY(QWT
+            INCDIR lib/qwt.framework/Versions/Current/Headers
+            LIBS qwt)
     endif()
 else()
-    SET_UP_THIRD_PARTY(QWT lib include qwt)
+    SET_UP_THIRD_PARTY(QWT LIBS qwt)
 endif()
 
 if(NOT QWT_FOUND)
