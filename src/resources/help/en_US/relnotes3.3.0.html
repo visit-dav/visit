@@ -52,6 +52,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added new mesh expressions 'logical_nodeid', 'logical_zoneid', 'node_domain', 'zone_domain', and 'zone_centers'.</li>
   <li>A tutorial on Python expressions was added to the tutorials section of the manual.</li>
   <li>Changed "active" to "default" for everything related to color tables. This means in the gui, in the python scripting interface, and internally.</li>
+  <li>Upgraded ADIOS and ADIOS2 to build with c-blosc, so blosc-compressed ADIOS-based files can now be read by VisIt.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -75,6 +76,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Xolotl reader was updated to support phase-space.<li>
   <li>SW4 reader was renamed as sw4img to fix static builds.<li>
   <li>NASTRAN reader was adjusted to reduce verbosity of debugX outputs and handle DOS line endings.<li>
+  <li>The Blueprint reader now supports the option to choose between two different MFEM low order refinement schemes. The Legacy option is the original LOR scheme used by VisIt, and the new option preserves the continuity of meshes. The new option is enabled by default.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -129,7 +131,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Build features added in version 3.3</font></b></p>
 <ul>
   <li>Build_visit was modified to do an out-of-source build for Qt.</li>
-  <li>Build Feature 2</li>
+  <li>Build_visit was enhanced to patch Xdmf so that it builds with gcc 11.2.</li>
 </ul>
 
 <a name="Dev_changes"></a>
@@ -144,6 +146,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The DEFINES, CXXFLAGS and LDFLAGS tags in the xml files for plugins now support an optional "components" attribute specifying for which component(s) the tag applies. Currently valid for MDServer("M"), serial Engine ("ESer") and parallel Engine("EPar"). Multiple components may be specified, separated by commas. See ADIOS2.xml or MOAB.xml for an example.</li>
   <li>The DEFINES tag now supports surrounding definitions in quotes if the quotes are important to be carried through. They must be escaped with a '\'. See uintah.xml for an example.</li>
   <li>The version of MFEM was upgraded to 4.4.</li>
+  <li>Corrected a bug with the regression test suite where the image difference metrics were reported incorrectly in the HTML and JSON output.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
