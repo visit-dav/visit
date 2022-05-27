@@ -542,7 +542,7 @@ function initialize_build_visit()
     ANY_ERRORS="no"
 
     #initialize VisIt
-    bv_visit_initialize
+    bv_visit_initialize "$@"
 
     #
     # OPTIONS
@@ -596,6 +596,7 @@ function initialize_build_visit()
     export CREATE_RPM="no"
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
+    export DO_QT510="no"
     DOWNLOAD_ONLY="no"
 
 
@@ -624,6 +625,17 @@ function initialize_build_visit()
         fi
     fi
 
+
+    #
+    # Check the command line arguments for any arguments that need to be
+    # handled before calling the bv_XXX_info methods. This would mainly
+    # be arguments that affect the version of a package being built.
+    #
+    for arg in "$@" ; do
+        case $arg in
+            --qt510) DO_QT510="yes";;
+        esac
+    done
 
     #get visit information..
     bv_visit_info
@@ -1223,6 +1235,9 @@ function run_build_visit()
             --thirdparty-path) next_arg="thirdparty-path";;
             --version) next_arg="version";;
             --xdb) DO_XDB="yes";;
+            # "--qt510" is actually handled elsewhere, but it is also here
+            # to prevent it triggering an "Urecognized option" error.
+            --qt510) ;;
             --console) ;;
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
             *)
