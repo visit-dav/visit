@@ -6,4 +6,4 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(GFORTRAN lib include gfortran quadmath gcc_s.1)
+SET_UP_THIRD_PARTY(GFORTRAN LIBS gfortran quadmath gcc_s.1)

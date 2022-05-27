@@ -26,12 +26,6 @@ SET(NEKTAR++_LIBRARIES LibUtilities
 
 If( EXISTS ${VISIT_NEKTAR++_DIR} )
 
-    IF(EXISTS ${VISIT_NEKTAR++_DIR}/lib64)
-        SET(LIB lib64)
-    ELSE()
-        SET(LIB lib)
-    ENDIF()
-
     IF(EXISTS ${VISIT_NEKTAR++_DIR}/${LIB}/nektar++/cmake/NEKTAR++Config.cmake)
         SET(NEKTAR++_DIR ${VISIT_NEKTAR++_DIR})
     ENDIF()
@@ -56,9 +50,8 @@ ENDIF()
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 SET_UP_THIRD_PARTY(NEKTAR++
-    ${LIB}
-    include/nektar++
-    ${NEKTAR++_LIBRARIES}
+    INCDIR include/nektar++
+    LIBS ${NEKTAR++_LIBRARIES}
     )
 
 IF(NEKTAR++_FOUND)

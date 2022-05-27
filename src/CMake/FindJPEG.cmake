@@ -21,9 +21,9 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
   if (JPEG_LIBNAME_PREFIX_LIB)
-      SET_UP_THIRD_PARTY(JPEG lib include libjpeg)
+      SET_UP_THIRD_PARTY(JPEG LIBS libjpeg)
   else() 
-      SET_UP_THIRD_PARTY(JPEG lib include jpeg)
+      SET_UP_THIRD_PARTY(JPEG LIBS jpeg)
   endif()
 ENDIF (WIN32)
 
