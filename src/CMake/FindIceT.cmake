@@ -24,6 +24,6 @@
 
 if(VISIT_ICET_DIR)
     include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
-    SET_UP_THIRD_PARTY(ICET lib include IceTCore IceTGL IceTMPI)
+    SET_UP_THIRD_PARTY(ICET LIBS IceTCore IceTGL IceTMPI)
 endif()
 

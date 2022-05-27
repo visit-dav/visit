@@ -230,7 +230,7 @@ if(NOT PySide_FOUND)
             get_filename_component(shiboken_lib_name ${SHIBOKEN_LIBRARY} NAME)
 
             # Is this call to SET_UP_THIRD_PARTY still needed?
-            SET_UP_THIRD_PARTY(PYSIDE lib include ${pyside_lib_name} ${shiboken_lib_name})
+            SET_UP_THIRD_PARTY(PYSIDE LIBS ${pyside_lib_name} ${shiboken_lib_name})
 
             # Install the pyside and shiboken python site-packages
             install(DIRECTORY ${PYSIDE_PYTHONPATH}
