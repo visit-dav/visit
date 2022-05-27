@@ -34,7 +34,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_features"></a>
 <p><b><font size="4">General features added in version 3.3</font></b></p>
 <ul>
-  <li>Updated the ORNL host file list to include only current machines.</li>
   <li>After a successful Export database, the informational message now contains the host and path to the export.</li>
   <li>Attribute assignment (e.g. <code>cylinderAtts.point1=...</code> or <code>cylinderAtts.SetPoint1(...)</code>) operations were modified to catch and disallow nonsensical usage instead of silently falling back to default values and provide better error checkingand messaging. It is possible these changes may cause code that worked fine to now terminate with a Python exception. In such cases, the resulting error message should explain the cause of the failure and the changes required to fix it should be obvious and minimal.</li>
   <li>A new function was added to the Python CLI named <code>apropos(regex)</code> similar in purpose to <a href="https://en.wikipedia.org/wiki/Apropos_(Unix)">Unix' apropos</a>. It makes finding the names of functions and objects much easier. It will return a list of the names of functions or objects where the regular expression matches either in the method name or in the documentation string for the method or in a stringified instance (objects only). All matching is case insensitive.</li>
@@ -53,6 +52,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A tutorial on Python expressions was added to the tutorials section of the manual.</li>
   <li>Changed "active" to "default" for everything related to color tables. This means in the gui, in the python scripting interface, and internally.</li>
   <li>Upgraded ADIOS and ADIOS2 to build with c-blosc, so blosc-compressed ADIOS-based files can now be read by VisIt.</li>
+  <li>A slew of new, color vision deficient (CVD) color tables from <a href="https://www.fabiocrameri.ch/visualisation/">Fabio Crameri</a> were added and assigned the category <code>CvdFriendlyCrameri</code></li>
+  <li>Existing Viridis CVD color tables were given a new category name, <code>CvdFriendlyViridis</code></li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -65,6 +66,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="GUI_changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 3.3</font></b></p>
 <ul>
+  <li>In the file open window, next to "Open file as type:" when you click "Guess from file name/extension", the list of file types is now sorted in alphabetical case-insensitive order. The same change has been made in the list of Databases in the Plugin Manager.</li>
+  <li>In the plugin selection in the file open window, users can now delete the text that is there and start typing the name of the plugin that they wish to open files with, and VisIt will autocomplete the entered text to select a plugin.</li>
   <li>Custom titles for Legend annotation objects can now be set.</li> 
   <li>Dolly and FlyThrough navigation modes now support mouse-wheel interaction for zooming.</li>
   <li>Changing navigation mode (Trackball, Dolly, FlyThrough) will now trigger an automatic View reset.</li>
@@ -73,10 +76,16 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 3.3</font></b></p>
 <ul>
+  <li>Chombo plugin now supports anisotropic refinements.</li>
+  <li>The WData database reader was added.</li>
+  <li>Added implicit points topology support to the Blueprint Plugin.</li>
+  <li>Added the ability for users to specify the output precision when exporting Xmdv (.okc) files.</li>
+  <li>Added polyhedral mesh support to the Blueprint Plugin. Now, if you ask visit to read a polyhedral mesh, it will automatically convert the mesh to a tetrahedral mesh, as well as convert the fields as needed. It will also keep track of original element ids so that you don't see the new lines from the resulting tetrahedra.</li>
   <li>The Xolotl reader was updated to support phase-space.<li>
   <li>SW4 reader was renamed as sw4img to fix static builds.<li>
   <li>NASTRAN reader was adjusted to reduce verbosity of debugX outputs and handle DOS line endings.<li>
   <li>The Blueprint reader now supports the option to choose between two different MFEM low order refinement schemes. The Legacy option is the original LOR scheme used by VisIt, and the new option preserves the continuity of meshes. The new option is enabled by default.</li>
+  <li>VisIt-generated expressions are no longer included in VTK, Blueprint, and Silo exports.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -96,8 +105,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Expression_changes"></a>
 <p><b><font size="4">Changes to VisIt's expression language in version 3.3</font></b></p>
 <ul>
-  <li>Expression Change 1</li>
-  <li>Expression Change 2</li>
+  <li>Moved the <i>divergence</i>, <i>curl</i>, <i>Laplacian</i>, and <i>gradient</i> functions from the <i>Miscellaneous</i> submenu to the <i>Vector</i> submenu within the <i>Insert function...</i> menu in the Expressions window. </li>
+  <li>Added new <i>ghost_zoneid</i> function to the <i>Mesh</i> submenu in the Expressions window.</li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -110,6 +119,11 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 3.3</font></b></p>
 <ul>
+  <li>Fixed a bug with expression insert-function for constant expressions, so usage is clearer. </li>
+  <li>Ensure variable names from PlainText reader have no leading or trailing whitespace.</li>
+  <li>Fixed a time slider widget window resize bug so that now the main gui window width is not locked and can be shrunk and expanded.</li>
+  <li>VisIt can now build successfully with ADIOS enabled while MPI is disabled.</li>
+  <li>Fixed an issue where the list of plugins in the file open window could disappear when selecting plugins from the list multiple times.</li>
   <li>Fixed bug where changing the 'Number format' for a Contour plot's legend would have no affect on the labels next to the tick marks.</li>
   <li>Fixed a bug that prevented users from comparing particular VisIt Python objects in the CLI with non-VisIt types.</li>
   <li>Fixed a crash with libsim when attempting to Export databases that have export options specified as enums.</li>
@@ -124,8 +138,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Configuration_changes"></a>
 <p><b><font size="4">Configuration changes in version 3.3</font></b></p>
 <ul>
-  <li>Configuration Change 1</li>
-  <li>Configuration Change 2</li>
+  <li>Updated the Ohio Supercomputing Center host profiles.</li>
+  <li>Updated the ORNL host file list to include only current machines.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -139,6 +153,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.3</font></b></p>
 <ul>
+  <li>VTK-m was updated to version 1.7.0 and VTK-h was updated to version 0.8.0.</li>
+  <li>The <i>--dry-run</i> command line option has been removed.</li>
+  <li>Added the spack environment files <i>compilers.yaml</i> and <i>packages.yaml</i> for crusher.olcf.ornl.gov.</li>
   <li>There is now a WIN32DEFINES xml tag for database plugins, used to specify preprocessor defines needed by a plugin on Windows. If the needed define comes from a thirdparty library, the Find module for that library should set a CMake var with those defines that the plugin could then use in the .xml file. See FindCGNS.cmake and CGNS.xml for an example.</li>
   <li>The minimum required version of CMake is now 3.14, the version built by build_visit.</li> 
   <li>The programs qtviswinExample, qtvtkExample, qvtkopenglExample were added to help with debugging OpenGL issues.</li>
@@ -160,6 +177,6 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes3.2.3.html>3.2.3</a>.</p>
+of VisIt: <a href=relnotes3.2.2.html>3.2.2</a>.</p>
 </body>
 </html>
