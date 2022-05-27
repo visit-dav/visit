@@ -10330,6 +10330,19 @@ visit_SetDefaultContinuousColorTable(PyObject *self, PyObject *args)
     return IntReturnValue(Synchronize());
 }
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+STATIC PyObject *
+visit_SetActiveContinuousColorTable(PyObject *self, PyObject *args)
+{
+#ifdef VIEWER
+    avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
+#endif
+    return visit_SetDefaultContinuousColorTable(self, args);
+}
+#endif
+
 // ****************************************************************************
 // Function: visit_SetDefaultDiscreteColorTable
 //
@@ -10367,11 +10380,24 @@ visit_SetDefaultDiscreteColorTable(PyObject *self, PyObject *args)
     return IntReturnValue(Synchronize());
 }
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+STATIC PyObject *
+visit_SetActiveDiscreteColorTable(PyObject *self, PyObject *args)
+{
+#ifdef VIEWER
+    avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
+#endif
+    return visit_SetDefaultDiscreteColorTable(self, args);
+}
+#endif
+
 // ****************************************************************************
 // Function: visit_GetDefaultContinuousColorTable
 //
 // Purpose:
-//   Returns the active continuous colortable.
+//   Returns the default continuous colortable.
 //
 // Notes:
 //
@@ -10396,11 +10422,24 @@ visit_GetDefaultContinuousColorTable(PyObject *self, PyObject *args)
     return retval;
 }
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+STATIC PyObject *
+visit_GetActiveContinuousColorTable(PyObject *self, PyObject *args)
+{
+#ifdef VIEWER
+    avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
+#endif
+    return visit_GetDefaultContinuousColorTable(self, args);
+}
+#endif
+
 // ****************************************************************************
 // Function: visit_GetDefaultDiscreteColorTable
 //
 // Purpose:
-//   Returns the active discrete colortable.
+//   Returns the default discrete colortable.
 //
 // Notes:
 //
@@ -10425,6 +10464,19 @@ visit_GetDefaultDiscreteColorTable(PyObject *self, PyObject *args)
 
     return retval;
 }
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+STATIC PyObject *
+visit_GetActiveDiscreteColorTable(PyObject *self, PyObject *args)
+{
+#ifdef VIEWER
+    avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
+#endif
+    return visit_GetDefaultDiscreteColorTable(self, args);
+}
+#endif
 
 // ****************************************************************************
 // Method: visit_AddColorTable
@@ -18339,6 +18391,14 @@ AddProxyMethods()
     AddMethod("GetDefaultContinuousColorTable", visit_GetDefaultContinuousColorTable,
                                                 visit_GetDefaultContinuousColorTable_doc);
     AddMethod("GetDefaultDiscreteColorTable", visit_GetDefaultDiscreteColorTable,
+                                                visit_GetDefaultDiscreteColorTable_doc);
+    AddMethod("SetActiveContinuousColorTable", visit_SetActiveContinuousColorTable,
+                                                visit_SetDefaultContinuousColorTable_doc);
+    AddMethod("SetActiveDiscreteColorTable", visit_SetActiveDiscreteColorTable,
+                                                visit_SetDefaultDiscreteColorTable_doc);
+    AddMethod("GetActiveContinuousColorTable", visit_GetActiveContinuousColorTable,
+                                                visit_GetDefaultContinuousColorTable_doc);
+    AddMethod("GetActiveDiscreteColorTable", visit_GetActiveDiscreteColorTable,
                                                 visit_GetDefaultDiscreteColorTable_doc);
     AddMethod("GetNumPlots", visit_GetNumPlots, visit_GetNumPlots_doc);
     AddMethod("Argv", visit_Argv, NULL);
