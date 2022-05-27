@@ -31,8 +31,8 @@ public class ColorTableAttributes extends AttributeSubject
 
         names = new Vector();
         colorTables = new Vector();
-        activeContinuous = new String("hot");
-        activeDiscrete = new String("levels");
+        defaultContinuous = new String("hot");
+        defaultDiscrete = new String("levels");
         groupingFlag = false;
     }
 
@@ -42,8 +42,8 @@ public class ColorTableAttributes extends AttributeSubject
 
         names = new Vector();
         colorTables = new Vector();
-        activeContinuous = new String("hot");
-        activeDiscrete = new String("levels");
+        defaultContinuous = new String("hot");
+        defaultDiscrete = new String("levels");
         groupingFlag = false;
     }
 
@@ -65,8 +65,8 @@ public class ColorTableAttributes extends AttributeSubject
             colorTables.addElement(new ColorControlPointList(oldObj));
         }
 
-        activeContinuous = new String(obj.activeContinuous);
-        activeDiscrete = new String(obj.activeDiscrete);
+        defaultContinuous = new String(obj.defaultContinuous);
+        defaultDiscrete = new String(obj.defaultDiscrete);
         groupingFlag = obj.groupingFlag;
 
         SelectAll();
@@ -107,8 +107,8 @@ public class ColorTableAttributes extends AttributeSubject
         // Create the return value
         return (names_equal &&
                 colorTables_equal &&
-                (activeContinuous.equals(obj.activeContinuous)) &&
-                (activeDiscrete.equals(obj.activeDiscrete)) &&
+                (defaultContinuous.equals(obj.defaultContinuous)) &&
+                (defaultDiscrete.equals(obj.defaultDiscrete)) &&
                 (groupingFlag == obj.groupingFlag));
     }
 
@@ -119,15 +119,15 @@ public class ColorTableAttributes extends AttributeSubject
         Select(0);
     }
 
-    public void SetActiveContinuous(String activeContinuous_)
+    public void SetDefaultContinuous(String defaultContinuous_)
     {
-        activeContinuous = activeContinuous_;
+        defaultContinuous = defaultContinuous_;
         Select(2);
     }
 
-    public void SetActiveDiscrete(String activeDiscrete_)
+    public void SetDefaultDiscrete(String defaultDiscrete_)
     {
-        activeDiscrete = activeDiscrete_;
+        defaultDiscrete = defaultDiscrete_;
         Select(3);
     }
 
@@ -140,8 +140,8 @@ public class ColorTableAttributes extends AttributeSubject
     // Property getting methods
     public Vector  GetNames() { return names; }
     public Vector  GetColorTables() { return colorTables; }
-    public String  GetActiveContinuous() { return activeContinuous; }
-    public String  GetActiveDiscrete() { return activeDiscrete; }
+    public String  GetDefaultContinuous() { return defaultContinuous; }
+    public String  GetDefaultDiscrete() { return defaultDiscrete; }
     public boolean GetGroupingFlag() { return groupingFlag; }
 
     // Write and read methods.
@@ -159,9 +159,9 @@ public class ColorTableAttributes extends AttributeSubject
             }
         }
         if(WriteSelect(2, buf))
-            buf.WriteString(activeContinuous);
+            buf.WriteString(defaultContinuous);
         if(WriteSelect(3, buf))
-            buf.WriteString(activeDiscrete);
+            buf.WriteString(defaultDiscrete);
         if(WriteSelect(4, buf))
             buf.WriteBool(groupingFlag);
     }
@@ -187,10 +187,10 @@ public class ColorTableAttributes extends AttributeSubject
             Select(1);
             break;
         case 2:
-            SetActiveContinuous(buf.ReadString());
+            SetDefaultContinuous(buf.ReadString());
             break;
         case 3:
-            SetActiveDiscrete(buf.ReadString());
+            SetDefaultDiscrete(buf.ReadString());
             break;
         case 4:
             SetGroupingFlag(buf.ReadBool());
@@ -212,8 +212,8 @@ public class ColorTableAttributes extends AttributeSubject
             str = str + "\n";
         }
         str = str + "}\n";
-        str = str + stringToString("activeContinuous", activeContinuous, indent) + "\n";
-        str = str + stringToString("activeDiscrete", activeDiscrete, indent) + "\n";
+        str = str + stringToString("defaultContinuous", defaultContinuous, indent) + "\n";
+        str = str + stringToString("defaultDiscrete", defaultDiscrete, indent) + "\n";
         str = str + boolToString("groupingFlag", groupingFlag, indent) + "\n";
         return str;
     }
@@ -285,9 +285,9 @@ public class ColorTableAttributes extends AttributeSubject
             return null;
     }
 
-    public ColorControlPointList GetActiveColorControlPoints()
+    public ColorControlPointList GetDefaultColorControlPoints()
     {
-        int index = GetColorTableIndex(activeContinuous);
+        int index = GetColorTableIndex(defaultContinuous);
         if(index >= 0 && index < colorTables.size())
             return (ColorControlPointList)colorTables.elementAt(index);
         else
@@ -312,8 +312,8 @@ public class ColorTableAttributes extends AttributeSubject
         if(index >= 0 && index < names.size())
         {
             String nameAt = (String)names.elementAt(index);
-            boolean isActiveContinuous = nameAt.equals(activeContinuous);
-            boolean isActiveDiscrete = nameAt.equals(activeDiscrete);
+            boolean isDefaultContinuous = nameAt.equals(defaultContinuous);
+            boolean isDefaultDiscrete = nameAt.equals(defaultDiscrete);
 
             // Remove the name from the vector.
             names.remove(index);
@@ -322,27 +322,27 @@ public class ColorTableAttributes extends AttributeSubject
             // Remove the color table from the vector.
             RemoveColorTables(index);
 
-            // If it is the active color table that was removed, reset the
-            // active color table to the first element.
-            if(isActiveContinuous)
+            // If it is the default color table that was removed, reset the
+            // default color table to the first element.
+            if(isDefaultContinuous)
             {
                 if(names.size() > 0)
                 {
                     nameAt = (String)names.elementAt(0);
-                    SetActiveContinuous(nameAt);
+                    SetDefaultContinuous(nameAt);
                 }
                 else
-                    SetActiveContinuous("");
+                    SetDefaultContinuous("");
             }
-            if(isActiveDiscrete)
+            if(isDefaultDiscrete)
             {
                 if(names.size() > 0)
                 {
                     nameAt = (String)names.elementAt(0);
-                    SetActiveDiscrete(nameAt);
+                    SetDefaultDiscrete(nameAt);
                 }
                 else
-                    SetActiveDiscrete("");
+                    SetDefaultDiscrete("");
             }
         }
     }
@@ -350,8 +350,8 @@ public class ColorTableAttributes extends AttributeSubject
     // Attributes
     private Vector  names; // vector of String objects
     private Vector  colorTables; // vector of ColorControlPointList objects
-    private String  activeContinuous;
-    private String  activeDiscrete;
+    private String  defaultContinuous;
+    private String  defaultDiscrete;
     private boolean groupingFlag;
 }
 
