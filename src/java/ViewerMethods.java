@@ -2170,7 +2170,7 @@ public class ViewerMethods
     }
 
     /**
-     * Set the active continuous color table, which is the color table to be used
+     * Set the default continuous color table, which is the color table to be used
      * in plots such as Pseudocolor and Surface when their plot attributes are set
      * to use the "default" color table. A continuous color table is one that
      * interpolates between the small set of colors that make up its definition to
@@ -2181,15 +2181,15 @@ public class ViewerMethods
      *                       in the ColorTableAttributes state object.
      * @return true on success; false otherwise.
      */
-    public boolean SetActiveContinuousColorTable(String colorTableName)
+    public boolean SetDefaultContinuousColorTable(String colorTableName)
     {
         if(proxy.GetViewerState().GetColorTableAttributes().GetColorTableIndex(colorTableName) != -1)
         {
-            proxy.GetViewerState().GetColorTableAttributes().SetActiveContinuous(colorTableName);
+            proxy.GetViewerState().GetColorTableAttributes().SetDefaultContinuous(colorTableName);
             proxy.GetViewerState().GetColorTableAttributes().Notify();
 
             // Update the color table. This has the effect of making all plots
-            // use the default color table update to use the new active color
+            // use the default color table update to use the new default color
             // table.
             boolean sync = proxy.GetSynchronous();
             proxy.SetSynchronous(false);
@@ -2201,7 +2201,7 @@ public class ViewerMethods
     }
 
     /**
-     * Set the active discrete color table, which is the color table to be used
+     * Set the default discrete color table, which is the color table to be used
      * in plots such as Subset and FilledBoundary when their plot attributes are set
      * to use the "default" color table. A discrete color table is a set of colors that
      * repeat mod the number of colors in the color table.
@@ -2211,11 +2211,11 @@ public class ViewerMethods
      *                       in the ColorTableAttributes state object.
      * @return true on success; false otherwise.
      */
-    public boolean SetActiveDiscreteColorTable(String colorTableName)
+    public boolean SetDefaultDiscreteColorTable(String colorTableName)
     {
         if(proxy.GetViewerState().GetColorTableAttributes().GetColorTableIndex(colorTableName) != -1)
         {
-            proxy.GetViewerState().GetColorTableAttributes().SetActiveDiscrete(colorTableName);
+            proxy.GetViewerState().GetColorTableAttributes().SetDefaultDiscrete(colorTableName);
             proxy.GetViewerState().GetColorTableAttributes().Notify();
         }
 
