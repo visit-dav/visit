@@ -10336,9 +10336,9 @@ visit_SetDefaultContinuousColorTable(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_SetActiveContinuousColorTable(PyObject *self, PyObject *args)
 {
-#ifdef VIEWER
-    avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
-#endif
+    cerr << "Warning: 'SetActiveContinuousColorTable' is deprecated and will "
+        "be removed in version 3.5.0. Please use "
+        "'SetDefaultContinuousColorTable' instead." << endl;
     return visit_SetDefaultContinuousColorTable(self, args);
 }
 #endif
@@ -10386,9 +10386,9 @@ visit_SetDefaultDiscreteColorTable(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_SetActiveDiscreteColorTable(PyObject *self, PyObject *args)
 {
-#ifdef VIEWER
-    avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
-#endif
+    cerr << "Warning: 'SetActiveDiscreteColorTable' is deprecated and will "
+        "be removed in version 3.5.0. Please use "
+        "'SetDefaultDiscreteColorTable' instead." << endl;
     return visit_SetDefaultDiscreteColorTable(self, args);
 }
 #endif
@@ -10428,9 +10428,9 @@ visit_GetDefaultContinuousColorTable(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_GetActiveContinuousColorTable(PyObject *self, PyObject *args)
 {
-#ifdef VIEWER
-    avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
-#endif
+    cerr << "Warning: 'GetActiveContinuousColorTable' is deprecated and will "
+        "be removed in version 3.5.0. Please use "
+        "'GetDefaultContinuousColorTable' instead." << endl;
     return visit_GetDefaultContinuousColorTable(self, args);
 }
 #endif
@@ -10471,9 +10471,9 @@ visit_GetDefaultDiscreteColorTable(PyObject *self, PyObject *args)
 STATIC PyObject *
 visit_GetActiveDiscreteColorTable(PyObject *self, PyObject *args)
 {
-#ifdef VIEWER
-    avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
-#endif
+    cerr << "Warning: 'GetActiveDiscreteColorTable' is deprecated and will "
+        "be removed in version 3.5.0. Please use "
+        "'GetDefaultDiscreteColorTable' instead." << endl;
     return visit_GetDefaultDiscreteColorTable(self, args);
 }
 #endif
