@@ -42,7 +42,19 @@
 
 int avtXRayImageQuery::iFileFamily = 0;
 
-const int MIN_OUT = 0;
+// To add new output types, these are the changes to make:
+// 1) increment `NUM_OUTPUT_TYPES`
+// 2) add new entries to `file_extensions`
+// 3) add new constants for your output types (make sure in the same order as in `file_extensions`)
+// 4) optional: add new inline functions to check for your output type or types
+// 5) add new cases where necessary (probably just in `avtXRayImageQuery::Execute`)
+
+const int NUM_OUTPUT_TYPES = 10;
+
+// outputType indexes this array
+const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
+    "blueprint_json", "blueprint_hdf5", "blueprint_conduit_json", "blueprint_conduit_bin"};
+
 const int BMP_OUT = 0;
 const int JPEG_OUT = 1;
 const int PNG_OUT = 2;
@@ -53,11 +65,11 @@ const int BLUEPRINT_JSON_OUT = 6;
 const int BLUEPRINT_HDF5_OUT = 7;
 const int BLUEPRINT_CONDUIT_JSON_OUT = 8;
 const int BLUEPRINT_CONDUIT_BIN_OUT = 9;
-const int MAX_OUT = 9;
 
+// an output type is valid if it is an int in [0,NUM_OUTPUT_TYPES)
 inline bool outputTypeValid(int otype)
 {
-    return otype >= MIN_OUT && otype <= MAX_OUT;
+    return otype >= 0 && otype < NUM_OUTPUT_TYPES;
 }
 
 inline bool outputTypeIsBmpJpegPngOrTif(int otype)
@@ -760,29 +772,18 @@ avtXRayImageQuery::SetOutputType(int type)
 void
 avtXRayImageQuery::SetOutputType(const std::string &type)
 {
-    if      (type == "bmp")
-        outputType = BMP_OUT;
-    else if (type == "jpeg")
-        outputType = JPEG_OUT;
-    else if (type == "png")
-        outputType = PNG_OUT;
-    else if (type == "tif")
-        outputType = TIF_OUT;
-    else if (type == "rawfloats")
-        outputType = RAWFLOATS_OUT;
-    else if (type == "bov")
-        outputType = BOV_OUT;
-    else if (type == "blueprint_hdf5")
-        outputType = BLUEPRINT_HDF5_OUT;
-    // TODO add yaml as well
-    else if (type == "blueprint_json")
-        outputType = BLUEPRINT_JSON_OUT;
-    else if (type == "blueprint_conduit_bin")
-        outputType = BLUEPRINT_CONDUIT_BIN_OUT;
-    else if (type == "blueprint_conduit_json")
-        outputType = BLUEPRINT_CONDUIT_JSON_OUT;
-    else
-        EXCEPTION1(VisItException, "bad type given in " + type);
+    int i = 0;
+    while (i < NUM_OUTPUT_TYPES)
+    {
+        // the output types index the file extensions array
+        if (type == file_extensions[i])
+        {
+            outputType = i;
+            return;
+        }
+        i ++;
+    }
+    EXCEPTION1(VisItException, "bad type given in " + type);        
 }
 
 // ****************************************************************************
@@ -990,7 +991,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         // Create the file base name.
         //
-        const char *exts[6] = {"bmp", "jpeg", "png", "tif", "bof", "bov"};
         char baseName[512];
         bool keepTrying = true;
         while (keepTrying)
@@ -1010,7 +1010,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // the next file base name in the sequence.
                 //
                 char fileName[512];
-                snprintf(fileName, 512, "%s00.%s", baseName, exts[outputType]);
+                snprintf(fileName, 512, "%s00.%s", baseName, file_extensions[outputType]);
 
                 ifstream ifile(fileName);
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -1242,15 +1242,15 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 snprintf(buf, 512, "The x ray image query results were "
                          "written to the file %s00.%s\n", baseName,
-                         exts[outputType]);
+                         file_extensions[outputType]);
             }
             else
                 if (outputTypeIsRawfloatsOrBov(outputType))
                 {
                     snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
-                        baseName, exts[outputType], baseName, numBins - 1,
-                        exts[outputType]);
+                        baseName, file_extensions[outputType], baseName, numBins - 1,
+                        file_extensions[outputType]);
                 }
                 else if (outputTypeIsBlueprint(outputType))
                 {
@@ -1262,8 +1262,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 {
                     snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
-                        baseName, exts[outputType], baseName, 2*numBins - 1,
-                        exts[outputType]);
+                        baseName, file_extensions[outputType], baseName, 2*numBins - 1,
+                        file_extensions[outputType]);
                 }
             msg += buf;
 
