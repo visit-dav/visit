@@ -20,9 +20,9 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 if(VISIT_PARALLEL)
-	SET_UP_THIRD_PARTY(ADIOS lib include adiosread adiosread_nompi)
+	SET_UP_THIRD_PARTY(ADIOS LIBS adiosread adiosread_nompi)
 else()
-	SET_UP_THIRD_PARTY(ADIOS lib include adiosread_nompi)
+	SET_UP_THIRD_PARTY(ADIOS LIBS adiosread_nompi)
 endif()
 
 

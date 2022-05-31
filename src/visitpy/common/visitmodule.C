@@ -10291,7 +10291,7 @@ visit_NumColorTables(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
-// Function: visit_SetActiveContinuousColorTable
+// Function: visit_SetDefaultContinuousColorTable
 //
 // Purpose:
 //   Tells the viewer to set a new active continuous colortable.
@@ -10304,11 +10304,15 @@ visit_NumColorTables(PyObject *self, PyObject *args)
 // Modifications:
 //   Brad Whitlock, Tue Dec 3 11:07:48 PDT 2002
 //   Renamed the function.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the name of the function.
 //
 // ****************************************************************************
 
 STATIC PyObject *
-visit_SetActiveContinuousColorTable(PyObject *self, PyObject *args)
+visit_SetDefaultContinuousColorTable(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
@@ -10320,14 +10324,27 @@ visit_SetActiveContinuousColorTable(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        GetViewerMethods()->SetActiveContinuousColorTable(ctName);
+        GetViewerMethods()->SetDefaultContinuousColorTable(ctName);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
 }
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+STATIC PyObject *
+visit_SetActiveContinuousColorTable(PyObject *self, PyObject *args)
+{
+    cerr << "Warning: 'SetActiveContinuousColorTable' is deprecated and will "
+        "be removed in version 3.5.0. Please use "
+        "'SetDefaultContinuousColorTable' instead." << endl;
+    return visit_SetDefaultContinuousColorTable(self, args);
+}
+#endif
+
 // ****************************************************************************
-// Function: visit_SetActiveDiscreteColorTable
+// Function: visit_SetDefaultDiscreteColorTable
 //
 // Purpose:
 //   Tells the viewer to set a new active discrete colortable.
@@ -10338,11 +10355,14 @@ visit_SetActiveContinuousColorTable(PyObject *self, PyObject *args)
 // Creation:   Tue Dec 3 11:08:02 PDT 2002
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the name of the function.
 //
 // ****************************************************************************
 
 STATIC PyObject *
-visit_SetActiveDiscreteColorTable(PyObject *self, PyObject *args)
+visit_SetDefaultDiscreteColorTable(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
@@ -10354,17 +10374,30 @@ visit_SetActiveDiscreteColorTable(PyObject *self, PyObject *args)
     }
 
     MUTEX_LOCK();
-        GetViewerMethods()->SetActiveDiscreteColorTable(ctName);
+        GetViewerMethods()->SetDefaultDiscreteColorTable(ctName);
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
 }
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+STATIC PyObject *
+visit_SetActiveDiscreteColorTable(PyObject *self, PyObject *args)
+{
+    cerr << "Warning: 'SetActiveDiscreteColorTable' is deprecated and will "
+        "be removed in version 3.5.0. Please use "
+        "'SetDefaultDiscreteColorTable' instead." << endl;
+    return visit_SetDefaultDiscreteColorTable(self, args);
+}
+#endif
+
 // ****************************************************************************
-// Function: visit_GetActiveContinuousColorTable
+// Function: visit_GetDefaultContinuousColorTable
 //
 // Purpose:
-//   Returns the active continuous colortable.
+//   Returns the default continuous colortable.
 //
 // Notes:
 //
@@ -10372,25 +10405,41 @@ visit_SetActiveDiscreteColorTable(PyObject *self, PyObject *args)
 // Creation:   Mon Nov 12 12:15:53 PDT 2001
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the name of the function.
 //
 // ****************************************************************************
 
 STATIC PyObject *
-visit_GetActiveContinuousColorTable(PyObject *self, PyObject *args)
+visit_GetDefaultContinuousColorTable(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    const std::string &ct = GetViewerState()->GetColorTableAttributes()->GetActiveContinuous();
+    const std::string &ct = GetViewerState()->GetColorTableAttributes()->GetDefaultContinuous();
     PyObject *retval = PyString_FromString(ct.c_str());
 
     return retval;
 }
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+STATIC PyObject *
+visit_GetActiveContinuousColorTable(PyObject *self, PyObject *args)
+{
+    cerr << "Warning: 'GetActiveContinuousColorTable' is deprecated and will "
+        "be removed in version 3.5.0. Please use "
+        "'GetDefaultContinuousColorTable' instead." << endl;
+    return visit_GetDefaultContinuousColorTable(self, args);
+}
+#endif
+
 // ****************************************************************************
-// Function: visit_GetActiveDiscreteColorTable
+// Function: visit_GetDefaultDiscreteColorTable
 //
 // Purpose:
-//   Returns the active discrete colortable.
+//   Returns the default discrete colortable.
 //
 // Notes:
 //
@@ -10398,20 +10447,36 @@ visit_GetActiveContinuousColorTable(PyObject *self, PyObject *args)
 // Creation:   Tue Dec 3 11:10:10 PDT 2002
 //
 // Modifications:
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
+//   In this case I changed the name of the function.
 //
 // ****************************************************************************
 
 STATIC PyObject *
-visit_GetActiveDiscreteColorTable(PyObject *self, PyObject *args)
+visit_GetDefaultDiscreteColorTable(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
     NO_ARGUMENTS();
 
-    const std::string &ct = GetViewerState()->GetColorTableAttributes()->GetActiveDiscrete();
+    const std::string &ct = GetViewerState()->GetColorTableAttributes()->GetDefaultDiscrete();
     PyObject *retval = PyString_FromString(ct.c_str());
 
     return retval;
 }
+
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+STATIC PyObject *
+visit_GetActiveDiscreteColorTable(PyObject *self, PyObject *args)
+{
+    cerr << "Warning: 'GetActiveDiscreteColorTable' is deprecated and will "
+        "be removed in version 3.5.0. Please use "
+        "'GetDefaultDiscreteColorTable' instead." << endl;
+    return visit_GetDefaultDiscreteColorTable(self, args);
+}
+#endif
 
 // ****************************************************************************
 // Method: visit_AddColorTable
@@ -17807,6 +17872,9 @@ AddMethod(const char *methodName,
 //
 //   Kathleen Biagas, Mon Dec 22 10:29:52 PST 2014
 //   Added SetRemoveDuplicateNodes to Proxy methods.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -18307,14 +18375,22 @@ AddProxyMethods()
                                                     visit_ColorTableNames_doc);
     AddMethod("NumColorTableNames", visit_NumColorTables,
                                                  visit_NumColorTableNames_doc);
+    AddMethod("SetDefaultContinuousColorTable", visit_SetDefaultContinuousColorTable,
+                                                visit_SetDefaultContinuousColorTable_doc);
+    AddMethod("SetDefaultDiscreteColorTable", visit_SetDefaultDiscreteColorTable,
+                                                visit_SetDefaultDiscreteColorTable_doc);
+    AddMethod("GetDefaultContinuousColorTable", visit_GetDefaultContinuousColorTable,
+                                                visit_GetDefaultContinuousColorTable_doc);
+    AddMethod("GetDefaultDiscreteColorTable", visit_GetDefaultDiscreteColorTable,
+                                                visit_GetDefaultDiscreteColorTable_doc);
     AddMethod("SetActiveContinuousColorTable", visit_SetActiveContinuousColorTable,
-                                                visit_SetActiveContinuousColorTable_doc);
+                                                visit_SetDefaultContinuousColorTable_doc);
     AddMethod("SetActiveDiscreteColorTable", visit_SetActiveDiscreteColorTable,
-                                                visit_SetActiveDiscreteColorTable_doc);
+                                                visit_SetDefaultDiscreteColorTable_doc);
     AddMethod("GetActiveContinuousColorTable", visit_GetActiveContinuousColorTable,
-                                                visit_GetActiveContinuousColorTable_doc);
+                                                visit_GetDefaultContinuousColorTable_doc);
     AddMethod("GetActiveDiscreteColorTable", visit_GetActiveDiscreteColorTable,
-                                                visit_GetActiveDiscreteColorTable_doc);
+                                                visit_GetDefaultDiscreteColorTable_doc);
     AddMethod("GetNumPlots", visit_GetNumPlots, visit_GetNumPlots_doc);
     AddMethod("Argv", visit_Argv, NULL);
     AddMethod("UpdateMouseActions", visit_UpdateMouseActions, NULL);

@@ -133,9 +133,6 @@ SwapIntoQueryAttributes(QueryAttributes &qA, std::vector<float> &outData)
     std::vector<float> &out = qA.GetFloatResultsValue();
     out = std::move(outData);
     qA.SelectFloatResultsValue();
-    std::cout << "Just swapped float vectors!" << std::endl;
-    std::cout << out[0] << ", " << out[1] << ", " << out[2] << std::endl;
-    std::cout << out[4] << ", " << out[5] << ", " << out[6] << std::endl;
 }
 
 static void

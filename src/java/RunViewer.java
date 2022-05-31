@@ -42,6 +42,9 @@ import llnl.visit.AnnotationAttributes;
 //
 //   Kathleen Biagas, Tue Jan 14 08:45:32 MST 2014
 //   Updated usage: changed -vob to -dv, added -datapath.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -158,7 +161,7 @@ public class RunViewer
             viewer.GetViewerMethods().SetAnnotationAttributes();
 
             // Change the active color table
-            viewer.GetViewerMethods().SetActiveContinuousColorTable("rainbow");
+            viewer.GetViewerMethods().SetDefaultContinuousColorTable("rainbow");
 
             viewer.GetViewerMethods().SetActivePlot(0);
             viewer.GetViewerMethods().ChangeActivePlotsVar("v");
