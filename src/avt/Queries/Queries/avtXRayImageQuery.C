@@ -895,6 +895,11 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 void
 avtXRayImageQuery::Execute(avtDataTree_p tree)
 {
+    if (!outputTypeValid(outputType))
+    {
+        EXCEPTION1(VisItException, "Bad outputType in " + outputType);
+    }
+
     avtDataset_p input = GetTypedInput();
     
     int nsets = 0;
@@ -1227,7 +1232,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
         else
         {
-            EXCEPTION1(VisItException, "Bad outputType in " + outputType);
+            char errmsg[256];
+            // this is safe because at the beginning of the function we check that the output type is valid
+            snprintf(errmsg, 256, "No logic implemented for output type %s.", file_extensions[outputType]);
+            EXCEPTION1(VisItException, errmsg);
         }
 
         //
@@ -1237,34 +1245,41 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         {
             std::string msg = "";
             char buf[512];
-    
-            if (numBins == 1 && outputTypeIsBmpJpegPngOrTif(outputType))
+
+            if (outputTypeIsBmpJpegPngOrTif(outputType))
             {
-                snprintf(buf, 512, "The x ray image query results were "
-                         "written to the file %s00.%s\n", baseName,
-                         file_extensions[outputType]);
-            }
-            else
-                if (outputTypeIsRawfloatsOrBov(outputType))
-                {
+                if (numBins == 1)
+                    snprintf(buf, 512, "The x ray image query results were "
+                             "written to the file %s00.%s\n", baseName,
+                             file_extensions[outputType]);
+                else
                     snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
                         baseName, file_extensions[outputType], baseName, numBins - 1,
                         file_extensions[outputType]);
-                }
-                else if (outputTypeIsBlueprint(outputType))
-                {
-                    // TODO more descriptive message
-                    snprintf(buf, 512, "The x ray image query results were "
-                             "written to a blueprint file");
-                }
-                else
-                {
-                    snprintf(buf, 512, "The x ray image query results were "
-                        "written to the files %s00.%s - %s%02d.%s\n",
-                        baseName, file_extensions[outputType], baseName, 2*numBins - 1,
-                        file_extensions[outputType]);
-                }
+            }
+            else if (outputTypeIsRawfloatsOrBov(outputType))
+            {
+                snprintf(buf, 512, "The x ray image query results were "
+                    "written to the files %s00.%s - %s%02d.%s\n",
+                    baseName, file_extensions[outputType], baseName, 2*numBins - 1,
+                    file_extensions[outputType]);                
+            }
+            else if (outputTypeIsBlueprint(outputType))
+            {
+                // TODO more descriptive message
+                snprintf(buf, 512, "The x ray image query results were "
+                         "written to a blueprint file");
+            }
+            else
+            {
+                char errmsg[256];
+                // this is safe because at the beginning of the function we check that the output type is valid
+                snprintf(errmsg, 256, "No output message implemented for output type %s.", file_extensions[outputType]);
+                EXCEPTION1(VisItException, errmsg);
+
+            }
+            
             msg += buf;
 
             SetResultMessage(msg);
