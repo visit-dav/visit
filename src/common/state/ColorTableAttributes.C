@@ -25,8 +25,8 @@
 
 void ColorTableAttributes::Init()
 {
-    activeContinuous = "hot";
-    activeDiscrete = "levels";
+    defaultContinuous = "hot";
+    defaultDiscrete = "levels";
     groupingFlag = false;
 
     ColorTableAttributes::SelectAll();
@@ -67,8 +67,8 @@ void ColorTableAttributes::Copy(const ColorTableAttributes &obj)
         colorTables.push_back(newColorControlPointList);
     }
 
-    activeContinuous = obj.activeContinuous;
-    activeDiscrete = obj.activeDiscrete;
+    defaultContinuous = obj.defaultContinuous;
+    defaultDiscrete = obj.defaultDiscrete;
     groupingFlag = obj.groupingFlag;
 
     ColorTableAttributes::SelectAll();
@@ -242,8 +242,8 @@ ColorTableAttributes::operator == (const ColorTableAttributes &obj) const
     // Create the return value
     return ((names == obj.names) &&
             colorTables_equal &&
-            (activeContinuous == obj.activeContinuous) &&
-            (activeDiscrete == obj.activeDiscrete) &&
+            (defaultContinuous == obj.defaultContinuous) &&
+            (defaultDiscrete == obj.defaultDiscrete) &&
             (groupingFlag == obj.groupingFlag));
 }
 
@@ -388,11 +388,11 @@ ColorTableAttributes::NewInstance(bool copy) const
 void
 ColorTableAttributes::SelectAll()
 {
-    Select(ID_names,            (void *)&names);
-    Select(ID_colorTables,      (void *)&colorTables);
-    Select(ID_activeContinuous, (void *)&activeContinuous);
-    Select(ID_activeDiscrete,   (void *)&activeDiscrete);
-    Select(ID_groupingFlag,     (void *)&groupingFlag);
+    Select(ID_names,             (void *)&names);
+    Select(ID_colorTables,       (void *)&colorTables);
+    Select(ID_defaultContinuous, (void *)&defaultContinuous);
+    Select(ID_defaultDiscrete,   (void *)&defaultDiscrete);
+    Select(ID_groupingFlag,      (void *)&groupingFlag);
 }
 
 // ****************************************************************************
@@ -460,6 +460,9 @@ ColorTableAttributes::CreateSubAttributeGroup(int)
 //   Brad Whitlock, Fri Apr 27 14:16:01 PDT 2012
 //   Change smoothing.
 //
+//  Justin Privitera, Fri May 20 11:02:45 PDT 2022
+//  Replaced *active* w/ *default* for everything color tables.
+//
 // ****************************************************************************
 
 bool
@@ -470,8 +473,8 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 
     // Create a node for ColorTableAttributes.
     DataNode *node = new DataNode("ColorTableAttributes");
-    node->AddNode(new DataNode("activeContinuous", activeContinuous));
-    node->AddNode(new DataNode("activeDiscrete", activeDiscrete));
+    node->AddNode(new DataNode("defaultContinuous", defaultContinuous));
+    node->AddNode(new DataNode("defaultDiscrete", defaultDiscrete));
     node->AddNode(new DataNode("groupingFlag", groupingFlag));
 
     // Add each color table specially.
@@ -540,6 +543,9 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 //
 //   Hank Childs, Thu Jul  1 14:20:26 PDT 2010
 //   Add support for opacities.
+//
+//  Justin Privitera, Fri May 20 11:02:45 PDT 2022
+//  Replaced *active* w/ *default* for everything color tables.
 //
 // ****************************************************************************
 
@@ -627,18 +633,18 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         } // end for i
     }
 
-    if((node = searchNode->GetNode("activeContinuous")) != 0)
-        SetActiveContinuous(node->AsString());
+    if((node = searchNode->GetNode("defaultContinuous")) != 0)
+        SetDefaultContinuous(node->AsString());
 
-    if((node = searchNode->GetNode("activeDiscrete")) != 0)
-        SetActiveDiscrete(node->AsString());
+    if((node = searchNode->GetNode("defaultDiscrete")) != 0)
+        SetDefaultDiscrete(node->AsString());
 
     if((node = searchNode->GetNode("groupingFlag")) != 0)
         SetGroupingFlag(node->AsBool());
 
     // For older version compatibility...
-    if((node = searchNode->GetNode("activeColorTable")) != 0)
-        SetActiveContinuous(node->AsString());
+    if((node = searchNode->GetNode("defaultColorTable")) != 0)
+        SetDefaultContinuous(node->AsString());
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
@@ -652,17 +658,17 @@ ColorTableAttributes::SetNames(const stringVector &names_)
 }
 
 void
-ColorTableAttributes::SetActiveContinuous(const std::string &activeContinuous_)
+ColorTableAttributes::SetDefaultContinuous(const std::string &defaultContinuous_)
 {
-    activeContinuous = activeContinuous_;
-    Select(ID_activeContinuous, (void *)&activeContinuous);
+    defaultContinuous = defaultContinuous_;
+    Select(ID_defaultContinuous, (void *)&defaultContinuous);
 }
 
 void
-ColorTableAttributes::SetActiveDiscrete(const std::string &activeDiscrete_)
+ColorTableAttributes::SetDefaultDiscrete(const std::string &defaultDiscrete_)
 {
-    activeDiscrete = activeDiscrete_;
-    Select(ID_activeDiscrete, (void *)&activeDiscrete);
+    defaultDiscrete = defaultDiscrete_;
+    Select(ID_defaultDiscrete, (void *)&defaultDiscrete);
 }
 
 void
@@ -701,27 +707,27 @@ ColorTableAttributes::GetColorTables()
 }
 
 const std::string &
-ColorTableAttributes::GetActiveContinuous() const
+ColorTableAttributes::GetDefaultContinuous() const
 {
-    return activeContinuous;
+    return defaultContinuous;
 }
 
 std::string &
-ColorTableAttributes::GetActiveContinuous()
+ColorTableAttributes::GetDefaultContinuous()
 {
-    return activeContinuous;
+    return defaultContinuous;
 }
 
 const std::string &
-ColorTableAttributes::GetActiveDiscrete() const
+ColorTableAttributes::GetDefaultDiscrete() const
 {
-    return activeDiscrete;
+    return defaultDiscrete;
 }
 
 std::string &
-ColorTableAttributes::GetActiveDiscrete()
+ColorTableAttributes::GetDefaultDiscrete()
 {
-    return activeDiscrete;
+    return defaultDiscrete;
 }
 
 bool
@@ -747,15 +753,15 @@ ColorTableAttributes::SelectColorTables()
 }
 
 void
-ColorTableAttributes::SelectActiveContinuous()
+ColorTableAttributes::SelectDefaultContinuous()
 {
-    Select(ID_activeContinuous, (void *)&activeContinuous);
+    Select(ID_defaultContinuous, (void *)&defaultContinuous);
 }
 
 void
-ColorTableAttributes::SelectActiveDiscrete()
+ColorTableAttributes::SelectDefaultDiscrete()
 {
-    Select(ID_activeDiscrete, (void *)&activeDiscrete);
+    Select(ID_defaultDiscrete, (void *)&defaultDiscrete);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -979,11 +985,11 @@ ColorTableAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_names:            return "names";
-    case ID_colorTables:      return "colorTables";
-    case ID_activeContinuous: return "activeContinuous";
-    case ID_activeDiscrete:   return "activeDiscrete";
-    case ID_groupingFlag:     return "groupingFlag";
+    case ID_names:             return "names";
+    case ID_colorTables:       return "colorTables";
+    case ID_defaultContinuous: return "defaultContinuous";
+    case ID_defaultDiscrete:   return "defaultDiscrete";
+    case ID_groupingFlag:      return "groupingFlag";
     default:  return "invalid index";
     }
 }
@@ -1008,11 +1014,11 @@ ColorTableAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_names:            return FieldType_stringVector;
-    case ID_colorTables:      return FieldType_attVector;
-    case ID_activeContinuous: return FieldType_string;
-    case ID_activeDiscrete:   return FieldType_string;
-    case ID_groupingFlag:     return FieldType_bool;
+    case ID_names:             return FieldType_stringVector;
+    case ID_colorTables:       return FieldType_attVector;
+    case ID_defaultContinuous: return FieldType_string;
+    case ID_defaultDiscrete:   return FieldType_string;
+    case ID_groupingFlag:      return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1037,11 +1043,11 @@ ColorTableAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_names:            return "stringVector";
-    case ID_colorTables:      return "attVector";
-    case ID_activeContinuous: return "string";
-    case ID_activeDiscrete:   return "string";
-    case ID_groupingFlag:     return "bool";
+    case ID_names:             return "stringVector";
+    case ID_colorTables:       return "attVector";
+    case ID_defaultContinuous: return "string";
+    case ID_defaultDiscrete:   return "string";
+    case ID_groupingFlag:      return "bool";
     default:  return "invalid index";
     }
 }
@@ -1087,14 +1093,14 @@ ColorTableAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = colorTables_equal;
         }
         break;
-    case ID_activeContinuous:
+    case ID_defaultContinuous:
         {  // new scope
-        retval = (activeContinuous == obj.activeContinuous);
+        retval = (defaultContinuous == obj.defaultContinuous);
         }
         break;
-    case ID_activeDiscrete:
+    case ID_defaultDiscrete:
         {  // new scope
-        retval = (activeDiscrete == obj.activeDiscrete);
+        retval = (defaultDiscrete == obj.defaultDiscrete);
         }
         break;
     case ID_groupingFlag:
@@ -1233,8 +1239,11 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 //   before adding the new color table.
 //
 //   Hank Childs, Thu Jan 17 16:41:34 PST 2008
-//   Preserve the active continuous/discrete status if a color table is
+//   Preserve the default continuous/discrete status if a color table is
 //   being replaced.
+//
+//  Justin Privitera, Fri May 20 11:02:45 PDT 2022
+//  Replaced *active* w/ *default* for everything color tables.
 //
 // ****************************************************************************
 
@@ -1242,12 +1251,12 @@ void
 ColorTableAttributes::AddColorTable(const std::string &name,
     const ColorControlPointList &cpts)
 {
-    bool activeContinuous = false;
-    if (GetActiveContinuous() == name)
-        activeContinuous = true;
-    bool activeDiscrete = false;
-    if (GetActiveDiscrete() == name)
-        activeDiscrete = true;
+    bool defaultContinuous = false;
+    if (GetDefaultContinuous() == name)
+        defaultContinuous = true;
+    bool defaultDiscrete = false;
+    if (GetDefaultDiscrete() == name)
+        defaultDiscrete = true;
 
     // Remove the color table if it already exists in the list.
     int index = GetColorTableIndex(name);
@@ -1273,10 +1282,10 @@ ColorTableAttributes::AddColorTable(const std::string &name,
         colorTables[i] = pos->second;
     }
 
-    if (activeContinuous)
-        SetActiveContinuous(name);
-    if (activeDiscrete)
-        SetActiveDiscrete(name);
+    if (defaultContinuous)
+        SetDefaultContinuous(name);
+    if (defaultDiscrete)
+        SetDefaultDiscrete(name);
 
     Select(0, (void *)&names);
 }
@@ -1320,6 +1329,9 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 //   Brad Whitlock, Wed Nov 20 12:08:18 PDT 2002
 //   Made it work with the new discrete color tables.
 //
+//  Justin Privitera, Fri May 20 11:02:45 PDT 2022
+//  Replaced *active* w/ *default* for everything color tables.
+//
 // ****************************************************************************
 
 void
@@ -1327,10 +1339,10 @@ ColorTableAttributes::RemoveColorTable(int index)
 {
     if(index >= 0 && (size_t)index < names.size())
     {
-        // Determine if the color table is active.
-        bool isActiveContinuous, isActiveDiscrete;
-        isActiveContinuous = (names[index] == activeContinuous);
-        isActiveDiscrete = (names[index] == activeDiscrete);
+        // Determine if the color table is default.
+        bool isDefaultContinuous, isDefaultDiscrete;
+        isDefaultContinuous = (names[index] == defaultContinuous);
+        isDefaultDiscrete = (names[index] == defaultDiscrete);
 
         // Iterate through the vector "index" times.
         stringVector::iterator pos = names.begin();
@@ -1349,22 +1361,77 @@ ColorTableAttributes::RemoveColorTable(int index)
         // erase the color table from the vector.
         RemoveColorTables(index);
 
-        // If it is the active color table that was removed, reset the
-        // active color table to the first element.
-        if(isActiveContinuous)
+        // If it is the default color table that was removed, reset the
+        // default color table to the first element.
+        if(isDefaultContinuous)
         {
             if(names.size() > 0)
-                SetActiveContinuous(names[0]);
+                SetDefaultContinuous(names[0]);
             else
-                SetActiveContinuous(std::string(""));
+                SetDefaultContinuous(std::string(""));
         }
-        if(isActiveDiscrete)
+        if(isDefaultDiscrete)
         {
             if(names.size() > 0)
-                SetActiveDiscrete(names[0]);
+                SetDefaultDiscrete(names[0]);
             else
-                SetActiveDiscrete(std::string(""));
+                SetDefaultDiscrete(std::string(""));
         }
     }
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Justin Privitera
+// Creation:   May 26 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+ColorTableAttributes::ProcessOldVersions(DataNode *parentNode,
+                                         const char *configVersion)
+{
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ColorTableAttributes");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.3.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("activeContinuous")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("activeContinuous", "3.5.0"));
+#endif
+            searchNode->AddNode(new DataNode("defaultContinuous", k->AsString()));
+            searchNode->RemoveNode(k);
+        }
+        if ((k = searchNode->GetNode("activeDiscrete")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("activeDiscrete", "3.5.0"));
+#endif
+            searchNode->AddNode(new DataNode("defaultDiscrete", k->AsString()));
+            searchNode->RemoveNode(k);
+        }
+    }
+#endif
 }
 

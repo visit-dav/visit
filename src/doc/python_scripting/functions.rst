@@ -2883,18 +2883,18 @@ forceNoSharedMemory:
     print(numpy.asarray(data["zoneTable"]))
 
 
-GetActiveContinuousColorTable
------------------------------
+GetDefaultContinuousColorTable
+------------------------------
 
 **Synopsis:**
 
 ::
 
-  GetActiveContinuousColorTable() -> string
+  GetDefaultContinuousColorTable() -> string
 
 
 return type : string
-    Both functions return a string object containing the name of a color table.
+    Returns a string object containing the name of a color table.
 
 
 **Description:**
@@ -2910,8 +2910,8 @@ return type : string
     notion of default continuous and default discrete color tables so plots can
     just use the "default" color table. This lets you change the color table
     used by many plots by just changing the "default" color table. The
-    GetActiveContinuousColorTable function returns the name of the default
-    continuous color table. The GetActiveDiscreteColorTable function returns
+    GetDefaultContinuousColorTable function returns the name of the default
+    continuous color table. The GetDefaultDiscreteColorTable function returns
     the name of the default discrete color table.
 
 
@@ -2920,22 +2920,22 @@ return type : string
 ::
 
   #% visit -cli
-  print("Default continuous color table: %s" % GetActiveContinuousColorTable())
-  print("Default discrete color table: %s" % GetActiveDiscreteColorTable())
+  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
+  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
 
 
-GetActiveDiscreteColorTable
----------------------------
+GetDefaultDiscreteColorTable
+----------------------------
 
 **Synopsis:**
 
 ::
 
-  GetActiveDiscreteColorTable() -> string
+  GetDefaultDiscreteColorTable() -> string
 
 
 return type : string
-    Both functions return a string object containing the name of a color table.
+    Returns a string object containing the name of a color table.
 
 
 **Description:**
@@ -2951,8 +2951,8 @@ return type : string
     notion of default continuous and default discrete color tables so plots can
     just use the "default" color table. This lets you change the color table
     used by many plots by just changing the "default" color table. The
-    GetActiveContinuousColorTable function returns the name of the default
-    continuous color table. The GetActiveDiscreteColorTable function returns
+    GetDefaultContinuousColorTable function returns the name of the default
+    continuous color table. The GetDefaultDiscreteColorTable function returns
     the name of the default discrete color table.
 
 
@@ -2961,8 +2961,8 @@ return type : string
 ::
 
   #% visit -cli
-  print("Default continuous color table: %s" % GetActiveContinuousColorTable())
-  print("Default discrete color table: %s" % GetActiveDiscreteColorTable())
+  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
+  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
 
 
 GetActiveTimeSlider
@@ -5954,7 +5954,7 @@ return type : CLI_return_t
   DrawPlots()
   print("There are %d color tables." % NumColorTableNames())
   for ct in ColorTableNames():
-      SetActiveContinuousColorTable(ct)
+      SetDefaultContinuousColorTable(ct)
       SaveWindow()
 
 
@@ -8290,14 +8290,14 @@ argument
     simulation to send the command to.
 
 
-SetActiveContinuousColorTable
------------------------------
+SetDefaultContinuousColorTable
+------------------------------
 
 **Synopsis:**
 
 ::
 
-  SetActiveContinuousColorTable(name) -> integer
+  SetDefaultContinuousColorTable(name) -> integer
 
 
 name : string
@@ -8333,17 +8333,17 @@ return type : CLI_return_t
   OpenDatabase("/usr/gapps/visit/data/noise.silo")
   AddPlot("Contour", "hgslice")
   DrawPlots()
-  SetActiveDiscreteColorTable("levels")
+  SetDefaultDiscreteColorTable("levels")
 
 
-SetActiveDiscreteColorTable
----------------------------
+SetDefaultDiscreteColorTable
+----------------------------
 
 **Synopsis:**
 
 ::
 
-  SetActiveDiscreteColorTable(name) -> integer
+  SetDefaultDiscreteColorTable(name) -> integer
 
 
 name : string
@@ -8379,7 +8379,7 @@ return type : CLI_return_t
   OpenDatabase("/usr/gapps/visit/data/noise.silo")
   AddPlot("Contour", "hgslice")
   DrawPlots()
-  SetActiveDiscreteColorTable("levels")
+  SetDefaultDiscreteColorTable("levels")
 
 
 SetActivePlots

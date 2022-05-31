@@ -46,7 +46,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(SILO lib include silohdf5)
+  SET_UP_THIRD_PARTY(SILO LIBS silohdf5)
   IF(EXISTS ${SILO_DIR}/lib/silex.exe)
     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
          ${SILO_DIR}/lib/silex.exe
@@ -80,10 +80,10 @@ ELSE (WIN32)
       NO_CMAKE_PATH
       NO_SYSTEM_ENVIRONMENT_PATH)
     IF(SILOH5_LIBRARY_EXISTS)
-        SET_UP_THIRD_PARTY(SILO lib include siloh5)
-    ELSE(SILOH5_LIBRARY_EXISTS)
-        SET_UP_THIRD_PARTY(SILO lib include silo)
-    ENDIF(SILOH5_LIBRARY_EXISTS)
+        SET_UP_THIRD_PARTY(SILO LIBS siloh5)
+    ELSE()
+        SET_UP_THIRD_PARTY(SILO LIBS silo)
+    ENDIF()
 ENDIF (WIN32)
 
 # We use Silo for PDB most of the time so set up additional PDB variables.
