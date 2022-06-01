@@ -43,15 +43,16 @@
 int avtXRayImageQuery::iFileFamily = 0;
 
 // To add new output types, these are the changes to make:
-// 1) increment `NUM_OUTPUT_TYPES`
-// 2) add new entries to `file_extensions`
-// 3) add new constants for your output types (make sure in the same order as in `file_extensions`)
-// 4) optional: add new inline functions to check for your output type or types
-// 5) add new cases where necessary (probably just in `avtXRayImageQuery::Execute`)
+//    1) increment `NUM_OUTPUT_TYPES` by however many output types you are planning to add
+//    2) add new entries to the `file_extensions` array
+//    3) add new constants for your output types (make sure in the same order as in `file_extensions`)
+//    4) optional: add new inline functions to check for your output type or types; see below for examples
+//    5) add new cases where necessary (probably just in `avtXRayImageQuery::Execute`)
+//    6) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
 
 const int NUM_OUTPUT_TYPES = 10;
 
-// outputType indexes this array
+// member `outputType` indexes this array
 const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
     "blueprint_json", "blueprint_hdf5", "blueprint_conduit_json", "blueprint_conduit_bin"};
 
