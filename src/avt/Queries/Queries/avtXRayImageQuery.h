@@ -111,6 +111,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetFamilyFiles(const bool &flag);
     void                      SetOutputType(int type);
     void                      SetOutputType(const std::string &type);
+    void                      SetOutputDir(const std::string &dir);
 
   protected:
     bool                      divideEmisByAbsorb;
@@ -122,6 +123,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     bool                      familyFiles;
     static int                iFileFamily;
     int                       outputType;
+    std::string               outputDir;
     bool                      useSpecifiedUpVector;
     bool                      useOldView;
     // The new view specification

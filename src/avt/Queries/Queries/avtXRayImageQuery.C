@@ -148,6 +148,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     debugRay = -1;
     familyFiles = false;
     outputType = PNG_OUT;
+    outputDir = ".";
     useSpecifiedUpVector = true;
     useOldView = true;
 
@@ -304,6 +305,9 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
             EXCEPTION1(VisItException, "Bad datatype given for output_type:"
                 " " + params.GetEntry("output_type")->TypeName());
     }
+
+    if (params.HasEntry("output_dir"))
+        SetOutputDir(params.GetEntry("output_dir")->AsString());
 
     // this is not a normal parameter, it is set by the cli when the query
     // is called with the deprecated argument parsing.
@@ -785,6 +789,25 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
         i ++;
     }
     EXCEPTION1(VisItException, "bad type given in " + type);        
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetOutputDir
+//
+//  Purpose:
+//    Set the output directory.
+//
+//  Programmer: Justin Privitera 
+//  Creation:   Wed Jun  1 12:30:46 PDT 2022
+//
+//  Modifications:
+// 
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetOutputDir(const std::string &dir)
+{
+    outputDir = dir;
 }
 
 // ****************************************************************************

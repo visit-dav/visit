@@ -11844,10 +11844,11 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     {
         // Handle the x ray image query.
         char *imageType = NULL;
+        char *outputDir = NULL;
         intVector ps(2);
         PyErr_Clear();
-        parse_success = PyArg_ParseTuple(args, "ssidddddddii|O", &queryName,
-                                         &imageType, &arg2,
+        parse_success = PyArg_ParseTuple(args, "sssidddddddii|O", &queryName,
+                                         &imageType, &outputDir, &arg2,
                                          &(darg1[0]), &(darg1[1]), &(darg1[2]),
                                          &(darg2[0]), &(darg2[1]), 
                                          &(darg3[0]), &(darg3[1]), 
@@ -11855,8 +11856,9 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         if (parse_success)
         {
             debug3 << mn << "parsed " <<  queryName 
-                   << " with 2nd attempt (ssidddddddii)" << endl;
+                   << " with 2nd attempt (sssidddddddii)" << endl;
             params["output_type"] = imageType;
+            params["output_dir"] = outputDir;
             params["divide_emis_by_absorb"] = arg2;
             params["origin"] = darg1;
             params["theta"] = darg2[0];
