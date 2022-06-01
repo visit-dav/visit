@@ -50,11 +50,11 @@ int avtXRayImageQuery::iFileFamily = 0;
 //    5) add new cases where necessary (probably just in `avtXRayImageQuery::Execute`)
 //    6) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
 
-const int NUM_OUTPUT_TYPES = 10;
+const int NUM_OUTPUT_TYPES = 11;
 
 // member `outputType` indexes this array
 const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
-    "blueprint_json", "blueprint_hdf5", "blueprint_conduit_json", "blueprint_conduit_bin"};
+    /*conduit blueprint output types */ "json", "hdf5", "conduit_json", "conduit_bin", "yaml"};
 
 const int BMP_OUT = 0;
 const int JPEG_OUT = 1;
@@ -66,6 +66,7 @@ const int BLUEPRINT_JSON_OUT = 6;
 const int BLUEPRINT_HDF5_OUT = 7;
 const int BLUEPRINT_CONDUIT_JSON_OUT = 8;
 const int BLUEPRINT_CONDUIT_BIN_OUT = 9;
+const int BLUEPRINT_YAML_OUT = 10;
 
 // an output type is valid if it is an int in [0,NUM_OUTPUT_TYPES)
 inline bool outputTypeValid(int otype)
@@ -86,7 +87,7 @@ inline bool outputTypeIsRawfloatsOrBov(int otype)
 
 inline bool outputTypeIsBlueprint(int otype)
 {
-    return otype == BLUEPRINT_HDF5_OUT || otype == BLUEPRINT_JSON_OUT || 
+    return otype == BLUEPRINT_HDF5_OUT || otype == BLUEPRINT_JSON_OUT || otype == BLUEPRINT_YAML_OUT ||
         otype == BLUEPRINT_CONDUIT_JSON_OUT || otype == BLUEPRINT_CONDUIT_BIN_OUT;
 }
 
@@ -756,7 +757,11 @@ avtXRayImageQuery::SetOutputType(int type)
     if (outputTypeValid(outputType))
         outputType = type;
     else
-        EXCEPTION1(VisItException, "bad type given in " + type);
+    {
+        char errmsg[256];
+        snprintf(errmsg, 256, "Output type %d is invalid.", type);
+        EXCEPTION1(VisItException, errmsg);
+    }
 }
 
 // ****************************************************************************
@@ -788,7 +793,9 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
         }
         i ++;
     }
-    EXCEPTION1(VisItException, "bad type given in " + type);        
+    char errmsg[256];
+    snprintf(errmsg, 256, "Output type %s is invalid.", type.c_str());
+    EXCEPTION1(VisItException, errmsg);
 }
 
 // ****************************************************************************
@@ -919,9 +926,19 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 void
 avtXRayImageQuery::Execute(avtDataTree_p tree)
 {
+    // check validity of output type before proceeding
     if (!outputTypeValid(outputType))
     {
-        EXCEPTION1(VisItException, "Bad outputType in " + outputType);
+        char errmsg[256];
+        snprintf(errmsg, 256, "Output type %d is invalid.", outputType);
+        EXCEPTION1(VisItException, errmsg);
+    }
+    // check if output directory exists before proceeding
+    if (!conduit::utils::is_directory(outputDir))
+    {
+        char errmsg[256];
+        snprintf(errmsg, 256, "Directory %s does not exist.", outputDir.c_str());
+        EXCEPTION1(VisItException, errmsg);
     }
 
     avtDataset_p input = GetTypedInput();
@@ -1059,9 +1076,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         int numBins = numLeaves / 2;
 
-        conduit::Node data_out;
         vtkDataArray *intensity;
         vtkDataArray *pathLength;
+        conduit::Node data_out;
+
         if (outputTypeIsBmpJpegPngOrTif(outputType))
         {
             for (int i = 0; i < numBins; i++)
@@ -1250,14 +1268,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
 
             // save out
-            std::string bp_out_type = "";
-            if      (outputType == BLUEPRINT_HDF5_OUT)         bp_out_type = "hdf5";
-            else if (outputType == BLUEPRINT_JSON_OUT)         bp_out_type = "json";
-            else if (outputType == BLUEPRINT_CONDUIT_BIN_OUT)  bp_out_type = "conduit_bin";
-            else if (outputType == BLUEPRINT_CONDUIT_JSON_OUT) bp_out_type = "conduit_json";
             conduit::relay::io::blueprint::save_mesh(data_out,
                                                      baseName,
-                                                     bp_out_type);
+                                                     file_extensions[outputType]);
         }
         else
         {
@@ -1296,9 +1309,16 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
             else if (outputTypeIsBlueprint(outputType))
             {
-                // TODO more descriptive message
-                snprintf(buf, 512, "The x ray image query results were "
-                         "written to a blueprint file");
+                if (outputType == BLUEPRINT_CONDUIT_BIN_OUT)
+                {
+                    snprintf(buf, 512, "The x ray image query results were "
+                             "written to the files %s.root - %s.root_json\n", baseName, baseName);
+                }
+                else
+                {
+                    snprintf(buf, 512, "The x ray image query results were "
+                             "written to the file %s.root\n", baseName);
+                }
             }
             else
             {
