@@ -1030,7 +1030,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 //
                 // Create the file base name and increment the family number.
                 //
-                snprintf(baseName, 512, "output%04d.", iFileFamily);
+                snprintf(baseName, 512, "%s/output%04d.", outputDir.c_str(), iFileFamily);
                 if (iFileFamily < 9999) iFileFamily++;
 
                 //
@@ -1049,7 +1049,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
             else
             {
-                snprintf(baseName, 512, "output");
+                snprintf(baseName, 512, "%s/output", outputDir.c_str());
             }
         }
 
@@ -1250,9 +1250,14 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
 
             // save out
+            std::string bp_out_type = "";
+            if      (outputType == BLUEPRINT_HDF5_OUT)         bp_out_type = "hdf5";
+            else if (outputType == BLUEPRINT_JSON_OUT)         bp_out_type = "json";
+            else if (outputType == BLUEPRINT_CONDUIT_BIN_OUT)  bp_out_type = "conduit_bin";
+            else if (outputType == BLUEPRINT_CONDUIT_JSON_OUT) bp_out_type = "conduit_json";
             conduit::relay::io::blueprint::save_mesh(data_out,
-                                                     "mymesh",
-                                                     "hdf5");
+                                                     baseName,
+                                                     bp_out_type);
         }
         else
         {
