@@ -28,7 +28,7 @@
 
 void
 build_mesh(int N, int **mat,
-      float **xCoords,   float **yCoords,   float **sphElev,
+    float **xCoords,   float **yCoords,   float **sphElev,
     double **xCoordsD, double **yCoordsD, double **sphElevD)
 {
     int iMax = (N - 1) / 2;
