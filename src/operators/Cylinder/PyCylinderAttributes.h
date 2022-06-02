@@ -22,7 +22,7 @@ PyObject *     PyCylinderAttributes_Wrap(const CylinderAttributes *attr);
 void           PyCylinderAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyCylinderAttributes_SetDefaults(const CylinderAttributes *atts);
 std::string    PyCylinderAttributes_GetLogString();
-std::string    PyCylinderAttributes_ToString(const CylinderAttributes *, const char *);
+std::string    PyCylinderAttributes_ToString(const CylinderAttributes *, const char *, const bool=false);
 PyObject *     PyCylinderAttributes_getattr(PyObject *self, char *name);
 int            PyCylinderAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyCylinderAttributes_methods[CYLINDERATTRIBUTES_NMETH];

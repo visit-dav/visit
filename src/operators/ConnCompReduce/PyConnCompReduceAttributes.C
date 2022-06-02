@@ -36,7 +36,7 @@ struct ConnCompReduceAttributesObject
 //
 static PyObject *NewConnCompReduceAttributes(int);
 std::string
-PyConnCompReduceAttributes_ToString(const ConnCompReduceAttributes *atts, const char *prefix)
+PyConnCompReduceAttributes_ToString(const ConnCompReduceAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -187,7 +187,7 @@ static int
 ConnCompReduceAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ConnCompReduceAttributesObject *obj = (ConnCompReduceAttributesObject *)v;
-    fprintf(fp, "%s", PyConnCompReduceAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyConnCompReduceAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -195,7 +195,7 @@ PyObject *
 ConnCompReduceAttributes_str(PyObject *v)
 {
     ConnCompReduceAttributesObject *obj = (ConnCompReduceAttributesObject *)v;
-    return PyString_FromString(PyConnCompReduceAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyConnCompReduceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -347,7 +347,7 @@ PyConnCompReduceAttributes_GetLogString()
 {
     std::string s("ConnCompReduceAtts = ConnCompReduceAttributes()\n");
     if(currentAtts != 0)
-        s += PyConnCompReduceAttributes_ToString(currentAtts, "ConnCompReduceAtts.");
+        s += PyConnCompReduceAttributes_ToString(currentAtts, "ConnCompReduceAtts.", true);
     return s;
 }
 
@@ -360,7 +360,7 @@ PyConnCompReduceAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ConnCompReduceAtts = ConnCompReduceAttributes()\n");
-        s += PyConnCompReduceAttributes_ToString(currentAtts, "ConnCompReduceAtts.");
+        s += PyConnCompReduceAttributes_ToString(currentAtts, "ConnCompReduceAtts.", true);
         cb(s);
     }
 }

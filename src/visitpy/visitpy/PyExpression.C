@@ -36,7 +36,7 @@ struct ExpressionObject
 //
 static PyObject *NewExpression(int);
 std::string
-PyExpression_ToString(const Expression *atts, const char *prefix)
+PyExpression_ToString(const Expression *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -838,7 +838,7 @@ static int
 Expression_print(PyObject *v, FILE *fp, int flags)
 {
     ExpressionObject *obj = (ExpressionObject *)v;
-    fprintf(fp, "%s", PyExpression_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyExpression_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -846,7 +846,7 @@ PyObject *
 Expression_str(PyObject *v)
 {
     ExpressionObject *obj = (ExpressionObject *)v;
-    return PyString_FromString(PyExpression_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyExpression_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -998,7 +998,7 @@ PyExpression_GetLogString()
 {
     std::string s("Expression = Expression()\n");
     if(currentAtts != 0)
-        s += PyExpression_ToString(currentAtts, "Expression.");
+        s += PyExpression_ToString(currentAtts, "Expression.", true);
     return s;
 }
 
@@ -1011,7 +1011,7 @@ PyExpression_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("Expression = Expression()\n");
-        s += PyExpression_ToString(currentAtts, "Expression.");
+        s += PyExpression_ToString(currentAtts, "Expression.", true);
         cb(s);
     }
 }

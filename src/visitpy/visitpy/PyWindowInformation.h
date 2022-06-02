@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyWindowInformation_Wrap(const WindowInformation *att
 void VISITPY_API           PyWindowInformation_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyWindowInformation_SetDefaults(const WindowInformation *atts);
 std::string VISITPY_API    PyWindowInformation_GetLogString();
-std::string VISITPY_API    PyWindowInformation_ToString(const WindowInformation *, const char *);
+std::string VISITPY_API    PyWindowInformation_ToString(const WindowInformation *, const char *, const bool=false);
 VISITPY_API PyObject *     PyWindowInformation_getattr(PyObject *self, char *name);
 int VISITPY_API            PyWindowInformation_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyWindowInformation_methods[WINDOWINFORMATION_NMETH];

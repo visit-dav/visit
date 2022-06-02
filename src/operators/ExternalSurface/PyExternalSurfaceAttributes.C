@@ -36,7 +36,7 @@ struct ExternalSurfaceAttributesObject
 //
 static PyObject *NewExternalSurfaceAttributes(int);
 std::string
-PyExternalSurfaceAttributes_ToString(const ExternalSurfaceAttributes *atts, const char *prefix)
+PyExternalSurfaceAttributes_ToString(const ExternalSurfaceAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -261,7 +261,7 @@ static int
 ExternalSurfaceAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ExternalSurfaceAttributesObject *obj = (ExternalSurfaceAttributesObject *)v;
-    fprintf(fp, "%s", PyExternalSurfaceAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyExternalSurfaceAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -269,7 +269,7 @@ PyObject *
 ExternalSurfaceAttributes_str(PyObject *v)
 {
     ExternalSurfaceAttributesObject *obj = (ExternalSurfaceAttributesObject *)v;
-    return PyString_FromString(PyExternalSurfaceAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyExternalSurfaceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -421,7 +421,7 @@ PyExternalSurfaceAttributes_GetLogString()
 {
     std::string s("ExternalSurfaceAtts = ExternalSurfaceAttributes()\n");
     if(currentAtts != 0)
-        s += PyExternalSurfaceAttributes_ToString(currentAtts, "ExternalSurfaceAtts.");
+        s += PyExternalSurfaceAttributes_ToString(currentAtts, "ExternalSurfaceAtts.", true);
     return s;
 }
 
@@ -434,7 +434,7 @@ PyExternalSurfaceAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ExternalSurfaceAtts = ExternalSurfaceAttributes()\n");
-        s += PyExternalSurfaceAttributes_ToString(currentAtts, "ExternalSurfaceAtts.");
+        s += PyExternalSurfaceAttributes_ToString(currentAtts, "ExternalSurfaceAtts.", true);
         cb(s);
     }
 }

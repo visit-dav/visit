@@ -36,7 +36,7 @@ struct InverseGhostZoneAttributesObject
 //
 static PyObject *NewInverseGhostZoneAttributes(int);
 std::string
-PyInverseGhostZoneAttributes_ToString(const InverseGhostZoneAttributes *atts, const char *prefix)
+PyInverseGhostZoneAttributes_ToString(const InverseGhostZoneAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -616,7 +616,7 @@ static int
 InverseGhostZoneAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)v;
-    fprintf(fp, "%s", PyInverseGhostZoneAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyInverseGhostZoneAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -624,7 +624,7 @@ PyObject *
 InverseGhostZoneAttributes_str(PyObject *v)
 {
     InverseGhostZoneAttributesObject *obj = (InverseGhostZoneAttributesObject *)v;
-    return PyString_FromString(PyInverseGhostZoneAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyInverseGhostZoneAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -776,7 +776,7 @@ PyInverseGhostZoneAttributes_GetLogString()
 {
     std::string s("InverseGhostZoneAtts = InverseGhostZoneAttributes()\n");
     if(currentAtts != 0)
-        s += PyInverseGhostZoneAttributes_ToString(currentAtts, "InverseGhostZoneAtts.");
+        s += PyInverseGhostZoneAttributes_ToString(currentAtts, "InverseGhostZoneAtts.", true);
     return s;
 }
 
@@ -789,7 +789,7 @@ PyInverseGhostZoneAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("InverseGhostZoneAtts = InverseGhostZoneAttributes()\n");
-        s += PyInverseGhostZoneAttributes_ToString(currentAtts, "InverseGhostZoneAtts.");
+        s += PyInverseGhostZoneAttributes_ToString(currentAtts, "InverseGhostZoneAtts.", true);
         cb(s);
     }
 }

@@ -37,7 +37,7 @@ struct SelectionSummaryObject
 //
 static PyObject *NewSelectionSummary(int);
 std::string
-PySelectionSummary_ToString(const SelectionSummary *atts, const char *prefix)
+PySelectionSummary_ToString(const SelectionSummary *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -52,7 +52,7 @@ PySelectionSummary_ToString(const SelectionSummary *atts, const char *prefix)
             const SelectionVariableSummary *current = (const SelectionVariableSummary *)(*pos);
             snprintf(tmpStr, 1000, "GetVariables(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PySelectionVariableSummary_ToString(current, objPrefix.c_str());
+            str += PySelectionVariableSummary_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#variables does not contain any SelectionVariableSummary objects.\n";
@@ -668,7 +668,7 @@ static int
 SelectionSummary_print(PyObject *v, FILE *fp, int flags)
 {
     SelectionSummaryObject *obj = (SelectionSummaryObject *)v;
-    fprintf(fp, "%s", PySelectionSummary_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySelectionSummary_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -676,7 +676,7 @@ PyObject *
 SelectionSummary_str(PyObject *v)
 {
     SelectionSummaryObject *obj = (SelectionSummaryObject *)v;
-    return PyString_FromString(PySelectionSummary_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySelectionSummary_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -828,7 +828,7 @@ PySelectionSummary_GetLogString()
 {
     std::string s("SelectionSummary = SelectionSummary()\n");
     if(currentAtts != 0)
-        s += PySelectionSummary_ToString(currentAtts, "SelectionSummary.");
+        s += PySelectionSummary_ToString(currentAtts, "SelectionSummary.", true);
     return s;
 }
 
@@ -841,7 +841,7 @@ PySelectionSummary_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SelectionSummary = SelectionSummary()\n");
-        s += PySelectionSummary_ToString(currentAtts, "SelectionSummary.");
+        s += PySelectionSummary_ToString(currentAtts, "SelectionSummary.", true);
         cb(s);
     }
 }

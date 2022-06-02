@@ -36,7 +36,7 @@ struct CracksClipperAttributesObject
 //
 static PyObject *NewCracksClipperAttributes(int);
 std::string
-PyCracksClipperAttributes_ToString(const CracksClipperAttributes *atts, const char *prefix)
+PyCracksClipperAttributes_ToString(const CracksClipperAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -617,7 +617,7 @@ static int
 CracksClipperAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)v;
-    fprintf(fp, "%s", PyCracksClipperAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCracksClipperAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -625,7 +625,7 @@ PyObject *
 CracksClipperAttributes_str(PyObject *v)
 {
     CracksClipperAttributesObject *obj = (CracksClipperAttributesObject *)v;
-    return PyString_FromString(PyCracksClipperAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCracksClipperAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -777,7 +777,7 @@ PyCracksClipperAttributes_GetLogString()
 {
     std::string s("CracksClipperAtts = CracksClipperAttributes()\n");
     if(currentAtts != 0)
-        s += PyCracksClipperAttributes_ToString(currentAtts, "CracksClipperAtts.");
+        s += PyCracksClipperAttributes_ToString(currentAtts, "CracksClipperAtts.", true);
     return s;
 }
 
@@ -790,7 +790,7 @@ PyCracksClipperAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CracksClipperAtts = CracksClipperAttributes()\n");
-        s += PyCracksClipperAttributes_ToString(currentAtts, "CracksClipperAtts.");
+        s += PyCracksClipperAttributes_ToString(currentAtts, "CracksClipperAtts.", true);
         cb(s);
     }
 }

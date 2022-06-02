@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyavtSimulationCommandSpecification_Wrap(const avtSim
 void VISITPY_API           PyavtSimulationCommandSpecification_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtSimulationCommandSpecification_SetDefaults(const avtSimulationCommandSpecification *atts);
 std::string VISITPY_API    PyavtSimulationCommandSpecification_GetLogString();
-std::string VISITPY_API    PyavtSimulationCommandSpecification_ToString(const avtSimulationCommandSpecification *, const char *);
+std::string VISITPY_API    PyavtSimulationCommandSpecification_ToString(const avtSimulationCommandSpecification *, const char *, const bool=false);
 VISITPY_API PyObject *     PyavtSimulationCommandSpecification_getattr(PyObject *self, char *name);
 int VISITPY_API            PyavtSimulationCommandSpecification_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtSimulationCommandSpecification_methods[AVTSIMULATIONCOMMANDSPECIFICATION_NMETH];

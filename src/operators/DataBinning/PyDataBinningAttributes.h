@@ -22,7 +22,7 @@ PyObject *     PyDataBinningAttributes_Wrap(const DataBinningAttributes *attr);
 void           PyDataBinningAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyDataBinningAttributes_SetDefaults(const DataBinningAttributes *atts);
 std::string    PyDataBinningAttributes_GetLogString();
-std::string    PyDataBinningAttributes_ToString(const DataBinningAttributes *, const char *);
+std::string    PyDataBinningAttributes_ToString(const DataBinningAttributes *, const char *, const bool=false);
 PyObject *     PyDataBinningAttributes_getattr(PyObject *self, char *name);
 int            PyDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyDataBinningAttributes_methods[DATABINNINGATTRIBUTES_NMETH];

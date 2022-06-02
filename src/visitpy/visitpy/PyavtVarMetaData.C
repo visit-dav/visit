@@ -37,12 +37,12 @@ struct avtVarMetaDataObject
 //
 static PyObject *NewavtVarMetaData(int);
 std::string
-PyavtVarMetaData_ToString(const avtVarMetaData *atts, const char *prefix)
+PyavtVarMetaData_ToString(const avtVarMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
-    str = PyavtBaseVarMetaData_ToString(atts, prefix);
+    str = PyavtBaseVarMetaData_ToString(atts, prefix, forLogging);
 
     const char *centering_names = "AVT_NODECENT, AVT_ZONECENT, AVT_NO_VARIABLE, AVT_UNKNOWN_CENT";
     if(atts->centering == AVT_NODECENT)
@@ -651,7 +651,7 @@ static int
 avtVarMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtVarMetaDataObject *obj = (avtVarMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtVarMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtVarMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -659,7 +659,7 @@ PyObject *
 avtVarMetaData_str(PyObject *v)
 {
     avtVarMetaDataObject *obj = (avtVarMetaDataObject *)v;
-    return PyString_FromString(PyavtVarMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtVarMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -811,7 +811,7 @@ PyavtVarMetaData_GetLogString()
 {
     std::string s("avtVarMetaData = avtVarMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtVarMetaData_ToString(currentAtts, "avtVarMetaData.");
+        s += PyavtVarMetaData_ToString(currentAtts, "avtVarMetaData.", true);
     return s;
 }
 
@@ -824,7 +824,7 @@ PyavtVarMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtVarMetaData = avtVarMetaData()\n");
-        s += PyavtVarMetaData_ToString(currentAtts, "avtVarMetaData.");
+        s += PyavtVarMetaData_ToString(currentAtts, "avtVarMetaData.", true);
         cb(s);
     }
 }

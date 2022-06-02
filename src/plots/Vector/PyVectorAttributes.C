@@ -38,7 +38,7 @@ struct VectorAttributesObject
 //
 static PyObject *NewVectorAttributes(int);
 std::string
-PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
+PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2231,7 +2231,7 @@ static int
 VectorAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)v;
-    fprintf(fp, "%s", PyVectorAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyVectorAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2239,7 +2239,7 @@ PyObject *
 VectorAttributes_str(PyObject *v)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)v;
-    return PyString_FromString(PyVectorAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyVectorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2391,7 +2391,7 @@ PyVectorAttributes_GetLogString()
 {
     std::string s("VectorAtts = VectorAttributes()\n");
     if(currentAtts != 0)
-        s += PyVectorAttributes_ToString(currentAtts, "VectorAtts.");
+        s += PyVectorAttributes_ToString(currentAtts, "VectorAtts.", true);
     return s;
 }
 
@@ -2404,7 +2404,7 @@ PyVectorAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("VectorAtts = VectorAttributes()\n");
-        s += PyVectorAttributes_ToString(currentAtts, "VectorAtts.");
+        s += PyVectorAttributes_ToString(currentAtts, "VectorAtts.", true);
         cb(s);
     }
 }

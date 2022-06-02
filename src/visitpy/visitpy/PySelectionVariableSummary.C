@@ -36,7 +36,7 @@ struct SelectionVariableSummaryObject
 //
 static PyObject *NewSelectionVariableSummary(int);
 std::string
-PySelectionVariableSummary_ToString(const SelectionVariableSummary *atts, const char *prefix)
+PySelectionVariableSummary_ToString(const SelectionVariableSummary *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -413,7 +413,7 @@ static int
 SelectionVariableSummary_print(PyObject *v, FILE *fp, int flags)
 {
     SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)v;
-    fprintf(fp, "%s", PySelectionVariableSummary_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySelectionVariableSummary_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -421,7 +421,7 @@ PyObject *
 SelectionVariableSummary_str(PyObject *v)
 {
     SelectionVariableSummaryObject *obj = (SelectionVariableSummaryObject *)v;
-    return PyString_FromString(PySelectionVariableSummary_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySelectionVariableSummary_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -573,7 +573,7 @@ PySelectionVariableSummary_GetLogString()
 {
     std::string s("SelectionVariableSummary = SelectionVariableSummary()\n");
     if(currentAtts != 0)
-        s += PySelectionVariableSummary_ToString(currentAtts, "SelectionVariableSummary.");
+        s += PySelectionVariableSummary_ToString(currentAtts, "SelectionVariableSummary.", true);
     return s;
 }
 
@@ -586,7 +586,7 @@ PySelectionVariableSummary_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SelectionVariableSummary = SelectionVariableSummary()\n");
-        s += PySelectionVariableSummary_ToString(currentAtts, "SelectionVariableSummary.");
+        s += PySelectionVariableSummary_ToString(currentAtts, "SelectionVariableSummary.", true);
         cb(s);
     }
 }

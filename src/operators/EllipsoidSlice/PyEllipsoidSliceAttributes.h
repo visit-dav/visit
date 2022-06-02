@@ -22,7 +22,7 @@ PyObject *     PyEllipsoidSliceAttributes_Wrap(const EllipsoidSliceAttributes *a
 void           PyEllipsoidSliceAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyEllipsoidSliceAttributes_SetDefaults(const EllipsoidSliceAttributes *atts);
 std::string    PyEllipsoidSliceAttributes_GetLogString();
-std::string    PyEllipsoidSliceAttributes_ToString(const EllipsoidSliceAttributes *, const char *);
+std::string    PyEllipsoidSliceAttributes_ToString(const EllipsoidSliceAttributes *, const char *, const bool=false);
 PyObject *     PyEllipsoidSliceAttributes_getattr(PyObject *self, char *name);
 int            PyEllipsoidSliceAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyEllipsoidSliceAttributes_methods[ELLIPSOIDSLICEATTRIBUTES_NMETH];

@@ -40,7 +40,7 @@ struct SubsetAttributesObject
 //
 static PyObject *NewSubsetAttributes(int);
 std::string
-PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix)
+PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1655,7 +1655,7 @@ static int
 SubsetAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SubsetAttributesObject *obj = (SubsetAttributesObject *)v;
-    fprintf(fp, "%s", PySubsetAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySubsetAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1663,7 +1663,7 @@ PyObject *
 SubsetAttributes_str(PyObject *v)
 {
     SubsetAttributesObject *obj = (SubsetAttributesObject *)v;
-    return PyString_FromString(PySubsetAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySubsetAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1815,7 +1815,7 @@ PySubsetAttributes_GetLogString()
 {
     std::string s("SubsetAtts = SubsetAttributes()\n");
     if(currentAtts != 0)
-        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.");
+        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.", true);
     return s;
 }
 
@@ -1828,7 +1828,7 @@ PySubsetAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SubsetAtts = SubsetAttributes()\n");
-        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.");
+        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.", true);
         cb(s);
     }
 }

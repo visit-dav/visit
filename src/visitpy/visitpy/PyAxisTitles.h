@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyAxisTitles_Wrap(const AxisTitles *attr);
 void VISITPY_API           PyAxisTitles_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyAxisTitles_SetDefaults(const AxisTitles *atts);
 std::string VISITPY_API    PyAxisTitles_GetLogString();
-std::string VISITPY_API    PyAxisTitles_ToString(const AxisTitles *, const char *);
+std::string VISITPY_API    PyAxisTitles_ToString(const AxisTitles *, const char *, const bool=false);
 VISITPY_API PyObject *     PyAxisTitles_getattr(PyObject *self, char *name);
 int VISITPY_API            PyAxisTitles_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyAxisTitles_methods[AXISTITLES_NMETH];

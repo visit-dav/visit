@@ -36,7 +36,7 @@ struct RevolveAttributesObject
 //
 static PyObject *NewRevolveAttributes(int);
 std::string
-PyRevolveAttributes_ToString(const RevolveAttributes *atts, const char *prefix)
+PyRevolveAttributes_ToString(const RevolveAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -601,7 +601,7 @@ static int
 RevolveAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     RevolveAttributesObject *obj = (RevolveAttributesObject *)v;
-    fprintf(fp, "%s", PyRevolveAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyRevolveAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -609,7 +609,7 @@ PyObject *
 RevolveAttributes_str(PyObject *v)
 {
     RevolveAttributesObject *obj = (RevolveAttributesObject *)v;
-    return PyString_FromString(PyRevolveAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyRevolveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -761,7 +761,7 @@ PyRevolveAttributes_GetLogString()
 {
     std::string s("RevolveAtts = RevolveAttributes()\n");
     if(currentAtts != 0)
-        s += PyRevolveAttributes_ToString(currentAtts, "RevolveAtts.");
+        s += PyRevolveAttributes_ToString(currentAtts, "RevolveAtts.", true);
     return s;
 }
 
@@ -774,7 +774,7 @@ PyRevolveAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("RevolveAtts = RevolveAttributes()\n");
-        s += PyRevolveAttributes_ToString(currentAtts, "RevolveAtts.");
+        s += PyRevolveAttributes_ToString(currentAtts, "RevolveAtts.", true);
         cb(s);
     }
 }
