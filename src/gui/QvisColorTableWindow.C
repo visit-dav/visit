@@ -243,6 +243,11 @@ QvisColorTableWindow::CreateWindowContents()
     categoryLineEdit = new QLineEdit(colorTableWidgetGroup);
     mgLayout->addWidget(categoryLineEdit, 4, 1);
 
+    QLabel *colorTableTags = new QLabel(tr("Tags"), colorTableWidgetGroup);
+    mgLayout->addWidget(colorTableTags, 5, 0, Qt::AlignRight);
+    tagLineEdit = new QLineEdit(colorTableWidgetGroup);
+    mgLayout->addWidget(tagLineEdit, 5, 1);
+
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
     colorWidgetGroup->setTitle(tr("Editor"));
