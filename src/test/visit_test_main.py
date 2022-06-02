@@ -1027,15 +1027,15 @@ def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
 #
 # A convenient method that will auto-section and auto-name test cases
 #
-def TestAutoName():
+def GetAutoName(autoSection=True):
 
     # Static local vars holding values from previous use
-    if not hasattr(TestAutoName, '_autoNamePrefix'):
-        TestAutoName._autoNamePrefix = ''
-        TestAutoName._autoNameIndex = 0
+    if not hasattr(GetAutoName, '_autoNamePrefix'):
+        GetAutoName._autoNamePrefix = ''
+        GetAutoName._autoNameIndex = 0
 
-    callingFileName = inspect.stack()[1].filename
-    callingFuncName = inspect.stack()[1].function
+    callingFileName = inspect.stack()[2].filename
+    callingFuncName = inspect.stack()[2].function
     callingFunc = globals()[callingFuncName]
     if hasattr(callingFunc, '__doc__'):
         callingFuncDoc = getattr(callingFunc, '__doc__')
@@ -1044,14 +1044,25 @@ def TestAutoName():
 
     testNamePrefix = os.path.splitext(os.path.basename(callingFileName))[0] + '_' + callingFuncName
 
-    if TestAutoName._autoNamePrefix != testNamePrefix:
-        TestAutoName._autoNamePrefix = testNamePrefix
-        TestAutoName._autoNameIndex = 0
-        TestSection(callingFuncDoc)
+    if GetAutoName._autoNamePrefix != testNamePrefix:
+        GetAutoName._autoNamePrefix = testNamePrefix
+        GetAutoName._autoNameIndex = 0
+        if autoSection:
+            TestSection(callingFuncDoc)
 
-    Test("%s_%d"%(testNamePrefix, TestAutoName._autoNameIndex))
+    testName = "%s_%d"%(testNamePrefix, GetAutoName._autoNameIndex)
 
-    TestAutoName._autoNameIndex += 1
+    GetAutoName._autoNameIndex += 1
+
+    return testName
+
+def TestAutoName(altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
+
+    Test(GetAutoName(), altSWA, alreadySaved, pixdiff, avgdiff)
+
+def TestTextAutoName(inText, baseText=None, numdifftol=None):
+
+    TestText(GetAutoName(), inText, baseText, numdifftol)
 
 # ----------------------------------------------------------------------------
 # Function: HTMLImageTestResult
