@@ -20,6 +20,7 @@ import atexit
 import difflib
 import glob
 import gzip
+import inspect
 import json
 import operator
 import os
@@ -1022,6 +1023,35 @@ def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
             diffState = 'Unacceptable'
 
     TestEnv.results["maxds"] = max(TestEnv.results["maxds"], diffVals[diffState])
+
+#
+# A convenient method that will auto-section and auto-name test cases
+#
+def TestAutoName():
+
+    # Static local vars holding values from previous use
+    if not hasattr(TestAutoName, '_autoNamePrefix'):
+        TestAutoName._autoNamePrefix = ''
+        TestAutoName._autoNameIndex = 0
+
+    callingFileName = inspect.stack()[1].filename
+    callingFuncName = inspect.stack()[1].function
+    callingFunc = globals()[callingFuncName]
+    if hasattr(callingFunc, '__doc__'):
+        callingFuncDoc = getattr(callingFunc, '__doc__')
+    else:
+        callingFuncDoc = callingFuncName
+
+    testNamePrefix = os.path.splitext(os.path.basename(callingFileName))[0] + '_' + callingFuncName
+
+    if TestAutoName._autoNamePrefix != testNamePrefix:
+        TestAutoName._autoNamePrefix = testNamePrefix
+        TestAutoName._autoNameIndex = 0
+        TestSection(callingFuncDoc)
+
+    Test("%s_%d"%(testNamePrefix, TestAutoName._autoNameIndex))
+
+    TestAutoName._autoNameIndex += 1
 
 # ----------------------------------------------------------------------------
 # Function: HTMLImageTestResult
