@@ -726,7 +726,6 @@ def curvilinear_3d_surface():
     DrawPlots()
     TestAutoName()
 
-    RemoveLastOperator()
     DeleteAllPlots()
     AddPlot("Pseudocolor","p3d")
     DrawPlots()
