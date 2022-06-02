@@ -23,7 +23,7 @@ import java.util.Vector;
 
 public class ColorControlPointList extends AttributeSubject
 {
-    private static int ColorControlPointList_numAdditionalAtts = 6;
+    private static int ColorControlPointList_numAdditionalAtts = 7;
 
     // Enum values
     public final static int SMOOTHINGMETHOD_NONE = 0;
@@ -41,6 +41,7 @@ public class ColorControlPointList extends AttributeSubject
         discreteFlag = false;
         externalFlag = false;
         categoryName = new String("");
+        tags = new Vector();
     }
 
     public ColorControlPointList(int nMoreFields)
@@ -53,6 +54,7 @@ public class ColorControlPointList extends AttributeSubject
         discreteFlag = false;
         externalFlag = false;
         categoryName = new String("");
+        tags = new Vector();
     }
 
     public ColorControlPointList(ColorControlPointList obj)
@@ -74,6 +76,10 @@ public class ColorControlPointList extends AttributeSubject
         discreteFlag = obj.discreteFlag;
         externalFlag = obj.externalFlag;
         categoryName = new String(obj.categoryName);
+        tags = new Vector(obj.tags.size());
+        for(i = 0; i < obj.tags.size(); ++i)
+            tags.addElement(new String((String)obj.tags.elementAt(i)));
+
 
         SelectAll();
     }
@@ -101,13 +107,23 @@ public class ColorControlPointList extends AttributeSubject
             ColorControlPoint controlPoints2 = (ColorControlPoint)obj.controlPoints.elementAt(i);
             controlPoints_equal = controlPoints1.equals(controlPoints2);
         }
+        // Compare the elements in the tags vector.
+        boolean tags_equal = (obj.tags.size() == tags.size());
+        for(i = 0; (i < tags.size()) && tags_equal; ++i)
+        {
+            // Make references to String from Object.
+            String tags1 = (String)tags.elementAt(i);
+            String tags2 = (String)obj.tags.elementAt(i);
+            tags_equal = tags1.equals(tags2);
+        }
         // Create the return value
         return (controlPoints_equal &&
                 (smoothing == obj.smoothing) &&
                 (equalSpacingFlag == obj.equalSpacingFlag) &&
                 (discreteFlag == obj.discreteFlag) &&
                 (externalFlag == obj.externalFlag) &&
-                (categoryName.equals(obj.categoryName)));
+                (categoryName.equals(obj.categoryName)) &&
+                tags_equal);
     }
 
     // Property setting methods
@@ -141,6 +157,12 @@ public class ColorControlPointList extends AttributeSubject
         Select(5);
     }
 
+    public void SetTags(Vector tags_)
+    {
+        tags = tags_;
+        Select(6);
+    }
+
     // Property getting methods
     public Vector  GetControlPoints() { return controlPoints; }
     public int     GetSmoothing() { return smoothing; }
@@ -148,6 +170,7 @@ public class ColorControlPointList extends AttributeSubject
     public boolean GetDiscreteFlag() { return discreteFlag; }
     public boolean GetExternalFlag() { return externalFlag; }
     public String  GetCategoryName() { return categoryName; }
+    public Vector  GetTags() { return tags; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -171,6 +194,8 @@ public class ColorControlPointList extends AttributeSubject
             buf.WriteBool(externalFlag);
         if(WriteSelect(5, buf))
             buf.WriteString(categoryName);
+        if(WriteSelect(6, buf))
+            buf.WriteStringVector(tags);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -205,6 +230,9 @@ public class ColorControlPointList extends AttributeSubject
         case 5:
             SetCategoryName(buf.ReadString());
             break;
+        case 6:
+            SetTags(buf.ReadStringVector());
+            break;
         }
     }
 
@@ -233,6 +261,7 @@ public class ColorControlPointList extends AttributeSubject
         str = str + boolToString("discreteFlag", discreteFlag, indent) + "\n";
         str = str + boolToString("externalFlag", externalFlag, indent) + "\n";
         str = str + stringToString("categoryName", categoryName, indent) + "\n";
+        str = str + stringVectorToString("tags", tags, indent) + "\n";
         return str;
     }
 
@@ -277,5 +306,6 @@ public class ColorControlPointList extends AttributeSubject
     private boolean discreteFlag;
     private boolean externalFlag;
     private String  categoryName;
+    private Vector  tags; // vector of String objects
 }
 

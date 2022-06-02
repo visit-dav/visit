@@ -21,6 +21,8 @@
     </Field>
     <Field name="categoryName" label="categoryName" type="string">
     </Field>
+    <Field name="tags" label="tags" type="stringVector">
+    </Field>
     <Function name="EvalCubicSpline" user="true" member="true" access="private">
     </Function>
     <Function name="GetColorsCubicSpline" user="true" member="true" access="private">

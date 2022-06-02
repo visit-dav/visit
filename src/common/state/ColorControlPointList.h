@@ -62,6 +62,7 @@ public:
     virtual void SelectAll();
     void SelectControlPoints();
     void SelectCategoryName();
+    void SelectTags();
 
     // Property setting methods
     void SetSmoothing(SmoothingMethod smoothing_);
@@ -69,16 +70,19 @@ public:
     void SetDiscreteFlag(bool discreteFlag_);
     void SetExternalFlag(bool externalFlag_);
     void SetCategoryName(const std::string &categoryName_);
+    void SetTags(const stringVector &tags_);
 
     // Property getting methods
     const AttributeGroupVector &GetControlPoints() const;
           AttributeGroupVector &GetControlPoints();
-    SmoothingMethod   GetSmoothing() const;
-    bool              GetEqualSpacingFlag() const;
-    bool              GetDiscreteFlag() const;
-    bool              GetExternalFlag() const;
-    const std::string &GetCategoryName() const;
-          std::string &GetCategoryName();
+    SmoothingMethod    GetSmoothing() const;
+    bool               GetEqualSpacingFlag() const;
+    bool               GetDiscreteFlag() const;
+    bool               GetExternalFlag() const;
+    const std::string  &GetCategoryName() const;
+          std::string  &GetCategoryName();
+    const stringVector &GetTags() const;
+          stringVector &GetTags();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -123,6 +127,7 @@ public:
         ID_discreteFlag,
         ID_externalFlag,
         ID_categoryName,
+        ID_tags,
         ID__LAST
     };
 
@@ -135,11 +140,12 @@ private:
     bool                 discreteFlag;
     bool                 externalFlag;
     std::string          categoryName;
+    stringVector         tags;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORCONTROLPOINTLIST_TMFS "a*ibbbs"
+#define COLORCONTROLPOINTLIST_TMFS "a*ibbbss*"
 
 #endif

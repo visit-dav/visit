@@ -86,6 +86,22 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
     str += tmpStr;
     snprintf(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
     str += tmpStr;
+    {   const stringVector &tags = atts->GetTags();
+        snprintf(tmpStr, 1000, "%stags = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < tags.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "\"%s\"", tags[i].c_str());
+            str += tmpStr;
+            if(i < tags.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -435,6 +451,75 @@ ColorControlPointList_GetCategoryName(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ColorControlPointList_SetTags(PyObject *self, PyObject *args)
+{
+    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+
+    stringVector vec;
+
+    if (PyUnicode_Check(args))
+    {
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
+
+    obj->data->GetTags() = vec;
+    // Mark the tags in the object as modified.
+    obj->data->SelectTags();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorControlPointList_GetTags(PyObject *self, PyObject *args)
+{
+    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
+    // Allocate a tuple the with enough entries to hold the tags.
+    const stringVector &tags = obj->data->GetTags();
+    PyObject *retval = PyTuple_New(tags.size());
+    for(size_t i = 0; i < tags.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(tags[i].c_str()));
+    return retval;
+}
+
 
 
 PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
@@ -452,6 +537,8 @@ PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
     {"GetDiscreteFlag", ColorControlPointList_GetDiscreteFlag, METH_VARARGS},
     {"SetCategoryName", ColorControlPointList_SetCategoryName, METH_VARARGS},
     {"GetCategoryName", ColorControlPointList_GetCategoryName, METH_VARARGS},
+    {"SetTags", ColorControlPointList_SetTags, METH_VARARGS},
+    {"GetTags", ColorControlPointList_GetTags, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -492,6 +579,8 @@ PyColorControlPointList_getattr(PyObject *self, char *name)
         return ColorControlPointList_GetDiscreteFlag(self, NULL);
     if(strcmp(name, "categoryName") == 0)
         return ColorControlPointList_GetCategoryName(self, NULL);
+    if(strcmp(name, "tags") == 0)
+        return ColorControlPointList_GetTags(self, NULL);
 
 
     // Add a __dict__ answer so that dir() works
@@ -522,6 +611,8 @@ PyColorControlPointList_setattr(PyObject *self, char *name, PyObject *args)
         obj = ColorControlPointList_SetDiscreteFlag(self, args);
     else if(strcmp(name, "categoryName") == 0)
         obj = ColorControlPointList_SetCategoryName(self, args);
+    else if(strcmp(name, "tags") == 0)
+        obj = ColorControlPointList_SetTags(self, args);
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

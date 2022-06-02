@@ -108,6 +108,7 @@ void ColorControlPointList::Copy(const ColorControlPointList &obj)
     discreteFlag = obj.discreteFlag;
     externalFlag = obj.externalFlag;
     categoryName = obj.categoryName;
+    tags = obj.tags;
 
     ColorControlPointList::SelectAll();
 }
@@ -283,7 +284,8 @@ ColorControlPointList::operator == (const ColorControlPointList &obj) const
             (equalSpacingFlag == obj.equalSpacingFlag) &&
             (discreteFlag == obj.discreteFlag) &&
             (externalFlag == obj.externalFlag) &&
-            (categoryName == obj.categoryName));
+            (categoryName == obj.categoryName) &&
+            (tags == obj.tags));
 }
 
 // ****************************************************************************
@@ -433,6 +435,7 @@ ColorControlPointList::SelectAll()
     Select(ID_discreteFlag,     (void *)&discreteFlag);
     Select(ID_externalFlag,     (void *)&externalFlag);
     Select(ID_categoryName,     (void *)&categoryName);
+    Select(ID_tags,             (void *)&tags);
 }
 
 // ****************************************************************************
@@ -517,6 +520,12 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("category", categoryName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tags, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tags", tags));
     }
 
     // Add the node to the parent node.
@@ -645,6 +654,8 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
         SetExternalFlag(node->AsBool());
     if((node = searchNode->GetNode("category")) != 0)
         SetCategoryName(node->AsString());
+    if((node = searchNode->GetNode("tags")) != 0)
+        SetTags(node->AsStringVector());
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
@@ -683,6 +694,13 @@ ColorControlPointList::SetCategoryName(const std::string &categoryName_)
 {
     categoryName = categoryName_;
     Select(ID_categoryName, (void *)&categoryName);
+}
+
+void
+ColorControlPointList::SetTags(const stringVector &tags_)
+{
+    tags = tags_;
+    Select(ID_tags, (void *)&tags);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -737,6 +755,18 @@ ColorControlPointList::GetCategoryName()
     return categoryName;
 }
 
+const stringVector &
+ColorControlPointList::GetTags() const
+{
+    return tags;
+}
+
+stringVector &
+ColorControlPointList::GetTags()
+{
+    return tags;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -751,6 +781,12 @@ void
 ColorControlPointList::SelectCategoryName()
 {
     Select(ID_categoryName, (void *)&categoryName);
+}
+
+void
+ColorControlPointList::SelectTags()
+{
+    Select(ID_tags, (void *)&tags);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -980,6 +1016,7 @@ ColorControlPointList::GetFieldName(int index) const
     case ID_discreteFlag:     return "discreteFlag";
     case ID_externalFlag:     return "externalFlag";
     case ID_categoryName:     return "categoryName";
+    case ID_tags:             return "tags";
     default:  return "invalid index";
     }
 }
@@ -1010,6 +1047,7 @@ ColorControlPointList::GetFieldType(int index) const
     case ID_discreteFlag:     return FieldType_bool;
     case ID_externalFlag:     return FieldType_bool;
     case ID_categoryName:     return FieldType_string;
+    case ID_tags:             return FieldType_stringVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1040,6 +1078,7 @@ ColorControlPointList::GetFieldTypeName(int index) const
     case ID_discreteFlag:     return "bool";
     case ID_externalFlag:     return "bool";
     case ID_categoryName:     return "string";
+    case ID_tags:             return "stringVector";
     default:  return "invalid index";
     }
 }
@@ -1103,6 +1142,11 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_categoryName:
         {  // new scope
         retval = (categoryName == obj.categoryName);
+        }
+        break;
+    case ID_tags:
+        {  // new scope
+        retval = (tags == obj.tags);
         }
         break;
     default: retval = false;
@@ -1677,6 +1721,12 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
     {
         addToParent = true;
         node->AddNode(new DataNode("category", categoryName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tags, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tags", tags));
     }
 
     // Add the node to the parent node.

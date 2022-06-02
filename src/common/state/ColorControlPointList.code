@@ -610,6 +610,8 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
         SetExternalFlag(node->AsBool());
     if((node = searchNode->GetNode("category")) != 0)
         SetCategoryName(node->AsString());
+    if((node = searchNode->GetNode("tags")) != 0)
+        SetTags(node->AsStringVector());
 }
 
 Function: CreateNode
@@ -672,6 +674,12 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("category", categoryName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tags, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tags", tags));
     }
 
     // Add the node to the parent node.
@@ -766,6 +774,12 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
     {
         addToParent = true;
         node->AddNode(new DataNode("category", categoryName));
+    }
+
+    if(completeSave || !FieldsEqual(ID_tags, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("tags", tags));
     }
 
     // Add the node to the parent node.
