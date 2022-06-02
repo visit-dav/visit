@@ -1025,7 +1025,12 @@ def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
     TestEnv.results["maxds"] = max(TestEnv.results["maxds"], diffVals[diffState])
 
 #
-# A convenient method that will auto-section and auto-name test cases
+# A convenient method that will auto-name and auto-section test cases.
+# The name is created by combining the name of the .py file with the
+# name of the function in the .py file and a sequence number starting
+# from zero. Each time a new file or function is encountered, the 
+# sequence number is reset to zero and a call to TestSection() is
+# inserted as well.
 #
 def GetAutoName(autoSection=True):
 
@@ -1034,6 +1039,10 @@ def GetAutoName(autoSection=True):
         GetAutoName._autoNamePrefix = ''
         GetAutoName._autoNameIndex = 0
 
+    #
+    # The magic number `2` is because we expect calls to TestAutoName() and
+    # TestTextAutoName() to be coming from this method's caller's caller.
+    #
     callingFileName = inspect.stack()[2].filename
     callingFuncName = inspect.stack()[2].function
     callingFunc = globals()[callingFuncName]
@@ -1056,10 +1065,16 @@ def GetAutoName(autoSection=True):
 
     return testName
 
+#
+# Auto-naming variant of Test()
+#
 def TestAutoName(altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
 
     Test(GetAutoName(), altSWA, alreadySaved, pixdiff, avgdiff)
 
+#
+# Auto-naming variant of TestText()
+#
 def TestTextAutoName(inText, baseText=None, numdifftol=None):
 
     TestText(GetAutoName(), inText, baseText, numdifftol)
