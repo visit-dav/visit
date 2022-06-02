@@ -52,6 +52,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A tutorial on Python expressions was added to the tutorials section of the manual.</li>
   <li>Changed "active" to "default" for everything related to color tables. This means in the gui, in the python scripting interface, and internally.</li>
   <li>Upgraded ADIOS and ADIOS2 to build with c-blosc, so blosc-compressed ADIOS-based files can now be read by VisIt.</li>
+  <li>Added support and examples of 2D structured grids representing surfaces in 3 dimensions.</li>
   <li>A slew of new, color vision deficient (CVD) color tables from <a href="https://www.fabiocrameri.ch/visualisation/">Fabio Crameri</a> were added and assigned the category <code>CvdFriendlyCrameri</code></li>
   <li>Existing Viridis CVD color tables were given a new category name, <code>CvdFriendlyViridis</code></li>
   <li>ColorControlPointsList and GaussianControlPointsList now have a 'SetNum' method for changing the size of the underlying controlPoints list. Control points will be added or removed based on the current size of the list. The SetNum method was also added to the script created by Logging /command recording, so that the control points list has the correct size and the created script can execute correctly without crashing the cli.<li>
@@ -168,6 +169,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The DEFINES tag now supports surrounding definitions in quotes if the quotes are important to be carried through. They must be escaped with a '\'. See uintah.xml for an example.</li>
   <li>The version of MFEM was upgraded to 4.4.</li>
   <li>Corrected a bug with the regression test suite where the image difference metrics were reported incorrectly in the HTML and JSON output.</li>
+  <li>Added <code>TestAutoName()</code> method for automagically naming test baseline files.</li>
   <li>The signature for the SET_UP_THIRD_PARTY function for Find modules was modified to utilize keyword arguments:
     <ul>
      <li><b>LIBS</b> (required) -- the list of libraries to be found</li>
