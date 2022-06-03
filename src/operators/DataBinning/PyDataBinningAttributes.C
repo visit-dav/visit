@@ -36,7 +36,7 @@ struct DataBinningAttributesObject
 //
 static PyObject *NewDataBinningAttributes(int);
 std::string
-PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *prefix)
+PyDataBinningAttributes_ToString(const DataBinningAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2054,7 +2054,7 @@ static int
 DataBinningAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)v;
-    fprintf(fp, "%s", PyDataBinningAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyDataBinningAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2062,7 +2062,7 @@ PyObject *
 DataBinningAttributes_str(PyObject *v)
 {
     DataBinningAttributesObject *obj = (DataBinningAttributesObject *)v;
-    return PyString_FromString(PyDataBinningAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyDataBinningAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2214,7 +2214,7 @@ PyDataBinningAttributes_GetLogString()
 {
     std::string s("DataBinningAtts = DataBinningAttributes()\n");
     if(currentAtts != 0)
-        s += PyDataBinningAttributes_ToString(currentAtts, "DataBinningAtts.");
+        s += PyDataBinningAttributes_ToString(currentAtts, "DataBinningAtts.", true);
     return s;
 }
 
@@ -2227,7 +2227,7 @@ PyDataBinningAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("DataBinningAtts = DataBinningAttributes()\n");
-        s += PyDataBinningAttributes_ToString(currentAtts, "DataBinningAtts.");
+        s += PyDataBinningAttributes_ToString(currentAtts, "DataBinningAtts.", true);
         cb(s);
     }
 }

@@ -35,7 +35,7 @@ struct RadialResampleAttributesObject
 //
 static PyObject *NewRadialResampleAttributes(int);
 std::string
-PyRadialResampleAttributes_ToString(const RadialResampleAttributes *atts, const char *prefix)
+PyRadialResampleAttributes_ToString(const RadialResampleAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -905,7 +905,7 @@ static int
 RadialResampleAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)v;
-    fprintf(fp, "%s", PyRadialResampleAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyRadialResampleAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -913,7 +913,7 @@ PyObject *
 RadialResampleAttributes_str(PyObject *v)
 {
     RadialResampleAttributesObject *obj = (RadialResampleAttributesObject *)v;
-    return PyString_FromString(PyRadialResampleAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyRadialResampleAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1065,7 +1065,7 @@ PyRadialResampleAttributes_GetLogString()
 {
     std::string s("RadialResampleAtts = RadialResampleAttributes()\n");
     if(currentAtts != 0)
-        s += PyRadialResampleAttributes_ToString(currentAtts, "RadialResampleAtts.");
+        s += PyRadialResampleAttributes_ToString(currentAtts, "RadialResampleAtts.", true);
     return s;
 }
 
@@ -1078,7 +1078,7 @@ PyRadialResampleAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("RadialResampleAtts = RadialResampleAttributes()\n");
-        s += PyRadialResampleAttributes_ToString(currentAtts, "RadialResampleAtts.");
+        s += PyRadialResampleAttributes_ToString(currentAtts, "RadialResampleAtts.", true);
         cb(s);
     }
 }

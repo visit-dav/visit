@@ -36,7 +36,7 @@ struct ModelFitAttsObject
 //
 static PyObject *NewModelFitAtts(int);
 std::string
-PyModelFitAtts_ToString(const ModelFitAtts *atts, const char *prefix)
+PyModelFitAtts_ToString(const ModelFitAtts *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1184,7 +1184,7 @@ static int
 ModelFitAtts_print(PyObject *v, FILE *fp, int flags)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)v;
-    fprintf(fp, "%s", PyModelFitAtts_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyModelFitAtts_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1192,7 +1192,7 @@ PyObject *
 ModelFitAtts_str(PyObject *v)
 {
     ModelFitAttsObject *obj = (ModelFitAttsObject *)v;
-    return PyString_FromString(PyModelFitAtts_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyModelFitAtts_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1344,7 +1344,7 @@ PyModelFitAtts_GetLogString()
 {
     std::string s("ModelFitAtts = ModelFitAtts()\n");
     if(currentAtts != 0)
-        s += PyModelFitAtts_ToString(currentAtts, "ModelFitAtts.");
+        s += PyModelFitAtts_ToString(currentAtts, "ModelFitAtts.", true);
     return s;
 }
 
@@ -1357,7 +1357,7 @@ PyModelFitAtts_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ModelFitAtts = ModelFitAtts()\n");
-        s += PyModelFitAtts_ToString(currentAtts, "ModelFitAtts.");
+        s += PyModelFitAtts_ToString(currentAtts, "ModelFitAtts.", true);
         cb(s);
     }
 }
