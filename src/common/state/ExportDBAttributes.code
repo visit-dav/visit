@@ -1,6 +1,6 @@
 Target: xml2python
 Function: PyExportDBAttributes_ToString
-Declaration: std::string PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix);
+Declaration: std::string PyExportDBAttributes_ToString(const ExportDBAttributes *, const char *, const bool);
 Definition:
 
 
@@ -16,7 +16,7 @@ Definition:
 //
 // ****************************************************************************
 std::string
-PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix)
+PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix, const bool /* forLogging */)
 {
     std::string str;
     char tmpStr[1000];
@@ -60,8 +60,7 @@ PyExportDBAttributes_ToString(const ExportDBAttributes *atts, const char *prefix
     snprintf(tmpStr, 1000, "%sgroupSize = %d\n", prefix, atts->GetGroupSize());
     str += tmpStr;
 
-    std::string db_opts_dict_str = PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(atts->GetOpts(),
-                                                                                     false);
+    std::string db_opts_dict_str = PyDBOptionsAttributes_CreateDictionaryStringFromDBOptions(atts->GetOpts(), false);
     if((!db_opts_dict_str.empty()) && // make sure its not an empty string
        (db_opts_dict_str.find("{}") != 0) ) // and not an empty dict
     {

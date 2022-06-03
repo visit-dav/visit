@@ -36,7 +36,7 @@ struct FFTAttributesObject
 //
 static PyObject *NewFFTAttributes(int);
 std::string
-PyFFTAttributes_ToString(const FFTAttributes *atts, const char *prefix)
+PyFFTAttributes_ToString(const FFTAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -187,7 +187,7 @@ static int
 FFTAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     FFTAttributesObject *obj = (FFTAttributesObject *)v;
-    fprintf(fp, "%s", PyFFTAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyFFTAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -195,7 +195,7 @@ PyObject *
 FFTAttributes_str(PyObject *v)
 {
     FFTAttributesObject *obj = (FFTAttributesObject *)v;
-    return PyString_FromString(PyFFTAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyFFTAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -347,7 +347,7 @@ PyFFTAttributes_GetLogString()
 {
     std::string s("FFTAtts = FFTAttributes()\n");
     if(currentAtts != 0)
-        s += PyFFTAttributes_ToString(currentAtts, "FFTAtts.");
+        s += PyFFTAttributes_ToString(currentAtts, "FFTAtts.", true);
     return s;
 }
 
@@ -360,7 +360,7 @@ PyFFTAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("FFTAtts = FFTAttributes()\n");
-        s += PyFFTAttributes_ToString(currentAtts, "FFTAtts.");
+        s += PyFFTAttributes_ToString(currentAtts, "FFTAtts.", true);
         cb(s);
     }
 }

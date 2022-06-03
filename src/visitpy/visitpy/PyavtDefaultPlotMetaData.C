@@ -36,7 +36,7 @@ struct avtDefaultPlotMetaDataObject
 //
 static PyObject *NewavtDefaultPlotMetaData(int);
 std::string
-PyavtDefaultPlotMetaData_ToString(const avtDefaultPlotMetaData *atts, const char *prefix)
+PyavtDefaultPlotMetaData_ToString(const avtDefaultPlotMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -324,7 +324,7 @@ static int
 avtDefaultPlotMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtDefaultPlotMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtDefaultPlotMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -332,7 +332,7 @@ PyObject *
 avtDefaultPlotMetaData_str(PyObject *v)
 {
     avtDefaultPlotMetaDataObject *obj = (avtDefaultPlotMetaDataObject *)v;
-    return PyString_FromString(PyavtDefaultPlotMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtDefaultPlotMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -484,7 +484,7 @@ PyavtDefaultPlotMetaData_GetLogString()
 {
     std::string s("avtDefaultPlotMetaData = avtDefaultPlotMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtDefaultPlotMetaData_ToString(currentAtts, "avtDefaultPlotMetaData.");
+        s += PyavtDefaultPlotMetaData_ToString(currentAtts, "avtDefaultPlotMetaData.", true);
     return s;
 }
 
@@ -497,7 +497,7 @@ PyavtDefaultPlotMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtDefaultPlotMetaData = avtDefaultPlotMetaData()\n");
-        s += PyavtDefaultPlotMetaData_ToString(currentAtts, "avtDefaultPlotMetaData.");
+        s += PyavtDefaultPlotMetaData_ToString(currentAtts, "avtDefaultPlotMetaData.", true);
         cb(s);
     }
 }

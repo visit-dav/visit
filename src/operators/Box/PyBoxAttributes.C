@@ -36,7 +36,7 @@ struct BoxAttributesObject
 //
 static PyObject *NewBoxAttributes(int);
 std::string
-PyBoxAttributes_ToString(const BoxAttributes *atts, const char *prefix)
+PyBoxAttributes_ToString(const BoxAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -690,7 +690,7 @@ static int
 BoxAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)v;
-    fprintf(fp, "%s", PyBoxAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyBoxAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -698,7 +698,7 @@ PyObject *
 BoxAttributes_str(PyObject *v)
 {
     BoxAttributesObject *obj = (BoxAttributesObject *)v;
-    return PyString_FromString(PyBoxAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyBoxAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -850,7 +850,7 @@ PyBoxAttributes_GetLogString()
 {
     std::string s("BoxAtts = BoxAttributes()\n");
     if(currentAtts != 0)
-        s += PyBoxAttributes_ToString(currentAtts, "BoxAtts.");
+        s += PyBoxAttributes_ToString(currentAtts, "BoxAtts.", true);
     return s;
 }
 
@@ -863,7 +863,7 @@ PyBoxAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("BoxAtts = BoxAttributes()\n");
-        s += PyBoxAttributes_ToString(currentAtts, "BoxAtts.");
+        s += PyBoxAttributes_ToString(currentAtts, "BoxAtts.", true);
         cb(s);
     }
 }

@@ -36,7 +36,7 @@ struct SliceAttributesObject
 //
 static PyObject *NewSliceAttributes(int);
 std::string
-PySliceAttributes_ToString(const SliceAttributes *atts, const char *prefix)
+PySliceAttributes_ToString(const SliceAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1462,7 +1462,7 @@ static int
 SliceAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SliceAttributesObject *obj = (SliceAttributesObject *)v;
-    fprintf(fp, "%s", PySliceAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySliceAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1470,7 +1470,7 @@ PyObject *
 SliceAttributes_str(PyObject *v)
 {
     SliceAttributesObject *obj = (SliceAttributesObject *)v;
-    return PyString_FromString(PySliceAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySliceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1622,7 +1622,7 @@ PySliceAttributes_GetLogString()
 {
     std::string s("SliceAtts = SliceAttributes()\n");
     if(currentAtts != 0)
-        s += PySliceAttributes_ToString(currentAtts, "SliceAtts.");
+        s += PySliceAttributes_ToString(currentAtts, "SliceAtts.", true);
     return s;
 }
 
@@ -1635,7 +1635,7 @@ PySliceAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SliceAtts = SliceAttributes()\n");
-        s += PySliceAttributes_ToString(currentAtts, "SliceAtts.");
+        s += PySliceAttributes_ToString(currentAtts, "SliceAtts.", true);
         cb(s);
     }
 }

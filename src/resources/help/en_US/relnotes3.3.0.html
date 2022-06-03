@@ -55,6 +55,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added support and examples of 2D structured grids representing surfaces in 3 dimensions.</li>
   <li>A slew of new, color vision deficient (CVD) color tables from <a href="https://www.fabiocrameri.ch/visualisation/">Fabio Crameri</a> were added and assigned the category <code>CvdFriendlyCrameri</code></li>
   <li>Existing Viridis CVD color tables were given a new category name, <code>CvdFriendlyViridis</code></li>
+  <li>ColorControlPointsList and GaussianControlPointsList now have a 'SetNum' method for changing the size of the underlying controlPoints list. Control points will be added or removed based on the current size of the list. The SetNum method was also added to the script created by Logging /command recording, so that the control points list has the correct size and the created script can execute correctly without crashing the cli.<li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -134,6 +135,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a cli crash when 'DeleteAllPlots' is called when there are not plots, and a callback has been registered for 'SetActivePlots'.</li>
   <li>Fixed a bug in visit_composite where output formats like bmp, png could not be read back in by VisIt nor used to encode movies.</li>
   <li>Fixed a bug with the Python CLI where the PySide2 module wouldn't load when running one of the pre-built binaries.</li>
+  <li>The Contour plot's fields were re-ordered internally to fix a bug where a command-recorded script of Contour plot would crash the cli if number of contours had been increased from the default.</li>
 </ul>
 
 <a name="Configuration_changes"></a>

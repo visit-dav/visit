@@ -77,9 +77,9 @@ public:
     void SelectChangedColors();
     void SelectColorTableName();
     void SelectSingleColor();
-    void SelectMultiColor();
     void SelectContourValue();
     void SelectContourPercent();
+    void SelectMultiColor();
 
     // Property setting methods
     void SetDefaultPalette(const ColorControlPointList &defaultPalette_);
@@ -90,11 +90,11 @@ public:
     void SetLegendFlag(bool legendFlag_);
     void SetLineWidth(int lineWidth_);
     void SetSingleColor(const ColorAttribute &singleColor_);
-    void SetMultiColor(const ColorAttributeList &multiColor_);
+    void SetContourMethod(Select_by contourMethod_);
     void SetContourNLevels(int contourNLevels_);
     void SetContourValue(const doubleVector &contourValue_);
     void SetContourPercent(const doubleVector &contourPercent_);
-    void SetContourMethod(Select_by contourMethod_);
+    void SetMultiColor(const ColorAttributeList &multiColor_);
     void SetMinFlag(bool minFlag_);
     void SetMaxFlag(bool maxFlag_);
     void SetMin(double min_);
@@ -115,14 +115,14 @@ public:
     int                         GetLineWidth() const;
     const ColorAttribute        &GetSingleColor() const;
           ColorAttribute        &GetSingleColor();
-    const ColorAttributeList    &GetMultiColor() const;
-          ColorAttributeList    &GetMultiColor();
+    Select_by                   GetContourMethod() const;
     int                         GetContourNLevels() const;
     const doubleVector          &GetContourValue() const;
           doubleVector          &GetContourValue();
     const doubleVector          &GetContourPercent() const;
           doubleVector          &GetContourPercent();
-    Select_by                   GetContourMethod() const;
+    const ColorAttributeList    &GetMultiColor() const;
+          ColorAttributeList    &GetMultiColor();
     bool                        GetMinFlag() const;
     bool                        GetMaxFlag() const;
     double                      GetMin() const;
@@ -178,11 +178,11 @@ public:
         ID_legendFlag,
         ID_lineWidth,
         ID_singleColor,
-        ID_multiColor,
+        ID_contourMethod,
         ID_contourNLevels,
         ID_contourValue,
         ID_contourPercent,
-        ID_contourMethod,
+        ID_multiColor,
         ID_minFlag,
         ID_maxFlag,
         ID_min,
@@ -201,11 +201,11 @@ private:
     bool                  legendFlag;
     int                   lineWidth;
     ColorAttribute        singleColor;
-    ColorAttributeList    multiColor;
+    int                   contourMethod;
     int                   contourNLevels;
     doubleVector          contourValue;
     doubleVector          contourPercent;
-    int                   contourMethod;
+    ColorAttributeList    multiColor;
     bool                  minFlag;
     bool                  maxFlag;
     double                min;
@@ -217,6 +217,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define CONTOURATTRIBUTES_TMFS "au*isbbiaaid*d*ibbddib"
+#define CONTOURATTRIBUTES_TMFS "au*isbbiaiid*d*abbddib"
 
 #endif
