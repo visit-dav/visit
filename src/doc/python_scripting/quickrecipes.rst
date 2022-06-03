@@ -909,14 +909,14 @@ Existing color tables can retreived by name via ``GetColorTable`` as in: ::
     categoryName = "Standard"
 
 The ``colors`` field of the ``ControlPoint`` represent the (Red,Green,Blue,Alpha) channels of the color and must be in the range (0, 255).
-The numbers indicate the contribution each channel makes to the overall color. 
+The numbers indicate the contribution each channel makes to the overall color.
 Higher values mean higher saturation of the color.
 For example, `red` would be represented as `(255, 0, 0, 255)`, while `yellow` would be `(255, 255, 0, 255)`, an equal combination of red and green. 
 Playing with the ``Color selection dialog`` from the ``Popup color menu`` in the gui can help in determining RGBA values for desired colors. 
 See :numref:`Figure %s <fig-MakingItPretty-ColorSelectDialog>`.
 
-Alpha indicates the level of transparency of the color, with a value of 255 meaning fully opaque, and 0,  fully transparent.  
-Not all plots in VisIt make use of the Alpha channel of a color table.
+Alpha indicates the level of transparency of the color, with a value of 255 meaning fully opaque, and 0, fully transparent. 
+Not all plots in VisIt make use of the Alpha channel of a color table. 
 For instance, for Pseudocolor plots, one must set the ``opacityType`` to ``ColorTable`` in order for a Color table with semi-transparent colors to have any effect.
 
 The ``position`` field of the ``ControlPoint`` is in the range (0, 1) and should be in ascending order.
@@ -1014,31 +1014,42 @@ Here's an example of creating a discrete color table using named colors from the
     Subset plot using the "mylevels" color table.
 
 
-Plots with special handling of color tables
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Volume Plot's special handling of its color table
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:ref:`Contour <contour_plot_head>`, MultiCurve, :ref:`Volume <volume_plot_head>` and Well Bore plots all store a ``ColorControlPointList`` directly instead of being referenced via color table name.
+:ref:`Volume <volume_plot_head>` plots Color Table is stored directly as a ``ColorControlPointList`` rather than indirectly from a color table name.
 
-Contour, MultiCurve and Well Bore plots
-"""""""""""""""""""""""""""""""""""""""
+The colorControlPoints object is initialized with 5 values corresponding to the `hot` Color Table.
+The size of the colorControlPoints list can be adjusted in several ways:
+via `AddControlPoints`, `RemoveControlPoints` or `SetNumControlPoints` called on the colorControlPoints object, or via `SetColorControlPoints` called on the VolumeAttributes object.
 
-For :ref:`Contour <contour_plot_head>`, MultiCurve and Well Bore plots, the ``ColorControlPointList`` is discrete, and is named ``defaultPalette``. 
-The size varies with the plot type, and each provides convenience methods (SetMultiColor) for changing its contents as demonstrated below for the :ref:`Contour <contour_plot_head>` plot:
-
-.. literalinclude:: ../../test/tests/plots/contour.py
-    :language: Python
-    :start-after: # contourAtts {
-    :end-before: # contourAtts }
-
-Volume plot
-"""""""""""
-
-The :ref:`Volume <volume_plot_head>` plot's name for it's ``ColorControlPointList`` is ``colorControlPoints`` and there are no convenice methods.
-You must access this list directly as shown below:
-
+Here is an example using `RemoveControlPoints`:
 
 .. literalinclude:: ../../test/tests/plots/volumePlot.py
     :language: Python
-    :start-after: # volumeColorControlPoints {
-    :end-before: # volumeColorControlPoints }
+    :start-after: # removeControlPoints {
+    :end-before: # removeControlPoints }
+
+Here is an example using `AddControlPoints`:
+
+.. literalinclude:: ../../test/tests/plots/volumePlot.py
+    :language: Python
+    :start-after: # addControlPoints {
+    :end-before: # addControlPoints }
+
+Here is an example using `SetNumControlPoints`:
+
+.. literalinclude:: ../../test/tests/plots/volumePlot.py
+    :language: Python
+    :start-after: # setNumControlPoints {
+    :end-before: # setNumControlPoints }
+
+Here is an example using a named color table and `SetColorControlPoints`:
+
+.. literalinclude:: ../../test/tests/plots/volumePlot.py
+    :language: Python
+    :start-after: # setFromColorTable {
+    :end-before: # setFromColorTable }
+
+Available color table names can be found via ``ColorTableNames()``.
 
