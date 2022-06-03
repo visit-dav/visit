@@ -37,7 +37,7 @@ struct RenderingAttributesObject
 //
 static PyObject *NewRenderingAttributes(int);
 std::string
-PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *prefix)
+PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2785,7 +2785,7 @@ static int
 RenderingAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)v;
-    fprintf(fp, "%s", PyRenderingAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyRenderingAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2793,7 +2793,7 @@ PyObject *
 RenderingAttributes_str(PyObject *v)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)v;
-    return PyString_FromString(PyRenderingAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyRenderingAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2945,7 +2945,7 @@ PyRenderingAttributes_GetLogString()
 {
     std::string s("RenderingAtts = RenderingAttributes()\n");
     if(currentAtts != 0)
-        s += PyRenderingAttributes_ToString(currentAtts, "RenderingAtts.");
+        s += PyRenderingAttributes_ToString(currentAtts, "RenderingAtts.", true);
     return s;
 }
 
@@ -2958,7 +2958,7 @@ PyRenderingAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("RenderingAtts = RenderingAttributes()\n");
-        s += PyRenderingAttributes_ToString(currentAtts, "RenderingAtts.");
+        s += PyRenderingAttributes_ToString(currentAtts, "RenderingAtts.", true);
         cb(s);
     }
 }

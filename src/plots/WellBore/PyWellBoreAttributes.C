@@ -40,7 +40,7 @@ struct WellBoreAttributesObject
 //
 static PyObject *NewWellBoreAttributes(int);
 std::string
-PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix)
+PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -48,7 +48,7 @@ PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "defaultPalette.";
-        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str());
+        str += PyColorControlPointList_ToString(&atts->GetDefaultPalette(), objPrefix.c_str(), forLogging);
     }
     {   const unsignedCharVector &changedColors = atts->GetChangedColors();
         snprintf(tmpStr, 1000, "%schangedColors = (", prefix);
@@ -1768,7 +1768,7 @@ static int
 WellBoreAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)v;
-    fprintf(fp, "%s", PyWellBoreAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyWellBoreAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1776,7 +1776,7 @@ PyObject *
 WellBoreAttributes_str(PyObject *v)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)v;
-    return PyString_FromString(PyWellBoreAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyWellBoreAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1928,7 +1928,7 @@ PyWellBoreAttributes_GetLogString()
 {
     std::string s("WellBoreAtts = WellBoreAttributes()\n");
     if(currentAtts != 0)
-        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.");
+        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.", true);
     return s;
 }
 
@@ -1941,7 +1941,7 @@ PyWellBoreAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("WellBoreAtts = WellBoreAttributes()\n");
-        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.");
+        s += PyWellBoreAttributes_ToString(currentAtts, "WellBoreAtts.", true);
         cb(s);
     }
 }

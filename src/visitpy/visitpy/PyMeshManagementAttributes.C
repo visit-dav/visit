@@ -36,7 +36,7 @@ struct MeshManagementAttributesObject
 //
 static PyObject *NewMeshManagementAttributes(int);
 std::string
-PyMeshManagementAttributes_ToString(const MeshManagementAttributes *atts, const char *prefix)
+PyMeshManagementAttributes_ToString(const MeshManagementAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -752,7 +752,7 @@ static int
 MeshManagementAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)v;
-    fprintf(fp, "%s", PyMeshManagementAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMeshManagementAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -760,7 +760,7 @@ PyObject *
 MeshManagementAttributes_str(PyObject *v)
 {
     MeshManagementAttributesObject *obj = (MeshManagementAttributesObject *)v;
-    return PyString_FromString(PyMeshManagementAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMeshManagementAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -912,7 +912,7 @@ PyMeshManagementAttributes_GetLogString()
 {
     std::string s("MeshManagementAtts = MeshManagementAttributes()\n");
     if(currentAtts != 0)
-        s += PyMeshManagementAttributes_ToString(currentAtts, "MeshManagementAtts.");
+        s += PyMeshManagementAttributes_ToString(currentAtts, "MeshManagementAtts.", true);
     return s;
 }
 
@@ -925,7 +925,7 @@ PyMeshManagementAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MeshManagementAtts = MeshManagementAttributes()\n");
-        s += PyMeshManagementAttributes_ToString(currentAtts, "MeshManagementAtts.");
+        s += PyMeshManagementAttributes_ToString(currentAtts, "MeshManagementAtts.", true);
         cb(s);
     }
 }

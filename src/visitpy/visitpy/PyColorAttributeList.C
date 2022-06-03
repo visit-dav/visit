@@ -37,7 +37,7 @@ struct ColorAttributeListObject
 //
 static PyObject *NewColorAttributeList(int);
 std::string
-PyColorAttributeList_ToString(const ColorAttributeList *atts, const char *prefix)
+PyColorAttributeList_ToString(const ColorAttributeList *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -50,7 +50,7 @@ PyColorAttributeList_ToString(const ColorAttributeList *atts, const char *prefix
             const ColorAttribute *current = (const ColorAttribute *)(*pos);
             snprintf(tmpStr, 1000, "GetColors(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyColorAttribute_ToString(current, objPrefix.c_str());
+            str += PyColorAttribute_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#colors does not contain any ColorAttribute objects.\n";
@@ -241,7 +241,7 @@ static int
 ColorAttributeList_print(PyObject *v, FILE *fp, int flags)
 {
     ColorAttributeListObject *obj = (ColorAttributeListObject *)v;
-    fprintf(fp, "%s", PyColorAttributeList_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyColorAttributeList_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -249,7 +249,7 @@ PyObject *
 ColorAttributeList_str(PyObject *v)
 {
     ColorAttributeListObject *obj = (ColorAttributeListObject *)v;
-    return PyString_FromString(PyColorAttributeList_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyColorAttributeList_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -401,7 +401,7 @@ PyColorAttributeList_GetLogString()
 {
     std::string s("ColorAttributeList = ColorAttributeList()\n");
     if(currentAtts != 0)
-        s += PyColorAttributeList_ToString(currentAtts, "ColorAttributeList.");
+        s += PyColorAttributeList_ToString(currentAtts, "ColorAttributeList.", true);
     return s;
 }
 
@@ -414,7 +414,7 @@ PyColorAttributeList_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ColorAttributeList = ColorAttributeList()\n");
-        s += PyColorAttributeList_ToString(currentAtts, "ColorAttributeList.");
+        s += PyColorAttributeList_ToString(currentAtts, "ColorAttributeList.", true);
         cb(s);
     }
 }
