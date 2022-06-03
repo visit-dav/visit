@@ -1017,34 +1017,34 @@ Here's an example of creating a discrete color table using named colors from the
 Volume Plot's special handling of its color table
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:ref:`Volume <volume_plot_head>` plots Color Table is stored directly as a ``ColorControlPointList`` rather than indirectly from a color table name.
+:ref:`Volume <volume_plot_head>` plot's Color Table is stored directly as a ``ColorControlPointList`` rather than indirectly from a color table name.
 
-The colorControlPoints object is initialized with 5 values corresponding to the `hot` Color Table.
+The colorControlPoints object is initialized with 5 values corresponding to the ``hot`` Color Table.
 The size of the colorControlPoints list can be adjusted in several ways:
-via `AddControlPoints`, `RemoveControlPoints` or `SetNumControlPoints` called on the colorControlPoints object, or via `SetColorControlPoints` called on the VolumeAttributes object.
+via ``AddControlPoints``, ``RemoveControlPoints`` or ``SetNumControlPoints`` called on the colorControlPoints object, or via ``SetColorControlPoints`` called on the VolumeAttributes object.
 
-Here is an example using `RemoveControlPoints`:
+Here is an example using ``RemoveControlPoints``:
 
 .. literalinclude:: ../../test/tests/plots/volumePlot.py
     :language: Python
     :start-after: # removeControlPoints {
     :end-before: # removeControlPoints }
 
-Here is an example using `AddControlPoints`:
+Here is an example using ``AddControlPoints``:
 
 .. literalinclude:: ../../test/tests/plots/volumePlot.py
     :language: Python
     :start-after: # addControlPoints {
     :end-before: # addControlPoints }
 
-Here is an example using `SetNumControlPoints`:
+Here is an example using ``SetNumControlPoints``:
 
 .. literalinclude:: ../../test/tests/plots/volumePlot.py
     :language: Python
     :start-after: # setNumControlPoints {
     :end-before: # setNumControlPoints }
 
-Here is an example using a named color table and `SetColorControlPoints`:
+Here is an example using a named color table and ``SetColorControlPoints``:
 
 .. literalinclude:: ../../test/tests/plots/volumePlot.py
     :language: Python
