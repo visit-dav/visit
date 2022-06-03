@@ -260,7 +260,7 @@ Finding Stuff from Python Prompt
 --------------------------------
 
 Most Python functions and objects in VisIt_ have ``_doc_`` strings specified.
-This means, you can use ``help(thing)``, where ``thing`` is not a string but an actual object or function, to get useful information about them.
+This means, you can use ``help(thing)``, where ``thing`` may be a string (see below) or an object or function, to get useful information about them.
 If you are having trouble finding the right functions or objects, you can use ``apropos(regex)``, where regex is a regular expression string, and you will get back a list of all objects and functions whose names, doc strings or stringified instances (for objects only) match the regular expression.
 For example, 
 
@@ -272,6 +272,8 @@ For example,
     ['SetDefaultMaterialAttributes', 'MaterialAttributes', 'GetMaterialAttributes', 'SetMaterialAttributes']
     >>> apropos(".*reconstruct.*")
     ['GetMeshManagementAttributes', 'SetDefaultMeshManagementAttributes', 'SetMeshManagementAttributes', 'SetDefaultMaterialAttributes', 'GetMaterialAttributes', 'SetMaterialAttributes']
+
+``apropos()`` also always does case-insensitive searches.
 
 One drawback with using Python's ``help(thing)`` facility is that it requires prior knowledge of the name(s) (including correct capitalization) of the things you want to use.
 Consequently, VisIt_'s Python environment adjusts the default behavior of ``help(thing)`` slightly to first present Python's *normal* help but then to also follow that up with the output of ``apropos(thing)``.
@@ -313,3 +315,6 @@ For example,
 In `Python Regular Expressions <https://docs.python.org/3/library/re.html>`_ the ``.*`` is needed for an arbitrary number of unspecified characters.
 See `this HOWTO <https://docs.python.org/3/howto/regex.html>`_ for more information about Python Regular Expressions.
 The function name ``apropos`` was inspired by a `function of similar name and purpose <https://en.wikipedia.org/wiki/Apropos_(Unix)>`_ in the Unix operating system. 
+
+If there is a need to bypass VisIt_'s override of ``help()``, ``python_help()`` is an alias for Python's *default* ``help()``.
+Likewise, ``visit_help()`` is an alias for VisIt_'s overridden ``help()``.
