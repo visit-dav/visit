@@ -178,7 +178,7 @@ QvisColorTableWindow::CreateWindowContents()
     topLayout->addWidget(defaultGroup, 5);
 
     QVBoxLayout *innerDefaultTopLayout = new QVBoxLayout(defaultGroup);
-    innerDefaultLayout = new QGridLayout();
+    QGridLayout *innerDefaultLayout = new QGridLayout();
     innerDefaultTopLayout->addLayout(innerDefaultLayout);
     innerDefaultLayout->setColumnMinimumWidth(1, 10);
 
@@ -201,10 +201,6 @@ QvisColorTableWindow::CreateWindowContents()
             this, SLOT(groupingToggled(bool)));
     innerDefaultLayout->addWidget(groupToggle, 2, 1);
 
-    // the tag options need to be added in later
-    std::cout << "num tags: " << tagList.size() << std::endl;
-    tagToggles = new std::vector<QCheckBox>();
-
     // Create the widget group that contains all of the color table
     // management stuff.
     colorTableWidgetGroup = new QGroupBox(central);
@@ -213,7 +209,7 @@ QvisColorTableWindow::CreateWindowContents()
     QVBoxLayout *innerColorTableLayout = new QVBoxLayout(colorTableWidgetGroup);
 
     // Create the color management widgets.
-    QGridLayout *mgLayout = new QGridLayout();
+    mgLayout = new QGridLayout();
     innerColorTableLayout->addLayout(mgLayout);
 
     newButton = new QPushButton(tr("New"), colorTableWidgetGroup);
@@ -837,6 +833,14 @@ QvisColorTableWindow::UpdateNames()
                 tagList.push_back(currtag);
             }
         }
+    }
+
+    // create the tag list checkboxes
+    for (int i = 0; i < tagList.size(); i ++)
+    {
+        tagToggles.push_back(new QCheckBox(QString(tagList[i].c_str()), defaultGroup));
+        // TODO connect w/ signals
+        mgLayout->addWidget(tagToggles[i], i + 6, 0);
     }
 
     nameListBox->blockSignals(false);

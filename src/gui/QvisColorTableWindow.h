@@ -157,8 +157,8 @@ private:
     QvisNoDefaultColorTableButton *defaultDiscrete;
     QLabel                   *defaultDiscreteLabel;
     QCheckBox                *groupToggle;
-    std::vector<QCheckBox>   *tagToggles;
-    QGridLayout              *innerDefaultLayout;
+    std::vector<QCheckBox*>   tagToggles;
+    QGridLayout              *mgLayout;
 
     QGroupBox                *colorTableWidgetGroup;
     QPushButton              *newButton;
