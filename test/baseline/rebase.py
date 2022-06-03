@@ -248,7 +248,7 @@ filelist = get_baseline_filenames(
 
 if not filelist:
     print('Specified parameters resulted in an empty list of files.')
-    print('Be all parameters are spelled and/or quoted correctly.')
+    print('Make sure all parameters are spelled and/or quoted correctly.')
     sys.exit(1)
 
 #
