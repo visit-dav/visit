@@ -1814,3 +1814,33 @@ ColorControlPointList::GetNumTags()
     return tagNames.size();
 }
 
+// ****************************************************************************
+// Method: ColorControlPointList::GetTagsAsString
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+ColorControlPointList::GetTagsAsString()
+{
+    int numtags = tagNames.size();
+    if (numtags == 0)
+        return "";
+    if (numtags == 1)
+        return tagNames[0];
+    std::string tags = "";
+    for (int i = 0; i < tagNames.size() - 1; i ++)
+    {
+        tags += tagNames[i] + ",";
+    }
+    tags += tagNames[tagNames.size() - 1];
+    return tags;
+}
+

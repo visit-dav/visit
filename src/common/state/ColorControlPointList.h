@@ -122,6 +122,7 @@ public:
     void ClearTags();
     std::string GetTag(int index);
     int GetNumTags();
+    std::string GetTagsAsString();
 
     // IDs that can be used to identify fields in case statements
     enum {

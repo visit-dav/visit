@@ -43,4 +43,6 @@
     </Function>
     <Function name="GetNumTags" user="true" member="true">
     </Function>
+    <Function name="GetTagsAsString" user="true" member="true">
+    </Function>
   </Attribute>

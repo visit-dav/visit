@@ -816,6 +816,7 @@ QvisColorTableWindow::UpdateNames()
         // Set the text of the default color table into the name line edit.
         nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
         categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
+        tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
     }
 
     nameListBox->blockSignals(false);
@@ -1866,23 +1867,12 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
     {
         currentColorTable = current->text(0);
         nameLineEdit->setText(currentColorTable);
+        int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
         if (groupToggle->isChecked())
         {
-            int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
             categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
         }
-        std::cout << "Current color table name: " << currentColorTable.toStdString() << std::endl;
-        int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
-        int numtags = colorAtts->GetColorTables(index).GetNumTags();
-        std::cout << "This color table has " << numtags << " tags" << std::endl;
-        if (numtags)
-        {
-            for (int i = 0; i < numtags; i ++)
-            {
-                std::cout << colorAtts->GetColorTables(index).GetTag(i) << " ";
-            }
-            std::cout << "\n" << std::endl;
-        }
+        tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
         UpdateEditor();
     }
 }
