@@ -6,7 +6,13 @@
 // avtBlueprintDataAdaptor.C
 // ************************************************************************* //
 
+
 #include "avtBlueprintDataAdaptor.h"
+
+// NOTE: This is from avtblueprint lib
+#include "avtConduitBlueprintDataAdaptor.h"
+// NOTE: This is from avtmfem lib
+#include "avtMFEMDataAdaptor.h"
 
 //-----------------------------------------------------------------------------
 // vtk includes

@@ -29,6 +29,9 @@
 
 #include <avtResolutionSelection.h>
 
+// NOTE: This is from avtmfem lib
+#include "avtMFEMDataAdaptor.h"
+
 #include <StringHelpers.h>
 #include <visit_gzstream.h>
 #include <vtkUnsignedIntArray.h>

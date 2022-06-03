@@ -36,32 +36,17 @@
 *
 *****************************************************************************/
 
-#ifndef AVT_BLUEPRINT_DATA_ADAPTOR_H
-#define AVT_BLUEPRINT_DATA_ADAPTOR_H
-#include <avtblueprint_exports.h>
+#include <avtConduitBlueprintDataAdaptor.h>
 #include <conduit.hpp>
+#include <conduit_blueprint.hpp>
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDoubleArray.h>
 
-// ****************************************************************************
-//  Class:  avtBlueprintDataAdaptor
-//
-//  Purpose:
-//    Helper methods that convert between Conduit Blueprint and VTK meshes.
-//
-//  Programmer:  Cyrus Harrison
-//  Creation:    May 31, 2022
-//
-//  Modifications:
-//
-// ****************************************************************************
 
-class AVTBLUEPRINT_API avtBlueprintDataAdaptor
+
+void
+avtConduitBlueprintDataAdaptor::ADD_OUR_HELPERS_HERE()
 {
-public:
-      static void ADD_OUR_HELPERS_HERE();
-
-};
-
-
-
-#endif
-
+  
+}

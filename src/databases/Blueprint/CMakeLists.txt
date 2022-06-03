@@ -36,6 +36,8 @@ avtBlueprintOptions.C
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${CONDUIT_INCLUDE_DIR}
+${VISIT_INCLUDE_DIR}/avt/MFEM
+${VISIT_INCLUDE_DIR}/avt/Blueprint
 ${MFEM_INCLUDE_DIR}
 ${HDF5_INCLUDE_DIR}
 ${VISIT_COMMON_INCLUDES}
@@ -71,19 +73,19 @@ SET(INSTALLTARGETS IBlueprintDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MBlueprintDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MBlueprintDatabase visitcommon avtdbatts avtdatabase_ser ${CONDUIT_LIB} ${MFEM_LIB} )
+    TARGET_LINK_LIBRARIES(MBlueprintDatabase visitcommon avtdbatts avtdatabase_ser avtmfem avtblueprint ${CONDUIT_LIB} ${MFEM_LIB} )
     ADD_TARGET_DEFINITIONS(MBlueprintDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MBlueprintDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EBlueprintDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EBlueprintDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${CONDUIT_LIB} ${MFEM_LIB} )
+TARGET_LINK_LIBRARIES(EBlueprintDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser avtmfem avtblueprint ${CONDUIT_LIB} ${MFEM_LIB} )
 ADD_TARGET_DEFINITIONS(EBlueprintDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EBlueprintDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EBlueprintDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EBlueprintDatabase_par visitcommon avtdatabase_par avtpipeline_par ${CONDUIT_LIB} ${MFEM_LIB} ${CONDUIT_MPI_LIB} )
+    TARGET_LINK_LIBRARIES(EBlueprintDatabase_par visitcommon avtpipeline_par avtdatabase_par avtmfem avtblueprint ${CONDUIT_LIB} ${MFEM_LIB} ${CONDUIT_MPI_LIB} )
     ADD_TARGET_DEFINITIONS(EBlueprintDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EBlueprintDatabase_par)
 ENDIF(VISIT_PARALLEL)
