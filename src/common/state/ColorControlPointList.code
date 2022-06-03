@@ -611,7 +611,7 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("category")) != 0)
         SetCategoryName(node->AsString());
     if((node = searchNode->GetNode("tags")) != 0)
-        SetTags(node->AsStringVector());
+        SetTagNames(node->AsStringVector());
 }
 
 Function: CreateNode
@@ -676,10 +676,10 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("category", categoryName));
     }
 
-    if(completeSave || !FieldsEqual(ID_tags, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tagNames, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("tags", tags));
+        node->AddNode(new DataNode("tags", tagNames));
     }
 
     // Add the node to the parent node.
@@ -776,10 +776,10 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
         node->AddNode(new DataNode("category", categoryName));
     }
 
-    if(completeSave || !FieldsEqual(ID_tags, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tagNames, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("tags", tags));
+        node->AddNode(new DataNode("tags", tagNames));
     }
 
     // Add the node to the parent node.
@@ -789,5 +789,49 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
         delete node;
 
     return (addToParent || forceAdd);
+}
+
+Function: AddToTags
+Declaration: void AddToTags(std::string newtag);
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::AddToTags
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::AddToTags(std::string newtag)
+{
+    tagNames.push_back(newtag);
+}
+
+Function: ClearTags
+Declaration: void ClearTags();
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::ClearTags
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::ClearTags()
+{
+    tagNames.clear();
 }
 

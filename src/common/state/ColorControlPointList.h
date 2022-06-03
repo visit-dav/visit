@@ -62,7 +62,7 @@ public:
     virtual void SelectAll();
     void SelectControlPoints();
     void SelectCategoryName();
-    void SelectTags();
+    void SelectTagNames();
 
     // Property setting methods
     void SetSmoothing(SmoothingMethod smoothing_);
@@ -70,7 +70,7 @@ public:
     void SetDiscreteFlag(bool discreteFlag_);
     void SetExternalFlag(bool externalFlag_);
     void SetCategoryName(const std::string &categoryName_);
-    void SetTags(const stringVector &tags_);
+    void SetTagNames(const stringVector &tagNames_);
 
     // Property getting methods
     const AttributeGroupVector &GetControlPoints() const;
@@ -81,8 +81,8 @@ public:
     bool               GetExternalFlag() const;
     const std::string  &GetCategoryName() const;
           std::string  &GetCategoryName();
-    const stringVector &GetTags() const;
-          stringVector &GetTags();
+    const stringVector &GetTagNames() const;
+          stringVector &GetTagNames();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -118,6 +118,8 @@ public:
     void GetColorsCubicSpline(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     void GetColors(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     bool CompactCreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
+    void AddToTags(std::string newtag);
+    void ClearTags();
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -127,7 +129,7 @@ public:
         ID_discreteFlag,
         ID_externalFlag,
         ID_categoryName,
-        ID_tags,
+        ID_tagNames,
         ID__LAST
     };
 
@@ -140,7 +142,7 @@ private:
     bool                 discreteFlag;
     bool                 externalFlag;
     std::string          categoryName;
-    stringVector         tags;
+    stringVector         tagNames;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

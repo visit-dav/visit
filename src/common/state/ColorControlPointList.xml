@@ -21,7 +21,7 @@
     </Field>
     <Field name="categoryName" label="categoryName" type="string">
     </Field>
-    <Field name="tags" label="tags" type="stringVector">
+    <Field name="tagNames" label="tagNames" type="stringVector">
     </Field>
     <Function name="EvalCubicSpline" user="true" member="true" access="private">
     </Function>
@@ -34,5 +34,9 @@
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="CompactCreateNode" user="true" member="true">
+    </Function>
+    <Function name="AddToTags" user="true" member="true">
+    </Function>
+    <Function name="ClearTags" user="true" member="true">
     </Function>
   </Attribute>

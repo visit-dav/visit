@@ -86,14 +86,14 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
     str += tmpStr;
     snprintf(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
     str += tmpStr;
-    {   const stringVector &tags = atts->GetTags();
-        snprintf(tmpStr, 1000, "%stags = (", prefix);
+    {   const stringVector &tagNames = atts->GetTagNames();
+        snprintf(tmpStr, 1000, "%stagNames = (", prefix);
         str += tmpStr;
-        for(size_t i = 0; i < tags.size(); ++i)
+        for(size_t i = 0; i < tagNames.size(); ++i)
         {
-            snprintf(tmpStr, 1000, "\"%s\"", tags[i].c_str());
+            snprintf(tmpStr, 1000, "\"%s\"", tagNames[i].c_str());
             str += tmpStr;
-            if(i < tags.size() - 1)
+            if(i < tagNames.size() - 1)
             {
                 snprintf(tmpStr, 1000, ", ");
                 str += tmpStr;
@@ -452,7 +452,7 @@ ColorControlPointList_GetCategoryName(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ColorControlPointList_SetTags(PyObject *self, PyObject *args)
+ColorControlPointList_SetTagNames(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
 
@@ -500,23 +500,23 @@ ColorControlPointList_SetTags(PyObject *self, PyObject *args)
     else
         return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
-    obj->data->GetTags() = vec;
-    // Mark the tags in the object as modified.
-    obj->data->SelectTags();
+    obj->data->GetTagNames() = vec;
+    // Mark the tagNames in the object as modified.
+    obj->data->SelectTagNames();
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ColorControlPointList_GetTags(PyObject *self, PyObject *args)
+ColorControlPointList_GetTagNames(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
-    // Allocate a tuple the with enough entries to hold the tags.
-    const stringVector &tags = obj->data->GetTags();
-    PyObject *retval = PyTuple_New(tags.size());
-    for(size_t i = 0; i < tags.size(); ++i)
-        PyTuple_SET_ITEM(retval, i, PyString_FromString(tags[i].c_str()));
+    // Allocate a tuple the with enough entries to hold the tagNames.
+    const stringVector &tagNames = obj->data->GetTagNames();
+    PyObject *retval = PyTuple_New(tagNames.size());
+    for(size_t i = 0; i < tagNames.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(tagNames[i].c_str()));
     return retval;
 }
 
@@ -537,8 +537,8 @@ PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
     {"GetDiscreteFlag", ColorControlPointList_GetDiscreteFlag, METH_VARARGS},
     {"SetCategoryName", ColorControlPointList_SetCategoryName, METH_VARARGS},
     {"GetCategoryName", ColorControlPointList_GetCategoryName, METH_VARARGS},
-    {"SetTags", ColorControlPointList_SetTags, METH_VARARGS},
-    {"GetTags", ColorControlPointList_GetTags, METH_VARARGS},
+    {"SetTagNames", ColorControlPointList_SetTagNames, METH_VARARGS},
+    {"GetTagNames", ColorControlPointList_GetTagNames, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -579,8 +579,8 @@ PyColorControlPointList_getattr(PyObject *self, char *name)
         return ColorControlPointList_GetDiscreteFlag(self, NULL);
     if(strcmp(name, "categoryName") == 0)
         return ColorControlPointList_GetCategoryName(self, NULL);
-    if(strcmp(name, "tags") == 0)
-        return ColorControlPointList_GetTags(self, NULL);
+    if(strcmp(name, "tagNames") == 0)
+        return ColorControlPointList_GetTagNames(self, NULL);
 
 
     // Add a __dict__ answer so that dir() works
@@ -611,8 +611,8 @@ PyColorControlPointList_setattr(PyObject *self, char *name, PyObject *args)
         obj = ColorControlPointList_SetDiscreteFlag(self, args);
     else if(strcmp(name, "categoryName") == 0)
         obj = ColorControlPointList_SetCategoryName(self, args);
-    else if(strcmp(name, "tags") == 0)
-        obj = ColorControlPointList_SetTags(self, args);
+    else if(strcmp(name, "tagNames") == 0)
+        obj = ColorControlPointList_SetTagNames(self, args);
 
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);

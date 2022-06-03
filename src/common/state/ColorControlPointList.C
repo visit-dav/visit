@@ -108,7 +108,7 @@ void ColorControlPointList::Copy(const ColorControlPointList &obj)
     discreteFlag = obj.discreteFlag;
     externalFlag = obj.externalFlag;
     categoryName = obj.categoryName;
-    tags = obj.tags;
+    tagNames = obj.tagNames;
 
     ColorControlPointList::SelectAll();
 }
@@ -285,7 +285,7 @@ ColorControlPointList::operator == (const ColorControlPointList &obj) const
             (discreteFlag == obj.discreteFlag) &&
             (externalFlag == obj.externalFlag) &&
             (categoryName == obj.categoryName) &&
-            (tags == obj.tags));
+            (tagNames == obj.tagNames));
 }
 
 // ****************************************************************************
@@ -435,7 +435,7 @@ ColorControlPointList::SelectAll()
     Select(ID_discreteFlag,     (void *)&discreteFlag);
     Select(ID_externalFlag,     (void *)&externalFlag);
     Select(ID_categoryName,     (void *)&categoryName);
-    Select(ID_tags,             (void *)&tags);
+    Select(ID_tagNames,         (void *)&tagNames);
 }
 
 // ****************************************************************************
@@ -522,10 +522,10 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("category", categoryName));
     }
 
-    if(completeSave || !FieldsEqual(ID_tags, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tagNames, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("tags", tags));
+        node->AddNode(new DataNode("tags", tagNames));
     }
 
     // Add the node to the parent node.
@@ -655,7 +655,7 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("category")) != 0)
         SetCategoryName(node->AsString());
     if((node = searchNode->GetNode("tags")) != 0)
-        SetTags(node->AsStringVector());
+        SetTagNames(node->AsStringVector());
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
@@ -697,10 +697,10 @@ ColorControlPointList::SetCategoryName(const std::string &categoryName_)
 }
 
 void
-ColorControlPointList::SetTags(const stringVector &tags_)
+ColorControlPointList::SetTagNames(const stringVector &tagNames_)
 {
-    tags = tags_;
-    Select(ID_tags, (void *)&tags);
+    tagNames = tagNames_;
+    Select(ID_tagNames, (void *)&tagNames);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -756,15 +756,15 @@ ColorControlPointList::GetCategoryName()
 }
 
 const stringVector &
-ColorControlPointList::GetTags() const
+ColorControlPointList::GetTagNames() const
 {
-    return tags;
+    return tagNames;
 }
 
 stringVector &
-ColorControlPointList::GetTags()
+ColorControlPointList::GetTagNames()
 {
-    return tags;
+    return tagNames;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -784,9 +784,9 @@ ColorControlPointList::SelectCategoryName()
 }
 
 void
-ColorControlPointList::SelectTags()
+ColorControlPointList::SelectTagNames()
 {
-    Select(ID_tags, (void *)&tags);
+    Select(ID_tagNames, (void *)&tagNames);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1016,7 +1016,7 @@ ColorControlPointList::GetFieldName(int index) const
     case ID_discreteFlag:     return "discreteFlag";
     case ID_externalFlag:     return "externalFlag";
     case ID_categoryName:     return "categoryName";
-    case ID_tags:             return "tags";
+    case ID_tagNames:         return "tagNames";
     default:  return "invalid index";
     }
 }
@@ -1047,7 +1047,7 @@ ColorControlPointList::GetFieldType(int index) const
     case ID_discreteFlag:     return FieldType_bool;
     case ID_externalFlag:     return FieldType_bool;
     case ID_categoryName:     return FieldType_string;
-    case ID_tags:             return FieldType_stringVector;
+    case ID_tagNames:         return FieldType_stringVector;
     default:  return FieldType_unknown;
     }
 }
@@ -1078,7 +1078,7 @@ ColorControlPointList::GetFieldTypeName(int index) const
     case ID_discreteFlag:     return "bool";
     case ID_externalFlag:     return "bool";
     case ID_categoryName:     return "string";
-    case ID_tags:             return "stringVector";
+    case ID_tagNames:         return "stringVector";
     default:  return "invalid index";
     }
 }
@@ -1144,9 +1144,9 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (categoryName == obj.categoryName);
         }
         break;
-    case ID_tags:
+    case ID_tagNames:
         {  // new scope
-        retval = (tags == obj.tags);
+        retval = (tagNames == obj.tagNames);
         }
         break;
     default: retval = false;
@@ -1723,10 +1723,10 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
         node->AddNode(new DataNode("category", categoryName));
     }
 
-    if(completeSave || !FieldsEqual(ID_tags, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tagNames, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("tags", tags));
+        node->AddNode(new DataNode("tags", tagNames));
     }
 
     // Add the node to the parent node.
@@ -1736,5 +1736,43 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
         delete node;
 
     return (addToParent || forceAdd);
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::AddToTags
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::AddToTags(std::string newtag)
+{
+    tagNames.push_back(newtag);
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::ClearTags
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::ClearTags()
+{
+    tagNames.clear();
 }
 
