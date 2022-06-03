@@ -760,6 +760,7 @@ QvisColorTableWindow::UpdateNames()
 
     // Put all of the color table names into the tree.
     bool doSimpleTree = !groupToggle->isChecked();
+    bool doTags = tagToggle->isChecked();
     if(!doSimpleTree)
     {
         nameListBox->setRootIsDecorated(true);
@@ -800,7 +801,7 @@ QvisColorTableWindow::UpdateNames()
         mappedCT.clear();
     }
 
-    if(doSimpleTree)
+    if(doSimpleTree && !doTags)
     {
         nameListBox->setRootIsDecorated(false);
         for(int i = 0; i < colorAtts->GetNumColorTables(); ++i)
@@ -809,6 +810,39 @@ QvisColorTableWindow::UpdateNames()
             QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
             treeItem->setText(0, item);
             nameListBox->addTopLevelItem(treeItem);
+        }
+    }
+
+    if (doTags)
+    {
+        nameListBox->setRootIsDecorated(false);
+        for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
+        {
+            bool tagFound = false;
+            int j = 0;
+            // go thru local tags
+            while (j < colorAtts->GetColorTables(i).GetNumTags() && ! tagFound)
+            {
+                int k = 0;
+                // go thru global tags
+                while (k < tagList.size() && ! tagFound)
+                {
+                    // if this global tag is active
+                    if (activeTags[k])
+                        if (tagList[k] == colorAtts->GetColorTables(i).GetTag(j))
+                            tagFound = true;
+                    k ++;
+                }
+                j ++;
+            }
+
+            if (tagFound)
+            {
+                QString item(colorAtts->GetNames()[i].c_str());
+                QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
+                treeItem->setText(0, item);
+                nameListBox->addTopLevelItem(treeItem);
+            }
         }
     }
 
@@ -867,7 +901,7 @@ QvisColorTableWindow::UpdateNames()
                 signalMapper->setMapping(tagToggles[i], i);
             }
         }
-        // we want to run this line the first time that the tag toggle has been checked
+        // we want to run this line ONLY the first time that the tag toggle has been checked... :)
         if (!runBefore)
             connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(activateTag(int)));
         runBefore = true;
@@ -2466,8 +2500,7 @@ void
 QvisColorTableWindow::activateTag(int tag_index)
 {
     activeTags[tag_index] = ! activeTags[tag_index];
-    std::cout << "tag name: " << tagList[tag_index] << (activeTags[tag_index] ? " enabled" : " disabled") << std::endl;
-    // Apply(true);
+    UpdateNames();
 }
 
 
