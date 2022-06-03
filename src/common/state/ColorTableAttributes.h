@@ -63,6 +63,7 @@ public:
     void SetDefaultContinuous(const std::string &defaultContinuous_);
     void SetDefaultDiscrete(const std::string &defaultDiscrete_);
     void SetGroupingFlag(bool groupingFlag_);
+    void SetTaggingFlag(bool taggingFlag_);
 
     // Property getting methods
     const stringVector &GetNames() const;
@@ -74,6 +75,7 @@ public:
     const std::string  &GetDefaultDiscrete() const;
           std::string  &GetDefaultDiscrete();
     bool               GetGroupingFlag() const;
+    bool               GetTaggingFlag() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -114,6 +116,7 @@ public:
         ID_defaultContinuous,
         ID_defaultDiscrete,
         ID_groupingFlag,
+        ID_taggingFlag,
         ID__LAST
     };
 
@@ -125,11 +128,12 @@ private:
     std::string          defaultContinuous;
     std::string          defaultDiscrete;
     bool                 groupingFlag;
+    bool                 taggingFlag;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*a*ssb"
+#define COLORTABLEATTRIBUTES_TMFS "s*a*ssbb"
 
 #endif

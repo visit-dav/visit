@@ -140,6 +140,8 @@ private slots:
     void highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*);
     void showIndexHintsToggled(bool val);
     void groupingToggled(bool val);
+    void taggingToggled(bool val);
+    void activateTag(int tag_index);
     void ApplyCategoryChange();
 private:
     ColorTableAttributes     *colorAtts;
@@ -149,6 +151,8 @@ private:
     int                      popupMode;
     bool                     sliding;
     stringVector             tagList;
+    std::vector<bool>        activeTags;
+    bool                     tagsVisible;
 
     // Widgets and layouts.
     QGroupBox                *defaultGroup;
@@ -157,7 +161,8 @@ private:
     QvisNoDefaultColorTableButton *defaultDiscrete;
     QLabel                   *defaultDiscreteLabel;
     QCheckBox                *groupToggle;
-    std::vector<QCheckBox*>   tagToggles;
+    QCheckBox                *tagToggle; // toggles if the tag toggles show up!
+    std::vector<QCheckBox*>  tagToggles;
     QGridLayout              *mgLayout;
 
     QGroupBox                *colorTableWidgetGroup;

@@ -23,7 +23,7 @@ import java.util.Vector;
 
 public class ColorTableAttributes extends AttributeSubject
 {
-    private static int ColorTableAttributes_numAdditionalAtts = 5;
+    private static int ColorTableAttributes_numAdditionalAtts = 6;
 
     public ColorTableAttributes()
     {
@@ -34,6 +34,7 @@ public class ColorTableAttributes extends AttributeSubject
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
         groupingFlag = false;
+        taggingFlag = false;
     }
 
     public ColorTableAttributes(int nMoreFields)
@@ -45,6 +46,7 @@ public class ColorTableAttributes extends AttributeSubject
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
         groupingFlag = false;
+        taggingFlag = false;
     }
 
     public ColorTableAttributes(ColorTableAttributes obj)
@@ -68,6 +70,7 @@ public class ColorTableAttributes extends AttributeSubject
         defaultContinuous = new String(obj.defaultContinuous);
         defaultDiscrete = new String(obj.defaultDiscrete);
         groupingFlag = obj.groupingFlag;
+        taggingFlag = obj.taggingFlag;
 
         SelectAll();
     }
@@ -109,7 +112,8 @@ public class ColorTableAttributes extends AttributeSubject
                 colorTables_equal &&
                 (defaultContinuous.equals(obj.defaultContinuous)) &&
                 (defaultDiscrete.equals(obj.defaultDiscrete)) &&
-                (groupingFlag == obj.groupingFlag));
+                (groupingFlag == obj.groupingFlag) &&
+                (taggingFlag == obj.taggingFlag));
     }
 
     // Property setting methods
@@ -137,12 +141,19 @@ public class ColorTableAttributes extends AttributeSubject
         Select(4);
     }
 
+    public void SetTaggingFlag(boolean taggingFlag_)
+    {
+        taggingFlag = taggingFlag_;
+        Select(5);
+    }
+
     // Property getting methods
     public Vector  GetNames() { return names; }
     public Vector  GetColorTables() { return colorTables; }
     public String  GetDefaultContinuous() { return defaultContinuous; }
     public String  GetDefaultDiscrete() { return defaultDiscrete; }
     public boolean GetGroupingFlag() { return groupingFlag; }
+    public boolean GetTaggingFlag() { return taggingFlag; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -164,6 +175,8 @@ public class ColorTableAttributes extends AttributeSubject
             buf.WriteString(defaultDiscrete);
         if(WriteSelect(4, buf))
             buf.WriteBool(groupingFlag);
+        if(WriteSelect(5, buf))
+            buf.WriteBool(taggingFlag);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -195,6 +208,9 @@ public class ColorTableAttributes extends AttributeSubject
         case 4:
             SetGroupingFlag(buf.ReadBool());
             break;
+        case 5:
+            SetTaggingFlag(buf.ReadBool());
+            break;
         }
     }
 
@@ -215,6 +231,7 @@ public class ColorTableAttributes extends AttributeSubject
         str = str + stringToString("defaultContinuous", defaultContinuous, indent) + "\n";
         str = str + stringToString("defaultDiscrete", defaultDiscrete, indent) + "\n";
         str = str + boolToString("groupingFlag", groupingFlag, indent) + "\n";
+        str = str + boolToString("taggingFlag", taggingFlag, indent) + "\n";
         return str;
     }
 
@@ -353,5 +370,6 @@ public class ColorTableAttributes extends AttributeSubject
     private String  defaultContinuous;
     private String  defaultDiscrete;
     private boolean groupingFlag;
+    private boolean taggingFlag;
 }
 

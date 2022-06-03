@@ -21,6 +21,7 @@
 #include <QSlider>
 #include <QSpinBox>
 #include <QDesktopWidget>
+#include <QSignalMapper>
 
 #include <QvisSpectrumBar.h>
 #include <QvisColorSelectionWidget.h>
@@ -82,6 +83,7 @@ QvisColorTableWindow::QvisColorTableWindow(
     sliding = false;
     colorSelect = 0;
     colorTableTypeGroup = 0;
+    tagsVisible = false;
 }
 
 // ****************************************************************************
@@ -200,6 +202,11 @@ QvisColorTableWindow::CreateWindowContents()
     connect(groupToggle, SIGNAL(toggled(bool)),
             this, SLOT(groupingToggled(bool)));
     innerDefaultLayout->addWidget(groupToggle, 2, 1);
+
+    tagToggle = new QCheckBox(tr("Filter tables by Tag"), defaultGroup);
+    connect(tagToggle, SIGNAL(toggled(bool)),
+            this, SLOT(taggingToggled(bool)));
+    innerDefaultLayout->addWidget(tagToggle, 3, 1);
 
     // Create the widget group that contains all of the color table
     // management stuff.
@@ -612,6 +619,13 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             groupToggle->blockSignals(false);
             updateNames = true;
             break;
+        case ColorTableAttributes::ID_taggingFlag:
+            tagToggle->blockSignals(true);
+            tagToggle->setChecked(colorAtts->GetTaggingFlag());
+            tagsVisible = colorAtts->GetTaggingFlag();
+            tagToggle->blockSignals(false);
+            updateNames = true;
+            break;
         }
     }
 
@@ -819,6 +833,7 @@ QvisColorTableWindow::UpdateNames()
         tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
     }
 
+    // TODO move this block into the if stmt below when it is safe to do so
     // populate tags list
     // iterate thru each color table
     for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
@@ -831,16 +846,37 @@ QvisColorTableWindow::UpdateNames()
             if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
             {
                 tagList.push_back(currtag);
+                activeTags.push_back(false);
             }
         }
     }
 
-    // create the tag list checkboxes
-    for (int i = 0; i < tagList.size(); i ++)
+    static bool runBefore = false;
+    static QSignalMapper* signalMapper = new QSignalMapper(this);
+    if (tagToggle->isChecked())
     {
-        tagToggles.push_back(new QCheckBox(QString(tagList[i].c_str()), defaultGroup));
-        // TODO connect w/ signals
-        mgLayout->addWidget(tagToggles[i], i + 6, 0);
+        // are there any new tags to add?
+        if (tagToggles.size() < tagList.size())
+        {
+            // create the tag list checkboxes
+            for (int i = tagToggles.size(); i < tagList.size(); i ++)
+            {
+                tagToggles.push_back(new QCheckBox(QString(tagList[i].c_str()), defaultGroup));
+                mgLayout->addWidget(tagToggles[i], i + 6, 1);
+                connect(tagToggles[i], SIGNAL(toggled(bool)), signalMapper, SLOT(map()));
+                signalMapper->setMapping(tagToggles[i], i);
+            }
+        }
+        // we want to run this line the first time that the tag toggle has been checked
+        if (!runBefore)
+            connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(activateTag(int)));
+        runBefore = true;
+    }
+
+    // set visible or invisible based on if the tag toggle is checked
+    for (int i = 0; i < tagToggles.size(); i ++)
+    {
+        tagToggles[i]->setVisible(tagsVisible);
     }
 
     nameListBox->blockSignals(false);
@@ -2389,6 +2425,49 @@ QvisColorTableWindow::groupingToggled(bool val)
 {
     colorAtts->SetGroupingFlag(val);
     Apply(true);
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::taggingToggled
+//
+// Purpose:
+//   This is a Qt slot function that controls toggling the tags.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 15:06:17 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::taggingToggled(bool val)
+{
+    colorAtts->SetTaggingFlag(val);
+    Apply(true);
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::activateTag
+//
+// Purpose:
+//   This is a Qt slot function that enables a given tag.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 15:06:17 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::activateTag(int tag_index)
+{
+    activeTags[tag_index] = ! activeTags[tag_index];
+    std::cout << "tag name: " << tagList[tag_index] << (activeTags[tag_index] ? " enabled" : " disabled") << std::endl;
+    // Apply(true);
 }
 
 

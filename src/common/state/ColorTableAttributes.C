@@ -28,6 +28,7 @@ void ColorTableAttributes::Init()
     defaultContinuous = "hot";
     defaultDiscrete = "levels";
     groupingFlag = false;
+    taggingFlag = false;
 
     ColorTableAttributes::SelectAll();
 }
@@ -70,6 +71,7 @@ void ColorTableAttributes::Copy(const ColorTableAttributes &obj)
     defaultContinuous = obj.defaultContinuous;
     defaultDiscrete = obj.defaultDiscrete;
     groupingFlag = obj.groupingFlag;
+    taggingFlag = obj.taggingFlag;
 
     ColorTableAttributes::SelectAll();
 }
@@ -244,7 +246,8 @@ ColorTableAttributes::operator == (const ColorTableAttributes &obj) const
             colorTables_equal &&
             (defaultContinuous == obj.defaultContinuous) &&
             (defaultDiscrete == obj.defaultDiscrete) &&
-            (groupingFlag == obj.groupingFlag));
+            (groupingFlag == obj.groupingFlag) &&
+            (taggingFlag == obj.taggingFlag));
 }
 
 // ****************************************************************************
@@ -393,6 +396,7 @@ ColorTableAttributes::SelectAll()
     Select(ID_defaultContinuous, (void *)&defaultContinuous);
     Select(ID_defaultDiscrete,   (void *)&defaultDiscrete);
     Select(ID_groupingFlag,      (void *)&groupingFlag);
+    Select(ID_taggingFlag,       (void *)&taggingFlag);
 }
 
 // ****************************************************************************
@@ -678,6 +682,13 @@ ColorTableAttributes::SetGroupingFlag(bool groupingFlag_)
     Select(ID_groupingFlag, (void *)&groupingFlag);
 }
 
+void
+ColorTableAttributes::SetTaggingFlag(bool taggingFlag_)
+{
+    taggingFlag = taggingFlag_;
+    Select(ID_taggingFlag, (void *)&taggingFlag);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -734,6 +745,12 @@ bool
 ColorTableAttributes::GetGroupingFlag() const
 {
     return groupingFlag;
+}
+
+bool
+ColorTableAttributes::GetTaggingFlag() const
+{
+    return taggingFlag;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -990,6 +1007,7 @@ ColorTableAttributes::GetFieldName(int index) const
     case ID_defaultContinuous: return "defaultContinuous";
     case ID_defaultDiscrete:   return "defaultDiscrete";
     case ID_groupingFlag:      return "groupingFlag";
+    case ID_taggingFlag:       return "taggingFlag";
     default:  return "invalid index";
     }
 }
@@ -1019,6 +1037,7 @@ ColorTableAttributes::GetFieldType(int index) const
     case ID_defaultContinuous: return FieldType_string;
     case ID_defaultDiscrete:   return FieldType_string;
     case ID_groupingFlag:      return FieldType_bool;
+    case ID_taggingFlag:       return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1048,6 +1067,7 @@ ColorTableAttributes::GetFieldTypeName(int index) const
     case ID_defaultContinuous: return "string";
     case ID_defaultDiscrete:   return "string";
     case ID_groupingFlag:      return "bool";
+    case ID_taggingFlag:       return "bool";
     default:  return "invalid index";
     }
 }
@@ -1106,6 +1126,11 @@ ColorTableAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_groupingFlag:
         {  // new scope
         retval = (groupingFlag == obj.groupingFlag);
+        }
+        break;
+    case ID_taggingFlag:
+        {  // new scope
+        retval = (taggingFlag == obj.taggingFlag);
         }
         break;
     default: retval = false;
