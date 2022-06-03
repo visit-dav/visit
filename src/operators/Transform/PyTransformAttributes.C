@@ -36,7 +36,7 @@ struct TransformAttributesObject
 //
 static PyObject *NewTransformAttributes(int);
 std::string
-PyTransformAttributes_ToString(const TransformAttributes *atts, const char *prefix)
+PyTransformAttributes_ToString(const TransformAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2909,7 +2909,7 @@ static int
 TransformAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)v;
-    fprintf(fp, "%s", PyTransformAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyTransformAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2917,7 +2917,7 @@ PyObject *
 TransformAttributes_str(PyObject *v)
 {
     TransformAttributesObject *obj = (TransformAttributesObject *)v;
-    return PyString_FromString(PyTransformAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyTransformAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -3069,7 +3069,7 @@ PyTransformAttributes_GetLogString()
 {
     std::string s("TransformAtts = TransformAttributes()\n");
     if(currentAtts != 0)
-        s += PyTransformAttributes_ToString(currentAtts, "TransformAtts.");
+        s += PyTransformAttributes_ToString(currentAtts, "TransformAtts.", true);
     return s;
 }
 
@@ -3082,7 +3082,7 @@ PyTransformAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("TransformAtts = TransformAttributes()\n");
-        s += PyTransformAttributes_ToString(currentAtts, "TransformAtts.");
+        s += PyTransformAttributes_ToString(currentAtts, "TransformAtts.", true);
         cb(s);
     }
 }

@@ -36,7 +36,7 @@ struct FluxAttributesObject
 //
 static PyObject *NewFluxAttributes(int);
 std::string
-PyFluxAttributes_ToString(const FluxAttributes *atts, const char *prefix)
+PyFluxAttributes_ToString(const FluxAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -304,7 +304,7 @@ static int
 FluxAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     FluxAttributesObject *obj = (FluxAttributesObject *)v;
-    fprintf(fp, "%s", PyFluxAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyFluxAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -312,7 +312,7 @@ PyObject *
 FluxAttributes_str(PyObject *v)
 {
     FluxAttributesObject *obj = (FluxAttributesObject *)v;
-    return PyString_FromString(PyFluxAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyFluxAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -464,7 +464,7 @@ PyFluxAttributes_GetLogString()
 {
     std::string s("FluxAtts = FluxAttributes()\n");
     if(currentAtts != 0)
-        s += PyFluxAttributes_ToString(currentAtts, "FluxAtts.");
+        s += PyFluxAttributes_ToString(currentAtts, "FluxAtts.", true);
     return s;
 }
 
@@ -477,7 +477,7 @@ PyFluxAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("FluxAtts = FluxAttributes()\n");
-        s += PyFluxAttributes_ToString(currentAtts, "FluxAtts.");
+        s += PyFluxAttributes_ToString(currentAtts, "FluxAtts.", true);
         cb(s);
     }
 }

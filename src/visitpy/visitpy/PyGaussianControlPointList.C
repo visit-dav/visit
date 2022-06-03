@@ -37,20 +37,28 @@ struct GaussianControlPointListObject
 //
 static PyObject *NewGaussianControlPointList(int);
 std::string
-PyGaussianControlPointList_ToString(const GaussianControlPointList *atts, const char *prefix)
+PyGaussianControlPointList_ToString(const GaussianControlPointList *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
     { // new scope
         int index = 0;
+        if (forLogging)
+        {
+            // this is needed in case the current NumControlPoints is greater
+            // than the default set up by the containing class.
+            snprintf(tmpStr, 1000, "SetNumControlPoints(%d)\n",
+                atts->GetNumControlPoints());
+            str += (prefix + std::string(tmpStr));
+        }
         // Create string representation of controlPoints from atts.
         for(AttributeGroupVector::const_iterator pos = atts->GetControlPoints().begin(); pos != atts->GetControlPoints().end(); ++pos, ++index)
         {
             const GaussianControlPoint *current = (const GaussianControlPoint *)(*pos);
             snprintf(tmpStr, 1000, "GetControlPoints(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyGaussianControlPoint_ToString(current, objPrefix.c_str());
+            str += PyGaussianControlPoint_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#controlPoints does not contain any GaussianControlPoint objects.\n";
@@ -169,6 +177,18 @@ GaussianControlPointList_ClearControlPoints(PyObject *self, PyObject *args)
 }
 
 
+PyObject *
+GaussianControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
+{
+    GaussianControlPointListObject *obj = (GaussianControlPointListObject *)self;
+    int numItems = -1;
+    if(!PyArg_ParseTuple(args, "i", &numItems))
+        return PyErr_Format(PyExc_TypeError, "Expecting integer numItems");
+    obj->data->SetNumControlPoints(numItems);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 
 PyMethodDef PyGaussianControlPointList_methods[GAUSSIANCONTROLPOINTLIST_NMETH] = {
     {"Notify", GaussianControlPointList_Notify, METH_VARARGS},
@@ -177,6 +197,7 @@ PyMethodDef PyGaussianControlPointList_methods[GAUSSIANCONTROLPOINTLIST_NMETH] =
     {"AddControlPoints", GaussianControlPointList_AddControlPoints, METH_VARARGS},
     {"RemoveControlPoints", GaussianControlPointList_RemoveControlPoints, METH_VARARGS},
     {"ClearControlPoints", GaussianControlPointList_ClearControlPoints, METH_VARARGS},
+    {"SetNumControlPoints", GaussianControlPointList_SetNumControlPoints, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -241,7 +262,7 @@ static int
 GaussianControlPointList_print(PyObject *v, FILE *fp, int flags)
 {
     GaussianControlPointListObject *obj = (GaussianControlPointListObject *)v;
-    fprintf(fp, "%s", PyGaussianControlPointList_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyGaussianControlPointList_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -249,7 +270,7 @@ PyObject *
 GaussianControlPointList_str(PyObject *v)
 {
     GaussianControlPointListObject *obj = (GaussianControlPointListObject *)v;
-    return PyString_FromString(PyGaussianControlPointList_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyGaussianControlPointList_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -401,7 +422,7 @@ PyGaussianControlPointList_GetLogString()
 {
     std::string s("GaussianControlPointList = GaussianControlPointList()\n");
     if(currentAtts != 0)
-        s += PyGaussianControlPointList_ToString(currentAtts, "GaussianControlPointList.");
+        s += PyGaussianControlPointList_ToString(currentAtts, "GaussianControlPointList.", true);
     return s;
 }
 
@@ -414,7 +435,7 @@ PyGaussianControlPointList_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("GaussianControlPointList = GaussianControlPointList()\n");
-        s += PyGaussianControlPointList_ToString(currentAtts, "GaussianControlPointList.");
+        s += PyGaussianControlPointList_ToString(currentAtts, "GaussianControlPointList.", true);
         cb(s);
     }
 }

@@ -36,7 +36,7 @@ struct NameschemeAttributesObject
 //
 static PyObject *NewNameschemeAttributes(int);
 std::string
-PyNameschemeAttributes_ToString(const NameschemeAttributes *atts, const char *prefix)
+PyNameschemeAttributes_ToString(const NameschemeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -743,7 +743,7 @@ static int
 NameschemeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     NameschemeAttributesObject *obj = (NameschemeAttributesObject *)v;
-    fprintf(fp, "%s", PyNameschemeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyNameschemeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -751,7 +751,7 @@ PyObject *
 NameschemeAttributes_str(PyObject *v)
 {
     NameschemeAttributesObject *obj = (NameschemeAttributesObject *)v;
-    return PyString_FromString(PyNameschemeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyNameschemeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -903,7 +903,7 @@ PyNameschemeAttributes_GetLogString()
 {
     std::string s("NameschemeAtts = NameschemeAttributes()\n");
     if(currentAtts != 0)
-        s += PyNameschemeAttributes_ToString(currentAtts, "NameschemeAtts.");
+        s += PyNameschemeAttributes_ToString(currentAtts, "NameschemeAtts.", true);
     return s;
 }
 
@@ -916,7 +916,7 @@ PyNameschemeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("NameschemeAtts = NameschemeAttributes()\n");
-        s += PyNameschemeAttributes_ToString(currentAtts, "NameschemeAtts.");
+        s += PyNameschemeAttributes_ToString(currentAtts, "NameschemeAtts.", true);
         cb(s);
     }
 }

@@ -36,7 +36,7 @@ struct IsosurfaceAttributesObject
 //
 static PyObject *NewIsosurfaceAttributes(int);
 std::string
-PyIsosurfaceAttributes_ToString(const IsosurfaceAttributes *atts, const char *prefix)
+PyIsosurfaceAttributes_ToString(const IsosurfaceAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -909,7 +909,7 @@ static int
 IsosurfaceAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)v;
-    fprintf(fp, "%s", PyIsosurfaceAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyIsosurfaceAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -917,7 +917,7 @@ PyObject *
 IsosurfaceAttributes_str(PyObject *v)
 {
     IsosurfaceAttributesObject *obj = (IsosurfaceAttributesObject *)v;
-    return PyString_FromString(PyIsosurfaceAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyIsosurfaceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1069,7 +1069,7 @@ PyIsosurfaceAttributes_GetLogString()
 {
     std::string s("IsosurfaceAtts = IsosurfaceAttributes()\n");
     if(currentAtts != 0)
-        s += PyIsosurfaceAttributes_ToString(currentAtts, "IsosurfaceAtts.");
+        s += PyIsosurfaceAttributes_ToString(currentAtts, "IsosurfaceAtts.", true);
     return s;
 }
 
@@ -1082,7 +1082,7 @@ PyIsosurfaceAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("IsosurfaceAtts = IsosurfaceAttributes()\n");
-        s += PyIsosurfaceAttributes_ToString(currentAtts, "IsosurfaceAtts.");
+        s += PyIsosurfaceAttributes_ToString(currentAtts, "IsosurfaceAtts.", true);
         cb(s);
     }
 }

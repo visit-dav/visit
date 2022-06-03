@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PySelectionProperties_Wrap(const SelectionProperties 
 void VISITPY_API           PySelectionProperties_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PySelectionProperties_SetDefaults(const SelectionProperties *atts);
 std::string VISITPY_API    PySelectionProperties_GetLogString();
-std::string VISITPY_API    PySelectionProperties_ToString(const SelectionProperties *, const char *);
+std::string VISITPY_API    PySelectionProperties_ToString(const SelectionProperties *, const char *, const bool=false);
 VISITPY_API PyObject *     PySelectionProperties_getattr(PyObject *self, char *name);
 int VISITPY_API            PySelectionProperties_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PySelectionProperties_methods[SELECTIONPROPERTIES_NMETH];

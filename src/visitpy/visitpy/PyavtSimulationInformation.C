@@ -38,7 +38,7 @@ struct avtSimulationInformationObject
 //
 static PyObject *NewavtSimulationInformation(int);
 std::string
-PyavtSimulationInformation_ToString(const avtSimulationInformation *atts, const char *prefix)
+PyavtSimulationInformation_ToString(const avtSimulationInformation *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -89,7 +89,7 @@ PyavtSimulationInformation_ToString(const avtSimulationInformation *atts, const 
             const avtSimulationCommandSpecification *current = (const avtSimulationCommandSpecification *)(*pos);
             snprintf(tmpStr, 1000, "GetGenericCommands(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtSimulationCommandSpecification_ToString(current, objPrefix.c_str());
+            str += PyavtSimulationCommandSpecification_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#genericCommands does not contain any avtSimulationCommandSpecification objects.\n";
@@ -121,7 +121,7 @@ PyavtSimulationInformation_ToString(const avtSimulationInformation *atts, const 
             const avtSimulationCommandSpecification *current = (const avtSimulationCommandSpecification *)(*pos);
             snprintf(tmpStr, 1000, "GetCustomCommands(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtSimulationCommandSpecification_ToString(current, objPrefix.c_str());
+            str += PyavtSimulationCommandSpecification_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#customCommands does not contain any avtSimulationCommandSpecification objects.\n";
@@ -883,7 +883,7 @@ static int
 avtSimulationInformation_print(PyObject *v, FILE *fp, int flags)
 {
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)v;
-    fprintf(fp, "%s", PyavtSimulationInformation_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtSimulationInformation_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -891,7 +891,7 @@ PyObject *
 avtSimulationInformation_str(PyObject *v)
 {
     avtSimulationInformationObject *obj = (avtSimulationInformationObject *)v;
-    return PyString_FromString(PyavtSimulationInformation_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtSimulationInformation_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1043,7 +1043,7 @@ PyavtSimulationInformation_GetLogString()
 {
     std::string s("avtSimulationInformation = avtSimulationInformation()\n");
     if(currentAtts != 0)
-        s += PyavtSimulationInformation_ToString(currentAtts, "avtSimulationInformation.");
+        s += PyavtSimulationInformation_ToString(currentAtts, "avtSimulationInformation.", true);
     return s;
 }
 
@@ -1056,7 +1056,7 @@ PyavtSimulationInformation_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtSimulationInformation = avtSimulationInformation()\n");
-        s += PyavtSimulationInformation_ToString(currentAtts, "avtSimulationInformation.");
+        s += PyavtSimulationInformation_ToString(currentAtts, "avtSimulationInformation.", true);
         cb(s);
     }
 }

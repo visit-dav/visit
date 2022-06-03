@@ -36,7 +36,7 @@ struct ProjectAttributesObject
 //
 static PyObject *NewProjectAttributes(int);
 std::string
-PyProjectAttributes_ToString(const ProjectAttributes *atts, const char *prefix)
+PyProjectAttributes_ToString(const ProjectAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -348,7 +348,7 @@ static int
 ProjectAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ProjectAttributesObject *obj = (ProjectAttributesObject *)v;
-    fprintf(fp, "%s", PyProjectAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyProjectAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -356,7 +356,7 @@ PyObject *
 ProjectAttributes_str(PyObject *v)
 {
     ProjectAttributesObject *obj = (ProjectAttributesObject *)v;
-    return PyString_FromString(PyProjectAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyProjectAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -508,7 +508,7 @@ PyProjectAttributes_GetLogString()
 {
     std::string s("ProjectAtts = ProjectAttributes()\n");
     if(currentAtts != 0)
-        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.");
+        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.", true);
     return s;
 }
 
@@ -521,7 +521,7 @@ PyProjectAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ProjectAtts = ProjectAttributes()\n");
-        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.");
+        s += PyProjectAttributes_ToString(currentAtts, "ProjectAtts.", true);
         cb(s);
     }
 }

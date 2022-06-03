@@ -1,4 +1,8 @@
 <?xml version="1.0"?>
-  <Attribute name="GaussianControlPointList" purpose="This class contains a list of GaussianControlPoint objects." exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="GaussianControlPointList" purpose="This class contains a list of GaussianControlPoint objects." exportAPI="STATE_API" exportInclude="state_exports.h" codefile="GaussianControlPointList.code">
     <Field name="controlPoints" type="attVector" subtype="GaussianControlPoint"></Field>
+    <Function name="SetNumControlPoints" user="true" member="true">
+    </Function>
+    <Function name="GaussianControlPointList_SetNumControlPoints" user="true" member="true">
+    </Function>
   </Attribute>
