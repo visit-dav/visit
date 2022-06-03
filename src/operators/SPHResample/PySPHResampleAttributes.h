@@ -22,7 +22,7 @@ PyObject *     PySPHResampleAttributes_Wrap(const SPHResampleAttributes *attr);
 void           PySPHResampleAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PySPHResampleAttributes_SetDefaults(const SPHResampleAttributes *atts);
 std::string    PySPHResampleAttributes_GetLogString();
-std::string    PySPHResampleAttributes_ToString(const SPHResampleAttributes *, const char *);
+std::string    PySPHResampleAttributes_ToString(const SPHResampleAttributes *, const char *, const bool=false);
 PyObject *     PySPHResampleAttributes_getattr(PyObject *self, char *name);
 int            PySPHResampleAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PySPHResampleAttributes_methods[SPHRESAMPLEATTRIBUTES_NMETH];

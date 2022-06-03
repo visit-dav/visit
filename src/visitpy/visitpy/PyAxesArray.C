@@ -37,7 +37,7 @@ struct AxesArrayObject
 //
 static PyObject *NewAxesArray(int);
 std::string
-PyAxesArray_ToString(const AxesArray *atts, const char *prefix)
+PyAxesArray_ToString(const AxesArray *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -67,7 +67,7 @@ PyAxesArray_ToString(const AxesArray *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "axes.";
-        str += PyAxisAttributes_ToString(&atts->GetAxes(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetAxes(), objPrefix.c_str(), forLogging);
     }
     return str;
 }
@@ -516,7 +516,7 @@ static int
 AxesArray_print(PyObject *v, FILE *fp, int flags)
 {
     AxesArrayObject *obj = (AxesArrayObject *)v;
-    fprintf(fp, "%s", PyAxesArray_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxesArray_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -524,7 +524,7 @@ PyObject *
 AxesArray_str(PyObject *v)
 {
     AxesArrayObject *obj = (AxesArrayObject *)v;
-    return PyString_FromString(PyAxesArray_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxesArray_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -676,7 +676,7 @@ PyAxesArray_GetLogString()
 {
     std::string s("AxesArray = AxesArray()\n");
     if(currentAtts != 0)
-        s += PyAxesArray_ToString(currentAtts, "AxesArray.");
+        s += PyAxesArray_ToString(currentAtts, "AxesArray.", true);
     return s;
 }
 
@@ -689,7 +689,7 @@ PyAxesArray_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AxesArray = AxesArray()\n");
-        s += PyAxesArray_ToString(currentAtts, "AxesArray.");
+        s += PyAxesArray_ToString(currentAtts, "AxesArray.", true);
         cb(s);
     }
 }

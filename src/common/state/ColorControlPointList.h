@@ -114,6 +114,7 @@ public:
     void GetColorsCubicSpline(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     void GetColors(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     bool CompactCreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
+    void SetNumControlPoints(const int n);
 
     // IDs that can be used to identify fields in case statements
     enum {

@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyavtDefaultPlotMetaData_Wrap(const avtDefaultPlotMet
 void VISITPY_API           PyavtDefaultPlotMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtDefaultPlotMetaData_SetDefaults(const avtDefaultPlotMetaData *atts);
 std::string VISITPY_API    PyavtDefaultPlotMetaData_GetLogString();
-std::string VISITPY_API    PyavtDefaultPlotMetaData_ToString(const avtDefaultPlotMetaData *, const char *);
+std::string VISITPY_API    PyavtDefaultPlotMetaData_ToString(const avtDefaultPlotMetaData *, const char *, const bool=false);
 VISITPY_API PyObject *     PyavtDefaultPlotMetaData_getattr(PyObject *self, char *name);
 int VISITPY_API            PyavtDefaultPlotMetaData_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyavtDefaultPlotMetaData_methods[AVTDEFAULTPLOTMETADATA_NMETH];

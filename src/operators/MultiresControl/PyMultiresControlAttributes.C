@@ -35,7 +35,7 @@ struct MultiresControlAttributesObject
 //
 static PyObject *NewMultiresControlAttributes(int);
 std::string
-PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, const char *prefix)
+PyMultiresControlAttributes_ToString(const MultiresControlAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -311,7 +311,7 @@ static int
 MultiresControlAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)v;
-    fprintf(fp, "%s", PyMultiresControlAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMultiresControlAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -319,7 +319,7 @@ PyObject *
 MultiresControlAttributes_str(PyObject *v)
 {
     MultiresControlAttributesObject *obj = (MultiresControlAttributesObject *)v;
-    return PyString_FromString(PyMultiresControlAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMultiresControlAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -471,7 +471,7 @@ PyMultiresControlAttributes_GetLogString()
 {
     std::string s("MultiresControlAtts = MultiresControlAttributes()\n");
     if(currentAtts != 0)
-        s += PyMultiresControlAttributes_ToString(currentAtts, "MultiresControlAtts.");
+        s += PyMultiresControlAttributes_ToString(currentAtts, "MultiresControlAtts.", true);
     return s;
 }
 
@@ -484,7 +484,7 @@ PyMultiresControlAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MultiresControlAtts = MultiresControlAttributes()\n");
-        s += PyMultiresControlAttributes_ToString(currentAtts, "MultiresControlAtts.");
+        s += PyMultiresControlAttributes_ToString(currentAtts, "MultiresControlAtts.", true);
         cb(s);
     }
 }

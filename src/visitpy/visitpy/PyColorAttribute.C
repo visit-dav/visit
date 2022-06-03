@@ -36,7 +36,7 @@ struct ColorAttributeObject
 //
 static PyObject *NewColorAttribute(int);
 std::string
-PyColorAttribute_ToString(const ColorAttribute *atts, const char *prefix)
+PyColorAttribute_ToString(const ColorAttribute *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -221,7 +221,7 @@ static int
 ColorAttribute_print(PyObject *v, FILE *fp, int flags)
 {
     ColorAttributeObject *obj = (ColorAttributeObject *)v;
-    fprintf(fp, "%s", PyColorAttribute_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyColorAttribute_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -229,7 +229,7 @@ PyObject *
 ColorAttribute_str(PyObject *v)
 {
     ColorAttributeObject *obj = (ColorAttributeObject *)v;
-    return PyString_FromString(PyColorAttribute_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyColorAttribute_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -381,7 +381,7 @@ PyColorAttribute_GetLogString()
 {
     std::string s("ColorAttribute = ColorAttribute()\n");
     if(currentAtts != 0)
-        s += PyColorAttribute_ToString(currentAtts, "ColorAttribute.");
+        s += PyColorAttribute_ToString(currentAtts, "ColorAttribute.", true);
     return s;
 }
 
@@ -394,7 +394,7 @@ PyColorAttribute_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ColorAttribute = ColorAttribute()\n");
-        s += PyColorAttribute_ToString(currentAtts, "ColorAttribute.");
+        s += PyColorAttribute_ToString(currentAtts, "ColorAttribute.", true);
         cb(s);
     }
 }

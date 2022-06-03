@@ -36,7 +36,7 @@ struct DBOptionsAttributesObject
 //
 static PyObject *NewDBOptionsAttributes(int);
 std::string
-PyDBOptionsAttributes_ToString(const DBOptionsAttributes *atts, const char *prefix)
+PyDBOptionsAttributes_ToString(const DBOptionsAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -274,7 +274,7 @@ static int
 DBOptionsAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)v;
-    fprintf(fp, "%s", PyDBOptionsAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyDBOptionsAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -282,7 +282,7 @@ PyObject *
 DBOptionsAttributes_str(PyObject *v)
 {
     DBOptionsAttributesObject *obj = (DBOptionsAttributesObject *)v;
-    return PyString_FromString(PyDBOptionsAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyDBOptionsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -434,7 +434,7 @@ PyDBOptionsAttributes_GetLogString()
 {
     std::string s("DBOptionsAtts = DBOptionsAttributes()\n");
     if(currentAtts != 0)
-        s += PyDBOptionsAttributes_ToString(currentAtts, "DBOptionsAtts.");
+        s += PyDBOptionsAttributes_ToString(currentAtts, "DBOptionsAtts.", true);
     return s;
 }
 
@@ -447,7 +447,7 @@ PyDBOptionsAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("DBOptionsAtts = DBOptionsAttributes()\n");
-        s += PyDBOptionsAttributes_ToString(currentAtts, "DBOptionsAtts.");
+        s += PyDBOptionsAttributes_ToString(currentAtts, "DBOptionsAtts.", true);
         cb(s);
     }
 }

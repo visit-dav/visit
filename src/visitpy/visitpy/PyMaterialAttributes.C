@@ -36,7 +36,7 @@ struct MaterialAttributesObject
 //
 static PyObject *NewMaterialAttributes(int);
 std::string
-PyMaterialAttributes_ToString(const MaterialAttributes *atts, const char *prefix)
+PyMaterialAttributes_ToString(const MaterialAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -998,7 +998,7 @@ static int
 MaterialAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)v;
-    fprintf(fp, "%s", PyMaterialAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMaterialAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1006,7 +1006,7 @@ PyObject *
 MaterialAttributes_str(PyObject *v)
 {
     MaterialAttributesObject *obj = (MaterialAttributesObject *)v;
-    return PyString_FromString(PyMaterialAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMaterialAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1158,7 +1158,7 @@ PyMaterialAttributes_GetLogString()
 {
     std::string s("MaterialAtts = MaterialAttributes()\n");
     if(currentAtts != 0)
-        s += PyMaterialAttributes_ToString(currentAtts, "MaterialAtts.");
+        s += PyMaterialAttributes_ToString(currentAtts, "MaterialAtts.", true);
     return s;
 }
 
@@ -1171,7 +1171,7 @@ PyMaterialAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MaterialAtts = MaterialAttributes()\n");
-        s += PyMaterialAttributes_ToString(currentAtts, "MaterialAtts.");
+        s += PyMaterialAttributes_ToString(currentAtts, "MaterialAtts.", true);
         cb(s);
     }
 }

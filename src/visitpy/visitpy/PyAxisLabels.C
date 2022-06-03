@@ -37,7 +37,7 @@ struct AxisLabelsObject
 //
 static PyObject *NewAxisLabels(int);
 std::string
-PyAxisLabels_ToString(const AxisLabels *atts, const char *prefix)
+PyAxisLabels_ToString(const AxisLabels *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -50,7 +50,7 @@ PyAxisLabels_ToString(const AxisLabels *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "font.";
-        str += PyFontAttributes_ToString(&atts->GetFont(), objPrefix.c_str());
+        str += PyFontAttributes_ToString(&atts->GetFont(), objPrefix.c_str(), forLogging);
     }
     snprintf(tmpStr, 1000, "%sscaling = %d\n", prefix, atts->GetScaling());
     str += tmpStr;
@@ -303,7 +303,7 @@ static int
 AxisLabels_print(PyObject *v, FILE *fp, int flags)
 {
     AxisLabelsObject *obj = (AxisLabelsObject *)v;
-    fprintf(fp, "%s", PyAxisLabels_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxisLabels_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -311,7 +311,7 @@ PyObject *
 AxisLabels_str(PyObject *v)
 {
     AxisLabelsObject *obj = (AxisLabelsObject *)v;
-    return PyString_FromString(PyAxisLabels_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxisLabels_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -463,7 +463,7 @@ PyAxisLabels_GetLogString()
 {
     std::string s("AxisLabels = AxisLabels()\n");
     if(currentAtts != 0)
-        s += PyAxisLabels_ToString(currentAtts, "AxisLabels.");
+        s += PyAxisLabels_ToString(currentAtts, "AxisLabels.", true);
     return s;
 }
 
@@ -476,7 +476,7 @@ PyAxisLabels_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AxisLabels = AxisLabels()\n");
-        s += PyAxisLabels_ToString(currentAtts, "AxisLabels.");
+        s += PyAxisLabels_ToString(currentAtts, "AxisLabels.", true);
         cb(s);
     }
 }

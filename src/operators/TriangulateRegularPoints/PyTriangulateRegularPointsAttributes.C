@@ -36,7 +36,7 @@ struct TriangulateRegularPointsAttributesObject
 //
 static PyObject *NewTriangulateRegularPointsAttributes(int);
 std::string
-PyTriangulateRegularPointsAttributes_ToString(const TriangulateRegularPointsAttributes *atts, const char *prefix)
+PyTriangulateRegularPointsAttributes_ToString(const TriangulateRegularPointsAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -397,7 +397,7 @@ static int
 TriangulateRegularPointsAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     TriangulateRegularPointsAttributesObject *obj = (TriangulateRegularPointsAttributesObject *)v;
-    fprintf(fp, "%s", PyTriangulateRegularPointsAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyTriangulateRegularPointsAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -405,7 +405,7 @@ PyObject *
 TriangulateRegularPointsAttributes_str(PyObject *v)
 {
     TriangulateRegularPointsAttributesObject *obj = (TriangulateRegularPointsAttributesObject *)v;
-    return PyString_FromString(PyTriangulateRegularPointsAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyTriangulateRegularPointsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -557,7 +557,7 @@ PyTriangulateRegularPointsAttributes_GetLogString()
 {
     std::string s("TriangulateRegularPointsAtts = TriangulateRegularPointsAttributes()\n");
     if(currentAtts != 0)
-        s += PyTriangulateRegularPointsAttributes_ToString(currentAtts, "TriangulateRegularPointsAtts.");
+        s += PyTriangulateRegularPointsAttributes_ToString(currentAtts, "TriangulateRegularPointsAtts.", true);
     return s;
 }
 
@@ -570,7 +570,7 @@ PyTriangulateRegularPointsAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("TriangulateRegularPointsAtts = TriangulateRegularPointsAttributes()\n");
-        s += PyTriangulateRegularPointsAttributes_ToString(currentAtts, "TriangulateRegularPointsAtts.");
+        s += PyTriangulateRegularPointsAttributes_ToString(currentAtts, "TriangulateRegularPointsAtts.", true);
         cb(s);
     }
 }
