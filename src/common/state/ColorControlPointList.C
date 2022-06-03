@@ -1739,7 +1739,7 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 }
 
 // ****************************************************************************
-// Method: ColorControlPointList::AddToTags
+// Method: ColorControlPointList::AddTag
 //
 // Purpose:
 //   TODO
@@ -1752,7 +1752,7 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 // ****************************************************************************
 
 void
-ColorControlPointList::AddToTags(std::string newtag)
+ColorControlPointList::AddTag(std::string newtag)
 {
     tagNames.push_back(newtag);
 }
@@ -1774,5 +1774,43 @@ void
 ColorControlPointList::ClearTags()
 {
     tagNames.clear();
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::GetTag
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+ColorControlPointList::GetTag(int index)
+{
+    return tagNames[index];
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::GetNumTags
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+ColorControlPointList::GetNumTags()
+{
+    return tagNames.size();
 }
 

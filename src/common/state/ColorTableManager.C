@@ -355,6 +355,14 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
                     ccpl2.SetCategoryName("Standard");
             }
 
+            if (ccpl2.GetTagNames().size() == 0)
+            {
+                if (importingPersonal)
+                    ccpl2.AddTag("UserDefined");
+                else
+                    ccpl2.AddTag("Standard");
+            }
+
             // Check for errors that would break code down the line
             int ii;
             bool broken = false;

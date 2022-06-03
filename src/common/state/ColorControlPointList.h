@@ -118,8 +118,10 @@ public:
     void GetColorsCubicSpline(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     void GetColors(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     bool CompactCreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
-    void AddToTags(std::string newtag);
+    void AddTag(std::string newtag);
     void ClearTags();
+    std::string GetTag(int index);
+    int GetNumTags();
 
     // IDs that can be used to identify fields in case statements
     enum {

@@ -791,11 +791,11 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
     return (addToParent || forceAdd);
 }
 
-Function: AddToTags
-Declaration: void AddToTags(std::string newtag);
+Function: AddTag
+Declaration: void AddTag(std::string newtag);
 Definition:
 // ****************************************************************************
-// Method: ColorControlPointList::AddToTags
+// Method: ColorControlPointList::AddTag
 //
 // Purpose:
 //   TODO
@@ -808,7 +808,7 @@ Definition:
 // ****************************************************************************
 
 void
-ColorControlPointList::AddToTags(std::string newtag)
+ColorControlPointList::AddTag(std::string newtag)
 {
     tagNames.push_back(newtag);
 }
@@ -833,5 +833,49 @@ void
 ColorControlPointList::ClearTags()
 {
     tagNames.clear();
+}
+
+Function: GetTag
+Declaration: std::string GetTag(int index);
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::GetTag
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+ColorControlPointList::GetTag(int index)
+{
+    return tagNames[index];
+}
+
+Function: GetNumTags
+Declaration: int GetNumTags();
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::GetNumTags
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+ColorControlPointList::GetNumTags()
+{
+    return tagNames.size();
 }
 

@@ -35,8 +35,12 @@
     </Function>
     <Function name="CompactCreateNode" user="true" member="true">
     </Function>
-    <Function name="AddToTags" user="true" member="true">
+    <Function name="AddTag" user="true" member="true">
     </Function>
     <Function name="ClearTags" user="true" member="true">
+    </Function>
+    <Function name="GetTag" user="true" member="true">
+    </Function>
+    <Function name="GetNumTags" user="true" member="true">
     </Function>
   </Attribute>

@@ -753,7 +753,6 @@ QvisColorTableWindow::UpdateNames()
         for (int i = 0; i < colorAtts->GetNumColorTables(); ++i)
         {
             QString ctCategory(colorAtts->GetColorTables(i).GetCategoryName().c_str());
-            std::cout << "we are here 1" << std::endl;
             QString item(colorAtts->GetNames()[i].c_str());
             mappedCT[ctCategory].append(item);
             mappedCT[ctCategory].sort();
@@ -817,8 +816,6 @@ QvisColorTableWindow::UpdateNames()
         // Set the text of the default color table into the name line edit.
         nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
         categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
-        std::cout << "we are here 2" << std::endl;
-        std::cout << colorAtts->GetColorTables(index).GetTagNames().size() << std::endl;
     }
 
     nameListBox->blockSignals(false);
@@ -1874,13 +1871,18 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
             int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
             categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
         }
-        std::cout << "we are here 3 " << currentColorTable.toStdString() << std::endl;
+        std::cout << "Current color table name: " << currentColorTable.toStdString() << std::endl;
         int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
-        // stringVector mytags;
-        // mytags.push_back("weewoo");
-        // mytags.push_back("lala");
-        // colorAtts->GetColorTables(index).SetTags(mytags);
-        std::cout << "how many tags? " << colorAtts->GetColorTables(index).GetTagNames().size() << std::endl;
+        int numtags = colorAtts->GetColorTables(index).GetNumTags();
+        std::cout << "This color table has " << numtags << " tags" << std::endl;
+        if (numtags)
+        {
+            for (int i = 0; i < numtags; i ++)
+            {
+                std::cout << colorAtts->GetColorTables(index).GetTag(i) << " ";
+            }
+            std::cout << "\n" << std::endl;
+        }
         UpdateEditor();
     }
 }
@@ -2402,7 +2404,6 @@ QvisColorTableWindow::ApplyCategoryChange()
         {
             if (categoryName.toStdString() != ccpl->GetCategoryName())
             {
-                std::cout << "we are here 4" << std::endl;
                 SetUpdate(false);
                 ccpl->SetCategoryName(categoryName.toStdString());
                 colorAtts->Notify();
