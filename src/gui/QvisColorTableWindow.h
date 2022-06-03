@@ -14,6 +14,7 @@ class ColorControlPointList;
 class ColorTableAttributes;
 class DataNode;
 class QVBoxLayout;
+class QGridLayout;
 class QPushButton;
 class QButtonGroup;
 class QCheckBox;
@@ -147,6 +148,7 @@ private:
     QString                  categoryName;
     int                      popupMode;
     bool                     sliding;
+    stringVector             tagList;
 
     // Widgets and layouts.
     QGroupBox                *defaultGroup;
@@ -155,6 +157,8 @@ private:
     QvisNoDefaultColorTableButton *defaultDiscrete;
     QLabel                   *defaultDiscreteLabel;
     QCheckBox                *groupToggle;
+    std::vector<QCheckBox>   *tagToggles;
+    QGridLayout              *innerDefaultLayout;
 
     QGroupBox                *colorTableWidgetGroup;
     QPushButton              *newButton;

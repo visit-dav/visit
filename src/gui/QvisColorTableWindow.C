@@ -178,7 +178,7 @@ QvisColorTableWindow::CreateWindowContents()
     topLayout->addWidget(defaultGroup, 5);
 
     QVBoxLayout *innerDefaultTopLayout = new QVBoxLayout(defaultGroup);
-    QGridLayout *innerDefaultLayout = new QGridLayout();
+    innerDefaultLayout = new QGridLayout();
     innerDefaultTopLayout->addLayout(innerDefaultLayout);
     innerDefaultLayout->setColumnMinimumWidth(1, 10);
 
@@ -200,6 +200,10 @@ QvisColorTableWindow::CreateWindowContents()
     connect(groupToggle, SIGNAL(toggled(bool)),
             this, SLOT(groupingToggled(bool)));
     innerDefaultLayout->addWidget(groupToggle, 2, 1);
+
+    // the tag options need to be added in later
+    std::cout << "num tags: " << tagList.size() << std::endl;
+    tagToggles = new std::vector<QCheckBox>();
 
     // Create the widget group that contains all of the color table
     // management stuff.
@@ -817,6 +821,22 @@ QvisColorTableWindow::UpdateNames()
         nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
         categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
         tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
+    }
+
+    // populate tags list
+    // iterate thru each color table
+    for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
+    {
+        // iterate thru each tag in the given color table
+        for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
+        {
+            std::string currtag = colorAtts->GetColorTables(i).GetTag(j);
+            // if the given tag is NOT in the global tag list
+            if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
+            {
+                tagList.push_back(currtag);
+            }
+        }
     }
 
     nameListBox->blockSignals(false);
