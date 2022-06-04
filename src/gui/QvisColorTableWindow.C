@@ -84,6 +84,7 @@ QvisColorTableWindow::QvisColorTableWindow(
     colorSelect = 0;
     colorTableTypeGroup = 0;
     tagsVisible = false;
+    tagsMatchAny = true;
 }
 
 // ****************************************************************************
@@ -207,6 +208,11 @@ QvisColorTableWindow::CreateWindowContents()
     connect(tagToggle, SIGNAL(toggled(bool)),
             this, SLOT(taggingToggled(bool)));
     innerDefaultLayout->addWidget(tagToggle, 3, 1);
+
+    tagCombiningBehaviorToggle = new QCheckBox(tr("Color tables must match every tag, instead of any tag"), defaultGroup);
+    connect(tagCombiningBehaviorToggle, SIGNAL(toggled(bool)),
+            this, SLOT(tagCombiningToggled(bool)));
+    innerDefaultLayout->addWidget(tagCombiningBehaviorToggle, 4, 1);
 
     // Create the widget group that contains all of the color table
     // management stuff.
@@ -623,6 +629,7 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             tagToggle->blockSignals(true);
             tagToggle->setChecked(colorAtts->GetTaggingFlag());
             tagsVisible = colorAtts->GetTaggingFlag();
+            tagCombiningBehaviorToggle->setVisible(tagsVisible);
             tagToggle->blockSignals(false);
             updateNames = true;
             break;
@@ -813,30 +820,55 @@ QvisColorTableWindow::UpdateNames()
         }
     }
 
+    // TODO what?
+    // the local tags need to have any of the global active tags
+    // the local tags need to have all of the global active tags
     if (doTags)
     {
         nameListBox->setRootIsDecorated(false);
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
-            bool tagFound = false;
+            bool allMatch = true; // for use when !tagsMatchAny
+            bool anyTagFound = false;
             int j = 0;
             // go thru local tags
-            while (j < colorAtts->GetColorTables(i).GetNumTags() && ! tagFound)
+            while (j < colorAtts->GetColorTables(i).GetNumTags())
             {
+                bool currTagFound = false;
                 int k = 0;
                 // go thru global tags
-                while (k < tagList.size() && ! tagFound)
+                while (k < tagList.size())
                 {
                     // if this global tag is active
                     if (activeTags[k])
+                    {
                         if (tagList[k] == colorAtts->GetColorTables(i).GetTag(j))
-                            tagFound = true;
+                        {
+                            // the current tag was found
+                            currTagFound = true;
+                            // any tag was found
+                            anyTagFound = true;
+                            break;
+                        }
+                    }
+
                     k ++;
                 }
+                
+                // we only care if one tag was found
+                if (anyTagFound && tagsMatchAny) break;
+                
+                // the current tag was not found
+                if (! currTagFound)
+                {
+                    // so not all tags match
+                    allMatch = false;
+                }
+
                 j ++;
             }
 
-            if (tagFound)
+            if ((anyTagFound && tagsMatchAny) || (!tagsMatchAny && allMatch))
             {
                 QString item(colorAtts->GetNames()[i].c_str());
                 QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
@@ -2484,10 +2516,31 @@ QvisColorTableWindow::taggingToggled(bool val)
 
 
 // ****************************************************************************
+// Method: QvisColorTableWindow::tagCombiningToggled
+//
+// Purpose:
+//   This is a Qt slot function that controls toggling the combination of tags.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 15:06:17 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::tagCombiningToggled(bool val)
+{
+    tagsMatchAny = ! tagsMatchAny;
+    UpdateNames();
+}
+
+
+// ****************************************************************************
 // Method: QvisColorTableWindow::activateTag
 //
 // Purpose:
-//   This is a Qt slot function that enables a given tag.
+//   This is a Qt slot function that enables or disables a given tag.
 //
 // Programmer: Justin Privitera
 // Creation:   Fri Jun  3 15:06:17 PDT 2022

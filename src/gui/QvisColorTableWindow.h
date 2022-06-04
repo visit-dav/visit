@@ -142,6 +142,7 @@ private slots:
     void groupingToggled(bool val);
     void taggingToggled(bool val);
     void activateTag(int tag_index);
+    void tagCombiningToggled(bool val);
     void ApplyCategoryChange();
 private:
     ColorTableAttributes     *colorAtts;
@@ -153,6 +154,7 @@ private:
     stringVector             tagList;
     std::vector<bool>        activeTags;
     bool                     tagsVisible;
+    bool                     tagsMatchAny;
 
     // Widgets and layouts.
     QGroupBox                *defaultGroup;
@@ -163,6 +165,7 @@ private:
     QCheckBox                *groupToggle;
     QCheckBox                *tagToggle; // toggles if the tag toggles show up!
     std::vector<QCheckBox*>  tagToggles;
+    QCheckBox                *tagCombiningBehaviorToggle;
     QGridLayout              *mgLayout;
 
     QGroupBox                *colorTableWidgetGroup;
