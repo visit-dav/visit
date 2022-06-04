@@ -4,12 +4,12 @@
 #  Test Case:  volumePlot.py
 #
 #  Tests:      mesh      - 3D rectilinear, one domain
-#              plots     - volume 
+#              plots     - volume
 #              operators - none
-#              selection - no 
+#              selection - no
 #
-#  Programmer: Kathleen Bonnell 
-#  Date:       March 4, 2005 
+#  Programmer: Kathleen Bonnell
+#  Date:       March 4, 2005
 #
 #  Modifications:
 #    Kathleen Bonnell, Fri Oct 14 10:12:06 PDT 2005
@@ -34,21 +34,27 @@
 #    Add test case for sampling types.
 #
 #    Alister Maguire, Tue Feb  5 14:17:13 PST 2019
-#    Updated the aspect test to use a larger multiplier and no shading for 
+#    Updated the aspect test to use a larger multiplier and no shading for
 #    better visibility. Updated the scaling test to not use shading (again
-#    for better visibility).  
+#    for better visibility).
 #
 #    Alister Maguire, Mon Mar 25 11:19:54 PDT 2019
-#    Added an opacity test that changes the opacity variable. 
+#    Added an opacity test that changes the opacity variable.
 #
 #    Alister Maguire, Wed Jun  5 11:01:31 PDT 2019
-#    Added opacity attenuation test. 
+#    Added opacity attenuation test.
 #
 #    Alister Maguire, Fri Mar 20 15:36:37 PDT 2020
 #    Added gradient lighting reduction test.
 #
 #    Kathleen Biagas, Wed May 25, 2022
 #    Added test for command-recorded volume atts.
+#
+#    Kathleen Biagas, Fri June 3, 2022
+#    Renamed TestVolumeColorControlPoints to volume_colors, use new
+#    TestAutoName funcationality. Modified TestVolumeSampling to set the
+#    ColorControlPoints directly from the retrieved color table rather than
+#    calling AddControlPoints (it is now a quick recipe).
 #
 # ----------------------------------------------------------------------------
 
@@ -141,7 +147,7 @@ def TestVolumeOpacity():
 
     # setting opacity via individual index and value
     for i in range(150):
-        volAtts.SetFreeformOpacity(i, 0) 
+        volAtts.SetFreeformOpacity(i, 0)
 
     SetPlotOptions(volAtts)
     Test("volumeOpacity_02")
@@ -171,7 +177,7 @@ def TestVolumeOpacity():
     Test("volumeOpacity_04")
 
     #
-    # Make sure we can change out opacity variable. 
+    # Make sure we can change out opacity variable.
     #
     DeleteAllPlots()
     OpenDatabase(silo_data_path("globe.silo"))
@@ -192,7 +198,7 @@ def TestOpacityAttenuation():
     ResetView()
 
     #
-    # First, test the ray caster without reduced attenuation. 
+    # First, test the ray caster without reduced attenuation.
     #
     AddPlot("Volume", "hardyglobal")
     volAtts = VolumeAttributes()
@@ -204,7 +210,7 @@ def TestOpacityAttenuation():
     Test("opacityAttenuation_01")
 
     #
-    # Now reduce attenutation. 
+    # Now reduce attenutation.
     #
     volAtts = VolumeAttributes()
     volAtts.lightingFlag = 0
@@ -241,9 +247,10 @@ def TestVolumeAspect():
     DeleteAllPlots()
     SetPlotOptions(orig_atts)
 
-def TestVolumeColorControlPoints():
+def volume_colors():
+    """Volume Plot color control points"""
     # the next comment and similar below bracket code to be 'literalincluded' in quickrecipes.rst
-    # volumeColorControlPoints {
+    # removeControlPoints {
     OpenDatabase(silo_data_path("noise.silo"))
 
     AddPlot("Volume", "hardyglobal")
@@ -261,8 +268,43 @@ def TestVolumeColorControlPoints():
     SetPlotOptions(v)
     DrawPlots()
     ResetView()
-    # volumeColorControlPoints }
-    Test("volumeColors_01")
+    # removeControlPoints }
+    TestAutoName()
+
+    # addControlPoints {
+    # there are a default of 5 control points, add 3 more and change
+    # positions of original  so everything is evenly spaced
+    v = VolumeAttributes()
+    v.colorControlPoints.GetControlPoints(0).position = 0
+    v.colorControlPoints.GetControlPoints(1).position = 0.142857
+    v.colorControlPoints.GetControlPoints(2).position = 0.285714
+    v.colorControlPoints.GetControlPoints(3).position = 0.428571
+    v.colorControlPoints.GetControlPoints(4).position = 0.571429
+    tmp = ColorControlPoint()
+    tmp.colors = (255,255,0,255)
+    tmp.position = 0.714286
+    v.GetColorControlPoints().AddControlPoints(tmp)
+    tmp.colors = (0,255,0,255)
+    tmp.position = 0.857143
+    v.GetColorControlPoints().AddControlPoints(tmp)
+    tmp.colors = (0,255,255,255)
+    tmp.position = 1
+    v.GetColorControlPoints().AddControlPoints(tmp)
+    SetPlotOptions(v)
+    # addControlPoints }
+    TestAutoName()
+
+    # setNumControlPoints {
+    v = VolumeAttributes()
+    # there are a default of 5, this resizes to 6
+    v.colorControlPoints.SetNumControlPoints(6)
+    v.colorControlPoints.GetControlPoints(4).position = 0.92
+    # GetControlPoints(5) will cause a segfault without the call to SetNumControlPoints
+    v.colorControlPoints.GetControlPoints(5).position = 1
+    v.colorControlPoints.GetControlPoints(5).colors = (128,0,128,255)
+    SetPlotOptions(v)
+    # setNumControlPoints }
+    TestAutoName()
 
     # Start over with the colors.
     v.GetColorControlPoints().ClearControlPoints()
@@ -284,7 +326,7 @@ def TestVolumeColorControlPoints():
         tmp.position = float(i) / float(npts-1)
         v.GetColorControlPoints().AddControlPoints(tmp)
     SetPlotOptions(v)
-    Test("volumeColors_02")
+    TestAutoName()
     DeleteAllPlots()
 
 def TestVolumeGaussianControlPoints():
@@ -325,6 +367,7 @@ def TestVolumeGaussianControlPoints():
     DeleteAllPlots()
 
 def TestVolumeSampling():
+    # setFromColorTable {
     OpenDatabase(silo_data_path("noise.silo"))
     AddPlot("Volume", "hardyglobal")
     v = VolumeAttributes()
@@ -332,10 +375,9 @@ def TestVolumeSampling():
     v.rendererType = v.RayCasting
     v.sampling = v.KernelBased
     ct = GetColorTable("hot_desaturated")
-    v.GetColorControlPoints().ClearControlPoints()
-    for i in range(ct.GetNumControlPoints()):
-        v.GetColorControlPoints().AddControlPoints(ct.GetControlPoints(i))
+    v.SetColorControlPoints(ct)
     SetPlotOptions(v)
+    # setFromColorTable }
 
     view = GetView3D()
     view.viewNormal = (-1, 0, 0)
@@ -599,14 +641,14 @@ def TestCommandRecording():
     CloseDatabase(silo_data_path("globe.silo"))
 
 
-#FIXME: For some reason, if you render using the ray caster, 
+#FIXME: For some reason, if you render using the ray caster,
 #       attempting to render using the default renderer afterwards
 #       will result in a blank test result. I have not been able
-#       to reproduce this outside of the test suite. I created 
-#       issue #3608 to track this. 
+#       to reproduce this outside of the test suite. I created
+#       issue #3608 to track this.
 
 InitAnnotationsLegendOn()
-TestVolumeColorControlPoints()
+volume_colors()
 TestVolumeGaussianControlPoints()
 TestVolumeAspect()
 TestVolumeOpacity()
