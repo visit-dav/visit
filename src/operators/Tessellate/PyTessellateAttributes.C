@@ -36,7 +36,7 @@ struct TessellateAttributesObject
 //
 static PyObject *NewTessellateAttributes(int);
 std::string
-PyTessellateAttributes_ToString(const TessellateAttributes *atts, const char *prefix)
+PyTessellateAttributes_ToString(const TessellateAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -326,7 +326,7 @@ static int
 TessellateAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     TessellateAttributesObject *obj = (TessellateAttributesObject *)v;
-    fprintf(fp, "%s", PyTessellateAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyTessellateAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -334,7 +334,7 @@ PyObject *
 TessellateAttributes_str(PyObject *v)
 {
     TessellateAttributesObject *obj = (TessellateAttributesObject *)v;
-    return PyString_FromString(PyTessellateAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyTessellateAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -486,7 +486,7 @@ PyTessellateAttributes_GetLogString()
 {
     std::string s("TessellateAtts = TessellateAttributes()\n");
     if(currentAtts != 0)
-        s += PyTessellateAttributes_ToString(currentAtts, "TessellateAtts.");
+        s += PyTessellateAttributes_ToString(currentAtts, "TessellateAtts.", true);
     return s;
 }
 
@@ -499,7 +499,7 @@ PyTessellateAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("TessellateAtts = TessellateAttributes()\n");
-        s += PyTessellateAttributes_ToString(currentAtts, "TessellateAtts.");
+        s += PyTessellateAttributes_ToString(currentAtts, "TessellateAtts.", true);
         cb(s);
     }
 }

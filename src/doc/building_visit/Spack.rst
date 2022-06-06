@@ -70,11 +70,11 @@ To build VisIt_ with the default compiler. ::
 
 To build VisIt_ with a specific compiler. ::
 
-    pack install visit%gcc@11.2.0 ^python+shared ^mesa+opengl
+    spack install visit%gcc@11.2.0 ^python+shared ^mesa+opengl
 
 To build VisIt_ and specify a specific version of a dependent library. ::
 
-    pack install visit%gcc@11.2.0 ^python+shared ^mesa+opengl ^llvm@11.0.1
+    spack install visit%gcc@11.2.0 ^python+shared ^mesa+opengl ^llvm@11.0.1
 
 To uninstall a package (the ``--dependents`` uninstalls all the packages that depend on the uninstalled packages). ::
 
@@ -95,6 +95,24 @@ Here are some examples. ::
 
     opt/spack/cray-sles15-zen2/gcc-11.2.0/hdf5-1.8.22-c3djozhlmrvy7wpu46f36qeakemiactw
     opt/spack/cray-sles15-zen2/gcc-11.2.0/cmake-3.14.7-nnahgnkkl2d2ty2us46we75pnjepci35
+
+Working around recurring download failures
+------------------------------------------
+
+Depending on context, recurring issues downloading a particular *dependent* package may arise.
+When this happens, SSL certificate handling may be the cause.
+A quick work-around is to disable this `security checking feature <https://spack.readthedocs.io/en/latest/config_yaml.html?highlight=ssl%20certificates#verify-ssl>`_ in Spack by adding the ``--insecure`` command-line option as the second option *just* after ``spack``.
+Alternatively, you may be able to manually download the needed files and place them in a directory for Spack to use as a `mirror <https://spack.readthedocs.io/en/latest/mirrors.html?highlight=mirror#mirrors-mirrors-yaml>`_.
+For example, starting from the point of having successfully downloaded the ``Python-3.7.13.tgz`` file somewhere, here are the Spack steps... ::
+
+    spack mirror add my_local_mirror file://`pwd`/my_local_mirror
+    mkdir -p my_local_mirror/python
+    cp Python-3.7.13.tgz my_local_mirror/python/python-3.7.13.tgz
+
+Note that change in case of the file name.
+Doing this will cause Spack to go get the file you manually downloaded.
+The first step to add the mirror is only needed once.
+To add additional files for which recurring download failures are occurring, just copy them into the mirror following the Spack naming conventions for packages.
 
 The spack environment files
 ---------------------------
@@ -122,17 +140,17 @@ These files are stored in your ``~/.spack`` directory. ::
     .spack/<platform>/compilers.yaml
     .spack/packages.yaml
 
-The VisIt_ repository at GitHub contains ``compilers.yaml`` and ``packages.yaml`` files for popular systems.
+The VisIt_ repository at GitHub contains ``compilers.yaml`` and ``packages.yaml`` files for popular systems in the directory ``scripts/spack/configs``.
 
 Here are the ``compilers.yaml`` and ``packages.yaml`` files for ``spock.olcf.ornl.gov`` for VisIt_.
 
 ``compilers.yaml``
 
-.. literalinclude:: ../../../scripts/spack/configs/olcf/compilers.yaml
+.. literalinclude:: ../../../scripts/spack/configs/olcf/spock/compilers.yaml
 
 ``packages.yaml``
 
-.. literalinclude:: ../../../scripts/spack/configs/olcf/packages.yaml
+.. literalinclude:: ../../../scripts/spack/configs/olcf/spock/packages.yaml
 
 Debugging a spack package
 -------------------------

@@ -36,7 +36,7 @@ struct ReplicateAttributesObject
 //
 static PyObject *NewReplicateAttributes(int);
 std::string
-PyReplicateAttributes_ToString(const ReplicateAttributes *atts, const char *prefix)
+PyReplicateAttributes_ToString(const ReplicateAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1011,7 +1011,7 @@ static int
 ReplicateAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ReplicateAttributesObject *obj = (ReplicateAttributesObject *)v;
-    fprintf(fp, "%s", PyReplicateAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyReplicateAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1019,7 +1019,7 @@ PyObject *
 ReplicateAttributes_str(PyObject *v)
 {
     ReplicateAttributesObject *obj = (ReplicateAttributesObject *)v;
-    return PyString_FromString(PyReplicateAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyReplicateAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1171,7 +1171,7 @@ PyReplicateAttributes_GetLogString()
 {
     std::string s("ReplicateAtts = ReplicateAttributes()\n");
     if(currentAtts != 0)
-        s += PyReplicateAttributes_ToString(currentAtts, "ReplicateAtts.");
+        s += PyReplicateAttributes_ToString(currentAtts, "ReplicateAtts.", true);
     return s;
 }
 
@@ -1184,7 +1184,7 @@ PyReplicateAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ReplicateAtts = ReplicateAttributes()\n");
-        s += PyReplicateAttributes_ToString(currentAtts, "ReplicateAtts.");
+        s += PyReplicateAttributes_ToString(currentAtts, "ReplicateAtts.", true);
         cb(s);
     }
 }

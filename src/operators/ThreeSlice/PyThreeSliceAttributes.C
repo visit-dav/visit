@@ -36,7 +36,7 @@ struct ThreeSliceAttributesObject
 //
 static PyObject *NewThreeSliceAttributes(int);
 std::string
-PyThreeSliceAttributes_ToString(const ThreeSliceAttributes *atts, const char *prefix)
+PyThreeSliceAttributes_ToString(const ThreeSliceAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -394,7 +394,7 @@ static int
 ThreeSliceAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)v;
-    fprintf(fp, "%s", PyThreeSliceAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyThreeSliceAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -402,7 +402,7 @@ PyObject *
 ThreeSliceAttributes_str(PyObject *v)
 {
     ThreeSliceAttributesObject *obj = (ThreeSliceAttributesObject *)v;
-    return PyString_FromString(PyThreeSliceAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyThreeSliceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -554,7 +554,7 @@ PyThreeSliceAttributes_GetLogString()
 {
     std::string s("ThreeSliceAtts = ThreeSliceAttributes()\n");
     if(currentAtts != 0)
-        s += PyThreeSliceAttributes_ToString(currentAtts, "ThreeSliceAtts.");
+        s += PyThreeSliceAttributes_ToString(currentAtts, "ThreeSliceAtts.", true);
     return s;
 }
 
@@ -567,7 +567,7 @@ PyThreeSliceAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ThreeSliceAtts = ThreeSliceAttributes()\n");
-        s += PyThreeSliceAttributes_ToString(currentAtts, "ThreeSliceAtts.");
+        s += PyThreeSliceAttributes_ToString(currentAtts, "ThreeSliceAtts.", true);
         cb(s);
     }
 }

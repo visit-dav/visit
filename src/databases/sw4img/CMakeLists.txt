@@ -3,7 +3,7 @@ PROJECT(sw4img_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
-ADD_DATABASE_CODE_GEN_TARGETS(WPPImage)
+ADD_DATABASE_CODE_GEN_TARGETS(sw4img)
 
 SET(COMMON_SOURCES
 sw4imgPluginInfo.C
@@ -65,13 +65,13 @@ IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(Esw4imgDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(Esw4imgDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(Esw4imgDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser )
 ADD_TARGET_DEFINITIONS(Esw4imgDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} Esw4imgDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(Esw4imgDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(Esw4imgDatabase_par visitcommon avtdatabase_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(Esw4imgDatabase_par visitcommon avtpipeline_par avtdatabase_par )
     ADD_TARGET_DEFINITIONS(Esw4imgDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} Esw4imgDatabase_par)
 ENDIF(VISIT_PARALLEL)

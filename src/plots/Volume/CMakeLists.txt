@@ -113,6 +113,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GVolumePlot visitcommon gui )
 
     ADD_LIBRARY(VVolumePlot ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VVolumePlot VIEWER)
     TARGET_LINK_LIBRARIES(VVolumePlot visitcommon viewer vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
     if(VISIT_OSPRAY)
         target_link_libraries(VVolumePlot ${OSPRAY_LIBRARIES})
@@ -145,23 +146,23 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EVolumePlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtplotter_ser avtpipeline_ser avtexpressions_ser vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
+TARGET_LINK_LIBRARIES(EVolumePlot_ser visitcommon avtpipeline_ser avtplotter_ser avtexpressions_ser vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
 if(VISIT_OSPRAY)
     target_link_libraries(EVolumePlot_ser ${OSPRAY_LIBRARIES})
 endif()
 
-SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_ser)
 ADD_TARGET_DEFINITIONS(EVolumePlot_ser ENGINE)
+SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVolumePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtplotter_par avtpipeline_par avtexpressions_par vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
+    TARGET_LINK_LIBRARIES(EVolumePlot_par visitcommon avtpipeline_par avtplotter_par avtexpressions_par vtkRenderingVolume vtkRenderingVolumeOpenGL2 )
     if(VISIT_OSPRAY)
         target_link_libraries(EVolumePlot_par ${OSPRAY_LIBRARIES})
     endif()
 
-    SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_par)
     ADD_TARGET_DEFINITIONS(EVolumePlot_par ENGINE)
+    SET(INSTALLTARGETS ${INSTALLTARGETS} EVolumePlot_par)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_PLOT_PLUGINS(${INSTALLTARGETS})

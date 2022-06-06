@@ -344,7 +344,53 @@ A python script, ``rebase.py``, in the ``test/baseline`` dir can be used to reba
 In particular, this script enables a developer to rebase test results without requiring access to the test platform where testing is performed. 
 This is becase the PNG files uploaded (e.g. posted) to VisIt_'s test results dashboard are suitable for using as baseline results. 
 To use this script, run ``./rebase.py --help.``
-Once you've completed using ``rebase.py`` to update image baselines, don't forget to commit your changes back to the repository.
+
+Here is an example workflow to rebaseline a set of results that were originally committed from macOS and are subtley different on the tier 1 testing platform we use for nightly testing...
+
+#. First, go to the `test dashboard <https://visit-dav.github.io/dashboard/>`__ and browse for any failed results.
+   Ensure you are browsing the *current* results from the previous evening.
+   Failing results will appear something like what is shown below...
+
+   .. figure:: images/rebase_main.png
+
+   Be sure to scroll through the *entire* table of results to find all failures.
+
+#. To learn more about which specific tests are failing, click into them and they will appear something like what is shown below...
+
+   .. figure:: images/rebase_cases.png
+
+#. To learn even more `specific details <Fuzzy Matching Thresholds>`__ about each failing case, click into them to find details which will appear something like what is shown below...
+
+   .. figure:: images/rebase_details.png
+
+#. Take note of some of the components of the URL of these cases.
+   This information is needed if the results need to be rebaselined.
+
+   .. figure:: images/rebase_url.png
+
+If after examining the results, the new results are deemed the *correct* ones, the baselines need to be updated.
+Use ``rebase.py`` for that.
+That python script is designed to be launched as a standalone application.
+So, the invocation looks something like... ::
+
+    % ./rebase.py -c databases -p silo -m serial -d '2022-06-02-22:00' "silo_curvilinear_3d_surface_*"
+    Copying file "silo_curvilinear_3d_surface_4.png"
+    Warning: dramatic change in size of file (old=129/new=5939)"databases/silo/silo_curvilinear_3d_surface_4.png"!
+    Copying file "silo_curvilinear_3d_surface_5.png"
+    Warning: dramatic change in size of file (old=129/new=3988)"databases/silo/silo_curvilinear_3d_surface_5.png"!
+    Copying file "silo_curvilinear_3d_surface_1.png"
+    Warning: dramatic change in size of file (old=130/new=24466)"databases/silo/silo_curvilinear_3d_surface_1.png"!
+    Copying file "silo_curvilinear_3d_surface_0.png"
+    Warning: dramatic change in size of file (old=130/new=24467)"databases/silo/silo_curvilinear_3d_surface_0.png"!
+    Copying file "silo_curvilinear_3d_surface_2.png"
+    Warning: dramatic change in size of file (old=130/new=11474)"databases/silo/silo_curvilinear_3d_surface_2.png"!
+    Copying file "silo_curvilinear_3d_surface_3.png"
+    Warning: dramatic change in size of file (old=129/new=2842)"databases/silo/silo_curvilinear_3d_surface_3.png"!
+
+The reason for the warnings, above, is that the local files are the LFS *pointer* files.
+If a ``git lfs pull`` had been done ahead of time (which is not necessary), then the local files would have been the actual ``.png`` image files and not the LFS'd pointer files.
+
+Once ``rebase.py`` is used, don't forget to push the changes in a new PR back to the repository.
 
 Test data archives
 ------------------

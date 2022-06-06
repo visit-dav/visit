@@ -37,7 +37,7 @@ struct ExpressionListObject
 //
 static PyObject *NewExpressionList(int);
 std::string
-PyExpressionList_ToString(const ExpressionList *atts, const char *prefix)
+PyExpressionList_ToString(const ExpressionList *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -50,7 +50,7 @@ PyExpressionList_ToString(const ExpressionList *atts, const char *prefix)
             const Expression *current = (const Expression *)(*pos);
             snprintf(tmpStr, 1000, "GetExpressions(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyExpression_ToString(current, objPrefix.c_str());
+            str += PyExpression_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#expressions does not contain any Expression objects.\n";
@@ -241,7 +241,7 @@ static int
 ExpressionList_print(PyObject *v, FILE *fp, int flags)
 {
     ExpressionListObject *obj = (ExpressionListObject *)v;
-    fprintf(fp, "%s", PyExpressionList_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyExpressionList_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -249,7 +249,7 @@ PyObject *
 ExpressionList_str(PyObject *v)
 {
     ExpressionListObject *obj = (ExpressionListObject *)v;
-    return PyString_FromString(PyExpressionList_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyExpressionList_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -401,7 +401,7 @@ PyExpressionList_GetLogString()
 {
     std::string s("ExpressionList = ExpressionList()\n");
     if(currentAtts != 0)
-        s += PyExpressionList_ToString(currentAtts, "ExpressionList.");
+        s += PyExpressionList_ToString(currentAtts, "ExpressionList.", true);
     return s;
 }
 
@@ -414,7 +414,7 @@ PyExpressionList_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ExpressionList = ExpressionList()\n");
-        s += PyExpressionList_ToString(currentAtts, "ExpressionList.");
+        s += PyExpressionList_ToString(currentAtts, "ExpressionList.", true);
         cb(s);
     }
 }

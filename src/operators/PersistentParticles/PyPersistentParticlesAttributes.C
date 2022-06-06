@@ -36,7 +36,7 @@ struct PersistentParticlesAttributesObject
 //
 static PyObject *NewPersistentParticlesAttributes(int);
 std::string
-PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *atts, const char *prefix)
+PyPersistentParticlesAttributes_ToString(const PersistentParticlesAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -877,7 +877,7 @@ static int
 PersistentParticlesAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)v;
-    fprintf(fp, "%s", PyPersistentParticlesAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPersistentParticlesAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -885,7 +885,7 @@ PyObject *
 PersistentParticlesAttributes_str(PyObject *v)
 {
     PersistentParticlesAttributesObject *obj = (PersistentParticlesAttributesObject *)v;
-    return PyString_FromString(PyPersistentParticlesAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPersistentParticlesAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1037,7 +1037,7 @@ PyPersistentParticlesAttributes_GetLogString()
 {
     std::string s("PersistentParticlesAtts = PersistentParticlesAttributes()\n");
     if(currentAtts != 0)
-        s += PyPersistentParticlesAttributes_ToString(currentAtts, "PersistentParticlesAtts.");
+        s += PyPersistentParticlesAttributes_ToString(currentAtts, "PersistentParticlesAtts.", true);
     return s;
 }
 
@@ -1050,7 +1050,7 @@ PyPersistentParticlesAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("PersistentParticlesAtts = PersistentParticlesAttributes()\n");
-        s += PyPersistentParticlesAttributes_ToString(currentAtts, "PersistentParticlesAtts.");
+        s += PyPersistentParticlesAttributes_ToString(currentAtts, "PersistentParticlesAtts.", true);
         cb(s);
     }
 }

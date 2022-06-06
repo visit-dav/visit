@@ -36,7 +36,7 @@ struct DecimateAttributesObject
 //
 static PyObject *NewDecimateAttributes(int);
 std::string
-PyDecimateAttributes_ToString(const DecimateAttributes *atts, const char *prefix)
+PyDecimateAttributes_ToString(const DecimateAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -187,7 +187,7 @@ static int
 DecimateAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     DecimateAttributesObject *obj = (DecimateAttributesObject *)v;
-    fprintf(fp, "%s", PyDecimateAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyDecimateAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -195,7 +195,7 @@ PyObject *
 DecimateAttributes_str(PyObject *v)
 {
     DecimateAttributesObject *obj = (DecimateAttributesObject *)v;
-    return PyString_FromString(PyDecimateAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyDecimateAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -347,7 +347,7 @@ PyDecimateAttributes_GetLogString()
 {
     std::string s("DecimateAtts = DecimateAttributes()\n");
     if(currentAtts != 0)
-        s += PyDecimateAttributes_ToString(currentAtts, "DecimateAtts.");
+        s += PyDecimateAttributes_ToString(currentAtts, "DecimateAtts.", true);
     return s;
 }
 
@@ -360,7 +360,7 @@ PyDecimateAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("DecimateAtts = DecimateAttributes()\n");
-        s += PyDecimateAttributes_ToString(currentAtts, "DecimateAtts.");
+        s += PyDecimateAttributes_ToString(currentAtts, "DecimateAtts.", true);
         cb(s);
     }
 }

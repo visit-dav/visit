@@ -37,7 +37,7 @@ struct SpreadsheetAttributesObject
 //
 static PyObject *NewSpreadsheetAttributes(int);
 std::string
-PySpreadsheetAttributes_ToString(const SpreadsheetAttributes *atts, const char *prefix)
+PySpreadsheetAttributes_ToString(const SpreadsheetAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1101,7 +1101,7 @@ static int
 SpreadsheetAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)v;
-    fprintf(fp, "%s", PySpreadsheetAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySpreadsheetAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1109,7 +1109,7 @@ PyObject *
 SpreadsheetAttributes_str(PyObject *v)
 {
     SpreadsheetAttributesObject *obj = (SpreadsheetAttributesObject *)v;
-    return PyString_FromString(PySpreadsheetAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySpreadsheetAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1261,7 +1261,7 @@ PySpreadsheetAttributes_GetLogString()
 {
     std::string s("SpreadsheetAtts = SpreadsheetAttributes()\n");
     if(currentAtts != 0)
-        s += PySpreadsheetAttributes_ToString(currentAtts, "SpreadsheetAtts.");
+        s += PySpreadsheetAttributes_ToString(currentAtts, "SpreadsheetAtts.", true);
     return s;
 }
 
@@ -1274,7 +1274,7 @@ PySpreadsheetAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SpreadsheetAtts = SpreadsheetAttributes()\n");
-        s += PySpreadsheetAttributes_ToString(currentAtts, "SpreadsheetAtts.");
+        s += PySpreadsheetAttributes_ToString(currentAtts, "SpreadsheetAtts.", true);
         cb(s);
     }
 }

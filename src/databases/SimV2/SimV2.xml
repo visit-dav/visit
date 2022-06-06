@@ -6,6 +6,7 @@
     </CXXFLAGS>
     <LDFLAGS>
       ${ICET_LIBRARY_DIR}
+      ${AVT_REQUIRED_LIB_DIR}
     </LDFLAGS>
     <FilePatterns>
       *.sim2

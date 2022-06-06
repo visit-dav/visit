@@ -241,3 +241,4 @@ IntegralCurveViewerEnginePluginInfo::GetMenuName() const
 {
     return "IntegralCurve";
 }
+

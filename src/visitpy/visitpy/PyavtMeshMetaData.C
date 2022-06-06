@@ -41,7 +41,7 @@ struct avtMeshMetaDataObject
 //
 static PyObject *NewavtMeshMetaData(int);
 std::string
-PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix)
+PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -224,7 +224,7 @@ PyavtMeshMetaData_ToString(const avtMeshMetaData *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "blockNameScheme.";
-        str += PyNameschemeAttributes_ToString(&atts->blockNameScheme, objPrefix.c_str());
+        str += PyNameschemeAttributes_ToString(&atts->blockNameScheme, objPrefix.c_str(), forLogging);
     }
     snprintf(tmpStr, 1000, "%snumGroups = %d\n", prefix, atts->numGroups);
     str += tmpStr;
@@ -3876,7 +3876,7 @@ static int
 avtMeshMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtMeshMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtMeshMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -3884,7 +3884,7 @@ PyObject *
 avtMeshMetaData_str(PyObject *v)
 {
     avtMeshMetaDataObject *obj = (avtMeshMetaDataObject *)v;
-    return PyString_FromString(PyavtMeshMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtMeshMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -4036,7 +4036,7 @@ PyavtMeshMetaData_GetLogString()
 {
     std::string s("avtMeshMetaData = avtMeshMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtMeshMetaData_ToString(currentAtts, "avtMeshMetaData.");
+        s += PyavtMeshMetaData_ToString(currentAtts, "avtMeshMetaData.", true);
     return s;
 }
 
@@ -4049,7 +4049,7 @@ PyavtMeshMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtMeshMetaData = avtMeshMetaData()\n");
-        s += PyavtMeshMetaData_ToString(currentAtts, "avtMeshMetaData.");
+        s += PyavtMeshMetaData_ToString(currentAtts, "avtMeshMetaData.", true);
         cb(s);
     }
 }

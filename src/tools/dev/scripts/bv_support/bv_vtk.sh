@@ -134,13 +134,6 @@ function bv_vtk_ensure
     fi
 }
 
-function bv_vtk_dry_run
-{
-    if [[ "$DO_VTK" == "yes" ]] ; then
-        echo "Dry run option not set for vtk"
-    fi
-}
-
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
@@ -1539,8 +1532,8 @@ function build_vtk
     #
     info "Configuring VTK . . ."
 
-    # Make a build directory for an out-of-source build.. Change the
-    # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
+    # Make a build directory for an out-of-source build. Change the
+    # VTK_BUILD_DIR variable to represent the out-of-source build directory.
     VTK_SRC_DIR=$VTK_BUILD_DIR
     VTK_BUILD_DIR="${VTK_SRC_DIR}-build"
     if [[ ! -d $VTK_BUILD_DIR ]] ; then

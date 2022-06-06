@@ -2755,6 +2755,8 @@ return type : CLI_return_t
   e.db_type = "Silo"
   e.variables = ("u", "v")
   e.filename = "test_ex_db"
+  # Set the export directory
+  e.dirname = "."
   ExportDatabase(e)
 
 
@@ -2881,18 +2883,18 @@ forceNoSharedMemory:
     print(numpy.asarray(data["zoneTable"]))
 
 
-GetActiveContinuousColorTable
------------------------------
+GetDefaultContinuousColorTable
+------------------------------
 
 **Synopsis:**
 
 ::
 
-  GetActiveContinuousColorTable() -> string
+  GetDefaultContinuousColorTable() -> string
 
 
 return type : string
-    Both functions return a string object containing the name of a color table.
+    Returns a string object containing the name of a color table.
 
 
 **Description:**
@@ -2908,8 +2910,8 @@ return type : string
     notion of default continuous and default discrete color tables so plots can
     just use the "default" color table. This lets you change the color table
     used by many plots by just changing the "default" color table. The
-    GetActiveContinuousColorTable function returns the name of the default
-    continuous color table. The GetActiveDiscreteColorTable function returns
+    GetDefaultContinuousColorTable function returns the name of the default
+    continuous color table. The GetDefaultDiscreteColorTable function returns
     the name of the default discrete color table.
 
 
@@ -2918,22 +2920,22 @@ return type : string
 ::
 
   #% visit -cli
-  print("Default continuous color table: %s" % GetActiveContinuousColorTable())
-  print("Default discrete color table: %s" % GetActiveDiscreteColorTable())
+  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
+  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
 
 
-GetActiveDiscreteColorTable
----------------------------
+GetDefaultDiscreteColorTable
+----------------------------
 
 **Synopsis:**
 
 ::
 
-  GetActiveDiscreteColorTable() -> string
+  GetDefaultDiscreteColorTable() -> string
 
 
 return type : string
-    Both functions return a string object containing the name of a color table.
+    Returns a string object containing the name of a color table.
 
 
 **Description:**
@@ -2949,8 +2951,8 @@ return type : string
     notion of default continuous and default discrete color tables so plots can
     just use the "default" color table. This lets you change the color table
     used by many plots by just changing the "default" color table. The
-    GetActiveContinuousColorTable function returns the name of the default
-    continuous color table. The GetActiveDiscreteColorTable function returns
+    GetDefaultContinuousColorTable function returns the name of the default
+    continuous color table. The GetDefaultDiscreteColorTable function returns
     the name of the default discrete color table.
 
 
@@ -2959,8 +2961,8 @@ return type : string
 ::
 
   #% visit -cli
-  print("Default continuous color table: %s" % GetActiveContinuousColorTable())
-  print("Default discrete color table: %s" % GetActiveDiscreteColorTable())
+  print("Default continuous color table: %s" % GetDefaultContinuousColorTable())
+  print("Default discrete color table: %s" % GetDefaultDiscreteColorTable())
 
 
 GetActiveTimeSlider
@@ -4495,6 +4497,10 @@ GetQueryParameters
 
   GetQueryParameters(name) -> dictionary
 
+
+name : string
+    The named query.
+
 return type : dictionary
     A python dictionary.
 
@@ -5948,7 +5954,7 @@ return type : CLI_return_t
   DrawPlots()
   print("There are %d color tables." % NumColorTableNames())
   for ct in ColorTableNames():
-      SetActiveContinuousColorTable(ct)
+      SetDefaultContinuousColorTable(ct)
       SaveWindow()
 
 
@@ -6057,6 +6063,9 @@ args : tuple
     Optional tuple of command line arguments for the engine.
     Alternative arguments - MachineProfile object to load with
     OpenComputeEngine call
+
+MachineProfile : MachineProfile object
+    The Machine Profile of the computer on which to start the engine.
 
 return type : CLI_return_t
     The OpenComputeEngine function returns an integer value of 1 for success
@@ -6289,7 +6298,7 @@ OverlayDatabase
 databaseName : string
     The name of the new plot database.
 
-state
+state : integer
     The time state at which to open the database.
 
 return type : CLI_return_t
@@ -8281,14 +8290,14 @@ argument
     simulation to send the command to.
 
 
-SetActiveContinuousColorTable
------------------------------
+SetDefaultContinuousColorTable
+------------------------------
 
 **Synopsis:**
 
 ::
 
-  SetActiveContinuousColorTable(name) -> integer
+  SetDefaultContinuousColorTable(name) -> integer
 
 
 name : string
@@ -8324,17 +8333,17 @@ return type : CLI_return_t
   OpenDatabase("/usr/gapps/visit/data/noise.silo")
   AddPlot("Contour", "hgslice")
   DrawPlots()
-  SetActiveDiscreteColorTable("levels")
+  SetDefaultDiscreteColorTable("levels")
 
 
-SetActiveDiscreteColorTable
----------------------------
+SetDefaultDiscreteColorTable
+----------------------------
 
 **Synopsis:**
 
 ::
 
-  SetActiveDiscreteColorTable(name) -> integer
+  SetDefaultDiscreteColorTable(name) -> integer
 
 
 name : string
@@ -8370,7 +8379,7 @@ return type : CLI_return_t
   OpenDatabase("/usr/gapps/visit/data/noise.silo")
   AddPlot("Contour", "hgslice")
   DrawPlots()
-  SetActiveDiscreteColorTable("levels")
+  SetDefaultDiscreteColorTable("levels")
 
 
 SetActivePlots
@@ -8512,7 +8521,11 @@ SetAnimationTimeout
 
   SetAnimationTimeout(milliseconds) -> integer
 
-return type : CLI_return_t
+
+milliseconds : integer
+    A positive integer to specify the number of milliseconds.
+
+return type : integer
     The SetAnimationTimeout function returns 1 for success and 0 for failure.
 
 
@@ -9731,6 +9744,9 @@ SetPipelineCachingMode
 
   SetPipelineCachingMode(mode) -> integer
 
+mode : boolean
+    A boolean value to turn pipeline caching on or off.
+
 return type : CLI_return_t
     The SetPipelineCachingMode function returns 1 for success and 0 for
     failure.
@@ -10062,9 +10078,10 @@ SetPlotSILRestriction
 silr : SIL restriction object
     A SIL restriction object.
 
-all
-    An optional argument that tells the function if the SIL restriction
-    should be applied to all plots in the plot list.
+all : integer
+    An optional argument that tells the function if the SIL restriction 
+    should be applied to all plots in the plot list (set all = 1) or not 
+    (set all = 0).
 
 return type : CLI_return_t
     The SetPlotSILRestriction function returns an integer value of 1 for
@@ -10110,17 +10127,18 @@ SetPrecisionType
   SetPrecisionType(typeAsString)
 
 
-typeAsInt : double
-    Precision type specified as an integer. 0 = float 1 = native 2 = double
+typeAsInt : integer
+    Precision type specified as an integer. Options are 0 for Float, 1
+    for Native, and 2 for Double. The default is 1.
 
 typeAsString : string
-    Precision type specified as a string. Options are 'float', 'native',
-    and 'double'.
+    Precision type specified as a string. Options are "Float", "Native",
+    and "Double". The default option is "Native."
 
 
 **Description:**
 
-    The SetPrecisionType function sets the floating point pecision
+    The SetPrecisionType function sets the floating point precision
     used by VisIt's pipeline.  The function accepts a single argument
     either an integer or string representing the precision desired.
     0 = "float", 1 = "native", 2 = "double"
@@ -12175,15 +12193,63 @@ WriteConfigFile
 WriteScript
 -----------
 
+**Synopsis:**
+
+::
+
+  WriteScript(f)
+
+f : file
+    The python file object that will be written to.
+
+**Description:**
+
+    ``WriteScript()`` saves the current state of VisIt as a Python script 
+    that can be used later to reproduce a visualization. This is like saving
+    a session file. But, the output of WriteScript can be further customized.
+    The resulting script will contain commands to set up plots in any 
+    visualization window that contained plots when WriteScript was called. 
+    It may be more verbose than necessary, so users may find it useful to 
+    delete portions of the script that are not needed. This will depend on 
+    how many plots there are or the complexity of the data. For example, it 
+    might useful to remove code related to setting a plot's SIL restriction. 
+    Once the script is edited to satisfaction, it can be replayed it in VisIt.
+    See below.
+
 
 **Example:**
 
 ::
 
-  f = open('script.py', 'wt')
+  #
+  # First, create the script.
+  #
+  #% visit -cli
+  OpenDatabase("foo.silo")
+  AddPlot("Pseudocolor","dx")
+  DrawPlots()
+  ChangeActivePlotsVar("dy")
+  WriteScript("plot_dx_and_dy.py")
+  #
+  # or
+  #
+  #% visit -cli  
+  OpenDatabase("foo.silo")
+  AddPlot("Pseudocolor","dx")
+  DrawPlots()
+  ChangeActivePlotsVar("dy")
+  f = open("plot_dx_and_dy.py", "wt")
   WriteScript(f)
   f.close()
-
+  #
+  # Now run the script in a terminal to replay it in VisIt.
+  #
+  # visit -cli -s script.py
+  #
+  # Or, the script can be used with VisIt's movie making scripts as a 
+  # basis to set up the initial visualization: 
+  #
+  # visit -movie -format mpeg -geometry 800x800 -scriptfile script.py -output scriptmovie
 
 
 ZonePick

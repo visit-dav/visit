@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
@@ -41,7 +42,7 @@ struct CurveAttributesObject
 //
 static PyObject *NewCurveAttributes(int);
 std::string
-PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
+PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2163,6 +2164,9 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(CurveAttributes::Degrees));
 
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in CurveAttributes
 
     //
@@ -2198,6 +2202,7 @@ PyCurveAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -2274,6 +2279,9 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "angleUnits") == 0)
         obj = CurveAttributes_SetAngleUnits(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
    // Try and handle legacy fields in CurveAttributes
     if(obj == &NULL_PY_OBJ)
     {
@@ -2289,6 +2297,7 @@ PyCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -2307,7 +2316,7 @@ static int
 CurveAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)v;
-    fprintf(fp, "%s", PyCurveAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCurveAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2315,7 +2324,7 @@ PyObject *
 CurveAttributes_str(PyObject *v)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)v;
-    return PyString_FromString(PyCurveAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2467,7 +2476,7 @@ PyCurveAttributes_GetLogString()
 {
     std::string s("CurveAtts = CurveAttributes()\n");
     if(currentAtts != 0)
-        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.");
+        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.", true);
     return s;
 }
 
@@ -2480,7 +2489,7 @@ PyCurveAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CurveAtts = CurveAttributes()\n");
-        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.");
+        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.", true);
         cb(s);
     }
 }

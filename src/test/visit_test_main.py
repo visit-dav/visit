@@ -20,6 +20,7 @@ import atexit
 import difflib
 import glob
 import gzip
+import inspect
 import json
 import operator
 import os
@@ -763,14 +764,21 @@ def LogImageTestResult(case_name,
                         tPixs, pPixs,dPixs, dpix, davg)
 
 # ----------------------------------------------------------------------------
-#  Method: LogImageTestResult
+#  Method: JSONImageTestResult
 #
 #  Programmer: Cyrus Harrison
 #  Date:       Wed May 30 2012
+#
+#  Modifications:
+#   Eric Brugger, Mon May 23 16:32:45 PDT 2022
+#   Move dpix in the argument list since it was in the wrong spot
+#   relative to the where it was when it was called. This caused it
+#   and several other arguments to be incorrect.
+#
 # ----------------------------------------------------------------------------
 def JSONImageTestResult(case_name, status,
                         diffState, modeSpecific,
-                        dpix, tPixs, pPixs, dPixs, davg):
+                        tPixs, pPixs, dPixs, dpix, davg):
     res = json_results_load()
     t_res = {'name':          case_name,
              'status':        status,
@@ -1016,6 +1024,61 @@ def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
 
     TestEnv.results["maxds"] = max(TestEnv.results["maxds"], diffVals[diffState])
 
+#
+# A convenient method that will auto-name and auto-section test cases.
+# The name is created by combining the name of the .py file with the
+# name of the function in the .py file and a sequence number starting
+# from zero. Each time a new file or function is encountered, the 
+# sequence number is reset to zero and a call to TestSection() is
+# inserted as well.
+#
+def GetAutoName(autoSection=True):
+
+    # Static local vars holding values from previous use
+    if not hasattr(GetAutoName, '_autoNamePrefix'):
+        GetAutoName._autoNamePrefix = ''
+        GetAutoName._autoNameIndex = 0
+
+    #
+    # The magic number `2` is because we expect calls to TestAutoName() and
+    # TestTextAutoName() to be coming from this method's caller's caller.
+    #
+    callingFileName = inspect.stack()[2].filename
+    callingFuncName = inspect.stack()[2].function
+    callingFunc = globals()[callingFuncName]
+    if hasattr(callingFunc, '__doc__'):
+        callingFuncDoc = getattr(callingFunc, '__doc__')
+    else:
+        callingFuncDoc = callingFuncName
+
+    testNamePrefix = os.path.splitext(os.path.basename(callingFileName))[0] + '_' + callingFuncName
+
+    if GetAutoName._autoNamePrefix != testNamePrefix:
+        GetAutoName._autoNamePrefix = testNamePrefix
+        GetAutoName._autoNameIndex = 0
+        if autoSection:
+            TestSection(callingFuncDoc)
+
+    testName = "%s_%d"%(testNamePrefix, GetAutoName._autoNameIndex)
+
+    GetAutoName._autoNameIndex += 1
+
+    return testName
+
+#
+# Auto-naming variant of Test()
+#
+def TestAutoName(altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
+
+    Test(GetAutoName(), altSWA, alreadySaved, pixdiff, avgdiff)
+
+#
+# Auto-naming variant of TestText()
+#
+def TestTextAutoName(inText, baseText=None, numdifftol=None):
+
+    TestText(GetAutoName(), inText, baseText, numdifftol)
+
 # ----------------------------------------------------------------------------
 # Function: HTMLImageTestResult
 #
@@ -1031,11 +1094,16 @@ def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
 #   I added the modeSpecific argument, which causes the text next to the
 #   baseline image to indicate if it is a mode specific image or not.
 #
+#   Eric Brugger, Mon May 23 16:32:45 PDT 2022
+#   Move dpix in the argument list since it was in the wrong spot
+#   relative to the where it was when it was called. This caused it
+#   and several other arguments to be incorrect.
+#
 # ----------------------------------------------------------------------------
 
 def HTMLImageTestResult(case_name,status,
                         diffState, modeSpecific,
-                        dpix, tPixs, pPixs, dPixs, davg):
+                        tPixs, pPixs, dPixs, dpix, davg):
     """
     Writes HTML entry for a single test image.
     """

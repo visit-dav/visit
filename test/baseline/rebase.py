@@ -246,6 +246,11 @@ filelist = get_baseline_filenames(
     vopts['type'],
     cases)
 
+if not filelist:
+    print('Specified parameters resulted in an empty list of files.')
+    print('Make sure all parameters are spelled and/or quoted correctly.')
+    sys.exit(1)
+
 #
 # Iterate, copying currents from HTML pages to baseline dir
 #

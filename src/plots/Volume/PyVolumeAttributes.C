@@ -38,7 +38,7 @@ struct VolumeAttributesObject
 //
 static PyObject *NewVolumeAttributes(int);
 std::string
-PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
+PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -94,7 +94,7 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "colorControlPoints.";
-        str += PyColorControlPointList_ToString(&atts->GetColorControlPoints(), objPrefix.c_str());
+        str += PyColorControlPointList_ToString(&atts->GetColorControlPoints(), objPrefix.c_str(), forLogging);
     }
     snprintf(tmpStr, 1000, "%sopacityAttenuation = %g\n", prefix, atts->GetOpacityAttenuation());
     str += tmpStr;
@@ -120,7 +120,7 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "opacityControlPoints.";
-        str += PyGaussianControlPointList_ToString(&atts->GetOpacityControlPoints(), objPrefix.c_str());
+        str += PyGaussianControlPointList_ToString(&atts->GetOpacityControlPoints(), objPrefix.c_str(), forLogging);
     }
     if(atts->GetResampleFlag())
         snprintf(tmpStr, 1000, "%sresampleFlag = 1\n", prefix);
@@ -1497,6 +1497,8 @@ VolumeAttributes_GetCompactVariable(PyObject *self, PyObject *args)
 //    (list or tuple object) --  as long as it is numeric and has length
 //    of 256, will set the opacity values to the values in the list or tuple.
 //
+//    Mark C. Miller, Fri Jul 23 14:54:46 PDT 2021
+//    Handle args as a "wrapped" tuple or list
 // ****************************************************************************
 
 static PyObject *
@@ -3269,7 +3271,7 @@ static int
 VolumeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)v;
-    fprintf(fp, "%s", PyVolumeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyVolumeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -3277,7 +3279,7 @@ PyObject *
 VolumeAttributes_str(PyObject *v)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)v;
-    return PyString_FromString(PyVolumeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyVolumeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -3429,7 +3431,7 @@ PyVolumeAttributes_GetLogString()
 {
     std::string s("VolumeAtts = VolumeAttributes()\n");
     if(currentAtts != 0)
-        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.");
+        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.", true);
     return s;
 }
 
@@ -3442,7 +3444,7 @@ PyVolumeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("VolumeAtts = VolumeAttributes()\n");
-        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.");
+        s += PyVolumeAttributes_ToString(currentAtts, "VolumeAtts.", true);
         cb(s);
     }
 }

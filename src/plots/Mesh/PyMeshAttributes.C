@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <GlyphTypes.h>
@@ -39,7 +40,7 @@ struct MeshAttributesObject
 //
 static PyObject *NewMeshAttributes(int);
 std::string
-PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
+PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1265,6 +1266,9 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "opacity") == 0)
         return MeshAttributes_GetOpacity(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in MeshAttributes
 
     //
@@ -1300,6 +1304,7 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1352,6 +1357,9 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "opacity") == 0)
         obj = MeshAttributes_SetOpacity(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in MeshAttributes
     if(obj == &NULL_PY_OBJ)
     {
@@ -1366,6 +1374,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1384,7 +1393,7 @@ static int
 MeshAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)v;
-    fprintf(fp, "%s", PyMeshAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMeshAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1392,7 +1401,7 @@ PyObject *
 MeshAttributes_str(PyObject *v)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)v;
-    return PyString_FromString(PyMeshAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMeshAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1544,7 +1553,7 @@ PyMeshAttributes_GetLogString()
 {
     std::string s("MeshAtts = MeshAttributes()\n");
     if(currentAtts != 0)
-        s += PyMeshAttributes_ToString(currentAtts, "MeshAtts.");
+        s += PyMeshAttributes_ToString(currentAtts, "MeshAtts.", true);
     return s;
 }
 
@@ -1557,7 +1566,7 @@ PyMeshAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MeshAtts = MeshAttributes()\n");
-        s += PyMeshAttributes_ToString(currentAtts, "MeshAtts.");
+        s += PyMeshAttributes_ToString(currentAtts, "MeshAtts.", true);
         cb(s);
     }
 }
