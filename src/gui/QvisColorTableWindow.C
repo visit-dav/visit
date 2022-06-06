@@ -261,12 +261,16 @@ QvisColorTableWindow::CreateWindowContents()
     tagLineEdit = new QLineEdit(colorTableWidgetGroup);
     mgLayout->addWidget(tagLineEdit, 5, 1);
 
-    QTreeWidget *tagTable = new QTreeWidget(colorTableWidgetGroup);
+    tagTable = new QTreeWidget(colorTableWidgetGroup);
     QStringList headers;
     headers << tr("Enabled") << tr("Tag Name");
     tagTable->setHeaderLabels(headers);
     tagTable->header()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
     tagTable->header()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
+    connect(tagTable, SIGNAL(itemChanged(QTreeWidgetItem *, int)), 
+            this, SLOT(tagTableItemSelected(QTreeWidgetItem *, int)));
+    tagTable->clear();
+    tagTable->setSortingEnabled(false);
     mgLayout->addWidget(tagTable, 6, 1);
 
     // Add the group box that will contain the color-related widgets.
@@ -639,6 +643,7 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             tagsVisible = colorAtts->GetTaggingFlag();
             tagLabel->setVisible(tagsVisible);
             tagLineEdit->setVisible(tagsVisible);
+            tagTable->setVisible(tagsVisible);
             tagCombiningBehaviorToggle->setVisible(tagsVisible);
             tagToggle->blockSignals(false);
             updateNames = true;
@@ -768,6 +773,7 @@ QvisColorTableWindow::UpdateEditor()
 void
 QvisColorTableWindow::UpdateNames()
 {
+    tagTable->blockSignals(true);
     nameListBox->blockSignals(true);
     defaultDiscrete->blockSignals(true);
     defaultContinuous->blockSignals(true);
@@ -972,6 +978,15 @@ QvisColorTableWindow::UpdateNames()
                 mgLayout->addWidget(tagToggles[i], i + 7, 1);
                 connect(tagToggles[i], SIGNAL(toggled(bool)), signalMapper, SLOT(map()));
                 signalMapper->setMapping(tagToggles[i], i);
+
+                QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+                item->setCheckState(0, Qt::Unchecked);
+                item->setText(1, tagList[i].c_str());
+                // this next column is secret and is for passing around the tag index
+                // TODO put in err msg for if you have over 100 tags
+                char buf[10];
+                sprintf(buf, "%d", i);
+                item->setText(2, buf);
             }
         }
         // we want to run this line ONLY the first time that the tag toggle has been checked... :)
@@ -988,6 +1003,7 @@ QvisColorTableWindow::UpdateNames()
         tagToggles[i]->setVisible(tagsVisible);
     }
 
+    tagTable->blockSignals(false);
     nameListBox->blockSignals(false);
     defaultContinuous->blockSignals(false);
     defaultDiscrete->blockSignals(false);
@@ -2044,6 +2060,30 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
         tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
         UpdateEditor();
     }
+}
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::tagTableItemSelected
+//
+// Purpose:
+//   TODO
+//
+// Arguments:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Mon Jun  6 14:02:16 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
+{
+    int index = std::stoi(item->text(2).toStdString());
+    activeTags[index] = item->checkState(0) == Qt::Checked;
+    UpdateNames();
 }
 
 // ****************************************************************************

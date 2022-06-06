@@ -138,6 +138,7 @@ private slots:
     void deleteColorTable();
     void exportColorTable();
     void highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*);
+    void tagTableItemSelected(QTreeWidgetItem *, int);
     void showIndexHintsToggled(bool val);
     void groupingToggled(bool val);
     void taggingToggled(bool val);
@@ -178,6 +179,7 @@ private:
     QLineEdit                *categoryLineEdit;
     QLabel                   *tagLabel;
     QLineEdit                *tagLineEdit;
+    QTreeWidget              *tagTable;
 
     QGroupBox                *colorWidgetGroup;
 
