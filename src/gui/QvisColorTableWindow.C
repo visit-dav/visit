@@ -256,8 +256,8 @@ QvisColorTableWindow::CreateWindowContents()
     categoryLineEdit = new QLineEdit(colorTableWidgetGroup);
     mgLayout->addWidget(categoryLineEdit, 4, 1);
 
-    QLabel *colorTableTags = new QLabel(tr("Tags"), colorTableWidgetGroup);
-    mgLayout->addWidget(colorTableTags, 5, 0, Qt::AlignRight);
+    tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
+    mgLayout->addWidget(tagLabel, 5, 0, Qt::AlignRight);
     tagLineEdit = new QLineEdit(colorTableWidgetGroup);
     mgLayout->addWidget(tagLineEdit, 5, 1);
 
@@ -629,6 +629,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             tagToggle->blockSignals(true);
             tagToggle->setChecked(colorAtts->GetTaggingFlag());
             tagsVisible = colorAtts->GetTaggingFlag();
+            tagLabel->setVisible(tagsVisible);
+            tagLineEdit->setVisible(tagsVisible);
             tagCombiningBehaviorToggle->setVisible(tagsVisible);
             tagToggle->blockSignals(false);
             updateNames = true;

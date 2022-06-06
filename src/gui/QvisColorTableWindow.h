@@ -173,10 +173,11 @@ private:
     QPushButton              *deleteButton;
     QPushButton              *exportButton;
     QLineEdit                *nameLineEdit;
-    QLineEdit                *tagLineEdit;
     QTreeWidget              *nameListBox;
     QLabel                   *categoryLabel;
     QLineEdit                *categoryLineEdit;
+    QLabel                   *tagLabel;
+    QLineEdit                *tagLineEdit;
 
     QGroupBox                *colorWidgetGroup;
 
