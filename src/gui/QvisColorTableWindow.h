@@ -142,7 +142,6 @@ private slots:
     void showIndexHintsToggled(bool val);
     void groupingToggled(bool val);
     void taggingToggled(bool val);
-    void activateTag(int tag_index);
     void tagCombiningToggled(bool val);
     void ApplyCategoryChange();
 private:
@@ -164,8 +163,7 @@ private:
     QvisNoDefaultColorTableButton *defaultDiscrete;
     QLabel                   *defaultDiscreteLabel;
     QCheckBox                *groupToggle;
-    QCheckBox                *tagToggle; // toggles if the tag toggles show up!
-    std::vector<QCheckBox*>  tagToggles;
+    QCheckBox                *tagToggle; // toggles tag filtering
     QCheckBox                *tagCombiningBehaviorToggle;
     QGridLayout              *mgLayout;
 
