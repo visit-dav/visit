@@ -261,6 +261,14 @@ QvisColorTableWindow::CreateWindowContents()
     tagLineEdit = new QLineEdit(colorTableWidgetGroup);
     mgLayout->addWidget(tagLineEdit, 5, 1);
 
+    QTreeWidget *tagTable = new QTreeWidget(colorTableWidgetGroup);
+    QStringList headers;
+    headers << tr("Enabled") << tr("Tag Name");
+    tagTable->setHeaderLabels(headers);
+    tagTable->header()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
+    tagTable->header()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
+    mgLayout->addWidget(tagTable, 6, 1);
+
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
     colorWidgetGroup->setTitle(tr("Editor"));
@@ -961,7 +969,7 @@ QvisColorTableWindow::UpdateNames()
             for (int i = tagToggles.size(); i < tagList.size(); i ++)
             {
                 tagToggles.push_back(new QCheckBox(QString(tagList[i].c_str()), defaultGroup));
-                mgLayout->addWidget(tagToggles[i], i + 6, 1);
+                mgLayout->addWidget(tagToggles[i], i + 7, 1);
                 connect(tagToggles[i], SIGNAL(toggled(bool)), signalMapper, SLOT(map()));
                 signalMapper->setMapping(tagToggles[i], i);
             }
