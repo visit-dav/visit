@@ -820,55 +820,86 @@ QvisColorTableWindow::UpdateNames()
         }
     }
 
-    // TODO what?
-    // the local tags need to have any of the global active tags
-    // the local tags need to have all of the global active tags
-    if (doTags)
+    if (doTags && tagsMatchAny)
     {
         nameListBox->setRootIsDecorated(false);
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
-            bool allMatch = true; // for use when !tagsMatchAny
             bool anyTagFound = false;
             int j = 0;
             // go thru local tags
             while (j < colorAtts->GetColorTables(i).GetNumTags())
             {
-                bool currTagFound = false;
                 int k = 0;
                 // go thru global tags
                 while (k < tagList.size())
                 {
-                    // if this global tag is active
+                    // if the global tag is active
                     if (activeTags[k])
                     {
+                        // and if the global tag is the same as our current local tag 
                         if (tagList[k] == colorAtts->GetColorTables(i).GetTag(j))
                         {
-                            // the current tag was found
-                            currTagFound = true;
                             // any tag was found
                             anyTagFound = true;
                             break;
                         }
                     }
-
                     k ++;
                 }
-                
-                // we only care if one tag was found
-                if (anyTagFound && tagsMatchAny) break;
-                
-                // the current tag was not found
-                if (! currTagFound)
-                {
-                    // so not all tags match
-                    allMatch = false;
-                }
 
+                // we only care if one tag was found
+                if (anyTagFound) break;
                 j ++;
             }
 
-            if ((anyTagFound && tagsMatchAny) || (!tagsMatchAny && allMatch))
+            // if any tag was found, we add the color table to the list
+            if (anyTagFound)
+            {
+                QString item(colorAtts->GetNames()[i].c_str());
+                QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
+                treeItem->setText(0, item);
+                nameListBox->addTopLevelItem(treeItem);
+            }
+        }
+    }
+
+    // so tags must match all
+    if (doTags && !tagsMatchAny)
+    {
+        nameListBox->setRootIsDecorated(false);
+        for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
+        {
+            bool allTagsFound = true;
+            int j = 0;
+            // go thru global tags
+            while (j < tagList.size())
+            {
+                // if the global tag is active
+                if (activeTags[j])
+                {
+                    bool foundLocalTag = false;
+                    int k = 0;
+                    while (k < colorAtts->GetColorTables(i).GetNumTags())
+                    {
+                        if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
+                        {
+                            foundLocalTag = true;
+                            break;
+                        }
+                        k ++;
+                    }
+                    if (!foundLocalTag)
+                    {
+                        allTagsFound = false;
+                        break;
+                    }
+                }
+                j ++;
+            }
+
+            // if all tags were found, we add the color table to the list
+            if (allTagsFound)
             {
                 QString item(colorAtts->GetNames()[i].c_str());
                 QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
@@ -935,8 +966,10 @@ QvisColorTableWindow::UpdateNames()
         }
         // we want to run this line ONLY the first time that the tag toggle has been checked... :)
         if (!runBefore)
+        {
             connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(activateTag(int)));
-        runBefore = true;
+            runBefore = true;
+        }
     }
 
     // set visible or invisible based on if the tag toggle is checked
