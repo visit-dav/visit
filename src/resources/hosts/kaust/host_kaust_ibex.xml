@@ -4,7 +4,7 @@
     <Field name="host" type="string">ilogin.ibex.kaust.edu.sa</Field>
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">login#g</Field>
-    <Field name="directory" type="string">/home/kressjm/packages/ibex/visit-install</Field>
+    <Field name="directory" type="string">/sw/vis/ibex-visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
@@ -53,7 +53,7 @@
         <Field name="XArguments" type="string"></Field>
         <Field name="launchXServers" type="bool">false</Field>
         <Field name="XDisplay" type="string">:%l</Field>
-        <Field name="profileName" type="string">"Ibex Parallel"</Field>
+        <Field name="profileName" type="string">"New profile #0"</Field>
     </Object>
     <Field name="activeProfile" type="int">0</Field>
 </Object>

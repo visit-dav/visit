@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
-    <Field name="hostNickname" type="string">KAUST_Shaheen</Field>
-    <Field name="host" type="string">hpc.kaust.edu.sa</Field>
+    <Field name="hostNickname" type="string">KAUST_Shaheen II</Field>
+    <Field name="host" type="string">shaheen.hpc.kaust.edu.sa</Field>
     <Field name="userName" type="string">notset</Field>
     <Field name="hostAliases" type="string">cdl#g</Field>
-    <Field name="directory" type="string">/project/k1033/kressjm/shaheen/visit-install</Field>
+    <Field name="directory" type="string">/sw/vis/shaheen-visit</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
