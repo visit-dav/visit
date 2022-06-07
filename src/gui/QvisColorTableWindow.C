@@ -781,34 +781,25 @@ QvisColorTableWindow::UpdateTags()
                 if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
                 {
                     tagList.push_back(currtag);
+                    QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
                     // make the "Standard" tag active the very first time the tags are enabled
                     if (currtag == "Standard" && !run_before)
+                    {
                         activeTags.push_back(true);
+                        item->setCheckState(0, Qt::Checked);
+                    }
                     else
+                    {
                         activeTags.push_back(false);
+                        item->setCheckState(0, Qt::Unchecked);
+                    }                        
+                    item->setText(1, currtag.c_str());
+                    // this next column is secret and is for passing around the tag index
+                    // TODO put in err msg for if you have over 100 tags
+                    char buf[10];
+                    sprintf(buf, "%d", tagList.size() - 1);
+                    item->setText(2, buf);
                 }
-            }
-        }
-
-        // are there any new tags to add?
-        if (tag_count < tagList.size())
-        {
-            // create the tag list checkboxes
-            for (int i = tag_count; i < tagList.size(); i ++)
-            {
-                QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-                // make the "Standard" tag active the very first time the tags are enabled
-                if (!run_before && tagList[i] == "Standard")
-                    item->setCheckState(0, Qt::Checked);
-                else
-                    item->setCheckState(0, Qt::Unchecked);
-                item->setText(1, tagList[i].c_str());
-                // this next column is secret and is for passing around the tag index
-                // TODO put in err msg for if you have over 100 tags
-                char buf[10];
-                sprintf(buf, "%d", i);
-                item->setText(2, buf);
-                tag_count ++;
             }
         }
         run_before = true;
