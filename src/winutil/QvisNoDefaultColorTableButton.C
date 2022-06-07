@@ -455,7 +455,7 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
             if (!colorTableNames.empty())
             {
                 buttons[i]->setText(colorTableNames[0]);
-                buttons[i]->setColorTable(colorTableNames[0]);                
+                buttons[i]->setColorTable(colorTableNames[0]);
             }
         }
         else

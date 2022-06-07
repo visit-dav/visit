@@ -747,6 +747,80 @@ QvisColorTableWindow::UpdateEditor()
 }
 
 // ****************************************************************************
+// Method: QvisColorTableWindow::UpdateTags
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Tue Jun  7 12:36:55 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::UpdateTags()
+{
+    // signal blocking SHOULD occur in the caller
+    // tagTable->blockSignals(true);
+
+    static bool run_before = false;
+    static int tag_count = 0;
+    if (tagToggle->isChecked())
+    {
+        // populate tags list
+        // iterate thru each color table
+        for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
+        {
+            // iterate thru each tag in the given color table
+            for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
+            {
+                std::string currtag = colorAtts->GetColorTables(i).GetTag(j);
+                // if the given tag is NOT in the global tag list
+                if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
+                {
+                    tagList.push_back(currtag);
+                    // make the "Standard" tag active the very first time the tags are enabled
+                    if (currtag == "Standard" && !run_before)
+                        activeTags.push_back(true);
+                    else
+                        activeTags.push_back(false);
+                }
+            }
+        }
+
+        // are there any new tags to add?
+        if (tag_count < tagList.size())
+        {
+            // create the tag list checkboxes
+            for (int i = tag_count; i < tagList.size(); i ++)
+            {
+                QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+                // make the "Standard" tag active the very first time the tags are enabled
+                if (!run_before && tagList[i] == "Standard")
+                    item->setCheckState(0, Qt::Checked);
+                else
+                    item->setCheckState(0, Qt::Unchecked);
+                item->setText(1, tagList[i].c_str());
+                // this next column is secret and is for passing around the tag index
+                // TODO put in err msg for if you have over 100 tags
+                char buf[10];
+                sprintf(buf, "%d", i);
+                item->setText(2, buf);
+                tag_count ++;
+            }
+        }
+        run_before = true;
+    }
+
+    tagTable->sortByColumn(1, Qt::AscendingOrder);
+
+    // signal unblocking SHOULD occur in the caller
+    // tagTable->blockSignals(false);
+}
+
+// ****************************************************************************
 // Method: QvisColorTableWindow::UpdateNames
 //
 // Purpose:
@@ -778,6 +852,8 @@ QvisColorTableWindow::UpdateNames()
     nameListBox->blockSignals(true);
     defaultDiscrete->blockSignals(true);
     defaultContinuous->blockSignals(true);
+
+    UpdateTags();
 
     // Clear out the existing names.
     nameListBox->clear();
@@ -947,46 +1023,6 @@ QvisColorTableWindow::UpdateNames()
         nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
         categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
         tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
-    }
-
-    // TODO move this block into the if stmt below when it is safe to do so
-    // populate tags list
-    // iterate thru each color table
-    for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
-    {
-        // iterate thru each tag in the given color table
-        for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
-        {
-            std::string currtag = colorAtts->GetColorTables(i).GetTag(j);
-            // if the given tag is NOT in the global tag list
-            if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
-            {
-                tagList.push_back(currtag);
-                activeTags.push_back(false);
-            }
-        }
-    }
-
-    static int tag_count = 0;
-    if (tagToggle->isChecked())
-    {
-        // are there any new tags to add?
-        if (tag_count < tagList.size())
-        {
-            // create the tag list checkboxes
-            for (int i = tag_count; i < tagList.size(); i ++)
-            {
-                QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-                item->setCheckState(0, Qt::Unchecked);
-                item->setText(1, tagList[i].c_str());
-                // this next column is secret and is for passing around the tag index
-                // TODO put in err msg for if you have over 100 tags
-                char buf[10];
-                sprintf(buf, "%d", i);
-                item->setText(2, buf);
-                tag_count ++;
-            }
-        }
     }
 
     tagTable->blockSignals(false);
