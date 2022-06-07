@@ -37,7 +37,7 @@ struct ColorTableAttributesObject
 //
 static PyObject *NewColorTableAttributes(int);
 std::string
-PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *prefix)
+PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -66,7 +66,7 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
             const ColorControlPointList *current = (const ColorControlPointList *)(*pos);
             snprintf(tmpStr, 1000, "GetColorTables(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyColorControlPointList_ToString(current, objPrefix.c_str());
+            str += PyColorControlPointList_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#colorTables does not contain any ColorControlPointList objects.\n";
@@ -569,7 +569,7 @@ static int
 ColorTableAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)v;
-    fprintf(fp, "%s", PyColorTableAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyColorTableAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -577,7 +577,7 @@ PyObject *
 ColorTableAttributes_str(PyObject *v)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)v;
-    return PyString_FromString(PyColorTableAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyColorTableAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -729,7 +729,7 @@ PyColorTableAttributes_GetLogString()
 {
     std::string s("ColorTableAtts = ColorTableAttributes()\n");
     if(currentAtts != 0)
-        s += PyColorTableAttributes_ToString(currentAtts, "ColorTableAtts.");
+        s += PyColorTableAttributes_ToString(currentAtts, "ColorTableAtts.", true);
     return s;
 }
 
@@ -742,7 +742,7 @@ PyColorTableAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ColorTableAtts = ColorTableAttributes()\n");
-        s += PyColorTableAttributes_ToString(currentAtts, "ColorTableAtts.");
+        s += PyColorTableAttributes_ToString(currentAtts, "ColorTableAtts.", true);
         cb(s);
     }
 }

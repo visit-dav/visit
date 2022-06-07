@@ -37,7 +37,7 @@ struct FontAttributesObject
 //
 static PyObject *NewFontAttributes(int);
 std::string
-PyFontAttributes_ToString(const FontAttributes *atts, const char *prefix)
+PyFontAttributes_ToString(const FontAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -586,7 +586,7 @@ static int
 FontAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     FontAttributesObject *obj = (FontAttributesObject *)v;
-    fprintf(fp, "%s", PyFontAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyFontAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -594,7 +594,7 @@ PyObject *
 FontAttributes_str(PyObject *v)
 {
     FontAttributesObject *obj = (FontAttributesObject *)v;
-    return PyString_FromString(PyFontAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyFontAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -746,7 +746,7 @@ PyFontAttributes_GetLogString()
 {
     std::string s("FontAtts = FontAttributes()\n");
     if(currentAtts != 0)
-        s += PyFontAttributes_ToString(currentAtts, "FontAtts.");
+        s += PyFontAttributes_ToString(currentAtts, "FontAtts.", true);
     return s;
 }
 
@@ -759,7 +759,7 @@ PyFontAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("FontAtts = FontAttributes()\n");
-        s += PyFontAttributes_ToString(currentAtts, "FontAtts.");
+        s += PyFontAttributes_ToString(currentAtts, "FontAtts.", true);
         cb(s);
     }
 }

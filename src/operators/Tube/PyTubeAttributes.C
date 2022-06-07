@@ -36,7 +36,7 @@ struct TubeAttributesObject
 //
 static PyObject *NewTubeAttributes(int);
 std::string
-PyTubeAttributes_ToString(const TubeAttributes *atts, const char *prefix)
+PyTubeAttributes_ToString(const TubeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -614,7 +614,7 @@ static int
 TubeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     TubeAttributesObject *obj = (TubeAttributesObject *)v;
-    fprintf(fp, "%s", PyTubeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyTubeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -622,7 +622,7 @@ PyObject *
 TubeAttributes_str(PyObject *v)
 {
     TubeAttributesObject *obj = (TubeAttributesObject *)v;
-    return PyString_FromString(PyTubeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyTubeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -774,7 +774,7 @@ PyTubeAttributes_GetLogString()
 {
     std::string s("TubeAtts = TubeAttributes()\n");
     if(currentAtts != 0)
-        s += PyTubeAttributes_ToString(currentAtts, "TubeAtts.");
+        s += PyTubeAttributes_ToString(currentAtts, "TubeAtts.", true);
     return s;
 }
 
@@ -787,7 +787,7 @@ PyTubeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("TubeAtts = TubeAttributes()\n");
-        s += PyTubeAttributes_ToString(currentAtts, "TubeAtts.");
+        s += PyTubeAttributes_ToString(currentAtts, "TubeAtts.", true);
         cb(s);
     }
 }

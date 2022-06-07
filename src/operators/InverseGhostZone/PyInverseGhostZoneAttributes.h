@@ -22,7 +22,7 @@ PyObject *     PyInverseGhostZoneAttributes_Wrap(const InverseGhostZoneAttribute
 void           PyInverseGhostZoneAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyInverseGhostZoneAttributes_SetDefaults(const InverseGhostZoneAttributes *atts);
 std::string    PyInverseGhostZoneAttributes_GetLogString();
-std::string    PyInverseGhostZoneAttributes_ToString(const InverseGhostZoneAttributes *, const char *);
+std::string    PyInverseGhostZoneAttributes_ToString(const InverseGhostZoneAttributes *, const char *, const bool=false);
 PyObject *     PyInverseGhostZoneAttributes_getattr(PyObject *self, char *name);
 int            PyInverseGhostZoneAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyInverseGhostZoneAttributes_methods[INVERSEGHOSTZONEATTRIBUTES_NMETH];

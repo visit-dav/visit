@@ -38,7 +38,7 @@ struct SaveWindowAttributesObject
 //
 static PyObject *NewSaveWindowAttributes(int);
 std::string
-PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *prefix)
+PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -219,12 +219,12 @@ PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *pr
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "subWindowAtts.";
-        str += PySaveSubWindowsAttributes_ToString(&atts->GetSubWindowAtts(), objPrefix.c_str());
+        str += PySaveSubWindowsAttributes_ToString(&atts->GetSubWindowAtts(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "opts.";
-        str += PyDBOptionsAttributes_ToString(&atts->GetOpts(), objPrefix.c_str());
+        str += PyDBOptionsAttributes_ToString(&atts->GetOpts(), objPrefix.c_str(), forLogging);
     }
     return str;
 }
@@ -1634,7 +1634,7 @@ static int
 SaveWindowAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)v;
-    fprintf(fp, "%s", PySaveWindowAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySaveWindowAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1642,7 +1642,7 @@ PyObject *
 SaveWindowAttributes_str(PyObject *v)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)v;
-    return PyString_FromString(PySaveWindowAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySaveWindowAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1794,7 +1794,7 @@ PySaveWindowAttributes_GetLogString()
 {
     std::string s("SaveWindowAtts = SaveWindowAttributes()\n");
     if(currentAtts != 0)
-        s += PySaveWindowAttributes_ToString(currentAtts, "SaveWindowAtts.");
+        s += PySaveWindowAttributes_ToString(currentAtts, "SaveWindowAtts.", true);
     return s;
 }
 
@@ -1807,7 +1807,7 @@ PySaveWindowAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SaveWindowAtts = SaveWindowAttributes()\n");
-        s += PySaveWindowAttributes_ToString(currentAtts, "SaveWindowAtts.");
+        s += PySaveWindowAttributes_ToString(currentAtts, "SaveWindowAtts.", true);
         cb(s);
     }
 }

@@ -36,7 +36,7 @@ struct IndexSelectAttributesObject
 //
 static PyObject *NewIndexSelectAttributes(int);
 std::string
-PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *prefix)
+PyIndexSelectAttributes_ToString(const IndexSelectAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1531,7 +1531,7 @@ static int
 IndexSelectAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)v;
-    fprintf(fp, "%s", PyIndexSelectAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyIndexSelectAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1539,7 +1539,7 @@ PyObject *
 IndexSelectAttributes_str(PyObject *v)
 {
     IndexSelectAttributesObject *obj = (IndexSelectAttributesObject *)v;
-    return PyString_FromString(PyIndexSelectAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyIndexSelectAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1691,7 +1691,7 @@ PyIndexSelectAttributes_GetLogString()
 {
     std::string s("IndexSelectAtts = IndexSelectAttributes()\n");
     if(currentAtts != 0)
-        s += PyIndexSelectAttributes_ToString(currentAtts, "IndexSelectAtts.");
+        s += PyIndexSelectAttributes_ToString(currentAtts, "IndexSelectAtts.", true);
     return s;
 }
 
@@ -1704,7 +1704,7 @@ PyIndexSelectAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("IndexSelectAtts = IndexSelectAttributes()\n");
-        s += PyIndexSelectAttributes_ToString(currentAtts, "IndexSelectAtts.");
+        s += PyIndexSelectAttributes_ToString(currentAtts, "IndexSelectAtts.", true);
         cb(s);
     }
 }

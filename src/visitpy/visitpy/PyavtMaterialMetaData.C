@@ -36,12 +36,12 @@ struct avtMaterialMetaDataObject
 //
 static PyObject *NewavtMaterialMetaData(int);
 std::string
-PyavtMaterialMetaData_ToString(const avtMaterialMetaData *atts, const char *prefix)
+PyavtMaterialMetaData_ToString(const avtMaterialMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
-    str = PyavtBaseVarMetaData_ToString(atts, prefix);
+    str = PyavtBaseVarMetaData_ToString(atts, prefix, forLogging);
 
     snprintf(tmpStr, 1000, "%snumMaterials = %d\n", prefix, atts->numMaterials);
     str += tmpStr;
@@ -403,7 +403,7 @@ static int
 avtMaterialMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtMaterialMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtMaterialMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -411,7 +411,7 @@ PyObject *
 avtMaterialMetaData_str(PyObject *v)
 {
     avtMaterialMetaDataObject *obj = (avtMaterialMetaDataObject *)v;
-    return PyString_FromString(PyavtMaterialMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtMaterialMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -563,7 +563,7 @@ PyavtMaterialMetaData_GetLogString()
 {
     std::string s("avtMaterialMetaData = avtMaterialMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtMaterialMetaData_ToString(currentAtts, "avtMaterialMetaData.");
+        s += PyavtMaterialMetaData_ToString(currentAtts, "avtMaterialMetaData.", true);
     return s;
 }
 
@@ -576,7 +576,7 @@ PyavtMaterialMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtMaterialMetaData = avtMaterialMetaData()\n");
-        s += PyavtMaterialMetaData_ToString(currentAtts, "avtMaterialMetaData.");
+        s += PyavtMaterialMetaData_ToString(currentAtts, "avtMaterialMetaData.", true);
         cb(s);
     }
 }

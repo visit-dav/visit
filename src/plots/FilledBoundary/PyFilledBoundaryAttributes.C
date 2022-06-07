@@ -41,7 +41,7 @@ struct FilledBoundaryAttributesObject
 //
 static PyObject *NewFilledBoundaryAttributes(int);
 std::string
-PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *atts, const char *prefix)
+PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1807,7 +1807,7 @@ static int
 FilledBoundaryAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)v;
-    fprintf(fp, "%s", PyFilledBoundaryAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyFilledBoundaryAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1815,7 +1815,7 @@ PyObject *
 FilledBoundaryAttributes_str(PyObject *v)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)v;
-    return PyString_FromString(PyFilledBoundaryAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyFilledBoundaryAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1967,7 +1967,7 @@ PyFilledBoundaryAttributes_GetLogString()
 {
     std::string s("FilledBoundaryAtts = FilledBoundaryAttributes()\n");
     if(currentAtts != 0)
-        s += PyFilledBoundaryAttributes_ToString(currentAtts, "FilledBoundaryAtts.");
+        s += PyFilledBoundaryAttributes_ToString(currentAtts, "FilledBoundaryAtts.", true);
     return s;
 }
 
@@ -1980,7 +1980,7 @@ PyFilledBoundaryAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("FilledBoundaryAtts = FilledBoundaryAttributes()\n");
-        s += PyFilledBoundaryAttributes_ToString(currentAtts, "FilledBoundaryAtts.");
+        s += PyFilledBoundaryAttributes_ToString(currentAtts, "FilledBoundaryAtts.", true);
         cb(s);
     }
 }

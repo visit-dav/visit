@@ -7203,6 +7203,8 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
 //    processors decided to change the ghost type. Now if any of them
 //    decide to change the ghost type, all of them will do it.
 //
+//    Mark C. Miller, Wed May 25 13:24:51 PDT 2022
+//    Do no work if there is no more than 1 domain.
 // ****************************************************************************
 
 bool
@@ -7211,6 +7213,10 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src,
                       intVector &allDomains, bool canDoCollectiveCommunication)
 {
+    // allDomains is consistent across all MPI ranks
+    if (allDomains.size() <= 1)
+        return false;
+
 #ifndef PARALLEL
     (void)canDoCollectiveCommunication;
 #endif

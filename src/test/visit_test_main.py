@@ -20,6 +20,7 @@ import atexit
 import difflib
 import glob
 import gzip
+import inspect
 import json
 import operator
 import os
@@ -1022,6 +1023,61 @@ def Test(case_name, altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
             diffState = 'Unacceptable'
 
     TestEnv.results["maxds"] = max(TestEnv.results["maxds"], diffVals[diffState])
+
+#
+# A convenient method that will auto-name and auto-section test cases.
+# The name is created by combining the name of the .py file with the
+# name of the function in the .py file and a sequence number starting
+# from zero. Each time a new file or function is encountered, the 
+# sequence number is reset to zero and a call to TestSection() is
+# inserted as well.
+#
+def GetAutoName(autoSection=True):
+
+    # Static local vars holding values from previous use
+    if not hasattr(GetAutoName, '_autoNamePrefix'):
+        GetAutoName._autoNamePrefix = ''
+        GetAutoName._autoNameIndex = 0
+
+    #
+    # The magic number `2` is because we expect calls to TestAutoName() and
+    # TestTextAutoName() to be coming from this method's caller's caller.
+    #
+    callingFileName = inspect.stack()[2].filename
+    callingFuncName = inspect.stack()[2].function
+    callingFunc = globals()[callingFuncName]
+    if hasattr(callingFunc, '__doc__'):
+        callingFuncDoc = getattr(callingFunc, '__doc__')
+    else:
+        callingFuncDoc = callingFuncName
+
+    testNamePrefix = os.path.splitext(os.path.basename(callingFileName))[0] + '_' + callingFuncName
+
+    if GetAutoName._autoNamePrefix != testNamePrefix:
+        GetAutoName._autoNamePrefix = testNamePrefix
+        GetAutoName._autoNameIndex = 0
+        if autoSection:
+            TestSection(callingFuncDoc)
+
+    testName = "%s_%d"%(testNamePrefix, GetAutoName._autoNameIndex)
+
+    GetAutoName._autoNameIndex += 1
+
+    return testName
+
+#
+# Auto-naming variant of Test()
+#
+def TestAutoName(altSWA=0, alreadySaved=0, pixdiff=None, avgdiff=None):
+
+    Test(GetAutoName(), altSWA, alreadySaved, pixdiff, avgdiff)
+
+#
+# Auto-naming variant of TestText()
+#
+def TestTextAutoName(inText, baseText=None, numdifftol=None):
+
+    TestText(GetAutoName(), inText, baseText, numdifftol)
 
 # ----------------------------------------------------------------------------
 # Function: HTMLImageTestResult

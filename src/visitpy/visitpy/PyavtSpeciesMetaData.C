@@ -37,7 +37,7 @@ struct avtSpeciesMetaDataObject
 //
 static PyObject *NewavtSpeciesMetaData(int);
 std::string
-PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *atts, const char *prefix)
+PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -65,7 +65,7 @@ PyavtSpeciesMetaData_ToString(const avtSpeciesMetaData *atts, const char *prefix
             const avtMatSpeciesMetaData *current = (const avtMatSpeciesMetaData *)(*pos);
             snprintf(tmpStr, 1000, "GetSpecies(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyavtMatSpeciesMetaData_ToString(current, objPrefix.c_str());
+            str += PyavtMatSpeciesMetaData_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#species does not contain any avtMatSpeciesMetaData objects.\n";
@@ -608,7 +608,7 @@ static int
 avtSpeciesMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtSpeciesMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtSpeciesMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -616,7 +616,7 @@ PyObject *
 avtSpeciesMetaData_str(PyObject *v)
 {
     avtSpeciesMetaDataObject *obj = (avtSpeciesMetaDataObject *)v;
-    return PyString_FromString(PyavtSpeciesMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtSpeciesMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -768,7 +768,7 @@ PyavtSpeciesMetaData_GetLogString()
 {
     std::string s("avtSpeciesMetaData = avtSpeciesMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtSpeciesMetaData_ToString(currentAtts, "avtSpeciesMetaData.");
+        s += PyavtSpeciesMetaData_ToString(currentAtts, "avtSpeciesMetaData.", true);
     return s;
 }
 
@@ -781,7 +781,7 @@ PyavtSpeciesMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtSpeciesMetaData = avtSpeciesMetaData()\n");
-        s += PyavtSpeciesMetaData_ToString(currentAtts, "avtSpeciesMetaData.");
+        s += PyavtSpeciesMetaData_ToString(currentAtts, "avtSpeciesMetaData.", true);
         cb(s);
     }
 }

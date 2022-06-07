@@ -39,7 +39,7 @@ struct SurfaceAttributesObject
 //
 static PyObject *NewSurfaceAttributes(int);
 std::string
-PySurfaceAttributes_ToString(const SurfaceAttributes *atts, const char *prefix)
+PySurfaceAttributes_ToString(const SurfaceAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1438,7 +1438,7 @@ static int
 SurfaceAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)v;
-    fprintf(fp, "%s", PySurfaceAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySurfaceAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1446,7 +1446,7 @@ PyObject *
 SurfaceAttributes_str(PyObject *v)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)v;
-    return PyString_FromString(PySurfaceAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySurfaceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1598,7 +1598,7 @@ PySurfaceAttributes_GetLogString()
 {
     std::string s("SurfaceAtts = SurfaceAttributes()\n");
     if(currentAtts != 0)
-        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.");
+        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.", true);
     return s;
 }
 
@@ -1611,7 +1611,7 @@ PySurfaceAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SurfaceAtts = SurfaceAttributes()\n");
-        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.");
+        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.", true);
         cb(s);
     }
 }

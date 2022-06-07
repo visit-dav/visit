@@ -37,7 +37,7 @@ struct ExplodeAttributesObject
 //
 static PyObject *NewExplodeAttributes(int);
 std::string
-PyExplodeAttributes_ToString(const ExplodeAttributes *atts, const char *prefix)
+PyExplodeAttributes_ToString(const ExplodeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -198,7 +198,7 @@ PyExplodeAttributes_ToString(const ExplodeAttributes *atts, const char *prefix)
             const ExplodeAttributes *current = (const ExplodeAttributes *)(*pos);
             snprintf(tmpStr, 1000, "GetExplosions(%d).", index);
             std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyExplodeAttributes_ToString(current, objPrefix.c_str());
+            str += PyExplodeAttributes_ToString(current, objPrefix.c_str(), forLogging);
         }
         if(index == 0)
             str += "#explosions does not contain any ExplodeAttributes objects.\n";
@@ -1431,7 +1431,7 @@ static int
 ExplodeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ExplodeAttributesObject *obj = (ExplodeAttributesObject *)v;
-    fprintf(fp, "%s", PyExplodeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyExplodeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1439,7 +1439,7 @@ PyObject *
 ExplodeAttributes_str(PyObject *v)
 {
     ExplodeAttributesObject *obj = (ExplodeAttributesObject *)v;
-    return PyString_FromString(PyExplodeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyExplodeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1591,7 +1591,7 @@ PyExplodeAttributes_GetLogString()
 {
     std::string s("ExplodeAtts = ExplodeAttributes()\n");
     if(currentAtts != 0)
-        s += PyExplodeAttributes_ToString(currentAtts, "ExplodeAtts.");
+        s += PyExplodeAttributes_ToString(currentAtts, "ExplodeAtts.", true);
     return s;
 }
 
@@ -1604,7 +1604,7 @@ PyExplodeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ExplodeAtts = ExplodeAttributes()\n");
-        s += PyExplodeAttributes_ToString(currentAtts, "ExplodeAtts.");
+        s += PyExplodeAttributes_ToString(currentAtts, "ExplodeAtts.", true);
         cb(s);
     }
 }

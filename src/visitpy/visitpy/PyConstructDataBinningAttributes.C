@@ -36,7 +36,7 @@ struct ConstructDataBinningAttributesObject
 //
 static PyObject *NewConstructDataBinningAttributes(int);
 std::string
-PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *atts, const char *prefix)
+PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1288,7 +1288,7 @@ static int
 ConstructDataBinningAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)v;
-    fprintf(fp, "%s", PyConstructDataBinningAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyConstructDataBinningAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1296,7 +1296,7 @@ PyObject *
 ConstructDataBinningAttributes_str(PyObject *v)
 {
     ConstructDataBinningAttributesObject *obj = (ConstructDataBinningAttributesObject *)v;
-    return PyString_FromString(PyConstructDataBinningAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyConstructDataBinningAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1448,7 +1448,7 @@ PyConstructDataBinningAttributes_GetLogString()
 {
     std::string s("ConstructDataBinningAtts = ConstructDataBinningAttributes()\n");
     if(currentAtts != 0)
-        s += PyConstructDataBinningAttributes_ToString(currentAtts, "ConstructDataBinningAtts.");
+        s += PyConstructDataBinningAttributes_ToString(currentAtts, "ConstructDataBinningAtts.", true);
     return s;
 }
 
@@ -1461,7 +1461,7 @@ PyConstructDataBinningAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ConstructDataBinningAtts = ConstructDataBinningAttributes()\n");
-        s += PyConstructDataBinningAttributes_ToString(currentAtts, "ConstructDataBinningAtts.");
+        s += PyConstructDataBinningAttributes_ToString(currentAtts, "ConstructDataBinningAtts.", true);
         cb(s);
     }
 }
