@@ -83,8 +83,13 @@ ColorTableObserver::Update(Subject *)
     // have to update the widget.
     if(colorAtts->IsSelected(ColorTableAttributes::ID_names) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
-       colorAtts->IsSelected(ColorTableAttributes::ID_groupingFlag))
+       colorAtts->IsSelected(ColorTableAttributes::ID_groupingFlag) ||
+       colorAtts->IsSelected(ColorTableAttributes::ID_taggingFlag) ||
+       colorAtts->GetChangesMade())
     {
+        // reset
+        colorAtts->SetChangesMade(false);
+
         // Clear all of the color tables.
         QvisColorTableButton::setColorTableAttributes(colorAtts);
         QvisColorTableButton::clearAllColorTables();

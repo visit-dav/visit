@@ -2070,6 +2070,9 @@ QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
     int index = std::stoi(item->text(2).toStdString());
     activeTags[index] = item->checkState(0) == Qt::Checked;
     UpdateNames();
+    colorAtts->SetChangesMade(true);
+    ctObserver.SetUpdate(true);
+    Apply(true);
 }
 
 // ****************************************************************************
@@ -2580,6 +2583,7 @@ void
 QvisColorTableWindow::taggingToggled(bool val)
 {
     colorAtts->SetTaggingFlag(val);
+    colorAtts->SetChangesMade(true);
     Apply(true);
 }
 
@@ -2602,6 +2606,9 @@ QvisColorTableWindow::tagCombiningToggled(bool val)
 {
     tagsMatchAny = ! tagsMatchAny;
     UpdateNames();
+    colorAtts->SetChangesMade(true);
+    ctObserver.SetUpdate(true);
+    Apply(true);
 }
 
 

@@ -24,7 +24,7 @@ import java.lang.Integer;
 
 public class ColorTableAttributes extends AttributeSubject
 {
-    private static int ColorTableAttributes_numAdditionalAtts = 7;
+    private static int ColorTableAttributes_numAdditionalAtts = 8;
 
     public ColorTableAttributes()
     {
@@ -37,6 +37,7 @@ public class ColorTableAttributes extends AttributeSubject
         defaultDiscrete = new String("levels");
         groupingFlag = false;
         taggingFlag = false;
+        changesMade = false;
     }
 
     public ColorTableAttributes(int nMoreFields)
@@ -50,6 +51,7 @@ public class ColorTableAttributes extends AttributeSubject
         defaultDiscrete = new String("levels");
         groupingFlag = false;
         taggingFlag = false;
+        changesMade = false;
     }
 
     public ColorTableAttributes(ColorTableAttributes obj)
@@ -80,6 +82,7 @@ public class ColorTableAttributes extends AttributeSubject
         defaultDiscrete = new String(obj.defaultDiscrete);
         groupingFlag = obj.groupingFlag;
         taggingFlag = obj.taggingFlag;
+        changesMade = obj.changesMade;
 
         SelectAll();
     }
@@ -132,7 +135,8 @@ public class ColorTableAttributes extends AttributeSubject
                 (defaultContinuous.equals(obj.defaultContinuous)) &&
                 (defaultDiscrete.equals(obj.defaultDiscrete)) &&
                 (groupingFlag == obj.groupingFlag) &&
-                (taggingFlag == obj.taggingFlag));
+                (taggingFlag == obj.taggingFlag) &&
+                (changesMade == obj.changesMade));
     }
 
     // Property setting methods
@@ -172,6 +176,12 @@ public class ColorTableAttributes extends AttributeSubject
         Select(6);
     }
 
+    public void SetChangesMade(boolean changesMade_)
+    {
+        changesMade = changesMade_;
+        Select(7);
+    }
+
     // Property getting methods
     public Vector  GetNames() { return names; }
     public Vector  GetActive() { return active; }
@@ -180,6 +190,7 @@ public class ColorTableAttributes extends AttributeSubject
     public String  GetDefaultDiscrete() { return defaultDiscrete; }
     public boolean GetGroupingFlag() { return groupingFlag; }
     public boolean GetTaggingFlag() { return taggingFlag; }
+    public boolean GetChangesMade() { return changesMade; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -205,6 +216,8 @@ public class ColorTableAttributes extends AttributeSubject
             buf.WriteBool(groupingFlag);
         if(WriteSelect(6, buf))
             buf.WriteBool(taggingFlag);
+        if(WriteSelect(7, buf))
+            buf.WriteBool(changesMade);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -242,6 +255,9 @@ public class ColorTableAttributes extends AttributeSubject
         case 6:
             SetTaggingFlag(buf.ReadBool());
             break;
+        case 7:
+            SetChangesMade(buf.ReadBool());
+            break;
         }
     }
 
@@ -264,6 +280,7 @@ public class ColorTableAttributes extends AttributeSubject
         str = str + stringToString("defaultDiscrete", defaultDiscrete, indent) + "\n";
         str = str + boolToString("groupingFlag", groupingFlag, indent) + "\n";
         str = str + boolToString("taggingFlag", taggingFlag, indent) + "\n";
+        str = str + boolToString("changesMade", changesMade, indent) + "\n";
         return str;
     }
 
@@ -406,5 +423,6 @@ public class ColorTableAttributes extends AttributeSubject
     private String  defaultDiscrete;
     private boolean groupingFlag;
     private boolean taggingFlag;
+    private boolean changesMade;
 }
 
