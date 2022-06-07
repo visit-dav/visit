@@ -45,7 +45,9 @@ if(EXISTS ${CONDUIT_DIR}/python-modules/conduit)
                 )
 endif()
 
-set(HAVE_CONDUIT TRUE CACHE BOOL "Have Conduit libraries")
+if(CONDUIT_FOUND)
+    set(HAVE_CONDUIT TRUE CACHE BOOL "Have Conduit libraries")
+endif()
 
 # Temporary, allow users to build VisIt with older Conduit
 #  and disable partition/flatten support conditionally
