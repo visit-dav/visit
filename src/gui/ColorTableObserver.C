@@ -93,12 +93,17 @@ ColorTableObserver::Update(Subject *)
 
         int nNames = colorAtts->GetNumColorTables();
         const stringVector &names = colorAtts->GetNames();
-        for(int i = 0; i < nNames; ++i)
+        const intVector &active = colorAtts->GetActive();
+        // TODO add error where these vectors are not the same length
+        for (int i = 0; i < nNames; ++i)
         {
-            QvisColorTableButton::addColorTable(names[i].c_str(),
-              colorAtts->GetColorTables(i).GetCategoryName().c_str());
-            QvisNoDefaultColorTableButton::addColorTable(names[i].c_str(),
-              colorAtts->GetColorTables(i).GetCategoryName().c_str());
+            if (active[i])
+            {
+                QvisColorTableButton::addColorTable(names[i].c_str(),
+                  colorAtts->GetColorTables(i).GetCategoryName().c_str());
+                QvisNoDefaultColorTableButton::addColorTable(names[i].c_str(),
+                  colorAtts->GetColorTables(i).GetCategoryName().c_str());
+            }
         }
 
         // Update all of the QvisColorTableButton widgets.

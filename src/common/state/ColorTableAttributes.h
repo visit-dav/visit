@@ -54,12 +54,14 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectNames();
+    void SelectActive();
     void SelectColorTables();
     void SelectDefaultContinuous();
     void SelectDefaultDiscrete();
 
     // Property setting methods
     void SetNames(const stringVector &names_);
+    void SetActive(const intVector &active_);
     void SetDefaultContinuous(const std::string &defaultContinuous_);
     void SetDefaultDiscrete(const std::string &defaultDiscrete_);
     void SetGroupingFlag(bool groupingFlag_);
@@ -68,6 +70,8 @@ public:
     // Property getting methods
     const stringVector &GetNames() const;
           stringVector &GetNames();
+    const intVector    &GetActive() const;
+          intVector    &GetActive();
     const AttributeGroupVector &GetColorTables() const;
           AttributeGroupVector &GetColorTables();
     const std::string  &GetDefaultContinuous() const;
@@ -107,11 +111,13 @@ public:
     void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
+    void SetActiveElement(int index, bool val);
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
         ID_names = 0,
+        ID_active,
         ID_colorTables,
         ID_defaultContinuous,
         ID_defaultDiscrete,
@@ -124,6 +130,7 @@ protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
 private:
     stringVector         names;
+    intVector            active;
     AttributeGroupVector colorTables;
     std::string          defaultContinuous;
     std::string          defaultDiscrete;
@@ -134,6 +141,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*a*ssbb"
+#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbb"
 
 #endif

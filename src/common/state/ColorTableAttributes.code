@@ -163,6 +163,7 @@ ColorTableAttributes::AddColorTable(const std::string &name,
 
     // Append the color table to the list.
     names.push_back(name);
+    active.push_back(true);
     AddColorTables(cpts);
 
     // Store the name, colortable pairs into a map.
@@ -253,13 +254,18 @@ ColorTableAttributes::RemoveColorTable(int index)
 
         // Iterate through the vector "index" times.
         stringVector::iterator pos = names.begin();
+        intVector::iterator pos2 = active.begin();
         for(int i = 0; i < index; ++i)
+        {
             ++pos;
+            ++pos2;
+        }
 
         // If pos is still a valid iterator, remove that element.
         if(pos != names.end())
         {
             names.erase(pos);
+            active.erase(pos2);
         }
 
         // Indicate that things have changed by selecting the list.
@@ -524,6 +530,37 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
         SetDefaultContinuous(node->AsString());
 }
 
+
+Function:  SetActiveElement
+Declaration: void SetActiveElement(int index, bool val);
+Definition:
+// ****************************************************************************
+// Method: ColorTableAttributes::SetActiveElement
+//
+// Purpose:
+//   TODO
+//
+// Arguments:
+//   TODO
+//
+// Returns:    TODO
+//
+// Note:
+//
+// Programmer: Justin Privitera
+// Creation:   Mon Jun  6 17:10:40 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ColorTableAttributes::SetActiveElement(int index, bool val)
+{
+    active[index] = val;
+}
+
+
 Target: xml2atts
 Function: ProcessOldVersions
 Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
@@ -706,6 +743,7 @@ Definition:
     public void AddColorTable(String name, ColorControlPointList cpts)
     {
         names.addElement(new String(name));
+        active.addElement(true);
         Select(0);
         AddColorTables(cpts);
     }
@@ -732,6 +770,7 @@ Definition:
 
             // Remove the name from the vector.
             names.remove(index);
+            active.remove(index);
             Select(0);
 
             // Remove the color table from the vector.

@@ -53,6 +53,7 @@ void ColorTableAttributes::Copy(const ColorTableAttributes &obj)
     AttributeGroupVector::const_iterator pos;
 
     names = obj.names;
+    active = obj.active;
     // *** Copy the colorTables field ***
     // Delete the AttributeGroup objects and clear the vector.
     for(pos = colorTables.begin(); pos != colorTables.end(); ++pos)
@@ -243,6 +244,7 @@ ColorTableAttributes::operator == (const ColorTableAttributes &obj) const
 
     // Create the return value
     return ((names == obj.names) &&
+            (active == obj.active) &&
             colorTables_equal &&
             (defaultContinuous == obj.defaultContinuous) &&
             (defaultDiscrete == obj.defaultDiscrete) &&
@@ -392,6 +394,7 @@ void
 ColorTableAttributes::SelectAll()
 {
     Select(ID_names,             (void *)&names);
+    Select(ID_active,            (void *)&active);
     Select(ID_colorTables,       (void *)&colorTables);
     Select(ID_defaultContinuous, (void *)&defaultContinuous);
     Select(ID_defaultDiscrete,   (void *)&defaultDiscrete);
@@ -662,6 +665,13 @@ ColorTableAttributes::SetNames(const stringVector &names_)
 }
 
 void
+ColorTableAttributes::SetActive(const intVector &active_)
+{
+    active = active_;
+    Select(ID_active, (void *)&active);
+}
+
+void
 ColorTableAttributes::SetDefaultContinuous(const std::string &defaultContinuous_)
 {
     defaultContinuous = defaultContinuous_;
@@ -703,6 +713,18 @@ stringVector &
 ColorTableAttributes::GetNames()
 {
     return names;
+}
+
+const intVector &
+ColorTableAttributes::GetActive() const
+{
+    return active;
+}
+
+intVector &
+ColorTableAttributes::GetActive()
+{
+    return active;
 }
 
 const AttributeGroupVector &
@@ -761,6 +783,12 @@ void
 ColorTableAttributes::SelectNames()
 {
     Select(ID_names, (void *)&names);
+}
+
+void
+ColorTableAttributes::SelectActive()
+{
+    Select(ID_active, (void *)&active);
 }
 
 void
@@ -1003,6 +1031,7 @@ ColorTableAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_names:             return "names";
+    case ID_active:            return "active";
     case ID_colorTables:       return "colorTables";
     case ID_defaultContinuous: return "defaultContinuous";
     case ID_defaultDiscrete:   return "defaultDiscrete";
@@ -1033,6 +1062,7 @@ ColorTableAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_names:             return FieldType_stringVector;
+    case ID_active:            return FieldType_intVector;
     case ID_colorTables:       return FieldType_attVector;
     case ID_defaultContinuous: return FieldType_string;
     case ID_defaultDiscrete:   return FieldType_string;
@@ -1063,6 +1093,7 @@ ColorTableAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_names:             return "stringVector";
+    case ID_active:            return "intVector";
     case ID_colorTables:       return "attVector";
     case ID_defaultContinuous: return "string";
     case ID_defaultDiscrete:   return "string";
@@ -1097,6 +1128,11 @@ ColorTableAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_names:
         {  // new scope
         retval = (names == obj.names);
+        }
+        break;
+    case ID_active:
+        {  // new scope
+        retval = (active == obj.active);
         }
         break;
     case ID_colorTables:
@@ -1290,6 +1326,7 @@ ColorTableAttributes::AddColorTable(const std::string &name,
 
     // Append the color table to the list.
     names.push_back(name);
+    active.push_back(true);
     AddColorTables(cpts);
 
     // Store the name, colortable pairs into a map.
@@ -1371,13 +1408,18 @@ ColorTableAttributes::RemoveColorTable(int index)
 
         // Iterate through the vector "index" times.
         stringVector::iterator pos = names.begin();
+        intVector::iterator pos2 = active.begin();
         for(int i = 0; i < index; ++i)
+        {
             ++pos;
+            ++pos2;
+        }
 
         // If pos is still a valid iterator, remove that element.
         if(pos != names.end())
         {
             names.erase(pos);
+            active.erase(pos2);
         }
 
         // Indicate that things have changed by selecting the list.
@@ -1403,6 +1445,32 @@ ColorTableAttributes::RemoveColorTable(int index)
                 SetDefaultDiscrete(std::string(""));
         }
     }
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::SetActiveElement
+//
+// Purpose:
+//   TODO
+//
+// Arguments:
+//   TODO
+//
+// Returns:    TODO
+//
+// Note:
+//
+// Programmer: Justin Privitera
+// Creation:   Mon Jun  6 17:10:40 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ColorTableAttributes::SetActiveElement(int index, bool val)
+{
+    active[index] = val;
 }
 
 // ****************************************************************************

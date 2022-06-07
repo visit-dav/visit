@@ -878,6 +878,7 @@ QvisColorTableWindow::UpdateNames()
                 treeItem->setText(0, item);
                 nameListBox->addTopLevelItem(treeItem);
             }
+            colorAtts->SetActiveElement(i, anyTagFound);
         }
     }
 
@@ -923,6 +924,7 @@ QvisColorTableWindow::UpdateNames()
                 treeItem->setText(0, item);
                 nameListBox->addTopLevelItem(treeItem);
             }
+            colorAtts->SetActiveElement(i, allTagsFound);
         }
     }
 

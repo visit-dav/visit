@@ -58,6 +58,22 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const intVector &active = atts->GetActive();
+        snprintf(tmpStr, 1000, "%sactive = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < active.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "%d", active[i]);
+            str += tmpStr;
+            if(i < active.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     { // new scope
         int index = 0;
         // Create string representation of colorTables from atts.
@@ -163,6 +179,82 @@ ColorTableAttributes_GetNames(PyObject *self, PyObject *args)
     PyObject *retval = PyTuple_New(names.size());
     for(size_t i = 0; i < names.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyString_FromString(names[i].c_str()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_SetActive(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+
+    intVector vec;
+
+    if (PyNumber_Check(args))
+    {
+        long val = PyLong_AsLong(args);
+        int cval = int(val);
+        if (val == -1 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "number not interpretable as C++ int");
+        }
+        if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            return PyErr_Format(PyExc_ValueError, "number not interpretable as C++ int");
+        vec.resize(1);
+        vec[0] = cval;
+    }
+    else if (PySequence_Check(args) && !PyUnicode_Check(args))
+    {
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyNumber_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a number type", (int) i);
+            }
+
+            long val = PyLong_AsLong(item);
+            int cval = int(val);
+
+            if (val == -1 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_ValueError, "arg %d not interpretable as C++ int", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
+    }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more ints");
+
+    obj->data->GetActive() = vec;
+    // Mark the active in the object as modified.
+    obj->data->SelectActive();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ColorTableAttributes_GetActive(PyObject *self, PyObject *args)
+{
+    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the active.
+    const intVector &active = obj->data->GetActive();
+    PyObject *retval = PyTuple_New(active.size());
+    for(size_t i = 0; i < active.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(active[i])));
     return retval;
 }
 
@@ -491,6 +583,8 @@ PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
     {"Notify", ColorTableAttributes_Notify, METH_VARARGS},
     {"SetNames", ColorTableAttributes_SetNames, METH_VARARGS},
     {"GetNames", ColorTableAttributes_GetNames, METH_VARARGS},
+    {"SetActive", ColorTableAttributes_SetActive, METH_VARARGS},
+    {"GetActive", ColorTableAttributes_GetActive, METH_VARARGS},
     {"GetColorTables", ColorTableAttributes_GetColorTables, METH_VARARGS},
     {"GetNumColorTables", ColorTableAttributes_GetNumColorTables, METH_VARARGS},
     {"AddColorTables", ColorTableAttributes_AddColorTables, METH_VARARGS},
@@ -528,6 +622,8 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
 #include <visit-config.h>
     if(strcmp(name, "names") == 0)
         return ColorTableAttributes_GetNames(self, NULL);
+    if(strcmp(name, "active") == 0)
+        return ColorTableAttributes_GetActive(self, NULL);
     if(strcmp(name, "colorTables") == 0)
         return ColorTableAttributes_GetColorTables(self, NULL);
     if(strcmp(name, "defaultContinuous") == 0)
@@ -584,6 +680,8 @@ PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "names") == 0)
         obj = ColorTableAttributes_SetNames(self, args);
+    else if(strcmp(name, "active") == 0)
+        obj = ColorTableAttributes_SetActive(self, args);
     else if(strcmp(name, "defaultContinuous") == 0)
         obj = ColorTableAttributes_SetDefaultContinuous(self, args);
     else if(strcmp(name, "defaultDiscrete") == 0)
