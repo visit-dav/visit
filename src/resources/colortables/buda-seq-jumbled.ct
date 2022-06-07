@@ -403,6 +403,6 @@
             <Field name="position" type="float">1</Field>
         </Object>
         <Field name="category" type="string">CvdFriendlyCrameri</Field>
-        <Field name="tags" type="stringVector">"CvdFriendly" "Crameri" </Field>
+        <Field name="tags" type="stringVector">"CvdFriendly" "Crameri" "seq-all" "seq-jumbled" "buda" </Field>
     </Object>
 </Object>

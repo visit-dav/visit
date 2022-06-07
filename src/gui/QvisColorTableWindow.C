@@ -270,8 +270,8 @@ QvisColorTableWindow::CreateWindowContents()
     connect(tagTable, SIGNAL(itemChanged(QTreeWidgetItem *, int)), 
             this, SLOT(tagTableItemSelected(QTreeWidgetItem *, int)));
     tagTable->clear();
-    tagTable->setSortingEnabled(false);
-    tagTable->setMinimumHeight(100);
+    tagTable->setSortingEnabled(true);
+    tagTable->setMinimumHeight(150);
     mgLayout->addWidget(tagTable, 6, 1);
 
     // Add the group box that will contain the color-related widgets.
