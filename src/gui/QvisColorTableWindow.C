@@ -747,6 +747,47 @@ QvisColorTableWindow::UpdateEditor()
 }
 
 // ****************************************************************************
+// Method: QvisColorTableWindow::AddGlobalTag
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Tue Jun  7 12:36:55 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::AddGlobalTag(std::string currtag, bool run_before)
+{
+    // if the given tag is NOT in the global tag list
+    if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
+    {
+        tagList.push_back(currtag);
+        QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+        // make the "Standard" tag active the very first time the tags are enabled
+        if (currtag == "Standard" && !run_before)
+        {
+            activeTags.push_back(true);
+            item->setCheckState(0, Qt::Checked);
+        }
+        else
+        {
+            activeTags.push_back(false);
+            item->setCheckState(0, Qt::Unchecked);
+        }
+        item->setText(1, currtag.c_str());
+        // this next column is secret and is for passing around the tag index
+        // TODO put in err msg for if you have over 100 tags
+        char buf[10];
+        sprintf(buf, "%d", tagList.size() - 1);
+        item->setText(2, buf);
+    }
+}
+
+// ****************************************************************************
 // Method: QvisColorTableWindow::UpdateTags
 //
 // Purpose:
@@ -766,46 +807,31 @@ QvisColorTableWindow::UpdateTags()
     // tagTable->blockSignals(true);
 
     static bool run_before = false;
-    static int tag_count = 0;
     if (tagToggle->isChecked())
     {
         // populate tags list
         // iterate thru each color table
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
-            // iterate thru each tag in the given color table
-            for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
+            // if this table has tags
+            if (colorAtts->GetColorTables(i).GetNumTags())
             {
-                std::string currtag = colorAtts->GetColorTables(i).GetTag(j);
-                // if the given tag is NOT in the global tag list
-                if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
+                // iterate thru each tag in the given color table
+                for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
                 {
-                    tagList.push_back(currtag);
-                    QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-                    // make the "Standard" tag active the very first time the tags are enabled
-                    if (currtag == "Standard" && !run_before)
-                    {
-                        activeTags.push_back(true);
-                        item->setCheckState(0, Qt::Checked);
-                    }
-                    else
-                    {
-                        activeTags.push_back(false);
-                        item->setCheckState(0, Qt::Unchecked);
-                    }
-                    item->setText(1, currtag.c_str());
-                    // this next column is secret and is for passing around the tag index
-                    // TODO put in err msg for if you have over 100 tags
-                    char buf[10];
-                    sprintf(buf, "%d", tagList.size() - 1);
-                    item->setText(2, buf);
+                    // add the tag if it is not already in the global tag list
+                    AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), run_before);
                 }
+            }
+            // this table has no tags associated with it
+            else
+            {
+                // TODO error because this shouldn't be possible
             }
         }
         run_before = true;
+        tagTable->sortByColumn(1, Qt::AscendingOrder);
     }
-
-    tagTable->sortByColumn(1, Qt::AscendingOrder);
 
     // signal unblocking SHOULD occur in the caller
     // tagTable->blockSignals(false);

@@ -375,7 +375,7 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
                 if (importingPersonal)
                     ccpl2.AddTag("UserDefined");
                 else
-                    ccpl2.AddTag("Standard");
+                    ccpl2.AddTag("no-tags");
             }
 
             // Check for errors that would break code down the line
