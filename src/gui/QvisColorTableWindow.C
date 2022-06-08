@@ -878,7 +878,7 @@ QvisColorTableWindow::UpdateNames()
     // Put all of the color table names into the tree.
     bool doSimpleTree = !groupToggle->isChecked();
     bool doTags = tagToggle->isChecked();
-    if(!doSimpleTree)
+    if(!doSimpleTree && !doTags)
     {
         nameListBox->setRootIsDecorated(true);
         QMap<QString, QStringList> mappedCT;
@@ -928,6 +928,12 @@ QvisColorTableWindow::UpdateNames()
             treeItem->setText(0, item);
             nameListBox->addTopLevelItem(treeItem);
         }
+    }
+
+    if (! doTags)
+    {
+        // set all color tables to active
+        colorAtts->SetAllActive();
     }
 
     if (doTags && tagsMatchAny)

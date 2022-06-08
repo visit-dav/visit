@@ -1499,6 +1499,35 @@ ColorTableAttributes::SetActiveElement(int index, bool val)
 }
 
 // ****************************************************************************
+// Method: ColorTableAttributes::SetAllActive
+//
+// Purpose:
+//   TODO
+//
+// Arguments:
+//   TODO
+//
+// Returns:    TODO
+//
+// Note:
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Jun  8 11:59:44 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ColorTableAttributes::SetAllActive()
+{
+    for (int i = 0; i < active.size(); i ++)
+    {
+        active[i] = true;
+    }
+}
+
+// ****************************************************************************
 // Method: ColorTableAttributes::ProcessOldVersions
 //
 // Purpose:

@@ -11,13 +11,14 @@
     <Function name="GetColorTableIndex"           user="true"></Function>
     <Function name="GetColorControlPoints1"       user="true"></Function>
     <Function name="GetColorControlPoints2"       user="true"></Function>
-    <Function name="GetDefaultColorControlPoints"  user="true"></Function>
+    <Function name="GetDefaultColorControlPoints" user="true"></Function>
     <Function name="AddColorTable"                user="true"></Function>
     <Function name="RemoveColorTable1"            user="true"></Function>
     <Function name="RemoveColorTable2"            user="true"></Function>
     <Function name="CreateNode"                   user="false"></Function>
     <Function name="SetFromNode"                  user="false"></Function>
     <Function name="SetActiveElement"             user="true"></Function>
+    <Function name="SetAllActive"                 user="true"></Function>
     <Function name="ProcessOldVersions" user="true" member="true"></Function>
     <Include file="source">ColorControlPoint.h</Include>
     <Include file="source">map</Include>
