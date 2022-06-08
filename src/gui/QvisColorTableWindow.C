@@ -247,7 +247,7 @@ QvisColorTableWindow::CreateWindowContents()
     mgLayout->addWidget(exportButton, 2, 0);
 
     nameListBox = new QTreeWidget(managerPage);
-    nameListBox->setMinimumHeight(100);
+    nameListBox->setMinimumHeight(300);
     nameListBox->setColumnCount(1);
     // don't want the header
     nameListBox->header()->close();
@@ -280,7 +280,7 @@ QvisColorTableWindow::CreateWindowContents()
             this, SLOT(tagTableItemSelected(QTreeWidgetItem *, int)));
     tagTable->clear();
     tagTable->setSortingEnabled(true);
-    tagTable->setMinimumHeight(150);
+    tagTable->setMinimumHeight(300);
     mgLayout->addWidget(tagTable, 6, 1);
 
     // page for editor
@@ -342,7 +342,7 @@ QvisColorTableWindow::CreateWindowContents()
 
     // Create the spectrum bar.
     spectrumBar = new QvisSpectrumBar(editorPage);
-    spectrumBar->setMinimumHeight(100);
+    spectrumBar->setMinimumHeight(300);
     spectrumBar->addControlPoint(QColor(255,0,0),   0.);
     spectrumBar->addControlPoint(QColor(255,255,0), 0.25);
     spectrumBar->addControlPoint(QColor(0,255,0),   0.5);
@@ -359,6 +359,7 @@ QvisColorTableWindow::CreateWindowContents()
 
     // Create the discrete color table widgets.
     discreteColors = new QvisColorGridWidget(editorPage);
+    discreteColors->setMinimumHeight(300);
     QColor *tmpColors = new QColor[DEFAULT_DISCRETE_NCOLORS];
     for(int i = 0; i < DEFAULT_DISCRETE_NCOLORS; ++i)
     {
