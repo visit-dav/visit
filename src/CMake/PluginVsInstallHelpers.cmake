@@ -18,6 +18,9 @@
 #   Add PYTHON_FOUND guard for python path related logic to avoid
 #   error with empty path passed to get_filename_component
 #
+#   Kathleen Biagas, Wed Jun  8 2023
+#   Install VisItIncludeVars.cmake.
+#
 #******************************************************************************
 
 
@@ -39,6 +42,13 @@ install(FILES ${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake
         )
 
 install(FILES ${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
+        PERMISSIONS OWNER_READ OWNER_WRITE
+                    GROUP_READ GROUP_WRITE
+                    WORLD_READ
+        )
+
+install(FILES ${VISIT_SOURCE_DIR}/CMake/VisItIncludeVars.cmake
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
         PERMISSIONS OWNER_READ OWNER_WRITE
                     GROUP_READ GROUP_WRITE
@@ -166,7 +176,7 @@ if(VTKH_FOUND)
     set(temp_VTKm_INCLUDE_DIRS ${VTKm_INCLUDE_DIRS})
     list(APPEND temp_VTKm_INCLUDE_DIRS ${ii_inc_dep})
     string(REPLACE "${VTKM_DIR}/include" "\${VISIT_INCLUDE_DIR}/vtkm/include"
-                    filtered_VTKm_INCLUDE_DIRS 
+                    filtered_VTKm_INCLUDE_DIRS
                     "${temp_VTKm_INCLUDE_DIRS}")
     unset(temp_VTKm_INCLUDE_DIRS)
 endif()
@@ -282,7 +292,7 @@ endif(VISIT_MPICH_INSTALL)
 
 # Fix some third-party include paths that are different on windows than unix.
 if(UNIX)
-   # python3's include dir has an 'm' after the version. For ease of 
+   # python3's include dir has an 'm' after the version. For ease of
    # use with future versions, and to save having to figure this out again
    # get and use the last part of the PYTHON_INCLUDE_DIR
    if(PYTHON_FOUND)
@@ -328,7 +338,7 @@ configure_file(${VISIT_SOURCE_DIR}/CMake/FilterDependencies.cmake.in
               @ONLY)
 install(SCRIPT "${VISIT_BINARY_DIR}/include/FilterDependencies.cmake")
 
-install(FILES 
+install(FILES
         ${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
         PERMISSIONS OWNER_READ OWNER_WRITE
