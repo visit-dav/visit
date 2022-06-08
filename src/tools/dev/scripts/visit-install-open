@@ -398,8 +398,8 @@ cat <<EOF > rztrona
 rm -f resultlog
 # Copy libraries needed for Qt and fortran for toss4 systems.
 cd /lib64
-cp libicudata.so.50.2 libicui18n.so.50.2 libicuuc.so.50.2 /usr/gapps/visit/3.2.2/linux-x86_64/lib
-cd /usr/gapps/visit/3.2.2/linux-x86_64/lib
+cp libicudata.so.50.2 libicui18n.so.50.2 libicuuc.so.50.2 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/gapps/visit/$ver+/linux-x86_64/lib
 chgrp visit libicudata.so.50.2 libicui18n.so.50.2 libicuuc.so.50.2
 chmod g+rwX,o+rX libicudata.so.50.2 libicui18n.so.50.2 libicuuc.so.50.2
 ln -s libicudata.so.50.2 libicudata.so
@@ -409,8 +409,8 @@ ln -s libicui18n.so.50.2 libicui18n.so.50
 ln -s libicuuc.so.50.2 libicuuc.so
 ln -s libicuuc.so.50.2 libicuuc.so.50
 cd /usr/tce/packages/gcc/gcc-7.1.0/lib64
-cp libgfortran.so.4.0.0 /usr/gapps/visit/3.2.2/linux-x86_64/lib
-cd /usr/gapps/visit/3.2.2/linux-x86_64/lib
+cp libgfortran.so.4.0.0 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/gapps/visit/$ver+/linux-x86_64/lib
 chgrp visit libgfortran.so.4.0.0
 chmod g+rwX,o+rX libgfortran.so.4.0.0
 ln -s libgfortran.so.4.0.0 libgfortran.so
