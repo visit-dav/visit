@@ -320,7 +320,7 @@ class KAUSTLauncher(MainLauncher):
         #print("JobSubmitterFactory kaust: ", launch, self.sectorname(), self.domainname())
         if self.IsRunningOnIbex():
             return JobSubmitter_srun_KAUST_Ibex(self)
-        elif self.isRunningOnShaheen():
+        elif self.IsRunningOnShaheen():
             return JobSubmitter_srun_KAUST_Shaheen(self)
         return super(KAUSTLauncher, self).JobSubmitterFactory(launch)
 
