@@ -32,27 +32,7 @@ binio.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_INCLUDE_DIR}/avt/DBAtts/MetaData
-${VISIT_INCLUDE_DIR}/avt/DBAtts/SIL
-${VISIT_INCLUDE_DIR}/avt/Database/Database
-${VISIT_INCLUDE_DIR}/avt/Database/Formats
-${VISIT_INCLUDE_DIR}/avt/Database/Ghost
-${VISIT_INCLUDE_DIR}/avt/FileWriter
-${VISIT_INCLUDE_DIR}/avt/Filters
-${VISIT_INCLUDE_DIR}/avt/MIR/Base
-${VISIT_INCLUDE_DIR}/avt/MIR/Tet
-${VISIT_INCLUDE_DIR}/avt/MIR/Zoo
-${VISIT_INCLUDE_DIR}/avt/Math
-${VISIT_INCLUDE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Data
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Pipeline
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Sinks
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
-${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
-${VISIT_INCLUDE_DIR}/visit_vtk/full
-${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS}
+${VISIT_DATABASE_INCLUDES}
 )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
