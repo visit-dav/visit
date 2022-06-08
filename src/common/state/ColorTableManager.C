@@ -194,6 +194,21 @@ ColorTableManager::WriteConfigFile(std::ostream& out)
         ctNode->GetNode("ColorControlPointList")->AddNode(new DataNode("category",std::string("UserDefined")));
     }
 
+    // add the user-defined tag
+    if (ctNode->GetNode("ColorControlPointList")->GetNode("tags"))
+    {
+        stringVector tags = ctNode->GetNode("ColorControlPointList")->GetNode("tags")->AsStringVector();
+        tags.push_back("UserDefined");
+        ctNode->GetNode("ColorControlPointList")->GetNode("tags")->SetStringVector(tags);
+    }
+    else
+    {        
+        ctNode->GetNode("ColorControlPointList")->AddNode(new DataNode("tags"));
+        stringVector tags;
+        tags.push_back("UserDefined");
+        ctNode->GetNode("ColorControlPointList")->GetNode("tags")->SetStringVector(tags);
+    }
+
     // Write the output file.
     out << "<?xml version=\"1.0\"?>\n";
     WriteObject(out, ctNode);

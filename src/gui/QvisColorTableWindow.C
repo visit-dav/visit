@@ -792,7 +792,7 @@ QvisColorTableWindow::UpdateTags()
                     {
                         activeTags.push_back(false);
                         item->setCheckState(0, Qt::Unchecked);
-                    }                        
+                    }
                     item->setText(1, currtag.c_str());
                     // this next column is secret and is for passing around the tag index
                     // TODO put in err msg for if you have over 100 tags
