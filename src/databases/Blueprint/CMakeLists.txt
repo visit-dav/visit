@@ -38,27 +38,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${CONDUIT_INCLUDE_DIR}
 ${MFEM_INCLUDE_DIR}
 ${HDF5_INCLUDE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_INCLUDE_DIR}/avt/DBAtts/MetaData
-${VISIT_INCLUDE_DIR}/avt/DBAtts/SIL
-${VISIT_INCLUDE_DIR}/avt/Database/Database
-${VISIT_INCLUDE_DIR}/avt/Database/Formats
-${VISIT_INCLUDE_DIR}/avt/Database/Ghost
-${VISIT_INCLUDE_DIR}/avt/FileWriter
-${VISIT_INCLUDE_DIR}/avt/Filters
-${VISIT_INCLUDE_DIR}/avt/MIR/Base
-${VISIT_INCLUDE_DIR}/avt/MIR/Tet
-${VISIT_INCLUDE_DIR}/avt/MIR/Zoo
-${VISIT_INCLUDE_DIR}/avt/Math
-${VISIT_INCLUDE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Data
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Pipeline
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Sinks
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
-${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
-${VISIT_INCLUDE_DIR}/visit_vtk/full
-${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS}
+${VISIT_DATABASE_INCLUDES}
 )
 
 ADD_DEFINITIONS(-DCONDUIT_HAVE_PARTITION_FLATTEN=${CONDUIT_HAVE_PARTITION_FLATTEN})
@@ -83,7 +63,7 @@ SET(INSTALLTARGETS ${INSTALLTARGETS} EBlueprintDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EBlueprintDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EBlueprintDatabase_par visitcommon avtdatabase_par avtpipeline_par ${CONDUIT_LIB} ${MFEM_LIB} ${CONDUIT_MPI_LIB} )
+    TARGET_LINK_LIBRARIES(EBlueprintDatabase_par visitcommon avtpipeline_par avtdatabase_par ${CONDUIT_LIB} ${MFEM_LIB} ${CONDUIT_MPI_LIB} )
     ADD_TARGET_DEFINITIONS(EBlueprintDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EBlueprintDatabase_par)
 ENDIF(VISIT_PARALLEL)

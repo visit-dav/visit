@@ -484,64 +484,15 @@ class CMakeGeneratorPlugin : public Plugin
                  extraIncludes.push_back(ConvertToProperVisItIncludeDir(cxxflags[i].right(cxxflags[i].size()-2)));
         }
 
-        out << endl
-            << "IF(VISIT_PYTHON_SCRIPTING)" << endl;
-        out << "    SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} "
-                << VisItIncludeDir() << "/visitpy/common "
-                << VisItIncludeDir() << "/visitpy/visitpy)" << endl;
-        out << "ENDIF(VISIT_PYTHON_SCRIPTING)" << endl << endl;
+        out << endl;
 
         // Includes
         out << "INCLUDE_DIRECTORIES(" << endl;
         out << "${CMAKE_CURRENT_SOURCE_DIR}" << endl;
-        out << "${VISIT_COMMON_INCLUDES}" << endl;
-        out << VisItIncludeDir() << "/avt/DBAtts/MetaData" << endl;
-        out << VisItIncludeDir() << "/avt/DBAtts/SIL" << endl;
-        out << VisItIncludeDir() << "/avt/Database/Database" << endl;
         if(type == "operator")
-        {
-            out << VisItIncludeDir() << "/avt/Expressions/Abstract" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/CMFE" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/Conditional" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/Derivations" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/General" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/ImageProcessing" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/Management" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/Math" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/MeshQuality" << endl;
-            out << VisItIncludeDir() << "/avt/Expressions/TimeIterators" << endl;
-        }
-        out << VisItIncludeDir() << "/avt/FileWriter" << endl;
-        out << VisItIncludeDir() << "/avt/Filters" << endl;
-        out << VisItIncludeDir() << "/avt/IVP" << endl;
-        out << VisItIncludeDir() << "/avt/Math" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/AbstractFilters" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Data" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Pipeline" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Sinks" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Sources" << endl;
-        out << VisItIncludeDir() << "/avt/Plotter" << endl;
-        out << VisItIncludeDir() << "/avt/QtVisWindow" << endl;
-        out << VisItIncludeDir() << "/avt/View" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/Colleagues" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/Interactors" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/Proxies" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/Tools" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/VisWindow" << endl;
-        out << VisItIncludeDir() << "/gui" << endl;
-        if(type == "operator")
-        {
-            out << VisItIncludeDir() << "/mdserver/proxy" << endl;
-            out << VisItIncludeDir() << "/mdserver/rpc" << endl;
-        }
-        out << VisItIncludeDir() << "/viewer/core" << endl;
-        out << VisItIncludeDir() << "/viewer/main" << endl;
-        out << VisItIncludeDir() << "/viewer/main/ui" << endl;
-        out << VisItIncludeDir() << "/viewer/proxy" << endl;
-        out << VisItIncludeDir() << "/viewer/rpc" << endl;
-        out << VisItIncludeDir() << "/winutil" << endl;
-        out << VisItIncludeDir() << "/visit_vtk/full" << endl;
-        out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
+            out << "${VISIT_OPERATOR_INCLUDES}" << endl;
+        else 
+            out << "${VISIT_PLOT_INCLUDES}" << endl;
         if(!using_dev)
         {
             out << "${QT_INCLUDE_DIR}" << endl;
@@ -549,8 +500,6 @@ class CMakeGeneratorPlugin : public Plugin
             out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
             out << "${QT_QTWIDGETS_INCLUDE_DIR}" << endl;
         }
-        out << "${VTK_INCLUDE_DIRS}" << endl;
-        out << "${PYINCLUDES}" << endl;
         if(extraIncludes.size() > 0)
             out << ToString(extraIncludes, true);
         out << ")" << endl;
@@ -997,27 +946,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "${CMAKE_CURRENT_SOURCE_DIR}" << endl;
         if(extraIncludes.size() > 0)
             out << ToString(extraIncludes, true) ;
-        out << "${VISIT_COMMON_INCLUDES}" << endl;
-        out << VisItIncludeDir() << "/avt/DBAtts/MetaData" << endl;
-        out << VisItIncludeDir() << "/avt/DBAtts/SIL" << endl;
-        out << VisItIncludeDir() << "/avt/Database/Database" << endl;
-        out << VisItIncludeDir() << "/avt/Database/Formats" << endl;
-        out << VisItIncludeDir() << "/avt/Database/Ghost" << endl;
-        out << VisItIncludeDir() << "/avt/FileWriter" << endl;
-        out << VisItIncludeDir() << "/avt/Filters" << endl;
-        out << VisItIncludeDir() << "/avt/MIR/Base" << endl;
-        out << VisItIncludeDir() << "/avt/MIR/Tet" << endl;
-        out << VisItIncludeDir() << "/avt/MIR/Zoo" << endl;
-        out << VisItIncludeDir() << "/avt/Math" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/AbstractFilters" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Data" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Pipeline" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Sinks" << endl;
-        out << VisItIncludeDir() << "/avt/Pipeline/Sources" << endl;
-        out << VisItIncludeDir() << "/avt/VisWindow/VisWindow" << endl;
-        out << VisItIncludeDir() << "/visit_vtk/full" << endl;
-        out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
-        out << "${VTK_INCLUDE_DIRS}" << endl;
+        out << "${VISIT_DATABASE_INCLUDES}" << endl;
         out << ")" << endl;
         out << endl;
 
