@@ -204,6 +204,6 @@
         </Object>
     <Field name="discrete" type="bool">true</Field>
     <Field name="category" type="string">CvdFriendlyCrameri</Field>
-    <Field name="tags" type="stringVector">"CvdFriendly" "Crameri" "2seq-all" "2seq-50" "bukavu" </Field>
+    <Field name="tags" type="stringVector">"CvdFriendly" "Crameri" "Multi-sequential" "Discrete" "50 Color Control Points" "bukavu" </Field>
     </Object>
 </Object>

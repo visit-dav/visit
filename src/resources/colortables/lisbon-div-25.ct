@@ -104,6 +104,6 @@
         </Object>
     <Field name="discrete" type="bool">true</Field>
     <Field name="category" type="string">CvdFriendlyCrameri</Field>
-    <Field name="tags" type="stringVector">"CvdFriendly" "Crameri" "div-all" "div-25" "lisbon" </Field>
+    <Field name="tags" type="stringVector">"CvdFriendly" "Crameri" "Diverging" "Discrete" "25 Color Control Points" "lisbon" </Field>
     </Object>
 </Object>
