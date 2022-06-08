@@ -151,6 +151,9 @@ class ViewerState;
 //
 //   Alister Maguire, Mon Oct 16 15:41:23 PDT 2017
 //   Added RemovePicks.
+// 
+//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
+//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
@@ -282,8 +285,8 @@ public:
     void SetOperatorOptions(int oper);
     void ResetOperatorOptions(int type);
 
-    void SetActiveContinuousColorTable(const std::string &colorTableName);
-    void SetActiveDiscreteColorTable(const std::string &colorTableName);
+    void SetDefaultContinuousColorTable(const std::string &colorTableName);
+    void SetDefaultDiscreteColorTable(const std::string &colorTableName);
     void DeleteColorTable(const std::string &colorTableName);
     void UpdateColorTable(const std::string &colorTableName);
     void ExportColorTable(const std::string &colorTableName);

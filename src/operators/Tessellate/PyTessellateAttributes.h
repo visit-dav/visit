@@ -22,7 +22,7 @@ PyObject *     PyTessellateAttributes_Wrap(const TessellateAttributes *attr);
 void           PyTessellateAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTessellateAttributes_SetDefaults(const TessellateAttributes *atts);
 std::string    PyTessellateAttributes_GetLogString();
-std::string    PyTessellateAttributes_ToString(const TessellateAttributes *, const char *);
+std::string    PyTessellateAttributes_ToString(const TessellateAttributes *, const char *, const bool=false);
 PyObject *     PyTessellateAttributes_getattr(PyObject *self, char *name);
 int            PyTessellateAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyTessellateAttributes_methods[TESSELLATEATTRIBUTES_NMETH];

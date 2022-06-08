@@ -55,7 +55,7 @@ ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${ICET_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${ICET_LIBRARY_DIR} ${AVT_REQUIRED_LIB_DIR})
 
 ADD_LIBRARY(ISimV2Database ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(ISimV2Database visitcommon)
@@ -69,13 +69,13 @@ IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(ESimV2Database_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(ESimV2Database_ser visitcommon avtdatabase_ser avtpipeline_ser simV2runtime_ser )
+TARGET_LINK_LIBRARIES(ESimV2Database_ser visitcommon avtpipeline_ser avtdatabase_ser simV2runtime_ser )
 ADD_TARGET_DEFINITIONS(ESimV2Database_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} ESimV2Database_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(ESimV2Database_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(ESimV2Database_par visitcommon avtdatabase_par avtpipeline_par simV2runtime_par )
+    TARGET_LINK_LIBRARIES(ESimV2Database_par visitcommon avtpipeline_par avtdatabase_par simV2runtime_par )
     ADD_TARGET_DEFINITIONS(ESimV2Database_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} ESimV2Database_par)
 ENDIF(VISIT_PARALLEL)

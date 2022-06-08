@@ -102,7 +102,9 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GBoundaryOpOperator visitcommon gui )
 
     ADD_LIBRARY(VBoundaryOpOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VBoundaryOpOperator VIEWER)
     TARGET_LINK_LIBRARIES(VBoundaryOpOperator visitcommon viewer )
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} GBoundaryOpOperator VBoundaryOpOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -129,12 +131,12 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EBoundaryOpOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EBoundaryOpOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EBoundaryOpOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EBoundaryOpOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EBoundaryOpOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EBoundaryOpOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EBoundaryOpOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EBoundaryOpOperator_par)
 ENDIF(VISIT_PARALLEL)
 

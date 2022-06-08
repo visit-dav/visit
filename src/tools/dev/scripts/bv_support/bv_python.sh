@@ -218,8 +218,7 @@ function bv_python_depends_on
 {
      pydep=""
      if [[ $USE_SYSTEM_PYTHON == "no" ]] ; then
-        # we always need openssl b/c of requests.
-        pydep="openssl zlib"
+        pydep="zlib"
      fi
      echo $pydep
 }
@@ -561,13 +560,6 @@ function bv_python_ensure
     fi
 }
 
-function bv_python_dry_run
-{
-    if [[ "$DO_PYTHON" == "yes" ]] ; then
-        echo "Dry run option not set for python."
-    fi
-}
-
 function apply_python_osx104_patch
 {
     info "Patching Python: fix _environ issue for OS X 10.4"
@@ -799,13 +791,6 @@ function build_python
         fi
     fi
 
-    if [[ "$DO_OPENSSL" == "yes" ]]; then
-        OPENSSL_INCLUDE="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/include"
-        OPENSSL_LIB="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/lib"
-        PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${OPENSSL_LIB}"
-        PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${OPENSSL_INCLUDE}"
-    fi
-
     PY_ZLIB_INCLUDE="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
     PY_ZLIB_LIB="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
     PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${PY_ZLIB_LIB}"
@@ -995,7 +980,7 @@ function build_requests
                 return 1
             fi
         fi
-        
+
         if ! test -f ${IDNA_FILE} ; then
             download_file ${IDNA_FILE} "${IDNA_URL}"
             if [[ $? != 0 ]] ; then
@@ -1047,7 +1032,7 @@ function build_requests
                 return 1
             fi
         fi
-        
+
         pushd $CERTIFI_BUILD_DIR > /dev/null
         info "Installing certifi ..."
         ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
@@ -1292,14 +1277,6 @@ function build_sphinx
         fi
     fi
 
-    if ! test -f ${REQUESTS_FILE} ; then
-        download_file ${REQUESTS_FILE} "${REQUESTS_URL}"
-        if [[ $? != 0 ]] ; then
-            warn "Could not download ${REQUESTS_FILE}"
-            return 1
-        fi
-    fi
-
     if ! test -f ${IMAGESIZE_FILE} ; then
         download_file ${IMAGESIZE_FILE} "${IMAGESIZE_URL}"
         if [[ $? != 0 ]] ; then
@@ -1459,15 +1436,6 @@ function build_sphinx
         uncompress_untar ${SETUPTOOLS_FILE}
         if test $? -ne 0 ; then
             warn "Could not extract ${SETUPTOOLS_FILE}"
-            return 1
-        fi
-    fi
-
-    if ! test -d ${PYREQUESTS_BUILD_DIR} ; then
-        info "Extracting requests ..."
-        uncompress_untar ${PYREQUESTS_FILE}
-        if test $? -ne 0 ; then
-            warn "Could not extract ${PYREQUESTS_FILE}"
             return 1
         fi
     fi
@@ -1947,14 +1915,6 @@ function bv_python_is_installed
         PY_OK=0
     fi
 
-    check_if_py_module_installed "requests"
-    if [[ $? != 0 ]] ; then
-        if [[ $PY_CHECK_ECHO != 0 ]] ; then
-            info "python module requests is not installed"
-        fi
-        PY_OK=0
-    fi
-
     check_if_py_module_installed "pyparsing"
     if [[ $? != 0 ]] ; then
         if [[ $PY_CHECK_ECHO != 0 ]] ; then
@@ -2080,19 +2040,20 @@ function bv_python_build
                 info "Done building the pyparsing module."
             fi
 
-            check_if_py_module_installed "requests"
-            if [[ $? != 0 ]] ; then
-                build_requests
-                if [[ $? != 0 ]] ; then
-                    error "requests python module build failed. Bailing out."
-                fi
-                info "Done building the requests python module."
-            fi
-
             if [[ "$BUILD_SPHINX" == "yes" ]]; then
 
                 if [[ "$DO_PYTHON2" == "yes" ]]; then
                     error "sphinx requires python 3 (but DO_PYTHON2=yes). Bailing out."
+                fi
+
+                # requests is needed by sphinx.
+                check_if_py_module_installed "requests"
+                if [[ $? != 0 ]] ; then
+                    build_requests
+                    if [[ $? != 0 ]] ; then
+                        error "requests python module build failed. Bailing out."
+                    fi
+                    info "Done building the requests python module."
                 fi
 
                 check_if_py_module_installed "sphinx"

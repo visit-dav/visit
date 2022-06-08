@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 
@@ -38,7 +39,7 @@ struct SurfaceAttributesObject
 //
 static PyObject *NewSurfaceAttributes(int);
 std::string
-PySurfaceAttributes_ToString(const SurfaceAttributes *atts, const char *prefix)
+PySurfaceAttributes_ToString(const SurfaceAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1307,6 +1308,9 @@ PySurfaceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "invertColorTable") == 0)
         return SurfaceAttributes_GetInvertColorTable(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
 
     //
@@ -1342,6 +1346,7 @@ PySurfaceAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1398,6 +1403,9 @@ PySurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "invertColorTable") == 0)
         obj = SurfaceAttributes_SetInvertColorTable(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
@@ -1411,6 +1419,7 @@ PySurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1429,7 +1438,7 @@ static int
 SurfaceAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)v;
-    fprintf(fp, "%s", PySurfaceAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySurfaceAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1437,7 +1446,7 @@ PyObject *
 SurfaceAttributes_str(PyObject *v)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)v;
-    return PyString_FromString(PySurfaceAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySurfaceAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1589,7 +1598,7 @@ PySurfaceAttributes_GetLogString()
 {
     std::string s("SurfaceAtts = SurfaceAttributes()\n");
     if(currentAtts != 0)
-        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.");
+        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.", true);
     return s;
 }
 
@@ -1602,7 +1611,7 @@ PySurfaceAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SurfaceAtts = SurfaceAttributes()\n");
-        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.");
+        s += PySurfaceAttributes_ToString(currentAtts, "SurfaceAtts.", true);
         cb(s);
     }
 }

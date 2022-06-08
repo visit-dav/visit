@@ -33,12 +33,12 @@ function bv_mfem_depends_on
 function bv_mfem_info
 {
     # NOTE: we are using a special version of MFEM that has not yet been in an MFEM release.
-    export MFEM_VERSION=${MFEM_VERSION:-"4.3"}
+    export MFEM_VERSION=${MFEM_VERSION:-"4.4"}
     export MFEM_FILE=${MFEM_FILE:-"mfem-${MFEM_VERSION}.tgz"}
     export MFEM_BUILD_DIR=${MFEM_BUILD_DIR:-"mfem-${MFEM_VERSION}"}
-    export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-3"}
-    export MFEM_MD5_CHECKSUM="bc6d760a5db6f2355f65a06bae274ce8"
-    export MFEM_SHA256_CHECKSUM="3a495602121b986049286ea0b23512279cdbdfb43c15c42a1511b521051fbe38"
+    export MFEM_URL=${MFEM_URL:-"https://bit.ly/mfem-4-4"}
+    export MFEM_MD5_CHECKSUM="9c6ca0e2bee45851b49f4a0cda1cacb6"
+    export MFEM_SHA256_CHECKSUM="37250dbef6e97b16dc9ab50973e8d68bc165bb4afcdaf91b3b72c8972c87deef"
 }
 
 function bv_mfem_print
@@ -96,13 +96,6 @@ function bv_mfem_ensure
             DO_MFEM="no"
             error "Unable to build mfem.  ${MFEM_FILE} not found."
         fi
-    fi
-}
-
-function bv_mfem_dry_run
-{
-    if [[ "$DO_MFEM" == "yes" ]] ; then
-        echo "Dry run option not set for mfem."
     fi
 }
 

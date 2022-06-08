@@ -22,7 +22,7 @@ PyObject *     PyRadialResampleAttributes_Wrap(const RadialResampleAttributes *a
 void           PyRadialResampleAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyRadialResampleAttributes_SetDefaults(const RadialResampleAttributes *atts);
 std::string    PyRadialResampleAttributes_GetLogString();
-std::string    PyRadialResampleAttributes_ToString(const RadialResampleAttributes *, const char *);
+std::string    PyRadialResampleAttributes_ToString(const RadialResampleAttributes *, const char *, const bool=false);
 PyObject *     PyRadialResampleAttributes_getattr(PyObject *self, char *name);
 int            PyRadialResampleAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyRadialResampleAttributes_methods[RADIALRESAMPLEATTRIBUTES_NMETH];

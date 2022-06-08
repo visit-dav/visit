@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <PyColorAttributeList.h>
 
 // ****************************************************************************
@@ -37,7 +38,7 @@ struct TopologyAttributesObject
 //
 static PyObject *NewTopologyAttributes(int);
 std::string
-PyTopologyAttributes_ToString(const TopologyAttributes *atts, const char *prefix)
+PyTopologyAttributes_ToString(const TopologyAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -766,6 +767,9 @@ PyTopologyAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "hitpercent") == 0)
         return TopologyAttributes_GetHitpercent(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
 
     //
@@ -801,6 +805,7 @@ PyTopologyAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -839,6 +844,9 @@ PyTopologyAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "hitpercent") == 0)
         obj = TopologyAttributes_SetHitpercent(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
@@ -852,6 +860,7 @@ PyTopologyAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -870,7 +879,7 @@ static int
 TopologyAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)v;
-    fprintf(fp, "%s", PyTopologyAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyTopologyAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -878,7 +887,7 @@ PyObject *
 TopologyAttributes_str(PyObject *v)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)v;
-    return PyString_FromString(PyTopologyAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyTopologyAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1030,7 +1039,7 @@ PyTopologyAttributes_GetLogString()
 {
     std::string s("TopologyAtts = TopologyAttributes()\n");
     if(currentAtts != 0)
-        s += PyTopologyAttributes_ToString(currentAtts, "TopologyAtts.");
+        s += PyTopologyAttributes_ToString(currentAtts, "TopologyAtts.", true);
     return s;
 }
 
@@ -1043,7 +1052,7 @@ PyTopologyAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("TopologyAtts = TopologyAttributes()\n");
-        s += PyTopologyAttributes_ToString(currentAtts, "TopologyAtts.");
+        s += PyTopologyAttributes_ToString(currentAtts, "TopologyAtts.", true);
         cb(s);
     }
 }

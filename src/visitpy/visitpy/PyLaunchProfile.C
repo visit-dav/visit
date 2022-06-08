@@ -36,7 +36,7 @@ struct LaunchProfileObject
 //
 static PyObject *NewLaunchProfile(int);
 std::string
-PyLaunchProfile_ToString(const LaunchProfile *atts, const char *prefix)
+PyLaunchProfile_ToString(const LaunchProfile *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2708,7 +2708,7 @@ static int
 LaunchProfile_print(PyObject *v, FILE *fp, int flags)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)v;
-    fprintf(fp, "%s", PyLaunchProfile_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLaunchProfile_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2716,7 +2716,7 @@ PyObject *
 LaunchProfile_str(PyObject *v)
 {
     LaunchProfileObject *obj = (LaunchProfileObject *)v;
-    return PyString_FromString(PyLaunchProfile_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLaunchProfile_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2868,7 +2868,7 @@ PyLaunchProfile_GetLogString()
 {
     std::string s("LaunchProfile = LaunchProfile()\n");
     if(currentAtts != 0)
-        s += PyLaunchProfile_ToString(currentAtts, "LaunchProfile.");
+        s += PyLaunchProfile_ToString(currentAtts, "LaunchProfile.", true);
     return s;
 }
 
@@ -2881,7 +2881,7 @@ PyLaunchProfile_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LaunchProfile = LaunchProfile()\n");
-        s += PyLaunchProfile_ToString(currentAtts, "LaunchProfile.");
+        s += PyLaunchProfile_ToString(currentAtts, "LaunchProfile.", true);
         cb(s);
     }
 }

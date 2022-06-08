@@ -88,13 +88,6 @@ function bv_hdf4_ensure
     fi
 }
 
-function bv_hdf4_dry_run
-{
-    if [[ "$DO_HDF4" == "yes" ]] ; then
-        echo "Dry run option not set for hdf4."
-    fi
-}
-
 
 # *************************************************************************** #
 #                          Function 8.3, build_hdf4                           #

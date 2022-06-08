@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
 #include <GlyphTypes.h>
@@ -41,7 +42,7 @@ struct PseudocolorAttributesObject
 //
 static PyObject *NewPseudocolorAttributes(int);
 std::string
-PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *prefix)
+PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -3944,6 +3945,9 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointColor") == 0)
         return PseudocolorAttributes_GetPointColor(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in PseudocolorAttributes
 
     //
@@ -3979,6 +3983,7 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
             "it from your script.\n", 3);
         return PyInt_FromLong(0L);
     }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -4107,6 +4112,9 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "pointColor") == 0)
         obj = PseudocolorAttributes_SetPointColor(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields in PseudocolorAttributes
     if(obj == &NULL_PY_OBJ)
     {
@@ -4122,6 +4130,7 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -4140,7 +4149,7 @@ static int
 PseudocolorAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)v;
-    fprintf(fp, "%s", PyPseudocolorAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPseudocolorAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -4148,7 +4157,7 @@ PyObject *
 PseudocolorAttributes_str(PyObject *v)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)v;
-    return PyString_FromString(PyPseudocolorAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPseudocolorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -4300,7 +4309,7 @@ PyPseudocolorAttributes_GetLogString()
 {
     std::string s("PseudocolorAtts = PseudocolorAttributes()\n");
     if(currentAtts != 0)
-        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.");
+        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.", true);
     return s;
 }
 
@@ -4313,7 +4322,7 @@ PyPseudocolorAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("PseudocolorAtts = PseudocolorAttributes()\n");
-        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.");
+        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.", true);
         cb(s);
     }
 }

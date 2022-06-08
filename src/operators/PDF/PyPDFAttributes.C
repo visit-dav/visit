@@ -36,7 +36,7 @@ struct PDFAttributesObject
 //
 static PyObject *NewPDFAttributes(int);
 std::string
-PyPDFAttributes_ToString(const PDFAttributes *atts, const char *prefix)
+PyPDFAttributes_ToString(const PDFAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2084,7 +2084,7 @@ static int
 PDFAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)v;
-    fprintf(fp, "%s", PyPDFAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPDFAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2092,7 +2092,7 @@ PyObject *
 PDFAttributes_str(PyObject *v)
 {
     PDFAttributesObject *obj = (PDFAttributesObject *)v;
-    return PyString_FromString(PyPDFAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPDFAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2244,7 +2244,7 @@ PyPDFAttributes_GetLogString()
 {
     std::string s("PDFAtts = PDFAttributes()\n");
     if(currentAtts != 0)
-        s += PyPDFAttributes_ToString(currentAtts, "PDFAtts.");
+        s += PyPDFAttributes_ToString(currentAtts, "PDFAtts.", true);
     return s;
 }
 
@@ -2257,7 +2257,7 @@ PyPDFAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("PDFAtts = PDFAttributes()\n");
-        s += PyPDFAttributes_ToString(currentAtts, "PDFAtts.");
+        s += PyPDFAttributes_ToString(currentAtts, "PDFAtts.", true);
         cb(s);
     }
 }

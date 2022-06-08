@@ -39,7 +39,7 @@ struct AxisAttributesObject
 //
 static PyObject *NewAxisAttributes(int);
 std::string
-PyAxisAttributes_ToString(const AxisAttributes *atts, const char *prefix)
+PyAxisAttributes_ToString(const AxisAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -47,17 +47,17 @@ PyAxisAttributes_ToString(const AxisAttributes *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "title.";
-        str += PyAxisTitles_ToString(&atts->GetTitle(), objPrefix.c_str());
+        str += PyAxisTitles_ToString(&atts->GetTitle(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "label.";
-        str += PyAxisLabels_ToString(&atts->GetLabel(), objPrefix.c_str());
+        str += PyAxisLabels_ToString(&atts->GetLabel(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "tickMarks.";
-        str += PyAxisTickMarks_ToString(&atts->GetTickMarks(), objPrefix.c_str());
+        str += PyAxisTickMarks_ToString(&atts->GetTickMarks(), objPrefix.c_str(), forLogging);
     }
     if(atts->GetGrid())
         snprintf(tmpStr, 1000, "%sgrid = 1\n", prefix);
@@ -325,7 +325,7 @@ static int
 AxisAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     AxisAttributesObject *obj = (AxisAttributesObject *)v;
-    fprintf(fp, "%s", PyAxisAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxisAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -333,7 +333,7 @@ PyObject *
 AxisAttributes_str(PyObject *v)
 {
     AxisAttributesObject *obj = (AxisAttributesObject *)v;
-    return PyString_FromString(PyAxisAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxisAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -485,7 +485,7 @@ PyAxisAttributes_GetLogString()
 {
     std::string s("AxisAtts = AxisAttributes()\n");
     if(currentAtts != 0)
-        s += PyAxisAttributes_ToString(currentAtts, "AxisAtts.");
+        s += PyAxisAttributes_ToString(currentAtts, "AxisAtts.", true);
     return s;
 }
 
@@ -498,7 +498,7 @@ PyAxisAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AxisAtts = AxisAttributes()\n");
-        s += PyAxisAttributes_ToString(currentAtts, "AxisAtts.");
+        s += PyAxisAttributes_ToString(currentAtts, "AxisAtts.", true);
         cb(s);
     }
 }

@@ -102,13 +102,6 @@ function bv_pyside_ensure
     fi
 }
 
-function bv_pyside_dry_run
-{
-    if [[ "$DO_PYSIDE" == "yes" ]] ; then
-        echo "Dry run option not set for pyside."
-    fi
-}
-
 # *************************************************************************** #
 #   Function 4.2, build_pyside
 # *************************************************************************** #
@@ -382,8 +375,7 @@ function build_pyside
     #    #fi
     #    ${pysideenv} ${PYTHON_COMMAND} ./setup.py install  --ignore-git --parallel=8 \
     #        --qmake=${QT_BIN_DIR}/qmake \
-    #        --cmake=${CMAKE_INSTALL}/cmake \
-    #        --openssl=$VISIT_DIR/openssl/$OPENSSL_VERSION/$VISITARCH/bin
+    #        --cmake=${CMAKE_INSTALL}/cmake
     #
     #    if test $? -ne 0 ; then
     #        warn "Could not install pyside"

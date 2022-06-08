@@ -6,6 +6,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <Py2and3Support.h>
+#include <visit-config.h>
 #include <ColorAttribute.h>
 #include <PyColorAttributeList.h>
 #include <GlyphTypes.h>
@@ -39,7 +40,7 @@ struct SubsetAttributesObject
 //
 static PyObject *NewSubsetAttributes(int);
 std::string
-PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix)
+PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1460,6 +1461,9 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "pointSizePixels") == 0)
         return SubsetAttributes_GetPointSizePixels(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
     // Try and handle legacy fields
 
     //
@@ -1501,6 +1505,11 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
         PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
+#endif
+
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
     //
     //  Removed in 3.0.0
     //
@@ -1530,6 +1539,7 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
         PyErr_WarnFormat(NULL, 3, "'%s' is obsolete. It is being ignored.", name);
         return PyInt_FromLong(0L);
     }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -1589,6 +1599,9 @@ PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
     // Try and handle legacy fields
     if(obj == &NULL_PY_OBJ)
     {
+#if VISIT_OBSOLETE_AT_VERSION(3,3,1)
+#error This code is obsolete in this version. Please remove it.
+#else
         //
         //  Removed in 2.13.0
         //
@@ -1608,6 +1621,11 @@ PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
             Py_INCREF(Py_None);
             obj = Py_None;
         }
+#endif
+
+#if VISIT_OBSOLETE_AT_VERSION(3,3,2)
+#error This code is obsolete in this version. Please remove it.
+#else
         //
         //  Removed in 3.0.0
         //
@@ -1618,6 +1636,7 @@ PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
     }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 
@@ -1636,7 +1655,7 @@ static int
 SubsetAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SubsetAttributesObject *obj = (SubsetAttributesObject *)v;
-    fprintf(fp, "%s", PySubsetAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySubsetAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1644,7 +1663,7 @@ PyObject *
 SubsetAttributes_str(PyObject *v)
 {
     SubsetAttributesObject *obj = (SubsetAttributesObject *)v;
-    return PyString_FromString(PySubsetAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySubsetAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1796,7 +1815,7 @@ PySubsetAttributes_GetLogString()
 {
     std::string s("SubsetAtts = SubsetAttributes()\n");
     if(currentAtts != 0)
-        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.");
+        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.", true);
     return s;
 }
 
@@ -1809,7 +1828,7 @@ PySubsetAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SubsetAtts = SubsetAttributes()\n");
-        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.");
+        s += PySubsetAttributes_ToString(currentAtts, "SubsetAtts.", true);
         cb(s);
     }
 }

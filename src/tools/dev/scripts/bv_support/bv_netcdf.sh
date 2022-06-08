@@ -108,13 +108,6 @@ function bv_netcdf_ensure
     fi
 }
 
-function bv_netcdf_dry_run
-{
-    if [[ "$DO_NETCDF" == "yes" ]] ; then
-        echo "Dry run option not set for netcdf."
-    fi
-}
-
 function apply_netcdf_411_macOS_patch
 {
     patch -p0 << \EOF

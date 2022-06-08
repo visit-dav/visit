@@ -36,7 +36,7 @@ struct AxisAlignedSlice4DAttributesObject
 //
 static PyObject *NewAxisAlignedSlice4DAttributes(int);
 std::string
-PyAxisAlignedSlice4DAttributes_ToString(const AxisAlignedSlice4DAttributes *atts, const char *prefix)
+PyAxisAlignedSlice4DAttributes_ToString(const AxisAlignedSlice4DAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -511,7 +511,7 @@ static int
 AxisAlignedSlice4DAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)v;
-    fprintf(fp, "%s", PyAxisAlignedSlice4DAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxisAlignedSlice4DAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -519,7 +519,7 @@ PyObject *
 AxisAlignedSlice4DAttributes_str(PyObject *v)
 {
     AxisAlignedSlice4DAttributesObject *obj = (AxisAlignedSlice4DAttributesObject *)v;
-    return PyString_FromString(PyAxisAlignedSlice4DAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxisAlignedSlice4DAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -671,7 +671,7 @@ PyAxisAlignedSlice4DAttributes_GetLogString()
 {
     std::string s("AxisAlignedSlice4DAtts = AxisAlignedSlice4DAttributes()\n");
     if(currentAtts != 0)
-        s += PyAxisAlignedSlice4DAttributes_ToString(currentAtts, "AxisAlignedSlice4DAtts.");
+        s += PyAxisAlignedSlice4DAttributes_ToString(currentAtts, "AxisAlignedSlice4DAtts.", true);
     return s;
 }
 
@@ -684,7 +684,7 @@ PyAxisAlignedSlice4DAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AxisAlignedSlice4DAtts = AxisAlignedSlice4DAttributes()\n");
-        s += PyAxisAlignedSlice4DAttributes_ToString(currentAtts, "AxisAlignedSlice4DAtts.");
+        s += PyAxisAlignedSlice4DAttributes_ToString(currentAtts, "AxisAlignedSlice4DAtts.", true);
         cb(s);
     }
 }

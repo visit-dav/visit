@@ -3,7 +3,7 @@ PROJECT(VTK_database)
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/PluginMacros.cmake)
 
-ADD_DATABASE_CODE_GEN_TARGETS(VTK)
+ADD_DATABASE_CODE_GEN_TARGETS(VTK SKIP_INFO)
 
 SET(COMMON_SOURCES
 VTKPluginInfo.C
@@ -78,13 +78,13 @@ IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EVTKDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EVTKDatabase_ser visitcommon avtdatabase_ser avtpipeline_ser vtkFiltersGeneral vtkIOXML vtkIOXMLParser )
+TARGET_LINK_LIBRARIES(EVTKDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser vtkFiltersGeneral vtkIOXML vtkIOXMLParser )
 ADD_TARGET_DEFINITIONS(EVTKDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EVTKDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EVTKDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EVTKDatabase_par visitcommon avtdatabase_par avtpipeline_par vtkFiltersGeneral vtkIOXML vtkIOXMLParser )
+    TARGET_LINK_LIBRARIES(EVTKDatabase_par visitcommon avtpipeline_par avtdatabase_par vtkFiltersGeneral vtkIOXML vtkIOXMLParser )
     ADD_TARGET_DEFINITIONS(EVTKDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EVTKDatabase_par)
 ENDIF(VISIT_PARALLEL)

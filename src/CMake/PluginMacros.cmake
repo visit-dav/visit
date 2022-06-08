@@ -24,6 +24,10 @@
 #   Kathleen Biagas, Wed Mar 4 2020
 #   Enable code-gen targets on Windows, and use FOLDER property.
 #
+#   Kathleen Biagas, Wed April 27, 2022
+#   Allow database plugins to skip creation of gen_info_XXX targets by adding
+#   SKIP_INFO optional argument to ADD_DATABASE_CODE_GEN_TARGETS.
+#
 #****************************************************************************/
 
 
@@ -166,12 +170,16 @@ ENDFUNCTION(ADD_OPERATOR_CODE_GEN_TARGETS)
 
 ##############################################################################
 # Function that adds all Code Gen Targets for a database plugin
+# If optional SKIP_INFO argument is found then the gen_info target
+# will not be added.
 ##############################################################################
 FUNCTION(ADD_DATABASE_CODE_GEN_TARGETS gen_name)
     ####
     # only create code gen targets if our cmake for gen targets option is on
     ####
     if(VISIT_CREATE_XMLTOOLS_GEN_TARGETS)
+        cmake_parse_arguments(PARSE_ARGV 1 db "SKIP_INFO" "" "")
+        
         set(gen_target_name "gen_plugin_${gen_name}")
 
         MESSAGE(STATUS "Adding xml tools plugin generation target: ${gen_target_name}")
@@ -182,20 +190,19 @@ FUNCTION(ADD_DATABASE_CODE_GEN_TARGETS gen_name)
                 FOLDER "generators/plugin")
         endif()
 
-        # only xml2info and xml2cmake for db plugins
-        ADD_INFO_GEN_TARGET(${gen_name}
-                            ${CMAKE_CURRENT_SOURCE_DIR}
-                            ${CMAKE_CURRENT_SOURCE_DIR})
+        if(NOT db_SKIP_INFO)
+            ADD_INFO_GEN_TARGET(${gen_name}
+                                ${CMAKE_CURRENT_SOURCE_DIR}
+                                ${CMAKE_CURRENT_SOURCE_DIR})
+            set(gen_plugin_deps "")
+            list(APPEND gen_plugin_deps "gen_info_${gen_name}")
+            # we don't wan't to directly wire up xml2cmake so its handled below
+            add_dependencies(${gen_target_name} ${gen_plugin_deps})
+        endif()
 
         ADD_CMAKE_GEN_TARGET(${gen_name}
                              ${CMAKE_CURRENT_SOURCE_DIR}
                              ${CMAKE_CURRENT_SOURCE_DIR})
-
-        set(gen_plugin_deps "")
-        list(APPEND gen_plugin_deps "gen_info_${gen_name}")
-        # we don't wan't to directly wire up xml2cmake
-
-        add_dependencies(${gen_target_name} ${gen_plugin_deps})
 
         # connect this target to roll up target for plugin gen
         if(NOT TARGET gen_plugin_all)

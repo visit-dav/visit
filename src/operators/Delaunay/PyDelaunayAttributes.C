@@ -36,7 +36,7 @@ struct DelaunayAttributesObject
 //
 static PyObject *NewDelaunayAttributes(int);
 std::string
-PyDelaunayAttributes_ToString(const DelaunayAttributes *atts, const char *prefix)
+PyDelaunayAttributes_ToString(const DelaunayAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -218,7 +218,7 @@ static int
 DelaunayAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     DelaunayAttributesObject *obj = (DelaunayAttributesObject *)v;
-    fprintf(fp, "%s", PyDelaunayAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyDelaunayAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -226,7 +226,7 @@ PyObject *
 DelaunayAttributes_str(PyObject *v)
 {
     DelaunayAttributesObject *obj = (DelaunayAttributesObject *)v;
-    return PyString_FromString(PyDelaunayAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyDelaunayAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -378,7 +378,7 @@ PyDelaunayAttributes_GetLogString()
 {
     std::string s("DelaunayAtts = DelaunayAttributes()\n");
     if(currentAtts != 0)
-        s += PyDelaunayAttributes_ToString(currentAtts, "DelaunayAtts.");
+        s += PyDelaunayAttributes_ToString(currentAtts, "DelaunayAtts.", true);
     return s;
 }
 
@@ -391,7 +391,7 @@ PyDelaunayAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("DelaunayAtts = DelaunayAttributes()\n");
-        s += PyDelaunayAttributes_ToString(currentAtts, "DelaunayAtts.");
+        s += PyDelaunayAttributes_ToString(currentAtts, "DelaunayAtts.", true);
         cb(s);
     }
 }

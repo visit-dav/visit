@@ -8,7 +8,7 @@
     </LDFLAGS>
     <LIBS>
       ${HDF5_LIB}
-      ${ZLIB_LIB}
+      ${ZLIB_LIBRARY}
     </LIBS>
     <FilePatterns>
       *.xolotl

@@ -86,10 +86,10 @@ ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTKh_INCLUDE_DIRS}
-${VTKm_INCLUDE_DIRS}
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
+${VTKh_INCLUDE_DIRS}
+${VTKm_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
@@ -104,7 +104,9 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GIsovolumeOperator visitcommon gui )
 
     ADD_LIBRARY(VIsovolumeOperator ${LIBV_SOURCES})
+    ADD_TARGET_DEFINITIONS(VIsovolumeOperator VIEWER)
     TARGET_LINK_LIBRARIES(VIsovolumeOperator visitcommon viewer )
+
     SET(INSTALLTARGETS ${INSTALLTARGETS} GIsovolumeOperator VIsovolumeOperator)
 
     IF(VISIT_PYTHON_SCRIPTING)
@@ -131,15 +133,16 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EIsovolumeOperator_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EIsovolumeOperator_ser visitcommon avtexpressions_ser avtfilters_ser avtpipeline_ser )
+TARGET_LINK_LIBRARIES(EIsovolumeOperator_ser visitcommon avtpipeline_ser avtexpressions_ser avtfilters_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EIsovolumeOperator_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EIsovolumeOperator_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EIsovolumeOperator_par visitcommon avtexpressions_par avtfilters_par avtpipeline_par )
+    TARGET_LINK_LIBRARIES(EIsovolumeOperator_par visitcommon avtpipeline_par avtexpressions_par avtfilters_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EIsovolumeOperator_par)
 ENDIF(VISIT_PARALLEL)
 
 VISIT_INSTALL_OPERATOR_PLUGINS(${INSTALLTARGETS})
 VISIT_PLUGIN_TARGET_RTOD(operators ${INSTALLTARGETS})
 VISIT_PLUGIN_TARGET_FOLDER(operators Isovolume ${INSTALLTARGETS})
+

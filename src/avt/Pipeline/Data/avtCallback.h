@@ -85,6 +85,7 @@ class PIPELINE_API avtCallback
     static void                  RegisterWarningCallback(WarningCallback,
                                                          void *);
     static bool                  IssueWarning(const char *);
+    static bool                  IssueWarning(const std::string &);
 
     static void                  SetCurrentWindowAtts(const WindowAttributes&);
     static const WindowAttributes &

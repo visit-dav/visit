@@ -55,13 +55,13 @@ public:
     virtual void SelectAll();
     void SelectNames();
     void SelectColorTables();
-    void SelectActiveContinuous();
-    void SelectActiveDiscrete();
+    void SelectDefaultContinuous();
+    void SelectDefaultDiscrete();
 
     // Property setting methods
     void SetNames(const stringVector &names_);
-    void SetActiveContinuous(const std::string &activeContinuous_);
-    void SetActiveDiscrete(const std::string &activeDiscrete_);
+    void SetDefaultContinuous(const std::string &defaultContinuous_);
+    void SetDefaultDiscrete(const std::string &defaultDiscrete_);
     void SetGroupingFlag(bool groupingFlag_);
 
     // Property getting methods
@@ -69,10 +69,10 @@ public:
           stringVector &GetNames();
     const AttributeGroupVector &GetColorTables() const;
           AttributeGroupVector &GetColorTables();
-    const std::string  &GetActiveContinuous() const;
-          std::string  &GetActiveContinuous();
-    const std::string  &GetActiveDiscrete() const;
-          std::string  &GetActiveDiscrete();
+    const std::string  &GetDefaultContinuous() const;
+          std::string  &GetDefaultContinuous();
+    const std::string  &GetDefaultDiscrete() const;
+          std::string  &GetDefaultDiscrete();
     bool               GetGroupingFlag() const;
 
     // Persistence methods
@@ -105,13 +105,14 @@ public:
     void AddColorTable(const std::string &name, const ColorControlPointList &cpts);
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
         ID_names = 0,
         ID_colorTables,
-        ID_activeContinuous,
-        ID_activeDiscrete,
+        ID_defaultContinuous,
+        ID_defaultDiscrete,
         ID_groupingFlag,
         ID__LAST
     };
@@ -121,8 +122,8 @@ protected:
 private:
     stringVector         names;
     AttributeGroupVector colorTables;
-    std::string          activeContinuous;
-    std::string          activeDiscrete;
+    std::string          defaultContinuous;
+    std::string          defaultDiscrete;
     bool                 groupingFlag;
 
     // Static class format string for type map.

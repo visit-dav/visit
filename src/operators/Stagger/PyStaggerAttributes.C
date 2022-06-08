@@ -36,7 +36,7 @@ struct StaggerAttributesObject
 //
 static PyObject *NewStaggerAttributes(int);
 std::string
-PyStaggerAttributes_ToString(const StaggerAttributes *atts, const char *prefix)
+PyStaggerAttributes_ToString(const StaggerAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -323,7 +323,7 @@ static int
 StaggerAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     StaggerAttributesObject *obj = (StaggerAttributesObject *)v;
-    fprintf(fp, "%s", PyStaggerAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyStaggerAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -331,7 +331,7 @@ PyObject *
 StaggerAttributes_str(PyObject *v)
 {
     StaggerAttributesObject *obj = (StaggerAttributesObject *)v;
-    return PyString_FromString(PyStaggerAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyStaggerAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -483,7 +483,7 @@ PyStaggerAttributes_GetLogString()
 {
     std::string s("StaggerAtts = StaggerAttributes()\n");
     if(currentAtts != 0)
-        s += PyStaggerAttributes_ToString(currentAtts, "StaggerAtts.");
+        s += PyStaggerAttributes_ToString(currentAtts, "StaggerAtts.", true);
     return s;
 }
 
@@ -496,7 +496,7 @@ PyStaggerAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("StaggerAtts = StaggerAttributes()\n");
-        s += PyStaggerAttributes_ToString(currentAtts, "StaggerAtts.");
+        s += PyStaggerAttributes_ToString(currentAtts, "StaggerAtts.", true);
         cb(s);
     }
 }

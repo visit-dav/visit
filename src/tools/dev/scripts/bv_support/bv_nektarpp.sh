@@ -103,13 +103,6 @@ function bv_nektarpp_ensure
     fi
 }
 
-function bv_nektarpp_dry_run
-{
-    if [[ "$DO_NEKTAR_PLUS_PLUS" == "yes" ]] ; then
-        echo "Dry run option not set for nektar_PLUS_PLUS."
-    fi
-}
-
 function apply_nektarpp_4_4_0_patch
 {
     info "Patching Nektar++ 4.4.0"

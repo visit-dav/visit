@@ -48,6 +48,11 @@ function bv_adios2_depends_on
             depends_on="$depends_on hdf5"
         fi
 
+        if [[ "$DO_BLOSC" == "yes" ]] ; then
+            # note that at the time of writing (may 2022) ADIOS2 only supports c-blosc1, NOT c-blosc2.
+            depends_on="$depends_on blosc"
+        fi
+
         echo $depends_on
     fi
 }
@@ -61,14 +66,13 @@ function bv_adios2_initialize_vars
 
 function bv_adios2_info
 {
-    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.5.0"}
+    export ADIOS2_VERSION=${ADIOS2_VERSION:-"2.7.1"}
     export ADIOS2_FILE=${ADIOS2_FILE:-"adios2-${ADIOS2_VERSION}.tar.gz"}
     export ADIOS2_COMPATIBILITY_VERSION=${ADIOS2_COMPATIBILITY_VERSION:-"${ADIOS2_VERSION}"}
-    export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/archive/v2.5.0"}
+    export ADIOS2_URL=${ADIOS2_URL:-"https://github.com/ornladios/ADIOS2/archive/refs/tags/v${ADIOS2_VERSION}"}
     export ADIOS2_BUILD_DIR=${ADIOS2_BUILD_DIR:-"ADIOS2-"${ADIOS2_VERSION}}
-    export ADIOS2_MD5_CHECKSUM="a50a6bcd02a0a296484a213dca7f9a11"
-    export ADIOS2_MD5_CHECKSUM=""
-    export ADIOS2_SHA256_CHECKSUM=""
+    export ADIOS2_MD5_CHECKSUM="b78e02946c4ff481679063220f9fc961"
+    export ADIOS2_SHA256_CHECKSUM="c8e237fd51f49d8a62a0660db12b72ea5067512aa7970f3fcf80b70e3f87ca3e"
 }
 
 function bv_adios2_print
@@ -123,13 +127,6 @@ function bv_adios2_ensure
     fi
 }
 
-function bv_adios2_dry_run
-{
-    if [[ "$DO_ADIOS2" == "yes" ]] ; then
-        echo "Dry run option not set for adios2."
-    fi
-}
-
 function build_adios2
 {
     #
@@ -155,6 +152,7 @@ function build_adios2
         warn "Unable to prepare ADIOS2 Build Directory. Giving Up"
         return 1
     fi
+
     #### begin parallel
 
     par_build_types="ser"
@@ -169,34 +167,6 @@ function build_adios2
         # Configure.
         cd $ADIOS2_SRC_DIR || error "Can't cd to $ADIOS2_SRC_DIR"
         info "Configuring ADIOS2-$bt (~1 minute)"
-
-        if [[ "$bt" == "par" ]]; then
-
-            SED_CMD="sed -i "
-
-            # sed for OSX is different then most Linux distros in that you have
-            # to use a few extra characters to get it to do the same command (see
-            # https://ed.gs/2016/01/26/os-x-sed-invalid-command-code/).
-            if [[ "$OPSYS" == "Darwin" ]]; then
-                SED_CMD="sed -i \"\" "
-            fi
-
-            # Change all references from adios2 to adios2_mpi.
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2/adios2_mpi/g" {} \;
-            # This changes too many things, now we need to change specific things back.
-
-            ${SED_CMD} "s/adios2_mpi/adios2/g" source/CMakeLists.txt
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi.h/adios2.h/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi\//adios2\//g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi_/adios2_/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi-/adios2-/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpi::/adios2::/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpisys/adios2sys/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/\/adios2_mpi/\/adios2/g" {} \;
-            find . -name "CMakeLists.txt" -exec ${SED_CMD} "s/adios2_mpiExports/adios2Exports/g" {} \;
-            ${SED_CMD} "s/adios2.helper/adios2\/helper/g" source/adios2/toolkit/sst/CMakeLists.txt
-            ${SED_CMD} "s/find_package(adios2_mpi/find_package(adios2/g" cmake/install/post/adios2-config-dummy/CMakeLists.txt
-        fi
 
         # Make a build directory for an out-of-source build.. Change the
         # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
@@ -234,6 +204,13 @@ function build_adios2
         cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
         cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
         cfg_opts="${cfg_opts} -DADIOS2_USE_SST:BOOL=ON"
+
+        # Use Blosc?
+        if [[ "$DO_BLOSC" == "yes" ]] ; then
+            cfg_opts="${cfg_opts} -DADIOS2_USE_Blosc:BOOL=ON"
+            cfg_opts="${cfg_opts} -DBLOSC_INCLUDE_DIR=${BLOSC_INCLUDE_DIR}"
+            cfg_opts="${cfg_opts} -DBLOSC_LIBRARY=${BLOSC_LIBRARY}"
+        fi
 
         if [[ "$bt" == "ser" ]]; then
             cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=OFF"
