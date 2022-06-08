@@ -321,6 +321,26 @@ rm -f quartz
 cat <<EOF > quartz
 #!/bin/sh
 ./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-quartz /usr/gapps/visit > installlog 2>&1
+# Copy libraries needed for Qt and fortran for toss4 systems.
+cd /lib64
+cp libicudata.so.50.2 libicui18n.so.50.2 libicuuc.so.50.2 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/gapps/visit/$ver+/linux-x86_64/lib
+chgrp visit libicudata.so.50.2 libicui18n.so.50.2 libicuuc.so.50.2
+chmod g+rwX,o+rX libicudata.so.50.2 libicui18n.so.50.2 libicuuc.so.50.2
+ln -s libicudata.so.50.2 libicudata.so
+ln -s libicudata.so.50.2 libicudata.so.50
+ln -s libicui18n.so.50.2 libicui18n.so
+ln -s libicui18n.so.50.2 libicui18n.so.50
+ln -s libicuuc.so.50.2 libicuuc.so
+ln -s libicuuc.so.50.2 libicuuc.so.50
+cd /usr/tce/packages/gcc/gcc-7.1.0/lib64
+cp libgfortran.so.4.0.0 /usr/gapps/visit/$ver+/linux-x86_64/lib
+cd /usr/gapps/visit/$ver+/linux-x86_64/lib
+chgrp visit libgfortran.so.4.0.0
+chmod g+rwX,o+rX libgfortran.so.4.0.0
+ln -s libgfortran.so.4.0.0 libgfortran.so
+ln -s libgfortran.so.4.0.0 libgfortran.so.4
+cd
 rm -f resultlog
 echo ""                                              > resultlog 2>&1
 echo "        install of visit on quartz"            >> resultlog 2>&1
@@ -395,7 +415,6 @@ rm -f rztrona
 cat <<EOF > rztrona
 #!/bin/sh
 ./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rztrona /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
 # Copy libraries needed for Qt and fortran for toss4 systems.
 cd /lib64
 cp libicudata.so.50.2 libicui18n.so.50.2 libicuuc.so.50.2 /usr/gapps/visit/$ver+/linux-x86_64/lib
@@ -416,6 +435,7 @@ chmod g+rwX,o+rX libgfortran.so.4.0.0
 ln -s libgfortran.so.4.0.0 libgfortran.so
 ln -s libgfortran.so.4.0.0 libgfortran.so.4
 cd
+rm -f resultlog
 echo "        install of visit on rztrona"          > resultlog 2>&1
 echo "       -----------------------------"         >> resultlog 2>&1
 echo ""                                             >> resultlog 2>&1
