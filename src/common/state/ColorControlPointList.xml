@@ -45,4 +45,6 @@
     </Function>
     <Function name="GetTagsAsString" user="true" member="true">
     </Function>
+    <Function name="HasTag" user="true" member="true">
+    </Function>
   </Attribute>

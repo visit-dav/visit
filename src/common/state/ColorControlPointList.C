@@ -1844,3 +1844,25 @@ ColorControlPointList::GetTagsAsString()
     return tags;
 }
 
+// ****************************************************************************
+// Method: ColorControlPointList::HasTag
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Jun  8 11:46:21 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+ColorControlPointList::HasTag(std::string tag)
+{
+    for (int i = 0; i < tagNames.size(); i ++)
+        if (tagNames[i] == tag)
+            return true;
+    return false;
+}
+

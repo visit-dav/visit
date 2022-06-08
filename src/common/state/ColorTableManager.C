@@ -370,11 +370,17 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
                     ccpl2.SetCategoryName("Standard");
             }
 
-            if (ccpl2.GetTagNames().size() == 0)
+            // add tags to imported color tables
+            if (importingPersonal)
             {
-                if (importingPersonal)
+                // add the user defined tag if it is user defined
+                if (! ccpl2.HasTag("UserDefined"))
                     ccpl2.AddTag("UserDefined");
-                else
+            }
+            else
+            {
+                // add the "no-tag" tag if there are no tags
+                if (ccpl2.GetNumTags() == 0)
                     ccpl2.AddTag("no-tags");
             }
 

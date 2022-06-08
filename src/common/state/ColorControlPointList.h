@@ -123,6 +123,7 @@ public:
     std::string GetTag(int index);
     int GetNumTags();
     std::string GetTagsAsString();
+    bool HasTag(std::string tag);
 
     // IDs that can be used to identify fields in case statements
     enum {
