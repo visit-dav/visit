@@ -14,22 +14,22 @@ VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
 ##
-VISIT_OPTION_DEFAULT(VISIT_C_COMPILER /usr/tce/packages/gcc/gcc-6.1.0/bin/gcc TYPE FILEPATH)
-VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/tce/packages/gcc/gcc-6.1.0/bin/g++ TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_C_COMPILER /usr/tce/packages/gcc/gcc-7.3.0/bin/gcc TYPE FILEPATH)
+VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER /usr/tce/packages/gcc/gcc-7.3.0/bin/g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS "-std=c++11  -m64 -fPIC -fvisibility=hidden" TYPE STRING)
-SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-6.1.0/lib64")
+SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-7.3.0/lib64")
 
 ##
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/lib" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0/lib")
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0/lib")
 
 ##
 ## VisIt Thread Option
