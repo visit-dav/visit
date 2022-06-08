@@ -642,6 +642,10 @@ avtColorTables::avtColorTables()
         ccpl.SetDiscreteFlag(predef_ct_discrete[i] == 1);
         ccpl.SetCategoryName("Standard");
         ccpl.AddTag("Standard");
+        if (predef_ct_discrete[i] == 1)
+            ccpl.AddTag("Discrete");
+        else
+            ccpl.AddTag("Continuous");
         ctAtts->AddColorTable(predef_ct_names[i], ccpl);
     }
 
