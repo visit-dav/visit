@@ -129,8 +129,8 @@
 #   I removed rzuseq and vulcan.
 #
 #   Eric Brugger, Wed Jun  8 10:42:23 PDT 2022
-#   I added logic to the rztrona install to copy libraries needed to
-#   run on toss4 systems.
+#   I added logic to the quartz and rztrona installs to copy libraries
+#   needed to run on toss4 systems.
 #
 #-----------------------------------------------------------------------
 
