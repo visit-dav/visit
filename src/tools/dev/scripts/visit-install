@@ -824,7 +824,7 @@ while [ "$config" = "prompt" ]; do
    echo "   7)  Clemson University network"
    echo "   8)  ETH Zurich network"
    echo "   9)  KAUST network"
-   echo "   10)  LLNL open network"
+   echo "   10) LLNL open network"
    echo "   11) LLNL closed network"
    echo "   12) Leibniz Supercomputing Centre network"
    echo "   13) Lousiana State University network"
