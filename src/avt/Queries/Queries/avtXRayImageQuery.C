@@ -1174,6 +1174,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(x_coords_dim));
             int *xvals = data_out["coordsets/image_coords/values/x"].value();
             for (int i = 0; i < x_coords_dim; i ++) { xvals[i] = i; }
+            // TODO use `set` instead?
 
             data_out["coordsets/image_coords/values/y"].set(conduit::DataType::int32(y_coords_dim));
             int *yvals = data_out["coordsets/image_coords/values/y"].value();
@@ -1211,7 +1212,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["fields/optical_depth/values"].set(conduit::DataType::float64(numfieldvals));
             conduit::float64 *depth_vals = data_out["fields/optical_depth/values"].value();
 
-            int datatype = leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType();
+            const int datatype = leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType();
 
             int field_index = 0;
             for (int i = 0; i < numBins; i ++)
