@@ -75,7 +75,7 @@ endif()
 
 if(VISIT_MESAGL_DIR)
     string(REPLACE "${VISIT_MESAGL_DIR}/include"
-                   "\${VISIT_INCLUDE_DIR}/mesgal/include"
+                   "\${VISIT_ROOT_INCLUDE_DIR}/mesgal/include"
                    OPENGL_INCLUDE_DIR
                    "${OPENGL_INCLUDE_DIR}")
     string(REPLACE "${VISIT_MESAGL_DIR}/lib"
@@ -175,7 +175,7 @@ if(VTKH_FOUND)
     # the install include location for vtkm
     set(temp_VTKm_INCLUDE_DIRS ${VTKm_INCLUDE_DIRS})
     list(APPEND temp_VTKm_INCLUDE_DIRS ${ii_inc_dep})
-    string(REPLACE "${VTKM_DIR}/include" "\${VISIT_INCLUDE_DIR}/vtkm/include"
+    string(REPLACE "${VTKM_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/vtkm/include"
                     filtered_VTKm_INCLUDE_DIRS
                     "${temp_VTKm_INCLUDE_DIRS}")
     unset(temp_VTKm_INCLUDE_DIRS)
@@ -251,35 +251,35 @@ if(VISIT_MPICH_INSTALL)
     string(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
                     f0_VISIT_PARALLEL_CXXFLAGS
                     "${VISIT_PARALLEL_CXXFLAGS}")
-    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/mpich/include"
                     filtered_VISIT_PARALLEL_CXXFLAGS
                     "${f0_VISIT_PARALLEL_CXXFLAGS}")
 
     string(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
                     f0_VISIT_PARALLEL_LINKER_FLAGS
                     "${VISIT_PARALLEL_LINKER_FLAGS}")
-    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/mpich/include"
                     filtered_VISIT_PARALLEL_LINKER_FLAGS
                     "${f0_VISIT_PARALLEL_LINKER_FLAGS}")
 
     string(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
                     f0_VISIT_PARALLEL_LIBS
                     "${VISIT_PARALLEL_LIBS}")
-    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/mpich/include"
                     filtered_VISIT_PARALLEL_LIBS
                     "${f0_VISIT_PARALLEL_LIBS}")
 
     string(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
                     f0_VISIT_PARALLEL_INCLUDE
                     "${VISIT_PARALLEL_INCLUDE}")
-    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/mpich/include"
                     filtered_VISIT_PARALLEL_INCLUDE
                     "${f0_VISIT_PARALLEL_INCLUDE}")
 
     string(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
                     f0_VISIT_PARALLEL_DEFS
                     "${VISIT_PARALLEL_DEFS}")
-    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
+    string(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_ROOT_INCLUDE_DIR}/mpich/include"
                     filtered_VISIT_PARALLEL_DEFS
                     "${f0_VISIT_PARALLEL_DEFS}")
 else(VISIT_MPICH_INSTALL)

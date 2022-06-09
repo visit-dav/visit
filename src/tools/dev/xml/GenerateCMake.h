@@ -269,7 +269,7 @@ class CMakeGeneratorPlugin : public Plugin
     QString
     VisItIncludeDir() const
     {
-        return using_dev ? "${VISIT_INCLUDE_DIR}" : "${VISIT_INCLUDE_DIR}/visit";
+        return "${VISIT_INCLUDE_DIR}";
     }
 
     QString
@@ -304,7 +304,7 @@ class CMakeGeneratorPlugin : public Plugin
         QString sep;
         if(withNewline)
             sep="\n";
-        else 
+        else
             sep=" ";
 
         for(size_t i = 0; i < vec.size(); ++i)
@@ -326,7 +326,7 @@ class CMakeGeneratorPlugin : public Plugin
     }
 
     void
-    CMakeWrite_TargetIncludes(QTextStream &out, 
+    CMakeWrite_TargetIncludes(QTextStream &out,
                               const char *indent,
                               const char *comp,
                               const char *suffix,
@@ -341,7 +341,7 @@ class CMakeGeneratorPlugin : public Plugin
     }
 
     void
-    CMakeWrite_TargetLinkDirs(QTextStream &out, 
+    CMakeWrite_TargetLinkDirs(QTextStream &out,
                               const char *indent,
                               const char *comp,
                               const char *suffix,
@@ -354,7 +354,7 @@ class CMakeGeneratorPlugin : public Plugin
     }
 
     void
-    CMakeWrite_TargetDefines(QTextStream &out, 
+    CMakeWrite_TargetDefines(QTextStream &out,
                               const char *indent,
                               const char *comp,
                               const char *suffix,
@@ -491,7 +491,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "${CMAKE_CURRENT_SOURCE_DIR}" << endl;
         if(type == "operator")
             out << "${VISIT_OPERATOR_INCLUDES}" << endl;
-        else 
+        else
             out << "${VISIT_PLOT_INCLUDES}" << endl;
         if(!using_dev)
         {

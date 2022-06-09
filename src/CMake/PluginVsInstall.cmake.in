@@ -219,7 +219,7 @@ set(PYTHON_LIBRARY         ${VISIT_LIBRARY_DIR}/@PYLIB@)
 include(${VISIT_ROOT_INCLUDE_DIR}/VisItIncludeVars.cmake)
 
 # plugin vs install needs visit's base include dir as well
-list(prepend ${VISIT_COMMON_INCLUDES} ${VISIT_INCLUDE_DIR})
+list(PREPEND ${VISIT_COMMON_INCLUDES} ${VISIT_INCLUDE_DIR})
 
 if(VISIT_OSPRAY)
     set(OSPRAY_INCLUDE_DIR    ${VISIT_ROOT_INCLUDE_DIR})
