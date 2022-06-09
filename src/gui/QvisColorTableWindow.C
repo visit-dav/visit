@@ -207,21 +207,6 @@ QvisColorTableWindow::CreateWindowContents()
     defaultDiscreteLabel = new QLabel(tr("Discrete"),defaultColorTablePage);
     innerDefaultLayout->addWidget(defaultDiscreteLabel, 1, 0);
 
-    groupToggle = new QCheckBox(tr("Group tables by Category"), defaultColorTablePage);
-    connect(groupToggle, SIGNAL(toggled(bool)),
-            this, SLOT(groupingToggled(bool)));
-    innerDefaultLayout->addWidget(groupToggle, 2, 1);
-
-    tagToggle = new QCheckBox(tr("Filter tables by Tag"), defaultColorTablePage);
-    connect(tagToggle, SIGNAL(toggled(bool)),
-            this, SLOT(taggingToggled(bool)));
-    innerDefaultLayout->addWidget(tagToggle, 3, 1);
-
-    tagCombiningBehaviorToggle = new QCheckBox(tr("Color tables must match every tag, instead of any tag"), defaultColorTablePage);
-    connect(tagCombiningBehaviorToggle, SIGNAL(toggled(bool)),
-            this, SLOT(tagCombiningToggled(bool)));
-    innerDefaultLayout->addWidget(tagCombiningBehaviorToggle, 4, 1);
-
     // page for tagging
     managerPage = new QWidget(central);
     tabs->addTab(managerPage, tr("Manager"));
@@ -233,6 +218,21 @@ QvisColorTableWindow::CreateWindowContents()
     // Create the color management widgets.
     mgLayout = new QGridLayout();
     innerColorTableLayout->addLayout(mgLayout);
+
+    groupToggle = new QCheckBox(tr("Group tables by Category"), managerPage);
+    connect(groupToggle, SIGNAL(toggled(bool)),
+            this, SLOT(groupingToggled(bool)));
+    mgLayout->addWidget(groupToggle, 0, 1);
+
+    tagToggle = new QCheckBox(tr("Filter tables by Tag"), managerPage);
+    connect(tagToggle, SIGNAL(toggled(bool)),
+            this, SLOT(taggingToggled(bool)));
+    mgLayout->addWidget(tagToggle, 1, 1);
+
+    tagCombiningBehaviorToggle = new QCheckBox(tr("Match every tag, instead of any tag"), managerPage);
+    connect(tagCombiningBehaviorToggle, SIGNAL(toggled(bool)),
+            this, SLOT(tagCombiningToggled(bool)));
+    mgLayout->addWidget(tagCombiningBehaviorToggle, 2, 1);
 
     newButton = new QPushButton(tr("New"), managerPage);
     connect(newButton, SIGNAL(clicked()), this, SLOT(addColorTable()));
@@ -253,22 +253,22 @@ QvisColorTableWindow::CreateWindowContents()
     nameListBox->header()->close();
     connect(nameListBox, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem*)),
             this, SLOT(highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*)));
-    mgLayout->addWidget(nameListBox, 0, 1, 3, 1);
+    mgLayout->addWidget(nameListBox, 3, 1);
 
     QLabel *colorTableName = new QLabel(tr("Name"), managerPage);
-    mgLayout->addWidget(colorTableName, 3, 0, Qt::AlignRight);
+    mgLayout->addWidget(colorTableName, 4, 0, Qt::AlignRight);
     nameLineEdit = new QLineEdit(managerPage);
-    mgLayout->addWidget(nameLineEdit, 3, 1);
+    mgLayout->addWidget(nameLineEdit, 4, 1);
 
     categoryLabel = new QLabel(tr("Category"), managerPage);
-    mgLayout->addWidget(categoryLabel, 4, 0, Qt::AlignRight);
+    mgLayout->addWidget(categoryLabel, 5, 0, Qt::AlignRight);
     categoryLineEdit = new QLineEdit(managerPage);
-    mgLayout->addWidget(categoryLineEdit, 4, 1);
+    mgLayout->addWidget(categoryLineEdit, 5, 1);
 
     tagLabel = new QLabel(tr("Tags"), managerPage);
-    mgLayout->addWidget(tagLabel, 5, 0, Qt::AlignRight);
+    mgLayout->addWidget(tagLabel, 6, 0, Qt::AlignRight);
     tagLineEdit = new QLineEdit(managerPage);
-    mgLayout->addWidget(tagLineEdit, 5, 1);
+    mgLayout->addWidget(tagLineEdit, 6, 1);
 
     tagTable = new QTreeWidget(managerPage);
     QStringList headers;
@@ -281,7 +281,7 @@ QvisColorTableWindow::CreateWindowContents()
     tagTable->clear();
     tagTable->setSortingEnabled(true);
     tagTable->setMinimumHeight(300);
-    mgLayout->addWidget(tagTable, 6, 1);
+    mgLayout->addWidget(tagTable, 7, 1);
 
     // page for editor
     editorPage = new QWidget(central);
