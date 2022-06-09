@@ -1106,8 +1106,8 @@ elif [ "$config" = "cscs" ]; then
 elif [ "$config" = "eth_zurich" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "kaust" ]; then
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml                  "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher         "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "llnl_open" ]; then
    # Install both cz hosts and rz hosts. We're most likely in a client
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/*.xml                  "$dir"/$version+/.visit/hosts/
