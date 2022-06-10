@@ -116,7 +116,6 @@ protected:
     QColor GetNextColor();
 
 private slots:
-    void tabSelected(int);
     void resizeColorTable(int);
     void setColorTableType(int);
     void redValueChanged(int r);
@@ -158,10 +157,9 @@ private:
     std::vector<bool>        activeTags;
     bool                     tagsVisible;
     bool                     tagsMatchAny;
-    int                      activeTab;
 
     // Widgets and layouts.
-    QWidget                  *defaultColorTablePage;
+    QGroupBox                *defaultGroup;
     QvisNoDefaultColorTableButton *defaultContinuous;
     QLabel                   *defaultContinuousLabel;
     QvisNoDefaultColorTableButton *defaultDiscrete;
@@ -171,7 +169,7 @@ private:
     QCheckBox                *tagCombiningBehaviorToggle;
     QGridLayout              *mgLayout;
 
-    QWidget                  *managerPage;
+    QGroupBox                *colorTableWidgetGroup;
     QPushButton              *newButton;
     QPushButton              *deleteButton;
     QPushButton              *exportButton;
@@ -183,7 +181,7 @@ private:
     QLineEdit                *tagLineEdit;
     QTreeWidget              *tagTable;
 
-    QWidget                  *editorPage;
+    QGroupBox                *colorWidgetGroup;
 
     QSpinBox                 *colorNumColors;
     QButtonGroup             *colorTableTypeGroup;
