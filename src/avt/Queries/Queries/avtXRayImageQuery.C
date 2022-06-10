@@ -67,7 +67,7 @@ const int BOV_OUT = 5;
 const int BLUEPRINT_JSON_OUT = 6;
 const int BLUEPRINT_HDF5_OUT = 7;
 const int BLUEPRINT_CONDUIT_JSON_OUT = 8;
-const int BLUEPRINT_CONDUIT_BIN_OUT = 9;
+const int BLUEPRINT_CONDUIT_BIN_OUT = 9; // be careful, this produces two files
 const int BLUEPRINT_YAML_OUT = 10;
 
 // an output type is valid if it is an int in [0,NUM_OUTPUT_TYPES)
@@ -1060,6 +1060,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         // Create the file base name.
         //
         char baseName[512];
+        std::stringstream full_file_path;
         bool keepTrying = true;
         while (keepTrying)
         {
@@ -1070,6 +1071,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // Create the file base name and increment the family number.
                 //
                 snprintf(baseName, 512, "%s/output%04d.", outputDir.c_str(), iFileFamily);
+                // full_file_path << outputDir.c_str() << "/output" << 
                 if (iFileFamily < 9999) iFileFamily++;
 
                 //
@@ -1193,6 +1195,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             const int y_coords_dim = ny + 1;
             const int z_coords_dim = numBins + 1;
 
+            // TODO cycle and time
+
             // set up coords
             data_out["coordsets/image_coords/type"] = "rectilinear";
             data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(x_coords_dim));
@@ -1303,16 +1307,19 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             // Once this bug is fixed, these lines should be removed.
 
             // Q? What do I do if the output type was conduit_bin? That outputs two files
+            // Q? also conduit bin does not work...
 
-            // TODO clean this up
-            std::string file_w_path = outputDir + "/" + outputFileName + file_extensions[outputType];
-            conduit::Node index_fix;
-            conduit::relay::io::load(file_w_path, file_protocols[outputType], index_fix);
-            index_fix["file_pattern"] = outputFileName + file_extensions[outputType];
-            conduit::relay::io::save(index_fix,
-                                     file_w_path,
-                                     file_protocols[outputType]);            
-
+            if (outputDir != ".")
+            {
+                // TODO clean this up
+                std::string file_w_path = outputDir + "/" + outputFileName + "." + file_extensions[outputType];
+                conduit::Node index_fix;
+                conduit::relay::io::load(file_w_path, file_protocols[outputType], index_fix);
+                index_fix["file_pattern"] = outputFileName + "." + file_extensions[outputType];
+                conduit::relay::io::save(index_fix,
+                                         file_w_path,
+                                         file_protocols[outputType]);  
+            }
         }
         else
         {
