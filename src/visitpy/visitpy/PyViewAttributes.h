@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyViewAttributes_Wrap(const ViewAttributes *attr);
 void VISITPY_API           PyViewAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyViewAttributes_SetDefaults(const ViewAttributes *atts);
 std::string VISITPY_API    PyViewAttributes_GetLogString();
-std::string VISITPY_API    PyViewAttributes_ToString(const ViewAttributes *, const char *);
+std::string VISITPY_API    PyViewAttributes_ToString(const ViewAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyViewAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyViewAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyViewAttributes_methods[VIEWATTRIBUTES_NMETH];

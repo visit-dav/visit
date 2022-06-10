@@ -36,7 +36,7 @@ struct PrinterAttributesObject
 //
 static PyObject *NewPrinterAttributes(int);
 std::string
-PyPrinterAttributes_ToString(const PrinterAttributes *atts, const char *prefix)
+PyPrinterAttributes_ToString(const PrinterAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -753,7 +753,7 @@ static int
 PrinterAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)v;
-    fprintf(fp, "%s", PyPrinterAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPrinterAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -761,7 +761,7 @@ PyObject *
 PrinterAttributes_str(PyObject *v)
 {
     PrinterAttributesObject *obj = (PrinterAttributesObject *)v;
-    return PyString_FromString(PyPrinterAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPrinterAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -913,7 +913,7 @@ PyPrinterAttributes_GetLogString()
 {
     std::string s("PrinterAtts = PrinterAttributes()\n");
     if(currentAtts != 0)
-        s += PyPrinterAttributes_ToString(currentAtts, "PrinterAtts.");
+        s += PyPrinterAttributes_ToString(currentAtts, "PrinterAtts.", true);
     return s;
 }
 
@@ -926,7 +926,7 @@ PyPrinterAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("PrinterAtts = PrinterAttributes()\n");
-        s += PyPrinterAttributes_ToString(currentAtts, "PrinterAtts.");
+        s += PyPrinterAttributes_ToString(currentAtts, "PrinterAtts.", true);
         cb(s);
     }
 }

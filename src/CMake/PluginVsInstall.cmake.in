@@ -95,6 +95,9 @@
 #   Kathleen Biagas, Mon Feb 28 13:48:42 PST 2022
 #   Added CONDUIT_HAVE_PARTITION_FLATTEN.
 #
+#   Cyrus Harrison, Fri Jun  3 15:46:29 PDT 2022
+#   Remove TESSELLATION_LIBRARY entires (no longer used)
+#
 #****************************************************************************/
 
 ##
@@ -196,9 +199,6 @@ set(OPENGL_INCLUDE_DIR  @OPENGL_INCLUDE_DIR@)
 set(OPENGL_gl_LIBRARY   @OPENGL_gl_LIBRARY@)
 set(OPENGL_glu_LIBRARY  @OPENGL_glu_LIBRARY@)
 set(OPENGL_LIBRARIES    @OPENGL_LIBRARIES@)
-
-# Set up the tessellation library
-set(TESSELLATION_LIBRARY @TESSELLATION_LIBRARY@)
 
 # Set up BOOST
 set(BOOST_INCLUDE_DIR ${VISIT_INCLUDE_DIR}/boost/include/boost)

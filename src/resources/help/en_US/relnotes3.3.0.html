@@ -50,10 +50,13 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Flatten() function has been added to the CLI; this function uses the new avtFlattenQuery to return the active plot data as a tabular, numpy compatible, 2D array.</li>
   <li>Added new mesh expressions 'logical_nodeid', 'logical_zoneid', 'node_domain', 'zone_domain', and 'zone_centers'.</li>
   <li>A tutorial on Python expressions was added to the tutorials section of the manual.</li>
+  <li>Added host profile support for machines located at KAUST.</li>
   <li>Changed "active" to "default" for everything related to color tables. This means in the gui, in the python scripting interface, and internally.</li>
   <li>Upgraded ADIOS and ADIOS2 to build with c-blosc, so blosc-compressed ADIOS-based files can now be read by VisIt.</li>
+  <li>Added support and examples of 2D structured grids representing surfaces in 3 dimensions.</li>
   <li>A slew of new, color vision deficient (CVD) color tables from <a href="https://www.fabiocrameri.ch/visualisation/">Fabio Crameri</a> were added and assigned the category <code>CvdFriendlyCrameri</code></li>
   <li>Existing Viridis CVD color tables were given a new category name, <code>CvdFriendlyViridis</code></li>
+  <li>ColorControlPointsList and GaussianControlPointsList now have a 'SetNum' method for changing the size of the underlying controlPoints list. Control points will be added or removed based on the current size of the list. The SetNum method was also added to the script created by Logging /command recording, so that the control points list has the correct size and the created script can execute correctly without crashing the cli.<li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -133,6 +136,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a cli crash when 'DeleteAllPlots' is called when there are not plots, and a callback has been registered for 'SetActivePlots'.</li>
   <li>Fixed a bug in visit_composite where output formats like bmp, png could not be read back in by VisIt nor used to encode movies.</li>
   <li>Fixed a bug with the Python CLI where the PySide2 module wouldn't load when running one of the pre-built binaries.</li>
+  <li>The Contour plot's fields were re-ordered internally to fix a bug where a command-recorded script of Contour plot would crash the cli if number of contours had been increased from the default.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
@@ -140,6 +144,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Updated the Ohio Supercomputing Center host profiles.</li>
   <li>Updated the ORNL host file list to include only current machines.</li>
+  <li>Renamed the <i>mxterm</i> launch profiles to <i>sxterm</i> in the LLNL host profiles since <i>mxterm</i> has been replaced with <i>sxterm</i>."
+  <li>Updated the <i>toss3</i> installations at LLNL so that they would also run on <i>toss4</i> systems.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -166,6 +172,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The DEFINES tag now supports surrounding definitions in quotes if the quotes are important to be carried through. They must be escaped with a '\'. See uintah.xml for an example.</li>
   <li>The version of MFEM was upgraded to 4.4.</li>
   <li>Corrected a bug with the regression test suite where the image difference metrics were reported incorrectly in the HTML and JSON output.</li>
+  <li>Added <code>TestAutoName()</code> method for automagically naming test baseline files.</li>
   <li>The signature for the SET_UP_THIRD_PARTY function for Find modules was modified to utilize keyword arguments:
     <ul>
      <li><b>LIBS</b> (required) -- the list of libraries to be found</li>

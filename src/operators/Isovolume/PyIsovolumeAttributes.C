@@ -36,7 +36,7 @@ struct IsovolumeAttributesObject
 //
 static PyObject *NewIsovolumeAttributes(int);
 std::string
-PyIsovolumeAttributes_ToString(const IsovolumeAttributes *atts, const char *prefix)
+PyIsovolumeAttributes_ToString(const IsovolumeAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -312,7 +312,7 @@ static int
 IsovolumeAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)v;
-    fprintf(fp, "%s", PyIsovolumeAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyIsovolumeAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -320,7 +320,7 @@ PyObject *
 IsovolumeAttributes_str(PyObject *v)
 {
     IsovolumeAttributesObject *obj = (IsovolumeAttributesObject *)v;
-    return PyString_FromString(PyIsovolumeAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyIsovolumeAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -472,7 +472,7 @@ PyIsovolumeAttributes_GetLogString()
 {
     std::string s("IsovolumeAtts = IsovolumeAttributes()\n");
     if(currentAtts != 0)
-        s += PyIsovolumeAttributes_ToString(currentAtts, "IsovolumeAtts.");
+        s += PyIsovolumeAttributes_ToString(currentAtts, "IsovolumeAtts.", true);
     return s;
 }
 
@@ -485,7 +485,7 @@ PyIsovolumeAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("IsovolumeAtts = IsovolumeAttributes()\n");
-        s += PyIsovolumeAttributes_ToString(currentAtts, "IsovolumeAtts.");
+        s += PyIsovolumeAttributes_ToString(currentAtts, "IsovolumeAtts.", true);
         cb(s);
     }
 }

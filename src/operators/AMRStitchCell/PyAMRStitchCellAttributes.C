@@ -36,7 +36,7 @@ struct AMRStitchCellAttributesObject
 //
 static PyObject *NewAMRStitchCellAttributes(int);
 std::string
-PyAMRStitchCellAttributes_ToString(const AMRStitchCellAttributes *atts, const char *prefix)
+PyAMRStitchCellAttributes_ToString(const AMRStitchCellAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -218,7 +218,7 @@ static int
 AMRStitchCellAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)v;
-    fprintf(fp, "%s", PyAMRStitchCellAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAMRStitchCellAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -226,7 +226,7 @@ PyObject *
 AMRStitchCellAttributes_str(PyObject *v)
 {
     AMRStitchCellAttributesObject *obj = (AMRStitchCellAttributesObject *)v;
-    return PyString_FromString(PyAMRStitchCellAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAMRStitchCellAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -378,7 +378,7 @@ PyAMRStitchCellAttributes_GetLogString()
 {
     std::string s("AMRStitchCellAtts = AMRStitchCellAttributes()\n");
     if(currentAtts != 0)
-        s += PyAMRStitchCellAttributes_ToString(currentAtts, "AMRStitchCellAtts.");
+        s += PyAMRStitchCellAttributes_ToString(currentAtts, "AMRStitchCellAtts.", true);
     return s;
 }
 
@@ -391,7 +391,7 @@ PyAMRStitchCellAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("AMRStitchCellAtts = AMRStitchCellAttributes()\n");
-        s += PyAMRStitchCellAttributes_ToString(currentAtts, "AMRStitchCellAtts.");
+        s += PyAMRStitchCellAttributes_ToString(currentAtts, "AMRStitchCellAtts.", true);
         cb(s);
     }
 }

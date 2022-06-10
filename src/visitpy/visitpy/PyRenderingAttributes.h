@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyRenderingAttributes_Wrap(const RenderingAttributes 
 void VISITPY_API           PyRenderingAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyRenderingAttributes_SetDefaults(const RenderingAttributes *atts);
 std::string VISITPY_API    PyRenderingAttributes_GetLogString();
-std::string VISITPY_API    PyRenderingAttributes_ToString(const RenderingAttributes *, const char *);
+std::string VISITPY_API    PyRenderingAttributes_ToString(const RenderingAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyRenderingAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH];

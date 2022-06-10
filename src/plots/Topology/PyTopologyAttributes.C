@@ -38,7 +38,7 @@ struct TopologyAttributesObject
 //
 static PyObject *NewTopologyAttributes(int);
 std::string
-PyTopologyAttributes_ToString(const TopologyAttributes *atts, const char *prefix)
+PyTopologyAttributes_ToString(const TopologyAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -879,7 +879,7 @@ static int
 TopologyAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)v;
-    fprintf(fp, "%s", PyTopologyAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyTopologyAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -887,7 +887,7 @@ PyObject *
 TopologyAttributes_str(PyObject *v)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)v;
-    return PyString_FromString(PyTopologyAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyTopologyAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1039,7 +1039,7 @@ PyTopologyAttributes_GetLogString()
 {
     std::string s("TopologyAtts = TopologyAttributes()\n");
     if(currentAtts != 0)
-        s += PyTopologyAttributes_ToString(currentAtts, "TopologyAtts.");
+        s += PyTopologyAttributes_ToString(currentAtts, "TopologyAtts.", true);
     return s;
 }
 
@@ -1052,7 +1052,7 @@ PyTopologyAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("TopologyAtts = TopologyAttributes()\n");
-        s += PyTopologyAttributes_ToString(currentAtts, "TopologyAtts.");
+        s += PyTopologyAttributes_ToString(currentAtts, "TopologyAtts.", true);
         cb(s);
     }
 }
