@@ -385,6 +385,11 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Kathleen Biagas, Wed Nov 18 2020
 //    Replace VISIT_LONG_LONG with long long.
 //
+//    Cyrus Harrison, Fri Jun 10 16:22:37 PDT 2022
+//    Bug fix for relative paths appearing in bov data file entry.
+//    Use `.bof` suffix for output data files.
+//    Improve error messages.
+//
 // ****************************************************************************
 
 void
