@@ -198,14 +198,14 @@ ColorTableManager::WriteConfigFile(std::ostream& out)
     if (ctNode->GetNode("ColorControlPointList")->GetNode("tags"))
     {
         stringVector tags = ctNode->GetNode("ColorControlPointList")->GetNode("tags")->AsStringVector();
-        tags.push_back("UserDefined");
+        tags.push_back("User Defined");
         ctNode->GetNode("ColorControlPointList")->GetNode("tags")->SetStringVector(tags);
     }
     else
     {        
         ctNode->GetNode("ColorControlPointList")->AddNode(new DataNode("tags"));
         stringVector tags;
-        tags.push_back("UserDefined");
+        tags.push_back("User Defined");
         ctNode->GetNode("ColorControlPointList")->GetNode("tags")->SetStringVector(tags);
     }
 
@@ -374,14 +374,14 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
             if (importingPersonal)
             {
                 // add the user defined tag if it is user defined
-                if (! ccpl2.HasTag("UserDefined"))
-                    ccpl2.AddTag("UserDefined");
+                if (! ccpl2.HasTag("User Defined"))
+                    ccpl2.AddTag("User Defined");
             }
             else
             {
-                // add the "no-tag" tag if there are no tags
+                // add the "No Tags" tag if there are no tags
                 if (ccpl2.GetNumTags() == 0)
-                    ccpl2.AddTag("no-tags");
+                    ccpl2.AddTag("No Tags");
             }
 
             // Check for errors that would break code down the line
