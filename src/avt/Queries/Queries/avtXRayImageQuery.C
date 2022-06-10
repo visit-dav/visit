@@ -44,7 +44,7 @@ int avtXRayImageQuery::iFileFamily = 0;
 
 // To add new output types, these are the changes to make:
 //    1) increment `NUM_OUTPUT_TYPES` by however many output types you are planning to add
-//    2) add new entries to the `file_protocols` array
+//    2) add new entries to the `file_protocols` and `file_extensions` arrays
 //    3) add new constants for your output types (make sure in the same order as in `file_protocols`)
 //    4) optional: add new inline functions to check for your output type or types; see below for examples
 //    5) add new cases where necessary (probably just in `avtXRayImageQuery::Execute`)
@@ -52,9 +52,11 @@ int avtXRayImageQuery::iFileFamily = 0;
 
 const int NUM_OUTPUT_TYPES = 11;
 
-// member `outputType` indexes this array
+// member `outputType` indexes these arrays
 const char *file_protocols[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
     /*conduit blueprint output types */ "json", "hdf5", "conduit_json", "conduit_bin", "yaml"};
+const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
+    /*conduit blueprint output types */ "root", "root", "root", "root", "root"};
 
 const int BMP_OUT = 0;
 const int JPEG_OUT = 1;
@@ -1076,7 +1078,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // the next file base name in the sequence.
                 //
                 char fileName[512];
-                snprintf(fileName, 512, "%s00.%s", baseName, file_protocols[outputType]);
+                snprintf(fileName, 512, "%s00.%s", baseName, file_extensions[outputType]);
 
                 ifstream ifile(fileName);
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -1303,10 +1305,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             // Q? What do I do if the output type was conduit_bin? That outputs two files
 
             // TODO clean this up
-            std::string file_w_path = outputDir + "/" + outputFileName + ".root";
+            std::string file_w_path = outputDir + "/" + outputFileName + file_extensions[outputType];
             conduit::Node index_fix;
             conduit::relay::io::load(file_w_path, file_protocols[outputType], index_fix);
-            index_fix["file_pattern"] = outputFileName + ".root";
+            index_fix["file_pattern"] = outputFileName + file_extensions[outputType];
             conduit::relay::io::save(index_fix,
                                      file_w_path,
                                      file_protocols[outputType]);            
@@ -1333,31 +1335,33 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 if (numBins == 1)
                     snprintf(buf, 512, "The x ray image query results were "
                              "written to the file %s00.%s\n", baseName,
-                             file_protocols[outputType]);
+                             file_extensions[outputType]);
                 else
                     snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
-                        baseName, file_protocols[outputType], baseName, numBins - 1,
-                        file_protocols[outputType]);
+                        baseName, file_extensions[outputType], baseName, numBins - 1,
+                        file_extensions[outputType]);
             }
             else if (outputTypeIsRawfloatsOrBov(outputType))
             {
                 snprintf(buf, 512, "The x ray image query results were "
                     "written to the files %s00.%s - %s%02d.%s\n",
-                    baseName, file_protocols[outputType], baseName, 2*numBins - 1,
-                    file_protocols[outputType]);                
+                    baseName, file_extensions[outputType], baseName, 2*numBins - 1,
+                    file_extensions[outputType]);                
             }
             else if (outputTypeIsBlueprint(outputType))
             {
                 if (outputType == BLUEPRINT_CONDUIT_BIN_OUT)
                 {
                     snprintf(buf, 512, "The x ray image query results were "
-                             "written to the files %s.root - %s.root_json\n", baseName, baseName);
+                             "written to the files %s.%s - %s.root_json\n", 
+                             baseName, file_extensions[outputType], baseName);
                 }
                 else
                 {
                     snprintf(buf, 512, "The x ray image query results were "
-                             "written to the file %s.root\n", baseName);
+                             "written to the file %s.%s\n", baseName, 
+                             file_extensions[outputType]);
                 }
             }
             else
