@@ -210,21 +210,6 @@ QvisColorTableWindow::CreateWindowContents()
     mgLayout = new QGridLayout();
     innerColorTableLayout->addLayout(mgLayout);
 
-    groupToggle = new QCheckBox(tr("Group tables by Category"), colorTableWidgetGroup);
-    connect(groupToggle, SIGNAL(toggled(bool)),
-            this, SLOT(groupingToggled(bool)));
-    mgLayout->addWidget(groupToggle, 0, 1);
-
-    tagToggle = new QCheckBox(tr("Filter tables by Tag"), colorTableWidgetGroup);
-    connect(tagToggle, SIGNAL(toggled(bool)),
-            this, SLOT(taggingToggled(bool)));
-    mgLayout->addWidget(tagToggle, 1, 1);
-
-    tagCombiningBehaviorToggle = new QCheckBox(tr("Match every tag, instead of any tag"), colorTableWidgetGroup);
-    connect(tagCombiningBehaviorToggle, SIGNAL(toggled(bool)),
-            this, SLOT(tagCombiningToggled(bool)));
-    mgLayout->addWidget(tagCombiningBehaviorToggle, 2, 1);
-
     newButton = new QPushButton(tr("New"), colorTableWidgetGroup);
     connect(newButton, SIGNAL(clicked()), this, SLOT(addColorTable()));
     mgLayout->addWidget(newButton, 0, 0);
@@ -237,42 +222,62 @@ QvisColorTableWindow::CreateWindowContents()
     connect(exportButton, SIGNAL(clicked()), this, SLOT(exportColorTable()));
     mgLayout->addWidget(exportButton, 2, 0);
 
+    // TODO remove entirely
+    groupToggle = new QCheckBox(tr("Group tables by Category"), colorTableWidgetGroup);
+    connect(groupToggle, SIGNAL(toggled(bool)),
+            this, SLOT(groupingToggled(bool)));
+    mgLayout->addWidget(groupToggle, 0, 2);
+    groupToggle->setVisible(false);
+
+    tagToggle = new QCheckBox(tr("Filter tables by Tag"), colorTableWidgetGroup);
+    connect(tagToggle, SIGNAL(toggled(bool)),
+            this, SLOT(taggingToggled(bool)));
+    mgLayout->addWidget(tagToggle, 0, 2);
+
+    tagCombiningBehaviorToggle = new QCheckBox(tr("Match every tag, instead of any tag"), colorTableWidgetGroup);
+    connect(tagCombiningBehaviorToggle, SIGNAL(toggled(bool)),
+            this, SLOT(tagCombiningToggled(bool)));
+    mgLayout->addWidget(tagCombiningBehaviorToggle, 1, 2);
+
     nameListBox = new QTreeWidget(colorTableWidgetGroup);
-    nameListBox->setMinimumHeight(150);
+    nameListBox->setMinimumHeight(100);
+    // nameListBox->setMinimumWidth(250);
     nameListBox->setColumnCount(1);
     // don't want the header
     nameListBox->header()->close();
     connect(nameListBox, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem*)),
             this, SLOT(highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*)));
-    mgLayout->addWidget(nameListBox, 3, 1);
+    mgLayout->addWidget(nameListBox, 3, 2);
 
     QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
-    mgLayout->addWidget(colorTableName, 4, 0, Qt::AlignRight);
+    mgLayout->addWidget(colorTableName, 4, 0, Qt::AlignLeft);
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
-    mgLayout->addWidget(nameLineEdit, 4, 1);
+    mgLayout->addWidget(nameLineEdit, 4, 2);
 
     categoryLabel = new QLabel(tr("Category"), colorTableWidgetGroup);
-    mgLayout->addWidget(categoryLabel, 5, 0, Qt::AlignRight);
+    mgLayout->addWidget(categoryLabel, 5, 0, Qt::AlignLeft);
     categoryLineEdit = new QLineEdit(colorTableWidgetGroup);
-    mgLayout->addWidget(categoryLineEdit, 5, 1);
+    mgLayout->addWidget(categoryLineEdit, 5, 2);
 
     tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
-    mgLayout->addWidget(tagLabel, 6, 0, Qt::AlignRight);
+    mgLayout->addWidget(tagLabel, 6, 0, Qt::AlignLeft);
     tagLineEdit = new QLineEdit(colorTableWidgetGroup);
-    mgLayout->addWidget(tagLineEdit, 6, 1);
+    mgLayout->addWidget(tagLineEdit, 6, 2);
 
     tagTable = new QTreeWidget(colorTableWidgetGroup);
     QStringList headers;
     headers << tr("Enabled") << tr("Tag Name");
     tagTable->setHeaderLabels(headers);
-    tagTable->header()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
-    tagTable->header()->setSectionResizeMode(1,QHeaderView::ResizeToContents);
+    tagTable->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    tagTable->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     connect(tagTable, SIGNAL(itemChanged(QTreeWidgetItem *, int)), 
             this, SLOT(tagTableItemSelected(QTreeWidgetItem *, int)));
     tagTable->clear();
     tagTable->setSortingEnabled(true);
-    tagTable->setMinimumHeight(150);
-    mgLayout->addWidget(tagTable, 7, 1);
+    tagTable->setMinimumHeight(100);
+    tagTable->setMinimumWidth(250);
+    tagTable->setColumnCount(2);
+    mgLayout->addWidget(tagTable, 3, 0);
 
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
@@ -333,7 +338,8 @@ QvisColorTableWindow::CreateWindowContents()
 
     // Create the spectrum bar.
     spectrumBar = new QvisSpectrumBar(colorWidgetGroup);
-    spectrumBar->setMinimumHeight(300);
+    spectrumBar->setMinimumHeight(100);
+    spectrumBar->setMaximumHeight(110);
     spectrumBar->addControlPoint(QColor(255,0,0),   0.);
     spectrumBar->addControlPoint(QColor(255,255,0), 0.25);
     spectrumBar->addControlPoint(QColor(0,255,0),   0.5);
@@ -350,7 +356,8 @@ QvisColorTableWindow::CreateWindowContents()
 
     // Create the discrete color table widgets.
     discreteColors = new QvisColorGridWidget(colorWidgetGroup);
-    discreteColors->setMinimumHeight(300);
+    discreteColors->setMinimumHeight(100);
+    discreteColors->setMaximumHeight(110);
     QColor *tmpColors = new QColor[DEFAULT_DISCRETE_NCOLORS];
     for(int i = 0; i < DEFAULT_DISCRETE_NCOLORS; ++i)
     {
