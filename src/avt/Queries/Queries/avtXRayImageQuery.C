@@ -1218,7 +1218,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             for (int i = 0; i < numBins; i ++)
             {
                 intensity = leaves[i]->GetPointData()->GetArray("Intensity");
-                pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
+                pathLength = leaves[numBins + i]->GetPointData()->GetArray("PathLength");
                 if (datatype == VTK_FLOAT)
                 {
                     float *intensity_ptr = (float *) intensity->GetVoidPointer(0);
@@ -1272,6 +1272,19 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             conduit::relay::io::blueprint::save_mesh(data_out,
                                                      baseName,
                                                      file_extensions[outputType]);
+
+            // TODO put note to self here w/ link to conduit issue
+            // TODO clean this up
+            // https://github.com/LLNL/conduit/issues/973
+
+            conduit::Node index_fix;
+            conduit::relay::io::load("outdir/output.root", file_extensions[outputType], index_fix);
+            index_fix["file_pattern"] = "output.root";
+            conduit::relay::io::save(index_fix,
+                // TODO fix this please
+                                                     "outdir/output.root",
+                                                     file_extensions[outputType]);            
+
         }
         else
         {
