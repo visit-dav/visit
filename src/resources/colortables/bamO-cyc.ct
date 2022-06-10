@@ -1027,6 +1027,6 @@
             <Field name="position" type="float">1</Field>
         </Object>
         <Field name="category" type="string">CvdFriendlyCrameri</Field>
-        <Field name="tags" type="stringVector">"CvdFriendly" "Crameri" "Cyclic" "Continuous" "bam" </Field>
+        <Field name="tags" type="stringVector">"CvdFriendly" "Crameri" "Cyclic" "Continuous" </Field>
     </Object>
 </Object>
