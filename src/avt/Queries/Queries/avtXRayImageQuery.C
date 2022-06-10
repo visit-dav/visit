@@ -44,8 +44,8 @@ int avtXRayImageQuery::iFileFamily = 0;
 
 // To add new output types, these are the changes to make:
 //    1) increment `NUM_OUTPUT_TYPES` by however many output types you are planning to add
-//    2) add new entries to the `file_extensions` array
-//    3) add new constants for your output types (make sure in the same order as in `file_extensions`)
+//    2) add new entries to the `file_protocols` array
+//    3) add new constants for your output types (make sure in the same order as in `file_protocols`)
 //    4) optional: add new inline functions to check for your output type or types; see below for examples
 //    5) add new cases where necessary (probably just in `avtXRayImageQuery::Execute`)
 //    6) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
@@ -53,7 +53,7 @@ int avtXRayImageQuery::iFileFamily = 0;
 const int NUM_OUTPUT_TYPES = 11;
 
 // member `outputType` indexes this array
-const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
+const char *file_protocols[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
     /*conduit blueprint output types */ "json", "hdf5", "conduit_json", "conduit_bin", "yaml"};
 
 const int BMP_OUT = 0;
@@ -149,6 +149,7 @@ avtXRayImageQuery::avtXRayImageQuery():
     debugRay = -1;
     familyFiles = false;
     outputType = PNG_OUT;
+    outputFileName = "output";
     outputDir = ".";
     useSpecifiedUpVector = true;
     useOldView = true;
@@ -786,7 +787,7 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
     while (i < NUM_OUTPUT_TYPES)
     {
         // the output types index the file extensions array
-        if (type == file_extensions[i])
+        if (type == file_protocols[i])
         {
             outputType = i;
             return;
@@ -796,6 +797,25 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
     char errmsg[256];
     snprintf(errmsg, 256, "Output type %s is invalid.", type.c_str());
     EXCEPTION1(VisItException, errmsg);
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetOutputFileName
+//
+//  Purpose:
+//    Set the output filename.
+//
+//  Programmer: Justin Privitera 
+//  Creation:   Fri Jun 10 11:12:02 PDT 2022
+//
+//  Modifications:
+// 
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetOutputFileName(const std::string &name)
+{
+    outputFileName = name;
 }
 
 // ****************************************************************************
@@ -1056,7 +1076,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // the next file base name in the sequence.
                 //
                 char fileName[512];
-                snprintf(fileName, 512, "%s00.%s", baseName, file_extensions[outputType]);
+                snprintf(fileName, 512, "%s00.%s", baseName, file_protocols[outputType]);
 
                 ifstream ifile(fileName);
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -1067,6 +1087,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             else
             {
                 snprintf(baseName, 512, "%s/output", outputDir.c_str());
+                // TODO make sense of this and fix
+                outputFileName = "output";
             }
         }
 
@@ -1271,26 +1293,30 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             // save out
             conduit::relay::io::blueprint::save_mesh(data_out,
                                                      baseName,
-                                                     file_extensions[outputType]);
+                                                     file_protocols[outputType]);
 
-            // TODO put note to self here w/ link to conduit issue
-            // TODO clean this up
+            // Note to future developers: The following lines are a workaround to a bug found in
+            // conduit 0.8.3; see this issue for more information: 
             // https://github.com/LLNL/conduit/issues/973
+            // Once this bug is fixed, these lines should be removed.
 
+            // Q? What do I do if the output type was conduit_bin? That outputs two files
+
+            // TODO clean this up
+            std::string file_w_path = outputDir + "/" + outputFileName + ".root";
             conduit::Node index_fix;
-            conduit::relay::io::load("outdir/output.root", file_extensions[outputType], index_fix);
-            index_fix["file_pattern"] = "output.root";
+            conduit::relay::io::load(file_w_path, file_protocols[outputType], index_fix);
+            index_fix["file_pattern"] = outputFileName + ".root";
             conduit::relay::io::save(index_fix,
-                // TODO fix this please
-                                                     "outdir/output.root",
-                                                     file_extensions[outputType]);            
+                                     file_w_path,
+                                     file_protocols[outputType]);            
 
         }
         else
         {
             char errmsg[256];
             // this is safe because at the beginning of the function we check that the output type is valid
-            snprintf(errmsg, 256, "No logic implemented for output type %s.", file_extensions[outputType]);
+            snprintf(errmsg, 256, "No logic implemented for output type %s.", file_protocols[outputType]);
             EXCEPTION1(VisItException, errmsg);
         }
 
@@ -1307,19 +1333,19 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 if (numBins == 1)
                     snprintf(buf, 512, "The x ray image query results were "
                              "written to the file %s00.%s\n", baseName,
-                             file_extensions[outputType]);
+                             file_protocols[outputType]);
                 else
                     snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
-                        baseName, file_extensions[outputType], baseName, numBins - 1,
-                        file_extensions[outputType]);
+                        baseName, file_protocols[outputType], baseName, numBins - 1,
+                        file_protocols[outputType]);
             }
             else if (outputTypeIsRawfloatsOrBov(outputType))
             {
                 snprintf(buf, 512, "The x ray image query results were "
                     "written to the files %s00.%s - %s%02d.%s\n",
-                    baseName, file_extensions[outputType], baseName, 2*numBins - 1,
-                    file_extensions[outputType]);                
+                    baseName, file_protocols[outputType], baseName, 2*numBins - 1,
+                    file_protocols[outputType]);                
             }
             else if (outputTypeIsBlueprint(outputType))
             {
@@ -1338,7 +1364,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 char errmsg[256];
                 // this is safe because at the beginning of the function we check that the output type is valid
-                snprintf(errmsg, 256, "No output message implemented for output type %s.", file_extensions[outputType]);
+                snprintf(errmsg, 256, "No output message implemented for output type %s.", file_protocols[outputType]);
                 EXCEPTION1(VisItException, errmsg);
 
             }
