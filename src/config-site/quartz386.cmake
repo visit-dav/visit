@@ -1,14 +1,14 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.3/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.0/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake
 ##
-## ./build_visit_develop generated host.cmake
-## created: Wed May 25 10:34:29 PDT 2022
-## system: Linux quartz1154 3.10.0-1160.62.1.1chaos.ch6.x86_64 #1 SMP Wed Apr 6 12:39:56 PDT 2022 x86_64 x86_64 x86_64 GNU/Linux
+## ./build_visit3_3_0 generated host.cmake
+## created: Tue May 31 14:34:31 PDT 2022
+## system: Linux quartz770 3.10.0-1160.62.1.1chaos.ch6.x86_64 #1 SMP Wed Apr 6 12:39:56 PDT 2022 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.3/toss3)
+SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.0/toss3)
 SET(VISITARCH linux-x86_64_gcc-7.3)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -77,7 +77,7 @@ VISIT_OPTION_DEFAULT(VISIT_MESAGL_DIR ${VISITHOME}/mesagl/17.3.9/${VISITARCH})
 ##
 ## Qt
 ##
-SETUP_APP_VERSION(QT 5.14.2)
+SETUP_APP_VERSION(QT 5.10.1)
 VISIT_OPTION_DEFAULT(VISIT_QT_DIR ${VISITHOME}/qt/${QT_VERSION}/${VISITARCH})
 
 ##
@@ -234,7 +234,6 @@ VISIT_OPTION_DEFAULT(VISIT_MOAB_DIR ${VISITHOME}/moab/4.9.2-RC0/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MOAB_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_DIR ${VISITHOME}/moab_mpi/4.9.2-RC0/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_LIBDEP HDF5_MPI_LIBRARY_DIR hdf5_mpi ${VISIT_HDF5_MPI_LIBDEP} TYPE STRING)
-##
 
 ##
 ## NetCDF
@@ -252,13 +251,6 @@ VISIT_OPTION_DEFAULT(VISIT_OPENEXR_DIR ${VISITHOME}/openexr/2.2.0/${VISITARCH})
 ##
 #SETUP_APP_VERSION(PIDX 0.9.3)
 #VISIT_OPTION_DEFAULT(VISIT_PIDX_DIR ${VISITHOME}/pidx/${PIDX_VERSION}/${VISITARCH})
-
-##
-## PySide
-##
-# version is needed by VisIt's Find module.
-set(PYSIDE_VERSION 5.14.2)
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/${PYSIDE_VERSION}/${VISITARCH})
 
 ##
 ## Silo
