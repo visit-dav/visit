@@ -1195,7 +1195,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             const int y_coords_dim = ny + 1;
             const int z_coords_dim = numBins + 1;
 
-            // TODO cycle and time
+            // TODO move to the end
+            // TODO xray_view stuff
+            data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
+            data_out["state/cycle"] = GetInput()->GetInfo().GetAttributes().GetCycle();
 
             // set up coords
             data_out["coordsets/image_coords/type"] = "rectilinear";
@@ -1242,6 +1245,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             const int datatype = leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType();
 
+            // TODO refactor; make templated function for this to reduce code bloat
             int field_index = 0;
             for (int i = 0; i < numBins; i ++)
             {
@@ -1287,6 +1291,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                     EXCEPTION1(VisItException, msg);
                 }
             }
+
+            data_out.print();
             
             // verify
             conduit::Node verify_info;
