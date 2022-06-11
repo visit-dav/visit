@@ -20,12 +20,12 @@ function bv_mili_depends_on
 
 function bv_mili_info
 {
-    export MILI_FILE=${MILI_FILE:-"mili-LGPL-19.2.tar.gz"}
-    export MILI_VERSION=${MILI_VERSION:-"19.2"}
-    export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"19.2"}
-    export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili"}
-    export MILI_MD5_CHECKSUM="2d3c62f5261b009dfda2b73bb358749f"
-    export MILI_SHA256_CHECKSUM="dcf636d5f0d2ae9c273ab0e909e558d950471554dc5757734ca73737660f4d90"
+    export MILI_FILE=${MILI_FILE:-"mili-22.1.tar.gz"}
+    export MILI_VERSION=${MILI_VERSION:-"22.1"}
+    export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION:-"22.1"}
+    export MILI_BUILD_DIR=${MILI_BUILD_DIR:-"mili-${MILI_VERSION}"}
+    export MILI_MD5_CHECKSUM="c8926a0a78aa079f91456d09b9088606"
+    export MILI_SHA256_CHECKSUM="16fb6e5c3e14f1eb3cd22b8f4a4db9609ccc437b892598d5e381b58caa6fa4a1"
 }
 
 function bv_mili_print
@@ -324,7 +324,7 @@ function build_mili
             warn "Mili build failed.  Giving up"
             return 1
         fi
-    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2 ]] ; then
+    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2 || ${MILI_VERSION} == 22.1 ]] ; then
         cd MILI-*-*
         make opt fortran=false
     fi
@@ -343,13 +343,13 @@ function build_mili
         cp mili.h mili_enum.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
         cp mili.h mili_enum.h misc.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2 ]] ; then
+    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2 || ${MILI_VERSION} == 22.1 ]] ; then
         cp src/{mili.h,mili_enum.h,misc.h}  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     fi
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         INSTALLNAMEPATH="$VISITDIR/mili/${MILI_VERSION}/$VISITARCH/lib"
 
-        if [[ ${MILI_VERSION} != 15.1 && ${MILI_VERSION} != 19.2 ]] ; then
+        if [[ ${MILI_VERSION} != 15.1 && ${MILI_VERSION} != 19.2 && ${MILI_VERSION} != 22.1 ]] ; then
             $C_COMPILER -dynamiclib -o libmili.$SO_EXT *.o \
                         -Wl,-headerpad_max_install_names \
                         -Wl,-install_name,$INSTALLNAMEPATH/libmili.${SO_EXT} \
@@ -368,7 +368,7 @@ function build_mili
         fi
         cp libmili.$SO_EXT "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     else
-        if [[ ${MILI_VERSION} != 13.1.1-patch && ${MILI_VERSION} != 15.1 && ${MILI_VERSION} != 19.2 ]] ; then
+        if [[ ${MILI_VERSION} != 13.1.1-patch && ${MILI_VERSION} != 15.1 && ${MILI_VERSION} != 19.2 && ${MILI_VERSION} != 22.1 ]] ; then
             ar -rc libmili.a *.o 
             if [[ $? != 0 ]] ; then
                 warn "Mili install failed.  Giving up"
