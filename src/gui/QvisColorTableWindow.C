@@ -2652,11 +2652,13 @@ QvisColorTableWindow::taggingToggled(bool val)
 {
     colorAtts->SetTaggingFlag(val);
     colorAtts->SetChangesMade(true);
+    nameListBox->blockSignals(true);
     mgLayout->removeWidget(nameListBox);
     if (val)
         mgLayout->addWidget(nameListBox, 3, 3, 1, 3);        
     else
         mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
+    nameListBox->blockSignals(false);
     Apply(true);
 }
 
