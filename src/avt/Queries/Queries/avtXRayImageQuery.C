@@ -1316,14 +1316,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             // Q? What do I do if the output type was conduit_bin? That outputs two files
             // Q? also conduit bin does not work...
+            // TODO make there be a filename stream elsewhere too for use everywhere
             std::stringstream oss;
             oss << outputFileName << ".cycle_" << std::setfill('0') << 
              std::setw(6) << cycle << "." << file_extensions[outputType];
 
             if (outputDir != ".")
             {
-                std::cout << "opening file " << outputDir + "/" + oss.str() << std::endl;
-                // TODO clean this up
                 conduit::Node index_fix;
                 conduit::relay::io::load(outputDir + "/" + oss.str(), file_protocols[outputType], index_fix);
                 index_fix["file_pattern"] = oss.str();
