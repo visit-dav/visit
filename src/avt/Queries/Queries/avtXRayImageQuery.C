@@ -1195,11 +1195,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             const int y_coords_dim = ny + 1;
             const int z_coords_dim = numBins + 1;
 
-            // TODO move to the end
-            // TODO xray_view stuff
-            data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
-            data_out["state/cycle"] = GetInput()->GetInfo().GetAttributes().GetCycle();
-
             // set up coords
             data_out["coordsets/image_coords/type"] = "rectilinear";
             data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(x_coords_dim));
@@ -1292,6 +1287,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 }
             }
 
+            // TODO xray_view stuff
+            // TODO this will cause a bug b/c cycle info changes the filename
+            // figure out the pattern OR use conduit's formatting lib to get the filename
+            data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
+            int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
+            data_out["state/cycle"] = cycle;
+
             data_out.print();
             
             // verify
@@ -1314,16 +1316,19 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             // Q? What do I do if the output type was conduit_bin? That outputs two files
             // Q? also conduit bin does not work...
+            std::stringstream oss;
+            oss << outputFileName << ".cycle_" << std::setfill('0') << 
+             std::setw(6) << cycle << "." << file_extensions[outputType];
 
             if (outputDir != ".")
             {
+                std::cout << "opening file " << outputDir + "/" + oss.str() << std::endl;
                 // TODO clean this up
-                std::string file_w_path = outputDir + "/" + outputFileName + "." + file_extensions[outputType];
                 conduit::Node index_fix;
-                conduit::relay::io::load(file_w_path, file_protocols[outputType], index_fix);
-                index_fix["file_pattern"] = outputFileName + "." + file_extensions[outputType];
+                conduit::relay::io::load(outputDir + "/" + oss.str(), file_protocols[outputType], index_fix);
+                index_fix["file_pattern"] = oss.str();
                 conduit::relay::io::save(index_fix,
-                                         file_w_path,
+                                         outputDir + "/" + oss.str(),
                                          file_protocols[outputType]);  
             }
         }
@@ -1364,6 +1369,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
             else if (outputTypeIsBlueprint(outputType))
             {
+                // TODO fix these messages
                 if (outputType == BLUEPRINT_CONDUIT_BIN_OUT)
                 {
                     snprintf(buf, 512, "The x ray image query results were "
