@@ -1287,14 +1287,30 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 }
             }
 
-            // TODO xray_view stuff
-            // TODO this will cause a bug b/c cycle info changes the filename
-            // figure out the pattern OR use conduit's formatting lib to get the filename
-            data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
-            int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
-            data_out["state/cycle"] = cycle;
+            // TODO strides
 
-            data_out.print();
+            data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
+            const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
+            data_out["state/cycle"] = cycle;
+            data_out["state/xray_view/normal/x"] = normal[0];
+            data_out["state/xray_view/normal/y"] = normal[1];
+            data_out["state/xray_view/normal/z"] = normal[2];
+            data_out["state/xray_view/focus/x"] = focus[0];
+            data_out["state/xray_view/focus/y"] = focus[1];
+            data_out["state/xray_view/focus/z"] = focus[2];
+            data_out["state/xray_view/viewUp/x"] = viewUp[0];
+            data_out["state/xray_view/viewUp/y"] = viewUp[1];
+            data_out["state/xray_view/viewUp/z"] = viewUp[2];
+            data_out["state/xray_view/viewAngle"] = viewAngle;
+            data_out["state/xray_view/parallelScale"] = parallelScale;
+            data_out["state/xray_view/nearPlane"] = nearPlane;
+            data_out["state/xray_view/farPlane"] = farPlane;
+            // Q? what is image pan? are x and y ok names?
+            data_out["state/xray_view/imagePan/x"] = imagePan[0];
+            data_out["state/xray_view/imagePan/y"] = imagePan[1];
+            data_out["state/xray_view/imageZoom"] = imageZoom;
+            // Q? should be boolean val or "true" or "false"?
+            data_out["state/xray_view/perspective"] = perspective;
             
             // verify
             conduit::Node verify_info;
@@ -1321,13 +1337,16 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             oss << outputFileName << ".cycle_" << std::setfill('0') << 
              std::setw(6) << cycle << "." << file_extensions[outputType];
 
+            std::string real_filename = oss.str();
+            std::string full_file_w_path = outputDir + "/" + real_filename;
+
             if (outputDir != ".")
             {
                 conduit::Node index_fix;
-                conduit::relay::io::load(outputDir + "/" + oss.str(), file_protocols[outputType], index_fix);
-                index_fix["file_pattern"] = oss.str();
+                conduit::relay::io::load(full_file_w_path, file_protocols[outputType], index_fix);
+                index_fix["file_pattern"] = real_filename;
                 conduit::relay::io::save(index_fix,
-                                         outputDir + "/" + oss.str(),
+                                         full_file_w_path,
                                          file_protocols[outputType]);  
             }
         }
