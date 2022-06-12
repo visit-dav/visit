@@ -19,12 +19,6 @@
 #include <avtSourceFromAVTDataset.h>
 #include <avtXRayFilter.h>
 
-#ifdef HAVE_CONDUIT
-    #include <conduit.hpp>
-    #include <conduit_blueprint.hpp>
-    #include <conduit_relay.hpp>
-#endif
-
 #include <vectortypes.h>
 
 #include <visitstream.h>
@@ -1240,51 +1234,17 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             const int datatype = leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType();
 
-            // TODO refactor; make templated function for this to reduce code bloat
-            int field_index = 0;
-            for (int i = 0; i < numBins; i ++)
+            if (datatype == VTK_FLOAT)
+                WriteArrays<float>(leaves, intensity_vals, depth_vals, numBins);
+            else if (datatype == VTK_DOUBLE)
+                WriteArrays<double>(leaves, intensity_vals, depth_vals, numBins);
+            else if (datatype == VTK_INT)
+                WriteArrays<int>(leaves, intensity_vals, depth_vals, numBins);
+            else
             {
-                intensity = leaves[i]->GetPointData()->GetArray("Intensity");
-                pathLength = leaves[numBins + i]->GetPointData()->GetArray("PathLength");
-                if (datatype == VTK_FLOAT)
-                {
-                    float *intensity_ptr = (float *) intensity->GetVoidPointer(0);
-                    float *path_length_ptr = (float *) pathLength->GetVoidPointer(0);
-                    for (int j = 0; j < numPixels; j ++)
-                    {
-                        intensity_vals[field_index] = intensity_ptr[j];
-                        depth_vals[field_index] = path_length_ptr[j];
-                        field_index ++;
-                    }
-                }
-                else if (datatype == VTK_DOUBLE)
-                {
-                    double *intensity_ptr = (double *) intensity->GetVoidPointer(0);
-                    double *path_length_ptr = (double *) pathLength->GetVoidPointer(0);
-                    for (int j = 0; j < numPixels; j ++)
-                    {
-                        intensity_vals[field_index] = intensity_ptr[j];
-                        depth_vals[field_index] = path_length_ptr[j];
-                        field_index ++;
-                    }
-                }
-                else if (datatype == VTK_INT)
-                {
-                    int *intensity_ptr = (int *) intensity->GetVoidPointer(0);
-                    int *path_length_ptr = (int *) pathLength->GetVoidPointer(0);
-                    for (int j = 0; j < numPixels; j ++)
-                    {
-                        intensity_vals[field_index] = intensity_ptr[j];
-                        depth_vals[field_index] = path_length_ptr[j];
-                        field_index ++;
-                    }
-                }
-                else
-                {
-                    char msg[256];
-                    snprintf(msg, 256, "VTKDataType %d is not supported.", datatype);
-                    EXCEPTION1(VisItException, msg);
-                }
+                char msg[256];
+                snprintf(msg, 256, "VTKDataType %d is not supported.", datatype);
+                EXCEPTION1(VisItException, msg);
             }
 
             // TODO strides
@@ -1706,6 +1666,44 @@ avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
     fprintf(file, "BRICK_ORIGIN: 1 1 1\n");
     fprintf(file, "BRICK_SIZE: %d %d 1\n", nx, ny);
     fclose(file);
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteArrays
+//
+//  Purpose:
+//    TODO
+//
+//  Programmer: Justin Privitera
+//  Creation:   Sat Jun 11 17:59:32 PDT 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+template <typename T>
+void
+avtXRayImageQuery::WriteArrays(vtkDataSet **leaves, 
+                               conduit::float64 *intensity_vals,
+                               conduit::float64 *depth_vals,
+                               int numBins)
+{
+    vtkDataArray *intensity;
+    vtkDataArray *pathLength;
+    int field_index = 0;
+    for (int i = 0; i < numBins; i ++)
+    {
+        intensity = leaves[i]->GetPointData()->GetArray("Intensity");
+        pathLength = leaves[numBins + i]->GetPointData()->GetArray("PathLength");
+        T *intensity_ptr = (T *) intensity->GetVoidPointer(0);
+        T *path_length_ptr = (T *) pathLength->GetVoidPointer(0);
+        for (int j = 0; j < numPixels; j ++)
+        {
+            intensity_vals[field_index] = intensity_ptr[j];
+            depth_vals[field_index] = path_length_ptr[j];
+            field_index ++;
+        }
+    }
 }
 
 // ****************************************************************************

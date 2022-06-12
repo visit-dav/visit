@@ -13,6 +13,12 @@
 #include <avtDatasetQuery.h>
 #include <avtXRayFilter.h>
 
+#ifdef HAVE_CONDUIT
+    #include <conduit.hpp>
+    #include <conduit_blueprint.hpp>
+    #include <conduit_relay.hpp>
+#endif
+
 #include <string>
 #include <vector>
 
@@ -165,6 +171,11 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      WriteFloats(const char *, int, int, T*);
     void                      WriteBOVHeader(const char *, const char *,
                                   int, int, int, const char *);
+    template <typename T>
+    void                      WriteArrays(vtkDataSet **leaves, 
+                                          conduit::float64 *intensity_vals,
+                                          conduit::float64 *depth_vals,
+                                          int numBins);
 
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
