@@ -144,12 +144,10 @@ private slots:
     void showIndexHintsToggled(bool val);
     void taggingToggled(bool val);
     void tagCombiningChanged(int index);
-    void ApplyCategoryChange();
 private:
     ColorTableAttributes     *colorAtts;
     int                      colorCycle;
     QString                  currentColorTable;
-    QString                  categoryName;
     int                      popupMode;
     bool                     sliding;
     stringVector             tagList;
@@ -174,8 +172,6 @@ private:
     QPushButton              *exportButton;
     QLineEdit                *nameLineEdit;
     QTreeWidget              *nameListBox;
-    QLabel                   *categoryLabel;
-    QLineEdit                *categoryLineEdit;
     QLabel                   *tagLabel;
     QLineEdit                *tagLineEdit;
     QTreeWidget              *tagTable;

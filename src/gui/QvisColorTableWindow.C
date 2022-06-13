@@ -76,7 +76,7 @@ QvisColorTableWindow::QvisColorTableWindow(
     const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(colorAtts_, caption, shortName, notepad,
                                QvisPostableWindowObserver::ApplyButton, false),
-    currentColorTable("none"), categoryName("none"), ctObserver(colorAtts_)
+    currentColorTable("none"), ctObserver(colorAtts_)
 {
     colorAtts = colorAtts_;
     colorCycle = 0;
@@ -250,14 +250,6 @@ QvisColorTableWindow::CreateWindowContents()
     mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
     mgLayout->addWidget(nameLineEdit, 4, 1, 1, 5);
-
-    // TODO deprecate entirely
-    categoryLabel = new QLabel(tr("Category"), colorTableWidgetGroup);
-    mgLayout->addWidget(categoryLabel, 5, 0, Qt::AlignLeft);
-    categoryLabel->setVisible(false);
-    categoryLineEdit = new QLineEdit(colorTableWidgetGroup);
-    mgLayout->addWidget(categoryLineEdit, 5, 2);
-    categoryLineEdit->setVisible(false);
 
     tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
     mgLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
@@ -872,49 +864,9 @@ QvisColorTableWindow::UpdateNames()
     nameListBox->clear();
 
     // Put all of the color table names into the tree.
-    bool doSimpleTree = true;
     bool doTags = tagToggle->isChecked();
-    if(!doSimpleTree && !doTags)
-    {
-        nameListBox->setRootIsDecorated(true);
-        QMap<QString, QStringList> mappedCT;
-        for (int i = 0; i < colorAtts->GetNumColorTables(); ++i)
-        {
-            QString ctCategory(colorAtts->GetColorTables(i).GetCategoryName().c_str());
-            QString item(colorAtts->GetNames()[i].c_str());
-            mappedCT[ctCategory].append(item);
-            mappedCT[ctCategory].sort();
-        }
-        if (mappedCT.count() > 1)
-        {
-            // use hierarchical tree if there is more than 1 category
-            QMap<QString, QStringList>::const_iterator iter = mappedCT.constBegin();
-            while (iter != mappedCT.constEnd())
-            {
-                QTreeWidgetItem *treeGroup = new QTreeWidgetItem(nameListBox);
-                treeGroup->setText(0, iter.key());
-                QStringList ctNames = iter.value();
 
-                // Add an item for each color table.
-                for(int i = 0; i < ctNames.size(); ++i)
-                {
-                    QTreeWidgetItem *treeItem = new QTreeWidgetItem();
-                    treeItem->setText(0, ctNames.at(i));
-                    treeGroup->addChild(treeItem);
-                }
-                nameListBox->addTopLevelItem(treeGroup);
-                ++iter;
-            }
-        }
-        else
-        {
-            // revert to undecorated tree if there is only 1 category.
-            doSimpleTree = true;
-        }
-        mappedCT.clear();
-    }
-
-    if(doSimpleTree && !doTags)
+    if(! doTags)
     {
         nameListBox->setRootIsDecorated(false);
         for(int i = 0; i < colorAtts->GetNumColorTables(); ++i)
@@ -924,10 +876,6 @@ QvisColorTableWindow::UpdateNames()
             treeItem->setText(0, item);
             nameListBox->addTopLevelItem(treeItem);
         }
-    }
-
-    if (! doTags)
-    {
         // set all color tables to active
         colorAtts->SetAllActive();
     }
@@ -1040,7 +988,6 @@ QvisColorTableWindow::UpdateNames()
         }
         // Set the text of the default color table into the name line edit.
         nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
-        categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
         tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
     }
 
@@ -1614,12 +1561,6 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
             pt.SetPosition(pos);
             cpts.AddControlPoints(pt);
         }
-        QString temp = categoryLineEdit->displayText().simplified();
-        if(!temp.isEmpty())
-        {
-            categoryName = temp;
-            cpts.SetCategoryName(categoryName.toStdString());
-        }
 
         // Get a pointer to the default color table's control points.
         ColorControlPointList *ccpl = GetDefaultColorControlPoints();
@@ -1639,18 +1580,6 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             currentColorTable = temp;
-        }
-    }
-
-    // Get the category name.
-    //
-    if(which_widget == 2 || which_widget == -1)
-    {
-        QString temp = categoryLineEdit->displayText().simplified();
-        bool okay = !temp.isEmpty();
-        if(okay)
-        {
-            categoryName = temp;
         }
     }
 }
@@ -1676,7 +1605,6 @@ QvisColorTableWindow::Apply(bool ignore)
     if(AutoUpdate() || ignore)
     {
         // Send the color table definitions to the viewer.
-        ApplyCategoryChange();
         GetCurrentValues(1);
         colorAtts->Notify();
 
@@ -1987,14 +1915,11 @@ QvisColorTableWindow::addColorTable()
     GetCurrentValues(1);
     if(colorAtts->GetColorTableIndex(currentColorTable.toStdString()) < 0)
     {
-        // make sure we have the category name
-        GetCurrentValues(2);
         // Add the new colortable to colorAtts.
         if(ccpl)
         {
             // Copy the default color table into the new color table.
             ColorControlPointList cpts(*ccpl);
-            cpts.SetCategoryName(categoryName.toStdString());
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
         else
@@ -2010,7 +1935,6 @@ QvisColorTableWindow::addColorTable()
             cpts.SetSmoothing(ColorControlPointList::Linear);
             cpts.SetEqualSpacingFlag(false);
             cpts.SetDiscreteFlag(false);
-            cpts.SetCategoryName(categoryName.toStdString());
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
 
@@ -2660,7 +2584,7 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::ApplyCategoryChange
+// Method: QvisColorTableWindow::ApplyCategoryChange - DELETED
 //
 // Purpose:
 //   Ensures the color control points use the correct category.
@@ -2671,24 +2595,9 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Mon Jun 13 11:43:49 PDT 2022
+//   Deleted the function.
 //
 // ****************************************************************************
 
-void
-QvisColorTableWindow::ApplyCategoryChange()
-{
-    GetCurrentValues(2);
-    if(!categoryName.isEmpty())
-    {
-        ColorControlPointList *ccpl = GetDefaultColorControlPoints();
-        if(ccpl)
-        {
-            if (categoryName.toStdString() != ccpl->GetCategoryName())
-            {
-                SetUpdate(false);
-                ccpl->SetCategoryName(categoryName.toStdString());
-                colorAtts->Notify();
-            }
-        }
-    }
-}
