@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+  <Plugin name="GEOSX" type="database" label="GEOSX" version="0.1" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" haslicense="false" filePatternsStrict="true" opensWholeDirectory="false">
+    <LIBS>
+      vtkIOLegacy
+      vtkIOXML
+      vtkIOXMLParser
+    </LIBS>
+    <FilePatterns>
+      *.vtm
+    </FilePatterns>
+    <Files components="M">
+      avtGEOSXFileFormat.C
+      GEOSXParser.C
+    </Files>
+    <Files components="E">
+      avtGEOSXFileFormat.C
+      GEOSXParser.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" codefile="GEOSX.code">
+      <Function name="GEOSXCommonPluginInfo::SetupDatabase" user="false" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>
