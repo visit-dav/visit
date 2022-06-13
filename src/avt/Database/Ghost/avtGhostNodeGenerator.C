@@ -188,11 +188,21 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         int ny = ndims[1];
         int nz = ndims[2];
 
+        // Handle possibility of this being a structured grid of quads
+        // but defining a surface in 3 space. There are three options
+        // depending on which of the 3 dimensions is set to size of 1.
+        // Each of these bools is used to switch on/off minor variations
+        // in the 3 loops over x faces, y faces and z faces below.
+        bool isReally2DEmbeddedIn3D = ndims[2] == 1; // z is 1 node thick
+
         int nx2 = ndims[0] - 1;
         int ny2 = ndims[1] - 1;
         int nz2 = ndims[2] - 1;
 
-        nFaces[i] = nx2 * ny2 * 2 + nx2 * nz2 * 2 + ny2 * nz2 * 2;
+        if (isReally2DEmbeddedIn3D)
+            nFaces[i] = nx2 * ny2;
+        else
+            nFaces[i] = nx2 * ny2 * 2 + nx2 * nz2 * 2 + ny2 * nz2 * 2;
 
         faceExternal[i] = new bool[nFaces[i]];
         bool *external = faceExternal[i];
@@ -204,7 +214,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         int iface = 0;
 
         // Do the x faces.
-        for (int ix = 0; ix < nx; ix += nx-1)
+        for (int ix = 0; ix < nx && !isReally2DEmbeddedIn3D; ix += nx-1)
         {
             for (int iy = 0; iy < ny2; iy++)
             {
@@ -245,7 +255,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         }
 
         // Do the y faces.
-        for (int iy = 0; iy < ny; iy += ny-1)
+        for (int iy = 0; iy < ny && !isReally2DEmbeddedIn3D; iy += ny-1)
         {
             for (int ix = 0; ix < nx2; ix++)
             {
@@ -287,7 +297,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         }
 
         // Do the z faces.
-        for (int iz = 0; iz < nz; iz += nz-1)
+        for (int iz = 0; iz < nz; iz += (nz-1+(int)isReally2DEmbeddedIn3D))
         {
             for (int ix = 0; ix < nx2; ix++)
             {
@@ -550,6 +560,8 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         int ny2 = ndims[1] - 1;
         int nz2 = ndims[2] - 1;
 
+        bool isReally2DEmbeddedIn3D = ndims[2] == 1;
+
         //
         // Create the ghost nodes array, initializing it to no ghost
         // nodes.
@@ -571,7 +583,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         bool *external = faceExternal[i];
 
         // Do the x faces.
-        for (int ix = 0; ix < nx; ix += nx-1)
+        for (int ix = 0; ix < nx && !isReally2DEmbeddedIn3D; ix += nx-1)
         {
             for (int iy = 0; iy < ny2; iy++)
             {
@@ -595,7 +607,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         }
 
         // Do the y faces.
-        for (int iy = 0; iy < ny; iy += ny-1)
+        for (int iy = 0; iy < ny && !isReally2DEmbeddedIn3D; iy += ny-1)
         {
             for (int ix = 0; ix < nx2; ix++)
             {
@@ -619,7 +631,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         }
 
         // Do the z faces.
-        for (int iz = 0; iz < nz; iz += nz-1)
+        for (int iz = 0; iz < nz; iz += (nz-1+(int)isReally2DEmbeddedIn3D))
         {
             for (int ix = 0; ix < nx2; ix++)
             {

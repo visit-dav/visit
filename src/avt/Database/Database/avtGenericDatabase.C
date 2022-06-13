@@ -7213,9 +7213,6 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src,
                       intVector &allDomains, bool canDoCollectiveCommunication)
 {
-    // allDomains is consistent across all MPI ranks
-    if (allDomains.size() <= 1)
-        return false;
 
 #ifndef PARALLEL
     (void)canDoCollectiveCommunication;
