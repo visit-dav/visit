@@ -213,6 +213,68 @@ EOF
     return 0
 }
 
+function apply_mili_221_cflags_patch
+{
+    patch -p0 << \EOF
+diff -c mili-22.1/configure.orig mili-22.1/configure
+*** mili-22.1/configure.orig      Mon Jun 13 12:08:41 2022
+--- mili-22.1/configure           Mon Jun 13 12:09:33 2022
+***************
+*** 4361,4382 ****
+  
+      case $CC in
+        *icc)
+!         CC_FLAGS_DEBUG="-g $WORD_SIZE "
+!         CC_FLAGS_OPT="-O3 $WORD_SIZE "
+!         CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
+!         CC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
+          ;;
+        *xlc)
+!         CC_FLAGS_DEBUG="-g $WORD_SIZE "
+!         CC_FLAGS_OPT="-O4 $WORD_SIZE "
+!         CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
+!         CC_FLAGS_LD_OPT="-O4"
+          ;;
+        *gcc)
+!         CC_FLAGS_DEBUG="-g $WORD_SIZE "
+!         CC_FLAGS_OPT="-O4 $WORD_SIZE "
+!         CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
+!         CC_FLAGS_LD_OPT="-O4 $WORD_SIZE"
+          ;;
+        *cc)
+          ;;
+--- 4361,4382 ----
+  
+      case $CC in
+        *icc)
+!         CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
+!         CC_FLAGS_OPT="$CFLAGS -O3 $WORD_SIZE "
+!         CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
+!         CC_FLAGS_LD_OPT="$CFLAGS -O3 $WORD_SIZE"
+          ;;
+        *xlc)
+!         CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
+!         CC_FLAGS_OPT="$CFLAGS -O4 $WORD_SIZE "
+!         CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
+!         CC_FLAGS_LD_OPT="$CFLAGS -O4"
+          ;;
+        *gcc)
+!         CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
+!         CC_FLAGS_OPT="$CFLAGS -O4 $WORD_SIZE "
+!         CC_FLAGS_LD_DEBUG="$CFLAGS -g $WORD_SIZE"
+!         CC_FLAGS_LD_OPT="$CFLAGS -O4 $WORD_SIZE"
+          ;;
+        *cc)
+          ;;
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply CFLAGS patch to Mili 22.1"
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_mili_patch
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -225,6 +287,13 @@ function apply_mili_patch
             return 1
         fi
         apply_mili_151_darwin_patch3
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
+    if [[ ${MILI_VERSION} == 22.1 ]] ; then
+        apply_mili_221_cflags_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
