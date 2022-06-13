@@ -144,7 +144,7 @@ private slots:
     void showIndexHintsToggled(bool val);
     void groupingToggled(bool val);
     void taggingToggled(bool val);
-    void tagCombiningToggled(bool val);
+    void tagCombiningChanged(int index);
     void ApplyCategoryChange();
 private:
     ColorTableAttributes     *colorAtts;
@@ -166,7 +166,8 @@ private:
     QLabel                   *defaultDiscreteLabel;
     QCheckBox                *groupToggle;
     QCheckBox                *tagToggle; // toggles tag filtering
-    QCheckBox                *tagCombiningBehaviorToggle;
+    QLabel                   *tagCombiningBehaviorLabel;
+    QComboBox                *tagCombiningBehaviorChoice;
     QGridLayout              *mgLayout;
 
     QGroupBox                *colorTableWidgetGroup;

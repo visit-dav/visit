@@ -232,12 +232,16 @@ QvisColorTableWindow::CreateWindowContents()
     tagToggle = new QCheckBox(tr("Filter tables by Tag"), colorTableWidgetGroup);
     connect(tagToggle, SIGNAL(toggled(bool)),
             this, SLOT(taggingToggled(bool)));
-    mgLayout->addWidget(tagToggle, 1, 0, 1, 3);
+    mgLayout->addWidget(tagToggle, 1, 0, 1, 6);
 
-    tagCombiningBehaviorToggle = new QCheckBox(tr("Match every tag, instead of any tag"), colorTableWidgetGroup);
-    connect(tagCombiningBehaviorToggle, SIGNAL(toggled(bool)),
-            this, SLOT(tagCombiningToggled(bool)));
-    mgLayout->addWidget(tagCombiningBehaviorToggle, 1, 3, 1, 3);
+    // tagCombiningBehaviorLabel = new QLabel(tr("Colortables must match"), colorTableWidgetGroup);
+    // mgLayout->addWidget(tagCombiningBehaviorLabel, 1, 2, 1, 2);
+    tagCombiningBehaviorChoice = new QComboBox(colorTableWidgetGroup);
+    tagCombiningBehaviorChoice->addItem(tr("Colortables must match any selected tag"));
+    tagCombiningBehaviorChoice->addItem(tr("Colortables must match every selected tag"));
+    connect(tagCombiningBehaviorChoice, SIGNAL(activated(int)),
+            this, SLOT(tagCombiningChanged(int)));
+    mgLayout->addWidget(tagCombiningBehaviorChoice, 1, 2, 1, 4);
 
     nameListBox = new QTreeWidget(colorTableWidgetGroup);
     nameListBox->setMinimumHeight(100);
@@ -654,7 +658,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             tagLabel->setVisible(tagsVisible);
             tagLineEdit->setVisible(tagsVisible);
             tagTable->setVisible(tagsVisible);
-            tagCombiningBehaviorToggle->setVisible(tagsVisible);
+            // tagCombiningBehaviorLabel->setVisible(tagsVisible);
+            tagCombiningBehaviorChoice->setVisible(tagsVisible);
             tagToggle->blockSignals(false);
             updateNames = true;
             break;
@@ -2664,10 +2669,10 @@ QvisColorTableWindow::taggingToggled(bool val)
 
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::tagCombiningToggled
+// Method: QvisColorTableWindow::tagCombiningChanged
 //
 // Purpose:
-//   This is a Qt slot function that controls toggling the combination of tags.
+//   This is a Qt slot function that controls changing how tags are combined.
 //
 // Programmer: Justin Privitera
 // Creation:   Fri Jun  3 15:06:17 PDT 2022
@@ -2677,13 +2682,21 @@ QvisColorTableWindow::taggingToggled(bool val)
 // ****************************************************************************
 
 void
-QvisColorTableWindow::tagCombiningToggled(bool val)
+QvisColorTableWindow::tagCombiningChanged(int index)
 {
-    tagsMatchAny = ! tagsMatchAny;
-    UpdateNames();
-    colorAtts->SetChangesMade(true);
-    ctObserver.SetUpdate(true);
-    Apply(true);
+    bool old_val = tagsMatchAny;
+    if (index == 0)
+        tagsMatchAny = true;
+    else
+        tagsMatchAny = false;
+    // have any changes actually been made?
+    if (old_val != tagsMatchAny)
+    {
+        UpdateNames();
+        colorAtts->SetChangesMade(true);
+        ctObserver.SetUpdate(true);
+        Apply(true);
+    }
 }
 
 
