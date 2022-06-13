@@ -142,7 +142,6 @@ private slots:
     void highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*);
     void tagTableItemSelected(QTreeWidgetItem *, int);
     void showIndexHintsToggled(bool val);
-    void groupingToggled(bool val);
     void taggingToggled(bool val);
     void tagCombiningChanged(int index);
     void ApplyCategoryChange();
@@ -164,7 +163,6 @@ private:
     QLabel                   *defaultContinuousLabel;
     QvisNoDefaultColorTableButton *defaultDiscrete;
     QLabel                   *defaultDiscreteLabel;
-    QCheckBox                *groupToggle;
     QCheckBox                *tagToggle; // toggles tag filtering
     QLabel                   *tagCombiningBehaviorLabel;
     QComboBox                *tagCombiningBehaviorChoice;

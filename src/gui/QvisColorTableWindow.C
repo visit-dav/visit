@@ -222,13 +222,6 @@ QvisColorTableWindow::CreateWindowContents()
     connect(exportButton, SIGNAL(clicked()), this, SLOT(exportColorTable()));
     mgLayout->addWidget(exportButton, 0, 4, 1, 2);
 
-    // TODO remove entirely
-    groupToggle = new QCheckBox(tr("Group tables by Category"), colorTableWidgetGroup);
-    connect(groupToggle, SIGNAL(toggled(bool)),
-            this, SLOT(groupingToggled(bool)));
-    mgLayout->addWidget(groupToggle, 0, 2);
-    groupToggle->setVisible(false);
-
     tagToggle = new QCheckBox(tr("Filter tables by Tag"), colorTableWidgetGroup);
     connect(tagToggle, SIGNAL(toggled(bool)),
             this, SLOT(taggingToggled(bool)));
@@ -261,8 +254,10 @@ QvisColorTableWindow::CreateWindowContents()
     // TODO deprecate entirely
     categoryLabel = new QLabel(tr("Category"), colorTableWidgetGroup);
     mgLayout->addWidget(categoryLabel, 5, 0, Qt::AlignLeft);
+    categoryLabel->setVisible(false);
     categoryLineEdit = new QLineEdit(colorTableWidgetGroup);
     mgLayout->addWidget(categoryLineEdit, 5, 2);
+    categoryLineEdit->setVisible(false);
 
     tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
     mgLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
@@ -643,14 +638,6 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             defaultDiscrete->setColorTable(colorAtts->GetDefaultDiscrete().c_str());
             defaultDiscrete->blockSignals(false);
             break;
-        case ColorTableAttributes::ID_groupingFlag:
-            groupToggle->blockSignals(true);
-            groupToggle->setChecked(colorAtts->GetGroupingFlag());
-            categoryLabel->setVisible(colorAtts->GetGroupingFlag());
-            categoryLineEdit->setVisible(colorAtts->GetGroupingFlag());
-            groupToggle->blockSignals(false);
-            updateNames = true;
-            break;
         case ColorTableAttributes::ID_taggingFlag:
             tagToggle->blockSignals(true);
             tagToggle->setChecked(colorAtts->GetTaggingFlag());
@@ -764,7 +751,8 @@ QvisColorTableWindow::UpdateEditor()
 // Method: QvisColorTableWindow::AddGlobalTag
 //
 // Purpose:
-//   TODO
+//   Adds a tag discovered when looking through each color table to the global 
+//   tag list.
 //
 // Programmer: Justin Privitera
 // Creation:   Tue Jun  7 12:36:55 PDT 2022
@@ -794,7 +782,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool run_before)
         }
         item->setText(1, currtag.c_str());
         // this next column is secret and is for passing around the tag index
-        // TODO put in err msg for if you have over 10^10 tags
+        // should allow you to have up to 10^10 tags
         char buf[10];
         sprintf(buf, "%d", tagList.size() - 1);
         item->setText(2, buf);
@@ -805,7 +793,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool run_before)
 // Method: QvisColorTableWindow::UpdateTags
 //
 // Purpose:
-//   TODO
+//   Updates the global tag list to reflect current available tags.
 //
 // Programmer: Justin Privitera
 // Creation:   Tue Jun  7 12:36:55 PDT 2022
@@ -818,8 +806,6 @@ void
 QvisColorTableWindow::UpdateTags()
 {
     // signal blocking SHOULD occur in the caller
-    // tagTable->blockSignals(true);
-
     static bool run_before = false;
     if (tagToggle->isChecked())
     {
@@ -837,18 +823,14 @@ QvisColorTableWindow::UpdateTags()
                     AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), run_before);
                 }
             }
-            // this table has no tags associated with it
-            else
-            {
-                // TODO error because this shouldn't be possible
-            }
+            // If it doesn't have tags then you're out of luck. 
+            // This should not be possible though.
+            // Qt does not like when you throw exceptions inside event handlers.
         }
         run_before = true;
         tagTable->sortByColumn(1, Qt::AscendingOrder);
     }
-
     // signal unblocking SHOULD occur in the caller
-    // tagTable->blockSignals(false);
 }
 
 // ****************************************************************************
@@ -890,7 +872,7 @@ QvisColorTableWindow::UpdateNames()
     nameListBox->clear();
 
     // Put all of the color table names into the tree.
-    bool doSimpleTree = !groupToggle->isChecked();
+    bool doSimpleTree = true;
     bool doTags = tagToggle->isChecked();
     if(!doSimpleTree && !doTags)
     {
@@ -2112,11 +2094,8 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
         currentColorTable = current->text(0);
         nameLineEdit->setText(currentColorTable);
         int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
-        if (groupToggle->isChecked())
-        {
-            categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
-        }
-        tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
+        if (tagToggle->isChecked())
+            tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
         UpdateEditor();
     }
 }
@@ -2125,10 +2104,11 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
 // Method: QvisColorTableWindow::tagTableItemSelected
 //
 // Purpose:
-//   TODO
+//   A Qt slot function to handle selection of tags in the tag table.
 //
 // Arguments:
-//   TODO
+//   QTreeWidgetItem *item      the selected item
+//   int column                 the column of the selected item
 //
 // Programmer: Justin Privitera
 // Creation:   Mon Jun  6 14:02:16 PDT 2022
@@ -2615,27 +2595,6 @@ void
 QvisColorTableWindow::exportColorTable()
 {
     GetViewerMethods()->ExportColorTable(currentColorTable.toStdString());
-}
-
-
-// ****************************************************************************
-// Method: QvisColorTableWindow::groupingToggled
-//
-// Purpose:
-//   This is a Qt slot function that tells modifies the grouping.
-//
-// Programmer: Kathleen Biagas
-// Creation:   August 8, 2013
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisColorTableWindow::groupingToggled(bool val)
-{
-    colorAtts->SetGroupingFlag(val);
-    Apply(true);
 }
 
 
