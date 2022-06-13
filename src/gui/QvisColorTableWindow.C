@@ -1561,6 +1561,8 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
 
         // Get a pointer to the default color table's control points.
         ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+        // preserve the tags
+        cpts.SetTagNames(ccpl->GetTagNames());
         if(ccpl)
         {
             ColorControlPointList &activeControlPoints = *ccpl;
