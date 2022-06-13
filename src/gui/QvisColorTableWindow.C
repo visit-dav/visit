@@ -805,19 +805,16 @@ QvisColorTableWindow::UpdateTags()
         // iterate thru each color table
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
-            // if this table has tags
-            if (colorAtts->GetColorTables(i).GetNumTags())
+            // if this table doesn't have tags, then add the no-tags tag
+            if (colorAtts->GetColorTables(i).GetNumTags() == 0)
+                colorAtts->GetColorTables(i).AddTag("No Tags");
+
+            // iterate thru each tag in the given color table
+            for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
             {
-                // iterate thru each tag in the given color table
-                for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
-                {
-                    // add the tag if it is not already in the global tag list
-                    AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), run_before);
-                }
+                // add the tag if it is not already in the global tag list
+                AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), run_before);
             }
-            // If it doesn't have tags then you're out of luck. 
-            // This should not be possible though.
-            // Qt does not like when you throw exceptions inside event handlers.
         }
         run_before = true;
         tagTable->sortByColumn(1, Qt::AscendingOrder);
@@ -1920,6 +1917,7 @@ QvisColorTableWindow::addColorTable()
         {
             // Copy the default color table into the new color table.
             ColorControlPointList cpts(*ccpl);
+            cpts.AddTag("User Defined");
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
         else
@@ -1935,6 +1933,7 @@ QvisColorTableWindow::addColorTable()
             cpts.SetSmoothing(ColorControlPointList::Linear);
             cpts.SetEqualSpacingFlag(false);
             cpts.SetDiscreteFlag(false);
+            cpts.AddTag("User Defined");
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
 

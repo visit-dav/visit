@@ -1742,7 +1742,7 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 // Method: ColorControlPointList::AddTag
 //
 // Purpose:
-//   TODO
+//   Add the provided tag to the list of local tags.
 //
 // Programmer: Justin Privitera
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
@@ -1754,6 +1754,10 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 void
 ColorControlPointList::AddTag(std::string newtag)
 {
+    // If the tag is already in the tag list then we will do nothing.
+    for (int i = 0; i < tagNames.size(); i ++)
+        if (newtag == tagNames[i])
+            return;
     tagNames.push_back(newtag);
 }
 
