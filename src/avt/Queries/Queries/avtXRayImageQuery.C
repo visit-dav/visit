@@ -1265,11 +1265,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["state/xray_view/parallelScale"] = parallelScale;
             data_out["state/xray_view/nearPlane"] = nearPlane;
             data_out["state/xray_view/farPlane"] = farPlane;
-            // Q? what is image pan? are x and y ok names?
             data_out["state/xray_view/imagePan/x"] = imagePan[0];
             data_out["state/xray_view/imagePan/y"] = imagePan[1];
             data_out["state/xray_view/imageZoom"] = imageZoom;
-            // Q? should be boolean val or "true" or "false"?
             data_out["state/xray_view/perspective"] = perspective;
             
             // verify
