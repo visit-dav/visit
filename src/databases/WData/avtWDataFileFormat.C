@@ -139,6 +139,8 @@ bool WDataRealVariable::getVariable(const char *_varname, int cycleid, float *da
 // =======================================================================================
 // ============================= WDataComplexVariable ====================================
 // =======================================================================================
+// Modifications:
+//   @Belyor on GitHub: Bugfix. Array iterator had a wrong name
 WDataComplexVariable::WDataComplexVariable(wdata_metadata *wdmd, int varid, int precdowngrade) : WDataVariable(wdmd, varid, precdowngrade)
 {
     // allocate memory for data
