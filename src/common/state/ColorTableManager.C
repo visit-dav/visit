@@ -198,7 +198,13 @@ ColorTableManager::WriteConfigFile(std::ostream& out)
     if (ctNode->GetNode("ColorControlPointList")->GetNode("tags"))
     {
         stringVector tags = ctNode->GetNode("ColorControlPointList")->GetNode("tags")->AsStringVector();
-        tags.push_back("User Defined");
+        // make sure it's not already here!
+        bool found = false;
+        for (int i = 0; i < tags.size(); i ++)
+            if (tags[i] == "User Defined")
+                found = true;
+        if (!found)
+            tags.push_back("User Defined");
         ctNode->GetNode("ColorControlPointList")->GetNode("tags")->SetStringVector(tags);
     }
     else

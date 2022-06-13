@@ -1755,10 +1755,8 @@ void
 ColorControlPointList::AddTag(std::string newtag)
 {
     // If the tag is already in the tag list then we will do nothing.
-    for (int i = 0; i < tagNames.size(); i ++)
-        if (newtag == tagNames[i])
-            return;
-    tagNames.push_back(newtag);
+    if (!HasTag(newtag))
+        tagNames.push_back(newtag);
 }
 
 // ****************************************************************************
