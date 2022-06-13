@@ -449,17 +449,12 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
 {
     for(size_t i = 0; i < buttons.size(); ++i)
     {
-        if (getColorTableIndex(buttons[i]->getColorTable()) == -1)
+        if (getColorTableIndex(buttons[i]->getColorTable()) != -1)
         {
-            // TODO is there a way around this?
-            if (!colorTableNames.empty())
-            {
-                buttons[i]->setText(colorTableNames[0]);
-                buttons[i]->setColorTable(colorTableNames[0]);
-            }
-        }
-        else
             buttons[i]->setIcon(getIcon(buttons[i]->text()));
+        }
+        // If there are no available color tables, we don't want the 
+        // entries to change.            
     }
 }
 
