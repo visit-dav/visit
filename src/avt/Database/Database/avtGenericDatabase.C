@@ -5065,6 +5065,10 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Alister Maguire, Mon Nov 27 15:31:54 PST 2017
 //    If materialLabelsForced is true, then create material labels.
 //
+//    Mark C. Miller, Tue Jun 14 08:43:22 PDT 2022
+//    Adjust topo dim for cases of structured grids with one dimension only
+//    one node thick (e.g. [nx][ny][1] or [nx][1][nz] or [1][ny][nz]). These
+//    are really 2D surfaces (a structred arrangement of quads) in 3 space.
 // ****************************************************************************
 
 avtDataTree_p
