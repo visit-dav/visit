@@ -5146,6 +5146,14 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         return NULL;
     }
     int topoDim = mmd->topologicalDimension;
+    if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        int *dims = ((vtkStructuredGrid*)ds)->GetDimensions();
+        if ((dims[0] == 1 && dims[1] > 1 && dims[2] > 1) ||
+            (dims[1] == 1 && dims[0] > 1 && dims[2] > 1) ||
+            (dims[2] == 1 && dims[0] > 1 && dims[1] > 1))
+            topoDim = 2;
+    }
 
     avtMaterial *material_used = NULL;
     void_ref_ptr vr_mir = GetMIR(dom, var, ts, ds, mat, topoDim,
