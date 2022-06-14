@@ -143,6 +143,18 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The DEFINES, CXXFLAGS and LDFLAGS tags in the xml files for plugins now support an optional "components" attribute specifying for which component(s) the tag applies. Currently valid for MDServer("M"), serial Engine ("ESer") and parallel Engine("EPar"). Multiple components may be specified, separated by commas. See ADIOS2.xml or MOAB.xml for an example.</li>
   <li>The DEFINES tag now supports surrounding definitions in quotes if the quotes are important to be carried through. They must be escaped with a '\'. See uintah.xml for an example.</li>
   <li>The version of MFEM was upgraded to 4.4.</li>
+  <li>Added the script <i>run-build-visit</i> for running <i>build_visit</i> to build the third party libraries on LLNL systems. The script has the following usage:<br>
+    <pre>
+    Usage: +"machine name" -v "version" -s "build_visit_script"
+    Valid machine names:
+        kickit_mesagl (B-Div, Linux, x86_64, mesagl),
+        kickit_opengl (B-Div, Linux, x86_64, opengl),
+        quartz (LC, Linux, x86_64),
+        lassen (LC, Linux, power9),
+        rztrona (LC, Linux, x86_64),
+        rzansel (LC, Linux, power9),
+        jade (LC, Linux, x86_64),
+        sierra (LC, Linux, power9)</pre></li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
