@@ -145,7 +145,6 @@ avtXRayImageQuery::avtXRayImageQuery():
     debugRay = -1;
     familyFiles = false;
     outputType = PNG_OUT;
-    outputFileName = "output";
     outputDir = ".";
     useSpecifiedUpVector = true;
     useOldView = true;
@@ -796,25 +795,6 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
 }
 
 // ****************************************************************************
-//  Method: avtXRayImageQuery::SetOutputFileName
-//
-//  Purpose:
-//    Set the output filename.
-//
-//  Programmer: Justin Privitera 
-//  Creation:   Fri Jun 10 11:12:02 PDT 2022
-//
-//  Modifications:
-// 
-// ****************************************************************************
-
-void
-avtXRayImageQuery::SetOutputFileName(const std::string &name)
-{
-    outputFileName = name;
-}
-
-// ****************************************************************************
 //  Method: avtXRayImageQuery::SetOutputDir
 //
 //  Purpose:
@@ -1054,7 +1034,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         // Create the file base name.
         //
         std::stringstream baseName;
-        // char baseName[512];
         bool keepTrying = true;
         while (keepTrying)
         {
@@ -1065,9 +1044,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // Create the file base name and increment the family number.
                 //
                 baseName.clear();
-                baseName << outputDir.c_str() << "/output" << std::setfill('0') << std::setw(4) << iFileFamily << ".";
+                baseName.str(std::string());
+                baseName << "output" << std::setfill('0') << std::setw(4) << iFileFamily << ".";
 
-                // snprintf(baseName, 512, "%s/output%04d.", outputDir.c_str(), iFileFamily);
                 if (iFileFamily < 9999) iFileFamily++;
 
                 //
@@ -1076,10 +1055,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // the next file base name in the sequence.
                 //
                 std::stringstream fileName;
-                fileName.clear();
-                fileName << baseName.str() << "00." << file_extensions[outputType];
-                // char fileName[512];
-                // snprintf(fileName, 512, "%s00.%s", baseName, file_extensions[outputType]);
+                fileName << outputDir.c_str() << "/" << baseName.str() << "00." << file_extensions[outputType];
 
                 ifstream ifile(fileName.str());
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -1089,12 +1065,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
             else
             {
-                // snprintf(baseName, 512, "%s/output", outputDir.c_str());
-                baseName << outputDir << "/output";
-                // TODO make sense of this and fix
-                outputFileName = "output";
+                baseName << "output";
             }
         }
+
+        // neither have the file extension in them though
+        std::string out_filename = baseName.str();
+        std::string out_filename_w_path = outputDir + "/" + out_filename;
 
         //
         // Write out the intensity and path length. The path length is only
@@ -1112,13 +1089,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 intensity= leaves[i]->GetPointData()->GetArray("Intensity");
                 if (intensity->GetDataType() == VTK_FLOAT)
-                    WriteImage(baseName.str().c_str(), i, numPixels,
+                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (float*) intensity->GetVoidPointer(0));
                 else if (intensity->GetDataType() == VTK_DOUBLE)
-                    WriteImage(baseName.str().c_str(), i, numPixels,
+                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (double*) intensity->GetVoidPointer(0));
                 else if (intensity->GetDataType() == VTK_INT)
-                    WriteImage(baseName.str().c_str(), i, numPixels,
+                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (int*) intensity->GetVoidPointer(0));
             }
         }
@@ -1130,23 +1107,23 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
                 if (intensity->GetDataType() == VTK_FLOAT)
                 {
-                    WriteFloats(baseName.str().c_str(), i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (float*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (float*)pathLength->GetVoidPointer(0));
                 }
                 else if (intensity->GetDataType() == VTK_DOUBLE)
                 {
-                    WriteFloats(baseName.str().c_str(), i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (double*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (double*)pathLength->GetVoidPointer(0));
                 }
                 else if (intensity->GetDataType() == VTK_INT)
                 {
-                    WriteFloats(baseName.str().c_str(), i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (int*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (int*)pathLength->GetVoidPointer(0));
                 }
             }
@@ -1159,32 +1136,32 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
                 if (intensity->GetDataType() == VTK_FLOAT)
                 {
-                    WriteFloats(baseName.str().c_str(), i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (float*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName.str().c_str(), "intensity", i, nx, ny, "FLOAT");
-                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "FLOAT");
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (float*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName.str().c_str(), "path_length", numBins+i,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
                         nx, ny, "FLOAT");
                 }
                 else if (intensity->GetDataType() == VTK_DOUBLE)
                 {
-                    WriteFloats(baseName.str().c_str(), i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (double*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName.str().c_str(), "intensity", i, nx, ny, "DOUBLE");
-                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "DOUBLE");
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (double*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName.str().c_str(), "path_length", numBins+i,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
                         nx, ny, "DOUBLE");
                 }
                 else if (intensity->GetDataType() == VTK_INT)
                 {
-                    WriteFloats(baseName.str().c_str(), i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (int*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName.str().c_str(), "intensity", i, nx, ny, "INT");
-                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "INT");
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (int*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName.str().c_str(), "path_length", numBins+i,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
                         nx, ny, "INT");
                 }
             }
@@ -1286,8 +1263,17 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             // save out
             conduit::relay::io::blueprint::save_mesh(data_out,
-                                                     baseName.str().c_str(),
+                                                     out_filename_w_path.c_str(),
                                                      file_protocols[outputType]);
+
+            // AFTER the file has been saved, update the basename to reflect 
+            // reality for the later output messages
+            baseName.clear();
+            baseName.str(std::string());
+            baseName << out_filename << ".cycle_" << std::setfill('0') 
+                << std::setw(6) << cycle;
+            out_filename = baseName.str();
+            out_filename_w_path = outputDir + "/" + out_filename;
 
             // Note to future developers: The following lines are a workaround to a bug found in
             // conduit 0.8.3; see this issue for more information: 
@@ -1296,16 +1282,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             // Q? What do I do if the output type was conduit_bin? That outputs two files
             // Q? also conduit bin does not work...
-            // TODO make there be a filename stream elsewhere too for use everywhere
-            std::stringstream oss;
-            oss << outputFileName << ".cycle_" << std::setfill('0') << 
-             std::setw(6) << cycle << "." << file_extensions[outputType];
-
-            std::string real_filename = oss.str();
-            std::string full_file_w_path = outputDir + "/" + real_filename;
-
             if (outputDir != ".")
             {
+                std::string real_filename = out_filename + "." + file_extensions[outputType];
+                std::string full_file_w_path = outputDir + "/" + real_filename;
                 conduit::Node index_fix;
                 conduit::relay::io::load(full_file_w_path, file_protocols[outputType], index_fix);
                 index_fix["file_pattern"] = real_filename;
@@ -1334,19 +1314,19 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 if (numBins == 1)
                     snprintf(buf, 512, "The x ray image query results were "
-                             "written to the file %s00.%s\n", baseName.str().c_str(),
+                             "written to the file %s00.%s\n", out_filename_w_path.c_str(),
                              file_extensions[outputType]);
                 else
                     snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
-                        baseName.str().c_str(), file_extensions[outputType], baseName.str().c_str(), numBins - 1,
+                        out_filename_w_path.c_str(), file_extensions[outputType], out_filename_w_path.c_str(), numBins - 1,
                         file_extensions[outputType]);
             }
             else if (outputTypeIsRawfloatsOrBov(outputType))
             {
                 snprintf(buf, 512, "The x ray image query results were "
                     "written to the files %s00.%s - %s%02d.%s\n",
-                    baseName.str().c_str(), file_extensions[outputType], baseName.str().c_str(), 2*numBins - 1,
+                    out_filename_w_path.c_str(), file_extensions[outputType], out_filename_w_path.c_str(), 2*numBins - 1,
                     file_extensions[outputType]);                
             }
             else if (outputTypeIsBlueprint(outputType))
@@ -1356,12 +1336,12 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 {
                     snprintf(buf, 512, "The x ray image query results were "
                              "written to the files %s.%s - %s.root_json\n", 
-                             baseName.str().c_str(), file_extensions[outputType], baseName.str().c_str());
+                             out_filename_w_path.c_str(), file_extensions[outputType], out_filename_w_path.c_str());
                 }
                 else
                 {
                     snprintf(buf, 512, "The x ray image query results were "
-                             "written to the file %s.%s\n", baseName.str().c_str(), 
+                             "written to the file %s.%s\n", out_filename_w_path.c_str(), 
                              file_extensions[outputType]);
                 }
             }
