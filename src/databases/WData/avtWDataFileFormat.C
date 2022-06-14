@@ -139,6 +139,8 @@ bool WDataRealVariable::getVariable(const char *_varname, int cycleid, float *da
 // =======================================================================================
 // ============================= WDataComplexVariable ====================================
 // =======================================================================================
+// Modifications:
+//   @Belyor on GitHub: Bugfix. Array iterator had a wrong name
 WDataComplexVariable::WDataComplexVariable(wdata_metadata *wdmd, int varid, int precdowngrade) : WDataVariable(wdmd, varid, precdowngrade)
 {
     // allocate memory for data
@@ -178,25 +180,25 @@ WDataComplexVariable::WDataComplexVariable(wdata_metadata *wdmd, int varid, int 
     for (int i = 0; i < md->nlink; i++)
         if (strcmp(md->link[i].linkto, md->var[vid].name) == 0)
         {
-            varlabel = md->link[vid].name;
+            varlabel = md->link[i].name;
             varlabel += "_abs";
             varname.push_back(varlabel);
             varunit.push_back(md->var[vid].unit);
             trans.push_back(cabs);
 
-            varlabel = md->link[vid].name;
+            varlabel = md->link[i].name;
             varlabel += "_arg";
             varname.push_back(varlabel);
             varunit.push_back("PI");
             trans.push_back(carg);
 
-            varlabel = md->link[vid].name;
+            varlabel = md->link[i].name;
             varlabel += "_re";
             varname.push_back(varlabel);
             varunit.push_back(md->var[vid].unit);
             trans.push_back(cre);
 
-            varlabel = md->link[vid].name;
+            varlabel = md->link[i].name;
             varlabel += "_im";
             varname.push_back(varlabel);
             varunit.push_back(md->var[vid].unit);
