@@ -54,7 +54,7 @@ const int NUM_OUTPUT_TYPES = 10;
 // member `outputType` indexes these arrays
 const char *file_protocols[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
     /*conduit blueprint output types */ "json", "hdf5", "conduit_json", "yaml"}; // removed conduit_bin
-const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
+const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpg", "png", "tif", "bof", "bov", 
     /*conduit blueprint output types */ "root", "root", "root", "root"};
 
 // constants for each of the output types
@@ -1121,7 +1121,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
         vtkDataArray *intensity;
         vtkDataArray *pathLength;
+#ifdef HAVE_CONDUIT
         conduit::Node data_out;
+#endif
 
         if (outputTypeIsBmpJpegPngOrTif(outputType))
         {
