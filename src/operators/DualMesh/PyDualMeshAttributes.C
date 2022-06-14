@@ -36,7 +36,7 @@ struct DualMeshAttributesObject
 //
 static PyObject *NewDualMeshAttributes(int);
 std::string
-PyDualMeshAttributes_ToString(const DualMeshAttributes *atts, const char *prefix)
+PyDualMeshAttributes_ToString(const DualMeshAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -218,7 +218,7 @@ static int
 DualMeshAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     DualMeshAttributesObject *obj = (DualMeshAttributesObject *)v;
-    fprintf(fp, "%s", PyDualMeshAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyDualMeshAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -226,7 +226,7 @@ PyObject *
 DualMeshAttributes_str(PyObject *v)
 {
     DualMeshAttributesObject *obj = (DualMeshAttributesObject *)v;
-    return PyString_FromString(PyDualMeshAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyDualMeshAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -378,7 +378,7 @@ PyDualMeshAttributes_GetLogString()
 {
     std::string s("DualMeshAtts = DualMeshAttributes()\n");
     if(currentAtts != 0)
-        s += PyDualMeshAttributes_ToString(currentAtts, "DualMeshAtts.");
+        s += PyDualMeshAttributes_ToString(currentAtts, "DualMeshAtts.", true);
     return s;
 }
 
@@ -391,7 +391,7 @@ PyDualMeshAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("DualMeshAtts = DualMeshAttributes()\n");
-        s += PyDualMeshAttributes_ToString(currentAtts, "DualMeshAtts.");
+        s += PyDualMeshAttributes_ToString(currentAtts, "DualMeshAtts.", true);
         cb(s);
     }
 }

@@ -36,7 +36,7 @@ struct ProcessAttributesObject
 //
 static PyObject *NewProcessAttributes(int);
 std::string
-PyProcessAttributes_ToString(const ProcessAttributes *atts, const char *prefix)
+PyProcessAttributes_ToString(const ProcessAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -673,7 +673,7 @@ static int
 ProcessAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ProcessAttributesObject *obj = (ProcessAttributesObject *)v;
-    fprintf(fp, "%s", PyProcessAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyProcessAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -681,7 +681,7 @@ PyObject *
 ProcessAttributes_str(PyObject *v)
 {
     ProcessAttributesObject *obj = (ProcessAttributesObject *)v;
-    return PyString_FromString(PyProcessAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyProcessAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -833,7 +833,7 @@ PyProcessAttributes_GetLogString()
 {
     std::string s("ProcessAtts = ProcessAttributes()\n");
     if(currentAtts != 0)
-        s += PyProcessAttributes_ToString(currentAtts, "ProcessAtts.");
+        s += PyProcessAttributes_ToString(currentAtts, "ProcessAtts.", true);
     return s;
 }
 
@@ -846,7 +846,7 @@ PyProcessAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ProcessAtts = ProcessAttributes()\n");
-        s += PyProcessAttributes_ToString(currentAtts, "ProcessAtts.");
+        s += PyProcessAttributes_ToString(currentAtts, "ProcessAtts.", true);
         cb(s);
     }
 }

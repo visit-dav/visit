@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyConstructDataBinningAttributes_Wrap(const Construct
 void VISITPY_API           PyConstructDataBinningAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyConstructDataBinningAttributes_SetDefaults(const ConstructDataBinningAttributes *atts);
 std::string VISITPY_API    PyConstructDataBinningAttributes_GetLogString();
-std::string VISITPY_API    PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *, const char *);
+std::string VISITPY_API    PyConstructDataBinningAttributes_ToString(const ConstructDataBinningAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyConstructDataBinningAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyConstructDataBinningAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyConstructDataBinningAttributes_methods[CONSTRUCTDATABINNINGATTRIBUTES_NMETH];

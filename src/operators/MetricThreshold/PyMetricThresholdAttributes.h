@@ -22,7 +22,7 @@ PyObject *     PyMetricThresholdAttributes_Wrap(const MetricThresholdAttributes 
 void           PyMetricThresholdAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyMetricThresholdAttributes_SetDefaults(const MetricThresholdAttributes *atts);
 std::string    PyMetricThresholdAttributes_GetLogString();
-std::string    PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *, const char *);
+std::string    PyMetricThresholdAttributes_ToString(const MetricThresholdAttributes *, const char *, const bool=false);
 PyObject *     PyMetricThresholdAttributes_getattr(PyObject *self, char *name);
 int            PyMetricThresholdAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyMetricThresholdAttributes_methods[METRICTHRESHOLDATTRIBUTES_NMETH];

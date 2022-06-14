@@ -36,7 +36,7 @@ struct ViewCurveAttributesObject
 //
 static PyObject *NewViewCurveAttributes(int);
 std::string
-PyViewCurveAttributes_ToString(const ViewCurveAttributes *atts, const char *prefix)
+PyViewCurveAttributes_ToString(const ViewCurveAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -522,7 +522,7 @@ static int
 ViewCurveAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)v;
-    fprintf(fp, "%s", PyViewCurveAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewCurveAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -530,7 +530,7 @@ PyObject *
 ViewCurveAttributes_str(PyObject *v)
 {
     ViewCurveAttributesObject *obj = (ViewCurveAttributesObject *)v;
-    return PyString_FromString(PyViewCurveAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -682,7 +682,7 @@ PyViewCurveAttributes_GetLogString()
 {
     std::string s("ViewCurveAtts = ViewCurveAttributes()\n");
     if(currentAtts != 0)
-        s += PyViewCurveAttributes_ToString(currentAtts, "ViewCurveAtts.");
+        s += PyViewCurveAttributes_ToString(currentAtts, "ViewCurveAtts.", true);
     return s;
 }
 
@@ -695,7 +695,7 @@ PyViewCurveAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewCurveAtts = ViewCurveAttributes()\n");
-        s += PyViewCurveAttributes_ToString(currentAtts, "ViewCurveAtts.");
+        s += PyViewCurveAttributes_ToString(currentAtts, "ViewCurveAtts.", true);
         cb(s);
     }
 }

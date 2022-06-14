@@ -22,7 +22,7 @@ PyObject *     PyDelaunayAttributes_Wrap(const DelaunayAttributes *attr);
 void           PyDelaunayAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyDelaunayAttributes_SetDefaults(const DelaunayAttributes *atts);
 std::string    PyDelaunayAttributes_GetLogString();
-std::string    PyDelaunayAttributes_ToString(const DelaunayAttributes *, const char *);
+std::string    PyDelaunayAttributes_ToString(const DelaunayAttributes *, const char *, const bool=false);
 PyObject *     PyDelaunayAttributes_getattr(PyObject *self, char *name);
 int            PyDelaunayAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyDelaunayAttributes_methods[DELAUNAYATTRIBUTES_NMETH];

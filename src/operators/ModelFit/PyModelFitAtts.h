@@ -22,7 +22,7 @@ PyObject *     PyModelFitAtts_Wrap(const ModelFitAtts *attr);
 void           PyModelFitAtts_SetParent(PyObject *obj, PyObject *parent);
 void           PyModelFitAtts_SetDefaults(const ModelFitAtts *atts);
 std::string    PyModelFitAtts_GetLogString();
-std::string    PyModelFitAtts_ToString(const ModelFitAtts *, const char *);
+std::string    PyModelFitAtts_ToString(const ModelFitAtts *, const char *, const bool=false);
 PyObject *     PyModelFitAtts_getattr(PyObject *self, char *name);
 int            PyModelFitAtts_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyModelFitAtts_methods[MODELFITATTS_NMETH];

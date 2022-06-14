@@ -36,7 +36,7 @@ struct ExtractPointFunction2DAttributesObject
 //
 static PyObject *NewExtractPointFunction2DAttributes(int);
 std::string
-PyExtractPointFunction2DAttributes_ToString(const ExtractPointFunction2DAttributes *atts, const char *prefix)
+PyExtractPointFunction2DAttributes_ToString(const ExtractPointFunction2DAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -315,7 +315,7 @@ static int
 ExtractPointFunction2DAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)v;
-    fprintf(fp, "%s", PyExtractPointFunction2DAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyExtractPointFunction2DAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -323,7 +323,7 @@ PyObject *
 ExtractPointFunction2DAttributes_str(PyObject *v)
 {
     ExtractPointFunction2DAttributesObject *obj = (ExtractPointFunction2DAttributesObject *)v;
-    return PyString_FromString(PyExtractPointFunction2DAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyExtractPointFunction2DAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -475,7 +475,7 @@ PyExtractPointFunction2DAttributes_GetLogString()
 {
     std::string s("ExtractPointFunction2DAtts = ExtractPointFunction2DAttributes()\n");
     if(currentAtts != 0)
-        s += PyExtractPointFunction2DAttributes_ToString(currentAtts, "ExtractPointFunction2DAtts.");
+        s += PyExtractPointFunction2DAttributes_ToString(currentAtts, "ExtractPointFunction2DAtts.", true);
     return s;
 }
 
@@ -488,7 +488,7 @@ PyExtractPointFunction2DAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ExtractPointFunction2DAtts = ExtractPointFunction2DAttributes()\n");
-        s += PyExtractPointFunction2DAttributes_ToString(currentAtts, "ExtractPointFunction2DAtts.");
+        s += PyExtractPointFunction2DAttributes_ToString(currentAtts, "ExtractPointFunction2DAtts.", true);
         cb(s);
     }
 }

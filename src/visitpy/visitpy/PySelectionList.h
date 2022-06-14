@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PySelectionList_Wrap(const SelectionList *attr);
 void VISITPY_API           PySelectionList_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PySelectionList_SetDefaults(const SelectionList *atts);
 std::string VISITPY_API    PySelectionList_GetLogString();
-std::string VISITPY_API    PySelectionList_ToString(const SelectionList *, const char *);
+std::string VISITPY_API    PySelectionList_ToString(const SelectionList *, const char *, const bool=false);
 VISITPY_API PyObject *     PySelectionList_getattr(PyObject *self, char *name);
 int VISITPY_API            PySelectionList_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PySelectionList_methods[SELECTIONLIST_NMETH];

@@ -22,7 +22,7 @@ PyObject *     PyLCSAttributes_Wrap(const LCSAttributes *attr);
 void           PyLCSAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyLCSAttributes_SetDefaults(const LCSAttributes *atts);
 std::string    PyLCSAttributes_GetLogString();
-std::string    PyLCSAttributes_ToString(const LCSAttributes *, const char *);
+std::string    PyLCSAttributes_ToString(const LCSAttributes *, const char *, const bool=false);
 PyObject *     PyLCSAttributes_getattr(PyObject *self, char *name);
 int            PyLCSAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyLCSAttributes_methods[LCSATTRIBUTES_NMETH];

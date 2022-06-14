@@ -36,7 +36,7 @@ struct SmoothOperatorAttributesObject
 //
 static PyObject *NewSmoothOperatorAttributes(int);
 std::string
-PySmoothOperatorAttributes_ToString(const SmoothOperatorAttributes *atts, const char *prefix)
+PySmoothOperatorAttributes_ToString(const SmoothOperatorAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -601,7 +601,7 @@ static int
 SmoothOperatorAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)v;
-    fprintf(fp, "%s", PySmoothOperatorAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySmoothOperatorAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -609,7 +609,7 @@ PyObject *
 SmoothOperatorAttributes_str(PyObject *v)
 {
     SmoothOperatorAttributesObject *obj = (SmoothOperatorAttributesObject *)v;
-    return PyString_FromString(PySmoothOperatorAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySmoothOperatorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -761,7 +761,7 @@ PySmoothOperatorAttributes_GetLogString()
 {
     std::string s("SmoothOperatorAtts = SmoothOperatorAttributes()\n");
     if(currentAtts != 0)
-        s += PySmoothOperatorAttributes_ToString(currentAtts, "SmoothOperatorAtts.");
+        s += PySmoothOperatorAttributes_ToString(currentAtts, "SmoothOperatorAtts.", true);
     return s;
 }
 
@@ -774,7 +774,7 @@ PySmoothOperatorAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SmoothOperatorAtts = SmoothOperatorAttributes()\n");
-        s += PySmoothOperatorAttributes_ToString(currentAtts, "SmoothOperatorAtts.");
+        s += PySmoothOperatorAttributes_ToString(currentAtts, "SmoothOperatorAtts.", true);
         cb(s);
     }
 }

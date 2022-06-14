@@ -36,7 +36,7 @@ struct ConnectedComponentsAttributesObject
 //
 static PyObject *NewConnectedComponentsAttributes(int);
 std::string
-PyConnectedComponentsAttributes_ToString(const ConnectedComponentsAttributes *atts, const char *prefix)
+PyConnectedComponentsAttributes_ToString(const ConnectedComponentsAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -190,7 +190,7 @@ static int
 ConnectedComponentsAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)v;
-    fprintf(fp, "%s", PyConnectedComponentsAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyConnectedComponentsAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -198,7 +198,7 @@ PyObject *
 ConnectedComponentsAttributes_str(PyObject *v)
 {
     ConnectedComponentsAttributesObject *obj = (ConnectedComponentsAttributesObject *)v;
-    return PyString_FromString(PyConnectedComponentsAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyConnectedComponentsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -350,7 +350,7 @@ PyConnectedComponentsAttributes_GetLogString()
 {
     std::string s("ConnectedComponentsAtts = ConnectedComponentsAttributes()\n");
     if(currentAtts != 0)
-        s += PyConnectedComponentsAttributes_ToString(currentAtts, "ConnectedComponentsAtts.");
+        s += PyConnectedComponentsAttributes_ToString(currentAtts, "ConnectedComponentsAtts.", true);
     return s;
 }
 
@@ -363,7 +363,7 @@ PyConnectedComponentsAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ConnectedComponentsAtts = ConnectedComponentsAttributes()\n");
-        s += PyConnectedComponentsAttributes_ToString(currentAtts, "ConnectedComponentsAtts.");
+        s += PyConnectedComponentsAttributes_ToString(currentAtts, "ConnectedComponentsAtts.", true);
         cb(s);
     }
 }

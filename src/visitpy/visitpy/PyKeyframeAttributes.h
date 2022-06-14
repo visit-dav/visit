@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyKeyframeAttributes_Wrap(const KeyframeAttributes *a
 void VISITPY_API           PyKeyframeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyKeyframeAttributes_SetDefaults(const KeyframeAttributes *atts);
 std::string VISITPY_API    PyKeyframeAttributes_GetLogString();
-std::string VISITPY_API    PyKeyframeAttributes_ToString(const KeyframeAttributes *, const char *);
+std::string VISITPY_API    PyKeyframeAttributes_ToString(const KeyframeAttributes *, const char *, const bool=false);
 VISITPY_API PyObject *     PyKeyframeAttributes_getattr(PyObject *self, char *name);
 int VISITPY_API            PyKeyframeAttributes_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyKeyframeAttributes_methods[KEYFRAMEATTRIBUTES_NMETH];

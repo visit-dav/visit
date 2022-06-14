@@ -36,7 +36,7 @@ struct MergeOperatorAttributesObject
 //
 static PyObject *NewMergeOperatorAttributes(int);
 std::string
-PyMergeOperatorAttributes_ToString(const MergeOperatorAttributes *atts, const char *prefix)
+PyMergeOperatorAttributes_ToString(const MergeOperatorAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -258,7 +258,7 @@ static int
 MergeOperatorAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     MergeOperatorAttributesObject *obj = (MergeOperatorAttributesObject *)v;
-    fprintf(fp, "%s", PyMergeOperatorAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyMergeOperatorAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -266,7 +266,7 @@ PyObject *
 MergeOperatorAttributes_str(PyObject *v)
 {
     MergeOperatorAttributesObject *obj = (MergeOperatorAttributesObject *)v;
-    return PyString_FromString(PyMergeOperatorAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyMergeOperatorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -418,7 +418,7 @@ PyMergeOperatorAttributes_GetLogString()
 {
     std::string s("MergeOperatorAtts = MergeOperatorAttributes()\n");
     if(currentAtts != 0)
-        s += PyMergeOperatorAttributes_ToString(currentAtts, "MergeOperatorAtts.");
+        s += PyMergeOperatorAttributes_ToString(currentAtts, "MergeOperatorAtts.", true);
     return s;
 }
 
@@ -431,7 +431,7 @@ PyMergeOperatorAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("MergeOperatorAtts = MergeOperatorAttributes()\n");
-        s += PyMergeOperatorAttributes_ToString(currentAtts, "MergeOperatorAtts.");
+        s += PyMergeOperatorAttributes_ToString(currentAtts, "MergeOperatorAtts.", true);
         cb(s);
     }
 }
