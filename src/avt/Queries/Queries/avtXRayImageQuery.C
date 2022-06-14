@@ -1053,8 +1053,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         // Create the file base name.
         //
-        char baseName[512];
-        std::stringstream full_file_path;
+        std::stringstream baseName;
+        // char baseName[512];
         bool keepTrying = true;
         while (keepTrying)
         {
@@ -1064,8 +1064,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 //
                 // Create the file base name and increment the family number.
                 //
-                snprintf(baseName, 512, "%s/output%04d.", outputDir.c_str(), iFileFamily);
-                // full_file_path << outputDir.c_str() << "/output" << 
+                baseName.clear();
+                baseName << outputDir.c_str() << "/output" << std::setfill('0') << std::setw(4) << iFileFamily << ".";
+
+                // snprintf(baseName, 512, "%s/output%04d.", outputDir.c_str(), iFileFamily);
                 if (iFileFamily < 9999) iFileFamily++;
 
                 //
@@ -1073,10 +1075,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // exists. If it does and we aren't at the maximum, try
                 // the next file base name in the sequence.
                 //
-                char fileName[512];
-                snprintf(fileName, 512, "%s00.%s", baseName, file_extensions[outputType]);
+                std::stringstream fileName;
+                fileName.clear();
+                fileName << baseName.str() << "00." << file_extensions[outputType];
+                // char fileName[512];
+                // snprintf(fileName, 512, "%s00.%s", baseName, file_extensions[outputType]);
 
-                ifstream ifile(fileName);
+                ifstream ifile(fileName.str());
                 if (!ifile.fail() && iFileFamily < 9999)
                 {
                     keepTrying = true;
@@ -1084,7 +1089,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
             else
             {
-                snprintf(baseName, 512, "%s/output", outputDir.c_str());
+                // snprintf(baseName, 512, "%s/output", outputDir.c_str());
+                baseName << outputDir << "/output";
                 // TODO make sense of this and fix
                 outputFileName = "output";
             }
@@ -1106,13 +1112,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 intensity= leaves[i]->GetPointData()->GetArray("Intensity");
                 if (intensity->GetDataType() == VTK_FLOAT)
-                    WriteImage(baseName, i, numPixels,
+                    WriteImage(baseName.str().c_str(), i, numPixels,
                         (float*) intensity->GetVoidPointer(0));
                 else if (intensity->GetDataType() == VTK_DOUBLE)
-                    WriteImage(baseName, i, numPixels,
+                    WriteImage(baseName.str().c_str(), i, numPixels,
                         (double*) intensity->GetVoidPointer(0));
                 else if (intensity->GetDataType() == VTK_INT)
-                    WriteImage(baseName, i, numPixels,
+                    WriteImage(baseName.str().c_str(), i, numPixels,
                         (int*) intensity->GetVoidPointer(0));
             }
         }
@@ -1124,23 +1130,23 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
                 if (intensity->GetDataType() == VTK_FLOAT)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(baseName.str().c_str(), i, numPixels,
                         (float*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
                         (float*)pathLength->GetVoidPointer(0));
                 }
                 else if (intensity->GetDataType() == VTK_DOUBLE)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(baseName.str().c_str(), i, numPixels,
                         (double*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
                         (double*)pathLength->GetVoidPointer(0));
                 }
                 else if (intensity->GetDataType() == VTK_INT)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(baseName.str().c_str(), i, numPixels,
                         (int*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
                         (int*)pathLength->GetVoidPointer(0));
                 }
             }
@@ -1153,32 +1159,32 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
                 if (intensity->GetDataType() == VTK_FLOAT)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(baseName.str().c_str(), i, numPixels,
                         (float*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "FLOAT");
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteBOVHeader(baseName.str().c_str(), "intensity", i, nx, ny, "FLOAT");
+                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
                         (float*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "path_length", numBins+i,
+                    WriteBOVHeader(baseName.str().c_str(), "path_length", numBins+i,
                         nx, ny, "FLOAT");
                 }
                 else if (intensity->GetDataType() == VTK_DOUBLE)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(baseName.str().c_str(), i, numPixels,
                         (double*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "DOUBLE");
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteBOVHeader(baseName.str().c_str(), "intensity", i, nx, ny, "DOUBLE");
+                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
                         (double*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "path_length", numBins+i,
+                    WriteBOVHeader(baseName.str().c_str(), "path_length", numBins+i,
                         nx, ny, "DOUBLE");
                 }
                 else if (intensity->GetDataType() == VTK_INT)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(baseName.str().c_str(), i, numPixels,
                         (int*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "INT");
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteBOVHeader(baseName.str().c_str(), "intensity", i, nx, ny, "INT");
+                    WriteFloats(baseName.str().c_str(), numBins+i, numPixels,
                         (int*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "path_length", numBins+i,
+                    WriteBOVHeader(baseName.str().c_str(), "path_length", numBins+i,
                         nx, ny, "INT");
                 }
             }
@@ -1280,7 +1286,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             // save out
             conduit::relay::io::blueprint::save_mesh(data_out,
-                                                     baseName,
+                                                     baseName.str().c_str(),
                                                      file_protocols[outputType]);
 
             // Note to future developers: The following lines are a workaround to a bug found in
@@ -1328,19 +1334,19 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 if (numBins == 1)
                     snprintf(buf, 512, "The x ray image query results were "
-                             "written to the file %s00.%s\n", baseName,
+                             "written to the file %s00.%s\n", baseName.str().c_str(),
                              file_extensions[outputType]);
                 else
                     snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
-                        baseName, file_extensions[outputType], baseName, numBins - 1,
+                        baseName.str().c_str(), file_extensions[outputType], baseName.str().c_str(), numBins - 1,
                         file_extensions[outputType]);
             }
             else if (outputTypeIsRawfloatsOrBov(outputType))
             {
                 snprintf(buf, 512, "The x ray image query results were "
                     "written to the files %s00.%s - %s%02d.%s\n",
-                    baseName, file_extensions[outputType], baseName, 2*numBins - 1,
+                    baseName.str().c_str(), file_extensions[outputType], baseName.str().c_str(), 2*numBins - 1,
                     file_extensions[outputType]);                
             }
             else if (outputTypeIsBlueprint(outputType))
@@ -1350,12 +1356,12 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 {
                     snprintf(buf, 512, "The x ray image query results were "
                              "written to the files %s.%s - %s.root_json\n", 
-                             baseName, file_extensions[outputType], baseName);
+                             baseName.str().c_str(), file_extensions[outputType], baseName.str().c_str());
                 }
                 else
                 {
                     snprintf(buf, 512, "The x ray image query results were "
-                             "written to the file %s.%s\n", baseName, 
+                             "written to the file %s.%s\n", baseName.str().c_str(), 
                              file_extensions[outputType]);
                 }
             }
