@@ -47,7 +47,7 @@
 //   I added an option to enable outputting the ray bounds to a vtk file.
 // 
 //   Justin Privitera, Tue Jun 14 10:02:21 PDT 2022
-//   Added new output type options.
+//   Added new output type options and added output dir option.
 //
 // ****************************************************************************
 
