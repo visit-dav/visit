@@ -98,6 +98,8 @@ def TurnOffSetsByName(silr, cat, names):
             if setname == names:
                 silr.TurnOffSet(s)
 
+if False: '''
+
 OpenDatabase(silo_data_path("multipart_multi_ucd3d.silo"))
 
 
@@ -686,6 +688,7 @@ testNum = testNum + 1
 
 DeleteAllPlots()
 CloseDatabase(silo_data_path("multi_rect2d.silo"))
+'''
 
 def curvilinear_3d_surface():
     """Curvilinear (quad) surfaces in 3D"""
@@ -725,17 +728,23 @@ def curvilinear_3d_surface():
     ResetView()
     DrawPlots()
     TestAutoName()
-
     DeleteAllPlots()
+
     AddPlot("Pseudocolor","p3d")
     DrawPlots()
     TestAutoName()
     DeleteAllPlots()
+
     AddPlot("Pseudocolor","u3d")
     DrawPlots()
     TestAutoName()
-
     DeleteAllPlots()
+
+    AddPlot("FilledBoundary", "Material_3d(Mesh_3d)")
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
     CloseDatabase(silo_data_path("specmix_quad.silo"))
 
 curvilinear_3d_surface()
