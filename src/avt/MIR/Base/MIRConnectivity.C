@@ -80,6 +80,12 @@ MIRConnectivity::~MIRConnectivity()
 //
 //    Mark C. Miller, Fri Oct 19 15:45:06 PDT 2018
 //    Handle VTK_POLY_DATA in same block as VTK_UNSTRUCTURED_GRID
+//
+//    Mark C. Miller, Mon Jun 13 22:50:55 PDT 2022
+//    Handle topologically 2D surface (of quads) potentially embedded in 3
+//    space. The basic trick is to identify the two dimensions of the input
+//    mesh more than a single node thick and treat those two dimensions as
+//    a basic 2D mesh.
 // ****************************************************************************
 
 void
@@ -106,7 +112,7 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
         int nz = dims[2]-1;
         debug5 << "Setting up connectivity array for " << dims[0] << ", " 
                << dims[1] << ", " << dims[2] << endl;
-        if (nz > 0)
+        if (nx > 0 && ny > 0 && nz > 0) // fully 3D case
         {
             ncells = nx*ny*nz;
             int cell_idx = 0;
@@ -155,8 +161,25 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
                 }
             }
         }
-        else
+        else // 2D (potentially 2D topological but 3D spatial)
         {
+            // Identify dimensions to treat as 'x' and 'y' here
+            if (nz == 0) // no-op case
+            {
+                         // treat input x dimension like 'x' here
+                (void)0; // treat input y dimension like 'y' here
+            }
+            else if (ny == 0)
+            {
+                         // treat input x dimension like 'x' here
+                ny = nz; // treat input z dimension like 'y' here
+            }
+            else if (nx == 0)
+            {
+                nx = ny; // treat input y dimension like 'x' here
+                ny = nz; // treat input z dimension like 'y' here
+            }
+
             ncells = nx*ny;
             int cell_idx = 0;
             cellindex = new int[ncells];
