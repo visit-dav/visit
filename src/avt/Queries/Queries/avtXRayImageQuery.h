@@ -81,6 +81,10 @@
 //
 //    Eric Brugger, Thu Jun  4 16:07:06 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Tue Jun 14 10:21:03 PDT 2022
+//    Added conduit include here, added output dir field + setter, 
+//    added write arrays method for writing conduit blueprint output.
 //
 // ****************************************************************************
 
