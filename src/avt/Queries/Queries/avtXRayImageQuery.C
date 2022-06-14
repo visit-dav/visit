@@ -36,6 +36,10 @@
 
 int avtXRayImageQuery::iFileFamily = 0;
 
+//
+// Output Type information and handling
+//
+
 // To add new output types, these are the changes to make:
 //    1) increment `NUM_OUTPUT_TYPES` by however many output types you are planning to add
 //    2) add new entries to the `file_protocols` and `file_extensions` arrays
@@ -44,6 +48,7 @@ int avtXRayImageQuery::iFileFamily = 0;
 //    5) add new cases where necessary (probably just in `avtXRayImageQuery::Execute`)
 //    6) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
 
+// a constant for how many valid output types there are
 const int NUM_OUTPUT_TYPES = 10;
 
 // member `outputType` indexes these arrays
@@ -52,6 +57,7 @@ const char *file_protocols[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bo
 const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
     /*conduit blueprint output types */ "root", "root", "root", "root"};
 
+// constants for each of the output types
 const int BMP_OUT = 0;
 const int JPEG_OUT = 1;
 const int PNG_OUT = 2;
@@ -130,6 +136,10 @@ inline bool outputTypeIsBlueprint(int otype)
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Changed default output type to use constant instead of magic number and
+//    added default outdir value.
 //
 // ****************************************************************************
 
@@ -253,6 +263,10 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //
 //    Eric Brugger, Thu Jun  4 16:11:47 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Added error message for bad output type data type and handled sending
+//    the output directory through.
 //
 // ****************************************************************************
 
@@ -743,7 +757,11 @@ avtXRayImageQuery::SetFamilyFiles(const bool &flag)
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
-//
+// 
+//  Modifications:
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Validity check for output type and error message if it is invalid.
+// 
 // ****************************************************************************
 
 void
@@ -772,6 +790,11 @@ avtXRayImageQuery::SetOutputType(int type)
 //    Eric Brugger, Mon May 14 10:35:27 PDT 2012
 //    I added the bov output type.
 // 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Output type upgrade across the entire file. Magic numbers for output
+//    types are gone, replaced with new constants. Output type indexes the 
+//    new file protocols array.
+// 
 // ****************************************************************************
 
 void
@@ -780,7 +803,7 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
     int i = 0;
     while (i < NUM_OUTPUT_TYPES)
     {
-        // the output types index the file extensions array
+        // the output type indexes the file extensions array
         if (type == file_protocols[i])
         {
             outputType = i;
@@ -915,6 +938,20 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    I corrected a bug where the type specified in the bov file was
 //    incorrectly set to float for the intensities in the case of double
 //    and integer output.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//     - Output type upgrade across the entire file. Magic numbers for output
+//    types are gone, replaced with new constants. There are now functions
+//    used to test output type validity and if output type falls into a 
+//    specific category. There are also arrays that the output type indexes
+//    into that contain file protocols and file extensions.
+//     - Added output directory to query.
+//     - Conduit checks if the output directory is valid.
+//     - baseName and fileName have become stringstreams. New strings have 
+//    been made to store results from baseName formatting, and are used 
+//    extensively.
+//    Blueprint output has been added, with 4 output types.
+//    The output messages has been reorganized and refactored.
 //
 // ****************************************************************************
 
@@ -1323,8 +1360,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 if (numBins == 1)
                     snprintf(buf, 512, "The x ray image query results were "
-                             "written to the file %s00.%s\n", out_filename_w_path.c_str(),
-                             file_extensions[outputType]);
+                        "written to the file %s00.%s\n", out_filename_w_path.c_str(),
+                        file_extensions[outputType]);
                 else
                     snprintf(buf, 512, "The x ray image query results were "
                         "written to the files %s00.%s - %s%02d.%s\n",
@@ -1493,6 +1530,9 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Changed magic numbers to their new constants.
 //
 // ****************************************************************************
 
@@ -1657,7 +1697,7 @@ avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
 //  Method: avtXRayImageQuery::WriteArrays
 //
 //  Purpose:
-//    TODO
+//    Write image to specified conduit arrays.
 //
 //  Programmer: Justin Privitera
 //  Creation:   Sat Jun 11 17:59:32 PDT 2022
