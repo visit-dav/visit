@@ -107,6 +107,20 @@
       ]
     },
     {
+      "network": "kaust",
+      "files": [
+        {
+          "name": "customlauncher"
+        },
+        {
+          "name": "host_kaust_ibex.xml"
+        },
+        {
+          "name": "host_kaust_shaheen.xml"
+        }
+      ]
+    },
+    {
       "network": "lanl",
       "files": [
         {

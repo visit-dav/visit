@@ -88,14 +88,6 @@ if(VISIT_MESAGL_DIR)
                    "\${VISIT_LIBRARY_DIR}/mesagl"
                    OPENGL_LIBRARIES
                    "${OPENGL_LIBRARIES}")
-    string(REPLACE "${VISIT_MESAGL_DIR}/lib"
-                   "\${VISIT_LIBRARY_DIR}/mesagl"
-                   TESSELLATION_LIBRARY
-                   "${TESSELLATION_LIBRARY}")
-    string(REPLACE "${VISIT_LLVM_DIR}/lib"
-                   "\${VISIT_LIBRARY_DIR}/mesagl"
-                   TESSELLATION_LIBRARY
-                   "${TESSELLATION_LIBRARY}")
 endif()
 
 if(VTKH_FOUND)

@@ -137,7 +137,7 @@
         <Field name="constrainNodeProcs" type="bool">false</Field>
         <Field name="allowableNodes" type="intVector"></Field>
         <Field name="allowableProcs" type="intVector"></Field>
-        <Field name="profileName" type="string">parallel mxterm</Field>
+        <Field name="profileName" type="string">parallel sxterm</Field>
     </Object>
     <Field name="activeProfile" type="int">0</Field>
 </Object>

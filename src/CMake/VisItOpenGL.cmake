@@ -66,12 +66,6 @@ if(NOT VISIT_MESAGL_DIR)
 endif()
 
 
-# We use libGLU for its tessellation abilities but it requires libGL sometimes.
-if(UNIX AND NOT APPLE)
-    set(TESSELLATION_LIBRARY ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY})
-else()
-    set(TESSELLATION_LIBRARY ${OPENGL_glu_LIBRARY})
-endif()
 
 message(STATUS "**** OPENGL_gl_LIBRARY=${OPENGL_gl_LIBRARY}")
 message(STATUS "**** OPENGL_opengl_LIBRARY=${OPENGL_opengl_LIBRARY}")
@@ -87,4 +81,3 @@ message(STATUS "**** OpenGL_EGL_FOUND=${OpenGL_EGL_FOUND}")
 message(STATUS "**** OPENGL_INCLUDE_DIR=${OPENGL_INCLUDE_DIR}")
 message(STATUS "**** OPENGL_EGL_INCLUDE_DIRS=${OPENGL_EGL_INCLUDE_DIRS}")
 message(STATUS "**** OPENGL_LIBRARIES=${OPENGL_LIBRARIES}")
-message(STATUS "**** TESSELLATION_LIBRARY=${TESSELLATION_LIBRARY}")
