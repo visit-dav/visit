@@ -7,7 +7,7 @@
 # Date:   May 17, 2022
 #
 # Usage:
-#    run-build-visit +<machine name> -v <version> -s <build_visit_script>"
+#    run-build-visit +<machine name> -v <version> -s <build_visit_script>
 #    Valid machine names:
 #       kickit_mesagl (B-Div, Linux, x86_64, mesagl),
 #       kickit_opengl (B-Div, Linux, x86_64, opengl),
