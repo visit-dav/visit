@@ -42,7 +42,7 @@ struct PseudocolorAttributesObject
 //
 static PyObject *NewPseudocolorAttributes(int);
 std::string
-PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *prefix)
+PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -4149,7 +4149,7 @@ static int
 PseudocolorAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)v;
-    fprintf(fp, "%s", PyPseudocolorAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyPseudocolorAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -4157,7 +4157,7 @@ PyObject *
 PseudocolorAttributes_str(PyObject *v)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)v;
-    return PyString_FromString(PyPseudocolorAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyPseudocolorAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -4309,7 +4309,7 @@ PyPseudocolorAttributes_GetLogString()
 {
     std::string s("PseudocolorAtts = PseudocolorAttributes()\n");
     if(currentAtts != 0)
-        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.");
+        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.", true);
     return s;
 }
 
@@ -4322,7 +4322,7 @@ PyPseudocolorAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("PseudocolorAtts = PseudocolorAttributes()\n");
-        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.");
+        s += PyPseudocolorAttributes_ToString(currentAtts, "PseudocolorAtts.", true);
         cb(s);
     }
 }

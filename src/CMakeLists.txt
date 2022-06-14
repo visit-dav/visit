@@ -489,6 +489,13 @@
 #    Change Windows _SRC_PACKAGE to _WINDEV_PACKAGE, to simply zip up the
 #    needed windows TP development files.
 #
+#    Eric Brugger, Fri Jun 10 09:53:54 PDT 2022
+#    Added logic to include the libicui18n, libicudata and libicuuc
+#    libraries used by Qt to the lib directory of a distribution. Added
+#    logic to include the libstdc++ libraries to the lib directory of a
+#    distribution. The libstdc++ library depends on VISIT_CXX_LIBRARY
+#    being defined. This would typically be added to the config site file.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
@@ -2062,6 +2069,38 @@ IF(VISIT_MPICH_INSTALL)
     )
 ENDIF(VISIT_MPICH_INSTALL)
 
+if(LINUX)
+    #-------------------------------------------------------------------------
+    # Install the system libraries required by Qt to the lib directory.
+    # The versions of these libraries change frequently, so including
+    # them means VisIt may continue to run even if the OS is upgraded.
+    #-------------------------------------------------------------------------
+    if(EXISTS "/lib64/libicui18n.so")
+        file(GLOB libicui18n_libs "/lib64/libicui18n.so*")
+        file(GLOB libicudata_libs "/lib64/libicudata.so*")
+        file(GLOB libicuuc_libs "/lib64/libicuuc.so*")
+        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    endif()
+
+    #-------------------------------------------------------------------------
+    # If the g++ standard library is specified, then install it the lib
+    # directory. This is typically needed if using a non-standard version
+    # of the g++ compiler.
+    #-------------------------------------------------------------------------
+    if(VISIT_CXX_LIBRARY)
+        file(GLOB libstdcxx_libs "${VISIT_CXX_LIBRARY}*")
+        install(FILES ${libstdcxx_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    endif()
+endif()
+
 #-----------------------------------------------------------------------------
 # Set flags & options from config-site files after everything is set up since
 # setting them beforehand can upset some of CMake's own find routines. Use
@@ -2075,6 +2114,30 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}"
 #-----------------------------------------------------------------------------
 # Top-level subdirectories
 #-----------------------------------------------------------------------------
+
+
+#
+# We pull in a few libs using VisIt's setup third party logic
+# that we want to use in the engine beyond the just DB plugins.
+#
+# Conduit and MFEM are examples of this.
+#
+# The the libsim runtime and engine example programs all need to follow
+# the same linking rules as the engine. Specifically, they need
+# the linking dirs for any dependencies introduced. 
+# (For example, for conduit this includes conduit, hdf5, zlib, etc dirs)
+#
+# To simplify the logic needed downstream, we provide AVT_REQUIRED_LIB_DIR
+
+# Ideally in the future with proper imported cmake targets,
+# we would simply rely on cmake to propgate transitive dependency details.
+#
+
+set(AVT_REQUIRED_LIB_DIR "" CACHE INTERNAL "Engine AVT Required I/O lib dirs")
+if(CONDUIT_FOUND)
+    set(AVT_REQUIRED_LIB_DIR ${CONDUIT_LIBRARY_DIR} CACHE INTERNAL "Engine AVT Required I/O lib dirs")
+endif()
+
 
 FUNCTION(CREATE_PLUGIN_DEPENDENCIES target comp type)
     FOREACH(P ${ARGN})

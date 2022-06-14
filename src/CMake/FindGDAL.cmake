@@ -21,7 +21,7 @@
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF (WIN32)
-    SET_UP_THIRD_PARTY(GDAL lib include gdal_i)
+    SET_UP_THIRD_PARTY(GDAL LIBS gdal_i)
     # normally handled in InstallThirdParty.cmake, but gdal has a weird
     # naming convention on windows
     FOREACH(VER 17 19 110 111 222 224)
@@ -37,6 +37,6 @@ IF (WIN32)
         ENDIF(EXISTS ${GDAL_LIBRARY_DIR}/gdal${VER}.dll)
     ENDFOREACH(VER)
 ELSE (WIN32)
-    SET_UP_THIRD_PARTY(GDAL lib include gdal)
+    SET_UP_THIRD_PARTY(GDAL LIBS gdal)
 ENDIF (WIN32)
 

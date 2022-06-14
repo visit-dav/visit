@@ -22,7 +22,7 @@ PyObject *     PyTubeAttributes_Wrap(const TubeAttributes *attr);
 void           PyTubeAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyTubeAttributes_SetDefaults(const TubeAttributes *atts);
 std::string    PyTubeAttributes_GetLogString();
-std::string    PyTubeAttributes_ToString(const TubeAttributes *, const char *);
+std::string    PyTubeAttributes_ToString(const TubeAttributes *, const char *, const bool=false);
 PyObject *     PyTubeAttributes_getattr(PyObject *self, char *name);
 int            PyTubeAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyTubeAttributes_methods[TUBEATTRIBUTES_NMETH];

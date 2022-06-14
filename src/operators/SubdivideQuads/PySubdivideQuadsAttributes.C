@@ -36,7 +36,7 @@ struct SubdivideQuadsAttributesObject
 //
 static PyObject *NewSubdivideQuadsAttributes(int);
 std::string
-PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *atts, const char *prefix)
+PySubdivideQuadsAttributes_ToString(const SubdivideQuadsAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -454,7 +454,7 @@ static int
 SubdivideQuadsAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)v;
-    fprintf(fp, "%s", PySubdivideQuadsAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PySubdivideQuadsAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -462,7 +462,7 @@ PyObject *
 SubdivideQuadsAttributes_str(PyObject *v)
 {
     SubdivideQuadsAttributesObject *obj = (SubdivideQuadsAttributesObject *)v;
-    return PyString_FromString(PySubdivideQuadsAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PySubdivideQuadsAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -614,7 +614,7 @@ PySubdivideQuadsAttributes_GetLogString()
 {
     std::string s("SubdivideQuadsAtts = SubdivideQuadsAttributes()\n");
     if(currentAtts != 0)
-        s += PySubdivideQuadsAttributes_ToString(currentAtts, "SubdivideQuadsAtts.");
+        s += PySubdivideQuadsAttributes_ToString(currentAtts, "SubdivideQuadsAtts.", true);
     return s;
 }
 
@@ -627,7 +627,7 @@ PySubdivideQuadsAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("SubdivideQuadsAtts = SubdivideQuadsAttributes()\n");
-        s += PySubdivideQuadsAttributes_ToString(currentAtts, "SubdivideQuadsAtts.");
+        s += PySubdivideQuadsAttributes_ToString(currentAtts, "SubdivideQuadsAtts.", true);
         cb(s);
     }
 }

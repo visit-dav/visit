@@ -36,7 +36,7 @@ struct ViewerClientAttributesObject
 //
 static PyObject *NewViewerClientAttributes(int);
 std::string
-PyViewerClientAttributes_ToString(const ViewerClientAttributes *atts, const char *prefix)
+PyViewerClientAttributes_ToString(const ViewerClientAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -816,7 +816,7 @@ static int
 ViewerClientAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)v;
-    fprintf(fp, "%s", PyViewerClientAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewerClientAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -824,7 +824,7 @@ PyObject *
 ViewerClientAttributes_str(PyObject *v)
 {
     ViewerClientAttributesObject *obj = (ViewerClientAttributesObject *)v;
-    return PyString_FromString(PyViewerClientAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewerClientAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -976,7 +976,7 @@ PyViewerClientAttributes_GetLogString()
 {
     std::string s("ViewerClientAtts = ViewerClientAttributes()\n");
     if(currentAtts != 0)
-        s += PyViewerClientAttributes_ToString(currentAtts, "ViewerClientAtts.");
+        s += PyViewerClientAttributes_ToString(currentAtts, "ViewerClientAtts.", true);
     return s;
 }
 
@@ -989,7 +989,7 @@ PyViewerClientAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewerClientAtts = ViewerClientAttributes()\n");
-        s += PyViewerClientAttributes_ToString(currentAtts, "ViewerClientAtts.");
+        s += PyViewerClientAttributes_ToString(currentAtts, "ViewerClientAtts.", true);
         cb(s);
     }
 }

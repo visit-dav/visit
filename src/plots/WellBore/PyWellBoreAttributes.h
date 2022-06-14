@@ -22,7 +22,7 @@ PyObject *     PyWellBoreAttributes_Wrap(const WellBoreAttributes *attr);
 void           PyWellBoreAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyWellBoreAttributes_SetDefaults(const WellBoreAttributes *atts);
 std::string    PyWellBoreAttributes_GetLogString();
-std::string    PyWellBoreAttributes_ToString(const WellBoreAttributes *, const char *);
+std::string    PyWellBoreAttributes_ToString(const WellBoreAttributes *, const char *, const bool=false);
 PyObject *     PyWellBoreAttributes_getattr(PyObject *self, char *name);
 int            PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyWellBoreAttributes_methods[WELLBOREATTRIBUTES_NMETH];

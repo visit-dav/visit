@@ -22,7 +22,7 @@ PyObject *     PyClipAttributes_Wrap(const ClipAttributes *attr);
 void           PyClipAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyClipAttributes_SetDefaults(const ClipAttributes *atts);
 std::string    PyClipAttributes_GetLogString();
-std::string    PyClipAttributes_ToString(const ClipAttributes *, const char *);
+std::string    PyClipAttributes_ToString(const ClipAttributes *, const char *, const bool=false);
 PyObject *     PyClipAttributes_getattr(PyObject *self, char *name);
 int            PyClipAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyClipAttributes_methods[CLIPATTRIBUTES_NMETH];

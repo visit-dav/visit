@@ -48,6 +48,10 @@ function bv_adios_depends_on
             depends_on="$depends_on hdf5"
         fi
 
+        if [[ "$DO_BLOSC" == "yes" ]] ; then
+            depends_on="$depends_on blosc"
+        fi
+
         echo $depends_on
     fi
 }
@@ -306,11 +310,18 @@ function build_adios
         #HDF5_DYLIB=""
     fi
 
+    # blosc support
+    if [[ "$DO_BLOSC" == "yes" ]]; then
+        WITH_BLOSC_ARGS="--with-blosc=$BLOSCDIR"
+    else
+        WITH_BLOSC_ARGS="--without-blosc"
+    fi
+
     set -x
     sh -c "./configure ${OPTIONAL} CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
            CFLAGS=\"$CFLAGS $C_OPT_FLAGS $WITH_MPI_INC\" \
            CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $WITH_MPI_INC\" \
-           $WITH_MPI_ARGS $WITH_HDF5_ARGS \
+           $WITH_MPI_ARGS $WITH_HDF5_ARGS $WITH_BLOSC_ARGS \
            --disable-fortran \
            --without-netcdf --without-nc4par --without-phdf5 --without-mxml \
            --prefix=\"$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH\""

@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyAxesArray_Wrap(const AxesArray *attr);
 void VISITPY_API           PyAxesArray_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyAxesArray_SetDefaults(const AxesArray *atts);
 std::string VISITPY_API    PyAxesArray_GetLogString();
-std::string VISITPY_API    PyAxesArray_ToString(const AxesArray *, const char *);
+std::string VISITPY_API    PyAxesArray_ToString(const AxesArray *, const char *, const bool=false);
 VISITPY_API PyObject *     PyAxesArray_getattr(PyObject *self, char *name);
 int VISITPY_API            PyAxesArray_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyAxesArray_methods[AXESARRAY_NMETH];

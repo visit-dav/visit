@@ -36,7 +36,7 @@ struct QueryAttributesObject
 //
 static PyObject *NewQueryAttributes(int);
 std::string
-PyQueryAttributes_ToString(const QueryAttributes *atts, const char *prefix)
+PyQueryAttributes_ToString(const QueryAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -697,7 +697,7 @@ static int
 QueryAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)v;
-    fprintf(fp, "%s", PyQueryAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyQueryAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -705,7 +705,7 @@ PyObject *
 QueryAttributes_str(PyObject *v)
 {
     QueryAttributesObject *obj = (QueryAttributesObject *)v;
-    return PyString_FromString(PyQueryAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyQueryAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -857,7 +857,7 @@ PyQueryAttributes_GetLogString()
 {
     std::string s("QueryAtts = QueryAttributes()\n");
     if(currentAtts != 0)
-        s += PyQueryAttributes_ToString(currentAtts, "QueryAtts.");
+        s += PyQueryAttributes_ToString(currentAtts, "QueryAtts.", true);
     return s;
 }
 
@@ -870,7 +870,7 @@ PyQueryAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("QueryAtts = QueryAttributes()\n");
-        s += PyQueryAttributes_ToString(currentAtts, "QueryAtts.");
+        s += PyQueryAttributes_ToString(currentAtts, "QueryAtts.", true);
         cb(s);
     }
 }

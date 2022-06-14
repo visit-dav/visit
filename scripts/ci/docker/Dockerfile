@@ -74,3 +74,12 @@ RUN python masonry_docker_ci_cleanup.py
 # change perms
 RUN chmod -R a+rX /masonry
 
+# add helper script to clone visit
+RUN echo "git clone https://github.com/visit-dav/visit.git" > /clone.sh
+RUN chmod +x /clone.sh
+
+# add helper script to add cmake to path
+RUN echo "export TPLS_PATH=/masonry/build-mb-develop-ci-smoke/thirdparty_shared/third_party/" > /env_setup.sh
+RUN echo "export CMAKE_BIN_DIR=`ls -d ${TPLS_PATH}/cmake/*/ci/bin/`" >> /env_setup.sh
+RUN echo "export PATH=$PATH:$CMAKE_BIN_DIR" >> /env_setup.sh
+RUN chmod +x /env_setup.sh
