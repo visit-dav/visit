@@ -928,6 +928,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         snprintf(errmsg, 256, "Output type %d is invalid.", outputType);
         EXCEPTION1(VisItException, errmsg);
     }
+    // It would be nice to have something that could check the validity of the 
+    // output directory without needing conduit.
+#ifdef HAVE_CONDUIT
     // check if output directory exists before proceeding
     if (!conduit::utils::is_directory(outputDir))
     {
@@ -935,6 +938,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         snprintf(errmsg, 256, "Directory %s does not exist.", outputDir.c_str());
         EXCEPTION1(VisItException, errmsg);
     }
+#endif
 
     avtDataset_p input = GetTypedInput();
     
@@ -1167,6 +1171,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         }
         else if (outputTypeIsBlueprint(outputType))
         {
+#ifdef HAVE_CONDUIT
             const int x_coords_dim = nx + 1;
             const int y_coords_dim = ny + 1;
             const int z_coords_dim = numBins + 1;
@@ -1290,6 +1295,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                                          full_file_w_path,
                                          file_protocols[outputType]);  
             }
+#else
+            char errmsg[256];
+            // this is safe because at the beginning of the function we check that the output type is valid
+            snprintf(errmsg, 256, "Visit was not installed with conduit, "
+                "which is needed for output type %s.", file_protocols[outputType]);
+            EXCEPTION1(VisItException, errmsg);
+#endif
         }
         else
         {
@@ -1328,9 +1340,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
             else if (outputTypeIsBlueprint(outputType))
             {
+#ifdef HAVE_CONDUIT
                 snprintf(buf, 512, "The x ray image query results were "
                     "written to the file %s.%s\n", out_filename_w_path.c_str(), 
                     file_extensions[outputType]);
+#endif
             }
             else
             {
@@ -1651,7 +1665,7 @@ avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
 //  Modifications:
 //
 // ****************************************************************************
-
+#ifdef HAVE_CONDUIT
 template <typename T>
 void
 avtXRayImageQuery::WriteArrays(vtkDataSet **leaves, 
@@ -1676,7 +1690,7 @@ avtXRayImageQuery::WriteArrays(vtkDataSet **leaves,
         }
     }
 }
-
+#endif
 // ****************************************************************************
 //  Method: avtXRayImageQuery::GetDefaultInputParams
 //

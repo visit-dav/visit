@@ -173,12 +173,13 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      WriteFloats(const char *, int, int, T*);
     void                      WriteBOVHeader(const char *, const char *,
                                   int, int, int, const char *);
+#ifdef HAVE_CONDUIT
     template <typename T>
     void                      WriteArrays(vtkDataSet **leaves, 
                                           conduit::float64 *intensity_vals,
                                           conduit::float64 *depth_vals,
                                           int numBins);
-
+#endif
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
 };
