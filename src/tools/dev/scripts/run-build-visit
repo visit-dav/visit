@@ -7,7 +7,16 @@
 # Date:   May 17, 2022
 #
 # Usage:
-#    run-build-visit -s <build_visit_script>
+#    run-build-visit +<machine name> -v <version> -s <build_visit_script>"
+#    Valid machine names:
+#       kickit_mesagl (B-Div, Linux, x86_64, mesagl),
+#       kickit_opengl (B-Div, Linux, x86_64, opengl),
+#       quartz (LC, Linux, x86_64),
+#       lassen (LC, Linux, power9),
+#       rztrona (LC, Linux, x86_64),
+#       rzansel (LC, Linux, power9),
+#       jade (LC, Linux, x86_64),
+#       sierra (LC, Linux, power9)
 #
 # Modifications:
 #
@@ -95,7 +104,7 @@ then
    echo "    rztrona (LC, Linux, x86_64),"
    echo "    rzansel (LC, Linux, power9),"
    echo "    jade (LC, Linux, x86_64),"
-   echo "    sierra (LC, Linux, power9),"
+   echo "    sierra (LC, Linux, power9)"
    exit
 fi
 
@@ -350,6 +359,6 @@ then
    echo "    rztrona (LC, Linux, x86_64),"
    echo "    rzansel (LC, Linux, power9),"
    echo "    jade (LC, Linux, x86_64),"
-   echo "    sierra (LC, Linux, power9),"
+   echo "    sierra (LC, Linux, power9)"
    exit
 fi
