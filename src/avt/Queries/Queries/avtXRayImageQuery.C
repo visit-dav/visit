@@ -44,13 +44,13 @@ int avtXRayImageQuery::iFileFamily = 0;
 //    5) add new cases where necessary (probably just in `avtXRayImageQuery::Execute`)
 //    6) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
 
-const int NUM_OUTPUT_TYPES = 11;
+const int NUM_OUTPUT_TYPES = 10;
 
 // member `outputType` indexes these arrays
 const char *file_protocols[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
-    /*conduit blueprint output types */ "json", "hdf5", "conduit_json", "conduit_bin", "yaml"};
+    /*conduit blueprint output types */ "json", "hdf5", "conduit_json", "yaml"}; // removed conduit_bin
 const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
-    /*conduit blueprint output types */ "root", "root", "root", "root", "root"};
+    /*conduit blueprint output types */ "root", "root", "root", "root"};
 
 const int BMP_OUT = 0;
 const int JPEG_OUT = 1;
@@ -61,8 +61,7 @@ const int BOV_OUT = 5;
 const int BLUEPRINT_JSON_OUT = 6;
 const int BLUEPRINT_HDF5_OUT = 7;
 const int BLUEPRINT_CONDUIT_JSON_OUT = 8;
-const int BLUEPRINT_CONDUIT_BIN_OUT = 9; // be careful, this produces two files
-const int BLUEPRINT_YAML_OUT = 10;
+const int BLUEPRINT_YAML_OUT = 9;
 
 // an output type is valid if it is an int in [0,NUM_OUTPUT_TYPES)
 inline bool outputTypeValid(int otype)
@@ -83,8 +82,8 @@ inline bool outputTypeIsRawfloatsOrBov(int otype)
 
 inline bool outputTypeIsBlueprint(int otype)
 {
-    return otype == BLUEPRINT_HDF5_OUT || otype == BLUEPRINT_JSON_OUT || otype == BLUEPRINT_YAML_OUT ||
-        otype == BLUEPRINT_CONDUIT_JSON_OUT || otype == BLUEPRINT_CONDUIT_BIN_OUT;
+    return otype == BLUEPRINT_HDF5_OUT || otype == BLUEPRINT_JSON_OUT || 
+        otype == BLUEPRINT_YAML_OUT || otype == BLUEPRINT_CONDUIT_JSON_OUT;
 }
 
 // ****************************************************************************
@@ -1280,8 +1279,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             // https://github.com/LLNL/conduit/issues/973
             // Once this bug is fixed, these lines should be removed.
 
-            // Q? What do I do if the output type was conduit_bin? That outputs two files
-            // Q? also conduit bin does not work...
             if (outputDir != ".")
             {
                 std::string real_filename = out_filename + "." + file_extensions[outputType];
@@ -1331,19 +1328,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
             else if (outputTypeIsBlueprint(outputType))
             {
-                // TODO fix these messages
-                if (outputType == BLUEPRINT_CONDUIT_BIN_OUT)
-                {
-                    snprintf(buf, 512, "The x ray image query results were "
-                             "written to the files %s.%s - %s.root_json\n", 
-                             out_filename_w_path.c_str(), file_extensions[outputType], out_filename_w_path.c_str());
-                }
-                else
-                {
-                    snprintf(buf, 512, "The x ray image query results were "
-                             "written to the file %s.%s\n", out_filename_w_path.c_str(), 
-                             file_extensions[outputType]);
-                }
+                snprintf(buf, 512, "The x ray image query results were "
+                    "written to the file %s.%s\n", out_filename_w_path.c_str(), 
+                    file_extensions[outputType]);
             }
             else
             {
