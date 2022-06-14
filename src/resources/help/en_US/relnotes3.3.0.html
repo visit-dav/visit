@@ -171,6 +171,18 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The DEFINES, CXXFLAGS and LDFLAGS tags in the xml files for plugins now support an optional "components" attribute specifying for which component(s) the tag applies. Currently valid for MDServer("M"), serial Engine ("ESer") and parallel Engine("EPar"). Multiple components may be specified, separated by commas. See ADIOS2.xml or MOAB.xml for an example.</li>
   <li>The DEFINES tag now supports surrounding definitions in quotes if the quotes are important to be carried through. They must be escaped with a '\'. See uintah.xml for an example.</li>
   <li>The version of MFEM was upgraded to 4.4.</li>
+  <li>Added the script <i>run-build-visit</i> for running <i>build_visit</i> to build the third party libraries on LLNL systems. The script has the following usage:<br>
+    <pre>
+    Usage: +"machine name" -v "version" -s "build_visit_script"
+    Valid machine names:
+        kickit_mesagl (B-Div, Linux, x86_64, mesagl),
+        kickit_opengl (B-Div, Linux, x86_64, opengl),
+        quartz (LC, Linux, x86_64),
+        lassen (LC, Linux, power9),
+        rztrona (LC, Linux, x86_64),
+        rzansel (LC, Linux, power9),
+        jade (LC, Linux, x86_64),
+        sierra (LC, Linux, power9)</pre></li>
   <li>Corrected a bug with the regression test suite where the image difference metrics were reported incorrectly in the HTML and JSON output.</li>
   <li>Added <code>TestAutoName()</code> method for automagically naming test baseline files.</li>
   <li>The signature for the SET_UP_THIRD_PARTY function for Find modules was modified to utilize keyword arguments:
@@ -181,6 +193,7 @@ enhancements and bug-fixes that were added to this release.</p>
     </ul>
     The first argument still must be the name of the package.
   </li>
+  <li>The packaging was enhanced to add the libicui18n, libicudata and libicuuc system libraries used by Qt to the lib directory. This is done automaticallly if the libraries can be found in the <i>lib64</i> directory. The packaging logic was also enhanced to add the libstdc++ libraries to the lib directory of a distribution. The libstdc++ library depends on VISIT_CXX_LIBRARY being defined. This would typically be added to the config site file and would be set if using a non-standard compiler on a system. Both of these enhancements only apply to Linux systems.</li>
   <li>The version of Mili was upgraded to 22.1.</li>
 </ul>
 

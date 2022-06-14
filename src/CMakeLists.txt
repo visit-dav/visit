@@ -493,6 +493,13 @@
 #    Moved setting of VISIT_COMMON_INCLUDES to CMake/VisItIncludeVars.cmake
 #    so that it could also be used by PluginVsInstall.
 #
+#    Eric Brugger, Fri Jun 10 09:53:54 PDT 2022
+#    Added logic to include the libicui18n, libicudata and libicuuc
+#    libraries used by Qt to the lib directory of a distribution. Added
+#    logic to include the libstdc++ libraries to the lib directory of a
+#    distribution. The libstdc++ library depends on VISIT_CXX_LIBRARY
+#    being defined. This would typically be added to the config site file.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
@@ -2055,6 +2062,38 @@ IF(VISIT_MPICH_INSTALL)
         CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
     )
 ENDIF(VISIT_MPICH_INSTALL)
+
+if(LINUX)
+    #-------------------------------------------------------------------------
+    # Install the system libraries required by Qt to the lib directory.
+    # The versions of these libraries change frequently, so including
+    # them means VisIt may continue to run even if the OS is upgraded.
+    #-------------------------------------------------------------------------
+    if(EXISTS "/lib64/libicui18n.so")
+        file(GLOB libicui18n_libs "/lib64/libicui18n.so*")
+        file(GLOB libicudata_libs "/lib64/libicudata.so*")
+        file(GLOB libicuuc_libs "/lib64/libicuuc.so*")
+        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    endif()
+
+    #-------------------------------------------------------------------------
+    # If the g++ standard library is specified, then install it the lib
+    # directory. This is typically needed if using a non-standard version
+    # of the g++ compiler.
+    #-------------------------------------------------------------------------
+    if(VISIT_CXX_LIBRARY)
+        file(GLOB libstdcxx_libs "${VISIT_CXX_LIBRARY}*")
+        install(FILES ${libstdcxx_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    endif()
+endif()
 
 #-----------------------------------------------------------------------------
 # Set flags & options from config-site files after everything is set up since
