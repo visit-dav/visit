@@ -115,6 +115,10 @@ if [ $kickit_mesagl = true ]
 then
    echo "Building using mesagl on kickit"
    ran_build_visit=true
+   if [ -f ${build_visit_script}_log.mesagl ]
+   then
+      mv ${build_visit_script}_log.mesagl ${build_visit_script}_log
+   fi
    if [ ! -d /usr/gapps/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/gapps/visit/thirdparty_shared/$version
@@ -139,6 +143,10 @@ if [ $kickit_opengl = true ]
 then
    echo "Building using opengl on kickit"
    ran_build_visit=true
+   if [ -f ${build_visit_script}_log.opengl ]
+   then
+      mv ${build_visit_script}_log.opengl ${build_visit_script}_log
+   fi
    if [ ! -d /usr/gapps/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/gapps/visit/thirdparty_shared/$version
@@ -163,6 +171,10 @@ if [ $quartz = true ]
 then
    echo "Building on quartz"
    ran_build_visit=true
+   if [ -f ${build_visit_script}_log.quartz ]
+   then
+      mv ${build_visit_script}_log.quartz ${build_visit_script}_log
+   fi
    if [ ! -d /usr/workspace/wsa/visit/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/workspace/wsa/visit/visit/thirdparty_shared/$version
@@ -186,6 +198,10 @@ if [ $lassen = true ]
 then
    echo "Building on lassen"
    ran_build_visit=true
+   if [ -f ${build_visit_script}_log.lassen ]
+   then
+      mv ${build_visit_script}_log.lassen ${build_visit_script}_log
+   fi
    if [ ! -d /usr/workspace/wsa/visit/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/workspace/wsa/visit/visit/thirdparty_shared/$version
@@ -212,6 +228,10 @@ if [ $rztrona = true ]
 then
    echo "Building on rztrona"
    ran_build_visit=true
+   if [ -f ${build_visit_script}_log.rztrona ]
+   then
+      mv ${build_visit_script}_log.rztrona ${build_visit_script}_log
+   fi
    if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
@@ -235,6 +255,10 @@ if [ $rzansel = true ]
 then
    echo "Building on rzansel"
    ran_build_visit=true
+   if [ -f ${build_visit_script}_log.rzansel ]
+   then
+      mv ${build_visit_script}_log.rzansel ${build_visit_script}_log
+   fi
    if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
@@ -261,6 +285,10 @@ if [ $jade = true ]
 then
    echo "Building on jade"
    ran_build_visit=true
+   if [ -f ${build_visit_script}_log.jade ]
+   then
+      mv ${build_visit_script}_log.jade ${build_visit_script}_log
+   fi
    if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
@@ -284,6 +312,10 @@ if [ $sierra = true ]
 then
    echo "Building on sierra"
    ran_build_visit=true
+   if [ -f ${build_visit_script}_log.sierra ]
+   then
+      mv ${build_visit_script}_log.sierra ${build_visit_script}_log
+   fi
    if [ ! -d /usr/workspace/visit/visit/thirdparty_shared/$version ]
    then
       mkdir /usr/workspace/visit/visit/thirdparty_shared/$version
