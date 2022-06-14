@@ -594,8 +594,8 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         //
         // Params to manage adjustments in looping logic over faces.
         // For common cases, these defaults are obeyed...all X, Y
-        // and Z loops are done and no changes are made to in
-        // incrimenting logic (e.g. zero is added to incriment).
+        // and Z loops are done and no changes are made to
+        // incrementing logic (e.g. zero is added to increment).
         //
         bool doX, doY, doZ; doX = doY = doZ = true;
         int nxD, nyD, nzD; nxD = nyD = nzD = 0;
