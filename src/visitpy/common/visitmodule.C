@@ -11800,8 +11800,9 @@ visit_GetQueryParameters(PyObject *self, PyObject *args)
 //   SetQueryOutputToxxx calls. Default is string.
 // 
 //   Justin Privitera, Thu May 19 18:52:29 PDT 2022
-//   Now you can pass the image type directly to the xray image query as a
+//   Now you can pass the output type directly to the xray image query as a
 //   string and it will handle which output type it should be internally.
+//   You can also send the output directory to the xray image query.
 //
 // ****************************************************************************
 
