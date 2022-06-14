@@ -44,7 +44,6 @@
 #include <visitstream.h>
 
 #include <avtCallback.h>
-#include <avtCommonDataFunctions.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDatasetCollection.h>
 #include <avtDatasetVerifier.h>
@@ -5066,7 +5065,7 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    If materialLabelsForced is true, then create material labels.
 //
 //    Mark C. Miller, Tue Jun 14 08:43:22 PDT 2022
-//    Adjust topo dim for cases of structured grids with one dimension only
+//    Adjust topoDim for cases of structured grids with one dimension only
 //    one node thick (e.g. [nx][ny][1] or [nx][1][nz] or [1][ny][nz]). These
 //    are really 2D surfaces (a structured arrangement of quads) in 3 space.
 // ****************************************************************************
