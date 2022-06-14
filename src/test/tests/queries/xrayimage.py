@@ -268,4 +268,26 @@ Test("xrayimage28", 0, 1)
 s = GetQueryOutputString()
 TestText("xrayimage29", s)
 
+DeleteAllPlots()
+
+####################################
+
+# test setting output directory
+outdir_set = out_path("current","queries","xrayimage","testdir")
+if not os.path.isdir(outdir_set):
+    os.mkdir(outdir_set)
+
+OpenDatabase(silo_data_path("curv3d.silo"))
+
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+
+# old style argument passing
+Query("XRay Image", "png", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+os.rename(out_path(outdir_set,"output00.png"), out_path(out_base, "xrayimage30.png"))
+Test("xrayimage30", 0, 1)
+
+# s = GetQueryOutputString()
+# TestText("xrayimage31", s)
+
 Exit()
