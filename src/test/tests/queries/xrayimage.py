@@ -18,6 +18,9 @@
 #
 #    Kathleen Biagas, Wed Oct 17 14:25:05 PDT 2012
 #    Show usage of new 'up_vector' parameter.
+# 
+#    Justin Privitera, Tue Jun 14 10:02:21 PDT 2022
+#    Change tests to reflect new ability to send output directory to query.
 #
 # ----------------------------------------------------------------------------
 

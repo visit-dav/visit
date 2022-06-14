@@ -57,6 +57,7 @@ private:
     bool             GetIntValues(int whichWidget, int *pt);
 
     QComboBox       *imageFormat;
+    QLineEdit       *outDir;
     QCheckBox       *divideFlag;
     QLineEdit       *backgroundIntensities;
     QLineEdit       *normal;

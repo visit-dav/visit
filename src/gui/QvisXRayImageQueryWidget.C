@@ -45,6 +45,9 @@
 //
 //   Eric Brugger, Thu Jun  4 17:26:57 PDT 2015
 //   I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//   Justin Privitera, Tue Jun 14 10:02:21 PDT 2022
+//   Added new output type options.
 //
 // ****************************************************************************
 
@@ -76,121 +79,129 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     imageFormat->setCurrentIndex(2);
     topLayout->addWidget(imageFormat, 0, 1);
 
+    // 
+    // Output Directory
+    // 
+    topLayout->addWidget(new QLabel(tr("Output Directory")), 1, 0);
+    outDir = new QLineEdit();
+    outDir->setText(".");
+    topLayout->addWidget(outDir, 1, 1);
+
     //
     // Divide emissivity by absorptivity
     //
     divideFlag = new QCheckBox(tr("Divide Emis by Absorb"));
     divideFlag->setChecked(0);
-    topLayout->addWidget(divideFlag, 1, 0, 1, 2);
+    topLayout->addWidget(divideFlag, 2, 0, 1, 2);
 
     // 
     // Background intensities
     // 
-    topLayout->addWidget(new QLabel(tr("background intensities")), 2, 0);
+    topLayout->addWidget(new QLabel(tr("background intensities")), 3, 0);
     backgroundIntensities = new QLineEdit();
     backgroundIntensities->setText("0");
-    topLayout->addWidget(backgroundIntensities, 2, 1);
+    topLayout->addWidget(backgroundIntensities, 3, 1);
 
     // 
     // Normal
     // 
-    topLayout->addWidget(new QLabel(tr("Normal")), 3, 0);
+    topLayout->addWidget(new QLabel(tr("Normal")), 4, 0);
     normal = new QLineEdit();
     normal->setText("0 0 1");
-    topLayout->addWidget(normal, 3, 1);
+    topLayout->addWidget(normal, 4, 1);
 
     // 
     // Focus
     // 
-    topLayout->addWidget(new QLabel(tr("Focus")), 4, 0);
+    topLayout->addWidget(new QLabel(tr("Focus")), 5, 0);
     focus = new QLineEdit();
     focus->setText("0 0 0");
-    topLayout->addWidget(focus, 4, 1);
+    topLayout->addWidget(focus, 5, 1);
 
     // 
     // View up
     // 
-    topLayout->addWidget(new QLabel(tr("View up")), 5, 0);
+    topLayout->addWidget(new QLabel(tr("View up")), 6, 0);
     viewUp = new QLineEdit();
     viewUp->setText("0 1 0");
-    topLayout->addWidget(viewUp, 5, 1);
+    topLayout->addWidget(viewUp, 6, 1);
 
     // 
     // View angle
     // 
-    topLayout->addWidget(new QLabel(tr("View angle")), 6, 0);
+    topLayout->addWidget(new QLabel(tr("View angle")), 7, 0);
     viewAngle = new QLineEdit();
     viewAngle->setText("30");
-    topLayout->addWidget(viewAngle, 6, 1);
+    topLayout->addWidget(viewAngle, 7, 1);
 
     // 
     // Parallel scale
     // 
-    topLayout->addWidget(new QLabel(tr("Parallel scale")), 7, 0);
+    topLayout->addWidget(new QLabel(tr("Parallel scale")), 8, 0);
     parallelScale = new QLineEdit();
     parallelScale->setText("10");
-    topLayout->addWidget(parallelScale, 7, 1);
+    topLayout->addWidget(parallelScale, 8, 1);
 
     // 
     // Near plane
     // 
-    topLayout->addWidget(new QLabel(tr("Near plane")), 8, 0);
+    topLayout->addWidget(new QLabel(tr("Near plane")), 9, 0);
     nearPlane = new QLineEdit();
     nearPlane->setText("-20");
-    topLayout->addWidget(nearPlane, 8, 1);
+    topLayout->addWidget(nearPlane, 9, 1);
 
     // 
     // Far plane
     // 
-    topLayout->addWidget(new QLabel(tr("Far plane")), 9, 0);
+    topLayout->addWidget(new QLabel(tr("Far plane")), 10, 0);
     farPlane = new QLineEdit();
     farPlane->setText("20");
-    topLayout->addWidget(farPlane, 9, 1);
+    topLayout->addWidget(farPlane, 10, 1);
 
     // 
     // Image pan
     // 
-    topLayout->addWidget(new QLabel(tr("Image pan")), 10, 0);
+    topLayout->addWidget(new QLabel(tr("Image pan")), 11, 0);
     imagePan = new QLineEdit();
     imagePan->setText("0 0");
-    topLayout->addWidget(imagePan, 10, 1);
+    topLayout->addWidget(imagePan, 11, 1);
 
     // 
     // Image zoom
     // 
-    topLayout->addWidget(new QLabel(tr("Image zoom")), 11, 0);
+    topLayout->addWidget(new QLabel(tr("Image zoom")), 12, 0);
     imageZoom = new QLineEdit();
     imageZoom->setText("1");
-    topLayout->addWidget(imageZoom, 11, 1);
+    topLayout->addWidget(imageZoom, 12, 1);
 
     //
     // Perspective
     //
     perspective = new QCheckBox(tr("Perspective"));
     perspective->setChecked(0);
-    topLayout->addWidget(perspective, 12, 0, 1, 2);
+    topLayout->addWidget(perspective, 13, 0, 1, 2);
 
     //
     // Family output files
     //
     family = new QCheckBox(tr("Family output files"));
     family->setChecked(1);
-    topLayout->addWidget(family, 13, 0, 1, 2);
+    topLayout->addWidget(family, 14, 0, 1, 2);
 
     //
     // Output ray bounds
     //
     outputRayBounds = new QCheckBox(tr("Output ray bounds"));
     outputRayBounds->setChecked(0);
-    topLayout->addWidget(outputRayBounds, 14, 0, 1, 2);
+    topLayout->addWidget(outputRayBounds, 15, 0, 1, 2);
 
     // 
     // Image size
     // 
-    topLayout->addWidget(new QLabel(tr("Image Size")), 15, 0);
+    topLayout->addWidget(new QLabel(tr("Image Size")), 16, 0);
     imageSize = new QLineEdit();
     imageSize->setText("500 500");
-    topLayout->addWidget(imageSize, 15, 1);
+    topLayout->addWidget(imageSize, 16, 1);
 }
 
 // ****************************************************************************
