@@ -5068,7 +5068,7 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Mark C. Miller, Tue Jun 14 08:43:22 PDT 2022
 //    Adjust topo dim for cases of structured grids with one dimension only
 //    one node thick (e.g. [nx][ny][1] or [nx][1][nz] or [1][ny][nz]). These
-//    are really 2D surfaces (a structred arrangement of quads) in 3 space.
+//    are really 2D surfaces (a structured arrangement of quads) in 3 space.
 // ****************************************************************************
 
 avtDataTree_p
