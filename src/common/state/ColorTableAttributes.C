@@ -486,7 +486,7 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     DataNode *node = new DataNode("ColorTableAttributes");
     node->AddNode(new DataNode("defaultContinuous", defaultContinuous));
     node->AddNode(new DataNode("defaultDiscrete", defaultDiscrete));
-    node->AddNode(new DataNode("groupingFlag", groupingFlag));
+    node->AddNode(new DataNode("taggingFlag", taggingFlag));
 
     // Add each color table specially.
     char tmp[100];
@@ -507,8 +507,8 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
                 ctNode->AddNode(new DataNode("smoothing", ccpl.GetSmoothing()));
             if(!ccpl.FieldsEqual(ColorControlPointList::ID_discreteFlag, &defaultObject))
                 ctNode->AddNode(new DataNode("discrete", ccpl.GetDiscreteFlag()));
-            if(!ccpl.FieldsEqual(ColorControlPointList::ID_categoryName, &defaultObject))
-                ctNode->AddNode(new DataNode("category", ccpl.GetCategoryName()));
+            if(!ccpl.FieldsEqual(ColorControlPointList::ID_tagNames, &defaultObject))
+                ctNode->AddNode(new DataNode("tags", ccpl.GetTagNames()));
 
             // Add the control points to the vector that we'll save out.
             floatVector fvec;
@@ -563,6 +563,7 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 void
 ColorTableAttributes::SetFromNode(DataNode *parentNode)
 {
+    std::cout << "hello1" << std::endl;
     if(parentNode == 0)
         return;
 
@@ -610,10 +611,14 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
                     if((tmpNode = node->GetNode("discrete")) != 0)
                         ccpl.SetDiscreteFlag(tmpNode->AsBool());
 
-                    if((tmpNode = node->GetNode("category")) != 0)
-                        ccpl.SetCategoryName(tmpNode->AsString());
+                    if((tmpNode = node->GetNode("tags")) != 0)
+                        ccpl.SetTagNames(tmpNode->AsStringVector());
                     else
-                        ccpl.SetCategoryName("Standard");
+                    {
+                        stringVector t;
+                        t.push_back("No Tags");
+                        ccpl.SetTagNames(t);
+                    }
 
                     // Set the color control points.
                     floatVector fvec = pointNode->AsFloatVector();
@@ -650,12 +655,14 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("defaultDiscrete")) != 0)
         SetDefaultDiscrete(node->AsString());
 
-    if((node = searchNode->GetNode("groupingFlag")) != 0)
-        SetGroupingFlag(node->AsBool());
+    if((node = searchNode->GetNode("taggingFlag")) != 0)
+        SetTaggingFlag(node->AsBool());
 
     // For older version compatibility...
     if((node = searchNode->GetNode("defaultColorTable")) != 0)
         SetDefaultContinuous(node->AsString());
+
+    std::cout << "hello2" << std::endl;
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods

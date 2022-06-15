@@ -368,13 +368,6 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
             ColorControlPointList ccpl2;
             ccpl2.SetFromNode(node2);
             ccpl2.SetExternalFlag(true);
-            if (ccpl2.GetCategoryName() == std::string(""))
-            {
-                if (importingPersonal)
-                    ccpl2.SetCategoryName("UserDefined");
-                else
-                    ccpl2.SetCategoryName("Standard");
-            }
 
             // add tags to imported color tables
             if (importingPersonal)

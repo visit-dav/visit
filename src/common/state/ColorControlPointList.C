@@ -516,12 +516,6 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("discrete", discreteFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_categoryName, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("category", categoryName));
-    }
-
     if(completeSave || !FieldsEqual(ID_tagNames, &defaultObject))
     {
         addToParent = true;
@@ -652,8 +646,6 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
         SetExternalFlag(node->AsBool());
     else if((node = searchNode->GetNode("externalFlag")) != 0)
         SetExternalFlag(node->AsBool());
-    if((node = searchNode->GetNode("category")) != 0)
-        SetCategoryName(node->AsString());
     if((node = searchNode->GetNode("tags")) != 0)
         SetTagNames(node->AsStringVector());
 }
@@ -1715,12 +1707,6 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
     {
         addToParent = true;
         node->AddNode(new DataNode("discrete", discreteFlag));
-    }
-
-    if(completeSave || !FieldsEqual(ID_categoryName, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("category", categoryName));
     }
 
     if(completeSave || !FieldsEqual(ID_tagNames, &defaultObject))
