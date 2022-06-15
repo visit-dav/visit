@@ -1272,7 +1272,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 EXCEPTION1(VisItException, msg);
             }
 
-            // TODO strides
+            // set strides
+            data_out["fields/intensities/strides"].set(conduit::DataType::int64(3));
+            conduit::int64 *stride_ptr = data_out["fields/intensities/strides"].value();
+            stride_ptr[0] = 1;
+            stride_ptr[1] = nx;
+            stride_ptr[2] = nx * ny;            
+            data_out["fields/optical_depth/strides"].set(data_out["fields/intensities/strides"]);
 
             data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
             const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
