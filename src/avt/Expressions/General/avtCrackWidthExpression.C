@@ -50,7 +50,9 @@ namespace avtCrackWidthExpression_Internal
             Slicer->SetOrigin(const_cast<double*>(center));
             MassProp->SetInputConnection(Slicer->GetOutputPort());
             MassProp->Update();
-            L =  zVol / MassProp->GetSurfaceArea();
+            double sa = MassProp->GetSurfaceArea();
+            if (sa != 0.)
+                L =  zVol / sa;
         }
         else
         {

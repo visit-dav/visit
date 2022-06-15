@@ -371,6 +371,9 @@ vtkCrackWidthFilter::RequestData(
 //    I modified the function to return the effective length in the crack
 //    direction instead of the crack width and changed the name to match.
 //
+//    Kathleen Biagas, Wed June 15, 2022
+//    Guard against divide-by-zero.
+//
 // ***************************************************************************
 
 double
@@ -386,7 +389,9 @@ vtkCrackWidthFilter::LengthForCell(vtkCell *cell, vtkIdType cellId,
     this->Slicer->SetOrigin(const_cast<double*>(center));
     this->MassProp->SetInputConnection(this->Slicer->GetOutputPort());
     this->MassProp->Update();
-    L =  zVol / this->MassProp->GetSurfaceArea();
+    double sa = this->MassProp->GetSurfaceArea();
+    if (sa != 0.)
+        L =  zVol / sa;
     }
   else
     {
