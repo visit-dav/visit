@@ -1350,6 +1350,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             EXCEPTION1(VisItException, errmsg);
         }
 
+
         //
         // Output the result message.
         //
@@ -1393,7 +1394,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 EXCEPTION1(VisItException, errmsg);
 
             }
-            
+
             msg += buf;
 
             SetResultMessage(msg);
@@ -1401,11 +1402,13 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         else
         {
             SetResultMessage("No x ray image query results were written "
-                             "because the output type was invalid\n");
+                             "because the output type was invalid.\n");
         }
 
         // Free the memory from the GetAllLeaves function call.
         delete [] leaves;
+
+
     }
     visitTimer->StopTimer(t2, "avtXRayImageQuery::WriteImage");
 
