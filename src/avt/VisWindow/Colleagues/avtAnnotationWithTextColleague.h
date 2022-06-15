@@ -32,7 +32,7 @@ public:
 protected:
     char *CreateAnnotationString(char const *fmtStr);
 
-    static avtDataAttributes *initialDataAttributes;
+    static std::unique_ptr<avtDataAttributes> initialDataAttributes;
 
     char                     *textFormatString; // fmt string from user
     char                     *textString; // string produced from fmt

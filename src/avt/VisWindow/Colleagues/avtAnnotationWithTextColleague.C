@@ -15,9 +15,7 @@
 
 #include <memory>
 
-#warning MAKE ME A UNIQUE_PTR
-// std::unique_ptr<avtDataAttributes const *> avtAnnotationWithTextColleague::initialDataAttributes(new avtDataAttributes);
-avtDataAttributes *avtAnnotationWithTextColleague::initialDataAttributes = new avtDataAttributes;
+std::unique_ptr<avtDataAttributes> avtAnnotationWithTextColleague::initialDataAttributes = std::unique_ptr<avtDataAttributes>(new avtDataAttributes);
 
 // ****************************************************************************
 // Method: avtAnnotationWithTextColleague::avtAnnotationWithText
@@ -28,16 +26,7 @@ avtDataAttributes *avtAnnotationWithTextColleague::initialDataAttributes = new a
 // Arguments:
 //   m : The vis window proxy.
 //
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 14:13:14 PST 2003
-//
-// Modifications:
-//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
-//    Added $cycle support.
-//
-//    Tom Fogal, Fri Jan 28 15:26:59 MST 2011
-//    VTK API change.
-//   
+// Programmer: Mark C. Miller, Wed Jun 15 15:30:22 PDT 2022
 // ****************************************************************************
 
 avtAnnotationWithTextColleague::avtAnnotationWithTextColleague(VisWindowColleagueProxy &m) 
@@ -56,14 +45,8 @@ avtAnnotationWithTextColleague::avtAnnotationWithTextColleague(VisWindowColleagu
 //
 // Purpose: 
 //   Destructor for the avtAnnotationWithText class.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 14:18:31 PST 2003
-//
-// Modifications:
-//    Burlen Loring, Mon Jul 14 14:04:31 PDT 2014
-//    fix alloc-dealloc-mismatch (operator new [] vs operator delete)
-//
+// 
+// Mark C. Miller, Wed Jun 15 15:31:15 PDT 2022
 // ****************************************************************************
 
 avtAnnotationWithTextColleague::~avtAnnotationWithTextColleague()
@@ -83,16 +66,7 @@ avtAnnotationWithTextColleague::~avtAnnotationWithTextColleague()
 // Arguments:
 //   lst : The plot list.
 //
-// Programmer: Brad Whitlock
-// Creation:   Wed Dec 3 12:46:37 PDT 2003
-//
-// Modifications:
-//    Jeremy Meredith, Wed Mar 11 12:33:20 EDT 2009
-//    Added $cycle support.
-//
-//    Brad Whitlock, Mon Dec 10 11:41:13 PST 2012
-//    Set initial values from the current values.
-//
+// Mark C. Miller, Wed Jun 15 15:31:32 PDT 2022
 // ****************************************************************************
 
 void
@@ -111,6 +85,11 @@ avtAnnotationWithTextColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 #define TIME_IDENTIFIER "$time"
 #define CYCLE_IDENTIFIER "$cycle"
 #define INDEX_IDENTIFIER "$index"
+
+// handle $XXX anywhere in string
+// handle multiple occurences of $XXX
+// handle $XXX and $YYY in same string
+
 
 // Caller must delete what is returned
 char *
