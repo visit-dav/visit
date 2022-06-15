@@ -45,44 +45,9 @@ ${COMMON_SOURCES}
 )
 
 
-IF(VISIT_PYTHON_SCRIPTING)
-    SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} ${VISIT_INCLUDE_DIR}/visitpy/common ${VISIT_INCLUDE_DIR}/visitpy/visitpy)
-ENDIF(VISIT_PYTHON_SCRIPTING)
-
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_COMMON_INCLUDES}
-${VISIT_INCLUDE_DIR}/avt/DBAtts/MetaData
-${VISIT_INCLUDE_DIR}/avt/DBAtts/SIL
-${VISIT_INCLUDE_DIR}/avt/Database/Database
-${VISIT_INCLUDE_DIR}/avt/FileWriter
-${VISIT_INCLUDE_DIR}/avt/Filters
-${VISIT_INCLUDE_DIR}/avt/IVP
-${VISIT_INCLUDE_DIR}/avt/Math
-${VISIT_INCLUDE_DIR}/avt/Pipeline/AbstractFilters
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Data
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Pipeline
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Sinks
-${VISIT_INCLUDE_DIR}/avt/Pipeline/Sources
-${VISIT_INCLUDE_DIR}/avt/Plotter
-${VISIT_INCLUDE_DIR}/avt/QtVisWindow
-${VISIT_INCLUDE_DIR}/avt/View
-${VISIT_INCLUDE_DIR}/avt/VisWindow/Colleagues
-${VISIT_INCLUDE_DIR}/avt/VisWindow/Interactors
-${VISIT_INCLUDE_DIR}/avt/VisWindow/Proxies
-${VISIT_INCLUDE_DIR}/avt/VisWindow/Tools
-${VISIT_INCLUDE_DIR}/avt/VisWindow/VisWindow
-${VISIT_INCLUDE_DIR}/gui
-${VISIT_INCLUDE_DIR}/viewer/core
-${VISIT_INCLUDE_DIR}/viewer/main
-${VISIT_INCLUDE_DIR}/viewer/main/ui
-${VISIT_INCLUDE_DIR}/viewer/proxy
-${VISIT_INCLUDE_DIR}/viewer/rpc
-${VISIT_INCLUDE_DIR}/winutil
-${VISIT_INCLUDE_DIR}/visit_vtk/full
-${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${VTK_INCLUDE_DIRS}
-${PYINCLUDES}
+${VISIT_PLOT_INCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
 )
 
