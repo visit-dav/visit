@@ -1956,6 +1956,17 @@ conn components Function: ``conn_components()`` : ``conn_components(expr0)``
 resrad Function: ``resrad()`` : ``resrad(expr0)``
     No description available.
 
+.. _CrackWidth_Expression_Function:
+
+crack width Function: ``crack_width()`` : ``crack_width(crack_num, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))``
+    Calculates crack width.
+    crack_num      : number of crack (1, 2, or 3). 
+    crack1_dir     : direction vector for crack 1. 
+    crack2_dir     : direction vector for crack 2. 
+    crack3_dir     : direction vector for crack 3. 
+    strain_tensor  : strain tensor
+    mesh_name      : name of the mesh
+
 Time Iteration Expressions
 """"""""""""""""""""""""""
 
