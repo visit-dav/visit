@@ -74,7 +74,6 @@ QvisXRayImageQueryWidget::QvisXRayImageQueryWidget(QWidget *parent,
     imageFormat->addItem(tr("bov"));
     imageFormat->addItem(tr("json"));
     imageFormat->addItem(tr("hdf5"));
-    imageFormat->addItem(tr("conduit_json"));
     imageFormat->addItem(tr("yaml"));
     imageFormat->setCurrentIndex(2);
     topLayout->addWidget(imageFormat, 0, 1);

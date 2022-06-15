@@ -49,13 +49,13 @@ int avtXRayImageQuery::iFileFamily = 0;
 //    6) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
 
 // a constant for how many valid output types there are
-const int NUM_OUTPUT_TYPES = 10;
+const int NUM_OUTPUT_TYPES = 9;
 
 // member `outputType` indexes these arrays
 const char *file_protocols[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
-    /*conduit blueprint output types */ "json", "hdf5", "conduit_json", "yaml"}; // removed conduit_bin
+    /*conduit blueprint output types */ "json", "hdf5", "yaml"}; // removed conduit_bin and conduit_json
 const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpg", "png", "tif", "bof", "bov", 
-    /*conduit blueprint output types */ "root", "root", "root", "root"};
+    /*conduit blueprint output types */ "root", "root", "root"};
 
 // constants for each of the output types
 const int BMP_OUT = 0;
@@ -66,8 +66,7 @@ const int RAWFLOATS_OUT = 4;
 const int BOV_OUT = 5;
 const int BLUEPRINT_JSON_OUT = 6;
 const int BLUEPRINT_HDF5_OUT = 7;
-const int BLUEPRINT_CONDUIT_JSON_OUT = 8;
-const int BLUEPRINT_YAML_OUT = 9;
+const int BLUEPRINT_YAML_OUT = 8;
 
 // an output type is valid if it is an int in [0,NUM_OUTPUT_TYPES)
 inline bool outputTypeValid(int otype)
@@ -89,7 +88,7 @@ inline bool outputTypeIsRawfloatsOrBov(int otype)
 inline bool outputTypeIsBlueprint(int otype)
 {
     return otype == BLUEPRINT_HDF5_OUT || otype == BLUEPRINT_JSON_OUT || 
-        otype == BLUEPRINT_YAML_OUT || otype == BLUEPRINT_CONDUIT_JSON_OUT;
+        otype == BLUEPRINT_YAML_OUT;
 }
 
 // ****************************************************************************
