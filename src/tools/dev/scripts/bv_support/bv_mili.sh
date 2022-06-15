@@ -275,6 +275,74 @@ EOF
     return 0
 }
 
+function apply_mili_221_blueos_patch
+{
+    patch -p0 << \EOF
+diff -c mili-22.1/src/eprtf.c.orig mili-22.1/src/eprtf.c
+*** mili-22.1/src/eprtf.c.orig	Wed Jun 15 16:38:26 2022
+--- mili-22.1/src/eprtf.c	Wed Jun 15 16:38:51 2022
+***************
+*** 89,115 ****
+  #include "win32-regex.h"
+  #endif
+  
+! #include "mili_enum.h"
+  #include "eprtf.h"
+  
+  static char destbuf[CMAX];
+  static char *p_cur;
+  static int cur_len;
+  static va_list val;
+- #ifdef HAVE_EPRINT
+  static char *t_pattern = "%([0-9]+|[*])t";
+  static regex_t all_re;
+  static char *all_pattern =
+     "%[0 -+#]*([0-9]*|[*])([.]([0-9]*|[*]))?[hlL]?[dioxXucsfeEgGpn%]";
+  
+- #endif
+  static regex_t t_re;
+  static regmatch_t t_match[1];
+  
+  
+- #ifdef NOOPTERON
+  static regmatch_t all_match[1];
+- #endif
+  
+  
+  /*****************************************************************
+--- 89,111 ----
+  #include "win32-regex.h"
+  #endif
+  
+! #include "mili_internal.h"
+  #include "eprtf.h"
+  
+  static char destbuf[CMAX];
+  static char *p_cur;
+  static int cur_len;
+  static va_list val;
+  static char *t_pattern = "%([0-9]+|[*])t";
+  static regex_t all_re;
+  static char *all_pattern =
+     "%[0 -+#]*([0-9]*|[*])([.]([0-9]*|[*]))?[hlL]?[dioxXucsfeEgGpn%]";
+  
+  static regex_t t_re;
+  static regmatch_t t_match[1];
+  
+  
+  static regmatch_t all_match[1];
+  
+  
+  /*****************************************************************
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply blueos patch to Mili 22.1"
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_mili_patch
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -294,6 +362,10 @@ function apply_mili_patch
 
     if [[ ${MILI_VERSION} == 22.1 ]] ; then
         apply_mili_221_cflags_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mili_221_blueos_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
