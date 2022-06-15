@@ -5098,10 +5098,8 @@ ViewerSubject::HandleColorTable()
             const stringVector &names = colorAtts->GetNames();
             for(int i = 0; i < nNames; ++i)
             {
-                QvisColorTableButton::addColorTable(names[i].c_str(), 
-                    colorAtts->GetColorTables(i).GetCategoryName().c_str());
-                QvisNoDefaultColorTableButton::addColorTable(names[i].c_str(),
-                    colorAtts->GetColorTables(i).GetCategoryName().c_str());
+                QvisColorTableButton::addColorTable(names[i].c_str());
+                QvisNoDefaultColorTableButton::addColorTable(names[i].c_str());
             }
 
             // Update all of the QvisColorTableButton widgets.

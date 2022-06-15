@@ -23,7 +23,7 @@ import java.util.Vector;
 
 public class ColorControlPointList extends AttributeSubject
 {
-    private static int ColorControlPointList_numAdditionalAtts = 7;
+    private static int ColorControlPointList_numAdditionalAtts = 6;
 
     // Enum values
     public final static int SMOOTHINGMETHOD_NONE = 0;
@@ -40,7 +40,6 @@ public class ColorControlPointList extends AttributeSubject
         equalSpacingFlag = false;
         discreteFlag = false;
         externalFlag = false;
-        categoryName = new String("");
         tagNames = new Vector();
     }
 
@@ -53,7 +52,6 @@ public class ColorControlPointList extends AttributeSubject
         equalSpacingFlag = false;
         discreteFlag = false;
         externalFlag = false;
-        categoryName = new String("");
         tagNames = new Vector();
     }
 
@@ -75,7 +73,6 @@ public class ColorControlPointList extends AttributeSubject
         equalSpacingFlag = obj.equalSpacingFlag;
         discreteFlag = obj.discreteFlag;
         externalFlag = obj.externalFlag;
-        categoryName = new String(obj.categoryName);
         tagNames = new Vector(obj.tagNames.size());
         for(i = 0; i < obj.tagNames.size(); ++i)
             tagNames.addElement(new String((String)obj.tagNames.elementAt(i)));
@@ -122,7 +119,6 @@ public class ColorControlPointList extends AttributeSubject
                 (equalSpacingFlag == obj.equalSpacingFlag) &&
                 (discreteFlag == obj.discreteFlag) &&
                 (externalFlag == obj.externalFlag) &&
-                (categoryName.equals(obj.categoryName)) &&
                 tagNames_equal);
     }
 
@@ -151,16 +147,10 @@ public class ColorControlPointList extends AttributeSubject
         Select(4);
     }
 
-    public void SetCategoryName(String categoryName_)
-    {
-        categoryName = categoryName_;
-        Select(5);
-    }
-
     public void SetTagNames(Vector tagNames_)
     {
         tagNames = tagNames_;
-        Select(6);
+        Select(5);
     }
 
     // Property getting methods
@@ -169,7 +159,6 @@ public class ColorControlPointList extends AttributeSubject
     public boolean GetEqualSpacingFlag() { return equalSpacingFlag; }
     public boolean GetDiscreteFlag() { return discreteFlag; }
     public boolean GetExternalFlag() { return externalFlag; }
-    public String  GetCategoryName() { return categoryName; }
     public Vector  GetTagNames() { return tagNames; }
 
     // Write and read methods.
@@ -193,8 +182,6 @@ public class ColorControlPointList extends AttributeSubject
         if(WriteSelect(4, buf))
             buf.WriteBool(externalFlag);
         if(WriteSelect(5, buf))
-            buf.WriteString(categoryName);
-        if(WriteSelect(6, buf))
             buf.WriteStringVector(tagNames);
     }
 
@@ -228,9 +215,6 @@ public class ColorControlPointList extends AttributeSubject
             SetExternalFlag(buf.ReadBool());
             break;
         case 5:
-            SetCategoryName(buf.ReadString());
-            break;
-        case 6:
             SetTagNames(buf.ReadStringVector());
             break;
         }
@@ -260,7 +244,6 @@ public class ColorControlPointList extends AttributeSubject
         str = str + boolToString("equalSpacingFlag", equalSpacingFlag, indent) + "\n";
         str = str + boolToString("discreteFlag", discreteFlag, indent) + "\n";
         str = str + boolToString("externalFlag", externalFlag, indent) + "\n";
-        str = str + stringToString("categoryName", categoryName, indent) + "\n";
         str = str + stringVectorToString("tagNames", tagNames, indent) + "\n";
         return str;
     }
@@ -305,7 +288,6 @@ public class ColorControlPointList extends AttributeSubject
     private boolean equalSpacingFlag;
     private boolean discreteFlag;
     private boolean externalFlag;
-    private String  categoryName;
     private Vector  tagNames; // vector of String objects
 }
 

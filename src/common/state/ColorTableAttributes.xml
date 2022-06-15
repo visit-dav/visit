@@ -5,7 +5,6 @@
     <Field name="colorTables" type="attVector" subtype="ColorControlPointList"></Field>
     <Field name="defaultContinuous" type="string">"hot"</Field>
     <Field name="defaultDiscrete"   type="string">"levels"</Field>
-    <Field name="groupingFlag"     type="bool">false</Field>
     <Field name="taggingFlag"     type="bool">false</Field>
     <Field name="changesMade" type="bool">false</Field>
     <Function name="GetColorTableIndex"           user="true"></Function>

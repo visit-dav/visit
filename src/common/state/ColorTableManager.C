@@ -177,23 +177,6 @@ ColorTableManager::WriteConfigFile(std::ostream& out)
 
     // Let the color table create and add its information to the node.
     ccpl.CreateNode(ctNode, false, true);
-    // This is an export, set the categoryName to UserDefined, adding the node
-    // if necessary.
-    if (ctNode->GetNode("ColorControlPointList")->GetNode("category"))
-    {
-        // if the category is Standard
-        std::string category =
-            ctNode->GetNode("ColorControlPointList")->GetNode("category")->AsString();
-        if (category == std::string("Standard"))
-        {
-            ctNode->GetNode("ColorControlPointList")->GetNode("category")->SetString("UserDefined");
-        }
-    }
-    else
-    {
-        ctNode->GetNode("ColorControlPointList")->AddNode(new DataNode("category",std::string("UserDefined")));
-    }
-
     // add the user-defined tag
     if (ctNode->GetNode("ColorControlPointList")->GetNode("tags"))
     {

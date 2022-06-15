@@ -83,7 +83,6 @@ ColorTableObserver::Update(Subject *)
     // have to update the widget.
     if(colorAtts->IsSelected(ColorTableAttributes::ID_names) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_colorTables) ||
-       colorAtts->IsSelected(ColorTableAttributes::ID_groupingFlag) ||
        colorAtts->IsSelected(ColorTableAttributes::ID_taggingFlag) ||
        colorAtts->GetChangesMade())
     {
@@ -104,10 +103,8 @@ ColorTableObserver::Update(Subject *)
         {
             if (active[i])
             {
-                QvisColorTableButton::addColorTable(names[i].c_str(),
-                  colorAtts->GetColorTables(i).GetCategoryName().c_str());
-                QvisNoDefaultColorTableButton::addColorTable(names[i].c_str(),
-                  colorAtts->GetColorTables(i).GetCategoryName().c_str());
+                QvisColorTableButton::addColorTable(names[i].c_str());
+                QvisNoDefaultColorTableButton::addColorTable(names[i].c_str());
             }
         }
 

@@ -19,8 +19,6 @@
     <Field name="externalFlag" label="externalFlag" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="categoryName" label="categoryName" type="string">
-    </Field>
     <Field name="tagNames" label="tagNames" type="stringVector">
     </Field>
     <Function name="EvalCubicSpline" user="true" member="true" access="private">

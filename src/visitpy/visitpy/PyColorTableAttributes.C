@@ -91,11 +91,6 @@ PyColorTableAttributes_ToString(const ColorTableAttributes *atts, const char *pr
     str += tmpStr;
     snprintf(tmpStr, 1000, "%sdefaultDiscrete = \"%s\"\n", prefix, atts->GetDefaultDiscrete().c_str());
     str += tmpStr;
-    if(atts->GetGroupingFlag())
-        snprintf(tmpStr, 1000, "%sgroupingFlag = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%sgroupingFlag = 0\n", prefix);
-    str += tmpStr;
     if(atts->GetTaggingFlag())
         snprintf(tmpStr, 1000, "%staggingFlag = 1\n", prefix);
     else
@@ -463,66 +458,6 @@ ColorTableAttributes_GetDefaultDiscrete(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ColorTableAttributes_SetGroupingFlag(PyObject *self, PyObject *args)
-{
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    bool cval = bool(val);
-
-    if (val == -1 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the groupingFlag in the object.
-    obj->data->SetGroupingFlag(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ColorTableAttributes_GetGroupingFlag(PyObject *self, PyObject *args)
-{
-    ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetGroupingFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
 ColorTableAttributes_SetTaggingFlag(PyObject *self, PyObject *args)
 {
     ColorTableAttributesObject *obj = (ColorTableAttributesObject *)self;
@@ -659,8 +594,6 @@ PyMethodDef PyColorTableAttributes_methods[COLORTABLEATTRIBUTES_NMETH] = {
     {"GetDefaultContinuous", ColorTableAttributes_GetDefaultContinuous, METH_VARARGS},
     {"SetDefaultDiscrete", ColorTableAttributes_SetDefaultDiscrete, METH_VARARGS},
     {"GetDefaultDiscrete", ColorTableAttributes_GetDefaultDiscrete, METH_VARARGS},
-    {"SetGroupingFlag", ColorTableAttributes_SetGroupingFlag, METH_VARARGS},
-    {"GetGroupingFlag", ColorTableAttributes_GetGroupingFlag, METH_VARARGS},
     {"SetTaggingFlag", ColorTableAttributes_SetTaggingFlag, METH_VARARGS},
     {"GetTaggingFlag", ColorTableAttributes_GetTaggingFlag, METH_VARARGS},
     {"SetChangesMade", ColorTableAttributes_SetChangesMade, METH_VARARGS},
@@ -697,8 +630,6 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
         return ColorTableAttributes_GetDefaultContinuous(self, NULL);
     if(strcmp(name, "defaultDiscrete") == 0)
         return ColorTableAttributes_GetDefaultDiscrete(self, NULL);
-    if(strcmp(name, "groupingFlag") == 0)
-        return ColorTableAttributes_GetGroupingFlag(self, NULL);
     if(strcmp(name, "taggingFlag") == 0)
         return ColorTableAttributes_GetTaggingFlag(self, NULL);
     if(strcmp(name, "changesMade") == 0)
@@ -755,8 +686,6 @@ PyColorTableAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ColorTableAttributes_SetDefaultContinuous(self, args);
     else if(strcmp(name, "defaultDiscrete") == 0)
         obj = ColorTableAttributes_SetDefaultDiscrete(self, args);
-    else if(strcmp(name, "groupingFlag") == 0)
-        obj = ColorTableAttributes_SetGroupingFlag(self, args);
     else if(strcmp(name, "taggingFlag") == 0)
         obj = ColorTableAttributes_SetTaggingFlag(self, args);
     else if(strcmp(name, "changesMade") == 0)

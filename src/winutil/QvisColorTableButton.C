@@ -26,7 +26,6 @@ QMenu        *QvisColorTableButton::colorTableMenu = 0;
 QActionGroup *QvisColorTableButton::colorTableMenuActionGroup = 0;
 QvisColorTableButton::ColorTableButtonVector QvisColorTableButton::buttons;
 QStringList  QvisColorTableButton::colorTableNames;
-QMap<QString,QStringList>  QvisColorTableButton::mappedColorTableNames;
 bool        QvisColorTableButton::popupHasEntries = false;
 ColorTableAttributes *QvisColorTableButton::colorTableAtts = NULL;
 
@@ -142,7 +141,6 @@ QvisColorTableButton::~QvisColorTableButton()
 
         // Delete the color table names.
         colorTableNames.clear();
-        mappedColorTableNames.clear();
     }
 }
 
@@ -361,28 +359,7 @@ QvisColorTableButton::colorTableSelected(QAction *action)
     }
     else
     {
-        QString ctName;
-        if (!colorTableAtts->GetGroupingFlag() || mappedColorTableNames.count() == 1)
-        {
-            ctName = colorTableNames.at(index-1);
-        }
-        else
-        {
-            int count=1, N=0;
-            QMap<QString, QStringList>::const_iterator iter;
-            for(iter = mappedColorTableNames.constBegin();
-                iter != mappedColorTableNames.constEnd();
-                ++iter)
-            {
-                N = iter.value().size();
-                if(index < (count+N))
-                {
-                    ctName = iter.value().at(index-count);
-                    break;
-                }
-                count += N;
-            }
-        }
+        QString ctName = colorTableNames.at(index-1);
 
         emit selectedColorTable(false, ctName);
         setText(ctName);
@@ -412,7 +389,6 @@ void
 QvisColorTableButton::clearAllColorTables()
 {
     colorTableNames.clear();
-    mappedColorTableNames.clear();
 
     // Clear out the popup menu.
     popupHasEntries = false;
@@ -438,13 +414,10 @@ QvisColorTableButton::clearAllColorTables()
 // ****************************************************************************
 
 void
-QvisColorTableButton::addColorTable(const QString &ctName,
-    const QString &ctCategory)
+QvisColorTableButton::addColorTable(const QString &ctName)
 {
     colorTableNames.append(ctName);
     colorTableNames.sort();
-    mappedColorTableNames[ctCategory].append(ctName);
-    mappedColorTableNames[ctCategory].sort();
 }
 
 // ****************************************************************************
@@ -540,31 +513,11 @@ QvisColorTableButton::regeneratePopupMenu()
 
     colorTableMenuActionGroup->addAction(colorTableMenu->addAction("Default"));
     colorTableMenu->addSeparator();
-    if (!colorTableAtts->GetGroupingFlag() || mappedColorTableNames.count() == 1)
+    // Add an item for each color table.
+    for (int i = 0; i < colorTableNames.size(); ++i)
     {
-        // Add an item for each color table.
-        for(int i = 0; i < colorTableNames.size(); ++i)
-        {
-            QAction *action = colorTableMenu->addAction(makeIcon(colorTableNames.at(i)), colorTableNames.at(i));
-            colorTableMenuActionGroup->addAction(action);
-        }
-    }
-    else
-    {
-        QMap<QString, QStringList>::const_iterator iter = mappedColorTableNames.constBegin();
-        while (iter != mappedColorTableNames.constEnd())
-        {
-            QMenu *subMenu = colorTableMenu->addMenu(iter.key());
-            QStringList ctNames = iter.value();
-
-            // Add an item for each color table.
-            for(int i = 0; i < ctNames.size(); ++i)
-            {
-                QAction *action = subMenu->addAction(makeIcon(ctNames.at(i)), ctNames.at(i));
-                colorTableMenuActionGroup->addAction(action);
-            }
-            ++iter;
-        }
+        QAction *action = colorTableMenu->addAction(makeIcon(colorTableNames.at(i)), colorTableNames.at(i));
+        colorTableMenuActionGroup->addAction(action);
     }
 
     // Indicate that we've added choices to the menu.

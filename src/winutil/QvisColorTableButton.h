@@ -61,7 +61,7 @@ public:
 
     // Methods to set the list of internal color tables.
     static void clearAllColorTables();
-    static void addColorTable(const QString &ctName, const QString &ctCategory);
+    static void addColorTable(const QString &ctName);
     static void updateColorTableButtons();
     static void setColorTableAttributes(ColorTableAttributes *cAtts);
 signals:
@@ -84,7 +84,6 @@ private:
     static ColorTableButtonVector  buttons;
 
     static QStringList             colorTableNames;
-    static QMap<QString, QStringList> mappedColorTableNames;
     static ColorTableAttributes   *colorTableAtts;
 };
 

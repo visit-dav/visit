@@ -24,7 +24,7 @@ import java.lang.Integer;
 
 public class ColorTableAttributes extends AttributeSubject
 {
-    private static int ColorTableAttributes_numAdditionalAtts = 8;
+    private static int ColorTableAttributes_numAdditionalAtts = 7;
 
     public ColorTableAttributes()
     {
@@ -35,7 +35,6 @@ public class ColorTableAttributes extends AttributeSubject
         colorTables = new Vector();
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
-        groupingFlag = false;
         taggingFlag = false;
         changesMade = false;
     }
@@ -49,7 +48,6 @@ public class ColorTableAttributes extends AttributeSubject
         colorTables = new Vector();
         defaultContinuous = new String("hot");
         defaultDiscrete = new String("levels");
-        groupingFlag = false;
         taggingFlag = false;
         changesMade = false;
     }
@@ -80,7 +78,6 @@ public class ColorTableAttributes extends AttributeSubject
 
         defaultContinuous = new String(obj.defaultContinuous);
         defaultDiscrete = new String(obj.defaultDiscrete);
-        groupingFlag = obj.groupingFlag;
         taggingFlag = obj.taggingFlag;
         changesMade = obj.changesMade;
 
@@ -134,7 +131,6 @@ public class ColorTableAttributes extends AttributeSubject
                 colorTables_equal &&
                 (defaultContinuous.equals(obj.defaultContinuous)) &&
                 (defaultDiscrete.equals(obj.defaultDiscrete)) &&
-                (groupingFlag == obj.groupingFlag) &&
                 (taggingFlag == obj.taggingFlag) &&
                 (changesMade == obj.changesMade));
     }
@@ -164,22 +160,16 @@ public class ColorTableAttributes extends AttributeSubject
         Select(4);
     }
 
-    public void SetGroupingFlag(boolean groupingFlag_)
-    {
-        groupingFlag = groupingFlag_;
-        Select(5);
-    }
-
     public void SetTaggingFlag(boolean taggingFlag_)
     {
         taggingFlag = taggingFlag_;
-        Select(6);
+        Select(5);
     }
 
     public void SetChangesMade(boolean changesMade_)
     {
         changesMade = changesMade_;
-        Select(7);
+        Select(6);
     }
 
     // Property getting methods
@@ -188,7 +178,6 @@ public class ColorTableAttributes extends AttributeSubject
     public Vector  GetColorTables() { return colorTables; }
     public String  GetDefaultContinuous() { return defaultContinuous; }
     public String  GetDefaultDiscrete() { return defaultDiscrete; }
-    public boolean GetGroupingFlag() { return groupingFlag; }
     public boolean GetTaggingFlag() { return taggingFlag; }
     public boolean GetChangesMade() { return changesMade; }
 
@@ -213,10 +202,8 @@ public class ColorTableAttributes extends AttributeSubject
         if(WriteSelect(4, buf))
             buf.WriteString(defaultDiscrete);
         if(WriteSelect(5, buf))
-            buf.WriteBool(groupingFlag);
-        if(WriteSelect(6, buf))
             buf.WriteBool(taggingFlag);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(6, buf))
             buf.WriteBool(changesMade);
     }
 
@@ -250,12 +237,9 @@ public class ColorTableAttributes extends AttributeSubject
             SetDefaultDiscrete(buf.ReadString());
             break;
         case 5:
-            SetGroupingFlag(buf.ReadBool());
-            break;
-        case 6:
             SetTaggingFlag(buf.ReadBool());
             break;
-        case 7:
+        case 6:
             SetChangesMade(buf.ReadBool());
             break;
         }
@@ -278,7 +262,6 @@ public class ColorTableAttributes extends AttributeSubject
         str = str + "}\n";
         str = str + stringToString("defaultContinuous", defaultContinuous, indent) + "\n";
         str = str + stringToString("defaultDiscrete", defaultDiscrete, indent) + "\n";
-        str = str + boolToString("groupingFlag", groupingFlag, indent) + "\n";
         str = str + boolToString("taggingFlag", taggingFlag, indent) + "\n";
         str = str + boolToString("changesMade", changesMade, indent) + "\n";
         return str;
@@ -421,7 +404,6 @@ public class ColorTableAttributes extends AttributeSubject
     private Vector  colorTables; // vector of ColorControlPointList objects
     private String  defaultContinuous;
     private String  defaultDiscrete;
-    private boolean groupingFlag;
     private boolean taggingFlag;
     private boolean changesMade;
 }

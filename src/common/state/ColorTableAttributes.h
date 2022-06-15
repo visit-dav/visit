@@ -64,7 +64,6 @@ public:
     void SetActive(const intVector &active_);
     void SetDefaultContinuous(const std::string &defaultContinuous_);
     void SetDefaultDiscrete(const std::string &defaultDiscrete_);
-    void SetGroupingFlag(bool groupingFlag_);
     void SetTaggingFlag(bool taggingFlag_);
     void SetChangesMade(bool changesMade_);
 
@@ -79,7 +78,6 @@ public:
           std::string  &GetDefaultContinuous();
     const std::string  &GetDefaultDiscrete() const;
           std::string  &GetDefaultDiscrete();
-    bool               GetGroupingFlag() const;
     bool               GetTaggingFlag() const;
     bool               GetChangesMade() const;
 
@@ -124,7 +122,6 @@ public:
         ID_colorTables,
         ID_defaultContinuous,
         ID_defaultDiscrete,
-        ID_groupingFlag,
         ID_taggingFlag,
         ID_changesMade,
         ID__LAST
@@ -138,7 +135,6 @@ private:
     AttributeGroupVector colorTables;
     std::string          defaultContinuous;
     std::string          defaultDiscrete;
-    bool                 groupingFlag;
     bool                 taggingFlag;
     bool                 changesMade;
 
@@ -146,6 +142,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbbb"
+#define COLORTABLEATTRIBUTES_TMFS "s*i*a*ssbb"
 
 #endif

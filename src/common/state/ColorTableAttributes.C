@@ -27,7 +27,6 @@ void ColorTableAttributes::Init()
 {
     defaultContinuous = "hot";
     defaultDiscrete = "levels";
-    groupingFlag = false;
     taggingFlag = false;
     changesMade = false;
 
@@ -72,7 +71,6 @@ void ColorTableAttributes::Copy(const ColorTableAttributes &obj)
 
     defaultContinuous = obj.defaultContinuous;
     defaultDiscrete = obj.defaultDiscrete;
-    groupingFlag = obj.groupingFlag;
     taggingFlag = obj.taggingFlag;
     changesMade = obj.changesMade;
 
@@ -250,7 +248,6 @@ ColorTableAttributes::operator == (const ColorTableAttributes &obj) const
             colorTables_equal &&
             (defaultContinuous == obj.defaultContinuous) &&
             (defaultDiscrete == obj.defaultDiscrete) &&
-            (groupingFlag == obj.groupingFlag) &&
             (taggingFlag == obj.taggingFlag) &&
             (changesMade == obj.changesMade));
 }
@@ -401,7 +398,6 @@ ColorTableAttributes::SelectAll()
     Select(ID_colorTables,       (void *)&colorTables);
     Select(ID_defaultContinuous, (void *)&defaultContinuous);
     Select(ID_defaultDiscrete,   (void *)&defaultDiscrete);
-    Select(ID_groupingFlag,      (void *)&groupingFlag);
     Select(ID_taggingFlag,       (void *)&taggingFlag);
     Select(ID_changesMade,       (void *)&changesMade);
 }
@@ -563,7 +559,6 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 void
 ColorTableAttributes::SetFromNode(DataNode *parentNode)
 {
-    std::cout << "hello1" << std::endl;
     if(parentNode == 0)
         return;
 
@@ -661,8 +656,6 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
     // For older version compatibility...
     if((node = searchNode->GetNode("defaultColorTable")) != 0)
         SetDefaultContinuous(node->AsString());
-
-    std::cout << "hello2" << std::endl;
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
@@ -694,13 +687,6 @@ ColorTableAttributes::SetDefaultDiscrete(const std::string &defaultDiscrete_)
 {
     defaultDiscrete = defaultDiscrete_;
     Select(ID_defaultDiscrete, (void *)&defaultDiscrete);
-}
-
-void
-ColorTableAttributes::SetGroupingFlag(bool groupingFlag_)
-{
-    groupingFlag = groupingFlag_;
-    Select(ID_groupingFlag, (void *)&groupingFlag);
 }
 
 void
@@ -779,12 +765,6 @@ std::string &
 ColorTableAttributes::GetDefaultDiscrete()
 {
     return defaultDiscrete;
-}
-
-bool
-ColorTableAttributes::GetGroupingFlag() const
-{
-    return groupingFlag;
 }
 
 bool
@@ -1059,7 +1039,6 @@ ColorTableAttributes::GetFieldName(int index) const
     case ID_colorTables:       return "colorTables";
     case ID_defaultContinuous: return "defaultContinuous";
     case ID_defaultDiscrete:   return "defaultDiscrete";
-    case ID_groupingFlag:      return "groupingFlag";
     case ID_taggingFlag:       return "taggingFlag";
     case ID_changesMade:       return "changesMade";
     default:  return "invalid index";
@@ -1091,7 +1070,6 @@ ColorTableAttributes::GetFieldType(int index) const
     case ID_colorTables:       return FieldType_attVector;
     case ID_defaultContinuous: return FieldType_string;
     case ID_defaultDiscrete:   return FieldType_string;
-    case ID_groupingFlag:      return FieldType_bool;
     case ID_taggingFlag:       return FieldType_bool;
     case ID_changesMade:       return FieldType_bool;
     default:  return FieldType_unknown;
@@ -1123,7 +1101,6 @@ ColorTableAttributes::GetFieldTypeName(int index) const
     case ID_colorTables:       return "attVector";
     case ID_defaultContinuous: return "string";
     case ID_defaultDiscrete:   return "string";
-    case ID_groupingFlag:      return "bool";
     case ID_taggingFlag:       return "bool";
     case ID_changesMade:       return "bool";
     default:  return "invalid index";
@@ -1184,11 +1161,6 @@ ColorTableAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_defaultDiscrete:
         {  // new scope
         retval = (defaultDiscrete == obj.defaultDiscrete);
-        }
-        break;
-    case ID_groupingFlag:
-        {  // new scope
-        retval = (groupingFlag == obj.groupingFlag);
         }
         break;
     case ID_taggingFlag:

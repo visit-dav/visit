@@ -296,7 +296,7 @@ behavior.
                    <Field name="colors" type="unsignedCharArray" length="4">153 0 204 255 </Field>
                    <Field name="position" type="float">1</Field>
                </Object>
-               <Field name="category" type="string">UserDefined</Field>
+               <Field name="tags" type="stringVector">"UserDefined"</Field>
            </Object>
        </Object>
 

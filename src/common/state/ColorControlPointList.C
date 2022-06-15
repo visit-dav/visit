@@ -107,7 +107,6 @@ void ColorControlPointList::Copy(const ColorControlPointList &obj)
     equalSpacingFlag = obj.equalSpacingFlag;
     discreteFlag = obj.discreteFlag;
     externalFlag = obj.externalFlag;
-    categoryName = obj.categoryName;
     tagNames = obj.tagNames;
 
     ColorControlPointList::SelectAll();
@@ -284,7 +283,6 @@ ColorControlPointList::operator == (const ColorControlPointList &obj) const
             (equalSpacingFlag == obj.equalSpacingFlag) &&
             (discreteFlag == obj.discreteFlag) &&
             (externalFlag == obj.externalFlag) &&
-            (categoryName == obj.categoryName) &&
             (tagNames == obj.tagNames));
 }
 
@@ -434,7 +432,6 @@ ColorControlPointList::SelectAll()
     Select(ID_equalSpacingFlag, (void *)&equalSpacingFlag);
     Select(ID_discreteFlag,     (void *)&discreteFlag);
     Select(ID_externalFlag,     (void *)&externalFlag);
-    Select(ID_categoryName,     (void *)&categoryName);
     Select(ID_tagNames,         (void *)&tagNames);
 }
 
@@ -682,13 +679,6 @@ ColorControlPointList::SetExternalFlag(bool externalFlag_)
 }
 
 void
-ColorControlPointList::SetCategoryName(const std::string &categoryName_)
-{
-    categoryName = categoryName_;
-    Select(ID_categoryName, (void *)&categoryName);
-}
-
-void
 ColorControlPointList::SetTagNames(const stringVector &tagNames_)
 {
     tagNames = tagNames_;
@@ -735,18 +725,6 @@ ColorControlPointList::GetExternalFlag() const
     return externalFlag;
 }
 
-const std::string &
-ColorControlPointList::GetCategoryName() const
-{
-    return categoryName;
-}
-
-std::string &
-ColorControlPointList::GetCategoryName()
-{
-    return categoryName;
-}
-
 const stringVector &
 ColorControlPointList::GetTagNames() const
 {
@@ -767,12 +745,6 @@ void
 ColorControlPointList::SelectControlPoints()
 {
     Select(ID_controlPoints, (void *)&controlPoints);
-}
-
-void
-ColorControlPointList::SelectCategoryName()
-{
-    Select(ID_categoryName, (void *)&categoryName);
 }
 
 void
@@ -1007,7 +979,6 @@ ColorControlPointList::GetFieldName(int index) const
     case ID_equalSpacingFlag: return "equalSpacingFlag";
     case ID_discreteFlag:     return "discreteFlag";
     case ID_externalFlag:     return "externalFlag";
-    case ID_categoryName:     return "categoryName";
     case ID_tagNames:         return "tagNames";
     default:  return "invalid index";
     }
@@ -1038,7 +1009,6 @@ ColorControlPointList::GetFieldType(int index) const
     case ID_equalSpacingFlag: return FieldType_bool;
     case ID_discreteFlag:     return FieldType_bool;
     case ID_externalFlag:     return FieldType_bool;
-    case ID_categoryName:     return FieldType_string;
     case ID_tagNames:         return FieldType_stringVector;
     default:  return FieldType_unknown;
     }
@@ -1069,7 +1039,6 @@ ColorControlPointList::GetFieldTypeName(int index) const
     case ID_equalSpacingFlag: return "bool";
     case ID_discreteFlag:     return "bool";
     case ID_externalFlag:     return "bool";
-    case ID_categoryName:     return "string";
     case ID_tagNames:         return "stringVector";
     default:  return "invalid index";
     }
@@ -1129,11 +1098,6 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_externalFlag:
         {  // new scope
         retval = (externalFlag == obj.externalFlag);
-        }
-        break;
-    case ID_categoryName:
-        {  // new scope
-        retval = (categoryName == obj.categoryName);
         }
         break;
     case ID_tagNames:

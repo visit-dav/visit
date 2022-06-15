@@ -61,7 +61,6 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectControlPoints();
-    void SelectCategoryName();
     void SelectTagNames();
 
     // Property setting methods
@@ -69,7 +68,6 @@ public:
     void SetEqualSpacingFlag(bool equalSpacingFlag_);
     void SetDiscreteFlag(bool discreteFlag_);
     void SetExternalFlag(bool externalFlag_);
-    void SetCategoryName(const std::string &categoryName_);
     void SetTagNames(const stringVector &tagNames_);
 
     // Property getting methods
@@ -79,8 +77,6 @@ public:
     bool               GetEqualSpacingFlag() const;
     bool               GetDiscreteFlag() const;
     bool               GetExternalFlag() const;
-    const std::string  &GetCategoryName() const;
-          std::string  &GetCategoryName();
     const stringVector &GetTagNames() const;
           stringVector &GetTagNames();
 
@@ -132,7 +128,6 @@ public:
         ID_equalSpacingFlag,
         ID_discreteFlag,
         ID_externalFlag,
-        ID_categoryName,
         ID_tagNames,
         ID__LAST
     };
@@ -145,13 +140,12 @@ private:
     bool                 equalSpacingFlag;
     bool                 discreteFlag;
     bool                 externalFlag;
-    std::string          categoryName;
     stringVector         tagNames;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORCONTROLPOINTLIST_TMFS "a*ibbbss*"
+#define COLORCONTROLPOINTLIST_TMFS "a*ibbbs*"
 
 #endif
