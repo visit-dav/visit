@@ -1073,7 +1073,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         while (keepTrying)
         {
             keepTrying = false;
-            if (familyFiles)
+            if (familyFiles && !outputTypeIsBlueprint(outputType))
             {
                 //
                 // Create the file base name and increment the family number.
@@ -1314,7 +1314,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             // reality for the later output messages
             baseName.clear();
             baseName.str(std::string());
-            baseName << out_filename << (familyFiles ? "" : ".") << "cycle_" << std::setfill('0') 
+            baseName << out_filename << ".cycle_" << std::setfill('0') 
                 << std::setw(6) << cycle;
             out_filename = baseName.str();
             out_filename_w_path = outputDir + "/" + out_filename;

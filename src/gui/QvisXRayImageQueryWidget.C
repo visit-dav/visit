@@ -486,6 +486,7 @@ QvisXRayImageQueryWidget::GetQueryParameters(MapNode &params)
     if (noerrors)
     {
         params["output_type"] = imageFormat->currentText().toStdString();
+        params["output_dir"] = outDir->displayText().simplified().toStdString();
         params["divide_emis_by_absorb"] = (int)divideFlag->isChecked();
         if (backgroundIntensities.size() == 1)
             params["background_intensity"] = backgroundIntensities[0];
