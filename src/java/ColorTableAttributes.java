@@ -107,15 +107,6 @@ public class ColorTableAttributes extends AttributeSubject
             String names2 = (String)obj.names.elementAt(i);
             names_equal = names1.equals(names2);
         }
-        // Compare the elements in the active vector.
-        boolean active_equal = (obj.active.size() == active.size());
-        for(i = 0; (i < active.size()) && active_equal; ++i)
-        {
-            // Make references to Integer from Object.
-            Integer active1 = (Integer)active.elementAt(i);
-            Integer active2 = (Integer)obj.active.elementAt(i);
-            active_equal = active1.equals(active2);
-        }
         // Compare the elements in the colorTables vector.
         boolean colorTables_equal = (obj.colorTables.size() == colorTables.size());
         for(i = 0; (i < colorTables.size()) && colorTables_equal; ++i)
@@ -127,7 +118,7 @@ public class ColorTableAttributes extends AttributeSubject
         }
         // Create the return value
         return (names_equal &&
-                active_equal &&
+                true /* can ignore active */ &&
                 colorTables_equal &&
                 (defaultContinuous.equals(obj.defaultContinuous)) &&
                 (defaultDiscrete.equals(obj.defaultDiscrete)) &&

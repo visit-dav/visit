@@ -244,7 +244,10 @@ QvisColorTableWindow::CreateWindowContents()
     nameListBox->header()->close();
     connect(nameListBox, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem*)),
             this, SLOT(highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*)));
-    mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
+    // if (val)
+        // mgLayout->addWidget(nameListBox, 3, 3, 1, 3);
+    // else
+        mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
 
     QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
     mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
@@ -2544,7 +2547,7 @@ QvisColorTableWindow::taggingToggled(bool val)
     nameListBox->blockSignals(true);
     mgLayout->removeWidget(nameListBox);
     if (val)
-        mgLayout->addWidget(nameListBox, 3, 3, 1, 3);        
+        mgLayout->addWidget(nameListBox, 3, 3, 1, 3);
     else
         mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
     nameListBox->blockSignals(false);

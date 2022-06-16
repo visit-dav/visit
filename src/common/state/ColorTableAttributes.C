@@ -244,7 +244,7 @@ ColorTableAttributes::operator == (const ColorTableAttributes &obj) const
 
     // Create the return value
     return ((names == obj.names) &&
-            (active == obj.active) &&
+            true /* can ignore active */ &&
             colorTables_equal &&
             (defaultContinuous == obj.defaultContinuous) &&
             (defaultDiscrete == obj.defaultDiscrete) &&
@@ -661,18 +661,58 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
 
+// ****************************************************************************
+// Method: ColorTableAttributes::SetNames
+//
+// Purpose:
+//   Setter for names.
+//
+// Note:       There needs to be a custom setter.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Jun 16 11:59:26 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
 void
 ColorTableAttributes::SetNames(const stringVector &names_)
 {
     names = names_;
     Select(ID_names, (void *)&names);
+    if (active.size() != names.size())
+    {
+        intVector newactive;
+        for (int i = 0; i < names.size(); i ++)
+            newactive.push_back(true);
+        SetActive(newactive);
+    }
 }
+
+// ****************************************************************************
+// Method: ColorTableAttributes::SetActive
+//
+// Purpose:
+//   Setter for names.
+//
+// Note:       There needs to be a custom setter.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Jun 16 11:59:26 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
 
 void
 ColorTableAttributes::SetActive(const intVector &active_)
 {
-    active = active_;
-    Select(ID_active, (void *)&active);
+    if (active_.size() == names.size())
+    {
+        active = active_;
+        Select(ID_active, (void *)&active);
+    }
 }
 
 void

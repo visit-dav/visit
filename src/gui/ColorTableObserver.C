@@ -98,7 +98,8 @@ ColorTableObserver::Update(Subject *)
         int nNames = colorAtts->GetNumColorTables();
         const stringVector &names = colorAtts->GetNames();
         const intVector &active = colorAtts->GetActive();
-        // TODO add error where these vectors are not the same length
+        if (names.size() != active.size())
+            colorAtts->SetNames(names); // should reset active
         for (int i = 0; i < nNames; ++i)
         {
             if (active[i])
