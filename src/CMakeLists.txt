@@ -500,9 +500,12 @@
 #    distribution. The libstdc++ library depends on VISIT_CXX_LIBRARY
 #    being defined. This would typically be added to the config site file.
 #
+#    Kathleen Biagas, Thu Jun 16, 2022 
+#    Changed minimum cmake version to 3.15.
+#
 #****************************************************************************
 
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0033 OLD)

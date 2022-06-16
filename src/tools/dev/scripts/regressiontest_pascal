@@ -99,8 +99,11 @@
 #   Eric Brugger, Fri Jan  8 11:12:04 PST 2021
 #   I modified the script to also make the manuals before making the package
 #   since the manuals are now required to make the package.
-
 #
+#   Kathleen Biagas, Thu June 16, 2022
+#   Modified cmakeCmd to use 3.3's 3.18.2 version and to use gcc-7.3
+#   for test_trunk. Modified the test_branch to build 3.2.
+
 # Determine the users name and e-mail address.
 #
 user=`whoami`
@@ -211,10 +214,10 @@ done
 
 if test "$branch" = "trunk" ; then
     workingDir="test_trunk"
-    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.2.0/toss3/cmake/3.14.7/linux-x86_64_gcc-6.1/bin/cmake"
+    cmakeCmd="/usr/workspace/wsa/visit/visit/thirdparty_shared/3.3.0/toss3/cmake/3.18.2/linux-x86_64_gcc-7.3/bin/cmake"
 else
     workingDir="test_branch"
-    cmakeCmd="/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake"
+    cmakeCmd="/usr/gapps/visit/thirdparty_shared/3.2.0/cmake/3.14.7/linux-x86_64_gcc-6.1/bin/cmake"
 fi
 
 #
@@ -308,11 +311,16 @@ export PATH=/usr/tce/packages/cuda/cuda-8.0/bin:\$PATH
 export CUDA_HOME=/usr/tce/packages/cuda/cuda-8.0
 export LD_LIBRARY_PATH=/usr/tce/packages/cuda/cuda-8.0/lib64:\$LD_LIBRARY_PATH
 
-# since gcc-6 isn't the default, make sure to set CC and CXX, otherwise
+# since gcc-7 or 6 isn't the default, make sure to set CC and CXX, otherwise
 # pluginVsInstall tests won't use the right compiler
 
-export CC=/usr/tce/packages/gcc/gcc-6.1.0/bin/gcc
-export CXX=/usr/tce/packages/gcc/gcc-6.1.0/bin/g++
+if test "$branch" = "trunk" ; then
+  export CC=/usr/tce/packages/gcc/gcc-7.3.0/bin/gcc
+  export CXX=/usr/tce/packages/gcc/gcc-7.3.0/bin/g++
+else
+  export CC=/usr/tce/packages/gcc/gcc-6.1.0/bin/gcc
+  export CXX=/usr/tce/packages/gcc/gcc-6.1.0/bin/g++
+fi
 
 if test "$serial" = "true" ; then
     sed -i "s/VISIT_PARALLEL ON/VISIT_PARALLEL OFF/" config-site/pascal83.cmake
@@ -337,7 +345,6 @@ else
         -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
         -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
         -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
-        -DCMAKE_MAKE_PROGRAM:FILEPATH="/usr/gapps/visit/gmake/4.0/chaos_5_x86_64_ib/bin/make" \
         ../src >> ../../buildlog 2>&1
 fi
 rm -f ../make.out ../make.err
