@@ -202,7 +202,7 @@ avtCrackWidthExpression::ProcessArguments(ArgsExpr *args,
 //
 //  Purpose:
 //      Called to calc the expression results.
-//      This duplicates code in operators/CracksClipper/vtkCrackWidthFilter
+//      This duplicates code in operators/CracksClipper/vtkCrackWidthFilter.
 //
 //  Programmer: Kathleen Biagas
 //  Creation:   June 13, 2022
