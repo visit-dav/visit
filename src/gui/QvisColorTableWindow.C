@@ -227,18 +227,19 @@ QvisColorTableWindow::CreateWindowContents()
             this, SLOT(taggingToggled(bool)));
     mgLayout->addWidget(tagToggle, 1, 0, 1, 6);
 
-    // tagCombiningBehaviorLabel = new QLabel(tr("Colortables must match"), colorTableWidgetGroup);
-    // mgLayout->addWidget(tagCombiningBehaviorLabel, 1, 2, 1, 2);
     tagCombiningBehaviorChoice = new QComboBox(colorTableWidgetGroup);
     tagCombiningBehaviorChoice->addItem(tr("Colortables must match any selected tag"));
     tagCombiningBehaviorChoice->addItem(tr("Colortables must match every selected tag"));
+    if (tagsMatchAny)
+        tagCombiningBehaviorChoice->setCurrentIndex(0);
+    else
+        tagCombiningBehaviorChoice->setCurrentIndex(1);        
     connect(tagCombiningBehaviorChoice, SIGNAL(activated(int)),
             this, SLOT(tagCombiningChanged(int)));
     mgLayout->addWidget(tagCombiningBehaviorChoice, 1, 2, 1, 4);
 
     nameListBox = new QTreeWidget(colorTableWidgetGroup);
     nameListBox->setMinimumHeight(100);
-    // nameListBox->setMinimumWidth(250);
     nameListBox->setColumnCount(1);
     // don't want the header
     nameListBox->header()->close();
@@ -521,7 +522,7 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
     if((node = winNode->GetNode("tagsVisible")) != 0)
         tagsVisible = node->AsBool();
     if((node = winNode->GetNode("tagsMatchAny")) != 0)
-        tagsMatchAny = node->AsBool();
+        tagsMatchAny = node->AsBool();    
 
     // Call the base class's function.
     QvisPostableWindowSimpleObserver::SetFromNode(parentNode, borders);
