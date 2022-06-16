@@ -264,8 +264,7 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //    I added an option to enable outputting the ray bounds to a vtk file.
 // 
 //    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
-//    Added error message for bad output type data type and handled sending
-//    the output directory through.
+//    Handled sending the output directory through.
 //
 // ****************************************************************************
 
@@ -310,9 +309,6 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
             SetOutputType(params.GetEntry("output_type")->AsInt());
         else if (params.GetEntry("output_type")->TypeName() == "string")
             SetOutputType(params.GetEntry("output_type")->AsString());
-        else
-            EXCEPTION1(VisItException, "Bad datatype given for output_type:"
-                " " + params.GetEntry("output_type")->TypeName());
     }
 
     if (params.HasEntry("output_dir"))
@@ -1318,7 +1314,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             // reality for the later output messages
             baseName.clear();
             baseName.str(std::string());
-            baseName << out_filename << ".cycle_" << std::setfill('0') 
+            baseName << out_filename << (familyFiles ? "" : ".") << "cycle_" << std::setfill('0') 
                 << std::setw(6) << cycle;
             out_filename = baseName.str();
             out_filename_w_path = outputDir + "/" + out_filename;
@@ -1412,8 +1408,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
         // Free the memory from the GetAllLeaves function call.
         delete [] leaves;
-
-
     }
     visitTimer->StopTimer(t2, "avtXRayImageQuery::WriteImage");
 

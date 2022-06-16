@@ -21,6 +21,9 @@
 # 
 #    Justin Privitera, Tue Jun 14 10:02:21 PDT 2022
 #    Change tests to reflect new ability to send output directory to query.
+# 
+#    Justin Privitera, Wed Jun 15 16:43:34 PDT 2022
+#    Added tests for new blueprint output.
 #
 # ----------------------------------------------------------------------------
 
