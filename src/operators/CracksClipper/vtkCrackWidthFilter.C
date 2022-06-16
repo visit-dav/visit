@@ -93,6 +93,8 @@ vtkCrackWidthFilter::~vtkCrackWidthFilter()
 //  Method: vtkCrackWidthFilter_OrderThem 
 //
 //  Purpose: Creates a max-to-min ordering based on the passed deltas. 
+//  
+//  Notes:  This code is duplicated in avtCrackWidthExpression.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   October 13, 2006 
@@ -136,6 +138,8 @@ vtkCrackWidthFilter_OrderThem(double delta1, double delta2, double delta3,
 //  Method: vtkCrackWidthFilter::RequestData
 //
 //  Purpose: Executes this filter.
+//  
+//  Notes:  This code is duplicated in avtCrackWidthExpression.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 22, 2005
@@ -344,6 +348,8 @@ vtkCrackWidthFilter::RequestData(
 //  Purpose: Determines the effective length in the crack direction for a
 //           given cell
 //  
+//  Notes:  This code is duplicated in avtCrackWidthExpression.
+//
 //  Arguments:
 //    cell      The cell.
 //    cellId    The id of the cell.

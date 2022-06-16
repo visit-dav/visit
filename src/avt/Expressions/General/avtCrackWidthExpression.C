@@ -26,6 +26,9 @@
 #include <vtkMassProperties.h>
 #include <vtkSlicer.h>
 
+//
+// This duplicates code in operators/CracksClipper/vtkCrackWidthFilter
+//
 namespace avtCrackWidthExpression_Internal
 {
     vtkNew<vtkSlicer> Slicer;
@@ -199,6 +202,7 @@ avtCrackWidthExpression::ProcessArguments(ArgsExpr *args,
 //
 //  Purpose:
 //      Called to calc the expression results.
+//      This duplicates code in operators/CracksClipper/vtkCrackWidthFilter
 //
 //  Programmer: Kathleen Biagas
 //  Creation:   June 13, 2022

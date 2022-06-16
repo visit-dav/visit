@@ -9,9 +9,7 @@
 #ifndef AVT_CRACKWIDTH_EXPRESSION_H
 #define AVT_CRACKWIDTH_EXPRESSION_H
 
-
 #include <avtMultipleInputExpressionFilter.h>
-
 
 // ****************************************************************************
 //  Class: avtCrackWidthExpression
@@ -23,7 +21,6 @@
 //  Creation:   June 13, 2022
 //
 // ****************************************************************************
-
 
 class EXPRESSION_API avtCrackWidthExpression : public avtMultipleInputExpressionFilter
 {
@@ -50,9 +47,5 @@ private:
    int crackNum;
 
 };
-
-
-
-
 
 #endif /* AVT_CRACKWIDTH_EXPRESSION_H */
