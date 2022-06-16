@@ -1247,11 +1247,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["fields/intensities/values"].set(conduit::DataType::float64(numfieldvals));
             conduit::float64 *intensity_vals = data_out["fields/intensities/values"].value();
 
-            data_out["fields/optical_depth/topology"] = "image_topo";
-            data_out["fields/optical_depth/association"] = "element";
+            data_out["fields/path_length/topology"] = "image_topo";
+            data_out["fields/path_length/association"] = "element";
             // set to float64 regardless of vtk data types
-            data_out["fields/optical_depth/values"].set(conduit::DataType::float64(numfieldvals));
-            conduit::float64 *depth_vals = data_out["fields/optical_depth/values"].value();
+            data_out["fields/path_length/values"].set(conduit::DataType::float64(numfieldvals));
+            conduit::float64 *depth_vals = data_out["fields/path_length/values"].value();
 
             const int datatype = leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType();
 
@@ -1274,7 +1274,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             stride_ptr[0] = 1;
             stride_ptr[1] = nx;
             stride_ptr[2] = nx * ny;            
-            data_out["fields/optical_depth/strides"].set(data_out["fields/intensities/strides"]);
+            data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
 
             data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
             const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
