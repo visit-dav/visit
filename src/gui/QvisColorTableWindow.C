@@ -244,10 +244,7 @@ QvisColorTableWindow::CreateWindowContents()
     nameListBox->header()->close();
     connect(nameListBox, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem*)),
             this, SLOT(highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*)));
-    // if (val)
-        // mgLayout->addWidget(nameListBox, 3, 3, 1, 3);
-    // else
-        mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
+    mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
 
     QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
     mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
@@ -483,6 +480,10 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
         // Save the current color table.
         std::string ct(currentColorTable.toStdString());
         node->AddNode(new DataNode("currentColorTable", ct));
+        node->AddNode(new DataNode("tagList", tagList));
+        node->AddNode(new DataNode("activeTags", activeTags));
+        node->AddNode(new DataNode("tagsVisible", tagsVisible));
+        node->AddNode(new DataNode("tagsMatchAny", tagsMatchAny));
     }
 }
 
@@ -511,9 +512,15 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
     // Get the active tab and show it.
     DataNode *node;
     if((node = winNode->GetNode("currentColorTable")) != 0)
-    {
         currentColorTable = QString(node->AsString().c_str());
-    }
+    if((node = winNode->GetNode("tagList")) != 0)
+        tagList = node->AsStringVector();
+    if((node = winNode->GetNode("activeTags")) != 0)
+        activeTags = node->AsBoolVector();
+    if((node = winNode->GetNode("tagsVisible")) != 0)
+        tagsVisible = node->AsBool();
+    if((node = winNode->GetNode("tagsMatchAny")) != 0)
+        tagsMatchAny = node->AsBool();
 
     // Call the base class's function.
     QvisPostableWindowSimpleObserver::SetFromNode(parentNode, borders);
@@ -640,7 +647,7 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             tagLabel->setVisible(tagsVisible);
             tagLineEdit->setVisible(tagsVisible);
             tagTable->setVisible(tagsVisible);
-            // tagCombiningBehaviorLabel->setVisible(tagsVisible);
+            updateNameBoxPosition(tagsVisible);
             tagCombiningBehaviorChoice->setVisible(tagsVisible);
             tagToggle->blockSignals(false);
             updateNames = true;
@@ -2544,13 +2551,6 @@ QvisColorTableWindow::taggingToggled(bool val)
 {
     colorAtts->SetTaggingFlag(val);
     colorAtts->SetChangesMade(true);
-    nameListBox->blockSignals(true);
-    mgLayout->removeWidget(nameListBox);
-    if (val)
-        mgLayout->addWidget(nameListBox, 3, 3, 1, 3);
-    else
-        mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
-    nameListBox->blockSignals(false);
     Apply(true);
 }
 
@@ -2584,6 +2584,32 @@ QvisColorTableWindow::tagCombiningChanged(int index)
         ctObserver.SetUpdate(true);
         Apply(true);
     }
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::updateNameBoxPosition
+//
+// Purpose:
+//   Updates the name box position to the given coords.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Jun 16 12:52:17 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void 
+QvisColorTableWindow::updateNameBoxPosition(bool tagsOn)
+{
+    nameListBox->blockSignals(true);
+    mgLayout->removeWidget(nameListBox);
+    if (tagsOn)
+        mgLayout->addWidget(nameListBox, 3, 3, 1, 3);
+    else
+        mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
+    nameListBox->blockSignals(false);
 }
 
 

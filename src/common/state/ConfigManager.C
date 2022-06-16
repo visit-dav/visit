@@ -361,6 +361,18 @@ ConfigManager::WriteData(std::ostream& out, DataNode *node)
                 WriteQuotedStringData(out, svec[i]);
        }
        break;
+    case BOOL_VECTOR_NODE:
+       { // new scope
+            const boolVector &bvec = node->AsBoolVector();
+            for(size_t i = 0; i < bvec.size(); ++i)
+            {
+                if (bvec[i])
+                    out << "\"true\" ";
+                else
+                    out << "\"false\" ";
+            }
+       }
+       break;
     default:
         fprintf(stderr, "ConfigManager::WriteData: Unsupported type\n");
     }
@@ -1106,6 +1118,17 @@ ConfigManager::ReadFieldData(std::istream& in,
             retval = new DataNode(tagName, sv);
         }
         break;
+    case BOOL_VECTOR_NODE:
+        { // new scope
+            boolVector temp;
+            if(minSize > 0)
+            {
+                for (i = 0; i < minSize; i ++)
+                    temp.push_back(sv[i] == "true");
+                retval = new DataNode(tagName, temp);
+            }
+        }
+        break;
     default:
         break;
     }
@@ -1646,6 +1669,17 @@ ConfigManager::ReadMapNodeFieldData(std::istream& in, MapNode &mn,
         {
             RemoveLeadAndTailQuotes(sv);
             mn[tagName] = sv;
+        }
+        break;
+    case BOOL_VECTOR_NODE:
+        { // new scope
+            boolVector temp;
+            if(minSize > 0)
+            {
+                for (i = 0; i < minSize; i ++)
+                    temp.push_back(sv[i] == "true");
+                mn[tagName] = temp;
+            }
         }
         break;
     default:

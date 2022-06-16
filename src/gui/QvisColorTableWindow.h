@@ -144,6 +144,7 @@ private slots:
     void showIndexHintsToggled(bool val);
     void taggingToggled(bool val);
     void tagCombiningChanged(int index);
+    void updateNameBoxPosition(bool tagsOn);
 private:
     ColorTableAttributes     *colorAtts;
     int                      colorCycle;
