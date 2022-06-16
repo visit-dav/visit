@@ -1044,9 +1044,14 @@ QvisColorTableWindow::UpdateNames()
     // Set the enabled state of the delete button.
     deleteButton->setEnabled(colorAtts->GetNumColorTables() > 1);
 
-    colorAtts->SetChangesMade(true);
-    ctObserver.SetUpdate(true);
-    Apply(true);
+    static bool run_before = false;
+    if (!run_before)
+    {
+        run_before = true;
+        colorAtts->SetChangesMade(true);
+        ctObserver.SetUpdate(true);
+        Apply(true);
+    }
 }
 
 // ****************************************************************************
@@ -2100,6 +2105,9 @@ QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
     int index = std::stoi(item->text(2).toStdString());
     activeTags[index] = item->checkState(0) == Qt::Checked;
     UpdateNames();
+    colorAtts->SetChangesMade(true);
+    ctObserver.SetUpdate(true);
+    Apply(true);
 }
 
 // ****************************************************************************
@@ -2617,7 +2625,12 @@ QvisColorTableWindow::tagCombiningChanged(int index)
         tagsMatchAny = false;
     // have any changes actually been made?
     if (old_val != tagsMatchAny)
+    {
         UpdateNames();
+        colorAtts->SetChangesMade(true);
+        ctObserver.SetUpdate(true);
+        Apply(true);
+    }
 }
 
 
