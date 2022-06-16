@@ -489,6 +489,10 @@
 #    Change Windows _SRC_PACKAGE to _WINDEV_PACKAGE, to simply zip up the
 #    needed windows TP development files.
 #
+#    Kathleen Biagas, Wed Jun 8, 2022
+#    Moved setting of VISIT_COMMON_INCLUDES to CMake/VisItIncludeVars.cmake
+#    so that it could also be used by PluginVsInstall.
+#
 #    Eric Brugger, Fri Jun 10 09:53:54 PDT 2022
 #    Added logic to include the libicui18n, libicudata and libicuuc
 #    libraries used by Qt to the lib directory of a distribution. Added
@@ -496,9 +500,12 @@
 #    distribution. The libstdc++ library depends on VISIT_CXX_LIBRARY
 #    being defined. This would typically be added to the config site file.
 #
+#    Kathleen Biagas, Thu Jun 16, 2022 
+#    Changed minimum cmake version to 3.15.
+#
 #****************************************************************************
 
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0033 OLD)
@@ -1729,25 +1736,16 @@ FUNCTION(PARALLEL_EXECUTABLE_LINK_LIBRARIES target)
     ENDIF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
 ENDFUNCTION(PARALLEL_EXECUTABLE_LINK_LIBRARIES)
 
+SET(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
-# Set up easy to use includes for the common directory
-SET(VISIT_COMMON_INCLUDES
-    ${VISIT_BINARY_DIR}/include
-    ${VISIT_SOURCE_DIR}/include
-    ${VISIT_SOURCE_DIR}/common/Exceptions/Database
-    ${VISIT_SOURCE_DIR}/common/Exceptions/Pipeline
-    ${VISIT_SOURCE_DIR}/common/Exceptions/Plotter
-    ${VISIT_SOURCE_DIR}/common/comm
-    ${VISIT_SOURCE_DIR}/common/expr
-    ${VISIT_SOURCE_DIR}/common/icons
-    ${VISIT_SOURCE_DIR}/common/misc
-    ${VISIT_SOURCE_DIR}/common/parser
-    ${VISIT_SOURCE_DIR}/common/plugin
-    ${VISIT_SOURCE_DIR}/common/proxybase
-    ${VISIT_SOURCE_DIR}/common/state
-    ${VISIT_SOURCE_DIR}/common/utility
-    ${ZLIB_INCLUDE_DIR}
-    )
+# This include sets up vars that contains lists of include directories
+include(${VISIT_SOURCE_DIR}/CMake/VisItIncludeVars.cmake)
+
+# macros/defines needed by CMake/VisItMacros.cmake
+if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
+  set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
+endif ()
+
 
 # macros/defines needed by CMake/VisItMacros.cmake
 if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
@@ -2019,7 +2017,6 @@ CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/visit-python-cmake.h.in
 CONFIGURE_FILE(${VISIT_SOURCE_DIR}/common/misc/ConfigureInfo.C.in
                ${VISIT_BINARY_DIR}/common/misc/ConfigureInfo.C @ONLY IMMEDIATE)
 
-SET(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
 # The normal plugin case. We redefine these when we build against an installed
 # version of VisIt
@@ -2124,7 +2121,7 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}"
 #
 # The the libsim runtime and engine example programs all need to follow
 # the same linking rules as the engine. Specifically, they need
-# the linking dirs for any dependencies introduced. 
+# the linking dirs for any dependencies introduced.
 # (For example, for conduit this includes conduit, hdf5, zlib, etc dirs)
 #
 # To simplify the logic needed downstream, we provide AVT_REQUIRED_LIB_DIR

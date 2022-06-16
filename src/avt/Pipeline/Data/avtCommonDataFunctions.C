@@ -3752,6 +3752,8 @@ CCalculateHistogram(avtDataRepresentation &data, void *args, bool &errOccurred)
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Jun 14 11:36:07 PDT 2022
+//    Add logic for structured grids embedded in higher spatial dimensions.
 // ****************************************************************************
 
 void 
@@ -3804,6 +3806,46 @@ CGetTopologicalDim(avtDataRepresentation &data, void *info, bool &success)
             else
             {
                 success |= false;
+            }
+        }
+        else if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+        {
+            int localDim = -1;
+            vtkStructuredGrid *sg = vtkStructuredGrid::SafeDownCast(ds);
+            int *dims = sg->GetDimensions();
+            if (dims[0] > 1 && dims[1] > 1 && dims[2] > 1)
+            {
+                localDim = 3; // All 3 dims > 1 node thick
+            }
+            else if ((dims[0] == 1 && dims[1] > 1 && dims[2] > 1) ||
+                     (dims[1] == 1 && dims[0] > 1 && dims[2] > 1) ||
+                     (dims[2] == 1 && dims[0] > 1 && dims[1] > 1))
+            {
+                localDim = 2; // One dim is just 1 node thick
+            }
+            else if ((dims[0] == 1 && dims[1] == 1 && dims[2] > 1) ||
+                     (dims[0] == 1 && dims[2] == 1 && dims[1] > 1) ||
+                     (dims[1] == 1 && dims[2] == 1 && dims[0] > 1))
+            {
+                localDim = 1; // Two dims are just one node thick
+            }
+            else
+            {
+                success |= false;
+            }
+            if(localDim != -1)
+            {
+                if(success)
+                {
+                    // merge previous results
+                    if(localDim > *newDim)
+                        *newDim = localDim;
+                }
+                else
+                {
+                    *newDim = localDim;
+                }
+                success = true;
             }
         }
         else if (ds->GetDataObjectType() == VTK_POLY_DATA)
