@@ -510,13 +510,14 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
         return;
 
     // Get the active tab and show it.
-    DataNode *node;
+    DataNode *node, *node2;
     if((node = winNode->GetNode("currentColorTable")) != 0)
         currentColorTable = QString(node->AsString().c_str());
-    if((node = winNode->GetNode("tagList")) != 0)
+    if((node = winNode->GetNode("tagList")) != 0 && (node2 = winNode->GetNode("activeTags")) != 0)
+    {
         tagList = node->AsStringVector();
-    if((node = winNode->GetNode("activeTags")) != 0)
-        activeTags = node->AsBoolVector();
+        activeTags = node2->AsBoolVector();
+    }
     if((node = winNode->GetNode("tagsVisible")) != 0)
         tagsVisible = node->AsBool();
     if((node = winNode->GetNode("tagsMatchAny")) != 0)
@@ -788,6 +789,42 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool run_before)
         char buf[10];
         sprintf(buf, "%d", tagList.size() - 1);
         item->setText(2, buf);
+    }
+    else
+    {
+        QList<QTreeWidgetItem*> items = tagTable->findItems(
+            QString::fromStdString(currtag), Qt::MatchExactly, 1);
+        // if the given tag IS in the global tag list but does not have a tagTable entry
+        if (items.count() == 0)
+        {
+            QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+            // get index of tag in taglist
+            int index = 0;
+            for (int i = 0; i < tagList.size(); i ++)
+            {
+                if (tagList[i] == currtag)
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (activeTags[index])
+            {
+                item->setCheckState(0, Qt::Checked);            
+            }
+            else
+            {
+                item->setCheckState(0, Qt::Unchecked);            
+            }
+
+            item->setText(1, currtag.c_str());
+            // this next column is secret and is for passing around the tag index
+            // should allow you to have up to 10^10 tags
+            char buf[10];
+            sprintf(buf, "%d", index);
+            item->setText(2, buf);
+        }
     }
 }
 

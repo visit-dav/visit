@@ -1124,7 +1124,7 @@ ConfigManager::ReadFieldData(std::istream& in,
             if(minSize > 0)
             {
                 for (i = 0; i < minSize; i ++)
-                    temp.push_back(sv[i] == "true");
+                    temp.push_back(sv[i] == "\"true\"");
                 retval = new DataNode(tagName, temp);
             }
         }
