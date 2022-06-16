@@ -39,7 +39,7 @@ struct Axes3DObject
 //
 static PyObject *NewAxes3D(int);
 std::string
-PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
+PyAxes3D_ToString(const Axes3D *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -120,17 +120,17 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "xAxis.";
-        str += PyAxisAttributes_ToString(&atts->GetXAxis(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetXAxis(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "yAxis.";
-        str += PyAxisAttributes_ToString(&atts->GetYAxis(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetYAxis(), objPrefix.c_str(), forLogging);
     }
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "zAxis.";
-        str += PyAxisAttributes_ToString(&atts->GetZAxis(), objPrefix.c_str());
+        str += PyAxisAttributes_ToString(&atts->GetZAxis(), objPrefix.c_str(), forLogging);
     }
     if(atts->GetSetBBoxLocation())
         snprintf(tmpStr, 1000, "%ssetBBoxLocation = 1\n", prefix);
@@ -1511,7 +1511,7 @@ static int
 Axes3D_print(PyObject *v, FILE *fp, int flags)
 {
     Axes3DObject *obj = (Axes3DObject *)v;
-    fprintf(fp, "%s", PyAxes3D_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyAxes3D_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1519,7 +1519,7 @@ PyObject *
 Axes3D_str(PyObject *v)
 {
     Axes3DObject *obj = (Axes3DObject *)v;
-    return PyString_FromString(PyAxes3D_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyAxes3D_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1671,7 +1671,7 @@ PyAxes3D_GetLogString()
 {
     std::string s("Axes3D = Axes3D()\n");
     if(currentAtts != 0)
-        s += PyAxes3D_ToString(currentAtts, "Axes3D.");
+        s += PyAxes3D_ToString(currentAtts, "Axes3D.", true);
     return s;
 }
 
@@ -1684,7 +1684,7 @@ PyAxes3D_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("Axes3D = Axes3D()\n");
-        s += PyAxes3D_ToString(currentAtts, "Axes3D.");
+        s += PyAxes3D_ToString(currentAtts, "Axes3D.", true);
         cb(s);
     }
 }

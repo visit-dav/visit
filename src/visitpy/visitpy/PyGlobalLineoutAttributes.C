@@ -36,7 +36,7 @@ struct GlobalLineoutAttributesObject
 //
 static PyObject *NewGlobalLineoutAttributes(int);
 std::string
-PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const char *prefix)
+PyGlobalLineoutAttributes_ToString(const GlobalLineoutAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -794,7 +794,7 @@ static int
 GlobalLineoutAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)v;
-    fprintf(fp, "%s", PyGlobalLineoutAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyGlobalLineoutAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -802,7 +802,7 @@ PyObject *
 GlobalLineoutAttributes_str(PyObject *v)
 {
     GlobalLineoutAttributesObject *obj = (GlobalLineoutAttributesObject *)v;
-    return PyString_FromString(PyGlobalLineoutAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyGlobalLineoutAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //

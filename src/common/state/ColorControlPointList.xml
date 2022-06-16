@@ -45,4 +45,8 @@
     </Function>
     <Function name="HasTag" user="true" member="true">
     </Function>
+    <Function name="SetNumControlPoints" user="true" member="true">
+    </Function>
+    <Function name="ColorControlPointList_SetNumControlPoints" user="true" member="true">
+    </Function>
   </Attribute>

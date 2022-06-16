@@ -36,12 +36,12 @@ struct avtVectorMetaDataObject
 //
 static PyObject *NewavtVectorMetaData(int);
 std::string
-PyavtVectorMetaData_ToString(const avtVectorMetaData *atts, const char *prefix)
+PyavtVectorMetaData_ToString(const avtVectorMetaData *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
 
-    str = PyavtVarMetaData_ToString(atts, prefix);
+    str = PyavtVarMetaData_ToString(atts, prefix, forLogging);
 
     snprintf(tmpStr, 1000, "%svarDim = %d\n", prefix, atts->varDim);
     str += tmpStr;
@@ -221,7 +221,7 @@ static int
 avtVectorMetaData_print(PyObject *v, FILE *fp, int flags)
 {
     avtVectorMetaDataObject *obj = (avtVectorMetaDataObject *)v;
-    fprintf(fp, "%s", PyavtVectorMetaData_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyavtVectorMetaData_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -229,7 +229,7 @@ PyObject *
 avtVectorMetaData_str(PyObject *v)
 {
     avtVectorMetaDataObject *obj = (avtVectorMetaDataObject *)v;
-    return PyString_FromString(PyavtVectorMetaData_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyavtVectorMetaData_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -381,7 +381,7 @@ PyavtVectorMetaData_GetLogString()
 {
     std::string s("avtVectorMetaData = avtVectorMetaData()\n");
     if(currentAtts != 0)
-        s += PyavtVectorMetaData_ToString(currentAtts, "avtVectorMetaData.");
+        s += PyavtVectorMetaData_ToString(currentAtts, "avtVectorMetaData.", true);
     return s;
 }
 
@@ -394,7 +394,7 @@ PyavtVectorMetaData_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("avtVectorMetaData = avtVectorMetaData()\n");
-        s += PyavtVectorMetaData_ToString(currentAtts, "avtVectorMetaData.");
+        s += PyavtVectorMetaData_ToString(currentAtts, "avtVectorMetaData.", true);
         cb(s);
     }
 }

@@ -36,7 +36,7 @@ struct ResampleAttributesObject
 //
 static PyObject *NewResampleAttributes(int);
 std::string
-PyResampleAttributes_ToString(const ResampleAttributes *atts, const char *prefix)
+PyResampleAttributes_ToString(const ResampleAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -1239,7 +1239,7 @@ static int
 ResampleAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)v;
-    fprintf(fp, "%s", PyResampleAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyResampleAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -1247,7 +1247,7 @@ PyObject *
 ResampleAttributes_str(PyObject *v)
 {
     ResampleAttributesObject *obj = (ResampleAttributesObject *)v;
-    return PyString_FromString(PyResampleAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyResampleAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -1399,7 +1399,7 @@ PyResampleAttributes_GetLogString()
 {
     std::string s("ResampleAtts = ResampleAttributes()\n");
     if(currentAtts != 0)
-        s += PyResampleAttributes_ToString(currentAtts, "ResampleAtts.");
+        s += PyResampleAttributes_ToString(currentAtts, "ResampleAtts.", true);
     return s;
 }
 
@@ -1412,7 +1412,7 @@ PyResampleAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ResampleAtts = ResampleAttributes()\n");
-        s += PyResampleAttributes_ToString(currentAtts, "ResampleAtts.");
+        s += PyResampleAttributes_ToString(currentAtts, "ResampleAtts.", true);
         cb(s);
     }
 }

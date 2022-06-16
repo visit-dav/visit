@@ -36,7 +36,7 @@ struct ViewerRPCObject
 //
 static PyObject *NewViewerRPC(int);
 std::string
-PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix)
+PyViewerRPC_ToString(const ViewerRPC *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -3871,7 +3871,7 @@ static int
 ViewerRPC_print(PyObject *v, FILE *fp, int flags)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)v;
-    fprintf(fp, "%s", PyViewerRPC_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyViewerRPC_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -3879,7 +3879,7 @@ PyObject *
 ViewerRPC_str(PyObject *v)
 {
     ViewerRPCObject *obj = (ViewerRPCObject *)v;
-    return PyString_FromString(PyViewerRPC_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyViewerRPC_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -4031,7 +4031,7 @@ PyViewerRPC_GetLogString()
 {
     std::string s("ViewerRPC = ViewerRPC()\n");
     if(currentAtts != 0)
-        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.");
+        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.", true);
     return s;
 }
 
@@ -4044,7 +4044,7 @@ PyViewerRPC_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("ViewerRPC = ViewerRPC()\n");
-        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.");
+        s += PyViewerRPC_ToString(currentAtts, "ViewerRPC.", true);
         cb(s);
     }
 }

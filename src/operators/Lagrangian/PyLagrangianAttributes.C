@@ -36,7 +36,7 @@ struct LagrangianAttributesObject
 //
 static PyObject *NewLagrangianAttributes(int);
 std::string
-PyLagrangianAttributes_ToString(const LagrangianAttributes *atts, const char *prefix)
+PyLagrangianAttributes_ToString(const LagrangianAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -587,7 +587,7 @@ static int
 LagrangianAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     LagrangianAttributesObject *obj = (LagrangianAttributesObject *)v;
-    fprintf(fp, "%s", PyLagrangianAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyLagrangianAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -595,7 +595,7 @@ PyObject *
 LagrangianAttributes_str(PyObject *v)
 {
     LagrangianAttributesObject *obj = (LagrangianAttributesObject *)v;
-    return PyString_FromString(PyLagrangianAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyLagrangianAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -747,7 +747,7 @@ PyLagrangianAttributes_GetLogString()
 {
     std::string s("LagrangianAtts = LagrangianAttributes()\n");
     if(currentAtts != 0)
-        s += PyLagrangianAttributes_ToString(currentAtts, "LagrangianAtts.");
+        s += PyLagrangianAttributes_ToString(currentAtts, "LagrangianAtts.", true);
     return s;
 }
 
@@ -760,7 +760,7 @@ PyLagrangianAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("LagrangianAtts = LagrangianAttributes()\n");
-        s += PyLagrangianAttributes_ToString(currentAtts, "LagrangianAtts.");
+        s += PyLagrangianAttributes_ToString(currentAtts, "LagrangianAtts.", true);
         cb(s);
     }
 }

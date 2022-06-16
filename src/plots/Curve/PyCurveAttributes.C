@@ -42,7 +42,7 @@ struct CurveAttributesObject
 //
 static PyObject *NewCurveAttributes(int);
 std::string
-PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix)
+PyCurveAttributes_ToString(const CurveAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -2316,7 +2316,7 @@ static int
 CurveAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)v;
-    fprintf(fp, "%s", PyCurveAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyCurveAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -2324,7 +2324,7 @@ PyObject *
 CurveAttributes_str(PyObject *v)
 {
     CurveAttributesObject *obj = (CurveAttributesObject *)v;
-    return PyString_FromString(PyCurveAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyCurveAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -2476,7 +2476,7 @@ PyCurveAttributes_GetLogString()
 {
     std::string s("CurveAtts = CurveAttributes()\n");
     if(currentAtts != 0)
-        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.");
+        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.", true);
     return s;
 }
 
@@ -2489,7 +2489,7 @@ PyCurveAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("CurveAtts = CurveAttributes()\n");
-        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.");
+        s += PyCurveAttributes_ToString(currentAtts, "CurveAtts.", true);
         cb(s);
     }
 }

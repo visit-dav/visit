@@ -146,6 +146,10 @@ inline char toupper(char c)
 //    Cyrus Harrison, Wed Jun  3 09:51:31 PDT 2020
 //    Update code gen to support both Python 2 and 3.
 //
+//    Kathleen Biagas, Wed May 25, 2022
+//    Added 'forLogging' arg to _ToString method so that AttVector's can call
+//    'SetNum' (if available) when being logged.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1882,7 +1886,7 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
                 c << "&atts->" << name;
             else
                 c << "&atts->" << MethodNameGet() << "()";
-            c << ", objPrefix.c_str());" << Endl;
+            c << ", objPrefix.c_str(), forLogging);" << Endl;
             c << "    }" << Endl;
         }
     }
@@ -2068,6 +2072,17 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
     {
         c << "    { // new scope" << Endl;
         c << "        int index = 0;" << Endl;
+        if(codeFile && codeFile->HasFunction(QString("SetNum")+Name))
+        {
+            c << "        if (forLogging)" << Endl;
+            c << "        {" << Endl;
+            c << "            // this is needed in case the current Num" << Name << " is greater" << Endl;
+            c << "            // than the default set up by the containing class." << Endl;
+            c << "            snprintf(tmpStr, 1000, \"SetNum" << Name << "(%d)\\n\"," << Endl;
+            c << "                atts->GetNum" << Name << "());" << Endl;
+            c << "            str += (prefix + std::string(tmpStr));" << Endl;
+            c << "        }" << Endl;
+        }
         c << "        // Create string representation of " << name << " from atts." << Endl;
         if(accessType == Field::AccessPublic)
             c << "        for(AttributeGroupVector::const_iterator pos = atts->" << name << ".begin(); pos != atts->" << name << ".end(); ++pos, ++index)" << Endl;
@@ -2077,7 +2092,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual PythonG
         c << "            const " << attType << " *current" << " = (const " << attType << " *)(*pos);" << Endl;
         c << "            snprintf(tmpStr, 1000, \"Get" << Name << "(%d).\", index);" << Endl;
         c << "            std::string objPrefix(prefix + std::string(tmpStr));" << Endl;
-        c << "            str += Py" << attType << "_ToString(current, objPrefix.c_str());" << Endl;
+        c << "            str += Py" << attType << "_ToString(current, objPrefix.c_str(), forLogging);" << Endl;
         c << "        }" << Endl;
         c << "        if(index == 0)" << Endl;
         c << "            str += \"#" << name << " does not contain any " << attType << " objects.\\n\";" << Endl;
@@ -2827,7 +2842,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         h << "void "<<api<<"          Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << Endl;
         h << "void "<<api<<"          Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << Endl;
         h << "std::string "<<api<<"   Py"<<name<<"_GetLogString();" << Endl;
-        h << "std::string "<<api<<"   Py"<<name<<"_ToString(const " << name << " *, const char *);" << Endl;
+        h << "std::string "<<api<<"   Py"<<name<<"_ToString(const " << name << " *, const char *, const bool=false);" << Endl;
         h << api << "PyObject * "<<"    Py"<<name<<"_getattr(PyObject *self, char *name);" << Endl;
         h << "int "<<api<<"           Py"<<name<<"_setattr(PyObject *self, char *name, PyObject *args);" << Endl;
         h << api << "extern PyMethodDef Py"<<name<<"_methods["<<name.toUpper()<<"_NMETH];" << Endl;
@@ -3113,10 +3128,10 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    if (obj == &NULL_PY_OBJ)" << Endl;
         c << "    {" << Endl;
         c << "        obj = NULL;" << Endl;
-        c << "        PyErr_Format(PyExc_NameError, \"name '\%s' is not defined\", name);" << Endl;
+        c << "        PyErr_Format(PyExc_NameError, \"name '%s' is not defined\", name);" << Endl;
         c << "    }" << Endl;
         c << "    else if (obj == NULL && !PyErr_Occurred())" << Endl;
-        c << "        PyErr_Format(PyExc_RuntimeError, \"unknown problem with '\%s'\", name);" << Endl;
+        c << "        PyErr_Format(PyExc_RuntimeError, \"unknown problem with '%s'\", name);" << Endl;
         c << Endl;
         c << "    return (obj != NULL) ? 0 : -1;" << Endl;
         c << "}" << Endl;
@@ -3139,7 +3154,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << Endl;
         if(HasCode(mName, 0))
             PrintCode(c, mName, 0);
-        c << "    fprintf(fp, \"%s\", Py" << name << "_ToString(obj->data, \"\").c_str());" << Endl;
+        c << "    fprintf(fp, \"%s\", Py" << name << "_ToString(obj->data, \"\",false).c_str());" << Endl;
         if(HasCode(mName, 1))
             PrintCode(c, mName, 1);
         c << "    return 0;" << Endl;
@@ -3158,7 +3173,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         }
 
         c << "std::string" << Endl;
-        c << mName << "(const "<<name<<" *atts, const char *prefix)" << Endl;
+        c << mName << "(const "<<name<<" *atts, const char *prefix, const bool forLogging)" << Endl;
         c << "{" << Endl;
         c << "    std::string str;" << Endl;
         if (!fields.empty())
@@ -3166,7 +3181,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << Endl;
         if (custombase)
         {
-            c << "    str = Py"<<baseClass<<"_ToString(atts, prefix);" << Endl;
+            c << "    str = Py"<<baseClass<<"_ToString(atts, prefix, forLogging);" << Endl;
             c << Endl;
         }
         if(HasCode(mName, 0))
@@ -3196,7 +3211,7 @@ class PythonGeneratorAttribute : public GeneratorBase
         c << mName << "(PyObject *v)" << Endl;
         c << "{" << Endl;
         c << "    "<<name<<"Object *obj = ("<<name<<"Object *)v;" << Endl;
-        c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\").c_str());" << Endl;
+        c << "    return PyString_FromString(Py" << name << "_ToString(obj->data,\"\", false).c_str());" << Endl;
         c << "}" << endl << Endl;
     }
 
@@ -3372,7 +3387,7 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << "{" << Endl;
             c << "    std::string s(\"" << shortName << " = " << name << "()\\n\");" << Endl;
             c << "    if(currentAtts != 0)" << Endl;
-            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << Endl;
+            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\", true);" << Endl;
             c << "    return s;" << Endl;
             c << "}" << Endl;
         }
@@ -3394,7 +3409,7 @@ class PythonGeneratorAttribute : public GeneratorBase
             c << "    if(cb != 0)" << Endl;
             c << "    {" << Endl;
             c << "        std::string s(\"" << shortName << " = " << name << "()\\n\");" << Endl;
-            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\");" << Endl;
+            c << "        s += Py" << name << "_ToString(currentAtts, \"" << shortName << ".\", true);" << Endl;
             c << "        cb(s);" << Endl;
             c << "    }" << Endl;
             if(HasCode(CallLogRoutine, 1))

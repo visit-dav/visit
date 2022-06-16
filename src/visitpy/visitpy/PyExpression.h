@@ -23,7 +23,7 @@ VISITPY_API PyObject *     PyExpression_Wrap(const Expression *attr);
 void VISITPY_API           PyExpression_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyExpression_SetDefaults(const Expression *atts);
 std::string VISITPY_API    PyExpression_GetLogString();
-std::string VISITPY_API    PyExpression_ToString(const Expression *, const char *);
+std::string VISITPY_API    PyExpression_ToString(const Expression *, const char *, const bool=false);
 VISITPY_API PyObject *     PyExpression_getattr(PyObject *self, char *name);
 int VISITPY_API            PyExpression_setattr(PyObject *self, char *name, PyObject *args);
 VISITPY_API extern PyMethodDef PyExpression_methods[EXPRESSION_NMETH];

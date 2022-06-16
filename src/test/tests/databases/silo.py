@@ -683,11 +683,67 @@ SetPlotOptions(curveAtts)
 DrawPlots()
 Test("silo_%d"%testNum)
 testNum = testNum + 1
-DeleteAllPlots()
 
+DeleteAllPlots()
 CloseDatabase(silo_data_path("multi_rect2d.silo"))
 
+def curvilinear_3d_surface():
+    """Curvilinear (quad) surfaces in 3D"""
 
+    OpenDatabase(silo_data_path("quad_disk.silo"))
 
+    AddPlot("Pseudocolor","sphElev_on_mesh_3d")
+    ResetView()
+    DrawPlots()
+    v = GetView3D()
+    v.RotateAxis(0,-20)
+    v.RotateAxis(1,-30)
+    SetView3D(v)
+    TestAutoName()
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor","sphElev_on_meshD_3d")
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    AddPlot("FilledBoundary", "mat_3d(mesh_3d)")
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    CloseDatabase(silo_data_path("quad_disk.silo"))
+    OpenDatabase(silo_data_path("specmix_quad.silo"))
+
+    # Index select doesn't work quite right here
+    AddPlot("Mesh","Mesh_3d")
+    AddOperator("IndexSelect")
+    idxsel = IndexSelectAttributes()
+    idxsel.xMin = 5
+    idxsel.xMax = 15
+    SetOperatorOptions(idxsel)
+    ResetView()
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor","p3d")
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    AddPlot("Pseudocolor","u3d")
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    AddPlot("FilledBoundary", "Material_3d(Mesh_3d)")
+    DrawPlots()
+    TestAutoName()
+    DeleteAllPlots()
+
+    CloseDatabase(silo_data_path("specmix_quad.silo"))
+
+curvilinear_3d_surface()
 
 Exit()

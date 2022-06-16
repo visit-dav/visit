@@ -22,7 +22,7 @@ PyObject *     PyBoxAttributes_Wrap(const BoxAttributes *attr);
 void           PyBoxAttributes_SetParent(PyObject *obj, PyObject *parent);
 void           PyBoxAttributes_SetDefaults(const BoxAttributes *atts);
 std::string    PyBoxAttributes_GetLogString();
-std::string    PyBoxAttributes_ToString(const BoxAttributes *, const char *);
+std::string    PyBoxAttributes_ToString(const BoxAttributes *, const char *, const bool=false);
 PyObject *     PyBoxAttributes_getattr(PyObject *self, char *name);
 int            PyBoxAttributes_setattr(PyObject *self, char *name, PyObject *args);
 extern PyMethodDef PyBoxAttributes_methods[BOXATTRIBUTES_NMETH];

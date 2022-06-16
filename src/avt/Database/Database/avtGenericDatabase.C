@@ -44,7 +44,6 @@
 #include <visitstream.h>
 
 #include <avtCallback.h>
-#include <avtCommonDataFunctions.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDatasetCollection.h>
 #include <avtDatasetVerifier.h>
@@ -5065,6 +5064,10 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Alister Maguire, Mon Nov 27 15:31:54 PST 2017
 //    If materialLabelsForced is true, then create material labels.
 //
+//    Mark C. Miller, Tue Jun 14 08:43:22 PDT 2022
+//    Adjust topoDim for cases of structured grids with one dimension only
+//    one node thick (e.g. [nx][ny][1] or [nx][1][nz] or [1][ny][nz]). These
+//    are really 2D surfaces (a structured arrangement of quads) in 3 space.
 // ****************************************************************************
 
 avtDataTree_p
@@ -5146,6 +5149,14 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         return NULL;
     }
     int topoDim = mmd->topologicalDimension;
+    if (ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        int *dims = ((vtkStructuredGrid*)ds)->GetDimensions();
+        if ((dims[0] == 1 && dims[1] > 1 && dims[2] > 1) ||
+            (dims[1] == 1 && dims[0] > 1 && dims[2] > 1) ||
+            (dims[2] == 1 && dims[0] > 1 && dims[1] > 1))
+            topoDim = 2;
+    }
 
     avtMaterial *material_used = NULL;
     void_ref_ptr vr_mir = GetMIR(dom, var, ts, ds, mat, topoDim,
@@ -7203,6 +7214,8 @@ avtGenericDatabase::ReadQOTDataset(avtDatasetCollection &ds,
 //    processors decided to change the ghost type. Now if any of them
 //    decide to change the ghost type, all of them will do it.
 //
+//    Mark C. Miller, Wed May 25 13:24:51 PDT 2022
+//    Do no work if there is no more than 1 domain.
 // ****************************************************************************
 
 bool
@@ -7211,6 +7224,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
                       avtDataRequest_p &spec, avtSourceFromDatabase *src,
                       intVector &allDomains, bool canDoCollectiveCommunication)
 {
+
 #ifndef PARALLEL
     (void)canDoCollectiveCommunication;
 #endif

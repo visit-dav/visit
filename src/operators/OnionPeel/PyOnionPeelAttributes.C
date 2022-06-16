@@ -36,7 +36,7 @@ struct OnionPeelAttributesObject
 //
 static PyObject *NewOnionPeelAttributes(int);
 std::string
-PyOnionPeelAttributes_ToString(const OnionPeelAttributes *atts, const char *prefix)
+PyOnionPeelAttributes_ToString(const OnionPeelAttributes *atts, const char *prefix, const bool forLogging)
 {
     std::string str;
     char tmpStr[1000];
@@ -796,7 +796,7 @@ static int
 OnionPeelAttributes_print(PyObject *v, FILE *fp, int flags)
 {
     OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)v;
-    fprintf(fp, "%s", PyOnionPeelAttributes_ToString(obj->data, "").c_str());
+    fprintf(fp, "%s", PyOnionPeelAttributes_ToString(obj->data, "",false).c_str());
     return 0;
 }
 
@@ -804,7 +804,7 @@ PyObject *
 OnionPeelAttributes_str(PyObject *v)
 {
     OnionPeelAttributesObject *obj = (OnionPeelAttributesObject *)v;
-    return PyString_FromString(PyOnionPeelAttributes_ToString(obj->data,"").c_str());
+    return PyString_FromString(PyOnionPeelAttributes_ToString(obj->data,"", false).c_str());
 }
 
 //
@@ -956,7 +956,7 @@ PyOnionPeelAttributes_GetLogString()
 {
     std::string s("OnionPeelAtts = OnionPeelAttributes()\n");
     if(currentAtts != 0)
-        s += PyOnionPeelAttributes_ToString(currentAtts, "OnionPeelAtts.");
+        s += PyOnionPeelAttributes_ToString(currentAtts, "OnionPeelAtts.", true);
     return s;
 }
 
@@ -969,7 +969,7 @@ PyOnionPeelAttributes_CallLogRoutine(Subject *subj, void *data)
     if(cb != 0)
     {
         std::string s("OnionPeelAtts = OnionPeelAttributes()\n");
-        s += PyOnionPeelAttributes_ToString(currentAtts, "OnionPeelAtts.");
+        s += PyOnionPeelAttributes_ToString(currentAtts, "OnionPeelAtts.", true);
         cb(s);
     }
 }

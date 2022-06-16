@@ -120,6 +120,7 @@ public:
     int GetNumTags();
     std::string GetTagsAsString();
     bool HasTag(std::string tag);
+    void SetNumControlPoints(const int n);
 
     // IDs that can be used to identify fields in case statements
     enum {
