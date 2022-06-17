@@ -21,7 +21,6 @@
 #include <QSlider>
 #include <QSpinBox>
 #include <QDesktopWidget>
-#include <QSignalMapper>
 
 #include <QvisSpectrumBar.h>
 #include <QvisColorSelectionWidget.h>

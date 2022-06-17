@@ -81,6 +81,9 @@ class QvisNoDefaultColorTableButton;
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
 // 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added infrastructure for tags.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
