@@ -474,6 +474,8 @@ ColorControlPointList::CreateSubAttributeGroup(int)
 // Creation:   omitted
 //
 // Modifications:
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -548,6 +550,9 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
 //   Kathleen Biagas, Thu Jul 31 09:28:48 PDT 2014
 //   Modified to reflect how 'equalSpacingFlag' and 'discreteFlag' are
 //   actually saved: as 'equal' and 'discrete'.  Add category.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -1615,6 +1620,9 @@ ColorControlPointList::GetColors(unsigned char *rgb,
 //
 //   Brad Whitlock, Fri Apr 27 11:28:11 PDT 2012
 //   Change smoothingFlag to smoothing and make it an enum.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -1713,7 +1721,7 @@ ColorControlPointList::AddTag(std::string newtag)
 // Method: ColorControlPointList::ClearTags
 //
 // Purpose:
-//   TODO
+//   Removes all tags from the ccpl.
 //
 // Programmer: Justin Privitera
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
@@ -1732,7 +1740,7 @@ ColorControlPointList::ClearTags()
 // Method: ColorControlPointList::GetTag
 //
 // Purpose:
-//   TODO
+//   Gets the name of the tag at the specified index.
 //
 // Programmer: Justin Privitera
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
@@ -1751,7 +1759,7 @@ ColorControlPointList::GetTag(int index)
 // Method: ColorControlPointList::GetNumTags
 //
 // Purpose:
-//   TODO
+//   Gets the number of tags associated with this ccpl.
 //
 // Programmer: Justin Privitera
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
@@ -1770,7 +1778,7 @@ ColorControlPointList::GetNumTags()
 // Method: ColorControlPointList::GetTagsAsString
 //
 // Purpose:
-//   TODO
+//   Formats the tags as a string for use in the tag line edit box in the gui.
 //
 // Programmer: Justin Privitera
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
@@ -1800,7 +1808,7 @@ ColorControlPointList::GetTagsAsString()
 // Method: ColorControlPointList::HasTag
 //
 // Purpose:
-//   TODO
+//   Determines if the ccpl has the given tag associated with it.
 //
 // Programmer: Justin Privitera
 // Creation:   Wed Jun  8 11:46:21 PDT 2022
