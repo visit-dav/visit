@@ -492,7 +492,7 @@ What if you want to access the actual lineout data and/or save it to a file?
 
 ::
 
-    # Set active window to one containing Lineout curve plots
+    # Set active window to one containing Lineout curve plots (typically #2)
     SetActiveWindow(2)
     # Get array of x,y pairs for first curve plot in window
     SetActivePlots(0)
@@ -507,7 +507,7 @@ What if you want to access the actual lineout data and/or save it to a file?
     # Write it as CSV data to a file
     for i in range(len(hgslice_vals) / 2):
         idx = i*2+1 # take only y-values in each array
-        print "%g %g %g %g" % (hgslice_vals[idx], var1_vals[idx], var2_vals[idx])
+        print "%g,%g,%g" % (hgslice_vals[idx], var1_vals[idx], var2_vals[idx])
 
 Query
 ~~~~~
