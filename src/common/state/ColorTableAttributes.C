@@ -469,6 +469,9 @@ ColorTableAttributes::CreateSubAttributeGroup(int)
 //
 //  Justin Privitera, Fri May 20 11:02:45 PDT 2022
 //  Replaced *active* w/ *default* for everything color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -553,6 +556,9 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 //
 //  Justin Privitera, Fri May 20 11:02:45 PDT 2022
 //  Replaced *active* w/ *default* for everything color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -1349,6 +1355,9 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 //
 //  Justin Privitera, Fri May 20 11:02:45 PDT 2022
 //  Replaced *active* w/ *default* for everything color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for `active` parallel to `names`.
 //
 // ****************************************************************************
 
@@ -1437,6 +1446,9 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 //
 //  Justin Privitera, Fri May 20 11:02:45 PDT 2022
 //  Replaced *active* w/ *default* for everything color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for `active` array parallel to `names`.
 //
 // ****************************************************************************
 

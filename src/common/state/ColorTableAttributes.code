@@ -258,6 +258,9 @@ Definition:
 //
 //  Justin Privitera, Fri May 20 11:02:45 PDT 2022
 //  Replaced *active* w/ *default* for everything color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for `active` parallel to `names`.
 //
 // ****************************************************************************
 
@@ -376,6 +379,9 @@ Definition:
 //
 //  Justin Privitera, Fri May 20 11:02:45 PDT 2022
 //  Replaced *active* w/ *default* for everything color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for `active` array parallel to `names`.
 //
 // ****************************************************************************
 
@@ -581,6 +587,9 @@ Definition:
 //
 //  Justin Privitera, Fri May 20 11:02:45 PDT 2022
 //  Replaced *active* w/ *default* for everything color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -669,6 +678,9 @@ Definition:
 //
 //  Justin Privitera, Fri May 20 11:02:45 PDT 2022
 //  Replaced *active* w/ *default* for everything color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
