@@ -164,6 +164,9 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
 //
 //   Kathleen Biagas, Fri Aug 8 08:34:29 PDT 2014
 //   Set default category name to 'UserDefined'.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags removed categories.
 //
 // ****************************************************************************
 bool
@@ -320,6 +323,9 @@ ColorTableManager::ImportHelper(void *data, const std::string &ctFileName,
 //
 //   Kathleen Biagas, Fri Aug 8 08:35:43 PDT 2014
 //   Set default category name if needed.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags removed categories.
 //
 // ****************************************************************************
 
