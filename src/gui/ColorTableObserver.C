@@ -65,6 +65,10 @@ ColorTableObserver::~ColorTableObserver()
 //   Kathleen Biagas, Mon Aug  4 15:48:31 PDT 2014
 //   Send category name when ading a color table, change in groupingFlag means
 //   the buttons need a change.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories, added tags, and new `active` array that says if color
+//   should be visible in the button.
 //
 // ****************************************************************************
 
@@ -99,7 +103,7 @@ ColorTableObserver::Update(Subject *)
         const stringVector &names = colorAtts->GetNames();
         const intVector &active = colorAtts->GetActive();
         if (names.size() != active.size())
-            colorAtts->SetNames(names); // should reset active
+            colorAtts->SetNames(names); // should reset active... this is very scary
         for (int i = 0; i < nNames; ++i)
         {
             if (active[i])
