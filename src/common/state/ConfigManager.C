@@ -209,6 +209,9 @@ ConfigManager::WriteEscapedString(std::ostream &out, const std::string &str)
 //   Kathleen Biagas, Thu Apr 9 07:19:54 MST 2015
 //   Set precision for floats and doubles (to highest value that doesn't
 //   convert '0.009' to '0.00899999999'.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for bool vectors.
 //
 // ****************************************************************************
 
@@ -783,6 +786,9 @@ ConfigManager::RemoveLeadAndTailQuotes(stringVector &sv)
 //
 //   Dave Pugmire, Wed Aug 18 09:54:43 EDT 2010
 //   Support variable names with leading and trailing spaces in sessionfiles.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for bool vectors.
 //
 // ****************************************************************************
 
@@ -1470,6 +1476,8 @@ ConfigManager::WriteMapNode(std::ostream &out, const MapNode &mn, int indentLeve
 // Creation:   November 28, 2018
 //
 // Modifications:
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for bool vectors.
 //
 // ****************************************************************************
 
