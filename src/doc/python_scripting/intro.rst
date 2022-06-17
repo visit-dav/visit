@@ -110,6 +110,24 @@ Python 3 installs provide a utility called ``2to3`` that you can use to help aut
 
 If you need help porting your trusty (or favorite) VisIt script, please reach out to the VisIt_ team.
 
+Mixing and Matching Python Modules
+----------------------------------
+
+Care must be taken when combining a variety of Python modules especially if any are not "pure python".
+A pure python module is one that is written *entirely* in Python and is highly portable.
+Most python modules involve a combination of compiled C/C++/Fortran code wrapped with a small amount of Python.
+These are less portable.
+When these kinds of modules are used, a number of additional factors impact their ability to be combined in a single Python script.
+These include 
+
+    * The Python library (header files) used to compile the module.
+    * The compiler used to compile the module.
+    * The compiler used to compile the Python interpreter where the modules are being combined.
+
+It is a best practice to ensure that all modules being combined are compiled with the same compiler and the same Python library.
+However, each team supporting installations of a given Python module on a given platform makes their own decisions regarding these choices.
+Consequently, when using combinations of Python modules installed by others, its very easy to encounter situations where the installations are incompatible and fail in subtle and hard to diagnose ways.
+
 Getting started
 ---------------
 
