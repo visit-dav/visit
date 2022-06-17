@@ -59,6 +59,18 @@ To make sure that the plot gets drawn, call the DrawPlots function.
       SetTimeSliderState(state) 
       SaveWindow() 
 
+Handling Command line Arguments
+-------------------------------
+
+In some cases, a VisIt_ python script also needs to handle its own command line arguments.
+This is handled using the ``Argv()`` method.
+For example, to run the python script, ``myscript.py`` with two arguments like so ::
+
+    visit -nowin -cli -s myscript.py myarg1 myarg2
+
+these arguments can be accessed using the ``Argv()`` method which returns the Python tuple, ``('myarg1', 'myarg2')``.
+Similarly, ``sys.argv`` will return the Python list, ``['myscript.py', 'myarg1', 'myarg2']`` which includes the script name itself as the zeroth argument.
+
 Saving images
 -------------
 
