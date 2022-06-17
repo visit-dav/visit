@@ -94,6 +94,9 @@ QvisColorTableButton::QvisColorTableButton(QWidget *parent) :
 // Modifications:
 //   Brad Whitlock, Thu Feb 14 13:31:46 PST 2002
 //   Deleted the popup menu if it exists.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed mappedColorTableNames, so no need to clear it in the destructor.
 //
 // ****************************************************************************
 
@@ -341,6 +344,9 @@ QvisColorTableButton::popupPressed()
 //
 //   Kathleen Biagas, Mon Aug  4 15:54:14 PDT 2014
 //   Handle grouping.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed grouping.
 //
 // ****************************************************************************
 
@@ -382,6 +388,8 @@ QvisColorTableButton::colorTableSelected(QAction *action)
 // Creation:   Sat Jun 16 20:12:33 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed mappedColorTableNames.
 //
 // ****************************************************************************
 
@@ -410,6 +418,9 @@ QvisColorTableButton::clearAllColorTables()
 //   Kathleen Biagas, Mon Aug  4 15:55:26 PDT 2014
 //   colorTableNames now a QStringList, so append and sort.
 //   Added mappedColorTableNames.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   No longer takes the category name.
 //
 // ****************************************************************************
 
@@ -499,6 +510,9 @@ QvisColorTableButton::getColorTableIndex(const QString &ctName)
 //
 //   Kathleen Biagas, Mon Aug  4 15:59:56 PDT 2014
 //   Hangle grouping.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories/grouping.
 //
 // ****************************************************************************
 
