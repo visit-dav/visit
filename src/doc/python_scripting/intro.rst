@@ -21,7 +21,6 @@ If you do not install the ``visit`` module as a Python site package, you can tel
 
 or by setting the ``PYTHONPATH`` environment variable as in ::
 
-    import sys
     env PYTHONPATH=/path/to/visit/<version>/<architecture>/lib/site-packages ./myscript.py
 
 Here is how to import all functions into the global Python namespace:
