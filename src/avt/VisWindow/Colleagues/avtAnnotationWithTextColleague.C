@@ -86,17 +86,94 @@ avtAnnotationWithTextColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 #define CYCLE_IDENTIFIER "$cycle"
 #define INDEX_IDENTIFIER "$index"
 
-// handle $XXX anywhere in string
-// handle multiple occurences of $XXX
-// handle $XXX and $YYY in same string
+// handle $Xxx anywhere in string
+// handle multiple occurences of $Xxx
+// handle $Xxx and $Yyy in same string
+// handle $Xxx%Fmt
 
+//
+// 1. Find $key in formatString
+//   - if present look also for %fmt and have defaults otherwise
+// 2. replace $key%fmt with intended text
+// 3. loop until all $key have been replaced.
+//
+// Algorithm...
+//    - iterate through formatString look for '$'
+//    - if find '$' check if subsequent chars up to some delimters match a key with optional format string
+//       - if key matches, add replacement string to output replacing (lengthening or shortening) what is there.
+//       - if $<txt> doesn't match any key, copy the text to the output string verbatim
+//    - if '$' not found, copy the char to the output string
+//
+
+// Keys and their default formats
+typedef struct _keyfmt {
+    char const *key;
+    char const *typ;
+    char const *fmt;
+} keyfmt_t;
+
+static keyfmt_t keysAndFmts[] = {
+   "time", "float", "%g",
+   "cycle", "int", "%d",
+   "index", "int", "%d"
+};
+
+
+int hasKeyMatch(char const *fmtStr, int idx)
+{
+    int const nkeys = (int) (sizeof(keysAndFmts)/sizeof(keysAndFmts[0]));
+    for (int ki = 0; ki < nkeys; ki++)
+    {
+        char const *key = keysAndFmts[ki].key;
+        if (!strncmp(&fmtStr[idx], key, strlen(key)))
+            return ki;
+    }
+    return -1;
+}
+
+char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid)
+{
+    char const *key = keysAndFmts[kid].key;
+    char const *typ = keysAndFmts[kid].typ;
+    char const *defaultFmt = keysAndFmts[kid].fmt;
+    char fmt[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;
+
+    // Use default printf format or whatever was specified in the string
+    int klen = strlen(key);
+    if (idx + klen < inlen && fmtStr[idx+klen] == '%')
+        strncpy(fmt, &fmtStr[idx+klen], strspn(&fmtStr[idx+klen], '0123456789-+ #.*lLhjztdiouxXfFeEgGaAn%')
+    else
+        strcpy(fmt, keysAndFmts[kid].fmt);
+
+
+   
+}
 
 // Caller must delete what is returned
 char *
 avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
 {
-    char *retval;
+    std::string rv;
 
+    int inlen = (int) strlen(formatString);
+    for (int i = 0; i < inlen; i++)
+    {
+        if ((formatString[i] == '$') && i < inlen-1)
+        {
+            
+            keyMatch = hasKeyMatch(formatString, i+1))
+            if (keyMatch != -1)
+                rv += keyReplace(formatString, inlen, i, keyMatch);
+            else
+                rv += formatString[i]
+        }
+        else
+            rv += formatString[i]
+    } 
+    return strdup(rv.c_str());
+
+
+#if 0
     size_t len = strlen(formatString);
     std::string fmtStr(formatString);
     std::string::size_type pos;
@@ -153,5 +230,6 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
     else
         snprintf(retval, 100, "%s", formatString);
     return retval;
+#endif
 #endif
 }
