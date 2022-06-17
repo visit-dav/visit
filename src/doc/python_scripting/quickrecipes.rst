@@ -472,7 +472,7 @@ The information in the string could be used for a multitude of uses such as buil
 Lineout
 ~~~~~~~
 
-VisIt allows you to extract data along a line, called a :ref:`lineout <Lineout>`, and plot the data using a Curve plot.
+VisIt allows you to extract data along a line, called a :ref:`lineout <Lineout>`, and plot the data using a :ref:`Curve <Curve plot> plot.
 
 ::
 
