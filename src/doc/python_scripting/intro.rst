@@ -112,7 +112,7 @@ If you need help porting your trusty (or favorite) VisIt script, please reach ou
 Mixing and Matching Python Modules
 ----------------------------------
 
-Care must be taken when combining a variety of Python modules especially if any are not "pure python".
+Care must be taken when combining a variety of Python modules especially if any are `extension modules <https://docs.python.org/3/glossary.html#term-extension-module>`_ and not *pure python*.
 A pure python module is one that is written *entirely* in Python and is highly portable.
 Most python modules involve a combination of compiled C/C++/Fortran code wrapped with a small amount of Python.
 These are less portable.
