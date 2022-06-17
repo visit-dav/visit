@@ -1495,14 +1495,12 @@ ColorTableAttributes::RemoveColorTable(int index)
 // Method: ColorTableAttributes::SetActiveElement
 //
 // Purpose:
-//   TODO
+//   Sets the tag corresponding to the given index to active or inactive
+//   depending on the boolean value passed.
 //
 // Arguments:
-//   TODO
-//
-// Returns:    TODO
-//
-// Note:
+//   index - index of the tag
+//   val   - bool to set active or inactive
 //
 // Programmer: Justin Privitera
 // Creation:   Mon Jun  6 17:10:40 PDT 2022
@@ -1521,14 +1519,7 @@ ColorTableAttributes::SetActiveElement(int index, bool val)
 // Method: ColorTableAttributes::SetAllActive
 //
 // Purpose:
-//   TODO
-//
-// Arguments:
-//   TODO
-//
-// Returns:    TODO
-//
-// Note:
+//   Sets all tags to active.
 //
 // Programmer: Justin Privitera
 // Creation:   Wed Jun  8 11:59:44 PDT 2022
