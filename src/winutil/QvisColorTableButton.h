@@ -41,6 +41,9 @@ class ColorTableAttributes;
 //   Kathleen Biagas, Mon Aug  4 15:51:11 PDT 2014
 //   Change colorTableNames to a QSringList, add mappedColorTableNames
 //   to aid in grouping.  Add category argument to addColorTable.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed category from addColorTable() and removed mappedColorTableNames.
 //
 // ****************************************************************************
 
