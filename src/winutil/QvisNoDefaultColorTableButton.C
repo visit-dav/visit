@@ -86,6 +86,9 @@ QvisNoDefaultColorTableButton::QvisNoDefaultColorTableButton(QWidget *parent) :
 // Modifications:
 //   Brad Whitlock, Thu Feb 14 13:31:46 PST 2002
 //   Deleted the popup menu if it exists.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed mappedColorTableNames.
 //
 // ****************************************************************************
 
@@ -333,6 +336,9 @@ QvisNoDefaultColorTableButton::popupPressed()
 //
 //   Kathleen Biagas, Mon Aug  4 15:54:14 PDT 2014
 //   Handle grouping.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories/grouping.
 //
 // ****************************************************************************
 
@@ -363,6 +369,8 @@ QvisNoDefaultColorTableButton::colorTableSelected(QAction *action)
 // Creation:   Sat Jun 16 20:12:33 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed mappedColorTableNames.
 //   
 // ****************************************************************************
 
@@ -391,6 +399,9 @@ QvisNoDefaultColorTableButton::clearAllColorTables()
 //   Kathleen Biagas, Mon Aug  4 15:55:26 PDT 2014
 //   colorTableNames now a QStringList, so append and sort.
 //   Added mappedColorTableNames.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed category arg and removed mappedColorTableNames.
 //
 // ****************************************************************************
 
@@ -414,6 +425,8 @@ QvisNoDefaultColorTableButton::addColorTable(const QString &ctName)
 // Creation:   Sat Jun 16 20:13:46 PST 2001
 //
 // Modifications:
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Handle the case where the color tables are gone by doing nothing.
 //   
 // ****************************************************************************
 
@@ -477,6 +490,9 @@ QvisNoDefaultColorTableButton::getColorTableIndex(const QString &ctName)
 //
 //   Kathleen Biagas, Mon Aug  4 15:59:56 PDT 2014
 //   Hangle grouping.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories/grouping.
 //
 // ****************************************************************************
 
