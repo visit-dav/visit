@@ -62,6 +62,9 @@ typedef enum
 //   Burlen Loring, Wed Jul 16 18:38:55 PDT 2014
 //   Added cast helper methods to catch invalid casts that lead
 //   to undefined behavior
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for bool vectors.
 //
 // ****************************************************************************
 

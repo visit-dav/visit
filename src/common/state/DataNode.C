@@ -306,6 +306,9 @@ DataNode::~DataNode()
 // Modifications:
 //   Cyrus Harrison, Thu Apr 18 10:37:46 PDT 2019
 //   Added default case to switch.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added logic for bool vectors.
 //
 // ****************************************************************************
 
