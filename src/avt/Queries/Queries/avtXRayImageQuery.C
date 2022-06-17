@@ -1090,7 +1090,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // the next file base name in the sequence.
                 //
                 std::stringstream fileName;
-                fileName << outputDir.c_str() << "/" << baseName.str() << "00." << file_extensions[outputType];
+                if (outputDir != ".")
+                    fileName << outputDir.c_str() << "/";
+                fileName << baseName.str() << "00." << file_extensions[outputType];
 
                 ifstream ifile(fileName.str());
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -1106,7 +1108,11 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
         // neither have the file extension in them though
         std::string out_filename = baseName.str();
-        std::string out_filename_w_path = outputDir + "/" + out_filename;
+        std::string out_filename_w_path;
+        if (outputDir == ".")
+            out_filename_w_path = out_filename;
+        else
+            out_filename_w_path = outputDir + "/" + out_filename;
 
         //
         // Write out the intensity and path length. The path length is only
