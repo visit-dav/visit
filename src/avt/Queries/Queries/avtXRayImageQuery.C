@@ -1311,36 +1311,48 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
             }
 
-            // save out
-            conduit::relay::io::blueprint::save_mesh(data_out,
-                                                     out_filename_w_path.c_str(),
-                                                     file_protocols[outputType]);
-
-            // AFTER the file has been saved, update the basename to reflect 
-            // reality for the later output messages
-            baseName.clear();
-            baseName.str(std::string());
-            baseName << out_filename << ".cycle_" << std::setfill('0') 
-                << std::setw(6) << cycle;
-            out_filename = baseName.str();
-            out_filename_w_path = outputDir + "/" + out_filename;
-
-            // Note to future developers: The following lines are a workaround to a bug found in
-            // conduit 0.8.3; see this issue for more information: 
-            // https://github.com/LLNL/conduit/issues/973
-            // Once this bug is fixed, these lines should be removed.
-
-            if (outputDir != ".")
+            try
             {
-                std::string real_filename = out_filename + "." + file_extensions[outputType];
-                std::string full_file_w_path = outputDir + "/" + real_filename;
-                conduit::Node index_fix;
-                conduit::relay::io::load(full_file_w_path, file_protocols[outputType], index_fix);
-                index_fix["file_pattern"] = real_filename;
-                conduit::relay::io::save(index_fix,
-                                         full_file_w_path,
-                                         file_protocols[outputType]);  
+                // save out
+                conduit::relay::io::blueprint::save_mesh(data_out,
+                                                         out_filename_w_path.c_str(),
+                                                         file_protocols[outputType]);
+
+                // AFTER the file has been saved, update the basename to reflect 
+                // reality for the later output messages
+                baseName.clear();
+                baseName.str(std::string());
+                baseName << out_filename << ".cycle_" << std::setfill('0') 
+                    << std::setw(6) << cycle;
+                out_filename = baseName.str();
+                out_filename_w_path = outputDir + "/" + out_filename;
+
+                // Note to future developers: The following lines are a workaround to a bug found in
+                // conduit 0.8.3; see this issue for more information: 
+                // https://github.com/LLNL/conduit/issues/973
+                // Once this bug is fixed, these lines should be removed.
+
+                if (outputDir != ".")
+                {
+                    std::string real_filename = out_filename + "." + file_extensions[outputType];
+                    std::string full_file_w_path = outputDir + "/" + real_filename;
+                    conduit::Node index_fix;
+                    conduit::relay::io::load(full_file_w_path, file_protocols[outputType], index_fix);
+                    index_fix["file_pattern"] = real_filename;
+                    conduit::relay::io::save(index_fix,
+                                             full_file_w_path,
+                                             file_protocols[outputType]);  
+                }
             }
+            catch (conduit::Error &e)
+            {
+                std::ostringstream err_oss;
+                err_oss <<  "Conduit Exception in X Ray Image Query "
+                            << "Execute: " << endl
+                            << e.message();
+                EXCEPTION1(VisItException, err_oss.str());
+            }
+            
 #else
             char errmsg[256];
             // this is safe because at the beginning of the function we check that the output type is valid
