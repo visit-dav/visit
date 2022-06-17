@@ -1,8 +1,8 @@
 Introduction to Python Scripting
 ================================
 
-Starting VisIt_
----------------
+Starting VisIt_'s Python Interface
+----------------------------------
 
 You can invoke VisIt_'s Python scripting interface from the command line by typing:
 
@@ -11,15 +11,18 @@ You can invoke VisIt_'s Python scripting interface from the command line by typi
     visit -cli 
 
 VisIt_ provides a separate Python module if you instead wish to include VisIt functions in an existing Python script.
-In that case, you must first import the VisIt_ module into Python and then call the Launch() function to make VisIt_ launch and dynamically load the rest of the VisIt_ functions into the Python namespace.
-VisIt_ adopts this somewhat unusual approach to module loading since the lightweight "visit" front-end module can be installed as one of your Python's site packages yet still dynamically load the real control functions from different versions of VisIt_ selected by the user.
+In that case, you must first import the VisIt_ module into Python and then call the ``Launch()`` function to make VisIt_ launch and dynamically load the rest of the VisIt_ functions into the Python namespace.
+VisIt_ adopts this somewhat unusual approach to module loading since the lightweight front-end module, named ``visit``, can be installed as one of your Python's site packages yet still dynamically load the real control functions from different versions of VisIt_ selected by the user.
 
-If you do not install the visit.so module as a Python site package, you can tell the Python interpreter where it is located by appending a new path to the sys.path variable. Be sure to substitute the correct path to visit.so on your system.
-
-::
+If you do not install the ``visit`` module as a Python site package, you can tell the Python interpreter where it is located either by appending a new path to the ``sys.path`` variable as in ::
 
     import sys
     sys.path.append("/path/to/visit/<version>/<architecture>/lib/site-packages")
+
+or by setting the ``PYTHONPATH`` environment variable as in ::
+
+    import sys
+    env PYTHONPATH=/path/to/visit/<version>/<architecture>/lib/site-packages ./myscript.py
 
 Here is how to import all functions into the global Python namespace:
 
