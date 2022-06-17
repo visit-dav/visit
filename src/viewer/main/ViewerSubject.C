@@ -5070,6 +5070,9 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 //
 //   Kathleen Biagas, Mon Aug  4 15:42:48 PDT 2014
 //   Send category name when adding color table.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed category from call to addColorTable().
 //
 // ****************************************************************************
 
