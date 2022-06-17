@@ -109,8 +109,10 @@ Python 3 installs provide a utility called ``2to3`` that you can use to help aut
 
 If you need help porting your trusty (or favorite) VisIt script, please reach out to the VisIt_ team.
 
-Mixing and Matching Python Modules
-----------------------------------
+Mixing and Matching Python Extension Modules
+--------------------------------------------
+
+.. danger:: Mixing and matching independently compiled Python extension modules can result in subtle and hard to diagnose failures.
 
 Care must be taken when combining a variety of Python modules especially if any are `extension modules <https://docs.python.org/3/glossary.html#term-extension-module>`_ and not *pure python*.
 A pure python module is one that is written *entirely* in Python and is highly portable.
@@ -126,6 +128,7 @@ These include
 It is a best practice to ensure that all modules being combined are compiled with the same compiler and the same Python library.
 However, each team supporting installations of a given Python module on a given platform makes their own decisions regarding these choices.
 Consequently, when using combinations of Python modules installed by others, its very easy to encounter situations where the installations are incompatible and fail in subtle and hard to diagnose ways.
+Worse, things may work for the most part and only intermittently produce invalid results with no warning.
 
 Getting started
 ---------------
