@@ -67,6 +67,9 @@
 //
 //   Brad Whitlock, Wed Apr  9 11:59:35 PDT 2008
 //   QString for caption, shortName.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added new tag-related vars to constructor.
 //
 // ****************************************************************************
 
@@ -167,6 +170,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Completely redid the gui to remove categories and add tags.
 //
 // ****************************************************************************
 
@@ -462,6 +468,9 @@ QvisColorTableWindow::CreateWindowContents()
 // Modifications:
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added ability for tag settings to be written to config/session files.
 //
 // ****************************************************************************
 
@@ -499,6 +508,9 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
 // Modifications:
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added ability for tag settings to be read from config/session files.
 //
 // ****************************************************************************
 
@@ -568,6 +580,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added tags.
 //
 // ****************************************************************************
 
@@ -755,7 +770,7 @@ QvisColorTableWindow::UpdateEditor()
 //
 // Purpose:
 //   Adds a tag discovered when looking through each color table to the global 
-//   tag list.
+//   tag list. Also adds to the tag table if the tag is not in it.
 //
 // Programmer: Justin Privitera
 // Creation:   Tue Jun  7 12:36:55 PDT 2022
@@ -891,6 +906,12 @@ QvisColorTableWindow::UpdateTags()
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added tags (so lots of logic to control what 
+//   happens when tags are enabled). Also added guard at the end to make 
+//   sure the observer updates the color table buttons if settings are 
+//   loaded from config files.
 //
 // ****************************************************************************
 
@@ -1046,6 +1067,11 @@ QvisColorTableWindow::UpdateNames()
     static bool run_before = false;
     if (!run_before)
     {
+        // This only needs to happen the very first time for loading options.
+        // If visit isn't opened with saved config and guiconfig files, then
+        // this is redundant, but doesn't hurt. The static bool is needed
+        // because if this runs at the end of EVERY UpdateNames() call, you
+        // will see the worst crash of your life.
         run_before = true;
         colorAtts->SetChangesMade(true);
         ctObserver.SetUpdate(true);
@@ -1571,6 +1597,9 @@ QvisColorTableWindow::GetNextColor()
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added logic to preserve the tags.
 //
 // ****************************************************************************
 
@@ -1651,6 +1680,9 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
 // Modifications:
 //    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
 //    Handle category.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories.
 //
 // ****************************************************************************
 
@@ -1956,6 +1988,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added default tag for user defined tables.
 //
 // ****************************************************************************
 
@@ -2062,6 +2097,9 @@ QvisColorTableWindow::deleteColorTable()
 //
 //    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
 //    Rewritten to reflect changes in how the names are stored.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added tags.
 //
 // ****************************************************************************
 
@@ -2657,23 +2695,3 @@ QvisColorTableWindow::updateNameBoxPosition(bool tagsOn)
         mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
     nameListBox->blockSignals(false);
 }
-
-
-// ****************************************************************************
-// Method: QvisColorTableWindow::ApplyCategoryChange - DELETED
-//
-// Purpose:
-//   Ensures the color control points use the correct category.
-//
-// Programmer: Kathleen Biagas
-// Creation:   August 8, 2013
-//
-// Modifications:
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
-// 
-//   Justin Privitera, Mon Jun 13 11:43:49 PDT 2022
-//   Deleted the function.
-//
-// ****************************************************************************
-
