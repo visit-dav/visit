@@ -85,8 +85,6 @@ class Container(object):
         output  = '"' + self.title + r'\n' + '"\n'
         output += '"' + r'\n' + '"\n'
         for line in self.text:
-            if 'DefineArrayExpression' in line:
-                print('\n'.join(textwrap.wrap(' '.join(self.text))))
             output += '"' + line + r'\n' + '"\n'
         if self.last:
             output += ';\n'
@@ -128,6 +126,20 @@ class DescriptionContainer(Container):
     def __init__(self):
         self.title = 'Description:'
         Container.__init__(self)
+
+    def __str__(self):
+        if self.last:
+            self.text = self.text[0:-1]
+        output  = '"' + self.title + r'\n' + '"\n'
+        output += '"' + r'\n' + '"\n'
+        for line in textwrap.wrap(' '.join(self.text)):
+            output += '"' + line + r'\n' + '"\n'
+        if self.last:
+            output += ';\n'
+        else:
+            output += '"' + r'\n' + '"\n'
+            output += '"' + r'\n' + '"\n'
+        return output
 
 
 class ExampleContainer(Container): 
