@@ -179,12 +179,14 @@ def insert_backslash(text):
 
 def split_colon_add_spaces(line):
     colon_index = line.find(':')
-    if colon_index > -1:
-        output = line[:colon_index-1]
+    indent = line[:4].count(' ')
+    if indent == 4:
+        output = '    ' + line
+    elif colon_index > -1:
+        output = line
     else:
         output = '    ' + line
     return output
-
 
 def write_state(writer, state_dict):
     if state_dict['synopsis']:
