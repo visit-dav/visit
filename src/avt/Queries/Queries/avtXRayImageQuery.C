@@ -19,10 +19,6 @@
 #include <avtSourceFromAVTDataset.h>
 #include <avtXRayFilter.h>
 
-#ifdef HAVE_CONDUIT
-    #include <conduit.hpp>
-#endif
-
 #include <vectortypes.h>
 
 #include <visitstream.h>
@@ -39,6 +35,61 @@
 
 
 int avtXRayImageQuery::iFileFamily = 0;
+
+//
+// Output Type information and handling
+//
+
+// To add new output types, these are the changes to make:
+//    1) increment `NUM_OUTPUT_TYPES` by however many output types you are planning to add
+//    2) add new entries to the `file_protocols` and `file_extensions` arrays
+//    3) add new constants for your output types (make sure in the same order as in `file_protocols`)
+//    4) optional: add new inline functions to check for your output type or types; see below for examples
+//    5) add new cases where necessary (probably just in `avtXRayImageQuery::Execute`)
+//    6) add them to `src/gui/QvisXRayImageQueryWidget.C` in the constructor.
+
+// a constant for how many valid output types there are
+const int NUM_OUTPUT_TYPES = 9;
+
+// member `outputType` indexes these arrays
+const char *file_protocols[NUM_OUTPUT_TYPES] = {"bmp", "jpeg", "png", "tif", "bof", "bov", 
+    /*conduit blueprint output types */ "json", "hdf5", "yaml"}; // removed conduit_bin and conduit_json
+const char *file_extensions[NUM_OUTPUT_TYPES] = {"bmp", "jpg", "png", "tif", "bof", "bov", 
+    /*conduit blueprint output types */ "root", "root", "root"};
+
+// constants for each of the output types
+const int BMP_OUT = 0;
+const int JPEG_OUT = 1;
+const int PNG_OUT = 2;
+const int TIF_OUT = 3;
+const int RAWFLOATS_OUT = 4;
+const int BOV_OUT = 5;
+const int BLUEPRINT_JSON_OUT = 6;
+const int BLUEPRINT_HDF5_OUT = 7;
+const int BLUEPRINT_YAML_OUT = 8;
+
+// an output type is valid if it is an int in [0,NUM_OUTPUT_TYPES)
+inline bool outputTypeValid(int otype)
+{
+    return otype >= 0 && otype < NUM_OUTPUT_TYPES;
+}
+
+inline bool outputTypeIsBmpJpegPngOrTif(int otype)
+{
+    return otype == BMP_OUT || otype == JPEG_OUT || 
+        otype == PNG_OUT || otype == TIF_OUT;
+}
+
+inline bool outputTypeIsRawfloatsOrBov(int otype)
+{
+    return otype == RAWFLOATS_OUT || otype == BOV_OUT;
+}
+
+inline bool outputTypeIsBlueprint(int otype)
+{
+    return otype == BLUEPRINT_HDF5_OUT || otype == BLUEPRINT_JSON_OUT || 
+        otype == BLUEPRINT_YAML_OUT;
+}
 
 // ****************************************************************************
 //  Method: avtXRayImageQuery::avtXRayImageQuery
@@ -84,6 +135,10 @@ int avtXRayImageQuery::iFileFamily = 0;
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Changed default output type to use constant instead of magic number and
+//    added default outdir value.
 //
 // ****************************************************************************
 
@@ -97,7 +152,8 @@ avtXRayImageQuery::avtXRayImageQuery():
     nBackgroundIntensities = 0;
     debugRay = -1;
     familyFiles = false;
-    outputType = 2; // png
+    outputType = PNG_OUT;
+    outputDir = ".";
     useSpecifiedUpVector = true;
     useOldView = true;
 
@@ -206,6 +262,9 @@ avtXRayImageQuery::~avtXRayImageQuery()
 //
 //    Eric Brugger, Thu Jun  4 16:11:47 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Handled sending the output directory through.
 //
 // ****************************************************************************
 
@@ -251,6 +310,9 @@ avtXRayImageQuery::SetInputParams(const MapNode &params)
         else if (params.GetEntry("output_type")->TypeName() == "string")
             SetOutputType(params.GetEntry("output_type")->AsString());
     }
+
+    if (params.HasEntry("output_dir"))
+        SetOutputDir(params.GetEntry("output_dir")->AsString());
 
     // this is not a normal parameter, it is set by the cli when the query
     // is called with the deprecated argument parsing.
@@ -690,13 +752,24 @@ avtXRayImageQuery::SetFamilyFiles(const bool &flag)
 //
 //  Programmer: Eric Brugger
 //  Creation:   June 30, 2010
-//
+// 
+//  Modifications:
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Validity check for output type and error message if it is invalid.
+// 
 // ****************************************************************************
 
 void
 avtXRayImageQuery::SetOutputType(int type)
 {
-    outputType = type;
+    if (outputTypeValid(outputType))
+        outputType = type;
+    else
+    {
+        char errmsg[256];
+        snprintf(errmsg, 256, "Output type %d is invalid.", type);
+        EXCEPTION1(VisItException, errmsg);
+    }
 }
 
 // ****************************************************************************
@@ -711,24 +784,50 @@ avtXRayImageQuery::SetOutputType(int type)
 //  Modifications:
 //    Eric Brugger, Mon May 14 10:35:27 PDT 2012
 //    I added the bov output type.
-//
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Output type upgrade across the entire file. Magic numbers for output
+//    types are gone, replaced with new constants. Output type indexes the 
+//    new file protocols array.
+// 
 // ****************************************************************************
 
 void
 avtXRayImageQuery::SetOutputType(const std::string &type)
 {
-    if      (type == "bmp")
-        outputType = 0;
-    else if (type == "jpeg")
-        outputType = 1;
-    else if (type == "png")
-        outputType = 2;
-    else if (type == "tif")
-        outputType = 3;
-    else if (type == "rawfloats")
-        outputType = 4;
-    else if (type == "bov")
-        outputType = 5;
+    int i = 0;
+    while (i < NUM_OUTPUT_TYPES)
+    {
+        // the output type indexes the file extensions array
+        if (type == file_protocols[i])
+        {
+            outputType = i;
+            return;
+        }
+        i ++;
+    }
+    char errmsg[256];
+    snprintf(errmsg, 256, "Output type %s is invalid.", type.c_str());
+    EXCEPTION1(VisItException, errmsg);
+}
+
+// ****************************************************************************
+//  Method: avtXRayImageQuery::SetOutputDir
+//
+//  Purpose:
+//    Set the output directory.
+//
+//  Programmer: Justin Privitera 
+//  Creation:   Wed Jun  1 12:30:46 PDT 2022
+//
+//  Modifications:
+// 
+// ****************************************************************************
+
+void
+avtXRayImageQuery::SetOutputDir(const std::string &dir)
+{
+    outputDir = dir;
 }
 
 // ****************************************************************************
@@ -834,12 +933,45 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    I corrected a bug where the type specified in the bov file was
 //    incorrectly set to float for the intensities in the case of double
 //    and integer output.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//     - Output type upgrade across the entire file. Magic numbers for output
+//    types are gone, replaced with new constants. There are now functions
+//    used to test output type validity and if output type falls into a 
+//    specific category. There are also arrays that the output type indexes
+//    into that contain file protocols and file extensions.
+//     - Added output directory to query.
+//     - Conduit checks if the output directory is valid.
+//     - baseName and fileName have become stringstreams. New strings have 
+//    been made to store results from baseName formatting, and are used 
+//    extensively.
+//    Blueprint output has been added, with 4 output types.
+//    The output messages has been reorganized and refactored.
 //
 // ****************************************************************************
 
 void
 avtXRayImageQuery::Execute(avtDataTree_p tree)
 {
+    // check validity of output type before proceeding
+    if (!outputTypeValid(outputType))
+    {
+        char errmsg[256];
+        snprintf(errmsg, 256, "Output type %d is invalid.", outputType);
+        EXCEPTION1(VisItException, errmsg);
+    }
+    // It would be nice to have something that could check the validity of the 
+    // output directory without needing conduit.
+#ifdef HAVE_CONDUIT
+    // check if output directory exists before proceeding
+    if (!conduit::utils::is_directory(outputDir))
+    {
+        char errmsg[256];
+        snprintf(errmsg, 256, "Directory %s does not exist.", outputDir.c_str());
+        EXCEPTION1(VisItException, errmsg);
+    }
+#endif
+
     avtDataset_p input = GetTypedInput();
     
     int nsets = 0;
@@ -936,18 +1068,20 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         //
         // Create the file base name.
         //
-        const char *exts[6] = {"bmp", "jpeg", "png", "tif", "bof", "bov"};
-        char baseName[512];
+        std::stringstream baseName;
         bool keepTrying = true;
         while (keepTrying)
         {
             keepTrying = false;
-            if (familyFiles)
+            if (familyFiles && !outputTypeIsBlueprint(outputType))
             {
                 //
                 // Create the file base name and increment the family number.
                 //
-                snprintf(baseName, 512, "output%04d.", iFileFamily);
+                baseName.clear();
+                baseName.str(std::string());
+                baseName << "output" << std::setfill('0') << std::setw(4) << iFileFamily << ".";
+
                 if (iFileFamily < 9999) iFileFamily++;
 
                 //
@@ -955,10 +1089,12 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 // exists. If it does and we aren't at the maximum, try
                 // the next file base name in the sequence.
                 //
-                char fileName[512];
-                snprintf(fileName, 512, "%s00.%s", baseName, exts[outputType]);
+                std::stringstream fileName;
+                if (outputDir != ".")
+                    fileName << outputDir.c_str() << "/";
+                fileName << baseName.str() << "00." << file_extensions[outputType];
 
-                ifstream ifile(fileName);
+                ifstream ifile(fileName.str());
                 if (!ifile.fail() && iFileFamily < 9999)
                 {
                     keepTrying = true;
@@ -966,9 +1102,17 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             }
             else
             {
-                snprintf(baseName, 512, "output");
+                baseName << "output";
             }
         }
+
+        // neither have the file extension in them though
+        std::string out_filename = baseName.str();
+        std::string out_filename_w_path;
+        if (outputDir == ".")
+            out_filename_w_path = out_filename;
+        else
+            out_filename_w_path = outputDir + "/" + out_filename;
 
         //
         // Write out the intensity and path length. The path length is only
@@ -978,23 +1122,27 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
         vtkDataArray *intensity;
         vtkDataArray *pathLength;
-        if (outputType >= 0 && outputType <=3)
+#ifdef HAVE_CONDUIT
+        conduit::Node data_out;
+#endif
+
+        if (outputTypeIsBmpJpegPngOrTif(outputType))
         {
             for (int i = 0; i < numBins; i++)
             {
                 intensity= leaves[i]->GetPointData()->GetArray("Intensity");
                 if (intensity->GetDataType() == VTK_FLOAT)
-                    WriteImage(baseName, i, numPixels,
+                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (float*) intensity->GetVoidPointer(0));
                 else if (intensity->GetDataType() == VTK_DOUBLE)
-                    WriteImage(baseName, i, numPixels,
+                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (double*) intensity->GetVoidPointer(0));
                 else if (intensity->GetDataType() == VTK_INT)
-                    WriteImage(baseName, i, numPixels,
+                    WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (int*) intensity->GetVoidPointer(0));
             }
         }
-        else if (outputType == 4)
+        else if (outputType == RAWFLOATS_OUT)
         {
             for (int i = 0; i < numBins; i++)
             {
@@ -1002,28 +1150,28 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
                 if (intensity->GetDataType() == VTK_FLOAT)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (float*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (float*)pathLength->GetVoidPointer(0));
                 }
                 else if (intensity->GetDataType() == VTK_DOUBLE)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (double*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (double*)pathLength->GetVoidPointer(0));
                 }
                 else if (intensity->GetDataType() == VTK_INT)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (int*)intensity->GetVoidPointer(0));
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (int*)pathLength->GetVoidPointer(0));
                 }
             }
         }
-        else if (outputType == 5)
+        else if (outputType == BOV_OUT)
         {
             for (int i = 0; i < numBins; i++)
             {
@@ -1031,66 +1179,241 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 pathLength = leaves[numBins+i]->GetPointData()->GetArray("PathLength");
                 if (intensity->GetDataType() == VTK_FLOAT)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (float*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "FLOAT");
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "FLOAT");
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (float*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "path_length", numBins+i,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
                         nx, ny, "FLOAT");
                 }
                 else if (intensity->GetDataType() == VTK_DOUBLE)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (double*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "DOUBLE");
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "DOUBLE");
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (double*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "path_length", numBins+i,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
                         nx, ny, "DOUBLE");
                 }
                 else if (intensity->GetDataType() == VTK_INT)
                 {
-                    WriteFloats(baseName, i, numPixels,
+                    WriteFloats(out_filename_w_path.c_str(), i, numPixels,
                         (int*)intensity->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "intensity", i, nx, ny, "INT");
-                    WriteFloats(baseName, numBins+i, numPixels,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "intensity", i, nx, ny, "INT");
+                    WriteFloats(out_filename_w_path.c_str(), numBins+i, numPixels,
                         (int*)pathLength->GetVoidPointer(0));
-                    WriteBOVHeader(baseName, "path_length", numBins+i,
+                    WriteBOVHeader(out_filename_w_path.c_str(), "path_length", numBins+i,
                         nx, ny, "INT");
                 }
             }
         }
+        else if (outputTypeIsBlueprint(outputType))
+        {
+#ifdef HAVE_CONDUIT
+            const int x_coords_dim = nx + 1;
+            const int y_coords_dim = ny + 1;
+            const int z_coords_dim = numBins + 1;
+
+            // set up coords
+            data_out["coordsets/image_coords/type"] = "rectilinear";
+            data_out["coordsets/image_coords/values/x"].set(conduit::DataType::int32(x_coords_dim));
+            int *xvals = data_out["coordsets/image_coords/values/x"].value();
+            for (int i = 0; i < x_coords_dim; i ++) { xvals[i] = i; }
+            // TODO use `set` instead?
+
+            data_out["coordsets/image_coords/values/y"].set(conduit::DataType::int32(y_coords_dim));
+            int *yvals = data_out["coordsets/image_coords/values/y"].value();
+            for (int i = 0; i < y_coords_dim; i ++) { yvals[i] = i; }
+
+            data_out["coordsets/image_coords/values/z"].set(conduit::DataType::int32(z_coords_dim));
+            int *zvals = data_out["coordsets/image_coords/values/z"].value();
+            for (int i = 0; i < z_coords_dim; i ++) { zvals[i] = i; }
+
+            // TODO get units piped through
+            // data_out["coordsets/image_coords/units/x"] = "cm";
+            // data_out["coordsets/image_coords/units/y"] = "cm";
+            // data_out["coordsets/image_coords/units/z"] = "kev";
+
+            data_out["coordsets/image_coords/labels/x"] = "width";
+            data_out["coordsets/image_coords/labels/y"] = "height";
+            data_out["coordsets/image_coords/labels/z"] = "energy_group";
+
+            // set up topology
+            data_out["topologies/image_topo/coordset"] = "image_coords";
+            data_out["topologies/image_topo/type"] = "rectilinear";
+
+            // set up fields
+            int numfieldvals = (x_coords_dim - 1) * (y_coords_dim - 1) * (z_coords_dim - 1);
+
+            data_out["fields/intensities/topology"] = "image_topo";
+            data_out["fields/intensities/association"] = "element";
+            // set to float64 regardless of vtk data types
+            data_out["fields/intensities/values"].set(conduit::DataType::float64(numfieldvals));
+            conduit::float64 *intensity_vals = data_out["fields/intensities/values"].value();
+
+            data_out["fields/path_length/topology"] = "image_topo";
+            data_out["fields/path_length/association"] = "element";
+            // set to float64 regardless of vtk data types
+            data_out["fields/path_length/values"].set(conduit::DataType::float64(numfieldvals));
+            conduit::float64 *depth_vals = data_out["fields/path_length/values"].value();
+
+            const int datatype = leaves[0]->GetPointData()->GetArray("Intensity")->GetDataType();
+
+            if (datatype == VTK_FLOAT)
+                WriteArrays<float>(leaves, intensity_vals, depth_vals, numBins);
+            else if (datatype == VTK_DOUBLE)
+                WriteArrays<double>(leaves, intensity_vals, depth_vals, numBins);
+            else if (datatype == VTK_INT)
+                WriteArrays<int>(leaves, intensity_vals, depth_vals, numBins);
+            else
+            {
+                char msg[256];
+                snprintf(msg, 256, "VTKDataType %d is not supported.", datatype);
+                EXCEPTION1(VisItException, msg);
+            }
+
+            // set strides
+            data_out["fields/intensities/strides"].set(conduit::DataType::int64(3));
+            conduit::int64 *stride_ptr = data_out["fields/intensities/strides"].value();
+            stride_ptr[0] = 1;
+            stride_ptr[1] = nx;
+            stride_ptr[2] = nx * ny;            
+            data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
+
+            data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
+            const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
+            data_out["state/cycle"] = cycle;
+            data_out["state/xray_view/normal/x"] = normal[0];
+            data_out["state/xray_view/normal/y"] = normal[1];
+            data_out["state/xray_view/normal/z"] = normal[2];
+            data_out["state/xray_view/focus/x"] = focus[0];
+            data_out["state/xray_view/focus/y"] = focus[1];
+            data_out["state/xray_view/focus/z"] = focus[2];
+            data_out["state/xray_view/viewUp/x"] = viewUp[0];
+            data_out["state/xray_view/viewUp/y"] = viewUp[1];
+            data_out["state/xray_view/viewUp/z"] = viewUp[2];
+            data_out["state/xray_view/viewAngle"] = viewAngle;
+            data_out["state/xray_view/parallelScale"] = parallelScale;
+            data_out["state/xray_view/nearPlane"] = nearPlane;
+            data_out["state/xray_view/farPlane"] = farPlane;
+            data_out["state/xray_view/imagePan/x"] = imagePan[0];
+            data_out["state/xray_view/imagePan/y"] = imagePan[1];
+            data_out["state/xray_view/imageZoom"] = imageZoom;
+            data_out["state/xray_view/perspective"] = perspective;
+            
+            // verify
+            conduit::Node verify_info;
+            if(!conduit::blueprint::mesh::verify(data_out, verify_info))
+            {
+                verify_info.print();
+                EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
+            }
+
+            try
+            {
+                // save out
+                conduit::relay::io::blueprint::save_mesh(data_out,
+                                                         out_filename_w_path.c_str(),
+                                                         file_protocols[outputType]);
+
+                // AFTER the file has been saved, update the basename to reflect 
+                // reality for the later output messages
+                baseName.clear();
+                baseName.str(std::string());
+                baseName << out_filename << ".cycle_" << std::setfill('0') 
+                    << std::setw(6) << cycle;
+                out_filename = baseName.str();
+                out_filename_w_path = outputDir + "/" + out_filename;
+
+                // Note to future developers: The following lines are a workaround to a bug found in
+                // conduit 0.8.3; see this issue for more information: 
+                // https://github.com/LLNL/conduit/issues/973
+                // Once this bug is fixed, these lines should be removed.
+
+                if (outputDir != ".")
+                {
+                    std::string real_filename = out_filename + "." + file_extensions[outputType];
+                    std::string full_file_w_path = outputDir + "/" + real_filename;
+                    conduit::Node index_fix;
+                    conduit::relay::io::load(full_file_w_path, file_protocols[outputType], index_fix);
+                    index_fix["file_pattern"] = real_filename;
+                    conduit::relay::io::save(index_fix,
+                                             full_file_w_path,
+                                             file_protocols[outputType]);  
+                }
+            }
+            catch (conduit::Error &e)
+            {
+                std::ostringstream err_oss;
+                err_oss <<  "Conduit Exception in X Ray Image Query "
+                            << "Execute: " << endl
+                            << e.message();
+                EXCEPTION1(VisItException, err_oss.str());
+            }
+            
+#else
+            char errmsg[256];
+            // this is safe because at the beginning of the function we check that the output type is valid
+            snprintf(errmsg, 256, "Visit was not installed with conduit, "
+                "which is needed for output type %s.", file_protocols[outputType]);
+            EXCEPTION1(VisItException, errmsg);
+#endif
+        }
+        else
+        {
+            char errmsg[256];
+            // this is safe because at the beginning of the function we check that the output type is valid
+            snprintf(errmsg, 256, "No logic implemented for output type %s.", file_protocols[outputType]);
+            EXCEPTION1(VisItException, errmsg);
+        }
+
 
         //
         // Output the result message.
         //
-        if (outputType >=0 && outputType <= 5)
+        if (outputTypeValid(outputType))
         {
             std::string msg = "";
             char buf[512];
-    
-            if (numBins == 1 && outputType < 4)
+
+            if (outputTypeIsBmpJpegPngOrTif(outputType))
+            {
+                if (numBins == 1)
+                    snprintf(buf, 512, "The x ray image query results were "
+                        "written to the file %s00.%s\n", out_filename_w_path.c_str(),
+                        file_extensions[outputType]);
+                else
+                    snprintf(buf, 512, "The x ray image query results were "
+                        "written to the files %s00.%s - %s%02d.%s\n",
+                        out_filename_w_path.c_str(), file_extensions[outputType], out_filename_w_path.c_str(), numBins - 1,
+                        file_extensions[outputType]);
+            }
+            else if (outputTypeIsRawfloatsOrBov(outputType))
             {
                 snprintf(buf, 512, "The x ray image query results were "
-                         "written to the file %s00.%s\n", baseName,
-                         exts[outputType]);
+                    "written to the files %s00.%s - %s%02d.%s\n",
+                    out_filename_w_path.c_str(), file_extensions[outputType], out_filename_w_path.c_str(), 2*numBins - 1,
+                    file_extensions[outputType]);                
+            }
+            else if (outputTypeIsBlueprint(outputType))
+            {
+#ifdef HAVE_CONDUIT
+                snprintf(buf, 512, "The x ray image query results were "
+                    "written to the file %s.%s\n", out_filename_w_path.c_str(), 
+                    file_extensions[outputType]);
+#endif
             }
             else
-                if (outputType < 4)
-                {
-                    snprintf(buf, 512, "The x ray image query results were "
-                        "written to the files %s00.%s - %s%02d.%s\n",
-                        baseName, exts[outputType], baseName, numBins - 1,
-                        exts[outputType]);
-                }
-                else
-                {
-                    snprintf(buf, 512, "The x ray image query results were "
-                        "written to the files %s00.%s - %s%02d.%s\n",
-                        baseName, exts[outputType], baseName, 2*numBins - 1,
-                        exts[outputType]);
-                }
+            {
+                char errmsg[256];
+                // this is safe because at the beginning of the function we check that the output type is valid
+                snprintf(errmsg, 256, "No output message implemented for output type %s.", file_protocols[outputType]);
+                EXCEPTION1(VisItException, errmsg);
+
+            }
+
             msg += buf;
 
             SetResultMessage(msg);
@@ -1098,7 +1421,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         else
         {
             SetResultMessage("No x ray image query results were written "
-                             "because the output type was invalid\n");
+                             "because the output type was invalid.\n");
         }
 
         // Free the memory from the GetAllLeaves function call.
@@ -1229,6 +1552,9 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
+//    Changed magic numbers to their new constants.
 //
 // ****************************************************************************
 
@@ -1273,7 +1599,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         ipixel++;
     }
 
-    if (outputType == 0)
+    if (outputType == BMP_OUT)
     {
         vtkImageWriter *writer = vtkBMPWriter::New();
         char fileName[24];
@@ -1283,7 +1609,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         writer->Write();
         writer->Delete();
     }
-    else if (outputType == 1)
+    else if (outputType == JPEG_OUT)
     {
         vtkImageWriter *writer = vtkJPEGWriter::New();
         char fileName[24];
@@ -1293,7 +1619,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         writer->Write();
         writer->Delete();
     }
-    else if (outputType == 2)
+    else if (outputType == PNG_OUT)
     {
         vtkImageWriter *writer = vtkPNGWriter::New();
         char fileName[24];
@@ -1303,7 +1629,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         writer->Write();
         writer->Delete();
     }
-    else if (outputType == 3)
+    else if (outputType == TIF_OUT)
     {
         vtkImageWriter *writer = vtkTIFFWriter::New();
         char fileName[24];
@@ -1389,6 +1715,44 @@ avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
     fclose(file);
 }
 
+// ****************************************************************************
+//  Method: avtXRayImageQuery::WriteArrays
+//
+//  Purpose:
+//    Write image to specified conduit arrays.
+//
+//  Programmer: Justin Privitera
+//  Creation:   Sat Jun 11 17:59:32 PDT 2022
+//
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef HAVE_CONDUIT
+template <typename T>
+void
+avtXRayImageQuery::WriteArrays(vtkDataSet **leaves, 
+                               conduit::float64 *intensity_vals,
+                               conduit::float64 *depth_vals,
+                               int numBins)
+{
+    vtkDataArray *intensity;
+    vtkDataArray *pathLength;
+    int field_index = 0;
+    for (int i = 0; i < numBins; i ++)
+    {
+        intensity = leaves[i]->GetPointData()->GetArray("Intensity");
+        pathLength = leaves[numBins + i]->GetPointData()->GetArray("PathLength");
+        T *intensity_ptr = (T *) intensity->GetVoidPointer(0);
+        T *path_length_ptr = (T *) pathLength->GetVoidPointer(0);
+        for (int j = 0; j < numPixels; j ++)
+        {
+            intensity_vals[field_index] = intensity_ptr[j];
+            depth_vals[field_index] = path_length_ptr[j];
+            field_index ++;
+        }
+    }
+}
+#endif
 // ****************************************************************************
 //  Method: avtXRayImageQuery::GetDefaultInputParams
 //
