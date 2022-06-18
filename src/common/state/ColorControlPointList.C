@@ -1752,7 +1752,9 @@ ColorControlPointList::ClearTags()
 std::string
 ColorControlPointList::GetTag(int index)
 {
-    return tagNames[index];
+    if (index >= 0 && index < tagNames.size())
+        return tagNames[index];
+    return "";
 }
 
 // ****************************************************************************
