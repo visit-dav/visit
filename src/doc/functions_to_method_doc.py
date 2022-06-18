@@ -132,8 +132,15 @@ class DescriptionContainer(Container):
             self.text = self.text[0:-1]
         output  = '"' + self.title + r'\n' + '"\n'
         output += '"' + r'\n' + '"\n'
+
+        # remove sphinx formatting
+        for i in range(len(self.text)):
+            self.text[i] = self.text[i].replace('``','')
+
+        # line wrap the output
         for line in textwrap.wrap(' '.join(self.text)):
             output += '"' + line + r'\n' + '"\n'
+
         if self.last:
             output += ';\n'
         else:
