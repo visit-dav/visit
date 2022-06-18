@@ -2,6 +2,7 @@
 
 import sys
 import argparse
+import textwrap
 
 parser=argparse.ArgumentParser(
     description='''Auto-generate MethodDoc.C and MethodDoc.h.''')
@@ -84,6 +85,8 @@ class Container(object):
         output  = '"' + self.title + r'\n' + '"\n'
         output += '"' + r'\n' + '"\n'
         for line in self.text:
+            if 'DefineArrayExpression' in line:
+                print('\n'.join(textwrap.wrap(' '.join(self.text))))
             output += '"' + line + r'\n' + '"\n'
         if self.last:
             output += ';\n'
