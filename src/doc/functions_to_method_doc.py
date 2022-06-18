@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import sys
 import argparse
+import re
+import sys
 import textwrap
 
 parser=argparse.ArgumentParser(
@@ -135,7 +136,11 @@ class DescriptionContainer(Container):
 
         # remove sphinx formatting
         for i in range(len(self.text)):
-            self.text[i] = self.text[i].replace('``','')
+            self.text[i] = self.text[i].replace('``','') # code typeface
+            self.text[i] = self.text[i].replace('**','') # bold typeface
+            self.text[i] = re.sub(r'(\s)\*(\w*)\*', r'\1\2', self.text[i]) # italic typeface
+            self.text[i] = re.sub(r'(:ref:)?`(.*) <.*>`_{0,2}', r'\2', self.text[i]) # links
+            self.text[i] = self.text[i].replace('VisIt_','VisIt') # VisIt_ link
 
         # line wrap the output
         for line in textwrap.wrap(' '.join(self.text)):
