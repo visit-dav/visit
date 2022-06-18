@@ -13,6 +13,12 @@
 #include <avtDatasetQuery.h>
 #include <avtXRayFilter.h>
 
+#ifdef HAVE_CONDUIT
+    #include <conduit.hpp>
+    #include <conduit_blueprint.hpp>
+    #include <conduit_relay.hpp>
+#endif
+
 #include <string>
 #include <vector>
 
@@ -75,6 +81,10 @@
 //
 //    Eric Brugger, Thu Jun  4 16:07:06 PDT 2015
 //    I added an option to enable outputting the ray bounds to a vtk file.
+// 
+//    Justin Privitera, Tue Jun 14 10:21:03 PDT 2022
+//    Added conduit include here, added output dir field + setter, 
+//    added write arrays method for writing conduit blueprint output.
 //
 // ****************************************************************************
 
@@ -111,6 +121,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      SetFamilyFiles(const bool &flag);
     void                      SetOutputType(int type);
     void                      SetOutputType(const std::string &type);
+    void                      SetOutputDir(const std::string &dir);
 
   protected:
     bool                      divideEmisByAbsorb;
@@ -122,6 +133,7 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     bool                      familyFiles;
     static int                iFileFamily;
     int                       outputType;
+    std::string               outputDir;
     bool                      useSpecifiedUpVector;
     bool                      useOldView;
     // The new view specification
@@ -161,7 +173,13 @@ class QUERY_API avtXRayImageQuery : public avtDatasetQuery
     void                      WriteFloats(const char *, int, int, T*);
     void                      WriteBOVHeader(const char *, const char *,
                                   int, int, int, const char *);
-
+#ifdef HAVE_CONDUIT
+    template <typename T>
+    void                      WriteArrays(vtkDataSet **leaves, 
+                                          conduit::float64 *intensity_vals,
+                                          conduit::float64 *depth_vals,
+                                          int numBins);
+#endif
     void                      ConvertOldImagePropertiesToNew();
     void                      CheckData(vtkDataSet **, const int);
 };

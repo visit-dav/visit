@@ -396,20 +396,28 @@ XRay Image
     +------+-------------------+----------------------------------------------+
     | *output_type*            | The format of the image. The default is PNG. |
     +------+-------------------+----------------------------------------------+
-    |      | "bmp" or 0        | BMP image format.                            |
+    |      | "bmp"             | BMP image format.                            |
     +------+-------------------+----------------------------------------------+
-    |      | "jpeg" or 1       | JPEG image format.                           |
+    |      | "jpeg"            | JPEG image format.                           |
     +------+-------------------+----------------------------------------------+
-    |      | "png" or 2        | PNG image format.                            |
+    |      | "png"             | PNG image format.                            |
     +------+-------------------+----------------------------------------------+
-    |      | "tif" or 3        | TIFF image format.                           |
+    |      | "tif"             | TIFF image format.                           |
     +------+-------------------+----------------------------------------------+
-    |      | "rawfloats" or 4  | File of 32 or 64 bit floating point values   |
+    |      | "rawfloats"       | File of 32 or 64 bit floating point values   |
     |      |                   | in IEEE format.                              |
     +------+-------------------+----------------------------------------------+
-    |      | "bov" or 5        | BOV (Brick Of Values) format, which consists |
+    |      | "bov"             | BOV (Brick Of Values) format, which consists |
     |      |                   | of a text header |br| file describing a      |
     |      |                   | rawfloats file.                              |
+    +------+-------------------+----------------------------------------------+
+    |      | "json"            | Conduit JSON output.                         |
+    +------+-------------------+----------------------------------------------+
+    |      | "hdf5"            | Conduit HDF5 output.                         |
+    +------+-------------------+----------------------------------------------+
+    |      | "yaml"            | Conduit YAML output.                         |
+    +------+-------------------+----------------------------------------------+
+    | *output_dir*             | The output directory. The default is "."     |
     +------+-------------------+----------------------------------------------+
     | *family_files*           | A flag indicating if the output files should |
     |                          | be familied. The default is |br| off. If it  |
