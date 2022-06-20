@@ -11798,6 +11798,11 @@ visit_GetQueryParameters(PyObject *self, PyObject *args)
 //   Kathleen Biagas, Thu Feb 27 15:17:45 PST 2014
 //   Change return type (Object/Value/String) based on user request from
 //   SetQueryOutputToxxx calls. Default is string.
+// 
+//   Justin Privitera, Thu May 19 18:52:29 PDT 2022
+//   Now you can pass the output type directly to the xray image query as a
+//   string and it will handle which output type it should be internally.
+//   You can also send the output directory to the xray image query.
 //
 // ****************************************************************************
 
@@ -11840,10 +11845,11 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
     {
         // Handle the x ray image query.
         char *imageType = NULL;
+        char *outputDir = NULL;
         intVector ps(2);
         PyErr_Clear();
-        parse_success = PyArg_ParseTuple(args, "ssidddddddii|O", &queryName,
-                                         &imageType, &arg2,
+        parse_success = PyArg_ParseTuple(args, "sssidddddddii|O", &queryName,
+                                         &imageType, &outputDir, &arg2,
                                          &(darg1[0]), &(darg1[1]), &(darg1[2]),
                                          &(darg2[0]), &(darg2[1]), 
                                          &(darg3[0]), &(darg3[1]), 
@@ -11851,21 +11857,9 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         if (parse_success)
         {
             debug3 << mn << "parsed " <<  queryName 
-                   << " with 2nd attempt (ssidddddddii)" << endl;
-            arg1 = 2;
-            if (strcmp(imageType, "bmp") == 0)
-                arg1 = 0;
-            else if (strcmp(imageType, "jpeg") == 0)
-                arg1 = 1;
-            else if (strcmp(imageType, "png") == 0)
-                arg1 = 2;
-            else if (strcmp(imageType, "tiff") == 0)
-                arg1 = 3;
-            else if (strcmp(imageType, "rawfloats") == 0)
-                arg1 = 4;
-            else if (strcmp(imageType, "bov") == 0)
-                arg1 = 5;
-            params["output_type"] = arg1;
+                   << " with 2nd attempt (sssidddddddii)" << endl;
+            params["output_type"] = imageType;
+            params["output_dir"] = outputDir;
             params["divide_emis_by_absorb"] = arg2;
             params["origin"] = darg1;
             params["theta"] = darg2[0];

@@ -18,6 +18,12 @@
 #
 #    Kathleen Biagas, Wed Oct 17 14:25:05 PDT 2012
 #    Show usage of new 'up_vector' parameter.
+# 
+#    Justin Privitera, Tue Jun 14 10:02:21 PDT 2022
+#    Change tests to reflect new ability to send output directory to query.
+# 
+#    Justin Privitera, Wed Jun 15 16:43:34 PDT 2022
+#    Added tests for new blueprint output.
 #
 # ----------------------------------------------------------------------------
 
@@ -32,7 +38,7 @@ AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 # old style argument passing
-Query("XRay Image", "png", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+Query("XRay Image", "png", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 
 
 if not os.path.isdir(out_path("current","queries")):
@@ -64,7 +70,7 @@ AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 #create our own dictionary
-params = dict(output_type="png", divide_emis_by_absorb=1, origin=(0.0, 2.5, 10.0), up_vector=(0, 1, 0), theta=0, phi=0, width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+params = dict(output_type="png", output_dir=".", divide_emis_by_absorb=1, origin=(0.0, 2.5, 10.0), up_vector=(0, 1, 0), theta=0, phi=0, width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
 Query("XRay Image", params)
 
 os.rename("output00.png", out_path(out_base,"xrayimage02.png"))
@@ -230,7 +236,7 @@ OpenDatabase(silo_data_path("multi_curv3d.silo"))
 AddPlot("Pseudocolor", "d")
 DrawPlots()
 
-params = dict(output_type="png", divide_emis_by_absorb=1, focus=(0.0, 2.5, 15.0), view_up=(0., 1., 0.), normal=(0., 0., 1.), view_angle=30., parallel_scale = 16.0078, near_plane = -32.0156, far_plane = 32.0156, image_pan=(0., 0.), image_zoom = 2.4, perspective = 1, image_size=(300, 300), vars=("d", "p"))
+params = dict(output_type="png", output_dir=".", divide_emis_by_absorb=1, focus=(0.0, 2.5, 15.0), view_up=(0., 1., 0.), normal=(0., 0., 1.), view_angle=30., parallel_scale = 16.0078, near_plane = -32.0156, far_plane = 32.0156, image_pan=(0., 0.), image_zoom = 2.4, perspective = 1, image_size=(300, 300), vars=("d", "p"))
 Query("XRay Image", params)
 
 os.rename("output00.png", out_path(out_base,"xrayimage25.png"))
@@ -253,7 +259,7 @@ OpenDatabase(silo_data_path("globe.silo"))
 AddPlot("Pseudocolor", "u")
 DrawPlots()
 
-params = dict(output_type="png", divide_emis_by_absorb=1, theta=90., phi=0., width=20., height=20., image_size=(300, 300), vars=("wa", "va"), background_intensities=(0.05, 0.1))
+params = dict(output_type="png", output_dir=".", divide_emis_by_absorb=1, theta=90., phi=0., width=20., height=20., image_size=(300, 300), vars=("wa", "va"), background_intensities=(0.05, 0.1))
 Query("XRay Image", params)
 
 os.rename("output00.png", out_path(out_base,"xrayimage27.png"))
@@ -264,5 +270,90 @@ Test("xrayimage28", 0, 1)
 
 s = GetQueryOutputString()
 TestText("xrayimage29", s)
+
+DeleteAllPlots()
+
+# 
+# test setting output directory
+# 
+outdir_set = out_base + "/testdir"
+if not os.path.isdir(outdir_set):
+    os.mkdir(outdir_set)
+
+OpenDatabase(silo_data_path("curv3d.silo"))
+
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+
+# old style argument passing
+Query("XRay Image", "png", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+os.rename(outdir_set + "/output00.png", out_path(out_base, "xrayimage30.png"))
+Test("xrayimage30", 0, 1)
+
+# TODO figure out where the query output string goes and add tests for it
+# s = GetQueryOutputString()
+# TestText("xrayimage31", s)
+DeleteAllPlots()
+CloseDatabase(silo_data_path("curv3d.silo"))
+
+# 
+# test blueprint output
+# 
+
+conduit_db = out_path(outdir_set, "output.cycle_000048.root")
+
+# hdf5
+
+OpenDatabase(silo_data_path("curv3d.silo"))
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+
+Query("XRay Image", "hdf5", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+DeleteAllPlots()
+CloseDatabase(silo_data_path("curv3d.silo"))
+OpenDatabase(conduit_db)
+
+AddPlot("Pseudocolor", "mesh_image_topo/intensities")
+DrawPlots()
+Test("Blueprint_HDF5_X_Ray_Output")
+DeleteAllPlots()
+CloseDatabase(conduit_db)
+os.remove(conduit_db)
+
+# json
+
+OpenDatabase(silo_data_path("curv3d.silo"))
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+
+Query("XRay Image", "json", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+DeleteAllPlots()
+CloseDatabase(silo_data_path("curv3d.silo"))
+OpenDatabase(conduit_db)
+
+AddPlot("Pseudocolor", "mesh_image_topo/intensities")
+DrawPlots()
+Test("Blueprint_JSON_X_Ray_Output")
+DeleteAllPlots()
+CloseDatabase(conduit_db)
+os.remove(conduit_db)
+
+# conduit_json
+
+OpenDatabase(silo_data_path("curv3d.silo"))
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+
+Query("XRay Image", "yaml", outdir_set, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+DeleteAllPlots()
+CloseDatabase(silo_data_path("curv3d.silo"))
+OpenDatabase(conduit_db)
+
+AddPlot("Pseudocolor", "mesh_image_topo/intensities")
+DrawPlots()
+Test("Blueprint_YAML_X_Ray_Output")
+DeleteAllPlots()
+CloseDatabase(conduit_db)
+os.remove(conduit_db)
 
 Exit()
