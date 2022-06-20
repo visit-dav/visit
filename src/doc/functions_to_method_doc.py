@@ -222,8 +222,8 @@ if __name__ == '__main__':
         c_output_name  = top_level + '/src/visitpy/common/MethodDoc.C'
 
     func_file   = open(func_file_name, 'r')
-    h_output    = open(h_output_name,'wb')
-    c_output    = open(c_output_name,'wb')
+    h_output    = open(h_output_name,'w',newline='')
+    c_output    = open(c_output_name,'w',newline='')
     
     h_output.write(copyright)
     h_output.write(note)
