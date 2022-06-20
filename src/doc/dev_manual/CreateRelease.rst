@@ -53,6 +53,15 @@ Your newly created release will now appear.
 
    The newly created release.
 
+Updating the Spack ``package.py`` file
+--------------------------------------
+
+Once a new VisIt_ release is actually available *as a release*, the `Spack <https://spack.io>`_ `package.py <https://github.com/spack/spack/blob/develop/var/spack/repos/builtin/packages/visit/package.py>`_ file for building VisIt_ with Spack should be reviewed for any changes needed to build this release.
+Generally, this work should be put in a pull request to Spack's ``develop`` branch.
+We think Spack is being released often enough that changes pushed to their ``develop`` will make it into a public release less than a few months later.
+If earlier public availability of this release of VisIt_ with Spack is needed, then have a look at `Spack's project boards <https://github.com/spack/spack/projects?type=classic>`_ to find a suitable upcomming minor release and consider pushing it there.
+Be aware, however, that if any of the changes made result in changes to how VisIt_ conrcretizes in Spack, it may be required to be delayed to a major release of Spack.
+
 Deleting a release
 ------------------
 
