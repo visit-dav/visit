@@ -304,7 +304,7 @@ EOF
 
 function apply_mili_221_blueos_patch
 {
-    info "Applying Mili 22.1 blueos patch.
+    info "Applying Mili 22.1 blueos patch."
     patch -p0 << \EOF
 diff -c mili-22.1/src/eprtf.c.orig mili-22.1/src/eprtf.c
 *** mili-22.1/src/eprtf.c.orig	Wed Jun 15 16:38:26 2022
