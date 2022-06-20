@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#! /usr/bin/env ./functions_to_method_doc.wrapper
 
 import argparse
 import re
