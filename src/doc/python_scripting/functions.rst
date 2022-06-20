@@ -5883,7 +5883,7 @@ stride (optional) : integer
 preserve_coord (optional) : integer
     An integer indicating whether to pick an element or a coordinate.
     0 -> used picked element (default), 1-> used picked coordinate.
-    Note: enabling this option may substantially slow down the speed with 
+    Note: enabling this option may substantially slow down the speed with
     which the query can be performed.
 
 curve_plot_type (optional) : integer
