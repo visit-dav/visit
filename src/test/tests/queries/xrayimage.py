@@ -38,7 +38,7 @@ AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 # old style argument passing
-Query("XRay Image", "png", ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+Query("XRay Image", 2, ".", 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
 
 
 if not os.path.isdir(out_path("current","queries")):
@@ -70,7 +70,7 @@ AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 #create our own dictionary
-params = dict(output_type="png", output_dir=".", divide_emis_by_absorb=1, origin=(0.0, 2.5, 10.0), up_vector=(0, 1, 0), theta=0, phi=0, width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+params = dict(output_type=2, output_dir=".", divide_emis_by_absorb=1, origin=(0.0, 2.5, 10.0), up_vector=(0, 1, 0), theta=0, phi=0, width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
 Query("XRay Image", params)
 
 os.rename("output00.png", out_path(out_base,"xrayimage02.png"))

@@ -2,8 +2,8 @@
 <Object name="TemplateOptions">
     <Field name="VERSION" type="string">1.5.3</Field>
     <Field name="TEMPLATEFILE" type="string">curveoverlay_ref.py</Field>
-    <Field name="TITLE" type="string">Reflected Curve Overlay 2D </Field>
-    <Field name="DESCRIPTION" type="string">This template displays two reflected 2D plots in one viewport while showing a 1D curve in another viewport.</Field>
+    <Field name="TITLE" type="string">Reflected Curve Overlay</Field>
+    <Field name="DESCRIPTION" type="string">This template displays two reflected plots in one viewport while showing a 1D curve in another viewport.</Field>
     <Field name="PREVIEWIMAGE" type="string">curveoverlay_ref_preview.bmp</Field>
     <Object name="VIEWPORTS">
         <Object name="Viewport 1">
