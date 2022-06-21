@@ -11870,6 +11870,32 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
             // upVector is a new param, don't support in old-style calls.
             params["useUpVector"] = 0;
         }
+        else
+        {
+            PyErr_Clear();
+            parse_success = PyArg_ParseTuple(args, "sisidddddddii|O", &queryName,
+                                             &arg1, &outputDir, &arg2,
+                                             &(darg1[0]), &(darg1[1]), &(darg1[2]),
+                                             &(darg2[0]), &(darg2[1]), 
+                                             &(darg3[0]), &(darg3[1]), 
+                                             &(ps[0]), &(ps[1]), &tuple);
+            if (parse_success)
+            {
+                debug3 << mn << "parsed " <<  queryName 
+                       << " with 3rd attempt (sisidddddddii)" << endl;
+                params["output_type"] = arg1;
+                params["output_dir"] = outputDir;
+                params["divide_emis_by_absorb"] = arg2;
+                params["origin"] = darg1;
+                params["theta"] = darg2[0];
+                params["phi"] = darg2[1];
+                params["width"] = darg3[0];
+                params["height"] = darg3[1];
+                params["image_size"] = ps;
+                // upVector is a new param, don't support in old-style calls.
+                params["useUpVector"] = 0;
+            }
+        }
     }
 
     if (!parse_success)
@@ -11884,7 +11910,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
              strcmp(dump, "dumpSteps") == 0))
         {
             debug3 << mn << "parsed " << queryName 
-                   << " with 3rd attempt (ss)" << endl;
+                   << " with 4th attempt (ss)" << endl;
             params["dump_steps"] = 1;
         }
         else
@@ -11901,7 +11927,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         if (parse_success)
         {
             debug3 << mn << "parsed " << queryName 
-                   << " with 4th attempt (sidddddd)" << endl;
+                   << " with 5th attempt (sidddddd)" << endl;
             //HohlraumFlux without DivEmisByAsborb
             params["num_lines"] = arg1;
             params["ray_center"] = darg1;
@@ -11920,7 +11946,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         if (parse_success)
         {
            debug3 << mn << "parsed " << queryName 
-                  << " with 5th attempt (siidd)" << endl;
+                  << " with 6th attempt (siidd)" << endl;
            // Line-Scan type queries:
            //Chord Length Distribution
            //Ray Length Distribution
@@ -11945,7 +11971,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
             if (std::string(queryName) == "Shapelet Decomposition")
             { 
                debug3 << mn << "parsed " << queryName 
-                      << " with 6th attempt (sdis)" << endl;
+                      << " with 7th attempt (sdis)" << endl;
                 params["beta"] = darg1[0];
                 params["nmax"] = arg1;
                 params["recomp_file"] = std::string(output_name);
@@ -11963,7 +11989,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         if (parse_success)
         {
             debug3 << mn << "parsed " << queryName 
-                   << " with 7th attempt (sdi)" << endl;
+                   << " with 8th attempt (sdi)" << endl;
             // args for Zone Center and Node Coords need a special fix here.
             std::string qname(queryName);
             if(qname == "Zone Center" || qname == "Node Coords" )
@@ -11990,7 +12016,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         if (parse_success)
         {
             debug3 << mn << "parsed " << queryName 
-                   << " with 8th attempt (sii)" << endl;
+                   << " with 9th attempt (sii)" << endl;
         }
     }
     
@@ -12002,7 +12028,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         if (parse_success)
         {
             debug3 << mn << "parsed " << queryName 
-                   << " with 9th attempt (si)" << endl;
+                   << " with 10th attempt (si)" << endl;
             // SpatialExtents with 0/1 for "use_actual_data"
             // Global Node Coords/Zone Center with int for element id 
             if (strncmp(queryName, "SpatialExtents", 14)==0)
@@ -12021,7 +12047,7 @@ visit_Query_deprecated(PyObject *self, PyObject *args)
         if (parse_success)
         {
             debug3 << mn << "parsed " << queryName 
-                   << " with 10th attempt (s)" << endl;
+                   << " with 11th attempt (s)" << endl;
         }
     }
     
