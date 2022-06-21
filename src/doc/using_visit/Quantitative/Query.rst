@@ -396,26 +396,26 @@ XRay Image
     +------+-------------------+----------------------------------------------+
     | *output_type*            | The format of the image. The default is PNG. |
     +------+-------------------+----------------------------------------------+
-    |      | "bmp"             | BMP image format.                            |
+    |      | "bmp" or 0        | BMP image format.                            |
     +------+-------------------+----------------------------------------------+
-    |      | "jpeg"            | JPEG image format.                           |
+    |      | "jpeg" or 1       | JPEG image format.                           |
     +------+-------------------+----------------------------------------------+
-    |      | "png"             | PNG image format.                            |
+    |      | "png" or 2        | PNG image format.                            |
     +------+-------------------+----------------------------------------------+
-    |      | "tif"             | TIFF image format.                           |
+    |      | "tif" or 3        | TIFF image format.                           |
     +------+-------------------+----------------------------------------------+
-    |      | "rawfloats"       | File of 32 or 64 bit floating point values   |
+    |      | "rawfloats" or 4  | File of 32 or 64 bit floating point values   |
     |      |                   | in IEEE format.                              |
     +------+-------------------+----------------------------------------------+
-    |      | "bov"             | BOV (Brick Of Values) format, which consists |
+    |      | "bov" or 5        | BOV (Brick Of Values) format, which consists |
     |      |                   | of a text header |br| file describing a      |
     |      |                   | rawfloats file.                              |
     +------+-------------------+----------------------------------------------+
-    |      | "json"            | Conduit JSON output.                         |
+    |      | "json" or 6       | Conduit JSON output.                         |
     +------+-------------------+----------------------------------------------+
-    |      | "hdf5"            | Conduit HDF5 output.                         |
+    |      | "hdf5" or 7       | Conduit HDF5 output.                         |
     +------+-------------------+----------------------------------------------+
-    |      | "yaml"            | Conduit YAML output.                         |
+    |      | "yaml" or 8       | Conduit YAML output.                         |
     +------+-------------------+----------------------------------------------+
     | *output_dir*             | The output directory. The default is "."     |
     +------+-------------------+----------------------------------------------+
