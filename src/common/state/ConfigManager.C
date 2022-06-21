@@ -1129,7 +1129,7 @@ ConfigManager::ReadFieldData(std::istream& in,
             boolVector temp;
             if(minSize > 0)
             {
-                for (i = 0; i < minSize; i ++)
+                for (i = 0; i < minSize; ++i)
                     temp.push_back(sv[i] == "\"true\"");
                 retval = new DataNode(tagName, temp);
             }
@@ -1684,7 +1684,7 @@ ConfigManager::ReadMapNodeFieldData(std::istream& in, MapNode &mn,
             boolVector temp;
             if(minSize > 0)
             {
-                for (i = 0; i < minSize; i ++)
+                for (i = 0; i < minSize; ++i)
                     temp.push_back(sv[i] == "true");
                 mn[tagName] = temp;
             }

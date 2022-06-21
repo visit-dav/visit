@@ -227,10 +227,10 @@ QvisColorTableWindow::CreateWindowContents()
     connect(exportButton, SIGNAL(clicked()), this, SLOT(exportColorTable()));
     mgLayout->addWidget(exportButton, 0, 4, 1, 2);
 
-    tagToggle = new QCheckBox(tr("Filter tables by Tag"), colorTableWidgetGroup);
-    connect(tagToggle, SIGNAL(toggled(bool)),
+    tagFilterToggle = new QCheckBox(tr("Filter tables by Tag"), colorTableWidgetGroup);
+    connect(tagFilterToggle, SIGNAL(toggled(bool)),
             this, SLOT(taggingToggled(bool)));
-    mgLayout->addWidget(tagToggle, 1, 0, 1, 6);
+    mgLayout->addWidget(tagFilterToggle, 1, 0, 1, 6);
 
     tagCombiningBehaviorChoice = new QComboBox(colorTableWidgetGroup);
     tagCombiningBehaviorChoice->addItem(tr("Colortables must match any selected tag"));
@@ -657,15 +657,15 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             defaultDiscrete->blockSignals(false);
             break;
         case ColorTableAttributes::ID_taggingFlag:
-            tagToggle->blockSignals(true);
-            tagToggle->setChecked(colorAtts->GetTaggingFlag());
+            tagFilterToggle->blockSignals(true);
+            tagFilterToggle->setChecked(colorAtts->GetTaggingFlag());
             tagsVisible = colorAtts->GetTaggingFlag();
             tagLabel->setVisible(tagsVisible);
             tagLineEdit->setVisible(tagsVisible);
             tagTable->setVisible(tagsVisible);
             updateNameBoxPosition(tagsVisible);
             tagCombiningBehaviorChoice->setVisible(tagsVisible);
-            tagToggle->blockSignals(false);
+            tagFilterToggle->blockSignals(false);
             updateNames = true;
             break;
         }
@@ -861,7 +861,7 @@ QvisColorTableWindow::UpdateTags()
 {
     // signal blocking SHOULD occur in the caller
     static bool run_before = false;
-    if (tagToggle->isChecked())
+    if (tagFilterToggle->isChecked())
     {
         // populate tags list
         // iterate thru each color table
@@ -929,7 +929,7 @@ QvisColorTableWindow::UpdateNames()
     nameListBox->clear();
 
     // Put all of the color table names into the tree.
-    bool doTags = tagToggle->isChecked();
+    bool doTags = tagFilterToggle->isChecked();
 
     if(! doTags)
     {
@@ -1069,9 +1069,8 @@ QvisColorTableWindow::UpdateNames()
     {
         // This only needs to happen the very first time for loading options.
         // If visit isn't opened with saved config and guiconfig files, then
-        // this is redundant, but doesn't hurt. The static bool is needed
-        // because if this runs at the end of EVERY UpdateNames() call, you
-        // will see the worst crash of your life.
+        // this is redundant, but doesn't hurt. If it happens more than once
+        // then VisIt will crash.
         run_before = true;
         colorAtts->SetChangesMade(true);
         ctObserver.SetUpdate(true);
@@ -2113,7 +2112,7 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
         currentColorTable = current->text(0);
         nameLineEdit->setText(currentColorTable);
         int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
-        if (tagToggle->isChecked())
+        if (tagFilterToggle->isChecked())
             tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
         UpdateEditor();
     }

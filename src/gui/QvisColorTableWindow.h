@@ -165,7 +165,7 @@ private:
     QLabel                   *defaultContinuousLabel;
     QvisNoDefaultColorTableButton *defaultDiscrete;
     QLabel                   *defaultDiscreteLabel;
-    QCheckBox                *tagToggle; // toggles tag filtering
+    QCheckBox                *tagFilterToggle;
     QComboBox                *tagCombiningBehaviorChoice;
     QGridLayout              *mgLayout;
 
