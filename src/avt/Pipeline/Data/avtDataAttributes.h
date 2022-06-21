@@ -248,6 +248,8 @@ class     avtWebpage;
 //    This is to support unique conditions where we must remove faces
 //    first, regardless of other considerations. 
 //
+//    Mark C. Miller, Tue Jun 21 10:46:44 PDT 2022
+//    Added commentInDB for holding the database comment
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -421,6 +423,9 @@ class PIPELINE_API avtDataAttributes
     const std::string       &GetFullDBName(void) const { return fullDBName; };
     void                     SetFullDBName(const std::string &s) 
                                                      { fullDBName=s; };
+    const std::string       &GetCommentInDB(void) const { return commentInDB; };
+    void                     SetCommentInDB(const std::string &s) 
+                                                     { commentInDB=s; };
 
     const std::string       &GetXUnits(void) const { return xUnits; };
     void                     SetXUnits(const std::string &s) { xUnits=s; };
@@ -659,6 +664,7 @@ class PIPELINE_API avtDataAttributes
     // can even include virtual database strings.  This is the name used by
     // the network manager.
     std::string              fullDBName;
+    std::string              commentInDB;
 
     std::string              xUnits;
     std::string              yUnits;
