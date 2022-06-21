@@ -24,7 +24,7 @@ makeVisItDiscreteFromTxtDiscrete() {
         echo "        </Object>" >> $newct
         pos=$(perl -e "print $pos+$delta")
     done < cividis.txt
-    echo "    <Field name=\"category\" type=\"string\">CvdFriendlyViridis</Field>" >> $newct
+    echo "    <Field name=\"tags\" type=\"stringVector\">\"CvdFriendly\" \"Viridis\" </Field>" >> $newct
     echo "    </Object>" >> $newct
     echo "</Object>" >> $newct
 }

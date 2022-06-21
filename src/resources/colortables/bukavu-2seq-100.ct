@@ -403,6 +403,6 @@
             <Field name="position" type="float">0.999999</Field>
         </Object>
     <Field name="discrete" type="bool">true</Field>
-    <Field name="category" type="string">CvdFriendlyCrameri</Field>
+    <Field name="tags" type="stringVector">"Color Blind Safe" "Crameri" "Multi-sequential" "Discrete" </Field>
     </Object>
 </Object>
