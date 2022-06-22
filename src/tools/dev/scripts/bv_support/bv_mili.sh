@@ -72,7 +72,7 @@ function bv_mili_ensure
 
 function apply_mili_151_darwin_patch1
 {
-    info "Applying Mili 15.1 darwin patch 1.
+    info "Applying Mili 15.1 darwin patch 1."
     patch -p0 << \EOF
 diff -c mili/src/mesh_u.c mili.patched/src/mesh_u.c
 *** mili/src/mesh_u.c   2015-09-22 13:20:42.000000000 -0700
@@ -105,7 +105,7 @@ EOF
 
 function apply_mili_151_darwin_patch2
 {
-    info "Applying Mili 15.1 darwin patch 2.
+    info "Applying Mili 15.1 darwin patch 2."
     patch -p0 << \EOF
 *** mili/Makefile.Library       2013-12-10 12:55:55.000000000 -0800
 --- mili.patched/Makefile.Library       2015-10-20 13:37:27.000000000 -0700
@@ -131,7 +131,7 @@ EOF
 
 function apply_mili_151_darwin_patch3
 {
-    info "Applying Mili 15.1 darwin patch 3.
+    info "Applying Mili 15.1 darwin patch 3."
     patch -p0 << \EOF
 *** mili/src/mili_internal.h    2015-09-17 13:26:32.000000000 -0700
 --- mili.patched/src/mili_internal.h    2015-10-20 16:57:21.000000000 -0700
@@ -218,7 +218,7 @@ EOF
 
 function apply_mili_221_cflags_patch
 {
-    info "Applying Mili 22.1 CFLAGS patch.
+    info "Applying Mili 22.1 CFLAGS patch."
     patch -p0 << \EOF
 diff -c mili-22.1/configure.orig mili-22.1/configure
 *** mili-22.1/configure.orig    2022-06-16 13:45:39.195734000 -0700
