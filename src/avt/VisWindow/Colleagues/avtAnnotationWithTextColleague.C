@@ -105,7 +105,7 @@ avtAnnotationWithTextColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 //    - if '$' not found, copy the char to the output string
 //
 
-// Keys and their default formats
+// Macro keys and their default formats
 typedef struct _keyfmt {
     char const *key;
     char const *typ;
@@ -113,14 +113,13 @@ typedef struct _keyfmt {
 } keyfmt_t;
 
 static keyfmt_t keysAndFmts[] = {
-   "time", "float", "%g",
-   "cycle", "int", "%d",
-   "index", "int", "%d",
-   "dbcomment", "char*", "%s"
+   "time",      "double", "%g",
+   "cycle",     "int",    "%d",
+   "index",     "int",    "%d",
+   "dbcomment", "char*",  "%s"
 };
 
-
-int hasKeyMatch(char const *fmtStr, int idx)
+static int hasKeyMatch(char const *fmtStr, int idx)
 {
     int const nkeys = (int) (sizeof(keysAndFmts)/sizeof(keysAndFmts[0]));
     for (int ki = 0; ki < nkeys; ki++)
@@ -132,7 +131,7 @@ int hasKeyMatch(char const *fmtStr, int idx)
     return -1;
 }
 
-char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid, avtDataAttributes const *cda)
+static char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid, avtDataAttributes const *cda)
 {
     static char retval[256];
     char const *key = keysAndFmts[kid].key;
@@ -145,13 +144,14 @@ char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid, avtDat
     int klen = strlen(key);
     if (idx + klen < (inlen-1) && fmtStr[idx+klen] == '%' && fmtStr[idx+klen+1] != '%')
     {
-        strncpy(fmt, &fmtStr[idx+klen], strspn(&fmtStr[idx+klen+1], "$"));
+        strncpy(fmt, &fmtStr[idx+klen], strcspn(&fmtStr[idx+klen], "$"));
     }
     else
     {
         strcpy(fmt, defaultFmt); // (e.g. fmt = "%g")
     }
 
+    // obtain correct data attribute member and print it into string
     if (!strncmp(key, keysAndFmts[0].key, sizeof("time"))) // time
         snprintf(retval, sizeof(retval), fmt, cda->GetTime());
     else if (!strncmp(key, keysAndFmts[1].key, sizeof("cycle"))) // cycle
@@ -162,6 +162,7 @@ char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid, avtDat
         snprintf(retval, sizeof(retval), fmt, cda->GetCommentInDB().c_str());
     else
         snprintf(retval, sizeof(retval), "%s", "unknown key");
+
     return retval;
 }
 
@@ -169,7 +170,6 @@ char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid, avtDat
 char *
 avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
 {
-#if 1
     std::string rv;
 
     int inlen = (int) strlen(formatString);
@@ -181,7 +181,11 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
             int keyMatch = hasKeyMatch(formatString, i+1);
             if (keyMatch != -1)
             {
+                i++; // move to next char after '$'                
                 rv += getKeyString(formatString, inlen, i, keyMatch, currentDataAttributes);
+                i += (int) strlen(keysAndFmts[keyMatch].key); // skip over key
+                if (formatString[i] == '%')
+                    i += strcspn(&formatString[i], "$");     // skip over format string if any
             }
             else
             {
@@ -191,68 +195,6 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
         else
             rv += formatString[i];
     } 
+
     return strdup(rv.c_str()); // caller must free
-#endif
-
-
-#if 0
-    char *retval;
-    size_t len = strlen(formatString);
-    std::string fmtStr(formatString);
-    std::string::size_type pos;
-    if((pos=fmtStr.find(TIME_IDENTIFIER)) != std::string::npos)
-    {
-        size_t tlen = strlen(TIME_IDENTIFIER);
-        std::string left(fmtStr.substr(0, pos));
-        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
-        char tmp[100];
-        snprintf(tmp, 100, "%g", currentDataAttributes->GetTime());
-        len = left.size() + strlen(tmp) + right.size() + 1;
-        retval = new char[len + 1];
-        snprintf(retval, len, "%s%s%s", left.c_str(), tmp, right.c_str());
-    }
-    else if((pos=fmtStr.find(CYCLE_IDENTIFIER)) != std::string::npos)
-    {
-        size_t tlen = strlen(CYCLE_IDENTIFIER);
-        std::string left(fmtStr.substr(0, pos));
-        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
-        char tmp[100];
-        snprintf(tmp, 100, "%d", currentDataAttributes->GetCycle());
-        len = left.size() + strlen(tmp) + right.size() + 1;
-        retval = new char[len + 1];
-        snprintf(retval, len, "%s%s%s", left.c_str(), tmp, right.c_str());
-    }
-    else if((pos=fmtStr.find(INDEX_IDENTIFIER)) != std::string::npos)
-    {
-        size_t tlen = strlen(INDEX_IDENTIFIER);
-        std::string left(fmtStr.substr(0, pos));
-        std::string right(fmtStr.substr(pos + tlen, fmtStr.size() - pos - tlen));
-        char tmp[100];
-        snprintf(tmp, 100, "%d", currentDataAttributes->GetTimeIndex());
-        len = left.size() + strlen(tmp) + right.size() + 1;
-        retval = new char[len + 1];
-        snprintf(retval, len, "%s%s%s", left.c_str(), tmp, right.c_str());
-    }
-    else
-    {
-        retval = new char[len + 1];
-        strcpy(retval, formatString);
-    }
-
-    return retval;
-
-
-#if 0
-    char *retval = new char[100]();
-    if (!strcmp(formatString, "$time"))
-        snprintf(retval, 100, "%g", currentDataAttributes->GetTime());
-    else if (!strcmp(formatString, "$cycle"))
-        snprintf(retval, 100, "%d", currentDataAttributes->GetCycle());
-    else if (!strcmp(formatString, "$index"))
-        snprintf(retval, 100, "%d", currentDataAttributes->GetTimeIndex());
-    else
-        snprintf(retval, 100, "%s", formatString);
-    return retval;
-#endif
-#endif
 }
