@@ -1075,6 +1075,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     SetMeshname(di.GetMeshname());
     SetFilename(di.GetFilename());
     SetFullDBName(di.GetFullDBName());
+    SetCommentInDB(di.GetCommentInDB());
     SetXUnits(di.GetXUnits());
     SetYUnits(di.GetYUnits());
     SetZUnits(di.GetZUnits());
