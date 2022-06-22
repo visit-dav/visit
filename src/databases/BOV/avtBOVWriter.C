@@ -390,6 +390,10 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Use `.bof` suffix for output data files.
 //    Improve error messages.
 //
+//    Eric Brugger, Wed Jun 22 11:26:44 PDT 2022
+//    Fixed a bug where the DATA_FILE was not set properly in the root
+//    bov file when using gzip compression.
+//
 // ****************************************************************************
 
 void
@@ -509,6 +513,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         brickletNK = approxCubeRoot;
     }
 
+    // The output is always gzip compressed when using bricklets.
     int numDecimals = 4;
     if (nBricklets > 1)
     {
@@ -518,7 +523,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
         if (PAR_Rank() == 0)
         {
-            // This needs to the stem w/o any pre-fixed directories,
+            // This needs to be the stem w/o any pre-fixed directories,
             // or else BOV header is bad
             char fname_data_cstr[1024];
             sprintf(fname_data_cstr, "%s_%%0.%dd.bof.gz", stem.c_str(), numDecimals);
@@ -530,9 +535,13 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
     {
         if (PAR_Rank() == 0)
         {
-            // This needs to the stem w/o any pre-fixed directories,
+            // This needs to be the stem w/o any pre-fixed directories,
             // or else BOV header is bad
             std::string fname_data = FileFunctions::Basename(std::string(stem)) + ".bof";
+            if (gzCompress)
+            { 
+                fname_data = fname_data + ".gz";
+            }
             *ofile << "DATA_FILE: " << fname_data << endl;
         }
     }
