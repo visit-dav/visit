@@ -94,7 +94,7 @@ avtAnnotationWithTextColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 //
 // 1. Find $key in formatString
 //   - if present look also for %fmt and have defaults otherwise
-// 2. replace $key%fmt with intended text
+// 2. replace $key%fmt$ with intended text
 // 3. loop until all $key have been replaced.
 //
 // Algorithm...
@@ -115,7 +115,8 @@ typedef struct _keyfmt {
 static keyfmt_t keysAndFmts[] = {
    "time", "float", "%g",
    "cycle", "int", "%d",
-   "index", "int", "%d"
+   "index", "int", "%d",
+   "dbcomment", "char*", "%s"
 };
 
 
@@ -131,28 +132,44 @@ int hasKeyMatch(char const *fmtStr, int idx)
     return -1;
 }
 
-char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid)
+char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid, avtDataAttributes const *cda)
 {
+    static char retval[256];
     char const *key = keysAndFmts[kid].key;
     char const *typ = keysAndFmts[kid].typ;
     char const *defaultFmt = keysAndFmts[kid].fmt;
-    char fmt[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;
+    char fmt[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     // Use default printf format or whatever was specified in the string
     int klen = strlen(key);
-    if (idx + klen < inlen && fmtStr[idx+klen] == '%')
-        strncpy(fmt, &fmtStr[idx+klen], strspn(&fmtStr[idx+klen], '0123456789-+ #.*lLhjztdiouxXfFeEgGaAn%')
+    if (idx + klen < (inlen-1) && fmtStr[idx+klen] == '%' && fmtStr[idx+klen+1] != '%')
+    {
+        strncpy(fmt, &fmtStr[idx+klen], strspn(&fmtStr[idx+klen+1], "$"));
+    }
     else
-        strcpy(fmt, keysAndFmts[kid].fmt);
+    {
+        strcpy(fmt, defaultFmt); // (e.g. fmt = "%g")
+    }
 
-
-   
+    if (!strncmp(key, keysAndFmts[0].key, sizeof("time"))) // time
+        snprintf(retval, sizeof(retval), fmt, cda->GetTime());
+    else if (!strncmp(key, keysAndFmts[1].key, sizeof("cycle"))) // cycle
+        snprintf(retval, sizeof(retval), fmt, cda->GetCycle());
+    else if (!strncmp(key, keysAndFmts[2].key, sizeof("index"))) // index
+        snprintf(retval, sizeof(retval), fmt, cda->GetTimeIndex());
+    else if (!strncmp(key, keysAndFmts[3].key, sizeof("dbcomment"))) // dbcomment
+        snprintf(retval, sizeof(retval), fmt, cda->GetCommentInDB().c_str());
+    else
+        snprintf(retval, sizeof(retval), "%s", "unknown key");
+    return retval;
 }
 
 // Caller must delete what is returned
 char *
 avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
 {
+#if 1
     std::string rv;
 
     int inlen = (int) strlen(formatString);
@@ -161,19 +178,25 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
         if ((formatString[i] == '$') && i < inlen-1)
         {
             
-            keyMatch = hasKeyMatch(formatString, i+1))
+            int keyMatch = hasKeyMatch(formatString, i+1);
             if (keyMatch != -1)
-                rv += keyReplace(formatString, inlen, i, keyMatch);
+            {
+                rv += getKeyString(formatString, inlen, i, keyMatch, currentDataAttributes);
+            }
             else
-                rv += formatString[i]
+            {
+                rv += formatString[i];
+            }
         }
         else
-            rv += formatString[i]
+            rv += formatString[i];
     } 
-    return strdup(rv.c_str());
+    return strdup(rv.c_str()); // caller must free
+#endif
 
 
 #if 0
+    char *retval;
     size_t len = strlen(formatString);
     std::string fmtStr(formatString);
     std::string::size_type pos;
