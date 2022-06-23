@@ -175,7 +175,7 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
     int inlen = (int) strlen(formatString);
     for (int i = 0; i < inlen; i++)
     {
-        if ((formatString[i] == '$') && i < inlen-1)
+        if (formatString[i] == '$')
         {
             
             int keyMatch = hasKeyMatch(formatString, i+1);
@@ -185,7 +185,14 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
                 rv += getKeyString(formatString, inlen, i, keyMatch, currentDataAttributes);
                 i += (int) strlen(keysAndFmts[keyMatch].key); // skip over key
                 if (formatString[i] == '%')
-                    i += strcspn(&formatString[i], "$");     // skip over format string if any
+                {
+                    while (i < inlen && formatString[i] != '$')
+                        i++;
+                }
+                else
+                {
+                    i--;
+                }
             }
             else
             {
@@ -193,7 +200,9 @@ avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
             }
         }
         else
+        {
             rv += formatString[i];
+        }
     } 
 
     return strdup(rv.c_str()); // caller must free
