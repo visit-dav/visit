@@ -4,6 +4,7 @@
 
 #ifndef AVT_ANNOTATION_WITH_TEXT_H
 #define AVT_ANNOTATION_WITH_TEXT_H
+#include <memory>
 #include <viswindow_exports.h>
 #include <avtAnnotationColleague.h>
 

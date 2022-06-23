@@ -13,8 +13,6 @@
 #include <vtkVisItTextActor.h>
 #include <vtkTextProperty.h>
 
-#include <memory>
-
 std::unique_ptr<avtDataAttributes> avtAnnotationWithTextColleague::initialDataAttributes = std::unique_ptr<avtDataAttributes>(new avtDataAttributes);
 
 // ****************************************************************************
