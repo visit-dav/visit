@@ -1,0 +1,6 @@
+#!/bin/sh
+# First try python3 and then default python
+for py in python3 python; do
+    if /usr/bin/env "${py}" "$@"; then exit $?; fi
+done
+exit $?

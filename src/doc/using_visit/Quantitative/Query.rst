@@ -411,6 +411,14 @@ XRay Image
     |      |                   | of a text header |br| file describing a      |
     |      |                   | rawfloats file.                              |
     +------+-------------------+----------------------------------------------+
+    |      | "json" or 6       | Conduit JSON output.                         |
+    +------+-------------------+----------------------------------------------+
+    |      | "hdf5" or 7       | Conduit HDF5 output.                         |
+    +------+-------------------+----------------------------------------------+
+    |      | "yaml" or 8       | Conduit YAML output.                         |
+    +------+-------------------+----------------------------------------------+
+    | *output_dir*             | The output directory. The default is "."     |
+    +------+-------------------+----------------------------------------------+
     | *family_files*           | A flag indicating if the output files should |
     |                          | be familied. The default is |br| off. If it  |
     |                          | is off then the output file is               |

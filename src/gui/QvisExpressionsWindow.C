@@ -175,6 +175,9 @@
 //    Justin Privitera, Wed Mar 30 12:50:59 PDT 2022
 //    Added "ghost_zoneid" expression under mesh submenu.
 //
+//    Kathleen Biagas, Wed Jun 15 2022
+//    Added crack_width to misc submenu.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -367,6 +370,7 @@ const char *expr_misc[] = {
     "bin",
     "cell_constant",
     "conn_components",
+    "crack_width",
     "curve_domain",
     "curve_integrate",
     "curve_swapxy",
@@ -1661,12 +1665,14 @@ QvisExpressionsWindow::UpdateStandardExpressionEditor(const QString &expr_def)
 //    Removed angle brackets from constantvalue field 
 //    in all 4 constant functions.
 //
+//    Kathleen Biagas, Wed Jun 15 2022
+//    Added crack_width.
+//
 // ****************************************************************************
 
 QString
 QvisExpressionsWindow::ExpandFunction(const QString &func_name)
 {
-
     QString res;
     bool doParens = (func_name.length() >= 2);
 
@@ -1855,6 +1861,11 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     else if (func_name == "divide")
     {
         res += QString("(<val_numerator>, <val_denominator>, [<div_by_zero_value>, <tolerance>])");
+        doParens = false;
+    }
+    else if (func_name == "crack_width")
+    {
+        res += QString("(crack_number, <crack1_dir>, <crack2_dir>, <crack3_dir>, <strain_tensor>, volume2(<mesh_name>))");
         doParens = false;
     }
 
