@@ -82,34 +82,24 @@ avtAnnotationWithTextColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
     }
 }
 
-// handle $Xxx anywhere in string
-// handle multiple occurences of $Xxx
-// handle $Xxx and $Yyy in same string
-// handle $Xxx%Fmt$
-
-//
-// 1. Find $key in formatString
-//   - if present look also for %fmt and have defaults otherwise
-// 2. replace $key%fmt$ with intended text
-// 3. loop until all $key have been replaced.
-//
-// Algorithm...
-//    - iterate through formatString look for '$'
-//    - if find '$' check if subsequent chars up to some delimters match a key with optional format string
-//       - if key matches, add replacement string to output replacing (lengthening or shortening) what is there.
-//       - if $<txt> doesn't match any key, copy the text to the output string verbatim
-//    - if '$' not found, copy the char to the output string
-//
-
-// Macro keys and their default formats
+// Staic storage for Macro keys and their default formats
 typedef struct _keyfmt {
     char const *key;
     char const *fmt;
 } keyfmt_t;
-
 static std::vector<keyfmt_t> keysAndFmts;
 
-static int hasKeyMatch(char const *fmtStr, int idx)
+// ****************************************************************************
+// static function: hasKeyMatch
+//
+// Purpose: Given a candidate key in the annotation string, march through the
+// known keys finding the first that matches.
+//
+// Mark C. Miller, Thu Jun 23 10:07:38 PDT 2022
+// ****************************************************************************
+
+static int
+hasKeyMatch(char const *fmtStr, int idx)
 {
     int const nkeys = (int) keysAndFmts.size();
     for (int ki = 0; ki < nkeys; ki++)
@@ -120,6 +110,15 @@ static int hasKeyMatch(char const *fmtStr, int idx)
     }
     return -1;
 }
+
+// ****************************************************************************
+// MACRO: TEXT_MACRO
+//
+// Two blocks of code that either adds the associated key to keysAndFmts or
+// renders the associated key to a string
+//
+// Mark C. Miller, Thu Jun 23 10:05:58 PDT 2022
+// ****************************************************************************
 
 #define TEXT_MACRO(NAME, FMT, GETTER)                  \
     do                                                 \
@@ -136,7 +135,23 @@ static int hasKeyMatch(char const *fmtStr, int idx)
         }                                              \
    } while (false) 
 
-static void processMacro(char *rv, size_t rvsize=0, char const *key=0, char const *fmt=0, avtDataAttributes const *cda=0)
+// ****************************************************************************
+// static function: processMacro
+//
+// Purpose: Two wholly disparate purposes. One is to initialize keysAndFmts
+// vector of known macro keys and their default sprintf formats. The other is
+// to render a specific key according to a specified format. The main design
+// goal is to enable any developer to add new keys EASILY by simply adding
+// an instance of TEXT_MACRO. This leads to a somewhat bizarre coding though.
+//
+// The first function is performed only once at startup.
+//
+// Mark C. Miller, Thu Jun 23 09:37:47 PDT 2022
+// ****************************************************************************
+
+static void
+processMacro(char *rv, size_t rvsize=0, char const *key=0, char const *fmt=0,
+    avtDataAttributes const *cda=0)
 {
     static bool initialized = false;
 
@@ -167,8 +182,20 @@ static void processMacro(char *rv, size_t rvsize=0, char const *key=0, char cons
     initialized = true;
 }
 
+// ****************************************************************************
+// static function: getKeyString
+//
+// Purpose: for any $Xxx matching a macro key, obtain also the format, if
+// given, or use the default format and then render the value of the macro key
+// to a string. The string must be used *immediately* upon return because it
+// is returned on a local static var.
+//
+// Mark C. Miller, Thu Jun 23 09:36:41 PDT 2022
+// ****************************************************************************
 
-static char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid, avtDataAttributes const *cda)
+static char const *
+getKeyString(char const *fmtStr, int inlen, int idx, int kid,
+avtDataAttributes const *cda)
 {
     static char retval[256];
     char const *key = keysAndFmts[kid].key;
@@ -192,7 +219,37 @@ static char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid,
     return retval;
 }
 
+// ****************************************************************************
+// Method: avtAnnotationWithTextColleague::CreateAnnotationString
+//
+// Purpose: Does the work of creating the string to be used in the annotation.
+// The key effort is handling any annotation "macros" such as $time or $cycle.
+//
+// Mark C. Miller, Thu Jun 23 09:34:18 PDT 2022
+//
+// Design goals...
+//    - handle $Xxx anywhere in string
+//    - handle multiple occurences of $Xxx
+//    - handle $Xxx and $Yyy in same string
+//    - handle $Xxx%Fmt$
+//    - make it easy to add more macros (e.g. TEXT_MACRO macro)
+//
+// Algorithm...
+//    1. Find $Xxx in formatString
+//      - if present look also for %fmt and have defaults otherwise
+//    2. replace $Xxx or $Xxx%fmt$ with intended text
+//    3. loop until all $Xxx have been replaced.
+//
+//    - iterate through formatString look for '$'
+//    - if find '$' check if subsequent chars match a key with optional format.
+//       - if key matches, add replacement to output.
+//       - if $Xxx doesn't match any key, copy to the output string verbatim.
+//    - if '$' not found, copy the char to the output string.
+//
 // Caller must delete what is returned
+//
+// ****************************************************************************
+
 char *
 avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
 {
