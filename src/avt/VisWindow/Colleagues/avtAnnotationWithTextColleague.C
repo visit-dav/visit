@@ -107,16 +107,11 @@ typedef struct _keyfmt {
     char const *fmt;
 } keyfmt_t;
 
-static keyfmt_t keysAndFmts[] = {
-   "time",      "%g",
-   "cycle",     "%d",
-   "index",     "%d",
-   "dbcomment", "%s"
-};
+static std::vector<keyfmt_t> keysAndFmts;
 
 static int hasKeyMatch(char const *fmtStr, int idx)
 {
-    int const nkeys = (int) (sizeof(keysAndFmts)/sizeof(keysAndFmts[0]));
+    int const nkeys = (int) keysAndFmts.size();
     for (int ki = 0; ki < nkeys; ki++)
     {
         char const *key = keysAndFmts[ki].key;
@@ -125,6 +120,53 @@ static int hasKeyMatch(char const *fmtStr, int idx)
     }
     return -1;
 }
+
+#define TEXT_MACRO(NAME, FMT, GETTER)                  \
+    do                                                 \
+    {                                                  \
+        if (!initialized)                              \
+        {                                              \
+            keyfmt_t x = {#NAME, #FMT};                \
+            keysAndFmts.push_back(x);                  \
+        }                                              \
+        else if (!strncmp(key, #NAME, sizeof(#NAME)))  \
+        {                                              \
+            snprintf(rv, rvsize, fmt, cda->GETTER);    \
+            return;                                    \
+        }                                              \
+   } while (false) 
+
+static void processMacro(char *rv, size_t rvsize=0, char const *key=0, char const *fmt=0, avtDataAttributes const *cda=0)
+{
+    static bool initialized = false;
+
+    if (initialized && rv==0) return;
+
+    TEXT_MACRO(time, %g, GetTime());
+    TEXT_MACRO(cycle, %d, GetCycle());
+    TEXT_MACRO(index, %d, GetTimeIndex());
+    TEXT_MACRO(numstates, %d, GetNumStates());
+    TEXT_MACRO(dbcomment, %s, GetCommentInDB().c_str());
+    TEXT_MACRO(lod, %z, GetLevelsOfDetail());
+    TEXT_MACRO(vardim, %d, GetVariableDimension());
+    TEXT_MACRO(numvar, %d, GetNumberOfVariables());
+    TEXT_MACRO(topodim, %d, GetTopologicalDimension());
+    TEXT_MACRO(spatialdim, %d, GetSpatialDimension());
+    TEXT_MACRO(varname, %s, GetVariableName().c_str());
+    TEXT_MACRO(varunits, %s, GetVariableUnits().c_str());
+    TEXT_MACRO(meshname, %s, GetMeshname().c_str());
+    TEXT_MACRO(filename, %s, GetFilename().c_str());
+    TEXT_MACRO(fulldbname, %s, GetFullDBName().c_str());
+    TEXT_MACRO(xunits, %s, GetXUnits().c_str());
+    TEXT_MACRO(yunits, %s, GetYUnits().c_str());
+    TEXT_MACRO(zunits, %s, GetZUnits().c_str());
+    TEXT_MACRO(xlabel, %s, GetXLabel().c_str());
+    TEXT_MACRO(ylabel, %s, GetYLabel().c_str());
+    TEXT_MACRO(zlabel, %s, GetZLabel().c_str());
+
+    initialized = true;
+}
+
 
 static char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid, avtDataAttributes const *cda)
 {
@@ -145,17 +187,7 @@ static char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid,
         strcpy(fmt, defaultFmt); // (e.g. fmt = "%g")
     }
 
-    // obtain correct data attribute member and print it into string
-    if (!strncmp(key, keysAndFmts[0].key, sizeof("time"))) // time
-        snprintf(retval, sizeof(retval), fmt, cda->GetTime());
-    else if (!strncmp(key, keysAndFmts[1].key, sizeof("cycle"))) // cycle
-        snprintf(retval, sizeof(retval), fmt, cda->GetCycle());
-    else if (!strncmp(key, keysAndFmts[2].key, sizeof("index"))) // index
-        snprintf(retval, sizeof(retval), fmt, cda->GetTimeIndex());
-    else if (!strncmp(key, keysAndFmts[3].key, sizeof("dbcomment"))) // dbcomment
-        snprintf(retval, sizeof(retval), fmt, cda->GetCommentInDB().c_str());
-    else
-        snprintf(retval, sizeof(retval), "%s", "unknown key");
+    processMacro(retval, sizeof(retval), key, fmt, cda);
 
     return retval;
 }
@@ -165,6 +197,8 @@ char *
 avtAnnotationWithTextColleague::CreateAnnotationString(const char *formatString)
 {
     std::string rv;
+
+    processMacro(0); // initialize keysAndFmts;
 
     int inlen = (int) strlen(formatString);
     for (int i = 0; i < inlen; i++)
