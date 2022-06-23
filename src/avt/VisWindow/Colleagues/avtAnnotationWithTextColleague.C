@@ -115,7 +115,8 @@ hasKeyMatch(char const *fmtStr, int idx)
 // MACRO: TEXT_MACRO
 //
 // Two blocks of code that either adds the associated key to keysAndFmts or
-// renders the associated key to a string
+// renders the associated key to a string. The do-while design is to enforce
+// semicolon termination of the macro instances.
 //
 // Mark C. Miller, Thu Jun 23 10:05:58 PDT 2022
 // ****************************************************************************
