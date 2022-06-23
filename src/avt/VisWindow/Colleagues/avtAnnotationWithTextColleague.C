@@ -82,14 +82,10 @@ avtAnnotationWithTextColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
     }
 }
 
-#define TIME_IDENTIFIER "$time"
-#define CYCLE_IDENTIFIER "$cycle"
-#define INDEX_IDENTIFIER "$index"
-
 // handle $Xxx anywhere in string
 // handle multiple occurences of $Xxx
 // handle $Xxx and $Yyy in same string
-// handle $Xxx%Fmt
+// handle $Xxx%Fmt$
 
 //
 // 1. Find $key in formatString
@@ -108,15 +104,14 @@ avtAnnotationWithTextColleague::UpdatePlotList(std::vector<avtActor_p> &lst)
 // Macro keys and their default formats
 typedef struct _keyfmt {
     char const *key;
-    char const *typ;
     char const *fmt;
 } keyfmt_t;
 
 static keyfmt_t keysAndFmts[] = {
-   "time",      "double", "%g",
-   "cycle",     "int",    "%d",
-   "index",     "int",    "%d",
-   "dbcomment", "char*",  "%s"
+   "time",      "%g",
+   "cycle",     "%d",
+   "index",     "%d",
+   "dbcomment", "%s"
 };
 
 static int hasKeyMatch(char const *fmtStr, int idx)
@@ -135,7 +130,6 @@ static char const *getKeyString(char const *fmtStr, int inlen, int idx, int kid,
 {
     static char retval[256];
     char const *key = keysAndFmts[kid].key;
-    char const *typ = keysAndFmts[kid].typ;
     char const *defaultFmt = keysAndFmts[kid].fmt;
     char fmt[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
