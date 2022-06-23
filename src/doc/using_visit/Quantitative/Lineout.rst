@@ -369,6 +369,7 @@ the **Samples** text field. The **Use Sampling** toggle button controls
 whether sampling is used and **Samples** is used to set the number of
 sample points when sampling.
 
+.. _LineoutInteractivemode:
 
 Interactive mode
 """"""""""""""""

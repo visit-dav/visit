@@ -59,6 +59,18 @@ To make sure that the plot gets drawn, call the DrawPlots function.
       SetTimeSliderState(state) 
       SaveWindow() 
 
+Handling Command line Arguments
+-------------------------------
+
+In some cases, a VisIt_ python script also needs to handle its own command line arguments.
+This is handled using the ``Argv()`` method.
+For example, to run the python script, ``myscript.py`` with two arguments like so ::
+
+    visit -nowin -cli -s myscript.py myarg1 myarg2
+
+these arguments can be accessed using the ``Argv()`` method which returns the Python tuple, ``('myarg1', 'myarg2')``.
+Similarly, ``sys.argv`` will return the Python list, ``['myscript.py', 'myarg1', 'myarg2']`` which includes the script name itself as the zeroth argument.
+
 Saving images
 -------------
 
@@ -460,16 +472,42 @@ The information in the string could be used for a multitude of uses such as buil
 Lineout
 ~~~~~~~
 
-VisIt allows you to extract data along a line, called a lineout, and plot the data using a Curve plot.
+VisIt allows you to extract data along a line, called a :ref:`lineout <Lineout>`, and plot the data using a :ref:`Curve <Curve plot>` plot.
 
 ::
 
+    p0 = (-5,-3)
+    p1 = ( 5, 8)
     OpenDatabase("/usr/local/visit/data/noise.silo") 
     AddPlot("Pseudocolor", "hgslice") 
     DrawPlots() 
-    Lineout((-5,-3), (5,8)) 
-    # Specify a number of sample points 
-    Lineout((-5,-4), (5,7))
+    Lineout(p0, p1)
+    # Specify 65 sample points 
+    Lineout(p0, p1, 65)
+    # Do three variables ("default" is "hgslice")
+    Lineout(p0, p1, ("default", "var1", "var2"))
+
+The above steps produce the requested lineout(s), visually, as curve(s) in a (new) viewer window.
+What if you want to access the actual lineout data and/or save it to a file? 
+
+::
+
+    # Set active window to one containing Lineout curve plots (typically #2)
+    SetActiveWindow(2)
+    # Get array of x,y pairs for first curve plot in window
+    SetActivePlots(0)
+    hgslice_vals = GetPlotInformation()["Curve"]
+    # Get array of x,y pairs for second curve plot in window
+    SetActivePlots(1)
+    var1_vals = GetPlotInformation()["Curve"]
+    # Get array of x,y pairs for third curve plot in window
+    SetActivePlots(2)
+    var2_vals = GetPlotInformation()["Curve"]
+
+    # Write it as CSV data to a file
+    for i in range(len(hgslice_vals) / 2):
+        idx = i*2+1 # take only y-values in each array
+        print "%g,%g,%g" % (hgslice_vals[idx], var1_vals[idx], var2_vals[idx])
 
 Query
 ~~~~~

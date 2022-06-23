@@ -1,4 +1,4 @@
-FROM ubuntu:hirsute
+FROM ubuntu:jammy
 MAINTAINER Eric Brugger <brugger1@llnl.gov>
 
 # fetch build env
@@ -8,7 +8,6 @@ RUN apt-get update && apt-get install -y \
     git \
     wget \
     curl \
-    p7zip \
     unzip \
     subversion \
     build-essential \
@@ -16,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     g++ \
     gfortran \
     zlib1g-dev \
-    python \
+    python2 \
     libsm-dev \
     libice-dev \
     libssl-dev \
@@ -49,6 +48,7 @@ RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* 
 ENV LANG en_US.utf8
 
 RUN cd /usr/include && ln -s freetype2 freetype
+RUN cd /usr/bin && ln -s python2 python
 
 RUN cd /usr && ln -s lib lib64
 
@@ -59,7 +59,7 @@ WORKDIR /home/visit
 # Create the third-party directory
 RUN mkdir third-party
 # Copy build_visit and the script to run it
-COPY build_visit3_2_2 /home/visit
+COPY build_visit3_3_0 /home/visit
 COPY run_build_visit_fedora31.sh /home/visit
 COPY build_visit_docker_cleanup.py /home/visit
 COPY build_test_visit.sh /home/visit

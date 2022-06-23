@@ -72,6 +72,7 @@ function bv_mili_ensure
 
 function apply_mili_151_darwin_patch1
 {
+    info "Applying Mili 15.1 darwin patch 1."
     patch -p0 << \EOF
 diff -c mili/src/mesh_u.c mili.patched/src/mesh_u.c
 *** mili/src/mesh_u.c   2015-09-22 13:20:42.000000000 -0700
@@ -104,6 +105,7 @@ EOF
 
 function apply_mili_151_darwin_patch2
 {
+    info "Applying Mili 15.1 darwin patch 2."
     patch -p0 << \EOF
 *** mili/Makefile.Library       2013-12-10 12:55:55.000000000 -0800
 --- mili.patched/Makefile.Library       2015-10-20 13:37:27.000000000 -0700
@@ -129,6 +131,7 @@ EOF
 
 function apply_mili_151_darwin_patch3
 {
+    info "Applying Mili 15.1 darwin patch 3."
     patch -p0 << \EOF
 *** mili/src/mili_internal.h    2015-09-17 13:26:32.000000000 -0700
 --- mili.patched/src/mili_internal.h    2015-10-20 16:57:21.000000000 -0700
@@ -215,13 +218,14 @@ EOF
 
 function apply_mili_221_cflags_patch
 {
+    info "Applying Mili 22.1 CFLAGS patch."
     patch -p0 << \EOF
 diff -c mili-22.1/configure.orig mili-22.1/configure
-*** mili-22.1/configure.orig      Mon Jun 13 12:08:41 2022
---- mili-22.1/configure           Mon Jun 13 12:09:33 2022
+*** mili-22.1/configure.orig    2022-06-16 13:45:39.195734000 -0700
+--- mili-22.1/configure         2022-06-16 13:46:49.898442000 -0700
 ***************
 *** 4361,4382 ****
-  
+
       case $CC in
         *icc)
 !         CC_FLAGS_DEBUG="-g $WORD_SIZE "
@@ -244,7 +248,7 @@ diff -c mili-22.1/configure.orig mili-22.1/configure
         *cc)
           ;;
 --- 4361,4382 ----
-  
+
       case $CC in
         *icc)
 !         CC_FLAGS_DEBUG="$CFLAGS -g $WORD_SIZE "
@@ -266,9 +270,101 @@ diff -c mili-22.1/configure.orig mili-22.1/configure
           ;;
         *cc)
           ;;
+***************
+*** 4395,4404 ****
+          FC_FLAGS_LD_OPT="-O3 $WORD_SIZE -WF,-DAIX"
+          ;;
+        *gfortran)
+!         CC_FLAGS_DEBUG="-g $WORD_SIZE "
+!         CC_FLAGS_OPT="-O3 $WORD_SIZE "
+!         CC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
+!         CC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
+          ;;
+        *cc)
+          ;;
+--- 4395,4404 ----
+          FC_FLAGS_LD_OPT="-O3 $WORD_SIZE -WF,-DAIX"
+          ;;
+        *gfortran)
+!         FC_FLAGS_DEBUG="-g $WORD_SIZE "
+!         FC_FLAGS_OPT="-O3 $WORD_SIZE "
+!         FC_FLAGS_LD_DEBUG="-g $WORD_SIZE"
+!         FC_FLAGS_LD_OPT="-O3 $WORD_SIZE"
+          ;;
+        *cc)
+          ;;
 EOF
     if [[ $? != 0 ]] ; then
         warn "Unable to apply CFLAGS patch to Mili 22.1"
+        return 1
+    fi
+
+    return 0
+}
+
+function apply_mili_221_blueos_patch
+{
+    info "Applying Mili 22.1 blueos patch."
+    patch -p0 << \EOF
+diff -c mili-22.1/src/eprtf.c.orig mili-22.1/src/eprtf.c
+*** mili-22.1/src/eprtf.c.orig	Wed Jun 15 16:38:26 2022
+--- mili-22.1/src/eprtf.c	Wed Jun 15 16:38:51 2022
+***************
+*** 89,115 ****
+  #include "win32-regex.h"
+  #endif
+  
+! #include "mili_enum.h"
+  #include "eprtf.h"
+  
+  static char destbuf[CMAX];
+  static char *p_cur;
+  static int cur_len;
+  static va_list val;
+- #ifdef HAVE_EPRINT
+  static char *t_pattern = "%([0-9]+|[*])t";
+  static regex_t all_re;
+  static char *all_pattern =
+     "%[0 -+#]*([0-9]*|[*])([.]([0-9]*|[*]))?[hlL]?[dioxXucsfeEgGpn%]";
+  
+- #endif
+  static regex_t t_re;
+  static regmatch_t t_match[1];
+  
+  
+- #ifdef NOOPTERON
+  static regmatch_t all_match[1];
+- #endif
+  
+  
+  /*****************************************************************
+--- 89,111 ----
+  #include "win32-regex.h"
+  #endif
+  
+! #include "mili_internal.h"
+  #include "eprtf.h"
+  
+  static char destbuf[CMAX];
+  static char *p_cur;
+  static int cur_len;
+  static va_list val;
+  static char *t_pattern = "%([0-9]+|[*])t";
+  static regex_t all_re;
+  static char *all_pattern =
+     "%[0 -+#]*([0-9]*|[*])([.]([0-9]*|[*]))?[hlL]?[dioxXucsfeEgGpn%]";
+  
+  static regex_t t_re;
+  static regmatch_t t_match[1];
+  
+  
+  static regmatch_t all_match[1];
+  
+  
+  /*****************************************************************
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply blueos patch to Mili 22.1"
         return 1
     fi
 
@@ -294,6 +390,10 @@ function apply_mili_patch
 
     if [[ ${MILI_VERSION} == 22.1 ]] ; then
         apply_mili_221_cflags_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mili_221_blueos_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
