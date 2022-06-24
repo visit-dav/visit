@@ -72,7 +72,7 @@ in detail later in this manual.
    VisIt_'s main menus
 
 The **Main** menu and the **Plots** and **Operators** menus are merged in
-the OSX version of VisIt_ because OSX applications always have all menus in
+the macOS version of VisIt_ because macOS applications always have all menus in
 the system menu along the top of the display.
 
 Viewing status messages
