@@ -1253,7 +1253,7 @@ function run_build_visit()
     fi
 
     if [[ "$ANY_ERRORS" == "yes" ]] ; then
-        echo "command line arguments are used incorrectly. unrecognized options..."
+        echo "command line arguments are used incorrectly. see above..."
         exit 1
     fi
 
