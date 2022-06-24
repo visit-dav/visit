@@ -944,7 +944,6 @@ Existing color tables can retreived by name via ``GetColorTable`` as in: ::
     smoothing = Linear  # NONE, Linear, CubicSpline
     equalSpacingFlag = 0
     discreteFlag = 0
-    categoryName = "Standard"
 
 The ``colors`` field of the ``ControlPoint`` represent the (Red,Green,Blue,Alpha) channels of the color and must be in the range (0, 255).
 The numbers indicate the contribution each channel makes to the overall color.
