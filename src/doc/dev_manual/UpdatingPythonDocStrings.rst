@@ -28,7 +28,7 @@ Steps to update the Python scripting manual
 #. Run the ``sphinx_cli_extractor.py`` tool producing new ``attributes.rst`` and ``events.rst`` files.
    To do so, you may need to use a combination of the ``PATH`` and ``PYTHONPATH`` environment variables to tell the ``sphinx_cli_extractor.py`` script where to find the VisIt_ module, ``visit`` in VisIt_'s ``site-packages`` and where to find the Python installation that that module is expecting to run with.
    In addition, you may need to use the ``PYTHONHOME`` environment variable to tell VisIt_'s ``visit`` module where to find standard Python libraries.
-   For example, to use an installed version of VisIt_ on my OSX machine, the command would look like...
+   For example, to use an installed version of VisIt_ on my macOS machine, the command would look like...
 
    .. code-block:: shell
 
