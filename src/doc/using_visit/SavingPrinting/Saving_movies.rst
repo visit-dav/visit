@@ -24,7 +24,7 @@ For example, the **Save movie wizard** asks which image and movie formats
 you want to generate, where you want to store the movies, what you want to
 call the movies, etc. Each of these questions appears on a separate screen
 in the **Save movie wizard** and once you answer the question on the current
-screen, clicking the **Next (Continue for OSX)** button advances you to the next screen. You can
+screen, clicking the **Next (Continue for macOS)** button advances you to the next screen. You can
 cancel saving a movie at any time by clicking on the **Cancel** button. If you
 advance to the last screen in the **Save movie wizard** then you have
 successfully provided all of the required information that VisIt needs to make

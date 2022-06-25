@@ -246,7 +246,7 @@ Playing the movie
 ~~~~~~~~~~~~~~~~~
 
 You can now play the movie with the native movie player on your system.
-On Linux you can use a player such as mplayer. On Mac OSX or Windows you
+On Linux you can use a player such as mplayer. On Mac macOS or Windows you
 can typically just double click on the icon for the movie. Note that on
 Windows you will need to play the movie with "Windows Media Player" and
 not "Movies & TV".
@@ -254,7 +254,7 @@ not "Movies & TV".
 Encoding the movie with a Python script
 ---------------------------------------
 
-This section of the tutorial is primarily aimed at Linux and Mac OSX
+This section of the tutorial is primarily aimed at Linux and Mac macOS
 systems. There are usually folder path issues on Windows that will prevent
 these Python code snippets from working as shown. In particular, the images
 from the image saving may get saved in a different folder from where the
@@ -312,7 +312,7 @@ only a single digit sequence.
 The second argument is the name of the output file. The extension
 determines the file format to create. The available options are: "mpg",
 "wmv", "avi", "mov", "swf", "mp4" and "divx". "wmv" is usually the
-best choice and plays on most platforms (Linux, OSX and Windows).
+best choice and plays on most platforms (Linux, macOS and Windows).
 "mpg" is lower quality, but should play on any platform.
 
 The last argument specifies the number of times each frame is duplicated.
@@ -390,7 +390,7 @@ Resizing images
 ~~~~~~~~~~~~~~~
 
 A good tool for resizing image is ImageMagick's convert tool. It is
-installed on most Linux and Mac OSX operating systems. If you don't
+installed on most Linux and Mac macOS operating systems. If you don't
 have ImageMagick installed on your systems and in your search path
 the following code snippet will fail. The following snippet of Python
 code will run convert to resize the images created earlier to one half
