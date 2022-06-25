@@ -739,8 +739,8 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
         // have to handle tar archives first in this logic
         if (ext == ".tar.gz" || ext == ".tgz" ||
             ext == ".tar.bz" || ext == ".tbz" ||
-            ext == ".tar.bz2" || ext == ".tbz2") ||
-            ext == ".tar.xz || ext == ".txz")
+            ext == ".tar.bz2" || ext == ".tbz2" ||
+            ext == ".tar.xz" || ext == ".txz")
             dcmd = "tar xvf";
         else if (ext == ".gz")
             dcmd = "gunzip -f";
