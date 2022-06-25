@@ -122,7 +122,9 @@ avtTimeSliderColleague::avtTimeSliderColleague(VisWindowColleagueProxy &m) :
 // Modifications:
 //    Kathleen Bonnell, Thu Jan 13 08:39:30 PST 2005 
 //    Delete timeFormatString. 
-//   
+//    
+//    Mark C. Miller, Fri Jun 24, 04:47:31 PST 2022
+//    Deletion of strings handled in base class now.
 // ****************************************************************************
 
 avtTimeSliderColleague::~avtTimeSliderColleague()
@@ -138,12 +140,6 @@ avtTimeSliderColleague::~avtTimeSliderColleague()
         textActor->Delete();
         textActor = 0;
     }
-
-    if(textFormatString != 0)
-        delete [] textFormatString;
-
-    if(timeFormatString != 0)
-        delete [] timeFormatString;
 }
 
 // ****************************************************************************
