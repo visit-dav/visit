@@ -120,7 +120,17 @@ ZipWrapperGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.gz");
+    defaultPatterns.push_back("*.bz");
     defaultPatterns.push_back("*.bz2");
+    defaultPatterns.push_back("*.xz");
+    defaultPatterns.push_back("*.tar.gz");
+    defaultPatterns.push_back("*.tar.bz");
+    defaultPatterns.push_back("*.tar.bz2");
+    defaultPatterns.push_back("*.tar.xz");
+    defaultPatterns.push_back("*.tgz");
+    defaultPatterns.push_back("*.tbz");
+    defaultPatterns.push_back("*.tbz2");
+    defaultPatterns.push_back("*.txz");
     defaultPatterns.push_back("*.zip");
 
     return defaultPatterns;

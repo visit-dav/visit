@@ -3,7 +3,16 @@
     <FilePatterns>
       *.gz
       *.bz2
+      *.xz
       *.zip
+      *.tar.gz
+      *.tgz
+      *.tar.bz2
+      *.tbz2
+      *.tar.bz
+      *.tbz
+      *.tar.xz
+      *.txz
     </FilePatterns>
     <Files components="M,E">
       avtZipWrapperFileFormatInterface.C
