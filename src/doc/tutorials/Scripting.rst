@@ -18,7 +18,7 @@ There are several ways to use the *CLI*:
 1) Launch VisIt_ in a batch mode and run scripts.
 
   * Linux: ``/path/to/visit/bin/visit -nowin -cli -s <script.py>``
-  * OSX: ``/path/to/VisIt.app/Contents/Resources/bin/visit -nowin -cli -s <script.py>``
+  * macOS: ``/path/to/VisIt.app/Contents/Resources/bin/visit -nowin -cli -s <script.py>``
 
 2) Launch VisIt_ so that a visualization window is visible and interactively issue *CLI* commands.
 3) Use both the standard *GUI* and *CLI* simultaneously.
