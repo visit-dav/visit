@@ -9,7 +9,7 @@ Postfix:
     // Try and handle legacy fields in ColorTableAttributes
 
     //
-    // Removed in 3.5.0
+    // Removed in 3.3.0
     //
     if(strcmp(name, "activeContinuous") == 0)
     {
@@ -838,6 +838,7 @@ ColorTableAttributes::SetAllActive()
     }
 }
 
+Target: xml2atts
 Function: ProcessOldVersions
 Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 Definition:
