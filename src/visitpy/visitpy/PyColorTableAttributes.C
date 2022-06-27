@@ -641,7 +641,7 @@ PyColorTableAttributes_getattr(PyObject *self, char *name)
     // Try and handle legacy fields in ColorTableAttributes
 
     //
-    // Removed in 3.5.0
+    // Removed in 3.3.0
     //
     if(strcmp(name, "activeContinuous") == 0)
     {

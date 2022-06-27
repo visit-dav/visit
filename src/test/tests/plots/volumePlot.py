@@ -502,6 +502,7 @@ def TestCommandRecording():
     VolumeAtts.colorControlPoints.smoothing = VolumeAtts.colorControlPoints.Linear
     VolumeAtts.colorControlPoints.equalSpacingFlag = 0
     VolumeAtts.colorControlPoints.discreteFlag = 0
+    VolumeAtts.colorControlPoints.categoryName = ""
     VolumeAtts.opacityAttenuation = 1
     VolumeAtts.opacityMode = VolumeAtts.GaussianMode
     VolumeAtts.opacityControlPoints.SetNumControlPoints(20)

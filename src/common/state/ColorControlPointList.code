@@ -1,3 +1,50 @@
+Target: xml2python
+Code: PyColorControlPointList_getattr
+Prefix:
+#include <visit-config.h>
+Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorControlPointList
+
+    //
+    // Removed in 3.3.0
+    //
+    if(strcmp(name, "categoryName") == 0)
+    {
+        PyErr_WarnEx(NULL,
+                    "categoryName is no longer a valid ColorControlPointList "
+                    "attribute.\nIt's value is being ignored, please remove "
+                    "it from your script.\n", 3);
+        return PyString_FromString("");
+    }
+#endif
+
+
+Code: PyColorControlPointList_setattr
+Prefix:
+#include <visit-config.h>
+Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorControlPointList
+    if(obj == &NULL_PY_OBJ)
+    {
+        //
+        // Removed in 3.3.0
+        //
+        if(strcmp(name, "categoryName") == 0)
+        {
+            PyErr_WarnEx(NULL, "'categoryName' is obsolete. It is being ignored.", 3);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
+
+Target: xml2atts
 Function: EvalCubicSpline
 Declaration: float EvalCubicSpline(float t, const float *allX, const float *allY, int n) const;
 Definition:
@@ -1028,3 +1075,52 @@ ColorControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+Target: xml2atts
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Justin Privitera
+// Creation:   June 27 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+ColorControlPointList::ProcessOldVersions(DataNode *parentNode,
+                                          const char *configVersion)
+{
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ColorControlPointList");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.3.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("categoryName")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("categoryName", "3.5.0"));
+#endif
+            searchNode->RemoveNode(k);
+        }
+    }
+#endif
+}
