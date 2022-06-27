@@ -36,20 +36,19 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The handling of color tables has been enhanced and modified.
     <ul>
      <li>Many color tables from <a href="https://www.fabiocrameri.ch/visualisation/">Fabio Crameri</a> have been added for individuals who are color vision deficient (CVD).</li>
-     <li>To handle the expanded list of color tables a new tagging system has been introduced. All the tagging controls are located in the existing Color table window.
+     <li>To handle the expanded list of color tables a new tagging system has been introduced to allow users to reduce the color tables displayed in the color table controls in the rest of the GUI. All the tagging and filtering controls are located in the existing Color table window.
        <ul>
         <li>Every color table has one or more tags.</li>
-        <li>Color table filtering has been introduced to allow users to reduce the color tables displayed in the color table controls in the rest of the GUI.</li>
         <li>Color table filtering can be turned on or off.</li>
         <li>When color table filtering is off all the color tables are displayed in the color table controls in the rest of the GUI.</li>
-        <li>If color table filtering is on only the color tables associated the the active flags are displayed.</li>
+        <li>When color table filtering is on only the color tables associated with the active flags are displayed.</li>
         <li>The user can select if only the color tables that contain all the tags or any of the tags gets displayed.</li>
        </ul>
      <li>The color table categroies have been eliminated since that functionality is now redundant with the introduction of the more flexible tagging system.</li>
      <li>Changed <i>active</i> to <i>default</i> for everything related to color tables, including the GUI and the Python scripting interface.</li>
     </ul>
   </li>
-  <li>Capabilities have been added to allow repartitioning or flattening domain decomposed data when exporting to Blueprint.
+  <li>New capabilities have been added to allow repartitioning or flattening domain decomposed data when exporting to Blueprint.
     <ul>
      <li>When repartitioning data, the user can specify the number of domains to repartition the data into. The current repartitioning algoithm uses a simple spatial decomposition algorithm. The user can also specify a field to control the partitioning, enabling an arbitrary repartitioning.</li>
      <li>When flattening the data, all the domains are merged into a single domain.</li>
@@ -72,7 +71,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Text annotation macros (e.g. <code>$time</code>, <code>$cycle</code>, ...) have been enhanced in some key ways. First, more macros are available including <code>$index</code>, <code>$dbcomment</code>, <code>$numstates</code>, etc.. Next, printf-style formatting can be specified for a macro and multiple instances of the same or different macros can appear in the same annotation object.</li>
   <li>Attribute assignment (e.g. <code>cylinderAtts.point1=...</code> or <code>cylinderAtts.SetPoint1(...)</code>) operations in the Python scripting interface were modified to catch and disallow incorrect usage instead of silently falling back to default values. Better error checks and messages were also added. It is possible these changes may cause code that worked fine to now terminate with a Python exception. In such cases, the resulting error message should explain the cause of the failure and the changes required to fix it should be obvious and minimal.</li>
   <li>A new function was added to the Python scripting interface named <code>apropos(regex)</code> similar in purpose to <a href="https://en.wikipedia.org/wiki/Apropos_(Unix)">Unix' apropos</a>. It makes finding the names of functions and objects much easier. It will return a list of the names of functions or objects where the regular expression matches either in the method name or in the documentation string for the method or in a stringified instance (objects only). All matching is case insensitive.</li>
-  <li><code>ColorControlPointsList</code> and <code>GaussianControlPointsList</code> now have a <code>SetNum</code> method for changing the size of the underlying controlPoints list. Control points will be added or removed based on the current size of the list. The <code>SetNum</code> method was also added to the script created by Logging / command recording, so that the control points list has the correct size and the created script can execute correctly without crashing the Pythone scripting interface.</li>
+  <li><code>ColorControlPointsList</code> and <code>GaussianControlPointsList</code> now have a <code>SetNum</code> method for changing the size of the underlying controlPoints list. Control points will be added or removed based on the current size of the list. The <code>SetNum</code> method was also added to the script created by logging / command recording, so that the control points list has the correct size and the created script can execute correctly without crashing the Python scripting interface.</li>
   <li>A section was added to the <i>Developer Manual</i> describing process launching.</li>
   <li>A section was added to the <i>Developer Manual</i> describing building VisIt with spack.</li>
   <li>A tutorial on Python expressions was added to the tutorials section of the manual.</li>
@@ -95,7 +94,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Chombo reader now supports anisotropic refinements.</li>
   <li>The WData reader was added.</li>
   <li>The Blueprint reader was enhanced to support the implicit points topology.</li>
-  <li>Added the ability for users to specify the output precision when exporting Xmdv (.okc) files.</li>
+  <li>The Xmdv reader was enhanced to allow users the ability to specify the output precision when exporting data.</li>
   <li>The Blueprint reader was enhanced to support polyhedral meshes. If you read a polyhedral mesh, it will automatically convert the mesh to a tetrahedral mesh, as well as convert the fields as needed. It will also keep track of original element ids so that you don't see the new lines from the resulting tetrahedra.</li>
   <li>The Xolotl reader was updated to support phase-space.</li>
   <li>The SW4 reader was renamed as sw4img to fix static builds.</li>
@@ -123,7 +122,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 3.3</font></b></p>
 <ul>
-  <li>Upgraded the <i>XRay Image</i> Query so it can now output conduit Blueprint files.</li>
+  <li>Upgraded the <i>XRay Image</i> Query so it can now output Blueprint files.</li>
   <li>Upgraded the <i>XRay Image</i> Query so users can now specify an output directory for query results.</li>
   <li>The <i>Pick</i> operation now has the option to include the Euclidean distance between the current and previous <i>Pick</i> in the GUI's output window. To enable this option, check the <i>Distance to previous</i> box Pick output window. You should then see a new field in the tabular output display titled <i>Distance to previous</i>.</li>
 </ul>
@@ -174,7 +173,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VTK-m was updated to version 1.7.0 and VTK-h was updated to version 0.8.0.</li>
   <li>Added the spack environment files <code>compilers.yaml</code> and <code>packages.yaml</code> for crusher.olcf.ornl.gov.</li>
   <li>There is now a WIN32DEFINES xml tag for database plugins, used to specify preprocessor defines needed by a plugin on Windows. If the needed define comes from a thirdparty library, the Find module for that library should set a CMake var with those defines that the plugin could then use in the .xml file. See FindCGNS.cmake and CGNS.xml for an example.</li>
-  <li>The minimum required version of CMake is now 3.14, the version built by build_visit.</li> 
+  <li>The minimum required version of CMake is now 3.14.</li> 
   <li>The programs <code>qtviswinExample</code>, <code>qtvtkExample</code>, <code>qvtkopenglExample</code> were added to help with debugging OpenGL issues.</li>
   <li>VisIt test data archive tooling was changed from <code>7z</code> to <code>tar</code> with the same (lzma2) compression.</li>
   <li>The version of Conduit was upgraded to 0.8.2.</li>
