@@ -942,13 +942,11 @@ QvisColorTableWindow::UpdateNames()
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
             bool anyTagFound = false;
-            int j = 0;
             // go thru local tags
-            while (j < colorAtts->GetColorTables(i).GetNumTags())
+            for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
             {
-                int k = 0;
                 // go thru global tags
-                while (k < tagList.size())
+                for (int k = 0; k < tagList.size(); k ++)
                 {
                     // if the global tag is active
                     if (activeTags[k])
@@ -961,12 +959,9 @@ QvisColorTableWindow::UpdateNames()
                             break;
                         }
                     }
-                    k ++;
                 }
-
                 // we only care if one tag was found
                 if (anyTagFound) break;
-                j ++;
             }
 
             // if any tag was found, we mark the color table as active
@@ -978,31 +973,27 @@ QvisColorTableWindow::UpdateNames()
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
             bool allTagsFound = true;
-            int j = 0;
             // go thru global tags
-            while (j < tagList.size())
+            for (int j = 0; j < tagList.size(); j ++)
             {
                 // if the global tag is active
                 if (activeTags[j])
                 {
                     bool foundLocalTag = false;
-                    int k = 0;
-                    while (k < colorAtts->GetColorTables(i).GetNumTags())
+                    for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
                     {
                         if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
                         {
                             foundLocalTag = true;
                             break;
                         }
-                        k ++;
                     }
-                    if (!foundLocalTag)
+                    if (! foundLocalTag)
                     {
                         allTagsFound = false;
                         break;
                     }
                 }
-                j ++;
             }
 
             // if all tags were found, we mark the color table as active
