@@ -766,6 +766,32 @@ QvisColorTableWindow::UpdateEditor()
 }
 
 // ****************************************************************************
+// Method: QvisColorTableWindow::AddToTagTable
+//
+// Purpose:
+//   Adds entries to the tag table. Called by AddGlobalTag().
+//
+// Programmer: Justin Privitera
+// Creation:   Mon Jun 27 17:30:16 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::AddToTagTable(std::string currtag, int index)
+{
+    QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+    item->setCheckState(0, activeTags[index] ? Qt::Checked : Qt::Unchecked);
+    item->setText(1, currtag.c_str());
+    // this next column is secret and is for passing around the tag index
+    // should allow you to have up to 10^10 tags
+    char buf[10];
+    sprintf(buf, "%d", index);
+    item->setText(2, buf);
+}
+
+// ****************************************************************************
 // Method: QvisColorTableWindow::AddGlobalTag
 //
 // Purpose:
@@ -776,45 +802,37 @@ QvisColorTableWindow::UpdateEditor()
 // Creation:   Tue Jun  7 12:36:55 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Mon Jun 27 17:33:23 PDT 2022
+//    Added call to AddToTagTable() to reduce code bloat.
 //
 // ****************************************************************************
 
 void
-QvisColorTableWindow::AddGlobalTag(std::string currtag, bool run_before)
+QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 {
     // if the given tag is NOT in the global tag list
     if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
     {
         tagList.push_back(currtag);
-        QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
         // make the "Standard" tag active the very first time the tags are enabled
-        if (currtag == "Standard" && !run_before)
-        {
+        if (currtag == "Standard" && !first_time)
             activeTags.push_back(true);
-            item->setCheckState(0, Qt::Checked);
-        }
         else
-        {
             activeTags.push_back(false);
-            item->setCheckState(0, Qt::Unchecked);
-        }
-        item->setText(1, currtag.c_str());
-        // this next column is secret and is for passing around the tag index
-        // should allow you to have up to 10^10 tags
-        char buf[10];
-        sprintf(buf, "%d", tagList.size() - 1);
-        item->setText(2, buf);
+        AddToTagTable(currtag, tagList.size() - 1);
     }
     else
     {
+        // We only want to run this check if the first case is not true.
         QList<QTreeWidgetItem*> items = tagTable->findItems(
             QString::fromStdString(currtag), Qt::MatchExactly, 1);
-        // if the given tag IS in the global tag list but does not have a tagTable entry
+        // If the given tag IS in the global tag list but does not have a tagTable entry
         if (items.count() == 0)
         {
-            QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-            // get index of tag in taglist
+            // Get index of tag in taglist
             int index = 0;
+            // This index is guaranteed to be found, since if it wasn't found then 
+            // the first case up above would be true.
             for (int i = 0; i < tagList.size(); i ++)
             {
                 if (tagList[i] == currtag)
@@ -823,22 +841,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool run_before)
                     break;
                 }
             }
-
-            if (activeTags[index])
-            {
-                item->setCheckState(0, Qt::Checked);            
-            }
-            else
-            {
-                item->setCheckState(0, Qt::Unchecked);            
-            }
-
-            item->setText(1, currtag.c_str());
-            // this next column is secret and is for passing around the tag index
-            // should allow you to have up to 10^10 tags
-            char buf[10];
-            sprintf(buf, "%d", index);
-            item->setText(2, buf);
+            AddToTagTable(currtag, index);
         }
     }
 }

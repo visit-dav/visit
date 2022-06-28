@@ -107,6 +107,7 @@ protected:
     void UpdateColorControlPoints();
     void UpdateDiscreteSettings();
     void AddGlobalTag(std::string currtag, bool run_before);
+    void AddToTagTable(std::string currtag, int index);
     void UpdateTags();
     void UpdateNames();
     void Apply(bool ignore = false);
