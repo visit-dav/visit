@@ -815,7 +815,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
     {
         tagList.push_back(currtag);
         // make the "Standard" tag active the very first time the tags are enabled
-        if (currtag == "Standard" && !first_time)
+        if (currtag == "Standard" && first_time)
             activeTags.push_back(true);
         else
             activeTags.push_back(false);
@@ -863,7 +863,7 @@ void
 QvisColorTableWindow::UpdateTags()
 {
     // signal blocking SHOULD occur in the caller
-    static bool run_before = false;
+    static bool first_time = true;
     if (tagFilterToggle->isChecked())
     {
         // populate tags list
@@ -878,10 +878,10 @@ QvisColorTableWindow::UpdateTags()
             for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
             {
                 // add the tag if it is not already in the global tag list
-                AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), run_before);
+                AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), first_time);
             }
         }
-        run_before = true;
+        first_time = false;
         tagTable->sortByColumn(1, Qt::AscendingOrder);
     }
     // signal unblocking SHOULD occur in the caller
