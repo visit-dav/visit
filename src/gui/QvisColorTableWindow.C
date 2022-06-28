@@ -862,7 +862,9 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 void
 QvisColorTableWindow::UpdateTags()
 {
-    // signal blocking SHOULD occur in the caller
+    // Signal blocking SHOULD occur in the caller.
+    // We want the 'Standard' tag to be checked the very first time tag
+    // filtering is enabled, hence the inclusion of `first_time`.
     static bool first_time = true;
     if (tagFilterToggle->isChecked())
     {
@@ -930,13 +932,13 @@ QvisColorTableWindow::UpdateNames()
 
     // Clear out the existing names.
     nameListBox->clear();
+    nameListBox->setRootIsDecorated(false);
 
     // Put all of the color table names into the tree.
     bool doTags = tagFilterToggle->isChecked();
 
     if(! doTags)
     {
-        nameListBox->setRootIsDecorated(false);
         for(int i = 0; i < colorAtts->GetNumColorTables(); ++i)
         {
             QString item(colorAtts->GetNames()[i].c_str());
@@ -947,95 +949,93 @@ QvisColorTableWindow::UpdateNames()
         // set all color tables to active
         colorAtts->SetAllActive();
     }
-
-    if (doTags && tagsMatchAny)
+    else
     {
-        nameListBox->setRootIsDecorated(false);
-        for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
+        if (tagsMatchAny)
         {
-            bool anyTagFound = false;
-            int j = 0;
-            // go thru local tags
-            while (j < colorAtts->GetColorTables(i).GetNumTags())
+            for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
             {
-                int k = 0;
-                // go thru global tags
-                while (k < tagList.size())
+                bool anyTagFound = false;
+                int j = 0;
+                // go thru local tags
+                while (j < colorAtts->GetColorTables(i).GetNumTags())
                 {
-                    // if the global tag is active
-                    if (activeTags[k])
-                    {
-                        // and if the global tag is the same as our current local tag 
-                        if (tagList[k] == colorAtts->GetColorTables(i).GetTag(j))
-                        {
-                            // any tag was found
-                            anyTagFound = true;
-                            break;
-                        }
-                    }
-                    k ++;
-                }
-
-                // we only care if one tag was found
-                if (anyTagFound) break;
-                j ++;
-            }
-
-            // if any tag was found, we add the color table to the list
-            if (anyTagFound)
-            {
-                QString item(colorAtts->GetNames()[i].c_str());
-                QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
-                treeItem->setText(0, item);
-                nameListBox->addTopLevelItem(treeItem);
-            }
-            colorAtts->SetActiveElement(i, anyTagFound);
-        }
-    }
-
-    // so tags must match all
-    if (doTags && !tagsMatchAny)
-    {
-        nameListBox->setRootIsDecorated(false);
-        for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
-        {
-            bool allTagsFound = true;
-            int j = 0;
-            // go thru global tags
-            while (j < tagList.size())
-            {
-                // if the global tag is active
-                if (activeTags[j])
-                {
-                    bool foundLocalTag = false;
                     int k = 0;
-                    while (k < colorAtts->GetColorTables(i).GetNumTags())
+                    // go thru global tags
+                    while (k < tagList.size())
                     {
-                        if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
+                        // if the global tag is active
+                        if (activeTags[k])
                         {
-                            foundLocalTag = true;
-                            break;
+                            // and if the global tag is the same as our current local tag 
+                            if (tagList[k] == colorAtts->GetColorTables(i).GetTag(j))
+                            {
+                                // any tag was found
+                                anyTagFound = true;
+                                break;
+                            }
                         }
                         k ++;
                     }
-                    if (!foundLocalTag)
-                    {
-                        allTagsFound = false;
-                        break;
-                    }
-                }
-                j ++;
-            }
 
-            // if all tags were found, we add the color table to the list
-            if (allTagsFound)
-            {
-                QString item(colorAtts->GetNames()[i].c_str());
-                QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
-                treeItem->setText(0, item);
-                nameListBox->addTopLevelItem(treeItem);
+                    // we only care if one tag was found
+                    if (anyTagFound) break;
+                    j ++;
+                }
+
+                // if any tag was found, we add the color table to the list
+                if (anyTagFound)
+                {
+                    QString item(colorAtts->GetNames()[i].c_str());
+                    QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
+                    treeItem->setText(0, item);
+                    nameListBox->addTopLevelItem(treeItem);
+                }
+                colorAtts->SetActiveElement(i, anyTagFound);
             }
-            colorAtts->SetActiveElement(i, allTagsFound);
+        }
+        else // so tags must match all
+        {
+            for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
+            {
+                bool allTagsFound = true;
+                int j = 0;
+                // go thru global tags
+                while (j < tagList.size())
+                {
+                    // if the global tag is active
+                    if (activeTags[j])
+                    {
+                        bool foundLocalTag = false;
+                        int k = 0;
+                        while (k < colorAtts->GetColorTables(i).GetNumTags())
+                        {
+                            if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
+                            {
+                                foundLocalTag = true;
+                                break;
+                            }
+                            k ++;
+                        }
+                        if (!foundLocalTag)
+                        {
+                            allTagsFound = false;
+                            break;
+                        }
+                    }
+                    j ++;
+                }
+
+                // if all tags were found, we add the color table to the list
+                if (allTagsFound)
+                {
+                    QString item(colorAtts->GetNames()[i].c_str());
+                    QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
+                    treeItem->setText(0, item);
+                    nameListBox->addTopLevelItem(treeItem);
+                }
+                colorAtts->SetActiveElement(i, allTagsFound);
+            }
         }
     }
 
