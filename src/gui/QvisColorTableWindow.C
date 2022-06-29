@@ -955,13 +955,24 @@ QvisColorTableWindow::UpdateNames()
                         // if the current global tag is the same as our local tag
                         if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
                         {
-                            // any tag was found
                             tagFound = true;
                             break;
                         }
                     }
-                    // we only care if one tag was found + TODO
-                    // if both are true or both are false
+                    // If both are true, that means...
+                    // 1) tagsMatchAny is true so we only need one tag from 
+                    //    the global tag list to be present in the local tag
+                    //    list.
+                    // 2) tagFound is true, so there is no need to keep 
+                    //    searching for a tag that is in both the local and
+                    //    global tag lists. Thus we can end iteration early.
+                    // If both are false, that means...
+                    // 1) tagsMatchAny is false so we need every tag from the
+                    //    global tag list to be present in the local tag list.
+                    // 2) tagFound is false, so there exists a global tag that
+                    //    is not in the local tag list, hence we can give up 
+                    //    early because we know that this color table does not
+                    //    have every tag in the global tag list.
                     if (tagFound == tagsMatchAny)
                         break;
                 }
