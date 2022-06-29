@@ -942,28 +942,27 @@ QvisColorTableWindow::UpdateNames()
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
             bool anyTagFound = false;
-            // go thru local tags
-            for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
+            // go thru global tags
+            for (int j = 0; j < tagList.size(); j ++)
             {
-                // go thru global tags
-                for (int k = 0; k < tagList.size(); k ++)
+                // if the global tag is active
+                if (activeTags[j])
                 {
-                    // if the global tag is active
-                    if (activeTags[k])
+                    // go thru local tags
+                    for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
                     {
                         // and if the global tag is the same as our current local tag 
-                        if (tagList[k] == colorAtts->GetColorTables(i).GetTag(j))
+                        if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
                         {
                             // any tag was found
                             anyTagFound = true;
                             break;
                         }
                     }
+                    // we only care if one tag was found
+                    if (anyTagFound) break;
                 }
-                // we only care if one tag was found
-                if (anyTagFound) break;
             }
-
             // if any tag was found, we mark the color table as active
             colorAtts->SetActiveElement(i, anyTagFound);
         }
@@ -979,20 +978,17 @@ QvisColorTableWindow::UpdateNames()
                 // if the global tag is active
                 if (activeTags[j])
                 {
-                    bool foundLocalTag = false;
+                    allTagsFound = false;
+                    // go thru local tags
                     for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
                     {
                         if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
                         {
-                            foundLocalTag = true;
+                            allTagsFound = true;
                             break;
                         }
                     }
-                    if (! foundLocalTag)
-                    {
-                        allTagsFound = false;
-                        break;
-                    }
+                    if (! allTagsFound) break;
                 }
             }
 
