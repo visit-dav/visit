@@ -942,7 +942,7 @@ QvisColorTableWindow::UpdateNames()
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
             bool anyTagFound = false;
-            bool allTagsFound = true;
+            bool allTagsFound = false;
             // go thru global tags
             for (int j = 0; j < tagList.size(); j ++)
             {
@@ -950,10 +950,11 @@ QvisColorTableWindow::UpdateNames()
                 if (activeTags[j])
                 {
                     allTagsFound = false;
+                    anyTagFound = false;
                     // go thru local tags
                     for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
                     {
-                        // and if the global tag is the same as our current local tag 
+                        // if the current global tag is the same as our local tag
                         if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
                         {
                             // any tag was found
@@ -962,7 +963,7 @@ QvisColorTableWindow::UpdateNames()
                             break;
                         }
                     }
-                    // we only care if one tag was found
+                    // we only care if one tag was found + TODO
                     if ((anyTagFound && tagsMatchAny) || 
                         (!allTagsFound && !tagsMatchAny)) 
                         break;
