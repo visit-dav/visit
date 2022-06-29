@@ -119,7 +119,7 @@ def steps_bv(opts,ctx):
         bv_args += " " + opts["build_visit"]["args"]
     if "libs" in opts["build_visit"]:
         bv_args +=  " " + " ".join(["--%s" % l for l in opts["build_visit"]["libs"]])
-    bv_cmd   = "echo yes | ../visit/src/tools/dev/scripts/build_visit %s" % bv_args
+    bv_cmd   = "echo yes | /Users/miller86/visit/visit/33rc/src/tools/dev/scripts/build_visit %s" % bv_args
     ctx.actions["bv_run"] = shell(cmd=bv_cmd,
                                   description="building dependencies",
                                   working_dir=bv_working,
