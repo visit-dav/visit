@@ -299,6 +299,14 @@ function apply_qt_patch
                 sed -i "s/\/usr\/lib64/\/usr\/lib/" ./qtbase/mkspecs/linux-icc-64/qmake.conf
             fi
         fi
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            if [[ $(echo $MACOSX_DEPLOYMENT_TARGET | tr -d '.') -ge 1014 ]]; then
+                apply_qt_5142_macOS_1014_hunspell_patch
+                if [[ $? != 0 ]] ; then
+                    return 1
+                fi
+            fi
+        fi
     fi
     return 0
 }
@@ -619,7 +627,7 @@ EOF
         return 1
     fi
 
-    return 0;
+    return 0
 }
 
 function apply_qt_5142_linux_opengl_patch
@@ -677,7 +685,67 @@ EOF
         return 1
     fi
 
-    return 0;
+    return 0
+}
+
+function apply_qt_5142_macOS_1014_hunspell_patch
+{   
+    info "Patching qt 5.14.2 for macOS 10.14 hunspell"
+    patch -p0 <<EOF
+diff -c qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h.orig qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h
+*** qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h.orig
+--- qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellworker_p.h
+***************
+*** 48,54 ****
+  #include <QSharedPointer>
+  #include <QVector>
+  #include <QLoggingCategory>
+! #include <hunspell/hunspell.h>
+  #include <QtHunspellInputMethod/qhunspellinputmethod_global.h>
+  
+  QT_BEGIN_NAMESPACE
+--- 48,54 ----
+  #include <QSharedPointer>
+  #include <QVector>
+  #include <QLoggingCategory>
+! #include <hunspell.h>
+  #include <QtHunspellInputMethod/qhunspellinputmethod_global.h>
+  
+  QT_BEGIN_NAMESPACE
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 5.14.2 for macOS 10.14 hunspell failed."
+        return 1
+    fi
+
+    patch -p0 <<EOF
+diff -c qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp.orig qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp
+*** qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp.orig
+--- qtvirtualkeyboard/src/plugins/hunspell/hunspellinputmethod/hunspellinputmethod_p.cpp
+***************
+*** 29,35 ****
+  
+  #include <QtHunspellInputMethod/private/hunspellinputmethod_p_p.h>
+  #include <QtVirtualKeyboard/qvirtualkeyboardinputcontext.h>
+! #include <hunspell/hunspell.h>
+  #include <QStringList>
+  #include <QDir>
+  #include <QTextCodec>
+--- 29,35 ----
+  
+  #include <QtHunspellInputMethod/private/hunspellinputmethod_p_p.h>
+  #include <QtVirtualKeyboard/qvirtualkeyboardinputcontext.h>
+! #include <hunspell.h>
+  #include <QStringList>
+  #include <QDir>
+  #include <QTextCodec>
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Patching qt 5.14.2 for macOS 10.14 hunspell failed."
+        return 1
+    fi
+
+    return 0
 }
 
 function build_qt
