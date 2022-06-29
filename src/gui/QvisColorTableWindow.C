@@ -941,16 +941,14 @@ QvisColorTableWindow::UpdateNames()
     {
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
-            bool anyTagFound = false;
-            bool allTagsFound = false;
+            bool tagFound = false;
             // go thru global tags
             for (int j = 0; j < tagList.size(); j ++)
             {
                 // if the global tag is active
                 if (activeTags[j])
                 {
-                    allTagsFound = false;
-                    anyTagFound = false;
+                    tagFound = false;
                     // go thru local tags
                     for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
                     {
@@ -958,19 +956,18 @@ QvisColorTableWindow::UpdateNames()
                         if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
                         {
                             // any tag was found
-                            anyTagFound = true;
-                            allTagsFound = true;
+                            tagFound = true;
                             break;
                         }
                     }
                     // we only care if one tag was found + TODO
-                    if ((anyTagFound && tagsMatchAny) || 
-                        (!allTagsFound && !tagsMatchAny)) 
+                    // if both are true or both are false
+                    if (tagFound == tagsMatchAny)
                         break;
                 }
             }
             // we mark the color table as active
-            colorAtts->SetActiveElement(i, tagsMatchAny ? anyTagFound : allTagsFound);
+            colorAtts->SetActiveElement(i, tagFound);
         }
     }
 
