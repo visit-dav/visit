@@ -937,40 +937,11 @@ QvisColorTableWindow::UpdateNames()
     // if tagging is not enabled
     if(! tagFilterToggle->isChecked())
         colorAtts->SetAllActive(); // set all color tables to active
-    else if (tagsMatchAny)
+    else // tagging is enabled
     {
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
             bool anyTagFound = false;
-            // go thru global tags
-            for (int j = 0; j < tagList.size(); j ++)
-            {
-                // if the global tag is active
-                if (activeTags[j])
-                {
-                    // go thru local tags
-                    for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
-                    {
-                        // and if the global tag is the same as our current local tag 
-                        if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
-                        {
-                            // any tag was found
-                            anyTagFound = true;
-                            break;
-                        }
-                    }
-                    // we only care if one tag was found
-                    if (anyTagFound) break;
-                }
-            }
-            // if any tag was found, we mark the color table as active
-            colorAtts->SetActiveElement(i, anyTagFound);
-        }
-    }
-    else // so tags must match all + tagging is enabled
-    {
-        for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
-        {
             bool allTagsFound = true;
             // go thru global tags
             for (int j = 0; j < tagList.size(); j ++)
@@ -982,18 +953,23 @@ QvisColorTableWindow::UpdateNames()
                     // go thru local tags
                     for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
                     {
+                        // and if the global tag is the same as our current local tag 
                         if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
                         {
+                            // any tag was found
+                            anyTagFound = true;
                             allTagsFound = true;
                             break;
                         }
                     }
-                    if (! allTagsFound) break;
+                    // we only care if one tag was found
+                    if ((anyTagFound && tagsMatchAny) || 
+                        (!allTagsFound && !tagsMatchAny)) 
+                        break;
                 }
             }
-
-            // if all tags were found, we mark the color table as active
-            colorAtts->SetActiveElement(i, allTagsFound);
+            // we mark the color table as active
+            colorAtts->SetActiveElement(i, tagsMatchAny ? anyTagFound : allTagsFound);
         }
     }
 
