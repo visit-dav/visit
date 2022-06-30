@@ -42,6 +42,8 @@
     </Function>
     <Function name="SetActiveElement" user="true" member="true">
     </Function>
+    <Function name="GetActiveElement" user="true" member="true">
+    </Function>
     <Function name="SetAllActive" user="true" member="true">
     </Function>
     <Function name="ProcessOldVersions" user="true" member="true">
