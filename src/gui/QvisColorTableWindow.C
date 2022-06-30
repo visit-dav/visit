@@ -854,6 +854,9 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 //
 // Programmer: Justin Privitera
 // Creation:   Tue Jun  7 12:36:55 PDT 2022
+// 
+// Notes:
+//    Signal blocking and unblocking SHOULD occur in the caller.
 //
 // Modifications:
 //
@@ -862,7 +865,6 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 void
 QvisColorTableWindow::UpdateTags()
 {
-    // Signal blocking SHOULD occur in the caller.
     // We want the 'Standard' tag to be checked the very first time tag
     // filtering is enabled, hence the inclusion of `first_time`.
     static bool first_time = true;
@@ -872,21 +874,26 @@ QvisColorTableWindow::UpdateTags()
         // iterate thru each color table
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
-            // if this table doesn't have tags, then add the no-tags tag
-            if (colorAtts->GetColorTables(i).GetNumTags() == 0)
-                colorAtts->GetColorTables(i).AddTag("No Tags");
-
-            // iterate thru each tag in the given color table
-            for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
+            // only try to add tags if the ccpl thinks it has new info
+            if (colorAtts->GetColorTables(i).GetTagChangesMade())
             {
-                // add the tag if it is not already in the global tag list
-                AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), first_time);
+                // if this table doesn't have tags, then add the no-tags tag
+                if (colorAtts->GetColorTables(i).GetNumTags() == 0)
+                    colorAtts->GetColorTables(i).AddTag("No Tags");
+
+                // iterate thru each tag in the given color table
+                for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
+                {
+                    // add the tag if it is not already in the global tag list
+                    AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), first_time);
+                }
+                // tell the ccpl that we have taken note of all of its tag changes
+                colorAtts->GetColorTables(i).SetTagChangesMade(false);
             }
         }
         first_time = false;
         tagTable->sortByColumn(1, Qt::AscendingOrder);
     }
-    // signal unblocking SHOULD occur in the caller
 }
 
 // ****************************************************************************
@@ -959,6 +966,7 @@ QvisColorTableWindow::UpdateNames()
                             break;
                         }
                     }
+                    if (tagFound == tagsMatchAny)
                     // If both are true, that means...
                     // 1) tagsMatchAny is true so we only need one tag from 
                     //    the global tag list to be present in the local tag
@@ -973,11 +981,10 @@ QvisColorTableWindow::UpdateNames()
                     //    is not in the local tag list, hence we can give up 
                     //    early because we know that this color table does not
                     //    have every tag in the global tag list.
-                    if (tagFound == tagsMatchAny)
                         break;
                 }
             }
-            // we mark the color table as active
+            // we mark the color table as active or inactive
             colorAtts->SetActiveElement(i, tagFound);
         }
     }
@@ -1969,6 +1976,7 @@ QvisColorTableWindow::addColorTable()
             // Copy the default color table into the new color table.
             ColorControlPointList cpts(*ccpl);
             cpts.AddTag("User Defined");
+            cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
         else
@@ -1985,6 +1993,7 @@ QvisColorTableWindow::addColorTable()
             cpts.SetEqualSpacingFlag(false);
             cpts.SetDiscreteFlag(false);
             cpts.AddTag("User Defined");
+            cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
 

@@ -69,6 +69,7 @@ public:
     void SetDiscreteFlag(bool discreteFlag_);
     void SetExternalFlag(bool externalFlag_);
     void SetTagNames(const stringVector &tagNames_);
+    void SetTagChangesMade(bool tagChangesMade_);
 
     // Property getting methods
     const AttributeGroupVector &GetControlPoints() const;
@@ -79,6 +80,7 @@ public:
     bool               GetExternalFlag() const;
     const stringVector &GetTagNames() const;
           stringVector &GetTagNames();
+    bool               GetTagChangesMade() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -130,6 +132,7 @@ public:
         ID_discreteFlag,
         ID_externalFlag,
         ID_tagNames,
+        ID_tagChangesMade,
         ID__LAST
     };
 
@@ -142,11 +145,12 @@ private:
     bool                 discreteFlag;
     bool                 externalFlag;
     stringVector         tagNames;
+    bool                 tagChangesMade;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORCONTROLPOINTLIST_TMFS "a*ibbbs*"
+#define COLORCONTROLPOINTLIST_TMFS "a*ibbbs*b"
 
 #endif

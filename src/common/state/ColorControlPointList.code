@@ -806,7 +806,10 @@ ColorControlPointList::AddTag(std::string newtag)
 {
     // If the tag is already in the tag list then we will do nothing.
     if (!HasTag(newtag))
+    {
         tagNames.push_back(newtag);
+        tagChangesMade = true;
+    }
 }
 
 Function: ClearTags
@@ -829,6 +832,7 @@ void
 ColorControlPointList::ClearTags()
 {
     tagNames.clear();
+    tagChangesMade = true;
 }
 
 Function: GetTag
@@ -909,7 +913,6 @@ ColorControlPointList::GetTagsAsString()
     tags += tagNames[tagNames.size() - 1];
     return tags;
 }
-
 
 Function: HasTag
 Declaration: bool HasTag(std::string tag);
@@ -1026,5 +1029,32 @@ ColorControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
     obj->data->SetNumControlPoints(numItems);
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+Target: xml2atts
+Function: SetTagNames
+Declaration: void SetTagNames(const stringVector &tagNames_);
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::SetTagNames
+//
+// Purpose:
+//   Setter for names.
+//
+// Note:       There needs to be a custom setter.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Jun 29 16:38:18 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::SetTagNames(const stringVector &tagNames_)
+{
+    tagNames = tagNames_;
+    tagChangesMade = true;
+    Select(ID_tagNames, (void *)&tagNames);
 }
 

@@ -515,13 +515,13 @@ ColorTableAttributes::SetNames(const stringVector &names_)
 }
 
 Function: SetActive
-Declaration: virtual bool SetActive(const stringVector &names_);
+Declaration: virtual void SetActive(const stringVector &names_);
 Definition:
 // ****************************************************************************
 // Method: ColorTableAttributes::SetActive
 //
 // Purpose:
-//   Setter for names.
+//   Setter for active.
 //
 // Note:       There needs to be a custom setter.
 //

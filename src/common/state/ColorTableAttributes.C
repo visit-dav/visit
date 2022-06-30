@@ -700,7 +700,7 @@ ColorTableAttributes::SetNames(const stringVector &names_)
 // Method: ColorTableAttributes::SetActive
 //
 // Purpose:
-//   Setter for names.
+//   Setter for active.
 //
 // Note:       There needs to be a custom setter.
 //
