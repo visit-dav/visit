@@ -112,6 +112,7 @@ public:
     void RemoveColorTable(const std::string &name);
     void RemoveColorTable(int index);
     void SetActiveElement(int index, bool val);
+    bool GetActiveElement(int index);
     void SetAllActive();
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
