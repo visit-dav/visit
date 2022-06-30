@@ -1951,3 +1951,49 @@ void ColorControlPointList::SetNumControlPoints(const int n)
     Select(ID_controlPoints, (void*)&controlPoints);
 }
 
+// ****************************************************************************
+// Method: ColorControlPointList::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Justin Privitera
+// Creation:   June 27 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+ColorControlPointList::ProcessOldVersions(DataNode *parentNode,
+                                          const char *configVersion)
+{
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ColorControlPointList");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.3.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("categoryName")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("categoryName", "3.5.0"));
+#endif
+            searchNode->RemoveNode(k);
+        }
+    }
+#endif
+}
+

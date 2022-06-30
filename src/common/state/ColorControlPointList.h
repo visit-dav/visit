@@ -123,6 +123,7 @@ public:
     std::string GetTagsAsString();
     bool HasTag(std::string tag);
     void SetNumControlPoints(const int n);
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
