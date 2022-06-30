@@ -693,7 +693,8 @@ ColorControlPointList::SetExternalFlag(bool externalFlag_)
 // Purpose:
 //   Setter for names.
 //
-// Note:       There needs to be a custom setter.
+// Note:       There needs to be a custom setter to make sure that every time
+//             the tagNames are set, tagChangesMade is set to true.
 //
 // Programmer: Justin Privitera
 // Creation:   Wed Jun 29 16:38:18 PDT 2022
@@ -1747,6 +1748,8 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Set tagChangesMade to true every time a tag is added.
 //
 // ****************************************************************************
 
@@ -1771,6 +1774,8 @@ ColorControlPointList::AddTag(std::string newtag)
 // Creation:   Fri Jun  3 11:27:43 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Set tagChangesMade to true each time the tags are cleared.
 //
 // ****************************************************************************
 

@@ -1519,6 +1519,8 @@ ColorTableAttributes::RemoveColorTable(int index)
 // Creation:   Mon Jun  6 17:10:40 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Added guard to prevent index out of bound errors.
 //
 // ****************************************************************************
 

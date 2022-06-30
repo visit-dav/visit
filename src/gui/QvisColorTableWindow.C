@@ -804,6 +804,7 @@ QvisColorTableWindow::AddToTagTable(std::string currtag, int index)
 // Modifications:
 //    Justin Privitera, Mon Jun 27 17:33:23 PDT 2022
 //    Added call to AddToTagTable() to reduce code bloat.
+//    Renamed `run_before` to `first_time`.
 //
 // ****************************************************************************
 
@@ -859,6 +860,10 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 //    Signal blocking and unblocking SHOULD occur in the caller.
 //
 // Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Renamed `run_before` to `first_time`.
+//    Added guard to make sure code to fill tag table and tag list
+//    is only run as much as it needs to be run.
 //
 // ****************************************************************************
 
@@ -924,6 +929,9 @@ QvisColorTableWindow::UpdateTags()
 //   happens when tags are enabled). Also added guard at the end to make 
 //   sure the observer updates the color table buttons if settings are 
 //   loaded from config files.
+// 
+//   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//   Refactored the block that fills the namelistbox.
 //
 // ****************************************************************************
 
@@ -1956,6 +1964,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added default tag for user defined tables.
+// 
+//   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//   SetTagChangesMade for copied color tables.
 //
 // ****************************************************************************
 
@@ -1993,7 +2004,6 @@ QvisColorTableWindow::addColorTable()
             cpts.SetEqualSpacingFlag(false);
             cpts.SetDiscreteFlag(false);
             cpts.AddTag("User Defined");
-            cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
 
