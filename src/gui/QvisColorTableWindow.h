@@ -84,6 +84,9 @@ class QvisNoDefaultColorTableButton;
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added infrastructure for tags.
 // 
+//   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//   Added new function `AddToTagTable()`.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -107,6 +110,7 @@ protected:
     void UpdateColorControlPoints();
     void UpdateDiscreteSettings();
     void AddGlobalTag(std::string currtag, bool run_before);
+    void AddToTagTable(std::string currtag, int index);
     void UpdateTags();
     void UpdateNames();
     void Apply(bool ignore = false);
