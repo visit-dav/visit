@@ -44,8 +44,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Flatten() function has been added to the Python scripting interface; this function uses the new avtFlattenQuery to return the active plot data as a tabular, numpy compatible, 2D array.</li>
   <li>Changed "active" to "default" for everything related to color tables. This includes the GUI, in the Python scripting interface, and internally.</li>
   <li>Added support and examples of 2D structured grids representing surfaces in 3 dimensions.</li>
-  <li>Many new, color vision deficient (CVD) color tables from <a href="https://www.fabiocrameri.ch/visualisation/">Fabio Crameri</a> were added and assigned the category <code>CvdFriendlyCrameri</code></li>
-  <li>Existing Viridis CVD color tables were given a new category name, <code>CvdFriendlyViridis</code></li>
+  <li>Many new, color vision deficient (CVD) color tables from <a href="https://www.fabiocrameri.ch/visualisation/">Fabio Crameri</a> were added and assigned the tags <code>CvdFriendly</code> and <code>Crameri</code>.</li>
+  <li>Existing Viridis CVD color tables were given new tag names, <code>CvdFriendly</code> and <code>Viridis</code>.</li>
 </ul>
 
 <a name="Advanced_features"></a>
@@ -129,6 +129,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed a bug with the Python scripting where the PySide2 module wouldn't load when running one of the pre-built binaries.</li>
   <li>The Contour plot's fields were re-ordered internally to fix a bug where a command-recorded script of a Contour plot would crash the Python scripting interface if the number of contours had been increased from the default.</li>
   <li>The images and wording for Curve Overlay and Reflected Curve Overlay templates in the Save Movie Wizard were updated to demonstrate that they can be used on 3D plots, not just 2D plots.</li>
+  <li>Fixed a bug with the color table window where the list of color tables could be populated even when no tags were selected.</li>
 </ul>
 
 <a name="Configuration_changes"></a>
