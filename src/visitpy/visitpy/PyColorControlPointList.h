@@ -12,7 +12,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define COLORCONTROLPOINTLIST_NMETH 18
+#define COLORCONTROLPOINTLIST_NMETH 16
 void VISITPY_API           PyColorControlPointList_StartUp(ColorControlPointList *subj, void *data);
 void VISITPY_API           PyColorControlPointList_CloseDown();
 VISITPY_API PyMethodDef *  PyColorControlPointList_GetMethodTable(int *nMethods);

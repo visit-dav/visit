@@ -21,7 +21,7 @@
     </Field>
     <Field name="tagNames" label="tagNames" type="stringVector">
     </Field>
-    <Field name="tagChangesMade" label="tagChangesMade" type="bool">
+    <Field name="tagChangesMade" label="tagChangesMade" type="bool" internal="true" persistent="false">
       true
     </Field>
     <Function name="EvalCubicSpline" user="true" member="true" access="private">

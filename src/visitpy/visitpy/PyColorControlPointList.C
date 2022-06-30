@@ -108,11 +108,6 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
         snprintf(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
-    if(atts->GetTagChangesMade())
-        snprintf(tmpStr, 1000, "%stagChangesMade = 1\n", prefix);
-    else
-        snprintf(tmpStr, 1000, "%stagChangesMade = 0\n", prefix);
-    str += tmpStr;
     return str;
 }
 
@@ -482,66 +477,6 @@ ColorControlPointList_GetTagNames(PyObject *self, PyObject *args)
     return retval;
 }
 
-/*static*/ PyObject *
-ColorControlPointList_SetTagChangesMade(PyObject *self, PyObject *args)
-{
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
-
-    PyObject *packaged_args = 0;
-
-    // Handle args packaged into a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
-    {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyNumber_Check(packaged_args))
-            args = packaged_args;
-    }
-
-    if (PySequence_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "expecting a single number arg");
-    }
-
-    if (!PyNumber_Check(args))
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a number type");
-    }
-
-    long val = PyLong_AsLong(args);
-    bool cval = bool(val);
-
-    if (val == -1 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ bool");
-    }
-    if (fabs(double(val))>1.5E-7 && fabs((double(long(cval))-double(val))/double(val))>1.5E-7)
-    {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_ValueError, "arg not interpretable as C++ bool");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the tagChangesMade in the object.
-    obj->data->SetTagChangesMade(cval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ColorControlPointList_GetTagChangesMade(PyObject *self, PyObject *args)
-{
-    ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetTagChangesMade()?1L:0L);
-    return retval;
-}
-
 
 PyObject *
 ColorControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
@@ -571,8 +506,6 @@ PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
     {"GetDiscreteFlag", ColorControlPointList_GetDiscreteFlag, METH_VARARGS},
     {"SetTagNames", ColorControlPointList_SetTagNames, METH_VARARGS},
     {"GetTagNames", ColorControlPointList_GetTagNames, METH_VARARGS},
-    {"SetTagChangesMade", ColorControlPointList_SetTagChangesMade, METH_VARARGS},
-    {"GetTagChangesMade", ColorControlPointList_GetTagChangesMade, METH_VARARGS},
     {"SetNumControlPoints", ColorControlPointList_SetNumControlPoints, METH_VARARGS},
     {NULL, NULL}
 };
@@ -615,8 +548,6 @@ PyColorControlPointList_getattr(PyObject *self, char *name)
         return ColorControlPointList_GetDiscreteFlag(self, NULL);
     if(strcmp(name, "tagNames") == 0)
         return ColorControlPointList_GetTagNames(self, NULL);
-    if(strcmp(name, "tagChangesMade") == 0)
-        return ColorControlPointList_GetTagChangesMade(self, NULL);
 
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
 #error This code is obsolete in this version. Please remove it.
@@ -665,8 +596,6 @@ PyColorControlPointList_setattr(PyObject *self, char *name, PyObject *args)
         obj = ColorControlPointList_SetDiscreteFlag(self, args);
     else if(strcmp(name, "tagNames") == 0)
         obj = ColorControlPointList_SetTagNames(self, args);
-    else if(strcmp(name, "tagChangesMade") == 0)
-        obj = ColorControlPointList_SetTagChangesMade(self, args);
 
 #if VISIT_OBSOLETE_AT_VERSION(3,5,0)
 #error This code is obsolete in this version. Please remove it.
