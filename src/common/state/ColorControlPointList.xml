@@ -53,6 +53,7 @@
     <Function name="ColorControlPointList_SetNumControlPoints" user="true" member="true">
     </Function>
     <Function name="SetTagNames" user="false" member="true">
+    </Function>
     <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
   </Attribute>
