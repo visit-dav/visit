@@ -435,7 +435,7 @@ through the 3D mesh.
 8. Click *Apply* and *Dismiss*.
 9. Go to *Operators->Slicing->Slice*.
 10. Open the Slice operator attributes window.
-11. Set *Normal* to *Arbitrary* and to "0 1 0".
+11. Set *Normal* to *Arbitrary* and to "0 -1 0".
 12. Set *Origin* to *Intercept* and to "3".
 13. Uncheck *Project to 2D*.
 14. Click *Make default*, *Apply* and *Dismiss*.
@@ -493,9 +493,13 @@ cell-by-cell basis.
 
 You will then get the error message saying: *The 'normals' expression failed because The Surface normal expression can only be calculated on surfaces. Use the ExternalSurface operator to generate the external surface of this object. You must also use the DeferExpression operator to defer the evaluation of this expression until after the external surface operator*. In fact, VisIt_ cannot use the name *Mesh* which refers to the original 3D mesh. It needs to defer the evaluation until after the Slice operator is applied. Thus, we need to add the Defer Expression operator.
 
-8. Go to *Operators->Analysis->DeferExpression*.
-9. Open the DeferExpression operator attributes window.
-10. Go to *Variables->Vectors->normals*.
+8. Go to *Operators->Geometry->ExternalSurface*.
+9. Open the ExternalSurface operator attribues window.
+10. Uncheck *Find external edges for 2D datasets*. 
+11. Click *Apply* and *Dismiss*.
+12. Go to *Operators->Analysis->DeferExpression*.
+13. Open the DeferExpression operator attributes window.
+14. Go to *Variables->Vectors->normals*.
 
 .. figure:: images/Aneurysm-DeferExpression.png
 
