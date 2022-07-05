@@ -65,6 +65,7 @@ void ColorControlPointList::Init()
     equalSpacingFlag = false;
     discreteFlag = false;
     externalFlag = false;
+    tagChangesMade = true;
 
     ColorControlPointList::SelectAll();
 }
@@ -107,7 +108,8 @@ void ColorControlPointList::Copy(const ColorControlPointList &obj)
     equalSpacingFlag = obj.equalSpacingFlag;
     discreteFlag = obj.discreteFlag;
     externalFlag = obj.externalFlag;
-    categoryName = obj.categoryName;
+    tagNames = obj.tagNames;
+    tagChangesMade = obj.tagChangesMade;
 
     ColorControlPointList::SelectAll();
 }
@@ -283,7 +285,8 @@ ColorControlPointList::operator == (const ColorControlPointList &obj) const
             (equalSpacingFlag == obj.equalSpacingFlag) &&
             (discreteFlag == obj.discreteFlag) &&
             (externalFlag == obj.externalFlag) &&
-            (categoryName == obj.categoryName));
+            (tagNames == obj.tagNames) &&
+            (tagChangesMade == obj.tagChangesMade));
 }
 
 // ****************************************************************************
@@ -432,7 +435,8 @@ ColorControlPointList::SelectAll()
     Select(ID_equalSpacingFlag, (void *)&equalSpacingFlag);
     Select(ID_discreteFlag,     (void *)&discreteFlag);
     Select(ID_externalFlag,     (void *)&externalFlag);
-    Select(ID_categoryName,     (void *)&categoryName);
+    Select(ID_tagNames,         (void *)&tagNames);
+    Select(ID_tagChangesMade,   (void *)&tagChangesMade);
 }
 
 // ****************************************************************************
@@ -474,6 +478,8 @@ ColorControlPointList::CreateSubAttributeGroup(int)
 // Creation:   omitted
 //
 // Modifications:
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -513,10 +519,10 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("discrete", discreteFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_categoryName, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tagNames, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("category", categoryName));
+        node->AddNode(new DataNode("tags", tagNames));
     }
 
     // Add the node to the parent node.
@@ -548,6 +554,9 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
 //   Kathleen Biagas, Thu Jul 31 09:28:48 PDT 2014
 //   Modified to reflect how 'equalSpacingFlag' and 'discreteFlag' are
 //   actually saved: as 'equal' and 'discrete'.  Add category.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -643,8 +652,8 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
         SetExternalFlag(node->AsBool());
     else if((node = searchNode->GetNode("externalFlag")) != 0)
         SetExternalFlag(node->AsBool());
-    if((node = searchNode->GetNode("category")) != 0)
-        SetCategoryName(node->AsString());
+    if((node = searchNode->GetNode("tags")) != 0)
+        SetTagNames(node->AsStringVector());
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
@@ -678,11 +687,35 @@ ColorControlPointList::SetExternalFlag(bool externalFlag_)
     Select(ID_externalFlag, (void *)&externalFlag);
 }
 
+// ****************************************************************************
+// Method: ColorControlPointList::SetTagNames
+//
+// Purpose:
+//   Setter for names.
+//
+// Note:       There needs to be a custom setter to make sure that every time
+//             the tagNames are set, tagChangesMade is set to true.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Jun 29 16:38:18 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
 void
-ColorControlPointList::SetCategoryName(const std::string &categoryName_)
+ColorControlPointList::SetTagNames(const stringVector &tagNames_)
 {
-    categoryName = categoryName_;
-    Select(ID_categoryName, (void *)&categoryName);
+    tagNames = tagNames_;
+    tagChangesMade = true;
+    Select(ID_tagNames, (void *)&tagNames);
+}
+
+void
+ColorControlPointList::SetTagChangesMade(bool tagChangesMade_)
+{
+    tagChangesMade = tagChangesMade_;
+    Select(ID_tagChangesMade, (void *)&tagChangesMade);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -725,16 +758,22 @@ ColorControlPointList::GetExternalFlag() const
     return externalFlag;
 }
 
-const std::string &
-ColorControlPointList::GetCategoryName() const
+const stringVector &
+ColorControlPointList::GetTagNames() const
 {
-    return categoryName;
+    return tagNames;
 }
 
-std::string &
-ColorControlPointList::GetCategoryName()
+stringVector &
+ColorControlPointList::GetTagNames()
 {
-    return categoryName;
+    return tagNames;
+}
+
+bool
+ColorControlPointList::GetTagChangesMade() const
+{
+    return tagChangesMade;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -748,9 +787,9 @@ ColorControlPointList::SelectControlPoints()
 }
 
 void
-ColorControlPointList::SelectCategoryName()
+ColorControlPointList::SelectTagNames()
 {
-    Select(ID_categoryName, (void *)&categoryName);
+    Select(ID_tagNames, (void *)&tagNames);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -979,7 +1018,8 @@ ColorControlPointList::GetFieldName(int index) const
     case ID_equalSpacingFlag: return "equalSpacingFlag";
     case ID_discreteFlag:     return "discreteFlag";
     case ID_externalFlag:     return "externalFlag";
-    case ID_categoryName:     return "categoryName";
+    case ID_tagNames:         return "tagNames";
+    case ID_tagChangesMade:   return "tagChangesMade";
     default:  return "invalid index";
     }
 }
@@ -1009,7 +1049,8 @@ ColorControlPointList::GetFieldType(int index) const
     case ID_equalSpacingFlag: return FieldType_bool;
     case ID_discreteFlag:     return FieldType_bool;
     case ID_externalFlag:     return FieldType_bool;
-    case ID_categoryName:     return FieldType_string;
+    case ID_tagNames:         return FieldType_stringVector;
+    case ID_tagChangesMade:   return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1039,7 +1080,8 @@ ColorControlPointList::GetFieldTypeName(int index) const
     case ID_equalSpacingFlag: return "bool";
     case ID_discreteFlag:     return "bool";
     case ID_externalFlag:     return "bool";
-    case ID_categoryName:     return "string";
+    case ID_tagNames:         return "stringVector";
+    case ID_tagChangesMade:   return "bool";
     default:  return "invalid index";
     }
 }
@@ -1100,9 +1142,14 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (externalFlag == obj.externalFlag);
         }
         break;
-    case ID_categoryName:
+    case ID_tagNames:
         {  // new scope
-        retval = (categoryName == obj.categoryName);
+        retval = (tagNames == obj.tagNames);
+        }
+        break;
+    case ID_tagChangesMade:
+        {  // new scope
+        retval = (tagChangesMade == obj.tagChangesMade);
         }
         break;
     default: retval = false;
@@ -1615,6 +1662,9 @@ ColorControlPointList::GetColors(unsigned char *rgb,
 //
 //   Brad Whitlock, Fri Apr 27 11:28:11 PDT 2012
 //   Change smoothingFlag to smoothing and make it an enum.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -1673,10 +1723,10 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
         node->AddNode(new DataNode("discrete", discreteFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_categoryName, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tagNames, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("category", categoryName));
+        node->AddNode(new DataNode("tags", tagNames));
     }
 
     // Add the node to the parent node.
@@ -1689,6 +1739,146 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 }
 
 // ****************************************************************************
+// Method: ColorControlPointList::AddTag
+//
+// Purpose:
+//   Add the provided tag to the list of local tags.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Set tagChangesMade to true every time a tag is added.
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::AddTag(std::string newtag)
+{
+    // If the tag is already in the tag list then we will do nothing.
+    if (!HasTag(newtag))
+    {
+        tagNames.push_back(newtag);
+        tagChangesMade = true;
+    }
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::ClearTags
+//
+// Purpose:
+//   Removes all tags from the ccpl.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Set tagChangesMade to true each time the tags are cleared.
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::ClearTags()
+{
+    tagNames.clear();
+    tagChangesMade = true;
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::GetTag
+//
+// Purpose:
+//   Gets the name of the tag at the specified index.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+ColorControlPointList::GetTag(int index)
+{
+    if (index >= 0 && index < tagNames.size())
+        return tagNames[index];
+    return "";
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::GetNumTags
+//
+// Purpose:
+//   Gets the number of tags associated with this ccpl.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+ColorControlPointList::GetNumTags()
+{
+    return tagNames.size();
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::GetTagsAsString
+//
+// Purpose:
+//   Formats the tags as a string for use in the tag line edit box in the gui.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+ColorControlPointList::GetTagsAsString()
+{
+    int numtags = tagNames.size();
+    if (numtags == 0)
+        return "";
+    if (numtags == 1)
+        return tagNames[0];
+    std::string tags = "";
+    for (int i = 0; i < tagNames.size() - 1; i ++)
+    {
+        tags += tagNames[i] + ",";
+    }
+    tags += tagNames[tagNames.size() - 1];
+    return tags;
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::HasTag
+//
+// Purpose:
+//   Determines if the ccpl has the given tag associated with it.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Jun  8 11:46:21 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+ColorControlPointList::HasTag(std::string tag)
+{
+    for (int i = 0; i < tagNames.size(); i ++)
+        if (tagNames[i] == tag)
+            return true;
+    return false;
+}
+
+// ****************************************************************************
 // Method: ColorControlPointList::SetNumControlPoints
 //
 // Purpose:
@@ -1698,7 +1888,7 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
 //
 // Programmer: Kathleen Biagas
 // Creation:   May 18, 2022
-//
+// 
 // Modifications:
 //
 // ****************************************************************************
@@ -1759,5 +1949,51 @@ void ColorControlPointList::SetNumControlPoints(const int n)
     }
 
     Select(ID_controlPoints, (void*)&controlPoints);
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Justin Privitera
+// Creation:   June 27 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+ColorControlPointList::ProcessOldVersions(DataNode *parentNode,
+                                          const char *configVersion)
+{
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ColorControlPointList");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.3.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("categoryName")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("categoryName", "3.5.0"));
+#endif
+            searchNode->RemoveNode(k);
+        }
+    }
+#endif
 }
 

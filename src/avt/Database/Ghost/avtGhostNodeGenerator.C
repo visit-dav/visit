@@ -67,6 +67,11 @@ avtGhostNodeGenerator::~avtGhostNodeGenerator()
 //
 //  Modifications:
 //
+//    Mark C. Miller, Mon Jun 13 17:48:54 PDT 2022
+//    Handle a structured grid (of quads) representing a toplogically 2D
+//    surface in 3 space. Basically, this involves setting some params that
+//    cause adjustments or wholesale skips in the loops over x, y and/or z
+//    faces.
 // ****************************************************************************
 
 bool
@@ -192,7 +197,43 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         int ny2 = ndims[1] - 1;
         int nz2 = ndims[2] - 1;
 
-        nFaces[i] = nx2 * ny2 * 2 + nx2 * nz2 * 2 + ny2 * nz2 * 2;
+        //
+        // Params to manage adjustments in looping logic over faces.
+        // For common cases, these defaults are obeyed...all X, Y
+        // and Z loops are done and no changes are made to
+        // incrementing logic (e.g. zero is added to increment).
+        //
+        bool doX, doY, doZ; doX = doY = doZ = true;
+        int nxD, nyD, nzD; nxD = nyD = nzD = 0;
+
+        //
+        // Handle possibility of this being a structured grid of quads
+        // but defining a surface in 3 space. There are three options
+        // depending on which of the 3 (logical) dimensions is set to
+        // a size of 1 node thick.
+        //
+        if (ndims[2] == 1)      // z is one node thick
+        {
+            nFaces[i] = nx2 * ny2;
+            doX = doY = false; // do only Z faces
+            nzD = 1;           // adjust z-inc of outer loop
+        }
+        else if (ndims[1] == 1) // y is one node tick
+        {
+            nFaces[i] = nx2 * nz2;
+            doX = doZ = false; // do only Y faces
+            nyD = 1;           // adjust y-inc of outer loop
+        }
+        else if (ndims[0] == 1) // x is one node thick
+        {
+            nFaces[i] = ny2 * nz2;
+            doY = doZ = false; // do only X faces
+            nxD = 1;           // adjust x-inc of outer loop
+        }
+        else
+        {
+            nFaces[i] = nx2 * ny2 * 2 + nx2 * nz2 * 2 + ny2 * nz2 * 2;
+        }
 
         faceExternal[i] = new bool[nFaces[i]];
         bool *external = faceExternal[i];
@@ -204,7 +245,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         int iface = 0;
 
         // Do the x faces.
-        for (int ix = 0; ix < nx; ix += nx-1)
+        for (int ix = 0; ix < nx && doX; ix += nx-1+nxD)
         {
             for (int iy = 0; iy < ny2; iy++)
             {
@@ -245,7 +286,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         }
 
         // Do the y faces.
-        for (int iy = 0; iy < ny; iy += ny-1)
+        for (int iy = 0; iy < ny && doY; iy += ny-1+nyD)
         {
             for (int ix = 0; ix < nx2; ix++)
             {
@@ -287,7 +328,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         }
 
         // Do the z faces.
-        for (int iz = 0; iz < nz; iz += nz-1)
+        for (int iz = 0; iz < nz && doZ; iz += (nz-1+nzD))
         {
             for (int ix = 0; ix < nx2; ix++)
             {
@@ -551,6 +592,40 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         int nz2 = ndims[2] - 1;
 
         //
+        // Params to manage adjustments in looping logic over faces.
+        // For common cases, these defaults are obeyed...all X, Y
+        // and Z loops are done and no changes are made to
+        // incrementing logic (e.g. zero is added to increment).
+        //
+        bool doX, doY, doZ; doX = doY = doZ = true;
+        int nxD, nyD, nzD; nxD = nyD = nzD = 0;
+
+        //
+        // Handle possibility of this being a structured grid of quads
+        // but defining a surface in 3 space. There are three options
+        // depending on which of the 3 (logical) dimensions is set to
+        // a size of 1 node thick.
+        //
+        if (ndims[2] == 1)      // z is one node thick
+        {
+            nFaces[i] = nx2 * ny2;
+            doX = doY = false; // do only Z faces
+            nzD = 1;           // adjust z-inc of outer loop
+        }
+        else if (ndims[1] == 1) // y is one node tick
+        {
+            nFaces[i] = nx2 * nz2;
+            doX = doZ = false; // do only Y faces
+            nyD = 1;           // adjust y-inc of outer loop
+        }
+        else if (ndims[0] == 1) // x is one node thick
+        {
+            nFaces[i] = ny2 * nz2;
+            doY = doZ = false; // do only X faces
+            nxD = 1;           // adjust x-inc of outer loop
+        }
+
+        //
         // Create the ghost nodes array, initializing it to no ghost
         // nodes.
         //
@@ -571,7 +646,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         bool *external = faceExternal[i];
 
         // Do the x faces.
-        for (int ix = 0; ix < nx; ix += nx-1)
+        for (int ix = 0; ix < nx && doX; ix += nx-1+nxD)
         {
             for (int iy = 0; iy < ny2; iy++)
             {
@@ -595,7 +670,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         }
 
         // Do the y faces.
-        for (int iy = 0; iy < ny; iy += ny-1)
+        for (int iy = 0; iy < ny && doY; iy += ny-1+nyD)
         {
             for (int ix = 0; ix < nx2; ix++)
             {
@@ -619,7 +694,7 @@ avtGhostNodeGenerator::CreateGhosts(avtDatasetCollection &ds)
         }
 
         // Do the z faces.
-        for (int iz = 0; iz < nz; iz += nz-1)
+        for (int iz = 0; iz < nz && doZ; iz += nz-1+nzD)
         {
             for (int ix = 0; ix < nx2; ix++)
             {

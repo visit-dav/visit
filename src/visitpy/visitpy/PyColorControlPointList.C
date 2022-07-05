@@ -92,8 +92,22 @@ PyColorControlPointList_ToString(const ColorControlPointList *atts, const char *
     else
         snprintf(tmpStr, 1000, "%sdiscreteFlag = 0\n", prefix);
     str += tmpStr;
-    snprintf(tmpStr, 1000, "%scategoryName = \"%s\"\n", prefix, atts->GetCategoryName().c_str());
-    str += tmpStr;
+    {   const stringVector &tagNames = atts->GetTagNames();
+        snprintf(tmpStr, 1000, "%stagNames = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < tagNames.size(); ++i)
+        {
+            snprintf(tmpStr, 1000, "\"%s\"", tagNames[i].c_str());
+            str += tmpStr;
+            if(i < tagNames.size() - 1)
+            {
+                snprintf(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        snprintf(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -395,51 +409,71 @@ ColorControlPointList_GetDiscreteFlag(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-ColorControlPointList_SetCategoryName(PyObject *self, PyObject *args)
+ColorControlPointList_SetTagNames(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
 
-    PyObject *packaged_args = 0;
+    stringVector vec;
 
-    // Handle args packaged as first member of a tuple of size one
-    // if we think the unpackaged args matches our needs
-    if (PySequence_Check(args) && PySequence_Size(args) == 1)
+    if (PyUnicode_Check(args))
     {
-        packaged_args = PySequence_GetItem(args, 0);
-        if (PyUnicode_Check(packaged_args))
-            args = packaged_args;
+        char const *val = PyUnicode_AsUTF8(args);
+        std::string cval = std::string(val);
+        if (val == 0 && PyErr_Occurred())
+        {
+            PyErr_Clear();
+            return PyErr_Format(PyExc_TypeError, "arg not interpretable as C++ string");
+        }
+        vec.resize(1);
+        vec[0] = cval;
     }
-
-    if (!PyUnicode_Check(args))
+    else if (PySequence_Check(args))
     {
-        Py_XDECREF(packaged_args);
-        return PyErr_Format(PyExc_TypeError, "arg is not a unicode string");
+        vec.resize(PySequence_Size(args));
+        for (Py_ssize_t i = 0; i < PySequence_Size(args); i++)
+        {
+            PyObject *item = PySequence_GetItem(args, i);
+
+            if (!PyUnicode_Check(item))
+            {
+                Py_DECREF(item);
+                return PyErr_Format(PyExc_TypeError, "arg %d is not a unicode string", (int) i);
+            }
+
+            char const *val = PyUnicode_AsUTF8(item);
+            std::string cval = std::string(val);
+
+            if (val == 0 && PyErr_Occurred())
+            {
+                Py_DECREF(item);
+                PyErr_Clear();
+                return PyErr_Format(PyExc_TypeError, "arg %d not interpretable as C++ string", (int) i);
+            }
+            Py_DECREF(item);
+
+            vec[i] = cval;
+        }
     }
+    else
+        return PyErr_Format(PyExc_TypeError, "arg(s) must be one or more string(s)");
 
-    char const *val = PyUnicode_AsUTF8(args);
-    std::string cval = std::string(val);
-
-    if (val == 0 && PyErr_Occurred())
-    {
-        Py_XDECREF(packaged_args);
-        PyErr_Clear();
-        return PyErr_Format(PyExc_TypeError, "arg not interpretable as utf8 string");
-    }
-
-    Py_XDECREF(packaged_args);
-
-    // Set the categoryName in the object.
-    obj->data->SetCategoryName(cval);
+    obj->data->GetTagNames() = vec;
+    // Mark the tagNames in the object as modified.
+    obj->data->SelectTagNames();
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-ColorControlPointList_GetCategoryName(PyObject *self, PyObject *args)
+ColorControlPointList_GetTagNames(PyObject *self, PyObject *args)
 {
     ColorControlPointListObject *obj = (ColorControlPointListObject *)self;
-    PyObject *retval = PyString_FromString(obj->data->GetCategoryName().c_str());
+    // Allocate a tuple the with enough entries to hold the tagNames.
+    const stringVector &tagNames = obj->data->GetTagNames();
+    PyObject *retval = PyTuple_New(tagNames.size());
+    for(size_t i = 0; i < tagNames.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(tagNames[i].c_str()));
     return retval;
 }
 
@@ -470,8 +504,8 @@ PyMethodDef PyColorControlPointList_methods[COLORCONTROLPOINTLIST_NMETH] = {
     {"GetEqualSpacingFlag", ColorControlPointList_GetEqualSpacingFlag, METH_VARARGS},
     {"SetDiscreteFlag", ColorControlPointList_SetDiscreteFlag, METH_VARARGS},
     {"GetDiscreteFlag", ColorControlPointList_GetDiscreteFlag, METH_VARARGS},
-    {"SetCategoryName", ColorControlPointList_SetCategoryName, METH_VARARGS},
-    {"GetCategoryName", ColorControlPointList_GetCategoryName, METH_VARARGS},
+    {"SetTagNames", ColorControlPointList_SetTagNames, METH_VARARGS},
+    {"GetTagNames", ColorControlPointList_GetTagNames, METH_VARARGS},
     {"SetNumControlPoints", ColorControlPointList_SetNumControlPoints, METH_VARARGS},
     {NULL, NULL}
 };
@@ -494,6 +528,7 @@ static PyObject *ColorControlPointList_richcompare(PyObject *self, PyObject *oth
 PyObject *
 PyColorControlPointList_getattr(PyObject *self, char *name)
 {
+#include <visit-config.h>
     if(strcmp(name, "controlPoints") == 0)
         return ColorControlPointList_GetControlPoints(self, NULL);
     if(strcmp(name, "smoothing") == 0)
@@ -511,9 +546,26 @@ PyColorControlPointList_getattr(PyObject *self, char *name)
         return ColorControlPointList_GetEqualSpacingFlag(self, NULL);
     if(strcmp(name, "discreteFlag") == 0)
         return ColorControlPointList_GetDiscreteFlag(self, NULL);
-    if(strcmp(name, "categoryName") == 0)
-        return ColorControlPointList_GetCategoryName(self, NULL);
+    if(strcmp(name, "tagNames") == 0)
+        return ColorControlPointList_GetTagNames(self, NULL);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorControlPointList
+
+    //
+    // Removed in 3.3.0
+    //
+    if(strcmp(name, "categoryName") == 0)
+    {
+        PyErr_WarnEx(NULL,
+                    "categoryName is no longer a valid ColorControlPointList "
+                    "attribute.\nIt's value is being ignored, please remove "
+                    "it from your script.\n", 3);
+        return PyString_FromString("");
+    }
+#endif
 
     // Add a __dict__ answer so that dir() works
     if (!strcmp(name, "__dict__"))
@@ -532,6 +584,7 @@ PyColorControlPointList_getattr(PyObject *self, char *name)
 int
 PyColorControlPointList_setattr(PyObject *self, char *name, PyObject *args)
 {
+#include <visit-config.h>
     PyObject NULL_PY_OBJ;
     PyObject *obj = &NULL_PY_OBJ;
 
@@ -541,9 +594,26 @@ PyColorControlPointList_setattr(PyObject *self, char *name, PyObject *args)
         obj = ColorControlPointList_SetEqualSpacingFlag(self, args);
     else if(strcmp(name, "discreteFlag") == 0)
         obj = ColorControlPointList_SetDiscreteFlag(self, args);
-    else if(strcmp(name, "categoryName") == 0)
-        obj = ColorControlPointList_SetCategoryName(self, args);
+    else if(strcmp(name, "tagNames") == 0)
+        obj = ColorControlPointList_SetTagNames(self, args);
 
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorControlPointList
+    if(obj == &NULL_PY_OBJ)
+    {
+        //
+        // Removed in 3.3.0
+        //
+        if(strcmp(name, "categoryName") == 0)
+        {
+            PyErr_WarnEx(NULL, "'categoryName' is obsolete. It is being ignored.", 3);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
     if (obj != NULL && obj != &NULL_PY_OBJ)
         Py_DECREF(obj);
 

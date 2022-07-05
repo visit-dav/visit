@@ -2,8 +2,8 @@
 <Object name="TemplateOptions">
     <Field name="VERSION" type="string">1.5.3</Field>
     <Field name="TEMPLATEFILE" type="string">curveoverlay.py</Field>
-    <Field name="TITLE" type="string">Curve Overlay 2D</Field>
-    <Field name="DESCRIPTION" type="string">This template displays 2D plots in one viewport while showing a 1D curve in another viewport.</Field>
+    <Field name="TITLE" type="string">Curve Overlay</Field>
+    <Field name="DESCRIPTION" type="string">This template displays plots in one viewport while showing a 1D curve in another viewport.</Field>
     <Field name="PREVIEWIMAGE" type="string">curveoverlay_preview.bmp</Field>
     <Object name="VIEWPORTS">
         <Object name="Viewport 1">

@@ -797,6 +797,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     avtDataValidity   &validity = dob->GetInfo().GetValidity();
 
     avtDatabaseMetaData *md = GetMetaData(ts);
+    atts.SetCommentInDB(md->GetDatabaseComment());
     atts.SetDynamicDomainDecomposition(md->GetFormatCanDoDomainDecomposition());
     string mesh = md->MeshForVar(var);
     const avtMeshMetaData *mmd = md->GetMesh(mesh);
