@@ -72,7 +72,7 @@ using namespace ExodusDBOptions;
 
 static int VisItNCErr;
 static map<string, int> messageCounts;
-#define supressMessage "further warnings regarding this error will be supressed"
+#define suppressMessage "further warnings regarding this error will be suppressed"
 #define CheckNCError2(ERR, FN, THELINE, THEFILE)                                                \
     if (ERR != NC_NOERR)                                                                        \
     {                                                                                           \
@@ -90,8 +90,8 @@ static map<string, int> messageCounts;
         }                                                                                       \
         else if (messageCounts[msg] == 6)                                                       \
         {                                                                                       \
-            if (!avtCallback::IssueWarning(supressMessage))                                     \
-                cerr << supressMessage << endl;                                                 \
+            if (!avtCallback::IssueWarning(suppressMessage))                                     \
+                cerr << suppressMessage << endl;                                                 \
         }                                                                                       \
     }                                                                                           \
     else                                                                                        \

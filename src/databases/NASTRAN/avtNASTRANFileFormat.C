@@ -238,10 +238,10 @@ static double GetVal(const char *s)
             }
             if (nwarnings == 5)
             {
-                if (!avtCallback::IssueWarning("Further warnings will be supressed."))
+                if (!avtCallback::IssueWarning("Further warnings will be suppressed."))
                 {
-                    cerr << "Further warnings will be supressed." << endl;
-                    debug5 << "Further warnings will be supressed." << endl;
+                    cerr << "Further warnings will be suppressed." << endl;
+                    debug5 << "Further warnings will be suppressed." << endl;
                 }
             }
         }

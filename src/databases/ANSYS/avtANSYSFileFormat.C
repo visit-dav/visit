@@ -185,7 +185,7 @@ get_errno()
 #define CHECK_COORD_COMPONENT(Coord)                                \
 do {                                                                \
     int _errno = get_errno();                                       \
-    char msg[512] = "Further warnings will be supressed";           \
+    char msg[512] = "Further warnings will be suppressed";           \
     if (_errno != 0 && invalidCoordCompWarning++ < 5)               \
     {                                                               \
         if (invalidCoordCompWarning < 5)                            \

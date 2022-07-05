@@ -297,7 +297,7 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {                                                                       \
     if (invalidPointCount++ < 6)                                        \
     {                                                                   \
-        char msg[512] = "Further warnings will be supressed";           \
+        char msg[512] = "Further warnings will be suppressed";           \
         if (invalidPointCount < 6)                                      \
         {                                                               \
             snprintf(msg, sizeof(msg),"Encountered invalid point "      \
