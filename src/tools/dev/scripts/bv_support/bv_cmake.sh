@@ -424,11 +424,11 @@ function build_cmake
     info "Bootstrapping CMake . . ."
     cd $CMAKE_BUILD_DIR || error "Can't cd to CMake build dir."
     if [[ "$OPSYS" == "AIX" ]]; then
-        env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
+        env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH" -- -DCMAKE_USE_OPENSSL=OFF
     elif [[ "$OPSYS" == "Linux" && "$C_COMPILER" == "xlc" ]]; then
-        env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
+        env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH" -- -DCMAKE_USE_OPENSSL=OFF
     else
-        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
+        env CC=${C_COMPILER} CXX=${CXX_COMPILER} CXXFLAGS="" CFLAGS="" ./bootstrap --prefix="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH" -- -DCMAKE_USE_OPENSSL=OFF
     fi
     if [[ $? != 0 ]] ; then
         warn "Bootstrap for cmake failed, giving up."

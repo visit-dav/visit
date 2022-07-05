@@ -22,6 +22,8 @@
 #include <avtDatabaseMetaData.h>
 #include <avtParallel.h>
 
+#include <FileFunctions.h>
+
 #include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
 #include <ImproperUseException.h>
@@ -383,6 +385,15 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Kathleen Biagas, Wed Nov 18 2020
 //    Replace VISIT_LONG_LONG with long long.
 //
+//    Cyrus Harrison, Fri Jun 10 16:22:37 PDT 2022
+//    Bug fix for relative paths appearing in bov data file entry.
+//    Use `.bof` suffix for output data files.
+//    Improve error messages.
+//
+//    Eric Brugger, Wed Jun 22 11:26:44 PDT 2022
+//    Fixed a bug where the DATA_FILE was not set properly in the root
+//    bov file when using gzip compression.
+//
 // ****************************************************************************
 
 void
@@ -445,12 +456,21 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         deletePtr = true;
     }
 
-    char filename[1024];
-    sprintf(filename, "%s.bov", stem.c_str());
+    std::string root_file = stem + ".bov";
     ofstream *ofile = NULL;
     if (PAR_Rank() == 0)
     {
-        ofile = new ofstream(filename);
+        ofile = new ofstream(root_file.c_str());
+        if(!ofile->is_open())
+        {
+            std::ostringstream err_msg;
+            err_msg << "Could not open root bov file: '" << root_file << "'."
+                       " Do you lack write access "
+                       "on the destination filesystem?";
+            EXCEPTION1(InvalidFilesException,
+                       err_msg.str());
+        }
+
         *ofile << "#BOV version: 1.0" << endl;
         *ofile << "# file written by VisIt conversion program " << endl;
     }
@@ -493,6 +513,7 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         brickletNK = approxCubeRoot;
     }
 
+    // The output is always gzip compressed when using bricklets.
     int numDecimals = 4;
     if (nBricklets > 1)
     {
@@ -500,15 +521,29 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         if (numDecimals < 4)
             numDecimals = 4;
 
-        char str[1024];
-        sprintf(str, "%s_%%0.%dd.bof.gz", stem.c_str(), numDecimals);
         if (PAR_Rank() == 0)
-            *ofile << "DATA_FILE: " << str << endl;
+        {
+            // This needs to be the stem w/o any pre-fixed directories,
+            // or else BOV header is bad
+            char fname_data_cstr[1024];
+            sprintf(fname_data_cstr, "%s_%%0.%dd.bof.gz", stem.c_str(), numDecimals);
+            std::string fname_data = FileFunctions::Basename(std::string(fname_data_cstr));
+            *ofile << "DATA_FILE: " << fname_data << endl;
+        }
     }
     else
     {
         if (PAR_Rank() == 0)
-            *ofile << "DATA_FILE: " << stem.c_str() << endl;
+        {
+            // This needs to be the stem w/o any pre-fixed directories,
+            // or else BOV header is bad
+            std::string fname_data = FileFunctions::Basename(std::string(stem)) + ".bof";
+            if (gzCompress)
+            { 
+                fname_data = fname_data + ".gz";
+            }
+            *ofile << "DATA_FILE: " << fname_data << endl;
+        }
     }
 
     if (PAR_Rank() == 0)
@@ -620,16 +655,18 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         //
         if (gzCompress)
         { 
-            char fmt[1024]; 
-            sprintf(fmt, "%s.gz", stem.c_str());
-            gzFile gz_handle = gzopen(fmt, "w");
+            std::string fname = stem + ".bof.gz";
+            gzFile gz_handle = gzopen(fname.c_str(), "w");
 
             if(gz_handle == NULL)
             {
                 if (deletePtr) delete [] ptr;
-                    EXCEPTION1(InvalidFilesException,
-                           "Could not open stem file.  Do you lack write access "
-                           "on the destination filesystem?");
+                std::ostringstream err_msg;
+                err_msg << "Could not open data file: '" << fname << "'."
+                           " Do you lack write access "
+                           "on the destination filesystem?";
+                EXCEPTION1(InvalidFilesException,
+                           err_msg.str());
             }
 
             gzwrite(gz_handle, ptr, nvals*sizeof(float));
@@ -637,13 +674,17 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
         }
         else
         {
-            FILE *file_handle = fopen(stem.c_str(), "w");
+            std::string fname = stem + ".bof";
+            FILE *file_handle = fopen(fname.c_str(), "w");
             if(file_handle == NULL)
             {
                 if (deletePtr) delete [] ptr;
+                std::ostringstream err_msg;
+                err_msg << "Could not open data file: '" << fname << "'."
+                           " Do you lack write access "
+                           "on the destination filesystem?";
                 EXCEPTION1(InvalidFilesException,
-                           "Could not open stem file.  Do you lack write access "
-                           "on the destination filesystem?");
+                           err_msg.str());
             }
             else
             {
@@ -685,22 +726,33 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
                         sprintf(fmt, "%s_%%0.%dd.bof.gz", stem.c_str(), numDecimals);
                         sprintf(str, fmt, brick);
                         gzFile gz_handle = gzopen(str, "w");
+                        if(gz_handle == NULL)
+                        {
+                            if (deletePtr) delete [] ptr;
+                            std::ostringstream err_msg;
+                            err_msg << "Could not open data file: '" << str << "'."
+                                       " Do you lack write access "
+                                       "on the destination filesystem?";
+                            EXCEPTION1(InvalidFilesException,
+                                       err_msg.str());
+                        }
                         gzwrite(gz_handle, samples, 
                                 vals_per_bricklet*sizeof(float));
                         gzclose(gz_handle);
                     }
                     else if (gzCompress)
                     {
-                        char fmt[1024]; 
-                        sprintf(fmt, "%s.gz", stem.c_str());
-                        gzFile gz_handle = gzopen(fmt, "w");
-
+                        std::string fname =  stem + ".bof.gz";
+                        gzFile gz_handle = gzopen(fname.c_str(), "w");
                         if(gz_handle == NULL)
                         {
                             if (deletePtr) delete [] ptr;
-                                EXCEPTION1(InvalidFilesException,
-                                       "Could not open stem file.  Do you lack write access "
-                                       "on the destination filesystem?");
+                            std::ostringstream err_msg;
+                            err_msg << "Could not open data file: '" << fname << "'."
+                                       " Do you lack write access "
+                                       "on the destination filesystem?";
+                            EXCEPTION1(InvalidFilesException,
+                                       err_msg.str());
                         }
 
                         gzwrite(gz_handle, samples, vals_per_bricklet*sizeof(float));
@@ -708,7 +760,18 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
                     }
                     else
                     {
-                        FILE *file_handle = fopen(stem.c_str(), "w");
+                        std::string fname =  stem + ".bof";
+                        FILE *file_handle = fopen(fname.c_str(), "w");
+                        if(file_handle == NULL)
+                        {
+                            if (deletePtr) delete [] ptr;
+                            std::ostringstream err_msg;
+                            err_msg << "Could not open data file: '" << fname << "'."
+                                       " Do you lack write access "
+                                       "on the destination filesystem?";
+                            EXCEPTION1(InvalidFilesException,
+                                       err_msg.str());
+                        }
                         fwrite(samples, sizeof(float), vals_per_bricklet, 
                                file_handle);
                         fclose(file_handle);

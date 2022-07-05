@@ -78,6 +78,10 @@
 #   I added logic to the jade install to copy libraries needed to run
 #   on toss4 systems.
 #
+#   Eric Brugger, Tue Jun 14 11:57:11 PDT 2022
+#   I removed the logic on the jade install that copies the libraries
+#   needed by Qt, since those now get included by default.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -213,18 +217,7 @@ rm -f jade
 cat <<EOF > jade
 #!/bin/sh
 ./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-jade /usr/gapps/visit > installlog 2>&1
-# Copy libraries needed for Qt and fortran for toss4 systems.
-cd /lib64
-cp libicudata.so.50.2 libicui18n.so.50.2 libicuuc.so.50.2 /usr/gapps/visit/$ver+/linux-x86_64/lib
-cd /usr/gapps/visit/$ver+/linux-x86_64/lib
-chgrp visit libicudata.so.50.2 libicui18n.so.50.2 libicuuc.so.50.2
-chmod g+rwX,o+rX libicudata.so.50.2 libicui18n.so.50.2 libicuuc.so.50.2
-ln -s libicudata.so.50.2 libicudata.so
-ln -s libicudata.so.50.2 libicudata.so.50
-ln -s libicui18n.so.50.2 libicui18n.so
-ln -s libicui18n.so.50.2 libicui18n.so.50
-ln -s libicuuc.so.50.2 libicuuc.so
-ln -s libicuuc.so.50.2 libicuuc.so.50
+# Copy libraries needed for fortran for toss4 systems.
 cd /usr/tce/packages/gcc/gcc-7.1.0/lib64
 cp libgfortran.so.4.0.0 /usr/gapps/visit/$ver+/linux-x86_64/lib
 cd /usr/gapps/visit/$ver+/linux-x86_64/lib

@@ -1,3 +1,50 @@
+Target: xml2python
+Code: PyColorControlPointList_getattr
+Prefix:
+#include <visit-config.h>
+Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorControlPointList
+
+    //
+    // Removed in 3.3.0
+    //
+    if(strcmp(name, "categoryName") == 0)
+    {
+        PyErr_WarnEx(NULL,
+                    "categoryName is no longer a valid ColorControlPointList "
+                    "attribute.\nIt's value is being ignored, please remove "
+                    "it from your script.\n", 3);
+        return PyString_FromString("");
+    }
+#endif
+
+
+Code: PyColorControlPointList_setattr
+Prefix:
+#include <visit-config.h>
+Postfix:
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    // Try and handle legacy fields in ColorControlPointList
+    if(obj == &NULL_PY_OBJ)
+    {
+        //
+        // Removed in 3.3.0
+        //
+        if(strcmp(name, "categoryName") == 0)
+        {
+            PyErr_WarnEx(NULL, "'categoryName' is obsolete. It is being ignored.", 3);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
+#endif
+
+Target: xml2atts
 Function: EvalCubicSpline
 Declaration: float EvalCubicSpline(float t, const float *allX, const float *allY, int n) const;
 Definition:
@@ -513,6 +560,9 @@ Definition:
 //   Kathleen Biagas, Thu Jul 31 09:28:48 PDT 2014
 //   Modified to reflect how 'equalSpacingFlag' and 'discreteFlag' are
 //   actually saved: as 'equal' and 'discrete'.  Add category.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -608,8 +658,8 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
         SetExternalFlag(node->AsBool());
     else if((node = searchNode->GetNode("externalFlag")) != 0)
         SetExternalFlag(node->AsBool());
-    if((node = searchNode->GetNode("category")) != 0)
-        SetCategoryName(node->AsString());
+    if((node = searchNode->GetNode("tags")) != 0)
+        SetTagNames(node->AsStringVector());
 }
 
 Function: CreateNode
@@ -629,6 +679,8 @@ Definition:
 // Creation:   omitted
 //
 // Modifications:
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -668,10 +720,10 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("discrete", discreteFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_categoryName, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tagNames, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("category", categoryName));
+        node->AddNode(new DataNode("tags", tagNames));
     }
 
     // Add the node to the parent node.
@@ -704,6 +756,9 @@ Definition:
 //
 //   Brad Whitlock, Fri Apr 27 11:28:11 PDT 2012
 //   Change smoothingFlag to smoothing and make it an enum.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags and removed categories.
 //
 // ****************************************************************************
 
@@ -762,10 +817,10 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
         node->AddNode(new DataNode("discrete", discreteFlag));
     }
 
-    if(completeSave || !FieldsEqual(ID_categoryName, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tagNames, &defaultObject))
     {
         addToParent = true;
-        node->AddNode(new DataNode("category", categoryName));
+        node->AddNode(new DataNode("tags", tagNames));
     }
 
     // Add the node to the parent node.
@@ -775,6 +830,164 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
         delete node;
 
     return (addToParent || forceAdd);
+}
+
+Function: AddTag
+Declaration: void AddTag(std::string newtag);
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::AddTag
+//
+// Purpose:
+//   Add the provided tag to the list of local tags.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Set tagChangesMade to true every time a tag is added.
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::AddTag(std::string newtag)
+{
+    // If the tag is already in the tag list then we will do nothing.
+    if (!HasTag(newtag))
+    {
+        tagNames.push_back(newtag);
+        tagChangesMade = true;
+    }
+}
+
+Function: ClearTags
+Declaration: void ClearTags();
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::ClearTags
+//
+// Purpose:
+//   Removes all tags from the ccpl.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Set tagChangesMade to true each time the tags are cleared.
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::ClearTags()
+{
+    tagNames.clear();
+    tagChangesMade = true;
+}
+
+Function: GetTag
+Declaration: std::string GetTag(int index);
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::GetTag
+//
+// Purpose:
+//   Gets the name of the tag at the specified index.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+ColorControlPointList::GetTag(int index)
+{
+    if (index >= 0 && index < tagNames.size())
+        return tagNames[index];
+    return "";
+}
+
+Function: GetNumTags
+Declaration: int GetNumTags();
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::GetNumTags
+//
+// Purpose:
+//   Gets the number of tags associated with this ccpl.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+ColorControlPointList::GetNumTags()
+{
+    return tagNames.size();
+}
+
+Function: GetTagsAsString
+Declaration: std::string GetTagsAsString();
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::GetTagsAsString
+//
+// Purpose:
+//   Formats the tags as a string for use in the tag line edit box in the gui.
+//
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 11:27:43 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+ColorControlPointList::GetTagsAsString()
+{
+    int numtags = tagNames.size();
+    if (numtags == 0)
+        return "";
+    if (numtags == 1)
+        return tagNames[0];
+    std::string tags = "";
+    for (int i = 0; i < tagNames.size() - 1; i ++)
+    {
+        tags += tagNames[i] + ",";
+    }
+    tags += tagNames[tagNames.size() - 1];
+    return tags;
+}
+
+Function: HasTag
+Declaration: bool HasTag(std::string tag);
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::HasTag
+//
+// Purpose:
+//   Determines if the ccpl has the given tag associated with it.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Jun  8 11:46:21 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+ColorControlPointList::HasTag(std::string tag)
+{
+    for (int i = 0; i < tagNames.size(); i ++)
+        if (tagNames[i] == tag)
+            return true;
+    return false;
 }
 
 Function: SetNumControlPoints
@@ -790,7 +1003,7 @@ Definition:
 //
 // Programmer: Kathleen Biagas
 // Creation:   May 18, 2022
-//
+// 
 // Modifications:
 //
 // ****************************************************************************
@@ -869,3 +1082,80 @@ ColorControlPointList_SetNumControlPoints(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+Target: xml2atts
+Function: SetTagNames
+Declaration: void SetTagNames(const stringVector &tagNames_);
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::SetTagNames
+//
+// Purpose:
+//   Setter for names.
+//
+// Note:       There needs to be a custom setter to make sure that every time
+//             the tagNames are set, tagChangesMade is set to true.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Jun 29 16:38:18 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::SetTagNames(const stringVector &tagNames_)
+{
+    tagNames = tagNames_;
+    tagChangesMade = true;
+    Select(ID_tagNames, (void *)&tagNames);
+}
+
+Target: xml2atts
+Function: ProcessOldVersions
+Declaration: virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+Definition:
+// ****************************************************************************
+// Method: ColorControlPointList::ProcessOldVersions
+//
+// Purpose:
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Justin Privitera
+// Creation:   June 27 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <visit-config.h>
+#ifdef VIEWER
+#include <avtCallback.h>
+#endif
+
+void
+ColorControlPointList::ProcessOldVersions(DataNode *parentNode,
+                                          const char *configVersion)
+{
+#if VISIT_OBSOLETE_AT_VERSION(3,5,0)
+#error This code is obsolete in this version. Please remove it.
+#else
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("ColorControlPointList");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.3.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("categoryName")) != 0)
+        {
+#ifdef VIEWER
+            avtCallback::IssueWarning(DeprecationMessage("categoryName", "3.5.0"));
+#endif
+            searchNode->RemoveNode(k);
+        }
+    }
+#endif
+}

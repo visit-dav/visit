@@ -489,9 +489,26 @@
 #    Change Windows _SRC_PACKAGE to _WINDEV_PACKAGE, to simply zip up the
 #    needed windows TP development files.
 #
+#    Kathleen Biagas, Wed Jun 8, 2022
+#    Moved setting of VISIT_COMMON_INCLUDES to CMake/VisItIncludeVars.cmake
+#    so that it could also be used by PluginVsInstall.
+#
+#    Eric Brugger, Fri Jun 10 09:53:54 PDT 2022
+#    Added logic to include the libicui18n, libicudata and libicuuc
+#    libraries used by Qt to the lib directory of a distribution. Added
+#    logic to include the libstdc++ libraries to the lib directory of a
+#    distribution. The libstdc++ library depends on VISIT_CXX_LIBRARY
+#    being defined. This would typically be added to the config site file.
+#
+#    Kathleen Biagas, Thu Jun 16, 2022 
+#    Changed minimum cmake version to 3.15.
+#
+#    Eric Brugger, Tue Jul  5 09:10:18 PDT 2022
+#    Added support for the Blosc library.
+#
 #****************************************************************************
 
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0033 OLD)
@@ -897,6 +914,7 @@ VISIT_3RDPARTY_VAR(ADIOS_DIR     "Path containing the ADIOS library's include an
 VISIT_3RDPARTY_VAR(ADIOS2_DIR     "Path containing the ADIOS library's include and lib")
 VISIT_3RDPARTY_VAR(ADIOS2_PAR_DIR "Path containing the ADIOS MPI library's include and lib")
 VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
+VISIT_3RDPARTY_VAR(BLOSC_DIR     "Path containing the Blosc library's include and lib")
 VISIT_3RDPARTY_VAR(BOOST_DIR     "Path containing the BOOST library's include and lib")
 VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include and lib")
 VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
@@ -1355,6 +1373,9 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     # Configure advio support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADVIO.cmake)
 
+    # Configure blosc support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBlosc.cmake)
+
     # Configure Boxlib support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
 
@@ -1722,25 +1743,16 @@ FUNCTION(PARALLEL_EXECUTABLE_LINK_LIBRARIES target)
     ENDIF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
 ENDFUNCTION(PARALLEL_EXECUTABLE_LINK_LIBRARIES)
 
+SET(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
-# Set up easy to use includes for the common directory
-SET(VISIT_COMMON_INCLUDES
-    ${VISIT_BINARY_DIR}/include
-    ${VISIT_SOURCE_DIR}/include
-    ${VISIT_SOURCE_DIR}/common/Exceptions/Database
-    ${VISIT_SOURCE_DIR}/common/Exceptions/Pipeline
-    ${VISIT_SOURCE_DIR}/common/Exceptions/Plotter
-    ${VISIT_SOURCE_DIR}/common/comm
-    ${VISIT_SOURCE_DIR}/common/expr
-    ${VISIT_SOURCE_DIR}/common/icons
-    ${VISIT_SOURCE_DIR}/common/misc
-    ${VISIT_SOURCE_DIR}/common/parser
-    ${VISIT_SOURCE_DIR}/common/plugin
-    ${VISIT_SOURCE_DIR}/common/proxybase
-    ${VISIT_SOURCE_DIR}/common/state
-    ${VISIT_SOURCE_DIR}/common/utility
-    ${ZLIB_INCLUDE_DIR}
-    )
+# This include sets up vars that contains lists of include directories
+include(${VISIT_SOURCE_DIR}/CMake/VisItIncludeVars.cmake)
+
+# macros/defines needed by CMake/VisItMacros.cmake
+if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
+  set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
+endif ()
+
 
 # macros/defines needed by CMake/VisItMacros.cmake
 if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
@@ -2012,7 +2024,6 @@ CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/visit-python-cmake.h.in
 CONFIGURE_FILE(${VISIT_SOURCE_DIR}/common/misc/ConfigureInfo.C.in
                ${VISIT_BINARY_DIR}/common/misc/ConfigureInfo.C @ONLY IMMEDIATE)
 
-SET(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
 # The normal plugin case. We redefine these when we build against an installed
 # version of VisIt
@@ -2062,6 +2073,38 @@ IF(VISIT_MPICH_INSTALL)
     )
 ENDIF(VISIT_MPICH_INSTALL)
 
+if(LINUX)
+    #-------------------------------------------------------------------------
+    # Install the system libraries required by Qt to the lib directory.
+    # The versions of these libraries change frequently, so including
+    # them means VisIt may continue to run even if the OS is upgraded.
+    #-------------------------------------------------------------------------
+    if(EXISTS "/lib64/libicui18n.so")
+        file(GLOB libicui18n_libs "/lib64/libicui18n.so*")
+        file(GLOB libicudata_libs "/lib64/libicudata.so*")
+        file(GLOB libicuuc_libs "/lib64/libicuuc.so*")
+        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    endif()
+
+    #-------------------------------------------------------------------------
+    # If the g++ standard library is specified, then install it the lib
+    # directory. This is typically needed if using a non-standard version
+    # of the g++ compiler.
+    #-------------------------------------------------------------------------
+    if(VISIT_CXX_LIBRARY)
+        file(GLOB libstdcxx_libs "${VISIT_CXX_LIBRARY}*")
+        install(FILES ${libstdcxx_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    endif()
+endif()
+
 #-----------------------------------------------------------------------------
 # Set flags & options from config-site files after everything is set up since
 # setting them beforehand can upset some of CMake's own find routines. Use
@@ -2085,7 +2128,7 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${VISIT_EXE_LINKER_FLAGS}"
 #
 # The the libsim runtime and engine example programs all need to follow
 # the same linking rules as the engine. Specifically, they need
-# the linking dirs for any dependencies introduced. 
+# the linking dirs for any dependencies introduced.
 # (For example, for conduit this includes conduit, hdf5, zlib, etc dirs)
 #
 # To simplify the logic needed downstream, we provide AVT_REQUIRED_LIB_DIR

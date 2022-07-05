@@ -2,7 +2,7 @@
 
 # CVD = color vision deficiency
 #    <Field name="discrete" type="bool">true</Field>
-#    <Field name="category" type="string">AccessibleColors</Field>
+#    <Field name="tags" type="stringVector">"AccessibleColors" </Field>
 #
 # Categorical pallet is 100 colors maximally disparate from previous
 # colors. First, last, middle-first-half, middle-2nd-half, etc.
@@ -95,7 +95,7 @@ makeVisItDiscreteFromTxtDiscrete() {
 # Footer...
 #
 #     <Field name="discrete" type="bool">true</Field>
-#     <Field name="category" type="string">AccessibleColors</Field>
+#     <Field name="tags" type="stringVector">\"AccessibleColors\" </Field>
 #    </Object>
 # </Object>
 #            $f/DiscretePalettes $m $name 10
@@ -122,7 +122,7 @@ makeVisItDiscreteFromTxtDiscrete() {
         pos=$(perl -e "print $pos>1?1:$pos")
     done < $1/$3$4.txt
     echo "    <Field name=\"discrete\" type=\"bool\">true</Field>" >> $newct
-    echo "    <Field name=\"category\" type=\"string\">CvdFriendlyCrameri</Field>" >> $newct
+    echo "    <Field name=\"tags\" type=\"stringVector\">\"CvdFriendly\" \"Crameri\" </Field>" >> $newct
     echo "    </Object>" >> $newct
     echo "</Object>" >> $newct
 }
@@ -145,13 +145,13 @@ for f in $ctfiles; do
 
     # Get the main map
     rm -f $name-$m.ct
-    cat $f/$name.ct | tr '\n' '@' | sed -e 's#@    </Object>@</Object>#@        <Field name="category" type="string">CvdFriendlyCrameri</Field>@    </Object>@</Object>#' | tr '@' '\n' > $name-$m.ct
+    cat $f/$name.ct | tr '\n' '@' | sed -e 's#@    </Object>@</Object>#@        <Field name="tags" type="stringVector">"CvdFriendly" "Crameri" </Field>@    </Object>@</Object>#' | tr '@' '\n' > $name-$m.ct
 
     # Get categorical map if present
     #git mv ${name}S-$m-jumbled.ct $name-$m-jumbled.ct
     rm -f $name-$m-jumbled.ct
     if [ -n "$cat" ]; then
-        cat $f/CategoricalPalettes/${name}S.ct | tr '\n' '@' | sed -e 's#@    </Object>@</Object>#@        <Field name="category" type="string">CvdFriendlyCrameri</Field>@    </Object>@</Object>#' | tr '@' '\n' > ${name}-$m-jumbled.ct
+        cat $f/CategoricalPalettes/${name}S.ct | tr '\n' '@' | sed -e 's#@    </Object>@</Object>#@        <Field name="tags" type="stringVector">"CvdFriendly" "Crameri" </Field>@    </Object>@</Object>#' | tr '@' '\n' > ${name}-$m-jumbled.ct
     fi
 
     # Make the discrete maps

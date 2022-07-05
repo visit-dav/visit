@@ -43,6 +43,7 @@ Colleagues/VisWinTriad.C
 Colleagues/VisWinUserInfo.C
 Colleagues/VisWinView.C
 Colleagues/avtAnnotationColleague.C
+Colleagues/avtAnnotationWithTextColleague.C
 Colleagues/avtImageColleague.C
 Colleagues/avtLegendAttributesColleague.C
 Colleagues/avtLine2DColleague.C

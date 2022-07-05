@@ -53,6 +53,9 @@
 #    Justin Privitera, Wed Mar 30 12:45:19 PDT 2022
 #    Added avtGhostZoneIdExpression.
 #
+#    Kathleen Biagas, Wed June 15, 2022
+#    Added General/avtCrackWidthExpression.C
+#
 #****************************************************************************/
 
 SET(ABSTRACT_SOURCES
@@ -126,6 +129,7 @@ General/avtColorComposeExpression.C
 General/avtConnComponentsExpression.C
 General/avtConstantFunctionExpression.C
 General/avtCoordinateExtremaExpression.C
+General/avtCrackWidthExpression.C
 General/avtCurlExpression.C
 General/avtCurveDomainExpression.C
 General/avtCurveExpression.C

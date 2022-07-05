@@ -591,6 +591,9 @@ void avtColorTables::ModifyColor(char unsigned const *inrgb, double mult,
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
 // 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tagging and removed categories.
+// 
 // ****************************************************************************
 
 avtColorTables::avtColorTables()
@@ -640,7 +643,11 @@ avtColorTables::avtColorTables()
         ccpl.SetSmoothing(ColorControlPointList::SmoothingMethod(predef_ct_smooth[i]));
         ccpl.SetEqualSpacingFlag(predef_ct_equal[i] == 1);
         ccpl.SetDiscreteFlag(predef_ct_discrete[i] == 1);
-        ccpl.SetCategoryName("Standard");
+        ccpl.AddTag("Standard");
+        if (predef_ct_discrete[i] == 1)
+            ccpl.AddTag("Discrete");
+        else
+            ccpl.AddTag("Continuous");
         ctAtts->AddColorTable(predef_ct_names[i], ccpl);
     }
 

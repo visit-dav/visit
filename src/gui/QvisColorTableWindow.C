@@ -67,6 +67,9 @@
 //
 //   Brad Whitlock, Wed Apr  9 11:59:35 PDT 2008
 //   QString for caption, shortName.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added new tag-related vars to constructor.
 //
 // ****************************************************************************
 
@@ -75,13 +78,15 @@ QvisColorTableWindow::QvisColorTableWindow(
     const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(colorAtts_, caption, shortName, notepad,
                                QvisPostableWindowObserver::ApplyButton, false),
-    currentColorTable("none"), categoryName("none"), ctObserver(colorAtts_)
+    currentColorTable("none"), ctObserver(colorAtts_)
 {
     colorAtts = colorAtts_;
     colorCycle = 0;
     sliding = false;
     colorSelect = 0;
     colorTableTypeGroup = 0;
+    tagsVisible = false;
+    tagsMatchAny = true;
 }
 
 // ****************************************************************************
@@ -165,6 +170,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Completely redid the gui to remove categories and add tags.
 //
 // ****************************************************************************
 
@@ -174,9 +182,9 @@ QvisColorTableWindow::CreateWindowContents()
     // Create the widgets needed to set the default color tables.
     topLayout->setMargin(2);
     defaultGroup = new QGroupBox(central);
-    defaultGroup->setTitle(tr("Default color table"));
+    defaultGroup->setTitle(tr("Default Color Table"));
     topLayout->addWidget(defaultGroup, 5);
-
+    
     QVBoxLayout *innerDefaultTopLayout = new QVBoxLayout(defaultGroup);
     QGridLayout *innerDefaultLayout = new QGridLayout();
     innerDefaultTopLayout->addLayout(innerDefaultLayout);
@@ -186,43 +194,54 @@ QvisColorTableWindow::CreateWindowContents()
     connect(defaultContinuous, SIGNAL(selectedColorTable(const QString &)),
             this, SLOT(setDefaultContinuous(const QString &)));
     innerDefaultLayout->addWidget(defaultContinuous, 0, 1);
-    defaultContinuousLabel = new QLabel(tr("Continuous"),defaultGroup);
+    defaultContinuousLabel = new QLabel(tr("Continuous"), defaultGroup);
     innerDefaultLayout->addWidget(defaultContinuousLabel, 0, 0);
 
     defaultDiscrete = new QvisNoDefaultColorTableButton(defaultGroup);
     connect(defaultDiscrete, SIGNAL(selectedColorTable(const QString &)),
             this, SLOT(setDefaultDiscrete(const QString &)));
     innerDefaultLayout->addWidget(defaultDiscrete, 1, 1);
-    defaultDiscreteLabel = new QLabel(tr("Discrete"),defaultGroup);
+    defaultDiscreteLabel = new QLabel(tr("Discrete"), defaultGroup);
     innerDefaultLayout->addWidget(defaultDiscreteLabel, 1, 0);
-
-    groupToggle = new QCheckBox(tr("Group tables by Category"), defaultGroup);
-    connect(groupToggle, SIGNAL(toggled(bool)),
-            this, SLOT(groupingToggled(bool)));
-    innerDefaultLayout->addWidget(groupToggle, 2, 1);
 
     // Create the widget group that contains all of the color table
     // management stuff.
     colorTableWidgetGroup = new QGroupBox(central);
     colorTableWidgetGroup->setTitle(tr("Manager"));
-    topLayout->addWidget(colorTableWidgetGroup,5);
+    topLayout->addWidget(colorTableWidgetGroup, 5);
     QVBoxLayout *innerColorTableLayout = new QVBoxLayout(colorTableWidgetGroup);
 
     // Create the color management widgets.
-    QGridLayout *mgLayout = new QGridLayout();
+    mgLayout = new QGridLayout();
     innerColorTableLayout->addLayout(mgLayout);
 
     newButton = new QPushButton(tr("New"), colorTableWidgetGroup);
     connect(newButton, SIGNAL(clicked()), this, SLOT(addColorTable()));
-    mgLayout->addWidget(newButton, 0, 0);
+    mgLayout->addWidget(newButton, 0, 0, 1, 2);
 
     deleteButton = new QPushButton(tr("Delete"), colorTableWidgetGroup);
     connect(deleteButton, SIGNAL(clicked()), this, SLOT(deleteColorTable()));
-    mgLayout->addWidget(deleteButton, 1, 0);
+    mgLayout->addWidget(deleteButton, 0, 2, 1, 2);
 
     exportButton = new QPushButton(tr("Export"), colorTableWidgetGroup);
     connect(exportButton, SIGNAL(clicked()), this, SLOT(exportColorTable()));
-    mgLayout->addWidget(exportButton, 2, 0);
+    mgLayout->addWidget(exportButton, 0, 4, 1, 2);
+
+    tagFilterToggle = new QCheckBox(tr("Filter tables by Tag"), colorTableWidgetGroup);
+    connect(tagFilterToggle, SIGNAL(toggled(bool)),
+            this, SLOT(taggingToggled(bool)));
+    mgLayout->addWidget(tagFilterToggle, 1, 0, 1, 6);
+
+    tagCombiningBehaviorChoice = new QComboBox(colorTableWidgetGroup);
+    tagCombiningBehaviorChoice->addItem(tr("Colortables must match any selected tag"));
+    tagCombiningBehaviorChoice->addItem(tr("Colortables must match every selected tag"));
+    if (tagsMatchAny)
+        tagCombiningBehaviorChoice->setCurrentIndex(0);
+    else
+        tagCombiningBehaviorChoice->setCurrentIndex(1);        
+    connect(tagCombiningBehaviorChoice, SIGNAL(activated(int)),
+            this, SLOT(tagCombiningChanged(int)));
+    mgLayout->addWidget(tagCombiningBehaviorChoice, 1, 2, 1, 4);
 
     nameListBox = new QTreeWidget(colorTableWidgetGroup);
     nameListBox->setMinimumHeight(100);
@@ -231,17 +250,32 @@ QvisColorTableWindow::CreateWindowContents()
     nameListBox->header()->close();
     connect(nameListBox, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem*)),
             this, SLOT(highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*)));
-    mgLayout->addWidget(nameListBox, 0, 1, 3, 1);
+    mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
 
     QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
-    mgLayout->addWidget(colorTableName, 3, 0, Qt::AlignRight);
+    mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
-    mgLayout->addWidget(nameLineEdit, 3, 1);
+    mgLayout->addWidget(nameLineEdit, 4, 1, 1, 5);
 
-    categoryLabel = new QLabel(tr("Category"), colorTableWidgetGroup);
-    mgLayout->addWidget(categoryLabel, 4, 0, Qt::AlignRight);
-    categoryLineEdit = new QLineEdit(colorTableWidgetGroup);
-    mgLayout->addWidget(categoryLineEdit, 4, 1);
+    tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
+    mgLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
+    tagLineEdit = new QLineEdit(colorTableWidgetGroup);
+    mgLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
+
+    tagTable = new QTreeWidget(colorTableWidgetGroup);
+    QStringList headers;
+    headers << tr("Enabled") << tr("Tag Name");
+    tagTable->setHeaderLabels(headers);
+    tagTable->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    tagTable->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    connect(tagTable, SIGNAL(itemChanged(QTreeWidgetItem *, int)), 
+            this, SLOT(tagTableItemSelected(QTreeWidgetItem *, int)));
+    tagTable->clear();
+    tagTable->setSortingEnabled(true);
+    tagTable->setMinimumHeight(100);
+    tagTable->setMinimumWidth(250);
+    tagTable->setColumnCount(2);
+    mgLayout->addWidget(tagTable, 3, 0, 1, 3);
 
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
@@ -303,6 +337,7 @@ QvisColorTableWindow::CreateWindowContents()
     // Create the spectrum bar.
     spectrumBar = new QvisSpectrumBar(colorWidgetGroup);
     spectrumBar->setMinimumHeight(100);
+    spectrumBar->setMaximumHeight(110);
     spectrumBar->addControlPoint(QColor(255,0,0),   0.);
     spectrumBar->addControlPoint(QColor(255,255,0), 0.25);
     spectrumBar->addControlPoint(QColor(0,255,0),   0.5);
@@ -319,6 +354,8 @@ QvisColorTableWindow::CreateWindowContents()
 
     // Create the discrete color table widgets.
     discreteColors = new QvisColorGridWidget(colorWidgetGroup);
+    discreteColors->setMinimumHeight(100);
+    discreteColors->setMaximumHeight(110);
     QColor *tmpColors = new QColor[DEFAULT_DISCRETE_NCOLORS];
     for(int i = 0; i < DEFAULT_DISCRETE_NCOLORS; ++i)
     {
@@ -431,6 +468,9 @@ QvisColorTableWindow::CreateWindowContents()
 // Modifications:
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added ability for tag settings to be written to config/session files.
 //
 // ****************************************************************************
 
@@ -449,6 +489,10 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
         // Save the current color table.
         std::string ct(currentColorTable.toStdString());
         node->AddNode(new DataNode("currentColorTable", ct));
+        node->AddNode(new DataNode("tagList", tagList));
+        node->AddNode(new DataNode("activeTags", activeTags));
+        node->AddNode(new DataNode("tagsVisible", tagsVisible));
+        node->AddNode(new DataNode("tagsMatchAny", tagsMatchAny));
     }
 }
 
@@ -464,6 +508,9 @@ QvisColorTableWindow::CreateNode(DataNode *parentNode)
 // Modifications:
 //   Cyrus Harrison, Tue Jun 10 10:04:26 PDT 20
 //   Initial Qt4 Port.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added ability for tag settings to be read from config/session files.
 //
 // ****************************************************************************
 
@@ -475,11 +522,18 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
         return;
 
     // Get the active tab and show it.
-    DataNode *node;
+    DataNode *node, *node2;
     if((node = winNode->GetNode("currentColorTable")) != 0)
-    {
         currentColorTable = QString(node->AsString().c_str());
+    if((node = winNode->GetNode("tagList")) != 0 && (node2 = winNode->GetNode("activeTags")) != 0)
+    {
+        tagList = node->AsStringVector();
+        activeTags = node2->AsBoolVector();
     }
+    if((node = winNode->GetNode("tagsVisible")) != 0)
+        tagsVisible = node->AsBool();
+    if((node = winNode->GetNode("tagsMatchAny")) != 0)
+        tagsMatchAny = node->AsBool();    
 
     // Call the base class's function.
     QvisPostableWindowSimpleObserver::SetFromNode(parentNode, borders);
@@ -526,6 +580,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added tags.
 //
 // ****************************************************************************
 
@@ -599,12 +656,16 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             defaultDiscrete->setColorTable(colorAtts->GetDefaultDiscrete().c_str());
             defaultDiscrete->blockSignals(false);
             break;
-        case ColorTableAttributes::ID_groupingFlag:
-            groupToggle->blockSignals(true);
-            groupToggle->setChecked(colorAtts->GetGroupingFlag());
-            categoryLabel->setVisible(colorAtts->GetGroupingFlag());
-            categoryLineEdit->setVisible(colorAtts->GetGroupingFlag());
-            groupToggle->blockSignals(false);
+        case ColorTableAttributes::ID_taggingFlag:
+            tagFilterToggle->blockSignals(true);
+            tagFilterToggle->setChecked(colorAtts->GetTaggingFlag());
+            tagsVisible = colorAtts->GetTaggingFlag();
+            tagLabel->setVisible(tagsVisible);
+            tagLineEdit->setVisible(tagsVisible);
+            tagTable->setVisible(tagsVisible);
+            updateNameBoxPosition(tagsVisible);
+            tagCombiningBehaviorChoice->setVisible(tagsVisible);
+            tagFilterToggle->blockSignals(false);
             updateNames = true;
             break;
         }
@@ -705,6 +766,142 @@ QvisColorTableWindow::UpdateEditor()
 }
 
 // ****************************************************************************
+// Method: QvisColorTableWindow::AddToTagTable
+//
+// Purpose:
+//   Adds entries to the tag table. Called by AddGlobalTag().
+//
+// Programmer: Justin Privitera
+// Creation:   Mon Jun 27 17:30:16 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::AddToTagTable(std::string currtag, int index)
+{
+    QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+    item->setCheckState(0, activeTags[index] ? Qt::Checked : Qt::Unchecked);
+    item->setText(1, currtag.c_str());
+    // this next column is secret and is for passing around the tag index
+    // should allow you to have up to 10^10 tags
+    char buf[10];
+    sprintf(buf, "%d", index);
+    item->setText(2, buf);
+}
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::AddGlobalTag
+//
+// Purpose:
+//   Adds a tag discovered when looking through each color table to the global 
+//   tag list. Also adds to the tag table if the tag is not in it.
+//
+// Programmer: Justin Privitera
+// Creation:   Tue Jun  7 12:36:55 PDT 2022
+//
+// Modifications:
+//    Justin Privitera, Mon Jun 27 17:33:23 PDT 2022
+//    Added call to AddToTagTable() to reduce code bloat.
+//    Renamed `run_before` to `first_time`.
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
+{
+    // if the given tag is NOT in the global tag list
+    if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
+    {
+        tagList.push_back(currtag);
+        // make the "Standard" tag active the very first time the tags are enabled
+        if (currtag == "Standard" && first_time)
+            activeTags.push_back(true);
+        else
+            activeTags.push_back(false);
+        AddToTagTable(currtag, tagList.size() - 1);
+    }
+    else
+    {
+        // We only want to run this check if the first case is not true.
+        QList<QTreeWidgetItem*> items = tagTable->findItems(
+            QString::fromStdString(currtag), Qt::MatchExactly, 1);
+        // If the given tag IS in the global tag list but does not have a tagTable entry
+        if (items.count() == 0)
+        {
+            // Get index of tag in taglist
+            int index = 0;
+            // This index is guaranteed to be found, since if it wasn't found then 
+            // the first case up above would be true.
+            for (int i = 0; i < tagList.size(); i ++)
+            {
+                if (tagList[i] == currtag)
+                {
+                    index = i;
+                    break;
+                }
+            }
+            AddToTagTable(currtag, index);
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::UpdateTags
+//
+// Purpose:
+//   Updates the global tag list to reflect current available tags.
+//
+// Programmer: Justin Privitera
+// Creation:   Tue Jun  7 12:36:55 PDT 2022
+// 
+// Notes:
+//    Signal blocking and unblocking SHOULD occur in the caller.
+//
+// Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Renamed `run_before` to `first_time`.
+//    Added guard to make sure code to fill tag table and tag list
+//    is only run as much as it needs to be run.
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::UpdateTags()
+{
+    // We want the 'Standard' tag to be checked the very first time tag
+    // filtering is enabled, hence the inclusion of `first_time`.
+    static bool first_time = true;
+    if (tagFilterToggle->isChecked())
+    {
+        // populate tags list
+        // iterate thru each color table
+        for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
+        {
+            // only try to add tags if the ccpl thinks it has new info
+            if (colorAtts->GetColorTables(i).GetTagChangesMade())
+            {
+                // if this table doesn't have tags, then add the no-tags tag
+                if (colorAtts->GetColorTables(i).GetNumTags() == 0)
+                    colorAtts->GetColorTables(i).AddTag("No Tags");
+
+                // iterate thru each tag in the given color table
+                for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
+                {
+                    // add the tag if it is not already in the global tag list
+                    AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), first_time);
+                }
+                // tell the ccpl that we have taken note of all of its tag changes
+                colorAtts->GetColorTables(i).SetTagChangesMade(false);
+            }
+        }
+        first_time = false;
+        tagTable->sortByColumn(1, Qt::AscendingOrder);
+    }
+}
+
+// ****************************************************************************
 // Method: QvisColorTableWindow::UpdateNames
 //
 // Purpose:
@@ -726,70 +923,90 @@ QvisColorTableWindow::UpdateEditor()
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added tags (so lots of logic to control what 
+//   happens when tags are enabled). Also added guard at the end to make 
+//   sure the observer updates the color table buttons if settings are 
+//   loaded from config files.
+// 
+//   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//   Refactored the block that fills the namelistbox.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::UpdateNames()
 {
+    tagTable->blockSignals(true);
     nameListBox->blockSignals(true);
     defaultDiscrete->blockSignals(true);
     defaultContinuous->blockSignals(true);
 
+    UpdateTags();
+
     // Clear out the existing names.
     nameListBox->clear();
+    nameListBox->setRootIsDecorated(false);
 
-    // Put all of the color table names into the tree.
-    bool doSimpleTree = !groupToggle->isChecked();
-    if(!doSimpleTree)
+    // if tagging is not enabled
+    if(! tagFilterToggle->isChecked())
+        colorAtts->SetAllActive(); // set all color tables to active
+    else // tagging is enabled
     {
-        nameListBox->setRootIsDecorated(true);
-        QMap<QString, QStringList> mappedCT;
-        for (int i = 0; i < colorAtts->GetNumColorTables(); ++i)
+        for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
-            QString ctCategory(colorAtts->GetColorTables(i).GetCategoryName().c_str());
-            QString item(colorAtts->GetNames()[i].c_str());
-            mappedCT[ctCategory].append(item);
-            mappedCT[ctCategory].sort();
-        }
-        if (mappedCT.count() > 1)
-        {
-            // use hierarchical tree if there is more than 1 category
-            QMap<QString, QStringList>::const_iterator iter = mappedCT.constBegin();
-            while (iter != mappedCT.constEnd())
+            bool tagFound = false;
+            // go thru global tags
+            for (int j = 0; j < tagList.size(); j ++)
             {
-                QTreeWidgetItem *treeGroup = new QTreeWidgetItem(nameListBox);
-                treeGroup->setText(0, iter.key());
-                QStringList ctNames = iter.value();
-
-                // Add an item for each color table.
-                for(int i = 0; i < ctNames.size(); ++i)
+                // if the global tag is active
+                if (activeTags[j])
                 {
-                    QTreeWidgetItem *treeItem = new QTreeWidgetItem();
-                    treeItem->setText(0, ctNames.at(i));
-                    treeGroup->addChild(treeItem);
+                    tagFound = false;
+                    // go thru local tags
+                    for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
+                    {
+                        // if the current global tag is the same as our local tag
+                        if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
+                        {
+                            tagFound = true;
+                            break;
+                        }
+                    }
+                    if (tagFound == tagsMatchAny)
+                    // If both are true, that means...
+                    // 1) tagsMatchAny is true so we only need one tag from 
+                    //    the global tag list to be present in the local tag
+                    //    list.
+                    // 2) tagFound is true, so there is no need to keep 
+                    //    searching for a tag that is in both the local and
+                    //    global tag lists. Thus we can end iteration early.
+                    // If both are false, that means...
+                    // 1) tagsMatchAny is false so we need every tag from the
+                    //    global tag list to be present in the local tag list.
+                    // 2) tagFound is false, so there exists a global tag that
+                    //    is not in the local tag list, hence we can give up 
+                    //    early because we know that this color table does not
+                    //    have every tag in the global tag list.
+                        break;
                 }
-                nameListBox->addTopLevelItem(treeGroup);
-                ++iter;
             }
+            // we mark the color table as active or inactive
+            colorAtts->SetActiveElement(i, tagFound);
         }
-        else
-        {
-            // revert to undecorated tree if there is only 1 category.
-            doSimpleTree = true;
-        }
-        mappedCT.clear();
     }
 
-    if(doSimpleTree)
+    // actually populate the name list box
+    for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
     {
-        nameListBox->setRootIsDecorated(false);
-        for(int i = 0; i < colorAtts->GetNumColorTables(); ++i)
+        // if the color table is active
+        if (colorAtts->GetActiveElement(i))
         {
             QString item(colorAtts->GetNames()[i].c_str());
             QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
             treeItem->setText(0, item);
-            nameListBox->addTopLevelItem(treeItem);
+            nameListBox->addTopLevelItem(treeItem);            
         }
     }
 
@@ -810,15 +1027,29 @@ QvisColorTableWindow::UpdateNames()
         }
         // Set the text of the default color table into the name line edit.
         nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
-        categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
+        tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
     }
 
+    tagTable->blockSignals(false);
     nameListBox->blockSignals(false);
     defaultContinuous->blockSignals(false);
     defaultDiscrete->blockSignals(false);
 
     // Set the enabled state of the delete button.
     deleteButton->setEnabled(colorAtts->GetNumColorTables() > 1);
+
+    static bool run_before = false;
+    if (!run_before)
+    {
+        // This only needs to happen the very first time for loading options.
+        // If visit isn't opened with saved config and guiconfig files, then
+        // this is redundant, but doesn't hurt. If it happens more than once
+        // then VisIt will crash.
+        run_before = true;
+        colorAtts->SetChangesMade(true);
+        ctObserver.SetUpdate(true);
+        Apply(true);
+    }
 }
 
 // ****************************************************************************
@@ -1339,6 +1570,9 @@ QvisColorTableWindow::GetNextColor()
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added logic to preserve the tags.
 //
 // ****************************************************************************
 
@@ -1382,15 +1616,11 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
             pt.SetPosition(pos);
             cpts.AddControlPoints(pt);
         }
-        QString temp = categoryLineEdit->displayText().simplified();
-        if(!temp.isEmpty())
-        {
-            categoryName = temp;
-            cpts.SetCategoryName(categoryName.toStdString());
-        }
 
         // Get a pointer to the default color table's control points.
         ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+        // preserve the tags
+        cpts.SetTagNames(ccpl->GetTagNames());
         if(ccpl)
         {
             ColorControlPointList &activeControlPoints = *ccpl;
@@ -1409,18 +1639,6 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
             currentColorTable = temp;
         }
     }
-
-    // Get the category name.
-    //
-    if(which_widget == 2 || which_widget == -1)
-    {
-        QString temp = categoryLineEdit->displayText().simplified();
-        bool okay = !temp.isEmpty();
-        if(okay)
-        {
-            categoryName = temp;
-        }
-    }
 }
 
 // ****************************************************************************
@@ -1435,6 +1653,9 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
 // Modifications:
 //    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
 //    Handle category.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories.
 //
 // ****************************************************************************
 
@@ -1444,7 +1665,6 @@ QvisColorTableWindow::Apply(bool ignore)
     if(AutoUpdate() || ignore)
     {
         // Send the color table definitions to the viewer.
-        ApplyCategoryChange();
         GetCurrentValues(1);
         colorAtts->Notify();
 
@@ -1741,6 +1961,12 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added default tag for user defined tables.
+// 
+//   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//   SetTagChangesMade for copied color tables.
 //
 // ****************************************************************************
 
@@ -1755,14 +1981,13 @@ QvisColorTableWindow::addColorTable()
     GetCurrentValues(1);
     if(colorAtts->GetColorTableIndex(currentColorTable.toStdString()) < 0)
     {
-        // make sure we have the category name
-        GetCurrentValues(2);
         // Add the new colortable to colorAtts.
         if(ccpl)
         {
             // Copy the default color table into the new color table.
             ColorControlPointList cpts(*ccpl);
-            cpts.SetCategoryName(categoryName.toStdString());
+            cpts.AddTag("User Defined");
+            cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
         else
@@ -1778,7 +2003,7 @@ QvisColorTableWindow::addColorTable()
             cpts.SetSmoothing(ColorControlPointList::Linear);
             cpts.SetEqualSpacingFlag(false);
             cpts.SetDiscreteFlag(false);
-            cpts.SetCategoryName(categoryName.toStdString());
+            cpts.AddTag("User Defined");
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
 
@@ -1849,6 +2074,9 @@ QvisColorTableWindow::deleteColorTable()
 //
 //    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
 //    Rewritten to reflect changes in how the names are stored.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added tags.
 //
 // ****************************************************************************
 
@@ -1861,13 +2089,39 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
     {
         currentColorTable = current->text(0);
         nameLineEdit->setText(currentColorTable);
-        if (groupToggle->isChecked())
-        {
-            int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
-            categoryLineEdit->setText(QString(colorAtts->GetColorTables(index).GetCategoryName().c_str()));
-        }
+        int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
+        if (tagFilterToggle->isChecked())
+            tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
         UpdateEditor();
     }
+}
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::tagTableItemSelected
+//
+// Purpose:
+//   A Qt slot function to handle selection of tags in the tag table.
+//
+// Arguments:
+//   QTreeWidgetItem *item      the selected item
+//   int column                 the column of the selected item
+//
+// Programmer: Justin Privitera
+// Creation:   Mon Jun  6 14:02:16 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
+{
+    int index = std::stoi(item->text(2).toStdString());
+    activeTags[index] = item->checkState(0) == Qt::Checked;
+    UpdateNames();
+    colorAtts->SetChangesMade(true);
+    ctObserver.SetUpdate(true);
+    Apply(true);
 }
 
 // ****************************************************************************
@@ -2341,57 +2595,80 @@ QvisColorTableWindow::exportColorTable()
 
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::groupingToggled
+// Method: QvisColorTableWindow::taggingToggled
 //
 // Purpose:
-//   This is a Qt slot function that tells modifies the grouping.
+//   This is a Qt slot function that controls toggling the tags.
 //
-// Programmer: Kathleen Biagas
-// Creation:   August 8, 2013
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 15:06:17 PDT 2022
 //
 // Modifications:
 //
 // ****************************************************************************
 
 void
-QvisColorTableWindow::groupingToggled(bool val)
+QvisColorTableWindow::taggingToggled(bool val)
 {
-    colorAtts->SetGroupingFlag(val);
+    colorAtts->SetTaggingFlag(val);
+    colorAtts->SetChangesMade(true);
     Apply(true);
 }
 
 
 // ****************************************************************************
-// Method: QvisColorTableWindow::ApplyCategoryChange
+// Method: QvisColorTableWindow::tagCombiningChanged
 //
 // Purpose:
-//   Ensures the color control points use the correct category.
+//   This is a Qt slot function that controls changing how tags are combined.
 //
-// Programmer: Kathleen Biagas
-// Creation:   August 8, 2013
+// Programmer: Justin Privitera
+// Creation:   Fri Jun  3 15:06:17 PDT 2022
 //
 // Modifications:
-//   Justin Privitera, Wed May 18 11:25:46 PDT 2022
-//   Changed *active* to *default* for everything related to color tables.
 //
 // ****************************************************************************
 
 void
-QvisColorTableWindow::ApplyCategoryChange()
+QvisColorTableWindow::tagCombiningChanged(int index)
 {
-    GetCurrentValues(2);
-    if(!categoryName.isEmpty())
+    bool old_val = tagsMatchAny;
+    if (index == 0)
+        tagsMatchAny = true;
+    else
+        tagsMatchAny = false;
+    // have any changes actually been made?
+    if (old_val != tagsMatchAny)
     {
-        ColorControlPointList *ccpl = GetDefaultColorControlPoints();
-        if(ccpl)
-        {
-            if (categoryName.toStdString() != ccpl->GetCategoryName())
-            {
-                SetUpdate(false);
-                ccpl->SetCategoryName(categoryName.toStdString());
-                colorAtts->Notify();
-            }
-        }
+        UpdateNames();
+        colorAtts->SetChangesMade(true);
+        ctObserver.SetUpdate(true);
+        Apply(true);
     }
 }
 
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::updateNameBoxPosition
+//
+// Purpose:
+//   Updates the name box position to the given coords.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Jun 16 12:52:17 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void 
+QvisColorTableWindow::updateNameBoxPosition(bool tagsOn)
+{
+    nameListBox->blockSignals(true);
+    mgLayout->removeWidget(nameListBox);
+    if (tagsOn)
+        mgLayout->addWidget(nameListBox, 3, 3, 1, 3);
+    else
+        mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
+    nameListBox->blockSignals(false);
+}

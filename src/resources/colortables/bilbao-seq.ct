@@ -1026,6 +1026,6 @@
             <Field name="colors" type="unsignedCharArray" length="4">77 0 1 255 </Field>
             <Field name="position" type="float">1</Field>
         </Object>
-        <Field name="category" type="string">CvdFriendlyCrameri</Field>
+        <Field name="tags" type="stringVector">"Color Blind Safe" "Crameri" "Sequential" "Continuous" </Field>
     </Object>
 </Object>

@@ -14,6 +14,7 @@ class ColorControlPointList;
 class ColorTableAttributes;
 class DataNode;
 class QVBoxLayout;
+class QGridLayout;
 class QPushButton;
 class QButtonGroup;
 class QCheckBox;
@@ -80,6 +81,12 @@ class QvisNoDefaultColorTableButton;
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
 // 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Removed categories and added infrastructure for tags.
+// 
+//   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//   Added new function `AddToTagTable()`.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -102,6 +109,9 @@ protected:
     void UpdateEditor();
     void UpdateColorControlPoints();
     void UpdateDiscreteSettings();
+    void AddGlobalTag(std::string currtag, bool run_before);
+    void AddToTagTable(std::string currtag, int index);
+    void UpdateTags();
     void UpdateNames();
     void Apply(bool ignore = false);
     void GetCurrentValues(int which_widget);
@@ -137,16 +147,21 @@ private slots:
     void deleteColorTable();
     void exportColorTable();
     void highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*);
+    void tagTableItemSelected(QTreeWidgetItem *, int);
     void showIndexHintsToggled(bool val);
-    void groupingToggled(bool val);
-    void ApplyCategoryChange();
+    void taggingToggled(bool val);
+    void tagCombiningChanged(int index);
+    void updateNameBoxPosition(bool tagsOn);
 private:
     ColorTableAttributes     *colorAtts;
     int                      colorCycle;
     QString                  currentColorTable;
-    QString                  categoryName;
     int                      popupMode;
     bool                     sliding;
+    stringVector             tagList;
+    std::vector<bool>        activeTags;
+    bool                     tagsVisible;
+    bool                     tagsMatchAny;
 
     // Widgets and layouts.
     QGroupBox                *defaultGroup;
@@ -154,7 +169,9 @@ private:
     QLabel                   *defaultContinuousLabel;
     QvisNoDefaultColorTableButton *defaultDiscrete;
     QLabel                   *defaultDiscreteLabel;
-    QCheckBox                *groupToggle;
+    QCheckBox                *tagFilterToggle;
+    QComboBox                *tagCombiningBehaviorChoice;
+    QGridLayout              *mgLayout;
 
     QGroupBox                *colorTableWidgetGroup;
     QPushButton              *newButton;
@@ -162,8 +179,9 @@ private:
     QPushButton              *exportButton;
     QLineEdit                *nameLineEdit;
     QTreeWidget              *nameListBox;
-    QLabel                   *categoryLabel;
-    QLineEdit                *categoryLineEdit;
+    QLabel                   *tagLabel;
+    QLineEdit                *tagLineEdit;
+    QTreeWidget              *tagTable;
 
     QGroupBox                *colorWidgetGroup;
 

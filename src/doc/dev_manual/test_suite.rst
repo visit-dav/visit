@@ -193,7 +193,7 @@ There are many alternative ways for both compiling and even running VisIt_ to pr
 Nonetheless, we expect results to be nearly if not perfectly identical. 
 For example, we expect VisIt_ running on two different implementations of the GL library to produce by and large the same images. 
 We expect VisIt_ running in serial or parallel to produce the same images. 
-We expect VisIt_ running on Ubuntu Linux to produce the same images as it would running on Mac OSX. 
+We expect VisIt_ running on Ubuntu Linux to produce the same images as it would running on Mac macOS. 
 We expect VisIt_ running in client-server mode to produce the same images as VisIt_ running entirely remotely.
 
 In many cases, we expect outputs produced by these alternative approaches to be nearly the same but not always bit-for-bit identical. 
@@ -564,7 +564,7 @@ When first running the test suite after new tests have been added, it is general
 .. That is a painful process to be sure but it should be enough to produce a working PIL on Mac.
 ..
 ..
-.. Here is a slightly easier way that I (Cyrus) was able to get PIL working on OSX:
+.. Here is a slightly easier way that I (Cyrus) was able to get PIL working on macOS:
 .. * Build your own jpeg library
 .. * Edit PIL's setup.py, do not modify JPEG_ROOT, instead directly edit the darwin case:
 .. <source lang="python">
