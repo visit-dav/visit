@@ -58,8 +58,11 @@ VTKCommonPluginInfo::GetDatabaseType()
 //    I changed the code so it switches the interface based on how many domains
 //    are present in the 1st file.
 //
-//    Kathleen Biagas, Fri Augus 13, 2021
+//    Kathleen Biagas, Fri August 13, 2021
 //    Add MTMD for .pvd file types.
+//
+//    Kathleen Biagas, Fri June 24, 2022
+//    Choose type solely based on file extension.
 //
 // ****************************************************************************
 
@@ -84,23 +87,7 @@ VTKCommonPluginInfo::SetupDatabase(const char *const *list,
 
         return db;
     }
-
-    // Figure out how many domains there are in the 1st file.
-    avtVTKFileReader *reader = new avtVTKFileReader(list[0], readOptions);
-    int nDomains = 1;
-    TRY
-    {
-        nDomains = reader->GetNumberOfDomains();
-    }
-    CATCHALL
-    {
-        delete reader;
-        RETHROW;
-    }
-    ENDTRY
-
-    // Return the proper interface.
-    if(nDomains > 1)
+    else if (ext == "vtm")
     {
         dbType = DB_TYPE_STMD;
 
@@ -108,10 +95,21 @@ VTKCommonPluginInfo::SetupDatabase(const char *const *list,
         avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
         for (int i = 0; i < nList; i++)
         {
-            if(i == 0)
-                ffl[i] = new avtVTK_STMDFileFormat(list[i], readOptions, reader);
-            else
-                ffl[i] = new avtVTK_STMDFileFormat(list[i], readOptions);
+            ffl[i] = new avtVTM_STMDFileFormat(list[i], readOptions);
+        }
+        avtSTMDFileFormatInterface *inter
+           = new avtSTMDFileFormatInterface(ffl, nList);
+        db = new avtGenericDatabase(inter);
+    }
+    else if (ext[0] == 'p')
+    {
+        dbType = DB_TYPE_STMD;
+
+        // STMD case
+        avtSTMDFileFormat **ffl = new avtSTMDFileFormat*[nList];
+        for (int i = 0; i < nList; i++)
+        {
+            ffl[i] = new avtPVTK_STMDFileFormat(list[i], readOptions);
         }
         avtSTMDFileFormatInterface *inter
            = new avtSTMDFileFormatInterface(ffl, nList);
@@ -129,10 +127,7 @@ VTKCommonPluginInfo::SetupDatabase(const char *const *list,
             ffl[i] = new avtSTSDFileFormat*[nBlock];
             for (int j = 0; j < nBlock; j++)
             {
-                if(i == 0 && j == 0)
-                    ffl[i][j] = new avtVTK_STSDFileFormat(list[i*nBlock + j], readOptions, reader);
-                else
-                    ffl[i][j] = new avtVTK_STSDFileFormat(list[i*nBlock + j], readOptions);
+                ffl[i][j] = new avtVTK_STSDFileFormat(list[i*nBlock + j], readOptions);
             }
         }
         avtSTSDFileFormatInterface *inter

@@ -6,69 +6,21 @@
 //                            avtVTKFileReader.C                             //
 // ************************************************************************* //
 
-#include <limits.h> // for INT_MAX
-#include <float.h> // for DBL_MAX
-
-#include <avtDatabaseMetaData.h>
-#include <Expression.h>
-#include <avtGhostData.h>
-#include <avtMaterial.h>
 #include <avtVTKFileReader.h>
 
-#include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetReader.h>
-#include <vtkFloatArray.h>
+#include <vtkFieldData.h>
 #include <vtkPointData.h>
-#include <vtkPolyData.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkStringArray.h>
-#include <vtkStructuredGrid.h>
-#include <vtkStructuredPoints.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkXMLImageDataReader.h>
-#include <vtkXMLPolyDataReader.h>
-#include <vtkXMLRectilinearGridReader.h>
-#include <vtkXMLStructuredGridReader.h>
-#include <vtkXMLUnstructuredGridReader.h>
-#include <vtkVisItXMLPDataReader.h>
-#include <PVTKParser.h>
-#include <VTMParser.h>
-
 #include <DebugStream.h>
-#include <Expression.h>
-#include <InvalidVariableException.h>
-#include <InvalidFilesException.h>
-#include <StringHelpers.h>
 
-#include <vtkVisItUtility.h>
-
-#include <map>
 #include <string>
 #include <vector>
 
-#ifdef _WIN32
-  #define strcasecmp stricmp
-#endif
-
-using std::array;
 using std::string;
 using std::vector;
 
-//
-// Define the static const's
-//
-const char   *avtVTKFileReader::MESHNAME="mesh";
-const char   *avtVTKFileReader::VARNAME="VTKVar";
-
-
-static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug,
-                                     vtkUnsignedCharArray *uca);
-
-int    avtVTKFileReader::INVALID_CYCLE = -INT_MAX;
-double avtVTKFileReader::INVALID_TIME = -DBL_MAX;
 
 // ****************************************************************************
 //  Method: avtVTKFileReader constructor
@@ -116,45 +68,17 @@ double avtVTKFileReader::INVALID_TIME = -DBL_MAX;
 //    pieceFileNames now a vector<string>.
 //    pieceExtents now vector<array<int,6>>.
 //
+//    Kathleen Biagas, Fri Jun 24, 2022
+//    Inherit from avtVTKFileReaderBase, to handle reading of single-block,
+//    legacy and xml formatted vtk files. Other logic moved into new classes.
+//
 // ****************************************************************************
 
-avtVTKFileReader::avtVTKFileReader(const char *fname, const DBOptionsAttributes *) :
-    vtk_meshname()
+avtVTKFileReader::avtVTKFileReader(const char *fname,
+    const DBOptionsAttributes *) : avtVTKFileReaderBase(), filename(fname)
 {
-    filename = new char[strlen(fname)+1];
-    strcpy(filename, fname);
-
-    nblocks = 1;
-    pieceDatasets = NULL;
-
-    readInDataset = false;
-    matvarname = NULL;
-
-    // find the file extension
-    int i, start = -1;
-    int len = int(strlen(fname));
-    for(i = len-1; i >= 0; i--)
-    {
-        if(fname[i] == '.')
-        {
-            start = i;
-            break;
-        }
-        else if(fname[i] == '/' || fname[i] == '\\')
-        {
-            // We hit a path separator. There is no file extension.
-            start = -1;
-            break;
-        }
-    }
-
-    if (start != -1)
-        fileExtension = string(fname, start+1, len-1);
-    else
-        fileExtension = "none";
-
-    vtk_time = INVALID_TIME;
-    vtk_cycle = INVALID_CYCLE;
+    dataset = nullptr;
+    haveReadDataset = false;
 }
 
 
@@ -184,37 +108,24 @@ avtVTKFileReader::avtVTKFileReader(const char *fname, const DBOptionsAttributes 
 //    pieceFileNames now a vector<string>.
 //    pieceExtents now vector<array<int,6>>.
 //
+//    Kathleen Biagas, Fri Jun 24, 2022
+//    Removed all code for parallel/multiblock files.
+//
 // ****************************************************************************
+
 void
 avtVTKFileReader::FreeUpResources(void)
 {
     debug4 << "VTK file " << filename << " forced to free up resources." << endl;
 
-    if (matvarname != NULL)
+    if(dataset != nullptr)
     {
-        free(matvarname);
-        matvarname = NULL;
+        dataset->Delete();
+        dataset = nullptr;
     }
-    pieceFileNames.clear();
-    if (pieceDatasets != NULL)
-    {
-        for (int i = 0; i < nblocks; i++)
-        {
-            if (pieceDatasets[i] != NULL)
-                pieceDatasets[i]->Delete();
-        }
-        delete [] pieceDatasets;
-        pieceDatasets = 0;
-    }
-    pieceExtents.clear();
-    for(std::map<string, vtkRectilinearGrid *>::iterator pos = vtkCurves.begin();
-        pos != vtkCurves.end(); ++pos)
-    {
-        pos->second->Delete();
-    }
-    vtkCurves.clear();
+    haveReadDataset = false;
 
-    readInDataset = false;
+    avtVTKFileReaderBase::FreeUpResources();
 }
 
 // ****************************************************************************
@@ -245,179 +156,6 @@ avtVTKFileReader::FreeUpResources(void)
 avtVTKFileReader::~avtVTKFileReader()
 {
     FreeUpResources();
-    delete [] filename;
-}
-
-
-// ****************************************************************************
-// Method: avtVTKFileReader::GetNumberOfDomains
-//
-// Purpose:
-//   Return the number of domains, reading the data file to figure it out.
-//
-// Returns:    The number of domains.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Oct 22 17:08:06 PDT 2012
-//
-// Modifications:
-//
-// ****************************************************************************
-
-int
-avtVTKFileReader::GetNumberOfDomains()
-{
-    if (!readInDataset)
-    {
-        ReadInFile();
-    }
-
-    return nblocks;
-}
-
-// ****************************************************************************
-//  Method: avtVTKFileReader::ReadInFile
-//
-//  Purpose:
-//      Reads in the file.
-//
-//  Programmer: Eric Brugger
-//  Creation:   June 18, 2012
-//
-//  Modifications:
-//    Eric Brugger, Tue Jul  9 09:36:44 PDT 2013
-//    I modified the reading of pvti, pvtr and pvts files to handle the case
-//    where the piece extent was a subset of the whole extent.
-//
-//    Kathleen Biagas, Thu Aug 13 17:29:21 PDT 2015
-//    Add support for groups and block names, as read from 'vtm' file.
-//
-//    Kathleen Biagas, Thu Sep 21 14:59:31 MST 2017
-//    Add support for pvtk files.
-//
-//    Kathleen Biagas, Fri Aug 13 2021
-//    pieceFileNames now a vector<string>. Combine 2 for-blocks into 1.
-//    pieceExtents now vector<array<int,6>>.
-//
-// ****************************************************************************
-
-void
-avtVTKFileReader::ReadInFile(int _domain)
-{
-    int domain = _domain == -1 ? 0 : _domain;
-
-    if (fileExtension == "pvtu" || fileExtension == "pvts" ||
-        fileExtension == "pvtr" || fileExtension == "pvti" ||
-        fileExtension == "pvtp")
-    {
-        vtkVisItXMLPDataReader *xmlpReader = vtkVisItXMLPDataReader::New();
-        xmlpReader->SetFileName(filename);
-        xmlpReader->ReadXMLInformation();
-
-        ngroups = 1;
-        nblocks = xmlpReader->GetNumberOfPieces();
-        pieceFileNames.resize(nblocks);
-        pieceExtents.resize(nblocks);
-        for (int i = 0; i < nblocks; i++)
-        {
-            pieceFileNames[i] = xmlpReader->GetPieceFileName(i);
-
-            int *ext = xmlpReader->GetExtent(i);
-            if (ext != NULL)
-            {
-                array<int, 6> pe = {ext[0], ext[1], ext[2], ext[3], ext[4], ext[5]};
-                pieceExtents[i] = pe;
-            }
-        }
-
-        xmlpReader->Delete();
-
-        pieceExtension = fileExtension.substr(1,3);
-    }
-    else if (fileExtension == "pvtk")
-    {
-        PVTKParser *parser = new PVTKParser();
-        parser->SetFileName(filename);
-        if (!parser->Parse())
-        {
-            string em = parser->GetErrorMessage();
-            delete parser;
-            EXCEPTION2(InvalidFilesException, filename, em);
-        }
-
-        ngroups = 1;
-        nblocks = int(parser->GetNumberOfPieces());
-        pieceFileNames.resize(nblocks);
-        for (int i = 0; i < nblocks; i++)
-        {
-            pieceFileNames[i] = parser->GetPieceFileName(i);
-        }
-
-        if (parser->HasExtents())
-        {
-            pieceExtents.resize(nblocks);
-            for (int i = 0; i < nblocks; i++)
-            {
-                vector< int >  &readerExtent = parser->GetPieceExtent(i);
-                array<int,6> pe;
-                std::copy_n(readerExtent.begin(), 6, pe.begin());
-                pieceExtents[i] = pe;
-            }
-        }
-
-        delete parser;
-
-        pieceExtension = "vtk";
-    }
-    else if (fileExtension == "vtm")
-    {
-        VTMParser *parser = new VTMParser;
-        parser->SetFileName(filename);
-        if (!parser->Parse())
-        {
-            string em = parser->GetErrorMessage();
-            delete parser;
-            EXCEPTION2(InvalidFilesException, filename, em);
-            return;
-        }
-
-        nblocks = parser->GetNumberOfBlocks();
-        ngroups = parser->GetNumberOfGroups();
-        if (ngroups > 1)
-        {
-            groupNames = parser->GetGroupNames();
-            groupPieceName = parser->GetGroupPieceName();
-            groupIds   = parser->GetGroupIds();
-        }
-
-        blockNames = parser->GetBlockNames();
-        blockPieceName = parser->GetBlockPieceName();
-
-        pieceFileNames.resize(nblocks);
-        for (int i = 0; i < nblocks; i++)
-        {
-            pieceFileNames[i] = parser->GetBlockFileName(i);
-        }
-        pieceExtension = parser->GetBlockExtension();
-        delete parser;
-    }
-    else
-    {
-        nblocks = 1;
-        ngroups = 1;
-        pieceFileNames.resize(1);
-        pieceFileNames[0] = filename;
-        pieceExtension = fileExtension;
-    }
-
-
-    pieceDatasets = new vtkDataSet*[nblocks];
-    for (int i = 0; i < nblocks; i++)
-        pieceDatasets[i] = NULL;
-
-    ReadInDataset(domain);
-
-    readInDataset = true;
 }
 
 
@@ -499,319 +237,23 @@ avtVTKFileReader::ReadInFile(int _domain)
 //    pieceFileNames now a vector<string>.
 //    pieceExtents now vector<array<int,6>>.
 //
-// ****************************************************************************
-
-void
-avtVTKFileReader::ReadInDataset(int domain)
-{
-    debug4 << "Reading in dataset from VTK file "; 
-    if (!pieceFileNames.empty())
-        debug4 << pieceFileNames[domain];
-    else
-        debug4 << filename;
-    debug4 << " (domain = " << domain << ") " << endl;
-
-    //
-    // This shouldn't ever happen (since we would already have the dataset
-    // we are trying to read from the file sitting in memory), but anything
-    // to prevent leaks.
-    //
-    if (pieceDatasets[domain] != NULL)
-    {
-        pieceDatasets[domain]->Delete();
-        pieceDatasets[domain] = NULL;
-    }
-
-    vtkDataSet *dataset = NULL;
-
-    if (pieceExtension == "vtk" || pieceExtension == "none")
-    {
-        if (pieceExtension == "none") {
-            debug1 << "No extension given ... assuming legacy VTK format."
-                   << endl;
-        }
-
-        //
-        // Create a file reader and set our dataset to be its output.
-        //
-        vtkDataSetReader *reader = vtkDataSetReader::New();
-        reader->ReadAllScalarsOn();
-        reader->ReadAllVectorsOn();
-        reader->ReadAllTensorsOn();
-        reader->SetFileName(pieceFileNames[domain].c_str());
-        reader->Update();
-        dataset = reader->GetOutput();
-        if (dataset == NULL)
-        {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
-        }
-        dataset->Register(NULL);
-        reader->Delete();
-    }
-    else if (pieceExtension == "vti")
-    {
-        vtkXMLImageDataReader *reader = vtkXMLImageDataReader::New();
-        reader->SetFileName(pieceFileNames[domain].c_str());
-        reader->Update();
-        dataset = reader->GetOutput();
-        if (dataset == NULL)
-        {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
-        }
-        dataset->Register(NULL);
-        reader->Delete();
-    }
-    else if (pieceExtension == "vtr")
-    {
-        vtkXMLRectilinearGridReader *reader =
-            vtkXMLRectilinearGridReader::New();
-        reader->SetFileName(pieceFileNames[domain].c_str());
-        reader->Update();
-        dataset = reader->GetOutput();
-        if (dataset == NULL)
-        {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
-        }
-        dataset->Register(NULL);
-        reader->Delete();
-    }
-    else if (pieceExtension == "vts")
-    {
-        vtkXMLStructuredGridReader *reader =
-            vtkXMLStructuredGridReader::New();
-        reader->SetFileName(pieceFileNames[domain].c_str());
-        reader->Update();
-        dataset = reader->GetOutput();
-        if (dataset == NULL)
-        {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
-        }
-        dataset->Register(NULL);
-        reader->Delete();
-    }
-    else if (pieceExtension == "vtp")
-    {
-        vtkXMLPolyDataReader *reader = vtkXMLPolyDataReader::New();
-        reader->SetFileName(pieceFileNames[domain].c_str());
-        reader->Update();
-        dataset = reader->GetOutput();
-        if (dataset == NULL)
-        {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
-        }
-        dataset->Register(NULL);
-        reader->Delete();
-    }
-    else if (pieceExtension == "vtu")
-    {
-        vtkXMLUnstructuredGridReader *reader =
-            vtkXMLUnstructuredGridReader::New();
-        reader->SetFileName(pieceFileNames[domain].c_str());
-        reader->Update();
-        dataset = reader->GetOutput();
-        if (dataset == NULL)
-        {
-            EXCEPTION1(InvalidFilesException, pieceFileNames[domain]);
-        }
-        dataset->Register(NULL);
-        reader->Delete();
-    }
-    else
-    {
-        EXCEPTION2(InvalidFilesException, pieceFileNames[domain],
-                   "could not match extension to a VTK file format type");
-    }
-
-    vtk_time = INVALID_TIME;
-    if (dataset->GetFieldData()->GetArray("TIME") != 0)
-    {
-        vtk_time = dataset->GetFieldData()->GetArray("TIME")->GetTuple1(0);
-    }
-    vtk_cycle = INVALID_CYCLE;
-    if (dataset->GetFieldData()->GetArray("CYCLE") != 0)
-    {
-        vtk_cycle = (int)dataset->GetFieldData()->GetArray("CYCLE")->GetTuple1(0);
-    }
-    vtk_meshname.clear();
-    if (dataset->GetFieldData()->GetAbstractArray("MeshName") != 0)
-    {
-        vtkStringArray *mn = vtkStringArray::SafeDownCast(
-            dataset->GetFieldData()->GetAbstractArray("MeshName"));
-        if (mn)
-            vtk_meshname = mn->GetValue(0);
-    }
-    vtk_exprs.ClearExpressions();
-    if (dataset->GetFieldData()->GetAbstractArray("VisItExpressions") != 0)
-    {
-        vtkStringArray *ve = vtkStringArray::SafeDownCast(
-            dataset->GetFieldData()->GetAbstractArray("VisItExpressions"));
-        for (int i = 0; i < ve->GetNumberOfTuples(); i++)
-        {
-            std::vector<std::string> expr_substrs = StringHelpers::split(ve->GetValue(i),';');
-            Expression::ExprType vtype = Expression::Unknown;
-
-            if (expr_substrs.size() != 3)
-            {
-                debug2 << "Ignoring invalid VisItExpression entry at index " << i << endl;
-                continue;
-            }
-
-            if (!strcasecmp(expr_substrs[1].c_str(),"curve"))
-                vtype = Expression::CurveMeshVar;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"scalar"))
-                vtype = Expression::ScalarMeshVar;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"vector"))
-                vtype = Expression::VectorMeshVar;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"tensor"))
-                vtype = Expression::TensorMeshVar;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"array"))
-                vtype = Expression::ArrayMeshVar;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"material"))
-                vtype = Expression::Material;
-            else if (!strcasecmp(expr_substrs[1].c_str(),"species"))
-                vtype = Expression::Species;
-
-            Expression expr;
-            expr.SetName(expr_substrs[0]);
-            expr.SetType(vtype);
-            expr.SetDefinition(expr_substrs[2]);
-
-            vtk_exprs.AddExpressions(expr);
-        }
-    }
-
-    if (dataset->GetDataObjectType() == VTK_STRUCTURED_POINTS ||
-        dataset->GetDataObjectType() == VTK_IMAGE_DATA)
-    {
-        //
-        // The old dataset passed in will be deleted, a new one will be
-        // returned.
-        //
-        if((pieceExtents.empty() || pieceExtents[domain].empty())  &&
-           dataset->GetDataObjectType() == VTK_IMAGE_DATA)
-        {
-          vtkImageData *img = vtkImageData::SafeDownCast(dataset);
-          if(img)
-          {
-            int *ext  = img->GetExtent();
-            dataset = ConvertStructuredPointsToRGrid((vtkStructuredPoints*)dataset,
-                                                      ext);
-          }
-        }
-        else
-        {
-            dataset = ConvertStructuredPointsToRGrid((vtkStructuredPoints*)dataset,
-                                                     pieceExtents[domain].data());
-        }
-    }
-
-    if(dataset->GetDataObjectType() == VTK_RECTILINEAR_GRID)
-    {
-        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(dataset);
-        int dims[3];
-        rgrid->GetDimensions(dims);
-        if(dims[0] > 0 && dims[1] <= 1 && dims[2] <= 1)
-        {
-            // Make some curves from this dataset.
-            CreateCurves(rgrid);
-        }
-    }
-
-    // Convert vtkGhostType to avtGhostDataType
-    // Rename the arrays stored in dataset->GetCellData() and dataset->GetPointData()
-
-    vtkDataArray *zoneArray = dataset->GetCellData()->GetArray("vtkGhostType");
-    if (zoneArray)
-    {
-        zoneArray->SetName("avtGhostZones");
-        dataset->GetCellData()->AddArray(zoneArray);
-    }
-
-    vtkDataArray *nodeArray = dataset->GetPointData()->GetArray("vtkGhostType");
-    if (nodeArray)
-    {
-        nodeArray->SetName("avtGhostNodes");
-        dataset->GetPointData()->AddArray(nodeArray);
-    }
-
-    pieceDatasets[domain] = dataset;
-}
-
-
-// ****************************************************************************
-// Method: avtVTKFileReader::CreateCurves
-//
-// Purpose:
-//   Create curve datasets based on the input rectilinear grid.
-//
-// Arguments:
-//   rgrid : The rectilinear grid from which to create curves.
-//
-// Returns:
-//
-// Note:       vtkCurves gets the new datasets.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Oct 26 11:01:44 PDT 2011
-//
-// Modifications:
+//    Kathleen Biagas, Fri Jun 24, 2022
+//    Call base class method for reading in single block vtk dataset. Logic
+//    for  multi block/multi group moved into new classes.
 //
 // ****************************************************************************
 
 void
-avtVTKFileReader::CreateCurves(vtkRectilinearGrid *rgrid)
+avtVTKFileReader::ReadInDataset()
 {
-    vtkDataArray *xc = rgrid->GetXCoordinates();
-    int nPts = xc->GetNumberOfTuples();
+    debug4 << "Reading in dataset from VTK file " << filename << endl; 
 
-    for(int i = 0; i < rgrid->GetPointData()->GetNumberOfArrays(); ++i)
-    {
-        vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
-        if(arr->GetNumberOfComponents() == 1)
-        {
-            vtkRectilinearGrid *curve = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
-            vtkDataArray *curve_xc = curve->GetXCoordinates();
-            vtkFloatArray *curve_yc = vtkFloatArray::New();
-            curve_yc->SetName(arr->GetName());
-            curve_yc->SetNumberOfTuples(nPts);
-            for(vtkIdType j = 0; j < nPts; ++j)
-            {
-                curve_xc->SetTuple1(j, xc->GetTuple1(j));
-                curve_yc->SetTuple1(j, arr->GetTuple1(j));
-            }
-            curve->GetPointData()->SetScalars(curve_yc);
-            curve_yc->Delete();
+    if(dataset != nullptr)
+        dataset->Delete(); 
 
-            vtkCurves[string("curve_") + string(arr->GetName())] = curve;
-        }
-    }
-
-    for(int i = 0; i < rgrid->GetCellData()->GetNumberOfArrays(); ++i)
-    {
-        vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
-        if(arr->GetNumberOfComponents() == 1)
-        {
-            vtkRectilinearGrid *curve = vtkVisItUtility::Create1DRGrid(nPts,VTK_FLOAT);
-            vtkDataArray *curve_xc = curve->GetXCoordinates();
-            for(vtkIdType j = 0; j < nPts; ++j)
-                curve_xc->SetTuple1(j, xc->GetTuple1(j));
-
-            int nCells = nPts-1;
-            int idx = 0;
-            vtkFloatArray *curve_yc = vtkFloatArray::New();
-            curve_yc->SetName(arr->GetName());
-            curve_yc->SetNumberOfTuples(nPts);
-            curve_yc->SetTuple1(idx++, arr->GetTuple1(0));
-            for(vtkIdType j = 0; j < nCells-1; ++j)
-                curve_yc->SetTuple1(idx++, (arr->GetTuple1(j) + arr->GetTuple1(j+1)) / 2.);
-            curve_yc->SetTuple1(idx++, arr->GetTuple1(nCells-1));
-
-            curve->GetPointData()->SetScalars(curve_yc);
-            curve_yc->Delete();
-
-            vtkCurves[string("curve_") + string(arr->GetName())] = curve;
-        }
-    }
+    dataset = ReadVTKDataset(filename);
+    dataset->Register(NULL);
+    haveReadDataset = true;
 }
 
 
@@ -839,115 +281,21 @@ avtVTKFileReader::CreateCurves(vtkRectilinearGrid *rgrid)
 //    Kathleen Biagas, Mon Nov 20 13:04:51 PST 2017
 //    Pass domain to the GetVar call when retrieving materials.
 //
+//    Kathleen Biagas, Fri Jun 24, 2022
+//    Call base class method.
+//
 // ****************************************************************************
 
 void *
-avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
+avtVTKFileReader::GetAuxiliaryData(const char *var,
     const char *type, void *, DestructorFunction &df)
 {
-    void *rv = NULL;
-
-    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    if (!haveReadDataset)
     {
-        vtkDataSet *dataset = NULL;
-
-        // matvarname is only inited if we call: PopulateDatabaseMetaData().
-        // If you have a series of vtk files using this variable will cause
-        // a crash any time the time slider is changed (and treat all dbs
-        // as time varying is off)
-
-        if(matvarname == NULL)
-        {
-            if (!readInDataset)
-            {
-                ReadInFile(domain);
-            }
-
-            if (pieceDatasets[domain] == NULL)
-            {
-                ReadInDataset(domain);
-            }
-            dataset = pieceDatasets[domain];
-
-            int ncellvars = dataset->GetCellData()->GetNumberOfArrays();
-            for(int i=0;( i < ncellvars) && (matvarname == NULL) ;i++)
-            {
-                // we are looking for either "avtSubsets" or "material"
-                if(strcmp(dataset->GetCellData()->GetArrayName(i), "avtSubsets") == 0)
-                    matvarname = strdup("avtSubsets");
-                else if(strcmp(dataset->GetCellData()->GetArrayName(i), "material") == 0)
-                    matvarname = strdup("material");
-            }
-        }
-        else
-        {
-            dataset = pieceDatasets[domain];
-        }
-
-        vtkIntArray *matarr = vtkIntArray::SafeDownCast(GetVar(domain, matvarname));
-
-
-        // again, if we haven't called PopulateDatabaseMetaData().
-        // this data will be bad ...
-        if(matnos.size() == 0)
-        {
-            vtkIntArray  *iarr = NULL;
-            // check for field data "MaterialIds" that can directly provide us
-            // the proper set of material ids.
-            vtkDataArray *mids_arr = dataset->GetFieldData()->GetArray("MaterialIds");
-            if( mids_arr != NULL)
-                iarr = vtkIntArray::SafeDownCast(mids_arr);
-            else
-                iarr = vtkIntArray::SafeDownCast(matarr);
-            int *iptr = iarr->GetPointer(0);
-            std::map<int, bool> valMap;
-            int ntuples = iarr->GetNumberOfTuples();
-            for (int j = 0; j < ntuples; j++)
-                valMap[iptr[j]] = true;
-            std::map<int, bool>::const_iterator it;
-            for (it = valMap.begin(); it != valMap.end(); it++)
-            {
-                char tmpname[32];
-                snprintf(tmpname, sizeof(tmpname), "%d", it->first);
-                matnames.push_back(tmpname);
-                matnos.push_back(it->first);
-            }
-        }
-
-        int ntuples = matarr->GetNumberOfTuples();
-        int *matlist = matarr->GetPointer(0);
-
-        int *matnostmp = new int[matnos.size()];
-        char **matnamestmp = new char*[matnames.size()];
-        for (size_t i = 0; i < matnos.size(); i++)
-        {
-            matnostmp[i] = matnos[i];
-            matnamestmp[i] = (char*) matnames[i].c_str();
-        }
-
-        avtMaterial *mat = new avtMaterial((int)matnos.size(), //silomat->nmat,
-                                           matnostmp,     //silomat->matnos,
-                                           matnamestmp,   //silomat->matnames,
-                                           1,             //silomat->ndims,
-                                           &ntuples,      //silomat->dims,
-                                           0,             //silomat->major_order,
-                                           matlist,       //silomat->matlist,
-                                           0,             //silomat->mixlen,
-                                           0,             //silomat->mix_mat,
-                                           0,             //silomat->mix_next,
-                                           0,             //silomat->mix_zone,
-                                           0              //silomat->mix_vf
-                                           );
-
-        delete [] matnostmp;
-        delete [] matnamestmp;
-        matarr->Delete();
-
-        df = avtMaterial::Destruct;
-        rv = mat;
+        ReadInDataset();
     }
 
-    return rv;
+    return GetAuxiliaryDataFromDataset(dataset, var, type, df);
 }
 
 
@@ -984,64 +332,23 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
 //    Kathleen Biagas, Fri Aug 13 2021
 //    Change debug message to correctly identify actual file being read in.
 //
+//    Kathleen Biagas, Fri Jun 24, 2022
+//    Call base class which handles vtkcurves and ensuring mesh is valid.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtVTKFileReader::GetMesh(int domain, const char *mesh)
+avtVTKFileReader::GetMesh(const char *mesh)
 {
-    debug5 << "Getting mesh from VTK file: " ;
-    if (!pieceFileNames.empty())
-        debug5 << pieceFileNames[domain];
-    else
-        debug5 << filename;
-    debug5 << " (domain = " << domain << ") " << endl;
+    debug5 << "Getting mesh from VTK file: " << filename << endl;
 
-    if (!readInDataset)
+    if (!haveReadDataset)
     {
-        ReadInFile(domain);
+        ReadInDataset();
     }
-
-    if (pieceDatasets[domain] == NULL)
-    {
-        ReadInDataset(domain);
-    }
-    vtkDataSet *dataset = pieceDatasets[domain];
-
-    if (dataset->GetNumberOfPoints() == 0)
-    {
-        return NULL;
-    }
-
-    // If the requested mesh is a curve, return it.
-    std::map<string, vtkRectilinearGrid *>::iterator pos = vtkCurves.find(mesh);
-    if(pos != vtkCurves.end())
-    {
-        pos->second->Register(NULL);
-        return pos->second;
-    }
-
-    if(vtk_meshname.empty())
-    {
-        if (strcmp(mesh, MESHNAME) != 0)
-        {
-            EXCEPTION1(InvalidVariableException, mesh);
-        }
-    }
-    else
-    {
-        if (strcmp(mesh, vtk_meshname.c_str()) != 0)
-        {
-            EXCEPTION1(InvalidVariableException, mesh);
-        }
-    }
-
-    //
-    // The routine that calls this method is going to assume that it can call
-    // Delete on what is returned.  That means we better add an extra
-    // reference.
-    //
-    dataset->Register(NULL);
-    return dataset;
+    vtkDataSet *meshDS = GetMeshFromDataset(dataset, mesh);
+    meshDS->Register(NULL);
+    return meshDS;
 }
 
 
@@ -1081,74 +388,24 @@ avtVTKFileReader::GetMesh(int domain, const char *mesh)
 //    Kathleen Biagas, Fri Aug 13 2021
 //    Change debug message to correctly identify actual file being read in.
 //
+//    Kathleen Biagas, Fri Jun 24, 2022
+//    Call base class method which handles internal vars and vars that were
+//    given artificial names.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtVTKFileReader::GetVar(int domain, const char *real_name)
+avtVTKFileReader::GetVar(const char *real_name)
 {
-    debug5 << "Getting var from VTK file ";
-    if (!pieceFileNames.empty())
-        debug5 << pieceFileNames[domain];
-    else
-        debug5 << filename;
-    debug5 << " (domain = " << domain << ") " << endl;
+    debug5 << "Getting var from VTK file " << filename << endl;
 
-    if (!readInDataset)
+    if (!haveReadDataset)
     {
-        ReadInFile(domain);
+        ReadInDataset();
     }
-
-    if (pieceDatasets[domain] == NULL)
-    {
-        ReadInDataset(domain);
-    }
-    vtkDataSet *dataset = pieceDatasets[domain];
-
-    const char *var = real_name;
-    char buffer[1024];
-    if (strncmp(var, "internal_var_", strlen("internal_var_")) == 0)
-    {
-        sprintf(buffer, "avt%s", var + strlen("internal_var_"));
-        var = buffer;
-    }
-
-    vtkDataArray *rv = NULL;
-    rv = dataset->GetPointData()->GetArray(var);
-    if (rv == NULL)
-    {
-        rv = dataset->GetCellData()->GetArray(var);
-    }
-
-    //
-    // See if we made up an artificial name for it.
-    //
-    if (strstr(var, VARNAME) != NULL)
-    {
-        const char *numstr = var + strlen(VARNAME);
-        int num = atoi(numstr);
-        int npointvars = dataset->GetPointData()->GetNumberOfArrays();
-        if (num < npointvars)
-        {
-            rv = dataset->GetPointData()->GetArray(num);
-        }
-        else
-        {
-            rv = dataset->GetCellData()->GetArray(num-npointvars);
-        }
-    }
-
-    if (rv == NULL)
-    {
-        EXCEPTION1(InvalidVariableException, var);
-    }
-
-    //
-    // The routine that calls this method is going to assume that it can call
-    // Delete on what is returned.  That means we better add an extra
-    // reference.
-    //
-    rv->Register(NULL);
-    return rv;
+    vtkDataArray *var = GetVarFromDataset(dataset, real_name);
+    var->Register(NULL);
+    return var;
 }
 
 
@@ -1183,12 +440,12 @@ avtVTKFileReader::GetVar(int domain, const char *real_name)
 // ****************************************************************************
 
 vtkDataArray *
-avtVTKFileReader::GetVectorVar(int domain, const char *var)
+avtVTKFileReader::GetVectorVar(const char *var)
 {
     //
     // There is no difference between vectors and scalars for this class.
     //
-    return GetVar(domain, var);
+    return GetVar(var);
 }
 
 
@@ -1303,397 +560,39 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 //    Kathleen Biagas, Fri August 13, 2021
 //    Add call to ReadInDataset if pieceDataset[0] is NULL.
 //
+//    Kathleen Biagas, Fri June 24, 2022 
+//    Bulk of logic moved to new base class methods.
+//
 // ****************************************************************************
 
 void
 avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
-    if (!readInDataset)
+    if (!haveReadDataset)
     {
-        ReadInFile();
+        ReadInDataset();
     }
 
-    if (pieceDatasets[0] == NULL)
-    {
-        ReadInDataset(0);
-    }
-
-    vtkDataSet *dataset = pieceDatasets[0];
-
-    int spat = 3;
-    int topo = 3;
-
-    avtMeshType type;
-    int  vtkType = dataset->GetDataObjectType();
-    switch (vtkType)
-    {
-      case VTK_RECTILINEAR_GRID:
-        type = AVT_RECTILINEAR_MESH;
-        break;
-      case VTK_STRUCTURED_GRID:
-        type = AVT_CURVILINEAR_MESH;
-        break;
-      case VTK_UNSTRUCTURED_GRID:
-        type = AVT_UNSTRUCTURED_MESH;
-        break;
-      case VTK_POLY_DATA:
-        topo = 2;
-        type = AVT_SURFACE_MESH;
-        break;
-      default:
-        debug1 << "Unable to identify mesh type " << vtkType << endl;
-        type = AVT_UNKNOWN_MESH;
-        break;
-    }
-
-    double bounds[6];
-    dataset->GetBounds(bounds);
-
-    if ((bounds[4] == bounds[5]) && (bounds[5] == 0.))
-    {
-        spat = 2;
-        topo = 2;
-    }
-
-    //
-    // Some mesh types can have a lower topological dimension
-    //
-    if (vtkType == VTK_UNSTRUCTURED_GRID)
-    {
-        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) dataset;
-
-        if(ugrid->GetNumberOfPoints() > 0)
-        {
-            if (ugrid->GetNumberOfCells() == 0)
-            {
-                // no cells declared, assume  point mesh.
-                debug5 << "The VTK file format contains all points -- "
-                       << "declaring this a point mesh." << endl;
-                type = AVT_POINT_MESH;
-                topo = 0;
-            }
-            else
-            {
-                vtkUnsignedCharArray *types = vtkUnsignedCharArray::New();
-                GetListOfUniqueCellTypes(ugrid, types);
-
-                if (types->GetNumberOfTuples() == 1)
-                {
-                    int myType = (int) types->GetValue(0);
-                    if (myType == VTK_VERTEX)
-                    {
-                        debug5 << "The VTK file format contains all points -- "
-                               << "declaring this a point mesh." << endl;
-                        type = AVT_POINT_MESH;
-                        topo = 0;
-                    }
-                    else if(myType == VTK_LINE)
-                    {
-                        debug5 << "The mesh contains all lines, set topo=1" << endl;
-                        topo = 1;
-                    }
-                }
-                types->Delete();
-            }
-        }
-    }
-    else if (vtkType == VTK_STRUCTURED_GRID)
-    {
-        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) dataset;
-        int dims[3];
-        sgrid->GetDimensions(dims);
-        if ((dims[0] == 1 && dims[1] == 1) ||
-            (dims[0] == 1 && dims[2] == 1) ||
-            (dims[1] == 1 && dims[2] == 1))
-        {
-            topo = 1;
-        }
-        else if (dims[0] == 1 || dims[1] == 1 || dims[2] == 1)
-        {
-            topo = 2;
-        }
-    }
-    else if (vtkType == VTK_POLY_DATA)
-    {
-        vtkPolyData *pd = (vtkPolyData *) dataset;
-        if (pd->GetNumberOfPoints() > 0)
-        {
-            if (pd->GetNumberOfPolys() == 0 && pd->GetNumberOfStrips() == 0)
-            {
-                if (pd->GetNumberOfLines() > 0)
-                {
-                    topo = 1;
-                }
-                else
-                {
-                    debug3 << "The VTK file format contains all points -- "
-                           << "declaring this a point mesh." << endl;
-                    type = AVT_POINT_MESH;
-                    topo = 0;
-                }
-            }
-        }
-    }
-
-    avtMeshMetaData *mesh = new avtMeshMetaData;
+    string useMeshName;
     if(vtk_meshname.empty())
     {
-        mesh->name = MESHNAME;
+        useMeshName = MESHNAME;
     }
     else
     {
-        mesh->name = vtk_meshname;
+        useMeshName = vtk_meshname;
     }
-    mesh->meshType = type;
-    mesh->spatialDimension = spat;
-    mesh->topologicalDimension = topo;
-    if (ngroups > 1)
-    {
-        mesh->numGroups = ngroups;
-        if (!groupNames.empty())
-            mesh->groupNames = groupNames;
-        if (!groupPieceName.empty())
-        {
-            mesh->groupPieceName = groupPieceName;
-            mesh->groupTitle = groupPieceName + string("s");
-        }
-        mesh->groupIds = groupIds;
-    }
-    mesh->numBlocks = nblocks;
-    mesh->blockOrigin = 0;
-    if (nblocks == 1)
-        mesh->SetExtents(bounds);
-    else
-    {
-        if (!blockPieceName.empty())
-        {
-            mesh->blockPieceName = blockPieceName;
-            mesh->blockTitle = blockPieceName + string("s");
-        }
-        if (!blockNames.empty() && (int)blockNames.size() == nblocks)
-            mesh->blockNames = blockNames;
-    }
-    if (dataset->GetFieldData()->GetArray("MeshCoordType") != NULL)
-    {
-        avtMeshCoordType mct = (avtMeshCoordType)
-            int(dataset->GetFieldData()->GetArray("MeshCoordType")->
-                                                        GetComponent(0, 0));
-        mesh->meshCoordType = mct;
-        if (mct == AVT_RZ)
-        {
-            mesh->xLabel = "Z-Axis";
-            mesh->yLabel = "R-Axis";
-        }
-        else if (mct == AVT_ZR)
-        {
-            mesh->xLabel = "R-Axis";
-            mesh->yLabel = "Z-Axis";
-        }
-    }
-    if (dataset->GetFieldData()->GetArray("UnitCellVectors"))
-    {
-        vtkDataArray *ucv = dataset->GetFieldData()->
-                                               GetArray("UnitCellVectors");
-        for (int j=0; j<3; j++)
-        {
-            for (int k=0; k<3; k++)
-            {
-                mesh->unitCellVectors[j*3+k] = ucv->GetComponent(j*3+k,0);
-            }
-        }
-    }
-    if (dataset->GetCellData()->GetArray("avtGhostZones"))
-    {
-        mesh->containsGhostZones = AVT_HAS_GHOSTS;
-        int ncells = dataset->GetNumberOfCells();
-        vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *) dataset->GetCellData()->GetArray("avtGhostZones");
-        unsigned char *ptr = arr->GetPointer(0);
-        unsigned char v = '\0';
-        avtGhostData::AddGhostZoneType(v, ZONE_EXTERIOR_TO_PROBLEM);
-        for (int i = 0 ; i < ncells ; i++)
-            if (ptr[i] & v)
-            {
-                mesh->containsExteriorBoundaryGhosts = true;
-                break;
-            }
-    }
-    else
-        mesh->containsGhostZones = AVT_NO_GHOSTS;
+   
+    // send some dummy vars for non-used mesh meta data 
+    string empty;
+    vector<string> vs;
+    vector<int> vi;
+    FillMeshMetaData(md, dataset, useMeshName, 0, empty, vs, vi, 0, empty, vs);
 
-    md->Add(mesh);
-
-    std::map<string, vtkRectilinearGrid *>::iterator pos;
-    for(pos = vtkCurves.begin(); pos != vtkCurves.end(); ++pos)
-    {
-        avtCurveMetaData *curve = new avtCurveMetaData;
-        curve->name = pos->first;
-        curve->hasSpatialExtents = false;
-        curve->hasDataExtents = false;
-        md->Add(curve);
-    }
-
-    int nvars = 0;
-
-    for (int i = 0 ; i < dataset->GetPointData()->GetNumberOfArrays() ; i++)
-    {
-        vtkDataArray *arr = dataset->GetPointData()->GetArray(i);
-        int ncomp = arr->GetNumberOfComponents();
-        const char *name = arr->GetName();
-        char buffer[1024];
-        char buffer2[1024];
-        if (name == NULL || strcmp(name, "") == 0)
-        {
-            sprintf(buffer, "%s%d", VARNAME, nvars);
-            name = buffer;
-        }
-        if (strncmp(name, "avt", strlen("avt")) == 0)
-        {
-            sprintf(buffer2, "internal_var_%s", name+strlen("avt"));
-            name = buffer2;
-        }
-        if (ncomp == 1)
-        {
-            bool ascii = arr->GetDataType() == VTK_CHAR;
-            AddScalarVarToMetaData(md, name, mesh->name, AVT_NODECENT, NULL, ascii);
-        }
-        else if (ncomp <= 4)
-        {
-            AddVectorVarToMetaData(md, name, mesh->name, AVT_NODECENT, ncomp);
-        }
-        else if (ncomp == 9)
-        {
-            AddTensorVarToMetaData(md, name, mesh->name, AVT_NODECENT);
-        }
-        else
-        {
-            if(arr->GetDataType() == VTK_UNSIGNED_CHAR ||
-               arr->GetDataType() == VTK_CHAR)
-            {
-                md->Add(new avtLabelMetaData(name, mesh->name, AVT_NODECENT));
-            }
-            else
-            {
-                AddArrayVarToMetaData(md, name, ncomp, mesh->name, AVT_NODECENT);
-                int compnamelen = int(strlen(name) + 40);
-                char *exp_name = new char[compnamelen];
-                char *exp_def = new char[compnamelen];
-                for(int c = 0; c < ncomp; ++c)
-                {
-                    snprintf(exp_name, compnamelen, "%s/comp_%d", name, c);
-                    snprintf(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
-                    Expression e;
-                    e.SetType(Expression::ScalarMeshVar);
-                    e.SetName(exp_name);
-                    e.SetDefinition(exp_def);
-                    md->AddExpression(&e);
-                }
-                delete [] exp_name;
-                delete [] exp_def;
-            }
-        }
-        nvars++;
-    }
-    for (int i = 0 ; i < dataset->GetCellData()->GetNumberOfArrays() ; i++)
-    {
-        vtkDataArray *arr = dataset->GetCellData()->GetArray(i);
-        int ncomp = arr->GetNumberOfComponents();
-        const char *name = arr->GetName();
-        char buffer[1024];
-        char buffer2[1024];
-        if (name == NULL || strcmp(name, "") == 0)
-        {
-            sprintf(buffer, "%s%d", VARNAME, nvars);
-            name = buffer;
-        }
-        if (strncmp(name, "avt", strlen("avt")) == 0)
-        {
-            sprintf(buffer2, "internal_var_%s", name+strlen("avt"));
-            name = buffer2;
-        }
-        if ((arr->GetDataType() == VTK_INT) && (ncomp == 1) &&
-            ((strncmp(name, "internal_var_Subsets", strlen("internal_var_Subsets")) == 0) ||
-            ((strncmp(name, "material", strlen("material")) == 0))))
-        {
-            std::map<int, bool> valMap;
-            vtkIntArray  *iarr = NULL;
-            // check for field data "MaterialIds" that can directly provide us
-            // the proper set of material ids.
-            vtkDataArray *mids_arr = dataset->GetFieldData()->GetArray("MaterialIds");
-            if( mids_arr != NULL)
-                iarr = vtkIntArray::SafeDownCast(mids_arr);
-            else
-                iarr = vtkIntArray::SafeDownCast(arr);
-
-            int *iptr = iarr->GetPointer(0);
-            int ntuples = iarr->GetNumberOfTuples();
-            for (int j = 0; j < ntuples; j++)
-                valMap[iptr[j]] = true;
-
-            std::map<int, bool>::const_iterator it;
-            for (it = valMap.begin(); it != valMap.end(); it++)
-            {
-                char tmpname[32];
-                snprintf(tmpname, sizeof(tmpname), "%d", it->first);
-                matnames.push_back(tmpname);
-                matnos.push_back(it->first);
-            }
-
-            avtMaterialMetaData *mmd =
-                new avtMaterialMetaData("materials", mesh->name,
-                                        (int)valMap.size(), matnames);
-            md->Add(mmd);
-
-            if (strncmp(name, "internal_var_Subsets", strlen("internal_var_Subsets")) == 0)
-                matvarname = strdup("internal_var_Subsets");
-            else
-                matvarname = strdup("material");
-        }
-        else if (ncomp == 1)
-        {
-            bool ascii = arr->GetDataType() == VTK_CHAR;
-            AddScalarVarToMetaData(md, name, mesh->name, AVT_ZONECENT, NULL, ascii);
-        }
-        else if (ncomp <= 4)
-        {
-            AddVectorVarToMetaData(md, name, mesh->name, AVT_ZONECENT, ncomp);
-        }
-        else if (ncomp == 9)
-        {
-            AddTensorVarToMetaData(md, name, mesh->name, AVT_ZONECENT);
-        }
-        else
-        {
-            if(arr->GetDataType() == VTK_UNSIGNED_CHAR ||
-               arr->GetDataType() == VTK_CHAR)
-            {
-                md->Add(new avtLabelMetaData(name, mesh->name, AVT_ZONECENT));
-            }
-            else
-            {
-                AddArrayVarToMetaData(md, name, ncomp, mesh->name, AVT_ZONECENT);
-                int compnamelen = int(strlen(name) + 40);
-                char *exp_name = new char[compnamelen];
-                char *exp_def = new char[compnamelen];
-                for(int c = 0; c < ncomp; ++c)
-                {
-                    snprintf(exp_name, compnamelen, "%s/comp_%d", name, c);
-                    snprintf(exp_def,  compnamelen, "array_decompose(<%s>, %d)",  name, c);
-                    Expression e;
-                    e.SetType(Expression::ScalarMeshVar);
-                    e.SetName(exp_name);
-                    e.SetDefinition(exp_def);
-                    md->AddExpression(&e);
-                }
-                delete [] exp_name;
-                delete [] exp_def;
-            }
-        }
-        nvars++;
-    }
-
-    // Add expressions from the database
-    for (int i = 0; i < vtk_exprs.GetNumExpressions(); i++)
-        md->AddExpression(&vtk_exprs.GetExpressions(i));
+    // Fill in the variables
+    FillVarsMetaData(md, dataset->GetPointData(), useMeshName, AVT_NODECENT);
+    FillVarsMetaData(md, dataset->GetCellData(),  useMeshName, AVT_ZONECENT,
+                     dataset->GetFieldData());
 
     // Don't hang on to all the data we've read. We might not even need it
     // if we're in mdserver or of on non-zero mpi-rank.
@@ -1719,17 +618,10 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 bool
 avtVTKFileReader::IsEmpty()
 {
-    if (!readInDataset)
+    if (!haveReadDataset)
     {
-        ReadInFile();
+        ReadInDataset();
     }
-
-    if (pieceDatasets[0] == NULL)
-    {
-        ReadInDataset(0);
-    }
-
-    vtkDataSet *dataset = pieceDatasets[0];
 
     if (dataset->GetNumberOfCells() == 0 && dataset->GetNumberOfPoints() == 0)
     {
@@ -1740,230 +632,6 @@ avtVTKFileReader::IsEmpty()
     return false;
 }
 
-
-// ****************************************************************************
-//  Function: GetListOfUniqueCellTypes
-//
-//  Purpose:
-//     Gets a list of the unique cell types.
-//
-//  Notes: This is done externally to the similar method in
-//         vtkUnstructuredGrid, since that method is buggy and can get
-//         into an infinite loop.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 21, 2003
-//
-// ****************************************************************************
-
-static void
-GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug, vtkUnsignedCharArray *uca)
-{
-    int  i;
-    bool   haveCellType[256];
-    for (i = 0 ; i < 256 ; i++)
-        haveCellType[i] = false;
-
-    int ncells = ug->GetNumberOfCells();
-    for (i = 0 ; i < ncells ; i++)
-        haveCellType[ug->GetCellType(i)] = true;
-
-    int ntypes = 0;
-    for (i = 0 ; i < 256 ; i++)
-        if (haveCellType[i])
-            ntypes++;
-
-    uca->SetNumberOfTuples(ntypes);
-    int idx = 0;
-    for (i = 0 ; i < 256 ; i++)
-        if (haveCellType[i])
-        {
-            uca->SetValue(idx++, i);
-        }
-}
-
-// ****************************************************************************
-//  Function: ConvertStructuredPointsToRGrid
-//
-//  Purpose:
-//     Constructs a vtkRectilinearGrid from the passed vtkStructuredPoints.
-//
-//  Notes: The passed in dataset will be deleted.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   March 9, 2004
-//
-//  Modifications:
-//    Eric Brugger, Tue Jul  9 09:36:44 PDT 2013
-//    I modified the reading of pvti, pvtr and pvts files to handle the case
-//    where the piece extent was a subset of the whole extent.
-//
-//    Kathleen Biagas, Fri Nov  1 13:27:44 PDT 2013
-//    Changed pieceOrigin from int to double to prevent truncating.
-//
-//    Kathleen Biagas, Thu Sep 14 13:45:00 PDT 2017
-//    Take the quick copy-array route when pieceDims == wholeDims.
-//
-// ****************************************************************************
-
-vtkDataSet *
-avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
-    int *extents)
-{
-    int wholeDims[3];
-    double spacing[3];
-    double wholeOrigin[3];
-    inSP->GetDimensions(wholeDims);
-    inSP->GetSpacing(spacing);
-    inSP->GetOrigin(wholeOrigin);
-
-    int pieceDims[3];
-    double pieceOrigin[3];
-    bool pieceEqualWhole = false;
-    if (extents == NULL)
-    {
-        pieceDims[0] = wholeDims[0];
-        pieceDims[1] = wholeDims[1];
-        pieceDims[2] = wholeDims[2];
-        pieceOrigin[0] = wholeOrigin[0];
-        pieceOrigin[1] = wholeOrigin[1];
-        pieceOrigin[2] = wholeOrigin[2];
-        pieceEqualWhole = true;
-    }
-    else
-    {
-        pieceDims[0] = extents[1] - extents[0] + 1;
-        pieceDims[1] = extents[3] - extents[2] + 1;
-        pieceDims[2] = extents[5] - extents[4] + 1;
-        pieceOrigin[0] = wholeOrigin[0] + extents[0] * spacing[0];
-        pieceOrigin[1] = wholeOrigin[1] + extents[2] * spacing[1];
-        pieceOrigin[2] = wholeOrigin[2] + extents[4] * spacing[2];
-
-        pieceEqualWhole = (wholeDims[0] == pieceDims[0]) &&
-                          (wholeDims[1] == pieceDims[1]) &&
-                          (wholeDims[2] == pieceDims[2]);
-    }
-
-    vtkFloatArray *x = vtkFloatArray::New();
-    x->SetNumberOfComponents(1);
-    x->SetNumberOfTuples(pieceDims[0]);
-    vtkFloatArray *y = vtkFloatArray::New();
-    y->SetNumberOfComponents(1);
-    y->SetNumberOfTuples(pieceDims[1]);
-    vtkFloatArray *z = vtkFloatArray::New();
-    z->SetNumberOfComponents(1);
-    z->SetNumberOfTuples(pieceDims[2]);
-
-    vtkRectilinearGrid *outRG = vtkRectilinearGrid::New();
-    outRG->SetDimensions(pieceDims);
-    outRG->SetXCoordinates(x);
-    outRG->SetYCoordinates(y);
-    outRG->SetZCoordinates(z);
-    x->Delete();
-    y->Delete();
-    z->Delete();
-
-    int i;
-    float *ptr = x->GetPointer(0);
-    for (i = 0; i < pieceDims[0]; i++, ptr++)
-        *ptr = pieceOrigin[0] + i * spacing[0];
-
-    ptr = y->GetPointer(0);
-    for (i = 0; i < pieceDims[1]; i++, ptr++)
-        *ptr = pieceOrigin[1] + i * spacing[1];
-
-    ptr = z->GetPointer(0);
-    for (i = 0; i < pieceDims[2]; i++, ptr++)
-        *ptr = pieceOrigin[2] + i * spacing[2];
-
-    if (extents == NULL || pieceEqualWhole)
-    {
-        for (i = 0; i < inSP->GetPointData()->GetNumberOfArrays(); i++)
-            outRG->GetPointData()->AddArray(inSP->GetPointData()->GetArray(i));
-
-        for (i = 0; i < inSP->GetCellData()->GetNumberOfArrays(); i++)
-            outRG->GetCellData()->AddArray(inSP->GetCellData()->GetArray(i));
-    }
-    else
-    {
-        for (i = 0; i < inSP->GetPointData()->GetNumberOfArrays(); i++)
-        {
-            vtkDataArray *in = inSP->GetPointData()->GetArray(i);
-
-            vtkDataArray *out = vtkDataArray::CreateDataArray(in->GetDataType());
-            out->SetName(in->GetName());
-            out->SetNumberOfComponents(in->GetNumberOfComponents());
-
-            unsigned long ntuples = pieceDims[0] * pieceDims[1] * pieceDims[2];
-            out->SetNumberOfTuples(ntuples);
-
-            vtkIdType outIndex = 0;
-            vtkIdType nx  = wholeDims[0];
-            vtkIdType nxy = wholeDims[0] * wholeDims[1];
-            for (unsigned int iZ = extents[4]; iZ < (unsigned int)extents[5]; iZ++)
-            {
-                for (unsigned int iY = extents[2]; iY < (unsigned int)extents[3]; iY++)
-                {
-                    for (unsigned int iX = extents[0]; iX < (unsigned int)extents[1]; iX++)
-                    {
-                        vtkIdType inIndex = iZ * nxy + iY * nx + iX;
-                        out->SetTuple(outIndex, inIndex, in);
-                        outIndex++;
-                    }
-                }
-            }
-            outRG->GetPointData()->AddArray(out);
-        }
-
-        for (i = 0; i < inSP->GetCellData()->GetNumberOfArrays(); i++)
-        {
-            vtkDataArray *in = inSP->GetCellData()->GetArray(i);
-
-            vtkDataArray *out = vtkDataArray::CreateDataArray(in->GetDataType());
-            out->SetName(in->GetName());
-            out->SetNumberOfComponents(in->GetNumberOfComponents());
-
-            int pieceZonalDims[3];
-            pieceZonalDims[0] = (pieceDims[0] <= 1) ? 1 : (pieceDims[0] - 1);
-            pieceZonalDims[1] = (pieceDims[1] <= 1) ? 1 : (pieceDims[1] - 1);
-            pieceZonalDims[2] = (pieceDims[2] <= 1) ? 1 : (pieceDims[2] - 1);
-            out->SetNumberOfTuples(pieceZonalDims[0] *
-                                   pieceZonalDims[1] *
-                                   pieceZonalDims[2]);
-
-            int wholeZonalDims[3];
-            wholeZonalDims[0] = (wholeDims[0] <= 1) ? 1 : (wholeDims[0] - 1);
-            wholeZonalDims[1] = (wholeDims[1] <= 1) ? 1 : (wholeDims[1] - 1);
-            wholeZonalDims[2] = (wholeDims[2] <= 1) ? 1 : (wholeDims[2] - 1);
-            vtkIdType outIndex = 0;
-            vtkIdType nX  = wholeZonalDims[0];
-            vtkIdType nXY = wholeZonalDims[0] * wholeZonalDims[1];
-            int zoneExtents[6];
-            zoneExtents[0] = extents[0];
-            zoneExtents[1] = extents[0] + pieceZonalDims[0];
-            zoneExtents[2] = extents[2];
-            zoneExtents[3] = extents[2] + pieceZonalDims[1];
-            zoneExtents[4] = extents[4];
-            zoneExtents[5] = extents[4] + pieceZonalDims[2];
-            for (int iZ = zoneExtents[4]; iZ < zoneExtents[5]; iZ++)
-            {
-                for (int iY = zoneExtents[2]; iY < zoneExtents[3]; iY++)
-                {
-                    for (int iX = zoneExtents[0]; iX < zoneExtents[1]; iX++)
-                    {
-                        vtkIdType inIndex = iZ * nXY + iY * nX + iX;
-                        out->SetTuple(outIndex, inIndex, in);
-                        outIndex++;
-                    }
-                }
-            }
-            outRG->GetCellData()->AddArray(out);
-        }
-    }
-
-    inSP->Delete();
-    return outRG;
-}
 
 // ****************************************************************************
 //  Method: avtVTKFileReader::GetTime
@@ -1985,8 +653,8 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
 double
 avtVTKFileReader::GetTime()
 {
-    if (INVALID_TIME == vtk_time && !readInDataset)
-        ReadInFile();
+    if (INVALID_TIME == vtk_time && !haveReadDataset)
+        ReadInDataset();
     return vtk_time;
 }
 
@@ -2008,167 +676,8 @@ avtVTKFileReader::GetTime()
 int
 avtVTKFileReader::GetCycle()
 {
-    if (INVALID_CYCLE == vtk_cycle && !readInDataset)
-        ReadInFile();
+    if (INVALID_CYCLE == vtk_cycle && !haveReadDataset)
+        ReadInDataset();
     return vtk_cycle;
 }
 
-// ****************************************************************************
-//  Method: avtFileFormat::AddScalarVarToMetaData
-//
-//  Purpose:
-//      A convenience routine to add a scalar variable to the meta-data.
-//
-//  Arguments:
-//      md        The meta-data object to add the scalar var to.
-//      name      The name of the scalar variable.
-//      mesh      The mesh the scalar var is defined on.
-//      cent      The centering type - node vs cell.
-//      extents   The extents of the scalar var. (optional)
-//      treatAsASCII   Whether the var is 'ascii' (optional)
-//
-//  Programmer: Hank Childs
-//  Creation:   February 23, 2001
-//
-//  Modifications:
-//    Kathleen Bonnell, Wed Jul 13 18:28:51 PDT 2005
-//    Add optional bool 'treatAsASCII' arg.
-//
-// ****************************************************************************
-
-void
-avtVTKFileReader::AddScalarVarToMetaData(avtDatabaseMetaData *md, string name,
-                                      string mesh, avtCentering cent,
-                                      const double *extents,
-                                      const bool treatAsASCII)
-{
-    avtScalarMetaData *scalar = new avtScalarMetaData();
-    scalar->name = name;
-    scalar->meshName = mesh;
-    scalar->centering = cent;
-    if (extents != NULL)
-    {
-        scalar->hasDataExtents = true;
-        scalar->SetExtents(extents);
-    }
-    else
-    {
-        scalar->hasDataExtents = false;
-    }
-    scalar->treatAsASCII = treatAsASCII;
-
-    md->Add(scalar);
-}
-
-
-// ****************************************************************************
-//  Method: avtFileFormat::AddVectorVarToMetaData
-//
-//  Purpose:
-//      A convenience routine to add a vector variable to the meta-data.
-//
-//  Arguments:
-//      md        The meta-data object to add the vector var to.
-//      name      The name of the vector variable.
-//      mesh      The mesh the vector var is defined on.
-//      cent      The centering type - node vs cell.
-//      dim       The dimension of the vector variable. (optional = 3)
-//      extents   The extents of the vector var. (optional)
-//
-//  Programmer: Hank Childs
-//  Creation:   February 23, 2001
-//
-// ****************************************************************************
-
-void
-avtVTKFileReader::AddVectorVarToMetaData(avtDatabaseMetaData *md, string name,
-                                      string mesh, avtCentering cent,
-                                      int dim, const double *extents)
-{
-    avtVectorMetaData *vector = new avtVectorMetaData();
-    vector->name = name;
-    vector->meshName = mesh;
-    vector->centering = cent;
-    vector->varDim = dim;
-    if (extents != NULL)
-    {
-        vector->hasDataExtents = true;
-        vector->SetExtents(extents);
-    }
-    else
-    {
-        vector->hasDataExtents = false;
-    }
-
-    md->Add(vector);
-}
-
-
-// ****************************************************************************
-//  Method: avtFileFormat::AddTensorVarToMetaData
-//
-//  Purpose:
-//      A convenience routine to add a tensor variable to the meta-data.
-//
-//  Arguments:
-//      md        The meta-data object to add the tensor var to.
-//      name      The name of the tensor variable.
-//      mesh      The mesh the tensor var is defined on.
-//      cent      The centering type - node vs cell.
-//      dim       The dimension of the tensor variable. (optional = 3)
-//
-//  Programmer: Hank Childs
-//  Creation:   September 20, 2003
-//
-// ****************************************************************************
-
-void
-avtVTKFileReader::AddTensorVarToMetaData(avtDatabaseMetaData *md, string name,
-                                      string mesh, avtCentering cent, int dim)
-{
-    avtTensorMetaData *tensor = new avtTensorMetaData();
-    tensor->name = name;
-    tensor->meshName = mesh;
-    tensor->centering = cent;
-    tensor->dim = dim;
-
-    md->Add(tensor);
-}
-
-// ****************************************************************************
-//  Method: avtFileFormat::AddArrayVarToMetaData
-//
-//  Purpose:
-//      A convenience routine to add a array variable to the meta-data.
-//
-//  Arguments:
-//      md        The meta-data object to add the tensor var to.
-//      name      The name of the array variable.
-//      ncomps    The number of components.
-//      mesh      The mesh the array var is defined on.
-//      cent      The centering type - node vs cell.
-//
-//  Programmer: Hank Childs
-//  Creation:   July 21, 2005
-//
-// ****************************************************************************
-
-void
-avtVTKFileReader::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name,
-                                     int ncomps, string mesh,avtCentering cent)
-{
-    avtArrayMetaData *st = new avtArrayMetaData();
-    st->name = name;
-    st->nVars = ncomps;
-    st->compNames.resize(ncomps);
-    for (int i = 0 ; i < ncomps ; i++)
-    {
-        char name[16];
-        snprintf(name, 16, "comp%02d", i);
-        st->compNames[i] = name;
-    }
-    st->meshName = mesh;
-    st->centering = cent;
-
-    md->Add(st);
-}

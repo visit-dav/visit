@@ -10,9 +10,10 @@
 #define AVT_VTK_FILE_FORMAT_H
 
 #include <avtSTSDFileFormat.h>
-#include <avtVTKFileReader.h>
+
 
 class DBOptionsAttributes;
+class avtVTKFileReader;
 
 // ****************************************************************************
 //  Class: avtVTK_STSDFileFormat
@@ -36,9 +37,6 @@ class avtVTK_STSDFileFormat : public avtSTSDFileFormat
 public:
                        avtVTK_STSDFileFormat(const char *filename,
                                              const DBOptionsAttributes *);
-                       avtVTK_STSDFileFormat(const char *filename,
-                                             const DBOptionsAttributes *,
-                                             avtVTKFileReader *r);
     virtual           ~avtVTK_STSDFileFormat();
 
     virtual const char    *GetType(void);
@@ -65,28 +63,28 @@ protected:
     mutable int cycleFromFilename;
 };
 
+
 #include <avtSTMDFileFormat.h>
 
 // ****************************************************************************
-//  Class: avtVTK_STMDFileFormat
+//  Class: avtPVTK_STMDFileFormat
 //
 //  Purpose:
-//      Reads in VTK_STMD files as a plugin to VisIt.
+//      Reads in PVTK flavor of STMD files as a plugin to VisIt.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Mon Oct 22 16:11:00 PST 2012
 //
 // ****************************************************************************
 
-class avtVTK_STMDFileFormat : public avtSTMDFileFormat
+class avtPVTKFileReader;
+
+class avtPVTK_STMDFileFormat : public avtSTMDFileFormat
 {
 public:
-                       avtVTK_STMDFileFormat(const char *filename,
+                       avtPVTK_STMDFileFormat(const char *filename,
                                              const DBOptionsAttributes *);
-                       avtVTK_STMDFileFormat(const char *filename,
-                                             const DBOptionsAttributes *,
-                                             avtVTKFileReader *r);
-    virtual           ~avtVTK_STMDFileFormat();
+    virtual           ~avtPVTK_STMDFileFormat();
 
     virtual const char    *GetType(void);
     virtual void           FreeUpResources(void);
@@ -105,14 +103,54 @@ public:
                               const char *type, void *, DestructorFunction &df);
 
 protected:
-    avtVTKFileReader *reader;
+    avtPVTKFileReader *reader;
 
     mutable int cycleFromFilename;
 };
 
 
-class avtPVDFileReader;
-#include <avtMTMDFileFormat.h>
+// ****************************************************************************
+//  Class: avtVTKM_STMDFileFormat
+//
+//  Purpose:
+//      Reads in VTM flavor of STMD files as a plugin to VisIt.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Mon Oct 22 16:11:00 PST 2012
+//
+// ****************************************************************************
+
+class avtVTMFileReader;
+
+class avtVTM_STMDFileFormat : public avtSTMDFileFormat
+{
+public:
+    avtVTM_STMDFileFormat(const char *filename,
+    const DBOptionsAttributes *);
+    virtual           ~avtVTM_STMDFileFormat();
+
+    virtual const char    *GetType(void);
+    virtual void           FreeUpResources(void);
+
+    virtual int            GetCycleFromFilename(const char *f) const;
+    virtual int            GetCycle(void);
+    virtual double         GetTime(void);
+
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+
+    virtual vtkDataSet    *GetMesh(int domain, const char *);
+    virtual vtkDataArray  *GetVar(int domain, const char *);
+    virtual vtkDataArray  *GetVectorVar(int domain, const char *);
+
+    virtual void          *GetAuxiliaryData(const char *var, int domain,
+    const char *type, void *, DestructorFunction &df);
+
+protected:
+    avtVTMFileReader *reader;
+
+    mutable int cycleFromFilename;
+};
+
 
 // ****************************************************************************
 //  Class: avtPVD_MTMDFileFormat
@@ -125,6 +163,8 @@ class avtPVDFileReader;
 //
 // ****************************************************************************
 
+class avtPVDFileReader;
+#include <avtMTMDFileFormat.h>
 
 class avtPVD_MTMDFileFormat : public avtMTMDFileFormat
 {

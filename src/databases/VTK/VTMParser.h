@@ -34,7 +34,7 @@ class VTMParser
                               VTMParser();
     virtual                  ~VTMParser();
 
-    void                      SetFileName(const char *);
+    void                      SetFileName(const std::string &);
     std::string              &GetBlockFileName(int index);
     std::string              &GetBlockExtension()
                                 { return blockExtension; }

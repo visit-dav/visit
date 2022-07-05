@@ -9,29 +9,19 @@
 #ifndef AVT_VTK_FILE_READER_H
 #define AVT_VTK_FILE_READER_H
 
-#include <array>
-#include <map>
-#include <string>
-#include <vector>
-#include <void_ref_ptr.h>
+#include <avtVTKFileReaderBase.h>
 
-#include <ExpressionList.h>
-#include <avtTypes.h>
+#include <string>
 
 class avtDatabaseMetaData;
 class vtkDataArray;
 class vtkDataSet;
-class vtkRectilinearGrid;
-class vtkStructuredPoints;
-class vtkVisItXMLPDataReader;
-
-class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtVTKFileReader
 //
 //  Purpose:
-//      Handles files of the .vtk file format.
+//      Handles files of the .vt? file format.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 23, 2001
@@ -97,85 +87,41 @@ class DBOptionsAttributes;
 //    ReadInFile so that avtPVDReader could override them.  Change pieceNames
 //    type to vector<string>. Change pieceExtents to vectr<array<int, 6>>.
 //
+//    Kathleen Biagas, Fri Jun 24, 2022
+//    Modified to be derived form avtFileReaderBase, and to operate only on
+///   single vtk datasets.
 // ****************************************************************************
 
-class avtVTKFileReader
+class avtVTKFileReader : public avtVTKFileReaderBase
 {
   public:
     avtVTKFileReader(const char *, const DBOptionsAttributes *);
     ~avtVTKFileReader();
 
-    int           GetNumberOfDomains();
+    virtual int           GetNumberOfDomains() { return 1; }
 
-    vtkDataSet   *GetMesh(int, const char *);
-    vtkDataArray *GetVar(int, const char *);
-    vtkDataArray *GetVectorVar(int, const char *);
-    void         *GetAuxiliaryData(const char *var, int,
-                                   const char *type, void *, DestructorFunction &df);
+    vtkDataSet   *GetMesh(const char *);
+    vtkDataArray *GetVar(const char *);
+    vtkDataArray *GetVectorVar(const char *);
+    void         *GetAuxiliaryData(const char *var,
+                                   const char *type, void *,
+                                   DestructorFunction &df);
 
-     virtual void PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual void   PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
-    bool          IsEmpty();
+    bool           IsEmpty();
 
     virtual void   FreeUpResources(void);
 
-    double        GetTime(void);
-    int           GetCycle(void);
+    double         GetTime(void);
+    int            GetCycle(void);
 
   protected:
-    static int            INVALID_CYCLE;
-    static double         INVALID_TIME;
+    std::string           filename;
+    vtkDataSet           *dataset;
+    bool                  haveReadDataset;
 
-    char                 *filename;
-
-    bool                  readInDataset;
-
-    int                      ngroups;
-    std::string              groupPieceName;
-    std::vector<std::string> groupNames;
-
-    int                      nblocks;
-    std::string              blockPieceName;
-    std::vector<std::string> blockNames;
-    std::vector<int>         groupIds;
-
-    std::vector<std::string> pieceFileNames;
-    vtkDataSet          **pieceDatasets;
-    std::vector<std::array<int,6> > pieceExtents;
-
-    static const char    *MESHNAME;
-    static const char    *VARNAME;
-    char                 *matvarname;
-    std::vector<int>      matnos;
-    std::vector<std::string> matnames;
-    double                vtk_time;
-    int                   vtk_cycle;
-    std::string           vtk_meshname;
-    ExpressionList        vtk_exprs;
-
-    std::string           fileExtension;
-    std::string           pieceExtension;
-
-    std::map<std::string, vtkRectilinearGrid *> vtkCurves;
-
-    virtual void          ReadInFile(int _domain=-1);
-    void                  ReadInDataset(int domain);
-    vtkDataSet           *ConvertStructuredPointsToRGrid(vtkStructuredPoints *,
-                                                         int *);
-    void                  CreateCurves(vtkRectilinearGrid *rgrid);
-
-    // Borrowed from avtFileFormat.
-    void       AddScalarVarToMetaData(avtDatabaseMetaData *, std::string,
-                                      std::string, avtCentering,
-                                      const double * = NULL,
-                                      const bool = false);
-    void       AddVectorVarToMetaData(avtDatabaseMetaData *, std::string,
-                                      std::string, avtCentering, int = 3,
-                                      const double * = NULL);
-    void       AddTensorVarToMetaData(avtDatabaseMetaData *, std::string,
-                                      std::string, avtCentering, int = 3);
-    void       AddArrayVarToMetaData(avtDatabaseMetaData *, std::string, int,
-                                     std::string, avtCentering);
+    void                  ReadInDataset();
 };
 
 

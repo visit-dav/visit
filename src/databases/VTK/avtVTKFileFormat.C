@@ -4,19 +4,13 @@
 
 #include <avtVTKFileFormat.h>
 
+#include <avtVTKFileReader.h>
+
 avtVTK_STSDFileFormat::avtVTK_STSDFileFormat(const char *filename, const DBOptionsAttributes *opts) :
     avtSTSDFileFormat(filename)
 {
     GetCycleFromFilename(filename);
     reader = new avtVTKFileReader(filename, opts);
-}
-
-avtVTK_STSDFileFormat::avtVTK_STSDFileFormat(const char *filename,
-    const DBOptionsAttributes *opts, avtVTKFileReader *r) :
-    avtSTSDFileFormat(filename)
-{
-    GetCycleFromFilename(filename);
-    reader = r;
 }
 
 avtVTK_STSDFileFormat::~avtVTK_STSDFileFormat()
@@ -110,26 +104,26 @@ avtVTK_STSDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtVTK_STSDFileFormat::GetMesh(const char *name)
 {
-    return reader->GetMesh(0, name);
+    return reader->GetMesh(name);
 }
 
 vtkDataArray *
 avtVTK_STSDFileFormat::GetVar(const char *name)
 {
-    return reader->GetVar(0, name);
+    return reader->GetVar(name);
 }
 
 vtkDataArray *
 avtVTK_STSDFileFormat::GetVectorVar(const char *name)
 {
-    return reader->GetVectorVar(0, name);
+    return reader->GetVectorVar(name);
 }
 
 void *
 avtVTK_STSDFileFormat::GetAuxiliaryData(const char *var,
     const char *type, void *d, DestructorFunction &df)
 {
-    return reader->GetAuxiliaryData(var, 0, type, d, df);
+    return reader->GetAuxiliaryData(var, type, d, df);
 }
 
 bool
@@ -139,43 +133,37 @@ avtVTK_STSDFileFormat::IsEmpty()
 }
 
 // ****************************************************************************
-// ****************************************************************************
+//   STMDFileFormat for .pvt? case.
 // ****************************************************************************
 
-avtVTK_STMDFileFormat::avtVTK_STMDFileFormat(const char *filename, const DBOptionsAttributes *opts) :
+#include <avtPVTKFileReader.h>
+
+avtPVTK_STMDFileFormat::avtPVTK_STMDFileFormat(const char *filename, const DBOptionsAttributes *opts) :
     avtSTMDFileFormat(&filename, 1)
 {
     GetCycleFromFilename(filename);
-    reader = new avtVTKFileReader(filename, opts);
+    reader = new avtPVTKFileReader(filename, opts);
 }
 
-avtVTK_STMDFileFormat::avtVTK_STMDFileFormat(const char *filename,
-    const DBOptionsAttributes *opts, avtVTKFileReader *r) :
-    avtSTMDFileFormat(&filename, 1)
-{
-    GetCycleFromFilename(filename);
-    reader = r;
-}
-
-avtVTK_STMDFileFormat::~avtVTK_STMDFileFormat()
+avtPVTK_STMDFileFormat::~avtPVTK_STMDFileFormat()
 {
     delete reader;
 }
 
 const char *
-avtVTK_STMDFileFormat::GetType(void)
+avtPVTK_STMDFileFormat::GetType(void)
 {
     return "VTK MD File Format";
 }
 
 void
-avtVTK_STMDFileFormat::FreeUpResources(void)
+avtPVTK_STMDFileFormat::FreeUpResources(void)
 {
     reader->FreeUpResources();
 }
 
 // ****************************************************************************
-//  Method: avtVTKFileFormat::GetCycle
+//  Method: avtPVTK_STMDFileFormat::GetCycle
 //
 //  Modifications:
 //    Kathleen Biagas, Tue Aug 18 11:38:07 PDT 2015
@@ -184,7 +172,7 @@ avtVTK_STMDFileFormat::FreeUpResources(void)
 // ****************************************************************************
 
 int
-avtVTK_STMDFileFormat::GetCycle(void)
+avtPVTK_STMDFileFormat::GetCycle(void)
 {
     int cycle = reader->GetCycle();
     if( cycle == INVALID_CYCLE )
@@ -194,7 +182,7 @@ avtVTK_STMDFileFormat::GetCycle(void)
 }
 
 // ****************************************************************************
-//  Method: avtVTKFileFormat::GetTime
+//  Method: avtPVTKFileFormat::GetTime
 //
 //  Modifications:
 //    If cycleFromFilename is invalid, return INVALID_TIME.
@@ -202,7 +190,7 @@ avtVTK_STMDFileFormat::GetCycle(void)
 // ****************************************************************************
 
 double
-avtVTK_STMDFileFormat::GetTime(void)
+avtPVTK_STMDFileFormat::GetTime(void)
 {
     double time = reader->GetTime();
     if( time == INVALID_TIME )
@@ -233,38 +221,134 @@ avtVTK_STMDFileFormat::GetTime(void)
 // ****************************************************************************
 
 int
-avtVTK_STMDFileFormat::GetCycleFromFilename(const char *f) const
+avtPVTK_STMDFileFormat::GetCycleFromFilename(const char *f) const
 {
     cycleFromFilename = GuessCycle(f);
     return cycleFromFilename;
 }
 
 void
-avtVTK_STMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+avtPVTK_STMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     reader->PopulateDatabaseMetaData(md);
 }
 
 vtkDataSet *
-avtVTK_STMDFileFormat::GetMesh(int domain, const char *name)
+avtPVTK_STMDFileFormat::GetMesh(int domain, const char *name)
 {
     return reader->GetMesh(domain, name);
 }
 
 vtkDataArray *
-avtVTK_STMDFileFormat::GetVar(int domain, const char *name)
+avtPVTK_STMDFileFormat::GetVar(int domain, const char *name)
 {
     return reader->GetVar(domain, name);
 }
 
 vtkDataArray *
-avtVTK_STMDFileFormat::GetVectorVar(int domain, const char *name)
+avtPVTK_STMDFileFormat::GetVectorVar(int domain, const char *name)
 {
     return reader->GetVectorVar(domain, name);
 }
 
 void *
-avtVTK_STMDFileFormat::GetAuxiliaryData(const char *var, int domain,
+avtPVTK_STMDFileFormat::GetAuxiliaryData(const char *var, int domain,
+    const char *type, void *d, DestructorFunction &df)
+{
+    return reader->GetAuxiliaryData(var, domain, type, d, df);
+}
+
+// ****************************************************************************
+//   STMDFileFormat for .vtm case.
+// ****************************************************************************
+
+#include <avtVTMFileReader.h>
+
+// ****************************************************************************
+// ****************************************************************************
+// ****************************************************************************
+
+avtVTM_STMDFileFormat::avtVTM_STMDFileFormat(const char *filename, const DBOptionsAttributes *opts) :
+    avtSTMDFileFormat(&filename, 1)
+{
+    GetCycleFromFilename(filename);
+    reader = new avtVTMFileReader(filename, opts);
+}
+
+avtVTM_STMDFileFormat::~avtVTM_STMDFileFormat()
+{
+    delete reader;
+}
+
+const char *
+avtVTM_STMDFileFormat::GetType(void)
+{
+    return "VTK MD File Format";
+}
+
+void
+avtVTM_STMDFileFormat::FreeUpResources(void)
+{
+    reader->FreeUpResources();
+}
+
+int
+avtVTM_STMDFileFormat::GetCycle(void)
+{
+    int cycle = reader->GetCycle();
+    if( cycle == INVALID_CYCLE )
+      return cycleFromFilename;
+    else
+      return cycle;
+}
+
+double
+avtVTM_STMDFileFormat::GetTime(void)
+{
+    double time = reader->GetTime();
+    if( time == INVALID_TIME )
+    {
+      if (cycleFromFilename == INVALID_CYCLE)
+          return INVALID_TIME;
+      return cycleFromFilename;
+    }
+    else
+      return time;
+}
+
+int
+avtVTM_STMDFileFormat::GetCycleFromFilename(const char *f) const
+{
+    cycleFromFilename = GuessCycle(f);
+    return cycleFromFilename;
+}
+
+void
+avtVTM_STMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
+{
+    reader->PopulateDatabaseMetaData(md);
+}
+
+vtkDataSet *
+avtVTM_STMDFileFormat::GetMesh(int domain, const char *name)
+{
+    return reader->GetMesh(domain, name);
+}
+
+vtkDataArray *
+avtVTM_STMDFileFormat::GetVar(int domain, const char *name)
+{
+    return reader->GetVar(domain, name);
+}
+
+vtkDataArray *
+avtVTM_STMDFileFormat::GetVectorVar(int domain, const char *name)
+{
+    return reader->GetVectorVar(domain, name);
+}
+
+void *
+avtVTM_STMDFileFormat::GetAuxiliaryData(const char *var, int domain,
     const char *type, void *d, DestructorFunction &df)
 {
     return reader->GetAuxiliaryData(var, domain, type, d, df);

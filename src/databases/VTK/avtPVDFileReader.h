@@ -9,7 +9,7 @@
 #ifndef AVT_PVD_FILE_READER_H
 #define AVT_PVD_FILE_READER_H
 
-#include <avtVTKFileReader.h>
+#include <avtVTKMultiGroupFileReader.h>
 #include <array>
 #include <map>
 #include <string>
@@ -27,16 +27,18 @@ class DBOptionsAttributes;
 //  Creation:   August 13, 2021
 //
 //  Modifications:
+//    Kathleen Biagas, June 22, 2022
+//    Change inheritance from avtVTKFilerReader to avtVTKMultiGroupFileReader.
 //
 // ****************************************************************************
 
-class avtPVDFileReader : public avtVTKFileReader
+class avtPVDFileReader : public avtVTKMultiGroupFileReader
 {
   public:
             avtPVDFileReader(const char *, const DBOptionsAttributes *);
            ~avtPVDFileReader();
 
-    // Override avtVTKFileReader
+    // Override avtVTKMultiGroupFileReader
     void    FreeUpResources(void) override;
     void    PopulateDatabaseMetaData(avtDatabaseMetaData *) override;
     void    ActivateTimestep(int ts);
@@ -48,13 +50,12 @@ class avtPVDFileReader : public avtVTKFileReader
 
   protected:
 
-    // Override avtVTKFileReader
+    // Override avtVTKMultiGroupFileReader
     // Throws an exception if it enounters a problem indicating
     // the pvdFile may not be formatted as valid pvd.
     void    ReadInFile(int _domain=-1) override;
 
   private:
-    std::string               pvdFile;
     std::vector<int>          dataFilePartIds;
     std::vector<double>       dataFileTimes;
     std::vector<std::string>  dataFileNames;

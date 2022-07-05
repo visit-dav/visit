@@ -19,7 +19,12 @@ VTKMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtPVDFileReader.C
 avtVTKFileFormat.C
+avtVTKFileReaderBase.C
 avtVTKFileReader.C
+avtVTKMultiBlockFileReader.C
+avtVTKMultiGroupFileReader.C
+avtPVTKFileReader.C
+avtVTMFileReader.C
 avtVTKOptions.C
 vtkVisItXMLPDataReader.C
 PVTKParser.C
@@ -31,7 +36,12 @@ VTKEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtPVDFileReader.C
 avtVTKFileFormat.C
+avtVTKFileReaderBase.C
 avtVTKFileReader.C
+avtVTKMultiBlockFileReader.C
+avtVTKMultiGroupFileReader.C
+avtPVTKFileReader.C
+avtVTMFileReader.C
 avtVTKOptions.C
 avtVTKWriter.C
 vtkVisItXMLPDataReader.C
