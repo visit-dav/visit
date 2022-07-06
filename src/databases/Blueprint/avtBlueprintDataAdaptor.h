@@ -57,18 +57,6 @@ class avtMaterial;
 class avtBlueprintDataAdaptor
 {
 public:
-
-  /// Helpers for converting Mesh and Field Blueprint conforming data
-  /// to vtk instances.
-  class VTK
-  {
-    public:
-      static vtkDataSet*    MeshToVTK(int domain, 
-                                      const conduit::Node &mesh);
-      static vtkDataArray*  FieldToVTK(const conduit::Node &field);
-
-  };
-
   /// Helpers for converting Blueprint Material info into avt Objects
   class AVT
   {
@@ -77,23 +65,6 @@ public:
       // static avtMixedVar *MatsetVarToMixedVar(const conduit::Node &matset_var);
   };
 
-  /// Helpers for converting vtk datasets to Mesh and Field Blueprint
-  /// conforming data
-  class BP
-  {
-    public:
-      static void VTKFieldNameToBlueprint(const std::string &vtk_name,
-                                          const std::string &topo_name,
-                                          std::string &bp_name);
-
-      static void VTKFieldsToBlueprint(conduit::Node &node,
-                                       const std::string topo_name,
-                                       vtkDataSet* dataset);
-
-      static void VTKToBlueprint(conduit::Node &mesh,
-                                 vtkDataSet* dataset,
-                                 const int ndims);
-  };
   /// Helpers for converting Mesh and Field Blueprint conforming data
   /// to mfem instances + helpers for refining mfem data to vtk.
   class MFEM

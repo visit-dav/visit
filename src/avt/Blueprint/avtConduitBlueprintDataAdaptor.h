@@ -57,8 +57,26 @@
 class AVTBLUEPRINT_API avtConduitBlueprintDataAdaptor
 {
 public:
-      static void ADD_OUR_HELPERS_HERE();
+      /// Helpers for converting Mesh and Field Blueprint conforming data
+      /// to vtk instances.
+      static vtkDataSet*    MeshToVTK(int domain, 
+                                      const conduit::Node &mesh);
+      static vtkDataArray*  FieldToVTK(const conduit::Node &field);
 
+
+      /// Helpers for converting vtk datasets to Mesh and Field Blueprint
+      /// conforming data
+      static void VTKFieldNameToBlueprint(const std::string &vtk_name,
+                                          const std::string &topo_name,
+                                          std::string &bp_name);
+
+      static void VTKFieldsToBlueprint(conduit::Node &node,
+                                       const std::string topo_name,
+                                       vtkDataSet* dataset);
+
+      static void VTKToBlueprint(conduit::Node &mesh,
+                                 vtkDataSet* dataset,
+                                 const int ndims);
 };
 
 
