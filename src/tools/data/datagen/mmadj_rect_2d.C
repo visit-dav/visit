@@ -25,7 +25,7 @@
 #include <errno.h>
 #endif
 
-// supress the following since silo uses char * in its API
+// suppress the following since silo uses char * in its API
 #if defined(__clang__)
 # pragma clang diagnostic ignored "-Wwritable-strings"
 #elif defined(__GNUC__)
