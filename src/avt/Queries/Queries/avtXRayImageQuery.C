@@ -953,6 +953,8 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 void
 avtXRayImageQuery::Execute(avtDataTree_p tree)
 {
+    std::cout << "begin execute" << std::endl;
+
     // check validity of output type before proceeding
     if (!outputTypeValid(outputType))
     {
@@ -972,6 +974,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     }
 #endif
 
+    std::cout << "checkpoint 1" << std::endl;
+
     avtDataset_p input = GetTypedInput();
     
     int nsets = 0;
@@ -979,17 +983,24 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     
     CheckData(dataSets, nsets);
 
+    std::cout << "checkpoint 2" << std::endl;
+
+
     //
     // If the number of pixels is less than or equal to zero then print
     // an error message and exit.
     //
     if (numPixels <= 0)
     {
+        std::cout << "setres1" << std::endl;
         SetResultMessage("VisIt is unable to execute this query because "
                          "the number of pixels specified is less than or "
                          "equal to zero.");
         return;
     }
+
+    std::cout << "checkpoint 3" << std::endl;
+
 
     //
     // If the grid is 2d and the R coordinates include negative values then
@@ -1002,6 +1013,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         UnifyMinMax(extents, 6);
         if (extents[2] < 0.)
         {
+            std::cout << "setres2" << std::endl;
             SetResultMessage("VisIt is unable to execute this query "
                              "because it has encountered an RZ mesh with "
                              "negative R values.");
@@ -1041,6 +1053,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     avtContract_p contract = input->GetOriginatingSource()->GetGeneralContract();
     filt->GetOutput()->Update(contract);
 
+    std::cout << "checkpoint 4" << std::endl;
+
     //
     // Get the output and write out the image.
     //
@@ -1064,6 +1078,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             EXCEPTION1(VisItException, "There must be at least one bin.");
         }
+
+        std::cout << "working on filename" << std::endl;
 
         //
         // Create the file base name.
@@ -1126,21 +1142,45 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         conduit::Node data_out;
 #endif
 
+        std::cout << "checkpoint 5" << std::endl;
+
         if (outputTypeIsBmpJpegPngOrTif(outputType))
         {
+            std::cout << "checkpoint 6 - output is BmpJpegPngOrTif" << std::endl;
             for (int i = 0; i < numBins; i++)
             {
+                std::cout << "checkpoint 7 - begin loop" << std::endl;
                 intensity= leaves[i]->GetPointData()->GetArray("Intensity");
+                std::cout << "checkpoint 8 - before conditional" << std::endl;
                 if (intensity->GetDataType() == VTK_FLOAT)
+                {
+                    std::cout << "case 1" << std::endl;
                     WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (float*) intensity->GetVoidPointer(0));
+                    // execution inexplicably halts here
+                    // I see this in the output:
+                    // 77% done: Performing x ray filter (0% of stage 8/9)
+                    // VisIt: Error - The compute engine running on rztopaz265.llnl.gov has exited abnormally.
+                    // Launching engine on rztopaz265.llnl.gov
+                    std::cout << "end case 1" << std::endl;
+                }
                 else if (intensity->GetDataType() == VTK_DOUBLE)
+                {
+                    std::cout << "case 2" << std::endl;
                     WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (double*) intensity->GetVoidPointer(0));
+                    std::cout << "end case 2" << std::endl;
+                }
                 else if (intensity->GetDataType() == VTK_INT)
+                {
+                    std::cout << "case 3" << std::endl;
                     WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (int*) intensity->GetVoidPointer(0));
+                    std::cout << "end case 3" << std::endl;
+                }
+                std::cout << "checkpoint 9 - end loop" << std::endl;
             }
+            std::cout << "checkpoint 10 - finished writing" << std::endl;
         }
         else if (outputType == RAWFLOATS_OUT)
         {
@@ -1416,10 +1456,12 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 
             msg += buf;
 
+            std::cout << "setres3" << std::endl;
             SetResultMessage(msg);
         }
         else
         {
+            std::cout << "setres4" << std::endl;
             SetResultMessage("No x ray image query results were written "
                              "because the output type was invalid.\n");
         }
@@ -1432,6 +1474,8 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     visitTimer->StopTimer(t1, "avtXRayImageQuery::ExecutePipeline");
 
     delete filt;
+
+    std::cout << "end execute" << std::endl;
 }
 
 // ****************************************************************************
@@ -1563,6 +1607,7 @@ void
 avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
     T *fbuf)
 {
+    std::cout << "\tinner1" << std::endl;
     //
     // Determine the range of the data excluding values less than zero.
     //
@@ -1621,6 +1666,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
     }
     else if (outputType == PNG_OUT)
     {
+        std::cout << "\tinner2 - png" << std::endl;
         vtkImageWriter *writer = vtkPNGWriter::New();
         char fileName[24];
         sprintf(fileName, "%s%02d.png", baseName, iImage);
@@ -1628,6 +1674,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         writer->SetInputData(image);
         writer->Write();
         writer->Delete();
+        std::cout << "\tinner3 - end png" << std::endl;
     }
     else if (outputType == TIF_OUT)
     {
@@ -1639,6 +1686,8 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         writer->Write();
         writer->Delete();
     }
+
+    std::cout << "\tinner4 - end" << std::endl;
 }
 
 // ****************************************************************************
