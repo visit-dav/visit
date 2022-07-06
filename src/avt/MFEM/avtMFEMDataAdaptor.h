@@ -46,7 +46,7 @@
 //
 //  Purpose:
 //    Helper methods that refine MFEM meshes and grid functions 
-//    low-order VTK objects.
+//    to low-order VTK objects.
 //
 //  Programmer:  Cyrus Harrison
 //  Creation:    May 31, 2022
@@ -58,7 +58,32 @@
 class AVTMFEM_API avtMFEMDataAdaptor
 {
 public:
-      static void ADD_OUR_HELPERS_HERE();
+      static vtkDataSet   *LegacyRefineMeshToVTK(mfem::Mesh *mesh,
+                                                 int lod);
+
+      static vtkDataSet   *LowOrderMeshToVTK(mfem::Mesh *mesh);
+
+      static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
+                                           int lod,
+                                           bool new_refine);
+
+      static vtkDataArray *LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                         mfem::GridFunction *gf,
+                                                         int lod);
+
+      static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf);
+
+      static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                   mfem::GridFunction *gf,
+                                                   int lod,
+                                                   bool new_refine);
+
+      static vtkDataArray *RefineElementColoringToVTK(mfem::Mesh *mesh,
+                                                      int domain_id,
+                                                      int lod);
+
+      static vtkDataArray *RefineElementAttributeToVTK(mfem::Mesh *mesh,
+                                                       int lod);
 
 };
 

@@ -55,8 +55,671 @@
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
 
-void
-avtMFEMDataAdaptor::ADD_OUR_HELPERS_HERE()
+// ****************************************************************************
+//  Method: LegacyRefineMeshToVTK
+//
+//  Purpose:
+//    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
+//
+//  Arguments:
+//    mesh:      MFEM mesh to be refined
+//    lod:       number of refinement steps
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014
+//
+// Notes: Adapted from avtMFEMFileFormat and MFEM examples.
+//
+//  Modifications:
+//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
+//    Casting geom to Geometry::Type where appropariate. This is required
+//    with the mfem upgrade to 4.0.
+// 
+//    Justin Privitera, Wed Apr 13 13:53:06 PDT 2022
+//    Renamed RefineMeshToVTK to LegacyRefineMeshToVTK.
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtMFEMDataAdaptor::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
+                                          int lod)
 {
-  
+    // create output objects
+    vtkUnstructuredGrid *res_ds  = vtkUnstructuredGrid::New();
+    vtkPoints           *res_pts = vtkPoints::New();
+
+    int npts=0;
+    int neles=0;
+
+    RefinedGeometry *refined_geo;
+    DenseMatrix      pmat;
+
+    //
+    // find the # of output points and cells at the selected level of
+    // refinement (we may want to cache this...)
+    //
+    for (int i = 0; i < mesh->GetNE(); i++)
+    {
+        int geom = mesh->GetElementBaseGeometry(i);
+        int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
+        refined_geo = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
+        npts  += refined_geo->RefPts.GetNPoints();
+        neles += refined_geo->RefGeoms.Size() / ele_nverts;
+    }
+
+    // create the points for the refined topoloy
+    res_pts->Allocate(npts);
+    res_pts->SetNumberOfPoints((vtkIdType) npts);
+    // create the points for the refined topoloy
+    int pt_idx=0;
+    for (int i = 0; i < mesh->GetNE(); i++)
+    {
+        int geom = mesh->GetElementBaseGeometry(i);
+        refined_geo = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
+        // refined points
+        mesh->GetElementTransformation(i)->Transform(refined_geo->RefPts, pmat);
+        for (int j = 0; j < pmat.Width(); j++)
+        {
+            double pt_vals[3]={0.0,0.0,0.0};
+            pt_vals[0] = pmat(0,j);
+            if (pmat.Height() > 1)
+                pt_vals[1] = pmat(1,j);
+            if (pmat.Height() > 2)
+                pt_vals[2] = pmat(2,j);
+            res_pts->InsertPoint(pt_idx,pt_vals);
+            pt_idx++;
+        }
+    }
+    res_ds->SetPoints(res_pts);
+    res_pts->Delete();
+    // create the cells for the refined topology
+    res_ds->Allocate(neles);
+    pt_idx=0;
+
+    for (int i = 0; i <  mesh->GetNE(); i++)
+    {
+        int geom       = mesh->GetElementBaseGeometry(i);
+        int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
+        Array<int> &rg_idxs = refined_geo->RefGeoms;
+        vtkCell *ele_cell = NULL;
+        // rg_idxs contains all of the verts for the refined elements
+        for (int j = 0; j < rg_idxs.Size(); )
+        {
+            switch (geom)
+            {
+                case Geometry::SEGMENT:      ele_cell = vtkLine::New();       break;
+                case Geometry::TRIANGLE:     ele_cell = vtkTriangle::New();   break;
+                case Geometry::SQUARE:       ele_cell = vtkQuad::New();       break;
+                case Geometry::TETRAHEDRON:  ele_cell = vtkTetra::New();      break;
+                case Geometry::CUBE:         ele_cell = vtkHexahedron::New(); break;
+            }
+            // the are ele_nverts for each refined element
+            for (int k = 0; k < ele_nverts; k++, j++)
+                ele_cell->GetPointIds()->SetId(k,pt_idx + rg_idxs[j]);
+            res_ds->InsertNextCell(ele_cell->GetCellType(),
+                                   ele_cell->GetPointIds());
+            ele_cell->Delete();
+        }
+        pt_idx += refined_geo->RefPts.GetNPoints();
+    }
+
+    return res_ds;
+}
+
+// ****************************************************************************
+//  Method: LowOrderMeshToVTK
+//
+//  Purpose:
+//    Converts a low order MFEM mesh to a VTK unstructured grid.
+//
+//  Arguments:
+//    mesh:         MFEM mesh to be refined
+//
+//  Programmer: Justin Privitera
+//  Creation:   Wed Apr 13 13:53:06 PDT 2022
+//
+// ****************************************************************************
+vtkDataSet *
+avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
+{
+    BP_PLUGIN_INFO("Converting Low Order Mesh to VTK.");
+
+    int dim = mesh->SpaceDimension();
+    if (dim < 1 || dim > 3)
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "invalid mesh dimension " << dim);
+    }
+
+    ////////////////////////////////////////////
+    // Setup main coordset
+    ////////////////////////////////////////////
+
+    int num_vertices = mesh->GetNV();
+
+    vtkPoints *points = vtkPoints::New();
+    points->SetDataTypeToDouble();
+    points->SetNumberOfPoints(num_vertices);
+
+    double *coords_ptr = mesh->GetVertex(0);
+    for (int i = 0; i < num_vertices; i ++)
+    {
+        double x = coords_ptr[i * 3];
+        double y = dim >= 2 ? coords_ptr[i * 3 + 1] : 0;
+        double z = dim >= 3 ? coords_ptr[i * 3 + 2] : 0;
+        points->SetPoint(i, x, y, z);
+    }
+
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    ugrid->SetPoints(points);
+    points->Delete();
+
+    ////////////////////////////////////////////
+    // Setup main topo
+    ////////////////////////////////////////////
+
+    vtkCellArray *ca = vtkCellArray::New();
+    vtkIdTypeArray *ida = vtkIdTypeArray::New();
+
+    int ncells = mesh->GetNE();
+    int geom = mesh->GetElementBaseGeometry(0);
+    int idxs_per_ele = mfem::Geometry::NumVerts[geom];
+
+    mfem::Element::Type ele_type = static_cast<mfem::Element::Type>(
+        mesh->GetElement(0)->GetType());
+    std::string ele_shape = ElementTypeToShapeName(ele_type);
+    int ctype = ElementShapeNameToVTKCellType(ele_shape);
+    int csize = VTKCellTypeSize(ctype);
+    ida->SetNumberOfTuples(ncells * (csize + 1));
+
+    // check our assumptions
+    if (idxs_per_ele != csize)
+    {
+        // Note:
+        // ncells = mesh->GetNE() * idxs_per_ele / csize
+        // but since the latter two are equal, we can safely
+        // say ncells = mesh->GetNE()
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "Expected equality of MFEM and VTK layout variables.");
+    }
+
+    for (int i = 0; i < ncells; i ++)
+    {
+        const int *ele_verts = mesh->GetElement(i)->GetVertices();
+        ida->SetComponent((csize + 1) * i, 0, csize);
+        for (int j = 0; j < csize; j ++)
+        {
+            ida->SetComponent((csize + 1) * i + j + 1, 0, ele_verts[j]);
+        }
+    }
+
+    ca->SetCells(ncells, ida);
+    ida->Delete();
+    ugrid->SetCells(ctype, ca);
+    ca->Delete();
+    return ugrid;
+}
+
+// ****************************************************************************
+//  Method: RefineMeshToVTK
+//
+//  Purpose:
+//    Constructs a vtkUnstructuredGrid that contains a refined mfem mesh.
+//
+//  Arguments:
+//    mesh:        MFEM mesh to be refined
+//    lod:         number of refinement steps
+//    new_refine:  switch for using the new LOR or legacy LOR
+//
+//  Programmer: Justin Privitera
+//  Creation:   Wed Apr 13 13:53:06 PDT 2022
+//
+// Notes: See LegacyRefineMeshToVTK for the function originally 
+//   with this name.
+//
+// ****************************************************************************
+vtkDataSet *
+avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
+                                    int lod,
+                                    bool new_refine)
+{
+    BP_PLUGIN_INFO("Creating Refined MFEM Mesh with lod:" << lod);
+
+    if (!new_refine)
+    {
+        BP_PLUGIN_INFO("Using Legacy LOR to refine mesh.");
+        return LegacyRefineMeshToVTK(mesh, lod);
+    }
+
+    // Check if the mesh is periodic.
+    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
+                                     (mesh->GetNodes()->FESpace()->FEColl());
+    if (L2_coll)
+    {
+        BP_PLUGIN_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
+        return LegacyRefineMeshToVTK(mesh, lod);
+    }
+
+    BP_PLUGIN_INFO("High Order Mesh is not periodic.");
+
+    // refine the mesh
+    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, 
+                                         lod, 
+                                         mfem::BasisType::GaussLobatto);
+
+    vtkDataSet *retval = LowOrderMeshToVTK(lo_mesh);
+    delete lo_mesh;
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: LegacyRefineGridFunctionToVTK
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
+//
+//  Arguments:
+//   mesh:      MFEM mesh for the field
+//   gf:        MFEM Grid Function for the field
+//   lod:       number of refinement steps
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014
+//
+// Notes: Adapted from avtMFEMFileFormat and MFEM examples.
+//
+//  Modifications:
+//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
+//    Casting geom to Geometry::Type where appropariate. This is required
+//    with the mfem upgrade to 4.0.
+// 
+//    Justin Privitera, Fri May  6 15:23:56 PDT 2022
+//    Renamed RefineGridFunctionToVTK to LegacyRefineGridFunctionToVTK.
+//
+// ****************************************************************************
+vtkDataArray *
+avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                                  mfem::GridFunction *gf,
+                                                  int lod)
+{
+    int npts=0;
+    int neles=0;
+
+    RefinedGeometry *refined_geo;
+    Vector           scalar_vals;
+    DenseMatrix      vec_vals;
+    DenseMatrix      pmat;
+
+    //
+    // find the # of output points and cells at the selected level of
+    // refinement (we may want to cache this...)
+    //
+    for (int i = 0; i < mesh->GetNE(); i++)
+    {
+        int geom = mesh->GetElementBaseGeometry(i);
+        int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
+        npts  += refined_geo->RefPts.GetNPoints();
+        neles += refined_geo->RefGeoms.Size() / ele_nverts;
+    }
+
+    vtkFloatArray *rv = vtkFloatArray::New();
+
+    int ncomps =gf->VectorDim();
+
+    if(ncomps == 2)
+        rv->SetNumberOfComponents(3);
+    else
+        rv->SetNumberOfComponents(ncomps);
+
+    rv->SetNumberOfTuples(npts);
+
+    double tuple_vals[9];
+    int ref_idx=0;
+    for (int i = 0; i <  mesh->GetNE(); i++)
+    {
+        int geom       = mesh->GetElementBaseGeometry(i);
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
+        if(ncomps == 1)
+        {
+            gf->GetValues(i, refined_geo->RefPts, scalar_vals, pmat);
+            for (int j = 0; j < scalar_vals.Size();j++)
+            {
+                tuple_vals[0] = scalar_vals(j);
+                rv->SetTuple(ref_idx, tuple_vals);
+                ref_idx++;
+            }
+        }
+        else
+        {
+            gf->GetVectorValues(i, refined_geo->RefPts, vec_vals, pmat);
+            for (int j = 0; j < vec_vals.Width(); j++)
+            {
+                tuple_vals[2] = 0.0;
+                tuple_vals[0] = vec_vals(0,j);
+                tuple_vals[1] = vec_vals(1,j);
+                if (vec_vals.Height() > 2)
+                    tuple_vals[2] = vec_vals(2,j);
+                rv->SetTuple(ref_idx, tuple_vals);
+                ref_idx++;
+            }
+        }
+    }
+
+    return rv;
+}
+
+// ****************************************************************************
+//  Method: LowOrderGridFunctionToVTK
+//
+//  Purpose:
+//   Converts a low order MFEM grid function to a vtkDataArray.
+//
+//  Arguments:
+//   gf:           MFEM Grid Function for the field
+//
+//  Programmer: Justin Privitera
+//  Creation:   Fri May  6 15:23:56 PDT 2022
+//
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
+{
+    BP_PLUGIN_INFO("Converting Low Order Grid Function To VTK");
+
+    mfem::FiniteElementSpace *fespace = gf->FESpace();
+    int vdim = fespace->GetVDim();
+    int ndofs = fespace->GetNDofs();
+
+    // all supported grid functions coming out of mfem end up being 
+    // associated with vertices
+
+    BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ndofs << " "
+                    << " num_comps = " << vdim);
+
+    vtkDataArray *retval = vtkDoubleArray::New();
+    // vtk reqs us to set number of comps before number of tuples
+    retval->SetNumberOfComponents(vdim == 2 ? 3 : vdim);
+    // set number of tuples
+    retval->SetNumberOfTuples(ndofs);
+
+    const double *values = gf->HostRead();
+
+    if (vdim == 1) // scalar case
+    {
+        for (vtkIdType i = 0; i < ndofs; i ++)
+        {
+            retval->SetComponent(i, 0, (double) values[i]);
+        }
+    }
+    else // vector case
+    {
+        // deal with striding of all components
+        bool bynodes = fespace->GetOrdering() == mfem::Ordering::byNODES;
+        int stride = bynodes ? 1 : vdim;
+        int vdim_stride = bynodes ? ndofs : 1;
+        int offset = 0;
+
+        for (int i = 0;  i < vdim; i ++)
+        {
+            for (vtkIdType j = 0; j < ndofs; j ++)
+            {
+                retval->SetComponent(j, i, values[offset + j * stride]);
+                if(vdim == 2)
+                {
+                    retval->SetComponent(j, 2, 0.0);
+                }
+            }
+            offset += vdim_stride;
+        }
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: RefineGridFunctionToVTK
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains a refined mfem mesh field variable.
+//
+//  Arguments:
+//   mesh:         MFEM mesh for the field
+//   gf:           MFEM Grid Function for the field
+//   lod:          number of refinement steps
+//   new_refine:   switch for using the new LOR or legacy LOR
+//
+//  Programmer: Justin Privitera
+//  Creation:   Fri May  6 15:23:56 PDT 2022
+//
+//  Notes: See LegacyRefineGridFunctionToVTK for the function originally 
+//   with this name.
+//
+// ****************************************************************************
+vtkDataArray *
+avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
+                                            mfem::GridFunction *gf,
+                                            int lod,
+                                            bool new_refine)
+{
+    BP_PLUGIN_INFO("Creating Refined MFEM Field with lod:" << lod);
+
+    if (!new_refine)
+    {
+        BP_PLUGIN_INFO("Using Legacy LOR to refine grid function.");
+        return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
+    }
+
+    // Check if the mesh is periodic.
+    const L2_FECollection *L2_coll = dynamic_cast<const L2_FECollection *>
+                                     (mesh->GetNodes()->FESpace()->FEColl());
+    if (L2_coll)
+    {
+        BP_PLUGIN_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
+        return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
+    }
+
+    BP_PLUGIN_INFO("High Order Mesh is not periodic.");
+
+    mfem::FiniteElementSpace *ho_fes = gf->FESpace();
+    if(!ho_fes)
+    {
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+            "RefineGridFunctionToVTK: high order gf finite element space is null");
+    }
+    // create the low order grid function
+    mfem::FiniteElementCollection *lo_col = new mfem::LinearFECollection;
+
+#if 0
+    /*Note: The following code is commented out because it appears that
+    MFEM's LOR always gives us back node centered data,
+    no matter if the input is H1 or L2. However,
+    this logic may be relevant if the mesh is periodic,
+    which is currently unsupported, but may be in the future.*/
+
+    std::string basis(gf->FESpace()->FEColl()->Name());
+    // we only have L2 or H1 at this point
+    bool node_centered = basis.find("H1_") == std::string::npos;
+    if(node_centered)
+    {
+        lo_col = new mfem::LinearFECollection;
+    }
+    else
+    {
+        int  p = 0; // single scalar
+        lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
+    }
+#endif
+    
+    // refine the mesh and convert to vtk
+    // it would be nice if this was cached somewhere but we will do it again
+    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, 
+                                         mfem::BasisType::GaussLobatto);
+    mfem::FiniteElementSpace *lo_fes = new mfem::FiniteElementSpace(lo_mesh, lo_col, ho_fes->GetVDim());
+    mfem::GridFunction *lo_gf = new mfem::GridFunction(lo_fes);
+    // transform the higher order function to a low order function somehow
+    mfem::OperatorHandle hi_to_lo;
+    lo_fes->GetTransferOperator(*ho_fes, hi_to_lo);
+    hi_to_lo.Ptr()->Mult(*gf, *lo_gf);
+
+    vtkDataArray *retval = LowOrderGridFunctionToVTK(lo_gf);
+    
+    delete lo_mesh;
+    delete lo_col;
+    delete lo_fes;
+    delete lo_gf;
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: RefineElementColoringToVTK
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains coloring that reflects the orignal
+//   finite elements of a mfem mesh.
+//
+//  Arguments:
+//   mesh:        MFEM mesh object
+//   domain_id :  domain id, use for rng seed
+//   lod:         number of refinement steps
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014
+//
+// Notes: Adapted from avtMFEMFileFormat and MFEM examples.
+//
+//  Modifications:
+//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
+//    Casting geom to Geometry::Type where appropariate. This is required
+//    with the mfem upgrade to 4.0.
+//
+// ****************************************************************************
+vtkDataArray *
+avtMFEMDataAdaptor::RefineElementColoringToVTK(mfem::Mesh *mesh,
+                                               int domain_id,
+                                               int lod)
+{
+    BP_PLUGIN_INFO("Creating Refined MFEM Element Coloring with lod:" << lod);
+    int npts=0;
+    int neles=0;
+
+    RefinedGeometry *refined_geo;
+    Array<int>       coloring;
+
+    //
+    // find the # of output points and cells at the selected level of
+    // refinement (we may want to cache this...)
+    //
+    for (int i = 0; i < mesh->GetNE(); i++)
+    {
+        int geom = mesh->GetElementBaseGeometry(i);
+        int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
+        npts  += refined_geo->RefPts.GetNPoints();
+        neles += refined_geo->RefGeoms.Size() / ele_nverts;
+    }
+
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfComponents(1);
+    rv->SetNumberOfTuples(neles);
+
+    //
+    // Use mfem's mesh coloring algo
+    //
+
+    // seed using domain id for predictable results
+    srand(domain_id);
+
+#ifdef _WIN32
+    double a = double(rand()) / (double(RAND_MAX) + 1.);
+#else
+    double a = double(random()) / (double(RAND_MAX) + 1.);
+#endif
+    int el0 = (int)floor(a * mesh->GetNE());
+    mesh->GetElementColoring(coloring, el0);
+    int ref_idx=0;
+    // set output array value from generated coloring
+    for (int i = 0; i < mesh->GetNE(); i++)
+    {
+        int geom = mesh->GetElementBaseGeometry(i);
+        int nv = Geometries.GetVertices(geom)->GetNPoints();
+        refined_geo= GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
+        for (int j = 0; j < refined_geo->RefGeoms.Size(); j += nv)
+        {
+             rv->SetTuple1(ref_idx,coloring[i]+1);
+             ref_idx++;
+        }
+   }
+
+   return rv;
+}
+
+
+// ****************************************************************************
+//  Method: RefineElementAttributeToVTK
+//
+//  Purpose:
+//   Constructs a vtkDataArray that contains the refined "attribute" value
+//   for finite elements in a mfem mesh.
+//
+//  Arguments:
+//   mesh:      MFEM mesh object
+//   lod:       number of refinement steps
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sat Jul  5 11:38:31 PDT 2014
+//
+//  Modifications:
+//    Alister Maguire, Wed Jan 15 09:18:05 PST 2020
+//    Casting geom to Geometry::Type where appropariate. This is required
+//    with the mfem upgrade to 4.0.
+//
+// ****************************************************************************
+vtkDataArray *
+avtMFEMDataAdaptor::RefineElementAttributeToVTK(mfem::Mesh *mesh,
+                                                int lod)
+{
+    BP_PLUGIN_INFO("Creating Refined MFEM Element Attribute with lod:" << lod);
+    int npts=0;
+    int neles=0;
+
+    RefinedGeometry *refined_geo;
+    Array<int>       coloring;
+
+    //
+    // find the # of output points and cells at the selected level of
+    // refinement (we may want to cache this...)
+    //
+    for (int i = 0; i < mesh->GetNE(); i++)
+    {
+        int geom = mesh->GetElementBaseGeometry(i);
+        int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
+        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
+        npts  += refined_geo->RefPts.GetNPoints();
+        neles += refined_geo->RefGeoms.Size() / ele_nverts;
+    }
+
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfComponents(1);
+    rv->SetNumberOfTuples(neles);
+
+    // set output array value from the mfem mesh's "Attribue" field
+    int ref_idx=0;
+    for (int i = 0; i < mesh->GetNE(); i++)
+    {
+        int geom = mesh->GetElementBaseGeometry(i);
+        int nv = Geometries.GetVertices(geom)->GetNPoints();
+        refined_geo= GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
+        int attr = mesh->GetAttribute(i);
+        for (int j = 0; j < refined_geo->RefGeoms.Size(); j += nv)
+        {
+             rv->SetTuple1(ref_idx,attr);
+             ref_idx++;
+        }
+   }
+   return rv;
 }

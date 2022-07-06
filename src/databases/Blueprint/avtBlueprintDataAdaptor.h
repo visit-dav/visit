@@ -107,35 +107,6 @@ public:
 
     static mfem::GridFunction *FieldToMFEM(mfem::Mesh *mesh,
                                            const conduit::Node &field);
-    //-------------------------------------------------------------------------
-    // mfem to vtk
-    //-------------------------------------------------------------------------
-    static vtkDataSet   *LegacyRefineMeshToVTK(mfem::Mesh *mesh,
-                                               int lod);
-
-    static vtkDataSet   *LowOrderMeshToVTK(mfem::Mesh *mesh);
-
-    static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
-                                         int lod,
-                                         bool new_refine);
-
-    static vtkDataArray *LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
-                                                       mfem::GridFunction *gf,
-                                                       int lod);
-
-    static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf);
-
-    static vtkDataArray *RefineGridFunctionToVTK(mfem::Mesh *mesh,
-                                                 mfem::GridFunction *gf,
-                                                 int lod,
-                                                 bool new_refine);
-
-    static vtkDataArray *RefineElementColoringToVTK(mfem::Mesh *mesh,
-                                                    int domain_id,
-                                                    int lod);
-
-    static vtkDataArray *RefineElementAttributeToVTK(mfem::Mesh *mesh,
-                                                     int lod);
   };
 };
 
