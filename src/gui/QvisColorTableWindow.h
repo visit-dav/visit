@@ -151,6 +151,7 @@ private slots:
     void showIndexHintsToggled(bool val);
     void taggingToggled(bool val);
     void tagCombiningChanged(int index);
+    void searchingToggled(bool val);
     void updateNameBoxPosition(bool tagsOn);
 private:
     ColorTableAttributes     *colorAtts;
@@ -162,6 +163,7 @@ private:
     std::vector<bool>        activeTags;
     bool                     tagsVisible;
     bool                     tagsMatchAny;
+    bool                     searchingOn;
 
     // Widgets and layouts.
     QGroupBox                *defaultGroup;
@@ -171,6 +173,7 @@ private:
     QLabel                   *defaultDiscreteLabel;
     QCheckBox                *tagFilterToggle;
     QComboBox                *tagCombiningBehaviorChoice;
+    QCheckBox                *searchToggle;
     QGridLayout              *mgLayout;
 
     QGroupBox                *colorTableWidgetGroup;

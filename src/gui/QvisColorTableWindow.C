@@ -252,16 +252,6 @@ QvisColorTableWindow::CreateWindowContents()
             this, SLOT(highlightColorTable(QTreeWidgetItem *, QTreeWidgetItem*)));
     mgLayout->addWidget(nameListBox, 3, 0, 1, 6);
 
-    QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
-    mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
-    nameLineEdit = new QLineEdit(colorTableWidgetGroup);
-    mgLayout->addWidget(nameLineEdit, 4, 1, 1, 5);
-
-    tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
-    mgLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
-    tagLineEdit = new QLineEdit(colorTableWidgetGroup);
-    mgLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
-
     tagTable = new QTreeWidget(colorTableWidgetGroup);
     QStringList headers;
     headers << tr("Enabled") << tr("Tag Name");
@@ -276,6 +266,21 @@ QvisColorTableWindow::CreateWindowContents()
     tagTable->setMinimumWidth(250);
     tagTable->setColumnCount(2);
     mgLayout->addWidget(tagTable, 3, 0, 1, 3);
+
+    QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
+    mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
+    nameLineEdit = new QLineEdit(colorTableWidgetGroup);
+    mgLayout->addWidget(nameLineEdit, 4, 1, 1, 5);
+
+    tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
+    mgLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
+    tagLineEdit = new QLineEdit(colorTableWidgetGroup);
+    mgLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
+
+    searchToggle = new QCheckBox(tr("Enable Searching"), colorTableWidgetGroup);
+    connect(searchToggle, SIGNAL(toggled(bool)),
+            this, SLOT(searchingToggled(bool)));
+    mgLayout->addWidget(searchToggle, 6, 0, 1, 6);
 
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
@@ -2645,6 +2650,26 @@ QvisColorTableWindow::tagCombiningChanged(int index)
         ctObserver.SetUpdate(true);
         Apply(true);
     }
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::searchingToggled
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Jul  7 10:22:58 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::searchingToggled(bool val)
+{
+    searchingOn = !searchingOn;
 }
 
 
