@@ -87,6 +87,8 @@ QvisColorTableWindow::QvisColorTableWindow(
     colorTableTypeGroup = 0;
     tagsVisible = false;
     tagsMatchAny = true;
+    searchingOn = false;
+    searchTerm = QString("");
 }
 
 // ****************************************************************************
@@ -270,6 +272,8 @@ QvisColorTableWindow::CreateWindowContents()
     QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
     mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
+    connect(nameLineEdit, SIGNAL(textEdited(const QString &)),
+            this, SLOT(searchEdited(const QString &)));
     mgLayout->addWidget(nameLineEdit, 4, 1, 1, 5);
 
     tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
@@ -1008,10 +1012,22 @@ QvisColorTableWindow::UpdateNames()
         // if the color table is active
         if (colorAtts->GetActiveElement(i))
         {
-            QString item(colorAtts->GetNames()[i].c_str());
-            QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
-            treeItem->setText(0, item);
-            nameListBox->addTopLevelItem(treeItem);            
+            QString ctName(colorAtts->GetNames()[i].c_str());
+            if (searchingOn)
+            {
+                if (ctName.contains(searchTerm, Qt::CaseInsensitive))
+                {
+                    QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
+                    treeItem->setText(0, ctName);
+                    nameListBox->addTopLevelItem(treeItem);  
+                }
+            }
+            else
+            {
+                QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
+                treeItem->setText(0, ctName);
+                nameListBox->addTopLevelItem(treeItem);
+            }
         }
     }
 
@@ -1031,7 +1047,8 @@ QvisColorTableWindow::UpdateNames()
             ++it;
         }
         // Set the text of the default color table into the name line edit.
-        nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
+        if (!searchingOn)
+            nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
         tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
     }
 
@@ -2657,7 +2674,7 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 // Method: QvisColorTableWindow::searchingToggled
 //
 // Purpose:
-//   TODO
+//   This is a Qt slot function that enables or disables searching.
 //
 // Programmer: Justin Privitera
 // Creation:   Thu Jul  7 10:22:58 PDT 2022
@@ -2667,9 +2684,34 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 // ****************************************************************************
 
 void
-QvisColorTableWindow::searchingToggled(bool val)
+QvisColorTableWindow::searchingToggled(bool checked)
 {
-    searchingOn = !searchingOn;
+    searchingOn = checked;
+    if (!searchingOn)
+        searchTerm = QString("");
+    nameLineEdit->setText(searchTerm);
+    Apply(true);
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::searchEdited
+//
+// Purpose:
+//   This is a Qt slot function that updates the search term.
+//
+// Programmer: Justin Privitera
+// Creation:   Thu Jul  7 10:22:58 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::searchEdited(const QString &newSearchTerm)
+{
+    searchTerm = newSearchTerm;
+    Apply(true);
 }
 
 

@@ -151,7 +151,8 @@ private slots:
     void showIndexHintsToggled(bool val);
     void taggingToggled(bool val);
     void tagCombiningChanged(int index);
-    void searchingToggled(bool val);
+    void searchingToggled(bool checked);
+    void searchEdited(const QString &newSearchTerm);
     void updateNameBoxPosition(bool tagsOn);
 private:
     ColorTableAttributes     *colorAtts;
@@ -164,6 +165,7 @@ private:
     bool                     tagsVisible;
     bool                     tagsMatchAny;
     bool                     searchingOn;
+    QString                  searchTerm;
 
     // Widgets and layouts.
     QGroupBox                *defaultGroup;
