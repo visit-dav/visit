@@ -13,6 +13,8 @@
 
 #include <InvalidFilesException.h>
 
+#include <algorithm>
+
 using std::array;
 using std::string;
 using std::vector;

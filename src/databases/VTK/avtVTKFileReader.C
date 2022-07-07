@@ -587,7 +587,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     string empty;
     vector<string> vs;
     vector<int> vi;
-    FillMeshMetaData(md, dataset, useMeshName, 0, empty, vs, vi, 0, empty, vs);
+    FillMeshMetaData(md, dataset, useMeshName, 0, empty, vs, vi, 1, empty, vs);
 
     // Fill in the variables
     FillVarsMetaData(md, dataset->GetPointData(), useMeshName, AVT_NODECENT);

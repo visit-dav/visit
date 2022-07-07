@@ -72,7 +72,7 @@ VTMParser::~VTMParser()
 // ****************************************************************************
 
 void
-VTMParser::SetFileName(const char *fn)
+VTMParser::SetFileName(const string &fn)
 {
     fileName = fn;
     baseDir = FileFunctions::Dirname(fileName);
