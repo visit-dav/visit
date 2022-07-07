@@ -506,6 +506,9 @@
 #    Eric Brugger, Tue Jul  5 09:10:18 PDT 2022
 #    Added support for the Blosc library.
 #
+#    Eric Brugger, Thu Jul  7 13:07:51 PDT 2022
+#    Added another directory to look for libicui18n, libicudata and libicuuc.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
@@ -2083,6 +2086,15 @@ if(LINUX)
         file(GLOB libicui18n_libs "/lib64/libicui18n.so*")
         file(GLOB libicudata_libs "/lib64/libicudata.so*")
         file(GLOB libicuuc_libs "/lib64/libicuuc.so*")
+        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    elseif(EXISTS "/lib/x86_64-linux-gnu/libicui18n.so")
+        file(GLOB libicui18n_libs "/lib/x86_64-linux-gnu/libicui18n.so*")
+        file(GLOB libicudata_libs "/lib/x86_64-linux-gnu/libicudata.so*")
+        file(GLOB libicuuc_libs "/lib/x86_64-linux-gnu/libicuuc.so*")
         install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
