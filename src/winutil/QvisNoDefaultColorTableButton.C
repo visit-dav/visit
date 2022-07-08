@@ -231,7 +231,7 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
         colorTable = ctName;
         setText(colorTable);
         setToolTip(colorTable);
-        setIcon(getIcon(ctName, defDiscrete));
+        setIcon(getIcon(ctName));
     }
     else
     {
@@ -239,7 +239,7 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
         colorTable = colorTableNames[0];
         setText(colorTable);
         setToolTip(colorTable);
-        setIcon(getIcon(colorTable, defDiscrete));
+        setIcon(getIcon(colorTable));
     }
 debug1 << "QvisNoDefaultColorTableButton::setColorTable ... done" << endl;
 }
@@ -393,7 +393,7 @@ QvisNoDefaultColorTableButton::colorTableSelected(QAction *action)
 
     emit selectedColorTable(ctName);
     setText(ctName);
-    setIcon(getIcon(ctName, defDiscrete));
+    setIcon(getIcon(ctName));
     setToolTip(ctName);
 }
 
@@ -480,7 +480,7 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
     {
         if (getColorTableIndex(buttons[i]->getColorTable()) != -1)
         {
-            buttons[i]->setIcon(getIcon(buttons[i]->text(), defDiscrete));
+            buttons[i]->setIcon(getIcon(buttons[i]->text()));
         }
         // If there are no available color tables, we don't want the 
         // entries to change.            
@@ -601,17 +601,16 @@ QvisNoDefaultColorTableButton::regeneratePopupMenu()
 // ****************************************************************************
 
 QIcon
-QvisNoDefaultColorTableButton::getIcon(const QString &ctName, 
-                                       bool defaultDiscrete)
+QvisNoDefaultColorTableButton::getIcon(const QString &ctName)
 {
-    QList<QAction*> a;
-    if (defaultDiscrete)
-        a = colorTableMenuActionGroupDiscrete->actions();
-    else        
-        a = colorTableMenuActionGroupContinuous->actions();
-    for(int i = 0; i < a.size(); ++i)
-        if(a[i]->text() == ctName)
-            return a[i]->icon();
+    QList<QAction*> a1 = colorTableMenuActionGroupDiscrete->actions();
+    QList<QAction*> a2 = colorTableMenuActionGroupContinuous->actions();
+    for (int i = 0; i < a1.size(); ++i)
+        if (a1[i]->text() == ctName)
+            return a1[i]->icon();
+    for (int i = 0; i < a2.size(); ++i)
+        if (a2[i]->text() == ctName)
+            return a2[i]->icon();
 
     return makeIcon(ctName);
 }

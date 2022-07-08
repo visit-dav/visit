@@ -74,7 +74,7 @@ private slots:
 private:
     static int  getColorTableIndex(const QString &ctName);
     void regeneratePopupMenu();
-    static QIcon getIcon(const QString &, bool defaultDiscrete);
+    static QIcon getIcon(const QString &);
     static QIcon makeIcon(const QString &);
 
     QString                        colorTable;
