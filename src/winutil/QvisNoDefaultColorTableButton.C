@@ -23,11 +23,11 @@
 //
 
 int           QvisNoDefaultColorTableButton::numInstances = 0;
-QMenu        *QvisNoDefaultColorTableButton::colorTableMenu = 0;
 QActionGroup *QvisNoDefaultColorTableButton::colorTableMenuActionGroup = 0;
 QvisNoDefaultColorTableButton::ColorTableButtonVector QvisNoDefaultColorTableButton::buttons;
 QStringList  QvisNoDefaultColorTableButton::colorTableNames;
-bool        QvisNoDefaultColorTableButton::popupHasEntries = false;
+bool         QvisNoDefaultColorTableButton::popupHasEntriesDiscrete = false;
+bool         QvisNoDefaultColorTableButton::popupHasEntriesContinuous = false;
 ColorTableAttributes *QvisNoDefaultColorTableButton::colorTableAtts = NULL;
 
 // ****************************************************************************
@@ -52,8 +52,9 @@ ColorTableAttributes *QvisNoDefaultColorTableButton::colorTableAtts = NULL;
 //
 // ****************************************************************************
 
-QvisNoDefaultColorTableButton::QvisNoDefaultColorTableButton(QWidget *parent) :
-    QPushButton(parent), colorTable("")
+QvisNoDefaultColorTableButton::QvisNoDefaultColorTableButton(QWidget *parent, 
+    bool discrete) : QPushButton(parent), colorTable(""), 
+    defDiscrete(discrete), colorTableMenu(0)
 {
     // Increase the instance count.
     ++numInstances;
@@ -217,6 +218,7 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
     }
     else
     {
+        // TODO
         colorTable = colorTableNames[0];
         setText(colorTable);
         setToolTip(colorTable);
@@ -270,8 +272,12 @@ QvisNoDefaultColorTableButton::popupPressed()
     if(isDown() && colorTableMenu)
     {
         // If the popup menu does not have anything in it, fill it up.
-        if(!popupHasEntries)
-            regeneratePopupMenu();
+        if (defDiscrete)
+            if (!popupHasEntriesDiscrete)
+                regeneratePopupMenu();
+        else
+            if (!popupHasEntriesContinuous)
+                regeneratePopupMenu();
 
         QPoint p1(mapToGlobal(rect().bottomLeft()));
         QPoint p2(mapToGlobal(rect().topRight()));
@@ -307,7 +313,7 @@ QvisNoDefaultColorTableButton::popupPressed()
         else if(menuY + menuH > QApplication::desktop()->height())
            menuY -= ((menuY + menuH) - QApplication::desktop()->height());
 
-        // Show the popup menu.         
+        // Show the popup menu.
         colorTableMenu->exec(QPoint(menuX, menuY));
         setDown(false);
     }
@@ -380,7 +386,8 @@ QvisNoDefaultColorTableButton::clearAllColorTables()
     colorTableNames.clear();
 
     // Clear out the popup menu.
-    popupHasEntries = false;
+    popupHasEntriesDiscrete = false;
+    popupHasEntriesContinuous = false;
 }
 
 // ****************************************************************************
@@ -508,12 +515,21 @@ QvisNoDefaultColorTableButton::regeneratePopupMenu()
     // Add an item for each color table.
     for(int i = 0; i < colorTableNames.size(); ++i)
     {
-        QAction *action = colorTableMenu->addAction(makeIcon(colorTableNames.at(i)), colorTableNames.at(i));
-        colorTableMenuActionGroup->addAction(action);
+        std::string ct_name = colorTableNames.at(i).toStdString();
+        int index = colorTableAtts->GetColorTableIndex(ct_name);
+        bool ct_discrete = colorTableAtts->GetColorTables(index).GetDiscreteFlag();
+        if (ct_discrete == defDiscrete)
+        {
+            QAction *action = colorTableMenu->addAction(makeIcon(colorTableNames.at(i)), colorTableNames.at(i));
+            colorTableMenuActionGroup->addAction(action);
+        }
     }
 
     // Indicate that we've added choices to the menu.
-    popupHasEntries = true;
+    if (defDiscrete)
+        popupHasEntriesDiscrete = true;
+    else
+        popupHasEntriesContinuous = true;
 }
 
 // ****************************************************************************

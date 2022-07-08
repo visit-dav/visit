@@ -53,7 +53,7 @@ class WINUTIL_API QvisNoDefaultColorTableButton : public QPushButton
 
     typedef std::vector<QvisNoDefaultColorTableButton *> ColorTableButtonVector;
 public:
-    QvisNoDefaultColorTableButton(QWidget *parent);
+    QvisNoDefaultColorTableButton(QWidget *parent, bool discrete);
     virtual ~QvisNoDefaultColorTableButton();
     virtual QSize sizeHint() const;
     virtual QSizePolicy sizePolicy () const;
@@ -73,20 +73,22 @@ private slots:
     void colorTableSelected(QAction *);
 private:
     static int  getColorTableIndex(const QString &ctName);
-    static void regeneratePopupMenu();
+    void regeneratePopupMenu();
     static QIcon getIcon(const QString &);
     static QIcon makeIcon(const QString &);
 
     QString                        colorTable;
 
     static int                     numInstances;
-    static QMenu                  *colorTableMenu;
+    QMenu                         *colorTableMenu;
     static QActionGroup           *colorTableMenuActionGroup;
-    static bool                    popupHasEntries;
+    static bool                    popupHasEntriesDiscrete;
+    static bool                    popupHasEntriesContinuous;
     static ColorTableButtonVector  buttons;
 
     static QStringList             colorTableNames;
     static ColorTableAttributes   *colorTableAtts;
+    bool                           defDiscrete;
 };
 
 #endif
