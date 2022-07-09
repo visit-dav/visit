@@ -384,6 +384,7 @@ void
 QvisNoDefaultColorTableButton::colorTableSelected(QAction *action)
 {
     int index;
+    // TODO this is bugged; these indices are not the same
     if (defDiscrete)
         index = colorTableMenuActionGroupDiscrete->actions().indexOf(action);
     else
