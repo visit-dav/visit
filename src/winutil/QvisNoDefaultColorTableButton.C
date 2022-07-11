@@ -290,7 +290,9 @@ QvisNoDefaultColorTableButton::getColorTable() const
 void
 QvisNoDefaultColorTableButton::popupPressed()
 {
-    if(isDown() && (colorTableMenuDiscrete || colorTableMenuContinuous))
+    bool allDiscrete = colorTableMenuDiscrete && defDiscrete;
+    bool allContinuous = colorTableMenuContinuous && !defDiscrete;
+    if (isDown() && (allDiscrete || allContinuous))
     {
         int menuW, menuH;
         if (defDiscrete)
