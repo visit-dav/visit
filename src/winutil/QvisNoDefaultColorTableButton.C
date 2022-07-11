@@ -292,23 +292,14 @@ QvisNoDefaultColorTableButton::popupPressed()
 {
     if(isDown() && (colorTableMenuDiscrete || colorTableMenuContinuous))
     {
-        // If the popup menu does not have anything in it, fill it up.
-        if (defDiscrete)
-            if (!popupHasEntriesDiscrete)
-                regeneratePopupMenu();
-        else
-            if (!popupHasEntriesContinuous)
-                regeneratePopupMenu();
-
-        QPoint p1(mapToGlobal(rect().bottomLeft()));
-        QPoint p2(mapToGlobal(rect().topRight()));
-        QPoint buttonMiddle(p1.x() + ((p2.x() - p1.x()) >> 1),
-                            p1.y() + ((p2.y() - p1.y()) >> 1));
-
         int menuW, menuH;
-        // Disconnect all other color table buttons.
         if (defDiscrete)
         {
+            // If the popup menu does not have anything in it, fill it up.
+            if (!popupHasEntriesDiscrete)
+                regeneratePopupMenu();
+
+            // Disconnect all other color table buttons.
             for(size_t i = 0; i < buttons.size(); ++i)
                 disconnect(colorTableMenuActionGroupDiscrete, SIGNAL(triggered(QAction *)),
                            buttons[i], SLOT(colorTableSelected(QAction *)));
@@ -320,6 +311,11 @@ QvisNoDefaultColorTableButton::popupPressed()
         }
         else
         {
+            // If the popup menu does not have anything in it, fill it up.
+            if (!popupHasEntriesContinuous)
+                regeneratePopupMenu();
+
+            // Disconnect all other color table buttons.
             for(size_t i = 0; i < buttons.size(); ++i)
                 disconnect(colorTableMenuActionGroupContinuous, SIGNAL(triggered(QAction *)),
                            buttons[i], SLOT(colorTableSelected(QAction *)));
@@ -329,6 +325,11 @@ QvisNoDefaultColorTableButton::popupPressed()
             menuW = colorTableMenuContinuous->sizeHint().width();
             menuH = colorTableMenuContinuous->sizeHint().height();
         }
+
+        QPoint p1(mapToGlobal(rect().bottomLeft()));
+        QPoint p2(mapToGlobal(rect().topRight()));
+        QPoint buttonMiddle(p1.x() + ((p2.x() - p1.x()) >> 1),
+                            p1.y() + ((p2.y() - p1.y()) >> 1));
 
         // Figure out a good place to popup the menu.
         int menuX = buttonMiddle.x();
@@ -570,7 +571,7 @@ QvisNoDefaultColorTableButton::regeneratePopupMenu()
     if (defDiscrete)
     {
         QList<QAction*> actions = colorTableMenuActionGroupDiscrete->actions();
-        for(int i = 0; i < actions.count(); ++i)
+        for (int i = 0; i < actions.count(); ++i)
             colorTableMenuActionGroupDiscrete->removeAction(actions[i]);
         colorTableMenuDiscrete->clear();
 
@@ -589,7 +590,7 @@ QvisNoDefaultColorTableButton::regeneratePopupMenu()
     else
     {
         QList<QAction*> actions = colorTableMenuActionGroupContinuous->actions();
-        for(int i = 0; i < actions.count(); ++i)
+        for (int i = 0; i < actions.count(); ++i)
             colorTableMenuActionGroupContinuous->removeAction(actions[i]);
         colorTableMenuContinuous->clear();
 
