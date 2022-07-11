@@ -5095,7 +5095,9 @@ ViewerSubject::HandleColorTable()
         {
             // Clear all of the color tables.
             QvisColorTableButton::clearAllColorTables();
+            QvisColorTableButton::setColorTableAttributes(colorAtts);
             QvisNoDefaultColorTableButton::clearAllColorTables();
+            QvisNoDefaultColorTableButton::setColorTableAttributes(colorAtts);
 
             int nNames = colorAtts->GetNumColorTables();
             const stringVector &names = colorAtts->GetNames();

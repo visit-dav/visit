@@ -88,7 +88,8 @@ private:
     static bool                    popupHasEntriesContinuous;
     static ColorTableButtonVector  buttons;
 
-    static QStringList             colorTableNames;
+    static QStringList             colorTableNamesDiscrete;
+    static QStringList             colorTableNamesContinuous;
     static ColorTableAttributes   *colorTableAtts;
     bool                           defDiscrete;
 };

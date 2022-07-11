@@ -28,7 +28,8 @@ QActionGroup *QvisNoDefaultColorTableButton::colorTableMenuActionGroupDiscrete =
 QMenu        *QvisNoDefaultColorTableButton::colorTableMenuDiscrete = 0;
 QActionGroup *QvisNoDefaultColorTableButton::colorTableMenuActionGroupContinuous = 0;
 QMenu        *QvisNoDefaultColorTableButton::colorTableMenuContinuous = 0;
-QStringList   QvisNoDefaultColorTableButton::colorTableNames;
+QStringList   QvisNoDefaultColorTableButton::colorTableNamesDiscrete;
+QStringList   QvisNoDefaultColorTableButton::colorTableNamesContinuous;
 bool          QvisNoDefaultColorTableButton::popupHasEntriesDiscrete = false;
 bool          QvisNoDefaultColorTableButton::popupHasEntriesContinuous = false;
 ColorTableAttributes *QvisNoDefaultColorTableButton::colorTableAtts = NULL;
@@ -153,7 +154,8 @@ QvisNoDefaultColorTableButton::~QvisNoDefaultColorTableButton()
         }
 
         // Delete the color table names.
-        colorTableNames.clear();
+        colorTableNamesDiscrete.clear();
+        colorTableNamesContinuous.clear();
     }
 }
 
@@ -235,8 +237,10 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
     }
     else
     {
-        // TODO
-        colorTable = colorTableNames[0];
+        if (defDiscrete)
+            colorTable = colorTableNamesDiscrete[0];
+        else
+            colorTable = colorTableNamesContinuous[0];
         setText(colorTable);
         setToolTip(colorTable);
         setIcon(getIcon(colorTable));
@@ -384,13 +388,17 @@ void
 QvisNoDefaultColorTableButton::colorTableSelected(QAction *action)
 {
     int index;
-    // TODO this is bugged; these indices are not the same
+    QString ctName;
     if (defDiscrete)
+    {
         index = colorTableMenuActionGroupDiscrete->actions().indexOf(action);
+        ctName = colorTableNamesDiscrete.at(index);
+    }
     else
+    {
         index = colorTableMenuActionGroupContinuous->actions().indexOf(action);
-
-    QString ctName = colorTableNames.at(index);
+        ctName = colorTableNamesContinuous.at(index);
+    }
 
     emit selectedColorTable(ctName);
     setText(ctName);
@@ -420,7 +428,8 @@ QvisNoDefaultColorTableButton::colorTableSelected(QAction *action)
 void
 QvisNoDefaultColorTableButton::clearAllColorTables()
 {
-    colorTableNames.clear();
+    colorTableNamesDiscrete.clear();
+    colorTableNamesContinuous.clear();
 
     // Clear out the popup menu.
     popupHasEntriesDiscrete = false;
@@ -452,8 +461,19 @@ QvisNoDefaultColorTableButton::clearAllColorTables()
 void
 QvisNoDefaultColorTableButton::addColorTable(const QString &ctName)
 {
-    colorTableNames.append(ctName);
-    colorTableNames.sort();
+    std::string ct_name = ctName.toStdString();
+    int index = colorTableAtts->GetColorTableIndex(ct_name);
+    bool ct_discrete = colorTableAtts->GetColorTables(index).GetDiscreteFlag();
+    if (ct_discrete)
+    {
+        colorTableNamesDiscrete.append(ctName);
+        colorTableNamesDiscrete.sort();        
+    }
+    else
+    {
+        colorTableNamesContinuous.append(ctName);
+        colorTableNamesContinuous.sort();        
+    }
 }
 
 // ****************************************************************************
@@ -512,7 +532,10 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
 int
 QvisNoDefaultColorTableButton::getColorTableIndex(const QString &ctName)
 {
-    return colorTableNames.indexOf(ctName);
+    int index_d = colorTableNamesDiscrete.indexOf(ctName);
+    int index_c = colorTableNamesContinuous.indexOf(ctName);
+    // There shouldn't be any overlap, so this should be fine.
+    return index_d != -1 ? index_d : index_c;
 }
 
 // ****************************************************************************
@@ -550,6 +573,18 @@ QvisNoDefaultColorTableButton::regeneratePopupMenu()
         for(int i = 0; i < actions.count(); ++i)
             colorTableMenuActionGroupDiscrete->removeAction(actions[i]);
         colorTableMenuDiscrete->clear();
+
+        // Add an item for each color table.
+        for (int i = 0; i < colorTableNamesDiscrete.size(); ++i)
+        {
+            QAction *action = colorTableMenuDiscrete->addAction(
+                makeIcon(colorTableNamesDiscrete.at(i)), 
+                colorTableNamesDiscrete.at(i));
+            colorTableMenuActionGroupDiscrete->addAction(action);
+        }
+
+        // Indicate that we've added choices to the menu.
+        popupHasEntriesDiscrete = true;
     }
     else
     {
@@ -557,35 +592,19 @@ QvisNoDefaultColorTableButton::regeneratePopupMenu()
         for(int i = 0; i < actions.count(); ++i)
             colorTableMenuActionGroupContinuous->removeAction(actions[i]);
         colorTableMenuContinuous->clear();
-    }
 
-    // Add an item for each color table.
-    for(int i = 0; i < colorTableNames.size(); ++i)
-    {
-        std::string ct_name = colorTableNames.at(i).toStdString();
-        int index = colorTableAtts->GetColorTableIndex(ct_name);
-        bool ct_discrete = colorTableAtts->GetColorTables(index).GetDiscreteFlag();
-        if (ct_discrete == defDiscrete)
+        // Add an item for each color table.
+        for (int i = 0; i < colorTableNamesContinuous.size(); ++i)
         {
-            if (defDiscrete)
-            {
-                QAction *action = colorTableMenuDiscrete->addAction(makeIcon(colorTableNames.at(i)), colorTableNames.at(i));
-                colorTableMenuActionGroupDiscrete->addAction(action);
-            }
-            else
-            {                
-                QAction *action = colorTableMenuContinuous->addAction(makeIcon(colorTableNames.at(i)), colorTableNames.at(i));
-                colorTableMenuActionGroupContinuous->addAction(action);
-            }
-            
+            QAction *action = colorTableMenuContinuous->addAction(
+                makeIcon(colorTableNamesContinuous.at(i)), 
+                colorTableNamesContinuous.at(i));
+            colorTableMenuActionGroupContinuous->addAction(action);
         }
-    }
 
-    // Indicate that we've added choices to the menu.
-    if (defDiscrete)
-        popupHasEntriesDiscrete = true;
-    else
+        // Indicate that we've added choices to the menu.
         popupHasEntriesContinuous = true;
+    }
 }
 
 // ****************************************************************************
