@@ -371,6 +371,35 @@ EOF
     return 0
 }
 
+function apply_mili_221_write_funcs_patch
+{
+    #
+    # write_funcs is not needed and having it in the header leads to
+    # multiple definitions, which gcc 10.2 on Debian 11 doesn't like.
+    #
+    patch -p0 << \EOF
+diff -c mili-22.1/src/mili_internal.h.orig mili-22.1/src/mili_internal.h
+*** mili-22.1/src/mili_internal.h.orig  Tue Jul 12 10:49:05 2022
+--- mili-22.1/src/mili_internal.h       Tue Jul 12 10:49:29 2022
+***************
+*** 674,680 ****
+  /* dep.c - routines for handling architecture dependencies. */
+  Return_value set_default_io_routines( Mili_family *fam );
+  Return_value set_state_data_io_routines( Mili_family *fam );
+- void (*write_funcs[QTY_PD_ENTRY_TYPES + 1])();
+  
+  /* svar.c - routines for managing state variables. */
+  Bool_type valid_svar_data( Aggregate_type atype, char *name,
+--- 674,679 ----
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply write funcs patch to Mili 22.1"
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_mili_patch
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -394,6 +423,10 @@ function apply_mili_patch
             return 1
         fi
         apply_mili_221_blueos_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mili_221_write_funcs_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
