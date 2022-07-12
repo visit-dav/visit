@@ -1325,7 +1325,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 baseName << out_filename << ".cycle_" << std::setfill('0') 
                     << std::setw(6) << cycle;
                 out_filename = baseName.str();
-                out_filename_w_path = outputDir + "/" + out_filename;
+                if (outputDir == ".")
+                    out_filename_w_path = out_filename;
+                else
+                    out_filename_w_path = outputDir + "/" + out_filename;
 
                 // Note to future developers: The following lines are a workaround to a bug found in
                 // conduit 0.8.3; see this issue for more information: 
