@@ -41,6 +41,12 @@
 #include <avtblueprint_exports.h>
 #include <conduit.hpp>
 
+//-----------------------------------------------------------------------------
+// vtk forward decls
+//-----------------------------------------------------------------------------
+class vtkDataSet;
+class vtkDataArray;
+
 // ****************************************************************************
 //  Class:  avtConduitBlueprintDataAdaptor
 //
