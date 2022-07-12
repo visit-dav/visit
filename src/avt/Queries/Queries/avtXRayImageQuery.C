@@ -1069,6 +1069,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         // Create the file base name.
         //
         std::stringstream baseName;
+        const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
         bool keepTrying = true;
         while (keepTrying)
         {
@@ -1093,7 +1094,12 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 std::stringstream fileName;
                 if (outputDir != ".")
                     fileName << outputDir.c_str() << "/";
-                fileName << baseName.str() << "00." << file_extensions[outputType];
+                fileName << baseName.str();
+                if (outputTypeIsBlueprint(outputType))
+                    fileName << ".cycle_" << std::setfill('0') << std::setw(6) << cycle;
+                else
+                    fileName << "00";
+                fileName << "." << file_extensions[outputType];
 
                 ifstream ifile(fileName.str());
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -1284,7 +1290,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
 
             data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
-            const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
             data_out["state/cycle"] = cycle;
             data_out["state/xray_view/normal/x"] = normal[0];
             data_out["state/xray_view/normal/y"] = normal[1];
