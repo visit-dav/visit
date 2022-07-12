@@ -2081,6 +2081,9 @@ if(LINUX)
     # Install the system libraries required by Qt to the lib directory.
     # The versions of these libraries change frequently, so including
     # them means VisIt may continue to run even if the OS is upgraded.
+    # "/lib64" is for rhel7 and fedora31, "/usr/lib/x86_64-linux-gnu"
+    # is for ubuntu 18, debian 10 and debian 11, "/lib/x86_64-linux-gnu"
+    # is for ubuntu 20.
     #-------------------------------------------------------------------------
     if(EXISTS "/lib64/libicui18n.so")
         file(GLOB libicui18n_libs "/lib64/libicui18n.so*")
