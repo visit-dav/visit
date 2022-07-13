@@ -700,7 +700,7 @@ ColorTableAttributes::SetNames(const stringVector &names_)
 // Method: ColorTableAttributes::SetActive
 //
 // Purpose:
-//   Setter for names.
+//   Setter for active.
 //
 // Note:       There needs to be a custom setter.
 //
@@ -1507,24 +1507,52 @@ ColorTableAttributes::RemoveColorTable(int index)
 // Method: ColorTableAttributes::SetActiveElement
 //
 // Purpose:
-//   Sets the tag corresponding to the given index to active or inactive
-//   depending on the boolean value passed.
+//   Sets the color table corresponding to the given index to active or 
+//   inactive (appearing in the namelistbox or not) depending on the boolean
+//   value passed.
 //
 // Arguments:
-//   index - index of the tag
+//   index - index of the color table
 //   val   - bool to set active or inactive
 //
 // Programmer: Justin Privitera
 // Creation:   Mon Jun  6 17:10:40 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Added guard to prevent index out of bound errors.
 //
 // ****************************************************************************
 
 void
 ColorTableAttributes::SetActiveElement(int index, bool val)
 {
-    active[index] = val;
+    if (index >= 0 && index < active.size())
+        active[index] = val;
+}
+
+// ****************************************************************************
+// Method: ColorTableAttributes::GetActiveElement
+//
+// Purpose:
+//   Gets the state of a given color table (active or inactive (appearing in
+//   the namelistbox or not)).
+//
+// Arguments:
+//   index - index of the tag
+//
+// Programmer: Justin Privitera
+// Creation:   Tue Jun 28 14:04:01 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+ColorTableAttributes::GetActiveElement(int index)
+{
+    if (index >= 0 && index < active.size())
+        return active[index];
 }
 
 // ****************************************************************************

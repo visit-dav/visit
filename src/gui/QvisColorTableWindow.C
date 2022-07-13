@@ -766,6 +766,32 @@ QvisColorTableWindow::UpdateEditor()
 }
 
 // ****************************************************************************
+// Method: QvisColorTableWindow::AddToTagTable
+//
+// Purpose:
+//   Adds entries to the tag table. Called by AddGlobalTag().
+//
+// Programmer: Justin Privitera
+// Creation:   Mon Jun 27 17:30:16 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::AddToTagTable(std::string currtag, int index)
+{
+    QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
+    item->setCheckState(0, activeTags[index] ? Qt::Checked : Qt::Unchecked);
+    item->setText(1, currtag.c_str());
+    // this next column is secret and is for passing around the tag index
+    // should allow you to have up to 10^10 tags
+    char buf[10];
+    sprintf(buf, "%d", index);
+    item->setText(2, buf);
+}
+
+// ****************************************************************************
 // Method: QvisColorTableWindow::AddGlobalTag
 //
 // Purpose:
@@ -776,45 +802,38 @@ QvisColorTableWindow::UpdateEditor()
 // Creation:   Tue Jun  7 12:36:55 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Mon Jun 27 17:33:23 PDT 2022
+//    Added call to AddToTagTable() to reduce code bloat.
+//    Renamed `run_before` to `first_time`.
 //
 // ****************************************************************************
 
 void
-QvisColorTableWindow::AddGlobalTag(std::string currtag, bool run_before)
+QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 {
     // if the given tag is NOT in the global tag list
     if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
     {
         tagList.push_back(currtag);
-        QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
         // make the "Standard" tag active the very first time the tags are enabled
-        if (currtag == "Standard" && !run_before)
-        {
+        if (currtag == "Standard" && first_time)
             activeTags.push_back(true);
-            item->setCheckState(0, Qt::Checked);
-        }
         else
-        {
             activeTags.push_back(false);
-            item->setCheckState(0, Qt::Unchecked);
-        }
-        item->setText(1, currtag.c_str());
-        // this next column is secret and is for passing around the tag index
-        // should allow you to have up to 10^10 tags
-        char buf[10];
-        sprintf(buf, "%d", tagList.size() - 1);
-        item->setText(2, buf);
+        AddToTagTable(currtag, tagList.size() - 1);
     }
     else
     {
+        // We only want to run this check if the first case is not true.
         QList<QTreeWidgetItem*> items = tagTable->findItems(
             QString::fromStdString(currtag), Qt::MatchExactly, 1);
-        // if the given tag IS in the global tag list but does not have a tagTable entry
+        // If the given tag IS in the global tag list but does not have a tagTable entry
         if (items.count() == 0)
         {
-            QTreeWidgetItem *item = new QTreeWidgetItem(tagTable);
-            // get index of tag in taglist
+            // Get index of tag in taglist
             int index = 0;
+            // This index is guaranteed to be found, since if it wasn't found then 
+            // the first case up above would be true.
             for (int i = 0; i < tagList.size(); i ++)
             {
                 if (tagList[i] == currtag)
@@ -823,22 +842,7 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool run_before)
                     break;
                 }
             }
-
-            if (activeTags[index])
-            {
-                item->setCheckState(0, Qt::Checked);            
-            }
-            else
-            {
-                item->setCheckState(0, Qt::Unchecked);            
-            }
-
-            item->setText(1, currtag.c_str());
-            // this next column is secret and is for passing around the tag index
-            // should allow you to have up to 10^10 tags
-            char buf[10];
-            sprintf(buf, "%d", index);
-            item->setText(2, buf);
+            AddToTagTable(currtag, index);
         }
     }
 }
@@ -851,37 +855,50 @@ QvisColorTableWindow::AddGlobalTag(std::string currtag, bool run_before)
 //
 // Programmer: Justin Privitera
 // Creation:   Tue Jun  7 12:36:55 PDT 2022
+// 
+// Notes:
+//    Signal blocking and unblocking SHOULD occur in the caller.
 //
 // Modifications:
+//    Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//    Renamed `run_before` to `first_time`.
+//    Added guard to make sure code to fill tag table and tag list
+//    is only run as much as it needs to be run.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::UpdateTags()
 {
-    // signal blocking SHOULD occur in the caller
-    static bool run_before = false;
+    // We want the 'Standard' tag to be checked the very first time tag
+    // filtering is enabled, hence the inclusion of `first_time`.
+    static bool first_time = true;
     if (tagFilterToggle->isChecked())
     {
         // populate tags list
         // iterate thru each color table
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
-            // if this table doesn't have tags, then add the no-tags tag
-            if (colorAtts->GetColorTables(i).GetNumTags() == 0)
-                colorAtts->GetColorTables(i).AddTag("No Tags");
-
-            // iterate thru each tag in the given color table
-            for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
+            // only try to add tags if the ccpl thinks it has new info
+            if (colorAtts->GetColorTables(i).GetTagChangesMade())
             {
-                // add the tag if it is not already in the global tag list
-                AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), run_before);
+                // if this table doesn't have tags, then add the no-tags tag
+                if (colorAtts->GetColorTables(i).GetNumTags() == 0)
+                    colorAtts->GetColorTables(i).AddTag("No Tags");
+
+                // iterate thru each tag in the given color table
+                for (int j = 0; j < colorAtts->GetColorTables(i).GetNumTags(); j ++)
+                {
+                    // add the tag if it is not already in the global tag list
+                    AddGlobalTag(colorAtts->GetColorTables(i).GetTag(j), first_time);
+                }
+                // tell the ccpl that we have taken note of all of its tag changes
+                colorAtts->GetColorTables(i).SetTagChangesMade(false);
             }
         }
-        run_before = true;
+        first_time = false;
         tagTable->sortByColumn(1, Qt::AscendingOrder);
     }
-    // signal unblocking SHOULD occur in the caller
 }
 
 // ****************************************************************************
@@ -912,6 +929,9 @@ QvisColorTableWindow::UpdateTags()
 //   happens when tags are enabled). Also added guard at the end to make 
 //   sure the observer updates the color table buttons if settings are 
 //   loaded from config files.
+// 
+//   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//   Refactored the block that fills the namelistbox.
 //
 // ****************************************************************************
 
@@ -927,112 +947,66 @@ QvisColorTableWindow::UpdateNames()
 
     // Clear out the existing names.
     nameListBox->clear();
+    nameListBox->setRootIsDecorated(false);
 
-    // Put all of the color table names into the tree.
-    bool doTags = tagFilterToggle->isChecked();
-
-    if(! doTags)
+    // if tagging is not enabled
+    if(! tagFilterToggle->isChecked())
+        colorAtts->SetAllActive(); // set all color tables to active
+    else // tagging is enabled
     {
-        nameListBox->setRootIsDecorated(false);
-        for(int i = 0; i < colorAtts->GetNumColorTables(); ++i)
-        {
-            QString item(colorAtts->GetNames()[i].c_str());
-            QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
-            treeItem->setText(0, item);
-            nameListBox->addTopLevelItem(treeItem);
-        }
-        // set all color tables to active
-        colorAtts->SetAllActive();
-    }
-
-    if (doTags && tagsMatchAny)
-    {
-        nameListBox->setRootIsDecorated(false);
         for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
         {
-            bool anyTagFound = false;
-            int j = 0;
-            // go thru local tags
-            while (j < colorAtts->GetColorTables(i).GetNumTags())
-            {
-                int k = 0;
-                // go thru global tags
-                while (k < tagList.size())
-                {
-                    // if the global tag is active
-                    if (activeTags[k])
-                    {
-                        // and if the global tag is the same as our current local tag 
-                        if (tagList[k] == colorAtts->GetColorTables(i).GetTag(j))
-                        {
-                            // any tag was found
-                            anyTagFound = true;
-                            break;
-                        }
-                    }
-                    k ++;
-                }
-
-                // we only care if one tag was found
-                if (anyTagFound) break;
-                j ++;
-            }
-
-            // if any tag was found, we add the color table to the list
-            if (anyTagFound)
-            {
-                QString item(colorAtts->GetNames()[i].c_str());
-                QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
-                treeItem->setText(0, item);
-                nameListBox->addTopLevelItem(treeItem);
-            }
-            colorAtts->SetActiveElement(i, anyTagFound);
-        }
-    }
-
-    // so tags must match all
-    if (doTags && !tagsMatchAny)
-    {
-        nameListBox->setRootIsDecorated(false);
-        for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
-        {
-            bool allTagsFound = true;
-            int j = 0;
+            bool tagFound = false;
             // go thru global tags
-            while (j < tagList.size())
+            for (int j = 0; j < tagList.size(); j ++)
             {
                 // if the global tag is active
                 if (activeTags[j])
                 {
-                    bool foundLocalTag = false;
-                    int k = 0;
-                    while (k < colorAtts->GetColorTables(i).GetNumTags())
+                    tagFound = false;
+                    // go thru local tags
+                    for (int k = 0; k < colorAtts->GetColorTables(i).GetNumTags(); k ++)
                     {
+                        // if the current global tag is the same as our local tag
                         if (tagList[j] == colorAtts->GetColorTables(i).GetTag(k))
                         {
-                            foundLocalTag = true;
+                            tagFound = true;
                             break;
                         }
-                        k ++;
                     }
-                    if (!foundLocalTag)
-                    {
-                        allTagsFound = false;
+                    if (tagFound == tagsMatchAny)
+                    // If both are true, that means...
+                    // 1) tagsMatchAny is true so we only need one tag from 
+                    //    the global tag list to be present in the local tag
+                    //    list.
+                    // 2) tagFound is true, so there is no need to keep 
+                    //    searching for a tag that is in both the local and
+                    //    global tag lists. Thus we can end iteration early.
+                    // If both are false, that means...
+                    // 1) tagsMatchAny is false so we need every tag from the
+                    //    global tag list to be present in the local tag list.
+                    // 2) tagFound is false, so there exists a global tag that
+                    //    is not in the local tag list, hence we can give up 
+                    //    early because we know that this color table does not
+                    //    have every tag in the global tag list.
                         break;
-                    }
                 }
-                j ++;
             }
+            // we mark the color table as active or inactive
+            colorAtts->SetActiveElement(i, tagFound);
+        }
+    }
 
-            // if all tags were found, we add the color table to the list
-            if (allTagsFound)
-            {
-                QString item(colorAtts->GetNames()[i].c_str());
-                QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
-                treeItem->setText(0, item);
-                nameListBox->addTopLevelItem(treeItem);
-            }
-            colorAtts->SetActiveElement(i, allTagsFound);
+    // actually populate the name list box
+    for (int i = 0; i < colorAtts->GetNumColorTables(); i ++)
+    {
+        // if the color table is active
+        if (colorAtts->GetActiveElement(i))
+        {
+            QString item(colorAtts->GetNames()[i].c_str());
+            QTreeWidgetItem *treeItem = new QTreeWidgetItem(nameListBox);
+            treeItem->setText(0, item);
+            nameListBox->addTopLevelItem(treeItem);            
         }
     }
 
@@ -1990,6 +1964,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added default tag for user defined tables.
+// 
+//   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
+//   SetTagChangesMade for copied color tables.
 //
 // ****************************************************************************
 
@@ -2010,6 +1987,7 @@ QvisColorTableWindow::addColorTable()
             // Copy the default color table into the new color table.
             ColorControlPointList cpts(*ccpl);
             cpts.AddTag("User Defined");
+            cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
         else
