@@ -36,7 +36,7 @@ Here is an example of specifying the size of your grid.
    :lines: 9-9
 
 The `i` component varies the fastest, then `j`, then `k`. 
-This means that if `BRICK_SIZE` is `2x2x2`, the first float in the data file corresponds to `[0,0,0]`, the second to `[1,0,0]`, the third to `[0,1,0]`, the fourth to `[1,1,0]`, the fifth to `[0,0,1]`, and so on.
+This means that if `BRICK_SIZE` is `2. 2. 2.`, the first float in the data file corresponds to `[0,0,0]`, the second to `[1,0,0]`, the third to `[0,1,0]`, the fourth to `[1,1,0]`, the fifth to `[0,0,1]`, and so on.
 
 BYTE_OFFSET
 ~~~~~~~~~~~
