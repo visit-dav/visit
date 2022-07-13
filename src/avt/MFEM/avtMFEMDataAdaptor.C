@@ -90,7 +90,6 @@
 #include "mfem.hpp"
 
 using std::string;
-using namespace conduit;
 using namespace mfem;
 
 //---------------------------------------------------------------------------//
