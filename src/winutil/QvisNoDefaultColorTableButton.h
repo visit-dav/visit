@@ -80,18 +80,14 @@ private:
     QString                        colorTable;
 
     static int                     numInstances;
-    static QMenu                  *colorTableMenuDiscrete;
-    static QActionGroup           *colorTableMenuActionGroupDiscrete;
-    static QMenu                  *colorTableMenuContinuous;
-    static QActionGroup           *colorTableMenuActionGroupContinuous;
-    static bool                    popupHasEntriesDiscrete;
-    static bool                    popupHasEntriesContinuous;
+    static QMenu                  *colorTableMenu[2];
+    static QActionGroup           *colorTableMenuActionGroup[2];
+    static bool                    popupHasEntries[2];
     static ColorTableButtonVector  buttons;
 
-    static QStringList             colorTableNamesDiscrete;
-    static QStringList             colorTableNamesContinuous;
+    static QStringList             colorTableNames[2];
     static ColorTableAttributes   *colorTableAtts;
-    bool                           defDiscrete;
+    int                            buttonType;
 };
 
 #endif
