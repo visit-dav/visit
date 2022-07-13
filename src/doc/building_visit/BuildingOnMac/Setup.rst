@@ -112,6 +112,20 @@ Configuration
 
    Masonry's JSON config file
 
+You Might Have to Adjust your PATH
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are cases where individual package's configuration processes wind up executing tools in your path (``$PATH``) to help set variables used in compilation.
+For example, the ``MPICH`` configuration winds up using ``pkg-config``, if it is found in your path, to help set ``CPPFLAGS`` and ``LDFLAGS``.
+In one case, ``libxml2`` was installed in both ``/opt/local/lib`` and in ``/usr/lib`` but because ``/opt/local/bin`` was first in ``$PATH``, ``/opt/local/bin/pkg-config`` was used to set paths for ``libxml2`` to ``/opt/local/include`` and ``/opt/local/lib``.
+This results in a build of ``MPICH`` using non-system ``libxml2`` which will fail the ``macOS`` (``otool -L``) ``@rpath`` validation checks on each of the shared libs VisIt is built with later.
+
+The solution is to be sure your ``$PATH`` variable is set such that nothing *non-standard* can be found in your path prior to running masonry.
+One way to do this is to ``echo $PATH | tr ':' '\n'`` to display, line-by-line, each path defined in ``$PATH`` and then remove from that list all *non-standard* (for example, anything beginning with ``/opt``) paths ::
+
+    set STD_PATH=`echo $PATH | tr ':' '\n' | grep -v '/opt' | tr '\n' ':'`
+    env PATH=$STD_PATH python3 src/tools/dev/masonry/bootstrap_visit.py src/tools/dev/masonry/opts/mb-3.3.0-darwin-10.14-x86_64-release.json
+
 Signing macOS Builds
 ~~~~~~~~~~~~~~~~~~~~
 To `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_index.html>`_ your VisIt_ build, you must be enrolled in the `Apple Developer Program <https://developer.apple.com/programs/>`_ and have a valid Developer ID certificate. Below are simple steps to get started, reference the links for more detailed information.
