@@ -44,6 +44,14 @@ class ColorTableAttributes;
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed category arg from addColorTable and removed mappedColorTableNames.
+// 
+//   Justin Privitera, Wed Jul 13 14:48:42 PDT 2022
+//   Made numerous changes throughout the class to enforce color table 
+//   filtering, so that the Continuous ct button can only select continuous
+//   color tables, and the Discrete ct button can only select discrete color
+//   tables. Note in this file the changes to the static variables; now many
+//   are arrays with two elements. This is to facilitate different behavior for
+//   the different buttons.
 //
 // ****************************************************************************
 
@@ -60,6 +68,7 @@ public:
 
     void setColorTable(const QString &ctName);
     const QString &getColorTable() const;
+    const int getButtonType() const;
 
     // Methods to set the list of internal color tables.
     static void clearAllColorTables();
@@ -72,12 +81,13 @@ private slots:
     void popupPressed();
     void colorTableSelected(QAction *);
 private:
-    static int  getColorTableIndex(const QString &ctName);
+    static int  getColorTableIndex(const QString &ctName, const int whichButton);
     void regeneratePopupMenu();
     static QIcon getIcon(const QString &);
     static QIcon makeIcon(const QString &);
 
     QString                        colorTable;
+    int                            buttonType;
 
     static int                     numInstances;
     static QMenu                  *colorTableMenu[2];
@@ -87,7 +97,6 @@ private:
 
     static QStringList             colorTableNames[2];
     static ColorTableAttributes   *colorTableAtts;
-    int                            buttonType;
 };
 
 #endif

@@ -206,7 +206,7 @@ QvisNoDefaultColorTableButton::setColorTable(const QString &ctName)
 {
 debug1 << "QvisNoDefaultColorTableButton::setColorTable" << endl;
 debug1 <<"    ctName: " << ctName.toStdString() << endl;
-    if(getColorTableIndex(ctName) != -1)
+    if (getColorTableIndex(ctName, buttonType) != -1)
     {
         colorTable = ctName;
         setText(colorTable);
@@ -242,6 +242,25 @@ const QString &
 QvisNoDefaultColorTableButton::getColorTable() const
 {
     return colorTable;
+}
+
+// ****************************************************************************
+// Method: QvisNoDefaultColorTableButton::getButtonType
+//
+// Purpose: 
+//   Returns the button type (continuous or discrete).
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Jul 13 14:48:42 PDT 2022
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const int
+QvisNoDefaultColorTableButton::getButtonType() const
+{
+    return buttonType;
 }
 
 //
@@ -434,7 +453,8 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
 {
     for(size_t i = 0; i < buttons.size(); ++i)
     {
-        if (getColorTableIndex(buttons[i]->getColorTable()) != -1)
+        if (getColorTableIndex(
+            buttons[i]->getColorTable(), buttons[i]->getButtonType()) != -1)
         {
             buttons[i]->setIcon(getIcon(buttons[i]->text()));
         }
@@ -452,6 +472,7 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
 //
 // Arguments:
 //   ctName : The name of the color table to look for.
+//   whichButton : The index of the ct button.
 //
 // Returns:    The index of the color table, or -1.
 //
@@ -461,16 +482,18 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
 // Modifications:
 //   Kathleen Biagas, Mon Aug  4 15:59:18 PDT 2014
 //   Use the indexOf method for QStringList.
+// 
+//   Justin Privitera, Wed Jul 13 14:48:42 PDT 2022
+//   Added the whichButton argument to take into account the fact that there
+//   are 2 buttons with different colorTableNames.
 //   
 // ****************************************************************************
 
 int
-QvisNoDefaultColorTableButton::getColorTableIndex(const QString &ctName)
+QvisNoDefaultColorTableButton::getColorTableIndex(const QString &ctName,
+                                                  const int whichButton)
 {
-    int index_d = colorTableNames[DISC].indexOf(ctName);
-    int index_c = colorTableNames[CONT].indexOf(ctName);
-    // There shouldn't be any overlap, so this should be fine.
-    return index_d != -1 ? index_d : index_c;
+    return colorTableNames[whichButton].indexOf(ctName);
 }
 
 // ****************************************************************************
@@ -495,6 +518,10 @@ QvisNoDefaultColorTableButton::getColorTableIndex(const QString &ctName)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories/grouping.
+// 
+//   Justin Privitera, Wed Jul 13 14:48:42 PDT 2022
+//   Most member vars this function deals with are now arrays, so indexing
+//   was added.
 //
 // ****************************************************************************
 
@@ -530,6 +557,8 @@ QvisNoDefaultColorTableButton::regeneratePopupMenu()
 // Creation:   Wed Apr 25 16:04:54 PDT 2012
 //
 // Modifications:
+//   Justin Privitera, Wed Jul 13 14:48:42 PDT 2022
+//   Modified to handle the fact that there are now two lists of actions.
 //
 // ****************************************************************************
 
@@ -538,10 +567,10 @@ QvisNoDefaultColorTableButton::getIcon(const QString &ctName)
 {
     QList<QAction*> a1 = colorTableMenuActionGroup[DISC]->actions();
     QList<QAction*> a2 = colorTableMenuActionGroup[CONT]->actions();
-    for (int i = 0; i < a1.size(); ++i)
+    for (int i = 0; i < a1.size(); i ++)
         if (a1[i]->text() == ctName)
             return a1[i]->icon();
-    for (int i = 0; i < a2.size(); ++i)
+    for (int i = 0; i < a2.size(); i ++)
         if (a2[i]->text() == ctName)
             return a2[i]->icon();
 
