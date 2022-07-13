@@ -104,6 +104,61 @@ using namespace mfem;
 //---------------------------------------------------------------------------//
 //---------------------------------------------------------------------------//
 
+//---------------------------------------------------------------------------//
+std::string
+ElementTypeToShapeName(Element::Type element_type)
+{
+   // Adapted from SidreDataCollection
+
+   // Note -- the mapping from Element::Type to string is based on
+   //   enum Element::Type { POINT, SEGMENT, TRIANGLE, QUADRILATERAL,
+   //                        TETRAHEDRON, HEXAHEDRON };
+   // Note: -- the string names are from conduit's blueprint
+
+   switch (element_type)
+   {
+      case Element::POINT:          return "point";
+      case Element::SEGMENT:        return "line";
+      case Element::TRIANGLE:       return "tri";
+      case Element::QUADRILATERAL:  return "quad";
+      case Element::TETRAHEDRON:    return "tet";
+      case Element::HEXAHEDRON:     return "hex";
+      // not yet supported:
+      case Element::WEDGE:       return "unknown";
+      
+   }
+   
+
+   return "unknown";
+}
+
+// ****************************************************************************
+static int
+ElementShapeNameToVTKCellType(const std::string &shape_name)
+{
+    if (shape_name == "point") return VTK_VERTEX;
+    if (shape_name == "line")  return VTK_LINE;
+    if (shape_name == "tri")   return VTK_TRIANGLE;
+    if (shape_name == "quad")  return VTK_QUAD;
+    if (shape_name == "hex")   return VTK_HEXAHEDRON;
+    if (shape_name == "tet")   return VTK_TETRA;
+    BP_PLUGIN_INFO("Warning: Unsupported Element Shape: " << shape_name);
+    return 0;
+}
+
+// ****************************************************************************
+static int
+VTKCellTypeSize(int cell_type)
+{
+    if (cell_type == VTK_VERTEX)     return 1;
+    if (cell_type == VTK_LINE)       return 2;
+    if (cell_type == VTK_TRIANGLE)   return 3;
+    if (cell_type == VTK_QUAD)       return 4;
+    if (cell_type == VTK_HEXAHEDRON) return 8;
+    if (cell_type == VTK_TETRA)      return 4;
+    return 0;
+}
+
 // ****************************************************************************
 //  Method: LegacyRefineMeshToVTK
 //

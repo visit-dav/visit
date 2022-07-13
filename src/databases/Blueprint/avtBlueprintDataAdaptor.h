@@ -9,6 +9,11 @@
 #ifndef AVT_BLUEPRINT_DATA_ADAPTOR_H
 #define AVT_BLUEPRINT_DATA_ADAPTOR_H
 
+// NOTE: This is from avtblueprint lib
+#include "avtConduitBlueprintDataAdaptor.h"
+// NOTE: This is from avtmfem lib
+#include "avtMFEMDataAdaptor.h"
+
 //-----------------------------------------------------------------------------
 // conduit includes
 //-----------------------------------------------------------------------------

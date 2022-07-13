@@ -1575,9 +1575,9 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("mesh  " << topo_name << " is a mfem mesh");
         // use mfem to refine and create a vtk dataset
         mfem::Mesh *mesh = avtBlueprintDataAdaptor::MFEM::MeshToMFEM(data);
-        res = avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mesh, 
-                                                             m_selected_lod+1,
-                                                             m_new_refine);
+        res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh, 
+                                                  m_selected_lod+1,
+                                                  m_new_refine);
 
         // cleanup the mfem mesh
         delete mesh;
@@ -1587,7 +1587,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         BP_PLUGIN_INFO("mesh  " << topo_name << " is a standard mesh");
         // construct a vtk dataset directly from blueprint data
         // in a conduit tree
-        res = avtBlueprintDataAdaptor::VTK::MeshToVTK(domain, data);
+        res = avtConduitBlueprintDataAdaptor::MeshToVTK(domain, data);
     }
 
     BP_PLUGIN_INFO("avtBlueprintFileFormat::GetMesh Done");
@@ -1671,9 +1671,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         // create an mfem mesh
         mfem::Mesh *mesh = avtBlueprintDataAdaptor::MFEM::MeshToMFEM(n_mesh);
         // refine the coloring to a vtk data array
-        res = avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mesh,
-                                                                        domain,
-                                                                        m_selected_lod+1);
+        res = avtMFEMDataAdaptor::RefineElementColoringToVTK(mesh,
+                                                             domain,
+                                                             m_selected_lod+1);
         // clean up the mfem mesh
         delete mesh;
 
@@ -1784,7 +1784,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         }
 
         // low-order case, use vtk
-        res = avtBlueprintDataAdaptor::VTK::FieldToVTK(*field_ptr);
+        res = avtConduitBlueprintDataAdaptor::FieldToVTK(*field_ptr);
     }
     // if we have a basis, this field is actually an mfem grid function
     else if(field_ptr->has_child("basis"))
@@ -1825,10 +1825,10 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         mfem::GridFunction *gf =  avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mesh,
                                                                              *field_ptr);
         // refine the grid function into a vtk data array
-        res =  avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mesh,
-                                                                      gf,
-                                                                      m_selected_lod+1,
-                                                                      m_new_refine);
+        res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,
+                                                          gf,
+                                                          m_selected_lod+1,
+                                                          m_new_refine);
 
         // cleanup mfem data
         delete gf;

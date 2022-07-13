@@ -9,11 +9,6 @@
 
 #include "avtBlueprintDataAdaptor.h"
 
-// NOTE: This is from avtblueprint lib
-#include "avtConduitBlueprintDataAdaptor.h"
-// NOTE: This is from avtmfem lib
-#include "avtMFEMDataAdaptor.h"
-
 //-----------------------------------------------------------------------------
 // vtk includes
 //-----------------------------------------------------------------------------
@@ -132,35 +127,6 @@ ElementShapeNameToMFEMShape(const std::string &shape_name)
         BP_PLUGIN_WARNING("Unsupported Element Shape: " << shape_name);
 
     return res;
-}
-
-
-//---------------------------------------------------------------------------//
-std::string
-ElementTypeToShapeName(Element::Type element_type)
-{
-   // Adapted from SidreDataCollection
-
-   // Note -- the mapping from Element::Type to string is based on
-   //   enum Element::Type { POINT, SEGMENT, TRIANGLE, QUADRILATERAL,
-   //                        TETRAHEDRON, HEXAHEDRON };
-   // Note: -- the string names are from conduit's blueprint
-
-   switch (element_type)
-   {
-      case Element::POINT:          return "point";
-      case Element::SEGMENT:        return "line";
-      case Element::TRIANGLE:       return "tri";
-      case Element::QUADRILATERAL:  return "quad";
-      case Element::TETRAHEDRON:    return "tet";
-      case Element::HEXAHEDRON:     return "hex";
-      // not yet supported:
-      case Element::WEDGE:       return "unknown";
-      
-   }
-   
-
-   return "unknown";
 }
 
 
