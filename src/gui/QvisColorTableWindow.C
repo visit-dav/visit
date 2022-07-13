@@ -173,6 +173,10 @@ QvisColorTableWindow::~QvisColorTableWindow()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Completely redid the gui to remove categories and add tags.
+// 
+//   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
+//   Called `QvisNoDefaultColorTableButton` constructor with its new boolean
+//   argument that signals if the button is discrete or continuous.
 //
 // ****************************************************************************
 

@@ -52,6 +52,10 @@ ColorTableAttributes *QvisNoDefaultColorTableButton::colorTableAtts = NULL;
 //
 //   Brad Whitlock, Fri May  9 11:23:57 PDT 2008
 //   Qt 4.
+// 
+//   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
+//   Added `discrete` boolean argument to set the buttonType to 
+//   discrete or continuous. Used it to index into arrays.
 //
 // ****************************************************************************
 
@@ -92,6 +96,10 @@ QvisNoDefaultColorTableButton::QvisNoDefaultColorTableButton(QWidget *parent,
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed mappedColorTableNames.
+// 
+//   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
+//   Deleted only the static pieces of the button that belong to the button 
+//   being deleted.
 //
 // ****************************************************************************
 
@@ -198,6 +206,9 @@ QvisNoDefaultColorTableButton::sizePolicy() const
 //
 //   Brad Whitlock, Tue Jan 17 11:41:44 PDT 2006
 //   Added a tooltip so long color table names can be put in a tooltip.
+// 
+//   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
+//   Using buttonType to index into the array vars.
 //
 // ****************************************************************************
 
@@ -278,6 +289,8 @@ QvisNoDefaultColorTableButton::getButtonType() const
 // Creation:   Sat Jun 16 20:10:16 PST 2001
 //
 // Modifications:
+//    Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
+//    Index into all the vars since they are now arrays.
 //   
 // ****************************************************************************
 
@@ -290,6 +303,11 @@ QvisNoDefaultColorTableButton::popupPressed()
         if (!popupHasEntries[buttonType])
             regeneratePopupMenu();
 
+        QPoint p1(mapToGlobal(rect().bottomLeft()));
+        QPoint p2(mapToGlobal(rect().topRight()));
+        QPoint buttonMiddle(p1.x() + ((p2.x() - p1.x()) >> 1),
+                            p1.y() + ((p2.y() - p1.y()) >> 1));
+
         // Disconnect all other color table buttons.
         for(size_t i = 0; i < buttons.size(); ++i)
             disconnect(colorTableMenuActionGroup[buttonType], SIGNAL(triggered(QAction *)),
@@ -297,11 +315,6 @@ QvisNoDefaultColorTableButton::popupPressed()
         // Connect this colorbutton to the popup menu.
         connect(colorTableMenuActionGroup[buttonType], SIGNAL(triggered(QAction *)),
                 this, SLOT(colorTableSelected(QAction *)));
-
-        QPoint p1(mapToGlobal(rect().bottomLeft()));
-        QPoint p2(mapToGlobal(rect().topRight()));
-        QPoint buttonMiddle(p1.x() + ((p2.x() - p1.x()) >> 1),
-                            p1.y() + ((p2.y() - p1.y()) >> 1));
 
         // Figure out a good place to popup the menu.
         int menuW = colorTableMenu[buttonType]->sizeHint().width();
@@ -353,6 +366,9 @@ QvisNoDefaultColorTableButton::popupPressed()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories/grouping.
+// 
+//   Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
+//   Index into the vars since they are now arrays.
 //
 // ****************************************************************************
 
@@ -384,6 +400,9 @@ QvisNoDefaultColorTableButton::colorTableSelected(QAction *action)
 // Modifications:
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed mappedColorTableNames.
+// 
+//   Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
+//   Clear out both lists of color table names and set both popup bools.
 //   
 // ****************************************************************************
 
@@ -417,6 +436,9 @@ QvisNoDefaultColorTableButton::clearAllColorTables()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed category arg and removed mappedColorTableNames.
+// 
+//   Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
+//   Figure out the right destination for incoming ctNames.
 //
 // ****************************************************************************
 
@@ -445,6 +467,9 @@ QvisNoDefaultColorTableButton::addColorTable(const QString &ctName)
 // Modifications:
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Handle the case where the color tables are gone by doing nothing.
+// 
+//   Justin Privitera, Wed Jul 13 15:19:47 PDT 2022
+//   Added call to getbuttontype() to specify which button.
 //   
 // ****************************************************************************
 

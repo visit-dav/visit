@@ -5073,6 +5073,10 @@ ViewerSubject::HandleSILAttsUpdated(const string &host,
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed category from call to addColorTable().
+// 
+//   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
+//   Added `setColorTableAttributes` call for the QvisColorTableButton and
+//   QvisNoDefaultColorTableButton.
 //
 // ****************************************************************************
 
