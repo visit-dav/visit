@@ -274,17 +274,17 @@ QvisColorTableWindow::CreateWindowContents()
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
     connect(nameLineEdit, SIGNAL(textEdited(const QString &)),
             this, SLOT(searchEdited(const QString &)));
-    mgLayout->addWidget(nameLineEdit, 4, 1, 1, 5);
+    mgLayout->addWidget(nameLineEdit, 4, 1, 1, 2);
+
+    searchToggle = new QCheckBox(tr("Enable Searching"), colorTableWidgetGroup);
+    connect(searchToggle, SIGNAL(toggled(bool)),
+            this, SLOT(searchingToggled(bool)));
+    mgLayout->addWidget(searchToggle, 4, 3, 1, 3);
 
     tagLabel = new QLabel(tr("Tags"), colorTableWidgetGroup);
     mgLayout->addWidget(tagLabel, 5, 0, 1, 1, Qt::AlignLeft);
     tagLineEdit = new QLineEdit(colorTableWidgetGroup);
     mgLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
-
-    searchToggle = new QCheckBox(tr("Enable Searching"), colorTableWidgetGroup);
-    connect(searchToggle, SIGNAL(toggled(bool)),
-            this, SLOT(searchingToggled(bool)));
-    mgLayout->addWidget(searchToggle, 6, 0, 1, 6);
 
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
