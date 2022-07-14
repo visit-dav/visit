@@ -9,7 +9,7 @@
 
 class JobSubmitter_qsub_NCI(JobSubmitter_qsub):
     def __init__(self, launcher):
-        super(JobSubmitter_qsub, self).__init__(launcher)
+    	super(JobSubmitter_qsub, self).__init__(launcher)
 
     def CreateFilename(self, root):
         tdate = time.asctime().replace(" ", "-")
@@ -35,9 +35,6 @@ class JobSubmitter_qsub_NCI(JobSubmitter_qsub):
 
         parcmd = parcmd + self.SetupTime()
         parcmd = parcmd + self.AdditionalSetup()
-
-        if self.usettc:
-            parcmd = parcmd + ["-l", "ttc=%s" % self.parallel.np]
 
         if self.parallel.partition != None:
             parcmd = parcmd + ["-q", self.parallel.partition]
@@ -68,7 +65,7 @@ class NCILauncher(MainLauncher):
     # be returned.
     #
     def JobSubmitterFactory(self, launch):
-        if launch[:4] == "qsub" or launch[:4] == "msub":
+        if launch[:4] == "qsub":
             return JobSubmitter_qsub_NCI(self)
         return super(NCILauncher, self).JobSubmitterFactory(launch)
 

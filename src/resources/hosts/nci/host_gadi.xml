@@ -4,7 +4,7 @@
     <Field name="host" type="string">gadi.nci.org.au</Field>
     <Field name="userName" type="string">YOUR_USERNAME</Field>
     <Field name="hostAliases" type="string">gadi-login-##</Field>
-    <Field name="directory" type="string">/g/data/YOUR_PROJECT_CODE/YOUR_USERNAME/visit3_2_2</Field>
+    <Field name="directory" type="string">/g/data/YOUR_PROJECT_CODE/YOUR_USERNAME/visit3_2_2.linux-x86_64</Field>
     <Field name="shareOneBatchJob" type="bool">false</Field>
     <Field name="sshPortSpecified" type="bool">false</Field>
     <Field name="sshPort" type="int">22</Field>
