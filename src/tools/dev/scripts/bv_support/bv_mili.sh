@@ -74,8 +74,8 @@ function apply_mili_151_darwin_patch1
 {
     info "Applying Mili 15.1 darwin patch 1."
     patch -p0 << \EOF
-diff -c mili/src/mesh_u.c mili.patched/src/mesh_u.c
-*** mili/src/mesh_u.c   2015-09-22 13:20:42.000000000 -0700
+diff -c mili-22.1/src/mesh_u.c mili.patched/src/mesh_u.c
+*** mili-22.1/src/mesh_u.c   2015-09-22 13:20:42.000000000 -0700
 --- mili.patched/src/mesh_u.c   2015-10-19 12:44:52.000000000 -0700
 ***************
 *** 14,20 ****
@@ -107,7 +107,7 @@ function apply_mili_151_darwin_patch2
 {
     info "Applying Mili 15.1 darwin patch 2."
     patch -p0 << \EOF
-*** mili/Makefile.Library       2013-12-10 12:55:55.000000000 -0800
+*** mili-22.1/Makefile.Library       2013-12-10 12:55:55.000000000 -0800
 --- mili.patched/Makefile.Library       2015-10-20 13:37:27.000000000 -0700
 ***************
 *** 386,393 ****
@@ -131,9 +131,10 @@ EOF
 
 function apply_mili_151_darwin_patch3
 {
+    return 0
     info "Applying Mili 15.1 darwin patch 3."
     patch -p0 << \EOF
-*** mili/src/mili_internal.h    2015-09-17 13:26:32.000000000 -0700
+*** mili-22.1/src/mili_internal.h    2015-09-17 13:26:32.000000000 -0700
 --- mili.patched/src/mili_internal.h    2015-10-20 16:57:21.000000000 -0700
 ***************
 *** 534,542 ****
@@ -478,18 +479,29 @@ function build_mili
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
     fi
 
-    # The 19.2 configure script does not play well with our fortran mac patch.
-    # We can use an older configure script that includes this patch already.
+    F77_ARG=""
+    TYPEDEFS_ARG=""
     config_script=configure
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ ${MILI_VERSION} == 19.2 && "$OPSYS" == "Darwin" ]]; then
         config_script=configure_15_1
+    elif [[ ${MILI_VERSION} == 22.1 ]] ; then
+        # Mili 22.1 configure expects fortran compiler even if no intention to use it.
+        # We spoof fortran compiler here to fool configure.
+       cat << EOF > spoof_f77.sh
+#!/bin/sh
+echo "#!/bin/sh" > conftest.out
+chmod 755 conftest.out
+EOF
+        chmod 755 spoof_f77.sh
+        F77_ARG="F77=./spoof_f77.sh"
+        TYPEDEFS_ARG="ac_cv_type_mode_t=yes ac_cv_type_off_t=yes ac_cv_type_size_t=yes"
     fi
 
     info "Invoking command to configure Mili"
     set -x
     ./${config_script} CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-                ac_cv_prog_FOUND_GMAKE=make $extra_ac_flags \
+                ac_cv_prog_FOUND_GMAKE=make $extra_ac_flags $F77_ARG $TYPEDEFS_ARG \
                 --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     set +x
     if [[ $? != 0 ]] ; then
@@ -528,7 +540,7 @@ function build_mili
         fi
     elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2 || ${MILI_VERSION} == 22.1 ]] ; then
         cd MILI-*-*
-        make opt fortran=false
+        $MAKE opt fortran=false
     fi
 
     #
