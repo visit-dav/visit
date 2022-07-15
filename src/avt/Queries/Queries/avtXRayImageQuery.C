@@ -1605,13 +1605,15 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         ipixel++;
     }
 
+    std::stringstream fileName;
+    fileName << baseName << std::setfill('0') << std::setw(2) << iImage;
+
     if (outputType == BMP_OUT)
     {
         vtkImageWriter *writer = vtkBMPWriter::New();
-        char fileName[1024];
-        // TODO USE MAKE THESE INTO STRING STREAMS
-        sprintf(fileName, "%s%02d.bmp", baseName, iImage);
-        writer->SetFileName(fileName);
+        std::stringstream fileName;
+        fileName << ".bmp";
+        writer->SetFileName(fileName.str());
         writer->SetInputData(image);
         writer->Write();
         writer->Delete();
@@ -1619,8 +1621,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
     else if (outputType == JPEG_OUT)
     {
         vtkImageWriter *writer = vtkJPEGWriter::New();
-        char fileName[1024];
-        sprintf(fileName, "%s%02d.jpg", baseName, iImage);
+        fileName << ".jpg";
         writer->SetFileName(fileName);
         writer->SetInputData(image);
         writer->Write();
@@ -1629,8 +1630,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
     else if (outputType == PNG_OUT)
     {
         vtkImageWriter *writer = vtkPNGWriter::New();
-        char fileName[1024];
-        sprintf(fileName, "%s%02d.png", baseName, iImage);
+        fileName << ".png";
         writer->SetFileName(fileName);
         writer->SetInputData(image);
         writer->Write();
@@ -1639,8 +1639,7 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
     else if (outputType == TIF_OUT)
     {
         vtkImageWriter *writer = vtkTIFFWriter::New();
-        char fileName[1024];
-        sprintf(fileName, "%s%02d.tif", baseName, iImage);
+        fileName << ".tif";
         writer->SetFileName(fileName);
         writer->SetInputData(image);
         writer->Write();
