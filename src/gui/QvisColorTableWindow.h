@@ -87,6 +87,11 @@ class QvisNoDefaultColorTableButton;
 //   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //   Added new function `AddToTagTable()`.
 // 
+//   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
+//   Added search capabilities for color tables. In this file, added boolean
+//   `searchingOn`, QString `searchTerm`, QCheckBox `searchToggle`, and 
+//   functions `searchingToggled` and `searchEdited`.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver

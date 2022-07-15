@@ -70,6 +70,9 @@
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added new tag-related vars to constructor.
+// 
+//   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
+//   Added new searching-related vars to the constructor.
 //
 // ****************************************************************************
 
@@ -175,6 +178,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Completely redid the gui to remove categories and add tags.
+// 
+//   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
+//   Added searchbox gui element and hooked up signals and slots for searching.
 //
 // ****************************************************************************
 
@@ -941,6 +947,10 @@ QvisColorTableWindow::UpdateTags()
 // 
 //   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //   Refactored the block that fills the namelistbox.
+// 
+//   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
+//   Added logic for searching for color tables. Now there is a search filter
+//   applied at the end of the function.
 //
 // ****************************************************************************
 
