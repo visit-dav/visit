@@ -455,3 +455,18 @@ The following is a list of all the tags that appear in VisIt_'s current set of c
 * Discrete
 * User Defined
 * No Tags
+
+Searching for Color Tables
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Another option for finding the right color table is to enable searching. 
+With this option, users can type a search term into the **Name** text box, and only color tables that have a name containing that term will appear in the color table name table.
+
+To enable searching, check the box for it to the right of the **Name** text box.
+While searching is enabled, searching will happen automatically each time the **Name** text box is edited.
+If a selection is made from the color table name table, searching will temporarily pause.
+However, as soon as the **Name** text box is edited once more, searching will resume as before.
+The only way to stop searching is to disable it via the check box.
+
+Searching also works in tandem with the tagging system. 
+So, if tagging is enabled, only results from a search which have the specified tags will appear in the color table name table.
