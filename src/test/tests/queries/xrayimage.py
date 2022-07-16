@@ -361,17 +361,41 @@ DeleteAllPlots()
 CloseDatabase(conduit_db)
 os.remove(conduit_db)
 
-# new tests
-# 1) test output messages when sending results to an output directory
-# 2) testing catching conduit error when writing blueprint output
-#     - visit seems to fail silently in scripts
-#     - cannot do chmod in script, perhaps need to do it in tmp?
+# 
+# test catching failures
+# 
 
-# outdir_bad = "/tmp/baddir"
-# if not os.path.isdir(outdir_bad):
-#     os.mkdir(outdir_bad)
-# os.chmod(outdir_bad, 0o444)
+# write to dir that does not exist
 
-# # I can't catch failures?
+dir_dne = outdir_set + "/doesnotexist"
+if os.path.isdir(dir_dne):
+    os.rmdir(dir_dne)
+
+OpenDatabase(silo_data_path("curv3d.silo"))
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+
+Query("XRay Image", "hdf5", dir_dne, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+s = GetQueryOutputString()
+TestText("xrayimage35", s)
+DeleteAllPlots()
+CloseDatabase(silo_data_path("curv3d.silo"))
+
+# write to dir w/ read only permissions
+
+outdir_bad = "/tmp/baddir"
+if not os.path.isdir(outdir_bad):
+    os.mkdir(outdir_bad)
+os.chmod(outdir_bad, 0o444)
+
+OpenDatabase(silo_data_path("curv3d.silo"))
+AddPlot("Pseudocolor", "d")
+DrawPlots()
+
+Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+s = GetQueryOutputString()
+TestText("xrayimage36", s)
+DeleteAllPlots()
+CloseDatabase(silo_data_path("curv3d.silo"))
 
 Exit()

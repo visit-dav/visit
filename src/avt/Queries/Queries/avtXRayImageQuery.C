@@ -958,6 +958,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     {
         std::ostringstream err_oss;
         err_oss << "Output type " << outputType << " is invalid.\n";
+        SetResultMessage(err_oss.str());
         EXCEPTION1(VisItException, err_oss.str());
     }
     // It would be nice to have something that could check the validity of the 
@@ -968,6 +969,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     {
         std::ostringstream err_oss;
         err_oss << "Directory " << outputDir << " does not exist.\n";
+        SetResultMessage(err_oss.str());
         EXCEPTION1(VisItException, err_oss.str());
     }
 #endif
@@ -1062,6 +1064,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             delete [] leaves;
             delete filt;
 
+            SetResultMessage("There must be at least one bin.");
             EXCEPTION1(VisItException, "There must be at least one bin.");
         }
 
@@ -1277,6 +1280,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 std::ostringstream err_oss;
                 err_oss << "VTKDataType " << datatype << " is not supported.\n";
+                SetResultMessage(err_oss.str());
                 EXCEPTION1(VisItException, err_oss.str());
             }
 
@@ -1314,6 +1318,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             if(!conduit::blueprint::mesh::verify(data_out, verify_info))
             {
                 verify_info.print();
+                SetResultMessage("Blueprint mesh verification failed!");
                 EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
             }
 
@@ -1356,6 +1361,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 err_oss <<  "Conduit Exception in X Ray Image Query "
                             << "Execute: " << endl
                             << e.message();
+                SetResultMessage(err_oss.str());
                 EXCEPTION1(VisItException, err_oss.str());
             }
             
@@ -1367,6 +1373,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                         << "which is needed for output type "
                         << file_protocols[outputType]
                         << "." << std::endl;
+            SetResultMessage(err_oss.str());
             EXCEPTION1(VisItException, err_oss.str());
 #endif
         }
@@ -1377,6 +1384,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             err_oss << "No logic implemented for output type "
                         << file_protocols[outputType]
                         << "." << std::endl;
+            SetResultMessage(err_oss.str());
             EXCEPTION1(VisItException, err_oss.str());
         }
 
@@ -1428,6 +1436,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 std::ostringstream err_oss;
                 err_oss << "No output message implemented for output type "
                             << file_protocols[outputType] << "." << std::endl;
+                SetResultMessage(err_oss.str());
                 EXCEPTION1(VisItException, err_oss.str());
 
             }
@@ -1528,15 +1537,18 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
         {
             if(isArgException)
             {
+                SetResultMessage(isAbs ? absVarName : emisVarName);
                 EXCEPTION1(QueryArgumentException, isAbs ? absVarName.c_str() : emisVarName.c_str());
             }
             else
             {
+                SetResultMessage(msg.str());
                 EXCEPTION1(ImproperUseException, msg.str());
             }
         }
         else
         {
+            SetResultMessage("Exception encountered on another node");
             EXCEPTION1(VisItException, "Exception encountered on another node");
         }
     }
@@ -1547,6 +1559,7 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
     {
         msg << "Variables " << absVarName << " and " << emisVarName 
             << " resulted in no data being selected.\n";
+        SetResultMessage(msg.str());
         EXCEPTION1(VisItException, msg.str());
     }
 }
