@@ -87,6 +87,8 @@
 #include "ExpressionList.h"
 #include "UnexpectedValueException.h"
 
+#include "avtMFEMLogging.h"
+
 #include "mfem.hpp"
 
 using std::string;

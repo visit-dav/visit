@@ -80,6 +80,8 @@
 #include <vtkTetra.h>
 #include <vtkPoints.h>
 
+#include "avtConduitBlueprintLogging.h"
+
 using std::string;
 using namespace conduit;
 
