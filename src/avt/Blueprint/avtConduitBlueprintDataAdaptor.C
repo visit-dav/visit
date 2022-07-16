@@ -104,7 +104,7 @@ ElementShapeNameToVTKCellType(const std::string &shape_name)
     if (shape_name == "quad")  return VTK_QUAD;
     if (shape_name == "hex")   return VTK_HEXAHEDRON;
     if (shape_name == "tet")   return VTK_TETRA;
-    BP_PLUGIN_INFO("Warning: Unsupported Element Shape: " << shape_name);
+    AVT_CONDUIT_BP_INFO("Warning: Unsupported Element Shape: " << shape_name);
     return 0;
 }
 
@@ -133,7 +133,7 @@ VTKCellTypeToElementShapeName(const int vtk_cell_type)
     if (vtk_cell_type == VTK_VOXEL)      return "hex";
     if (vtk_cell_type == VTK_TETRA)      return "tet";
 
-    BP_PLUGIN_INFO("Warning: Unsupported vtkCellType : " << vtk_cell_type);
+    AVT_CONDUIT_BP_INFO("Warning: Unsupported vtkCellType : " << vtk_cell_type);
     return "";
 }
 
@@ -216,7 +216,7 @@ Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
 vtkDataArray *
 ConduitArrayToVTKDataArray(const conduit::Node &n)
 {
-    BP_PLUGIN_INFO("Creating VTKDataArray from Node");
+    AVT_CONDUIT_BP_INFO("Creating VTKDataArray from Node");
     vtkDataArray *retval = NULL;
 
 
@@ -232,8 +232,8 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Node v_info;
         if(!blueprint::mcarray::verify(n,v_info))
         {
-            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                                 "Node is not a mcarray " << v_info.to_yaml());
+            AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                      "Node is not a mcarray " << v_info.to_yaml());
         }
 
         // in this case, each child is a component of the array
@@ -249,8 +249,8 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     // get the number of tuples
     ntuples = (int) vals_dtype.number_of_elements();
 
-    BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ntuples << " "
-                    << " num_comps = " << ncomps);
+    AVT_CONDUIT_BP_INFO("VTKDataArray num_tuples = " << ntuples << " "
+                        << " num_comps = " << ncomps);
 
     if (vals_dtype.is_unsigned_char())
     {
@@ -355,9 +355,9 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     }
     else
     {
-        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                             "Conduit Array to VTK Data Array"
-                             "unsupported data type: " << n.dtype().name());
+        AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                  "Conduit Array to VTK Data Array"
+                                  "unsupported data type: " << n.dtype().name());
     }
     return retval;
 }
@@ -530,7 +530,7 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
 {
     vtkRectilinearGrid *rectgrid = vtkRectilinearGrid::New();
 
-    BP_PLUGIN_INFO(n_coords.to_yaml());
+    AVT_CONDUIT_BP_INFO(n_coords.to_yaml());
 
     int nx[3];
     nx[0] = n_coords["dims"].has_child("i") ? n_coords["dims/i"].to_int() : 1;
@@ -606,9 +606,9 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
             da = vtkDoubleArray::New();
         else
         {
-            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                                 "Conduit Blueprint to Rectilinear Grid coordinates "
-                                 "unsupported data type: " << dt.name());
+            AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                      "Conduit Blueprint to Rectilinear Grid coordinates "
+                                      "unsupported data type: " << dt.name());
         }
 
         da->SetNumberOfTuples(nx[i]);
@@ -804,7 +804,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
             #else
                 Node about;
                 conduit::about(about);
-                BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
                     "VisIt Blueprint Plugin requires Conduit >= 0.8.0 to read polytopal meshes."
                     "VisIt was built with Conduit version:"  << about["version"].as_string());
             #endif
@@ -855,7 +855,7 @@ avtConduitBlueprintDataAdaptor::MeshToVTK(int domain,
     //NOTE: this assumes one coordset and one topo
     // that is the case for the blueprint plugin, but may not be the case
     // generally if we want to reuse this code.
-    BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet Begin");
+    AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet Begin");
 
     const Node &n_coords = n_mesh["coordsets"][0];
     const Node &n_topo   = n_mesh["topologies"][0];
@@ -864,40 +864,40 @@ avtConduitBlueprintDataAdaptor::MeshToVTK(int domain,
 
     if (n_coords["type"].as_string() == "uniform")
     {
-        BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet UniformCoordsToVTKRectilinearGrid");
+        AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet UniformCoordsToVTKRectilinearGrid");
         res = UniformCoordsToVTKRectilinearGrid(n_coords);
     }
     else if (n_coords["type"].as_string() == "rectilinear")
     {
-        BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet RectilinearCoordsToVTKRectilinearGrid");
+        AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet RectilinearCoordsToVTKRectilinearGrid");
         res = RectilinearCoordsToVTKRectilinearGrid(n_coords);
     }
     else if (n_coords["type"].as_string() == "explicit")
     {
         if (n_topo["type"].as_string() == "structured")
         {
-            BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet StructuredTopologyToVTKStructuredGrid");
+            AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet StructuredTopologyToVTKStructuredGrid");
             res = StructuredTopologyToVTKStructuredGrid(n_coords, n_topo);
         }
         else if (n_topo["type"].as_string() == "points")
         {
-            BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet PointsTopologyToVTKUnstructuredGrid");
+            AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet PointsTopologyToVTKUnstructuredGrid");
             res = PointsTopologyToVTKUnstructuredGrid(n_coords, n_topo);
         }
         else
         {
-            BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet UnstructuredTopologyToVTKUnstructuredGrid");
+            AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet UnstructuredTopologyToVTKUnstructuredGrid");
             res = UnstructuredTopologyToVTKUnstructuredGrid(domain, n_coords, n_topo);
         }
     }
     else
     {
-        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                              "expected Coordinate type of \"uniform\", \"rectilinear\", or \"explicit\""
-                              << " but found " << n_coords["type"].as_string());
+        AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                                  "expected Coordinate type of \"uniform\", \"rectilinear\", or \"explicit\""
+                                  << " but found " << n_coords["type"].as_string());
     }
 
-    BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet End");
+    AVT_CONDUIT_BP_INFO("BlueprintVTK::MeshToVTKDataSet End");
 
     return res;
 }
@@ -1048,8 +1048,8 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 
   if(nzones == 0)
   {
-    BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                         "Unstructured grids must have at least one zone");
+    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                              "Unstructured grids must have at least one zone");
   }
 
   bool single_shape = true;
@@ -1066,15 +1066,15 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 
   if(!single_shape)
   {
-    BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                         "Only usntructured grids with a single cell type is currently supported");
+    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                              "Only usntructured grids with a single cell type is currently supported");
   }
 
   const std::string shape_name = VTKCellTypeToElementShapeName(cell_type);
   if(shape_name == "")
   {
-    BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                         "Unsupported vtk cell type "<<cell_type);
+    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException,
+                              "Unsupported vtk cell type "<<cell_type);
   }
 
   node["shape"] = shape_name;
@@ -1193,7 +1193,7 @@ void avtConduitBlueprintDataAdaptor::VTKFieldsToBlueprint(conduit::Node &node,
          node[field_path + "/topology"] = topo_name;
 
          VTKDataArrayToNode(node[field_path + "/values"], arr);
-         BP_PLUGIN_INFO("VTKBlueprint:: converted point field "<<fname);
+         AVT_CONDUIT_BP_INFO("VTKBlueprint:: converted point field "<<fname);
     }
   }
 
@@ -1212,7 +1212,7 @@ void avtConduitBlueprintDataAdaptor::VTKFieldsToBlueprint(conduit::Node &node,
          node[field_path + "/association"] = "element";
          node[field_path + "/topology"] = topo_name;
 
-         BP_PLUGIN_INFO("VTKBlueprint:: converted cell field "<<fname);
+         AVT_CONDUIT_BP_INFO("VTKBlueprint:: converted cell field "<<fname);
          VTKDataArrayToNode(node[field_path + "/values"], arr);
     }
   }
@@ -1242,7 +1242,7 @@ avtConduitBlueprintDataAdaptor::VTKToBlueprint(conduit::Node &mesh,
 
    if (dataset->GetDataObjectType() == VTK_RECTILINEAR_GRID)
    {
-     BP_PLUGIN_INFO("VTKToBlueprint:: Rectilinear");
+     AVT_CONDUIT_BP_INFO("VTKToBlueprint:: Rectilinear");
       vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) dataset;
 
       mesh[coord_path+ "/type"] = "rectilinear";
@@ -1269,7 +1269,7 @@ avtConduitBlueprintDataAdaptor::VTKToBlueprint(conduit::Node &mesh,
    }
    else if (dataset->GetDataObjectType() == VTK_STRUCTURED_GRID)
    {
-     BP_PLUGIN_INFO("VTKToBlueprint:: StructuredGrid");
+     AVT_CONDUIT_BP_INFO("VTKToBlueprint:: StructuredGrid");
      vtkStructuredGrid *grid = (vtkStructuredGrid *) dataset;
 
      mesh[coord_path + "/type"] = "explicit";
@@ -1280,7 +1280,7 @@ avtConduitBlueprintDataAdaptor::VTKToBlueprint(conduit::Node &mesh,
 
      int dims[3];
      grid->GetCellDims(dims);
-     BP_PLUGIN_INFO("VTKBlueprint:: StructuredGrid4");
+     AVT_CONDUIT_BP_INFO("VTKBlueprint:: StructuredGrid4");
       if(ndims > 0)
       {
          mesh[topo_path+ "/elements/dims/i"] = dims[0];
@@ -1296,7 +1296,7 @@ avtConduitBlueprintDataAdaptor::VTKToBlueprint(conduit::Node &mesh,
    }
    else if (dataset->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
    {
-     BP_PLUGIN_INFO("VTKToBlueprint:: UntructuredGrid");
+     AVT_CONDUIT_BP_INFO("VTKToBlueprint:: UntructuredGrid");
      vtkUnstructuredGrid *grid = (vtkUnstructuredGrid *) dataset;
 
      mesh[coord_path + "/type"] = "explicit";

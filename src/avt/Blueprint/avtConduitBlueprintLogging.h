@@ -22,12 +22,12 @@
 /// Macros for info messages, warnings and and errors
 //-----------------------------------------------------------------------------
 
-#define BP_PLUGIN_INFO(  msg  )                                     \
+#define AVT_CONDUIT_BP_INFO(  msg  )                                \
 {                                                                   \
     CONDUIT_INFO( msg );                                            \
 }                                                                   \
 
-#define BP_PLUGIN_EXCEPTION1(  etype , msg )                        \
+#define AVT_CONDUIT_BP_EXCEPTION1(  etype , msg )                        \
 {                                                                   \
     std::ostringstream err_oss;                                     \
     err_oss << msg << std::endl;                                    \
