@@ -29,10 +29,10 @@
 
 #define BP_PLUGIN_EXCEPTION1(  etype , msg )                        \
 {                                                                   \
-    std::ostringstream err_oss;                                  \
-    err_oss << msg << std::endl;                                 \
+    std::ostringstream err_oss;                                     \
+    err_oss << msg << std::endl;                                    \
     debug1 << "[avtConduitBlueprint error] " << err_oss.str();      \
-    EXCEPTION1( etype  , err_oss.str() );                        \
+    EXCEPTION1( etype  , err_oss.str() );                           \
 }                                                                   \
 
 #endif
