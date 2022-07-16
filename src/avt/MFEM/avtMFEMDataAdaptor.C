@@ -38,46 +38,20 @@
 
 #include <avtMFEMDataAdaptor.h>
 #include <mfem.hpp>
-#include <vtkCellData.h>
-#include <vtkDataArray.h>
-#include <vtkDoubleArray.h>
 
 //-----------------------------------------------------------------------------
 // vtk includes
 //-----------------------------------------------------------------------------
+#include <vtkDoubleArray.h>
 #include <vtkUnstructuredGrid.h>
-
-
-#include "vtkCharArray.h"
-#include "vtkUnsignedCharArray.h"
-#include "vtkShortArray.h"
-#include "vtkUnsignedShortArray.h"
-#include "vtkIntArray.h"
-#include "vtkUnsignedIntArray.h"
-#include "vtkLongArray.h"
-#include "vtkUnsignedLongArray.h"
-#include "vtkLongLongArray.h"
-#include "vtkUnsignedLongLongArray.h"
 #include "vtkFloatArray.h"
-#include "vtkDoubleArray.h"
-
 #include "vtkCellArray.h"
-#include "vtkCellType.h"
-#include "vtkCellData.h"
 #include "vtkIdTypeArray.h"
-#include "vtkPoints.h"
-#include "vtkPointData.h"
-#include "vtkRectilinearGrid.h"
-#include "vtkStructuredGrid.h"
-#include "vtkUnstructuredGrid.h"
-
-#include <vtkCell.h>
 #include <vtkLine.h>
 #include <vtkTriangle.h>
 #include <vtkHexahedron.h>
 #include <vtkQuad.h>
 #include <vtkTetra.h>
-#include <vtkPoints.h>
 
 //-----------------------------------------------------------------------------
 // visit includes
