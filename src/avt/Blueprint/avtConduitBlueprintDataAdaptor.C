@@ -39,48 +39,29 @@
 #include <avtConduitBlueprintDataAdaptor.h>
 #include <conduit.hpp>
 #include <conduit_blueprint.hpp>
-#include <vtkCellData.h>
-#include <vtkDataArray.h>
-#include <vtkDoubleArray.h>
+#include "avtConduitBlueprintLogging.h"
 
 //-----------------------------------------------------------------------------
 // vtk includes
 //-----------------------------------------------------------------------------
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkUnstructuredGrid.h>
-
-
-#include "vtkCharArray.h"
-#include "vtkUnsignedCharArray.h"
-#include "vtkShortArray.h"
-#include "vtkUnsignedShortArray.h"
-#include "vtkIntArray.h"
-#include "vtkUnsignedIntArray.h"
-#include "vtkLongArray.h"
-#include "vtkUnsignedLongArray.h"
-#include "vtkLongLongArray.h"
-#include "vtkUnsignedLongLongArray.h"
-#include "vtkFloatArray.h"
-#include "vtkDoubleArray.h"
-
-#include "vtkCellArray.h"
-#include "vtkCellType.h"
-#include "vtkCellData.h"
-#include "vtkIdTypeArray.h"
-#include "vtkPoints.h"
-#include "vtkPointData.h"
-#include "vtkRectilinearGrid.h"
-#include "vtkStructuredGrid.h"
-#include "vtkUnstructuredGrid.h"
-
-#include <vtkCell.h>
-#include <vtkLine.h>
-#include <vtkTriangle.h>
-#include <vtkHexahedron.h>
-#include <vtkQuad.h>
-#include <vtkTetra.h>
-#include <vtkPoints.h>
-
-#include "avtConduitBlueprintLogging.h"
+#include <vtkCharArray.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkShortArray.h>
+#include <vtkUnsignedShortArray.h>
+#include <vtkIntArray.h>
+#include <vtkUnsignedIntArray.h>
+#include <vtkLongArray.h>
+#include <vtkUnsignedLongArray.h>
+#include <vtkFloatArray.h>
+#include <vtkCellArray.h>
+#include <vtkIdTypeArray.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
 
 using std::string;
 using namespace conduit;
