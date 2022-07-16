@@ -144,7 +144,7 @@ ElementShapeNameToVTKCellType(const std::string &shape_name)
     if (shape_name == "quad")  return VTK_QUAD;
     if (shape_name == "hex")   return VTK_HEXAHEDRON;
     if (shape_name == "tet")   return VTK_TETRA;
-    BP_PLUGIN_INFO("Warning: Unsupported Element Shape: " << shape_name);
+    AVT_MFEM_INFO("Warning: Unsupported Element Shape: " << shape_name);
     return 0;
 }
 
@@ -289,13 +289,13 @@ avtMFEMDataAdaptor::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
 vtkDataSet *
 avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 {
-    BP_PLUGIN_INFO("Converting Low Order Mesh to VTK.");
+    AVT_MFEM_INFO("Converting Low Order Mesh to VTK.");
 
     int dim = mesh->SpaceDimension();
     if (dim < 1 || dim > 3)
     {
-        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                             "invalid mesh dimension " << dim);
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "invalid mesh dimension " << dim);
     }
 
     ////////////////////////////////////////////
@@ -346,8 +346,8 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
         // ncells = mesh->GetNE() * idxs_per_ele / csize
         // but since the latter two are equal, we can safely
         // say ncells = mesh->GetNE()
-        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
-                             "Expected equality of MFEM and VTK layout variables.");
+        AVT_MFEM_EXCEPTION1(InvalidVariableException,
+                            "Expected equality of MFEM and VTK layout variables.");
     }
 
     for (int i = 0; i < ncells; i ++)
@@ -390,11 +390,11 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
                                     int lod,
                                     bool new_refine)
 {
-    BP_PLUGIN_INFO("Creating Refined MFEM Mesh with lod:" << lod);
+    AVT_MFEM_INFO("Creating Refined MFEM Mesh with lod:" << lod);
 
     if (!new_refine)
     {
-        BP_PLUGIN_INFO("Using Legacy LOR to refine mesh.");
+        AVT_MFEM_INFO("Using Legacy LOR to refine mesh.");
         return LegacyRefineMeshToVTK(mesh, lod);
     }
 
@@ -403,11 +403,11 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
                                      (mesh->GetNodes()->FESpace()->FEColl());
     if (L2_coll)
     {
-        BP_PLUGIN_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
+        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
         return LegacyRefineMeshToVTK(mesh, lod);
     }
 
-    BP_PLUGIN_INFO("High Order Mesh is not periodic.");
+    AVT_MFEM_INFO("High Order Mesh is not periodic.");
 
     // refine the mesh
     mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, 
@@ -534,7 +534,7 @@ avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 vtkDataArray *
 avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 {
-    BP_PLUGIN_INFO("Converting Low Order Grid Function To VTK");
+    AVT_MFEM_INFO("Converting Low Order Grid Function To VTK");
 
     mfem::FiniteElementSpace *fespace = gf->FESpace();
     int vdim = fespace->GetVDim();
@@ -543,7 +543,7 @@ avtMFEMDataAdaptor::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
     // all supported grid functions coming out of mfem end up being 
     // associated with vertices
 
-    BP_PLUGIN_INFO("VTKDataArray num_tuples = " << ndofs << " "
+    AVT_MFEM_INFO("VTKDataArray num_tuples = " << ndofs << " "
                     << " num_comps = " << vdim);
 
     vtkDataArray *retval = vtkDoubleArray::New();
@@ -611,11 +611,11 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             int lod,
                                             bool new_refine)
 {
-    BP_PLUGIN_INFO("Creating Refined MFEM Field with lod:" << lod);
+    AVT_MFEM_INFO("Creating Refined MFEM Field with lod:" << lod);
 
     if (!new_refine)
     {
-        BP_PLUGIN_INFO("Using Legacy LOR to refine grid function.");
+        AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
     }
 
@@ -624,16 +624,16 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                      (mesh->GetNodes()->FESpace()->FEColl());
     if (L2_coll)
     {
-        BP_PLUGIN_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
+        AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
         return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
     }
 
-    BP_PLUGIN_INFO("High Order Mesh is not periodic.");
+    AVT_MFEM_INFO("High Order Mesh is not periodic.");
 
     mfem::FiniteElementSpace *ho_fes = gf->FESpace();
     if(!ho_fes)
     {
-        BP_PLUGIN_EXCEPTION1(InvalidVariableException, 
+        AVT_MFEM_EXCEPTION1(InvalidVariableException, 
             "RefineGridFunctionToVTK: high order gf finite element space is null");
     }
     // create the low order grid function
@@ -709,7 +709,7 @@ avtMFEMDataAdaptor::RefineElementColoringToVTK(mfem::Mesh *mesh,
                                                int domain_id,
                                                int lod)
 {
-    BP_PLUGIN_INFO("Creating Refined MFEM Element Coloring with lod:" << lod);
+    AVT_MFEM_INFO("Creating Refined MFEM Element Coloring with lod:" << lod);
     int npts=0;
     int neles=0;
 
@@ -789,7 +789,7 @@ vtkDataArray *
 avtMFEMDataAdaptor::RefineElementAttributeToVTK(mfem::Mesh *mesh,
                                                 int lod)
 {
-    BP_PLUGIN_INFO("Creating Refined MFEM Element Attribute with lod:" << lod);
+    AVT_MFEM_INFO("Creating Refined MFEM Element Attribute with lod:" << lod);
     int npts=0;
     int neles=0;
 
