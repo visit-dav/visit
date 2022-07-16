@@ -393,6 +393,7 @@ AddPlot("Pseudocolor", "d")
 DrawPlots()
 
 Query("XRay Image", "hdf5", outdir_bad, 1, 0.0, 2.5, 10.0, 0, 0, 10., 10., 300, 300, ("d", "p"))
+# I'm getting a really strange output message for this one... "An invalid variable (\n) was specified."
 s = GetQueryOutputString()
 TestText("xrayimage36", s)
 DeleteAllPlots()
