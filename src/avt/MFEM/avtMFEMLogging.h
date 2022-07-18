@@ -25,7 +25,7 @@
 
 #define AVT_MFEM_INFO(  msg  )                                      \
 {                                                                   \
-    CONDUIT_INFO( msg );                                            \
+    debug5 << msg;                                                  \
 }                                                                   \
 
 #define AVT_MFEM_EXCEPTION1(  etype , msg )                         \

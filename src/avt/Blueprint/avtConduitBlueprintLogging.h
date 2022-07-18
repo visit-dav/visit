@@ -24,10 +24,10 @@
 
 #define AVT_CONDUIT_BP_INFO(  msg  )                                \
 {                                                                   \
-    CONDUIT_INFO( msg );                                            \
+    debug5 << msg;                                                  \
 }                                                                   \
 
-#define AVT_CONDUIT_BP_EXCEPTION1(  etype , msg )                        \
+#define AVT_CONDUIT_BP_EXCEPTION1(  etype , msg )                   \
 {                                                                   \
     std::ostringstream err_oss;                                     \
     err_oss << msg << std::endl;                                    \
