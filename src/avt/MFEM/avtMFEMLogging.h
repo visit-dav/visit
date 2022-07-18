@@ -9,8 +9,6 @@
 #ifndef AVT_MFEM_LOGGING_H
 #define AVT_MFEM_LOGGING_H
 
-// TODO remove this dependency
-#include "conduit.hpp"
 #include <string>
 #include "InvalidVariableException.h"
 
