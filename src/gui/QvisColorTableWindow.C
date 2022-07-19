@@ -2024,6 +2024,7 @@ QvisColorTableWindow::addColorTable()
             ColorControlPointList cpts(*ccpl);
             cpts.AddTag("User Defined");
             cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
+            cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
         else
@@ -2040,6 +2041,7 @@ QvisColorTableWindow::addColorTable()
             cpts.SetEqualSpacingFlag(false);
             cpts.SetDiscreteFlag(false);
             cpts.AddTag("User Defined");
+            cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
 
@@ -2082,7 +2084,16 @@ QvisColorTableWindow::deleteColorTable()
     // to remove it from the list of color tables.
     std::string ctName = nameListBox->currentItem()->text(0).toStdString();
 
-    GetViewerMethods()->DeleteColorTable(ctName.c_str());
+    if (colorAtts->GetColorControlPoints(ctName)->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot delete a built-in color table.");
+        Error(tmp);
+    }
+    else
+        GetViewerMethods()->DeleteColorTable(ctName.c_str());
 }
 
 // ****************************************************************************
@@ -2626,7 +2637,17 @@ QvisColorTableWindow::resizeColorTable(int size)
 void
 QvisColorTableWindow::exportColorTable()
 {
-    GetViewerMethods()->ExportColorTable(currentColorTable.toStdString());
+    if (colorAtts->GetColorControlPoints(
+        currentColorTable.toStdString())->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot export a built-in color table.");
+        Error(tmp);
+    }
+    else
+        GetViewerMethods()->ExportColorTable(currentColorTable.toStdString());
 }
 
 
@@ -2724,8 +2745,11 @@ QvisColorTableWindow::searchingToggled(bool checked)
 void
 QvisColorTableWindow::searchEdited(const QString &newSearchTerm)
 {
-    searchTerm = newSearchTerm;
-    Apply(true);
+    if (searchingOn)
+    {
+        searchTerm = newSearchTerm;
+        Apply(true);
+    }
 }
 
 

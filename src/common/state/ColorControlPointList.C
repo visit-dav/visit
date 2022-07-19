@@ -66,6 +66,7 @@ void ColorControlPointList::Init()
     discreteFlag = false;
     externalFlag = false;
     tagChangesMade = true;
+    builtIn = true;
 
     ColorControlPointList::SelectAll();
 }
@@ -110,6 +111,7 @@ void ColorControlPointList::Copy(const ColorControlPointList &obj)
     externalFlag = obj.externalFlag;
     tagNames = obj.tagNames;
     tagChangesMade = obj.tagChangesMade;
+    builtIn = obj.builtIn;
 
     ColorControlPointList::SelectAll();
 }
@@ -286,7 +288,8 @@ ColorControlPointList::operator == (const ColorControlPointList &obj) const
             (discreteFlag == obj.discreteFlag) &&
             (externalFlag == obj.externalFlag) &&
             (tagNames == obj.tagNames) &&
-            (tagChangesMade == obj.tagChangesMade));
+            (tagChangesMade == obj.tagChangesMade) &&
+            (builtIn == obj.builtIn));
 }
 
 // ****************************************************************************
@@ -437,6 +440,7 @@ ColorControlPointList::SelectAll()
     Select(ID_externalFlag,     (void *)&externalFlag);
     Select(ID_tagNames,         (void *)&tagNames);
     Select(ID_tagChangesMade,   (void *)&tagChangesMade);
+    Select(ID_builtIn,          (void *)&builtIn);
 }
 
 // ****************************************************************************
@@ -718,6 +722,13 @@ ColorControlPointList::SetTagChangesMade(bool tagChangesMade_)
     Select(ID_tagChangesMade, (void *)&tagChangesMade);
 }
 
+void
+ColorControlPointList::SetBuiltIn(bool builtIn_)
+{
+    builtIn = builtIn_;
+    Select(ID_builtIn, (void *)&builtIn);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -774,6 +785,12 @@ bool
 ColorControlPointList::GetTagChangesMade() const
 {
     return tagChangesMade;
+}
+
+bool
+ColorControlPointList::GetBuiltIn() const
+{
+    return builtIn;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1020,6 +1037,7 @@ ColorControlPointList::GetFieldName(int index) const
     case ID_externalFlag:     return "externalFlag";
     case ID_tagNames:         return "tagNames";
     case ID_tagChangesMade:   return "tagChangesMade";
+    case ID_builtIn:          return "builtIn";
     default:  return "invalid index";
     }
 }
@@ -1051,6 +1069,7 @@ ColorControlPointList::GetFieldType(int index) const
     case ID_externalFlag:     return FieldType_bool;
     case ID_tagNames:         return FieldType_stringVector;
     case ID_tagChangesMade:   return FieldType_bool;
+    case ID_builtIn:          return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1082,6 +1101,7 @@ ColorControlPointList::GetFieldTypeName(int index) const
     case ID_externalFlag:     return "bool";
     case ID_tagNames:         return "stringVector";
     case ID_tagChangesMade:   return "bool";
+    case ID_builtIn:          return "bool";
     default:  return "invalid index";
     }
 }
@@ -1150,6 +1170,11 @@ ColorControlPointList::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_tagChangesMade:
         {  // new scope
         retval = (tagChangesMade == obj.tagChangesMade);
+        }
+        break;
+    case ID_builtIn:
+        {  // new scope
+        retval = (builtIn == obj.builtIn);
         }
         break;
     default: retval = false;
