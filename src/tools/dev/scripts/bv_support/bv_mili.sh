@@ -484,10 +484,10 @@ function build_mili
     config_script=configure
     if [[ ${MILI_VERSION} == 19.2 && "$OPSYS" == "Darwin" ]]; then
         config_script=configure_15_1
-    elif [[ ${MILI_VERSION} == 22.1 ]] ; then
+    elif [[ ${MILI_VERSION} == 22.1 && "$OPSYS" == "Darwin" ]] ; then
         # Mili 22.1 configure expects fortran compiler even if no intention to use it.
         # We spoof fortran compiler here to fool configure.
-       cat << EOF > spoof_f77.sh
+       cat << \EOF > spoof_f77.sh
 #!/bin/sh
 echo "#!/bin/sh" > conftest.out
 chmod 755 conftest.out
@@ -513,35 +513,8 @@ EOF
     # Build Mili
     #
     info "Building Mili . . . (~2 minutes)"
-
-    if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
-        cd MILI-$OPSYS-*
-        cd src
-        $C_COMPILER $CFLAGS $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c \
-                    mili.c direc.c param.c io.c util.c dep.c svar.c \
-                    srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c \
-                    sarray.c gahl.c util.c partition.c ti.c tidirc.c
-        if [[ $? != 0 ]] ; then
-            warn "Mili build failed.  Giving up"
-            return 1
-        fi
-    elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
-        cd MILI-*-*
-        cd src
-        $C_COMPILER $CFLAGS $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c \
-                    mili.c dep.c direc.c eprtf.c gahl.c io_mem.c \
-                    mesh_u.c mr_funcs.c param.c partition.c read_db.c sarray.c \
-                    srec.c svar.c taurus_db.c taurus_mesh_u.c taurus_srec.c \
-                    taurus_svars.c taurus_util.c ti.c tidirc.c util.c wrap_c.c \
-                    write_db.c
-        if [[ $? != 0 ]] ; then
-            warn "Mili build failed.  Giving up"
-            return 1
-        fi
-    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2 || ${MILI_VERSION} == 22.1 ]] ; then
-        cd MILI-*-*
-        $MAKE opt fortran=false
-    fi
+    cd MILI-*-*
+    $MAKE opt fortran=false
 
     #
     # Install into the VisIt third party location.
@@ -553,13 +526,7 @@ EOF
     mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
-        cp mili.h mili_enum.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
-        cp mili.h mili_enum.h misc.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2 || ${MILI_VERSION} == 22.1 ]] ; then
-        cp src/{mili.h,mili_enum.h,misc.h}  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    fi
+    cp src/{mili.h,mili_enum.h,misc.h}  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         INSTALLNAMEPATH="$VISITDIR/mili/${MILI_VERSION}/$VISITARCH/lib"
 
@@ -582,16 +549,7 @@ EOF
         fi
         cp libmili.$SO_EXT "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     else
-        if [[ ${MILI_VERSION} != 13.1.1-patch && ${MILI_VERSION} != 15.1 && ${MILI_VERSION} != 19.2 && ${MILI_VERSION} != 22.1 ]] ; then
-            ar -rc libmili.a *.o 
-            if [[ $? != 0 ]] ; then
-                warn "Mili install failed.  Giving up"
-                return 1
-            fi
-            cp libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
-        else
-            cp lib_opt/libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
-        fi
+        cp lib_opt/libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
