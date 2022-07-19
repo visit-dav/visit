@@ -2198,6 +2198,20 @@ QvisColorTableWindow::setColorTableType(int index)
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot change the type of a built-in "
+                     "color table.");
+            Error(tmp);
+            colorTableTypeGroup->blockSignals(true);
+            colorTableTypeGroup->button(ccpl->GetDiscreteFlag()?1:0)->setChecked(true);
+            colorTableTypeGroup->blockSignals(false);
+            return;
+        }
         ccpl->SetDiscreteFlag(index == 1);
         colorAtts->SelectColorTables();
         // When discrete set the smoothing to none so the legend is correct.
