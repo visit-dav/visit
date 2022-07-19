@@ -1657,6 +1657,8 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
         ColorControlPointList *ccpl = GetDefaultColorControlPoints();
         // preserve the tags
         cpts.SetTagNames(ccpl->GetTagNames());
+        // preserve the `built-in` attribute
+        cpts.SetBuiltIn(ccpl->GetBuiltIn());
         if(ccpl)
         {
             ColorControlPointList &activeControlPoints = *ccpl;
@@ -2091,6 +2093,7 @@ QvisColorTableWindow::deleteColorTable()
               QString("\"") + currentColorTable + QString("\"") +
               tr(" is built-in. You cannot delete a built-in color table.");
         Error(tmp);
+        return;
     }
     else
         GetViewerMethods()->DeleteColorTable(ctName.c_str());
@@ -2536,6 +2539,20 @@ QvisColorTableWindow::resizeColorTable(int size)
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            colorNumColors->blockSignals(true);
+            colorNumColors->setValue(ccpl->GetNumControlPoints());
+            colorNumColors->blockSignals(false);
+            return;
+        }
+
         int i;
 
         if(ccpl->GetDiscreteFlag())
@@ -2645,6 +2662,7 @@ QvisColorTableWindow::exportColorTable()
               QString("\"") + currentColorTable + QString("\"") +
               tr(" is built-in. You cannot export a built-in color table.");
         Error(tmp);
+        return;
     }
     else
         GetViewerMethods()->ExportColorTable(currentColorTable.toStdString());
