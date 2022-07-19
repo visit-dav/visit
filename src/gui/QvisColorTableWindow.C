@@ -2011,6 +2011,15 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 void
 QvisColorTableWindow::addColorTable()
 {
+    if (searchingOn)
+    {
+        QString tmp;
+        tmp = tr("Cannot add a color table while searching is enabled. "
+                 "Please disable searching first.");
+        Error(tmp);
+        return;
+    }
+
     // Get a pointer to the default color table's control points.
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
 
@@ -2082,6 +2091,15 @@ QvisColorTableWindow::addColorTable()
 void
 QvisColorTableWindow::deleteColorTable()
 {
+    if (searchingOn)
+    {
+        QString tmp;
+        tmp = tr("Cannot delete a color table while searching is enabled. "
+                 "Please disable searching first.");
+        Error(tmp);
+        return;
+    }
+
     // Get the index of the currently selected color table and tell the viewer
     // to remove it from the list of color tables.
     std::string ctName = nameListBox->currentItem()->text(0).toStdString();
@@ -2668,7 +2686,15 @@ QvisColorTableWindow::resizeColorTable(int size)
 void
 QvisColorTableWindow::exportColorTable()
 {
-    if (colorAtts->GetColorControlPoints(
+    if (searchingOn)
+    {
+        QString tmp;
+        tmp = tr("Cannot export a color table while searching is enabled. "
+                 "Please disable searching first.");
+        Error(tmp);
+        return;
+    }
+    else if (colorAtts->GetColorControlPoints(
         currentColorTable.toStdString())->GetBuiltIn())
     {
         QString tmp;
