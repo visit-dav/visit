@@ -2046,6 +2046,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // 
 //   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //   SetTagChangesMade for copied color tables.
+// 
+//   Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
+//   Added error if users try to add a color table while searching is enabled.
 //
 // ****************************************************************************
 
@@ -2127,6 +2130,9 @@ QvisColorTableWindow::addColorTable()
 //    Kathleen Biagas, Fri Aug 8 08:44:12 PDT 2014
 //    nameListBox object is now a QTreeWidget.
 //
+//    Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
+//    Error when deleting a CT while searching is enabled.
+// 
 // ****************************************************************************
 
 void
@@ -2720,6 +2726,8 @@ QvisColorTableWindow::resizeColorTable(int size)
 // Creation:   Tue Jul 1 16:40:39 PST 2003
 //
 // Modifications:
+//    Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
+//    Error when trying to export a CT while searching is enabled.
 //
 // ****************************************************************************
 
@@ -2837,6 +2845,8 @@ QvisColorTableWindow::searchingToggled(bool checked)
 // Creation:   Thu Jul  7 10:22:58 PDT 2022
 //
 // Modifications:
+//   Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
+//   Added guard to prevent Apply() from being called when searching is off.
 //
 // ****************************************************************************
 
