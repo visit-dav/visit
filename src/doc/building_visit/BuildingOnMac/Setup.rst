@@ -112,6 +112,138 @@ Configuration
 
    Masonry's JSON config file
 
+You Might Have to Adjust your PATH
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are cases where individual package's configuration processes wind up executing tools in your path (``$PATH``) to help set variables used in compilation.
+For example, the ``MPICH`` configuration winds up using ``pkg-config``, if it is found in your path, to help set ``CPPFLAGS`` and ``LDFLAGS``.
+In one case, ``libxml2`` was installed in both ``/opt/local/lib`` and in ``/usr/lib`` but because ``/opt/local/bin`` was first in ``$PATH``, ``/opt/local/bin/pkg-config`` was used to set paths for ``libxml2`` to ``/opt/local/include`` and ``/opt/local/lib``.
+This results in a build of ``MPICH`` using non-system ``libxml2`` which will fail the ``macOS`` (``otool -L``) ``@rpath`` validation checks on each of the shared libs VisIt is built with later.
+
+The solution is to be sure your ``$PATH`` variable is set such that nothing *non-standard* can be found in your path prior to running masonry.
+One way to do this is to ``echo $PATH | tr ':' '\n'`` to display, line-by-line, each path defined in ``$PATH`` and then remove from that list all *non-standard* (for example, anything beginning with ``/opt``) paths ::
+
+    set STD_PATH=`echo $PATH | tr ':' '\n' | grep -v '/opt' | tr '\n' ':'`
+    env PATH=$STD_PATH python3 src/tools/dev/masonry/bootstrap_visit.py src/tools/dev/masonry/opts/mb-3.3.0-darwin-10.14-x86_64-release.json
+
+What Can Go Wrong?
+~~~~~~~~~~~~~~~~~~
+
+Apart from commonly encountered issues building each third party library built by a ``bv_xxx.sh`` script, there are many other ways getting the macOS release ready can fail.
+
+* There are at least 3 levels of *certifications* (from your macOS keychain) involved.
+
+  * The Apple *Root* Certificate Authority (CA) certificates (``Apple Root CA`` or ``Apple Root CA - G2`` or ``Apple Root CA - G3``
+  * Apple Worldwide Developer Relations Certificate Authority certificates (also called the *intermediate* certificate authority)
+  * Developer ID Certificate Authority for the organization (Lawrence Livermore) and yourself.
+    These all need to be correctly configured and tied to each other from the lowest level (also called a *leaf* certificate), yourself to the root.
+
+* Sometimes Apple expires its certificates and you may need to go get `updated certificates. <https://www.apple.com/certificateauthority/>`__
+* Sometimes your own certificate can expire.
+  Currently, Charles Heizer is the LLNL point of contact for adding developers and updating their expired certificates.
+* You might need to *evaluate* the validity of your certificate using `Apple KeyChain Certificate Assistant <https://support.apple.com/guide/keychain-access/determine-if-a-certificate-is-valid-kyca2794/mac>`__ to confirm its all working.
+* If you are VPN'd into LLNL, codesigning and notorizing a release may fail.
+* If you have MacPorts, Homebrew, Fink or other macOS package managers, python package builds may wind up enabling (and then creating a release that is dependent upon) libraries that are available only to users with similar package managers installed.
+  Worse, you won't have any idea this has happend until you give the release to another developer who has a mac that is not using said package managers and they try to use it and it doesn't work due to missing libraries.
+  You can use ``otool`` combined with ``find`` to try to find any cases where the release has such dependences.
+  For example, the command ::
+
+      find /Volumes/VisIt-3.3.0/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64 -name '*.so -o -name '*.dylib' -exec otool -L {} \; -print | grep -v rpath
+
+  will find cases of non-rpath'd library dependencies build into either shared (``.so``) or dynamic (``.dylib``) libraries.
+  Note, however, that sometimes Python EGG's contained Zip-compressed ``.so`` files that this check won't find.
+  
+  Just removing associated stuff from your ``$PATH`` will not prevent these build dependencies.
+  Fixing them likely means finding some of the individual packages in ``bv_python.sh`` and adding ``site.cfg`` files or otherwise finding build switches that explicitly disable the features creating the need for these dependencies.
+* Sometimes, a python package winds up using the python interpreter in ``Xcode`` instead of the one built for the release of VisIt you are preparing.
+  For example, Sphinx can wind up getting installed with all command-line scripts using a `shebang <https://en.wikipedia.org/wiki/Shebang_(Unix)>`__ which is an absolute path to ``Xcode``'s python interpreter.
+  We've added patching code to ``bv_python.sh`` to help correct for this.
+* You can check whether ``VisIt.app`` is properly codesigned using this command ::
+
+      codesign -v -v /Volumes/VisIt-3.3.0/VisIt.app
+
+  which should produce output like so... ::
+
+      /Volumes/VisIt-3.3.0/VisIt.app: valid on disk
+      /Volumes/VisIt-3.3.0/VisIt.app: satisfies its Designated Requirement
+
+* You can check whether ``VisIt.app`` is properly notarized using this command ::
+
+      spctl -a -t exec -vv /Volumes/VisIt-3.3.0/VisIt.app
+
+  which should produce output like so... ::
+
+      /Volumes/VisIt-3.3.0/VisIt.app: accepted
+      source=Notarized Developer ID
+      origin=Developer ID Application: Lawrence Livermore National Laboratory (A827VH86QR)
+
+* You can get more details about why a notorization failed using the command ::
+
+      xcrun altool --notarization-info ``uuid`` --username ``username-email`` --password @keychain:VisIt
+
+  where ``uuid`` (also called the *request identifier*) is the id you get (in email or printed by masonry to the logs) and ``username-email`` is your Apple developer ID email address.
+  And, this should produce output like so... ::
+
+      No errors getting notarization info.
+
+                Date: 2022-07-18 18:59:44 +0000
+                Hash: af5e1231bae06e051e5f1a0cfa37219ec4cb5ec2f76971557d9389f1d8edcadd
+          LogFileURL: https://osxapps-ssl.itunes.apple.com/itunes-assets/Enigma122/v4/d6/a7/08/d6a7083b-c6d7-6e8f-8a3c-0db0d406d3da/developer_log.json?accessKey=1658530108_1173406174696701459_H%2BzLM3o4PjKeGN8jgdqPBTVz5wUY5BMY7R7Lvh8UrBmn6kxu%2F4XVdkvSsUE5wrAlbmW%2FCCLSRzU%2FUHBGNhgOa1DZDoXQXtXOAUx3sk1ptivix7dQhzQa11SU9EnbESN6PkZ5je9g4IOrqMdibbB7hhxhTgMvQhiKEO9BXjne9xs%3D
+         RequestUUID: 1a8b8756-9c4c-4908-b6db-387a5144ce43
+              Status: invalid
+         Status Code: 2
+      Status Message: Package Invalid
+
+  Cut and paste the ``LogFileURL`` into a browser to go examine the results.
+  Doing so for the above example yielded a json page like so... ::
+
+      {
+        "logFormatVersion": 1,
+        "jobId": "1a8b8756-9c4c-4908-b6db-387a5144ce43",
+        "status": "Invalid",
+        "statusSummary": "Archive contains critical validation errors",
+        "statusCode": 4000,
+        "archiveFilename": "VisIt.dmg",
+        "uploadDate": "2022-07-18T18:59:44Z",
+        "sha256": "af5e1231bae06e051e5f1a0cfa37219ec4cb5ec2f76971557d9389f1d8edcadd",
+        "ticketContents": null,
+        "issues": [
+          {
+            "severity": "error",
+            "code": null,
+            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_webp.cpython-37m-darwin.so",
+            "message": "The binary is not signed.",
+            "docUrl": null,
+            "architecture": "x86_64"
+          },
+          {
+            "severity": "error",
+            "code": null,
+            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_webp.cpython-37m-darwin.so",
+            "message": "The signature does not include a secure timestamp.",
+            "docUrl": null,
+            "architecture": "x86_64"
+          },
+          {
+            "severity": "error",
+            "code": null,
+            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_imagingft.cpython-37m-darwin.so",
+            "message": "The binary is not signed.",
+            "docUrl": null,
+            "architecture": "x86_64"
+          },
+          {
+            "severity": "error",
+            "code": null,
+            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_imagingft.cpython-37m-darwin.so",
+            "message": "The signature does not include a secure timestamp.",
+            "docUrl": null,
+            "architecture": "x86_64"
+          }
+        ]
+      }
+
+
 Signing macOS Builds
 ~~~~~~~~~~~~~~~~~~~~
 To `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_index.html>`_ your VisIt_ build, you must be enrolled in the `Apple Developer Program <https://developer.apple.com/programs/>`_ and have a valid Developer ID certificate. Below are simple steps to get started, reference the links for more detailed information.
@@ -146,6 +278,7 @@ To `code sign <https://developer.apple.com/library/archive/technotes/tn2206/_ind
         Certificate trust evaluation for api.apple-cloudkit.com did not return expected result. No error..
         Could not establish secure connection to api.apple-cloudkit.com
 
+Read more about `Apple's Code Signing documentation. <https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/Procedures/Procedures.html>`__
 
 App-Specific Password
 ~~~~~~~~~~~~~~~~~~~~~
