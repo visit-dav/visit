@@ -1082,18 +1082,20 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         // Create the file base name.
         //
         std::stringstream baseName;
+        const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
         bool keepTrying = true;
         while (keepTrying)
         {
             keepTrying = false;
-            if (familyFiles && !outputTypeIsBlueprint(outputType))
+            if (familyFiles)
             {
                 //
                 // Create the file base name and increment the family number.
                 //
                 baseName.clear();
                 baseName.str(std::string());
-                baseName << "output" << std::setfill('0') << std::setw(4) << iFileFamily << ".";
+                baseName << "output" << std::setfill('0') << std::setw(4) << iFileFamily;
+                if (!outputTypeIsBlueprint(outputType)) baseName << ".";
 
                 if (iFileFamily < 9999) iFileFamily++;
 
@@ -1105,7 +1107,12 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 std::stringstream fileName;
                 if (outputDir != ".")
                     fileName << outputDir.c_str() << "/";
-                fileName << baseName.str() << "00." << file_extensions[outputType];
+                fileName << baseName.str();
+                if (outputTypeIsBlueprint(outputType))
+                    fileName << ".cycle_" << std::setfill('0') << std::setw(6) << cycle;
+                else
+                    fileName << "00";
+                fileName << "." << file_extensions[outputType];
 
                 ifstream ifile(fileName.str());
                 if (!ifile.fail() && iFileFamily < 9999)
@@ -1297,7 +1304,6 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             data_out["fields/path_length/strides"].set(data_out["fields/intensities/strides"]);
 
             data_out["state/time"] = GetInput()->GetInfo().GetAttributes().GetTime();
-            const int cycle = GetInput()->GetInfo().GetAttributes().GetCycle();
             data_out["state/cycle"] = cycle;
             data_out["state/xray_view/normal/x"] = normal[0];
             data_out["state/xray_view/normal/y"] = normal[1];
@@ -1340,7 +1346,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 baseName << out_filename << ".cycle_" << std::setfill('0') 
                     << std::setw(6) << cycle;
                 out_filename = baseName.str();
-                out_filename_w_path = outputDir + "/" + out_filename;
+                if (outputDir == ".")
+                    out_filename_w_path = out_filename;
+                else
+                    out_filename_w_path = outputDir + "/" + out_filename;
 
                 // Note to future developers: The following lines are a workaround to a bug found in
                 // conduit 0.8.3; see this issue for more information: 

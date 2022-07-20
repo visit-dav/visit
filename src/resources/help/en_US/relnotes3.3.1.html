@@ -22,19 +22,25 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Bugs fixed in version 3.3.1</font></b></p>
 <ul>
   <li>Fixed a bug with the color table window where the list of color tables could be populated even when no tags were selected.</li>
+  <li>Fixed a discrepancy with the x ray image query where, if blueprint output was requested, the result message from the query would display differently than the other output types.</li>
+  <li>Fixed a bug with the color table window searching feature where the name text box could no longer be properly edited.</li>
   <li>Fixed a bug with the x ray image query, where a crash would occur if the specified output directory was too long.</li>
 </ul>
 
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 3.3.1</font></b></p>
 <ul>
+  <li>Blueprint output for the x ray image query now supports file familying.</li>
+  <li>In the color table window, the popup menu accessed via clicking on the default continuous color table button now correctly only displays continuous color tables, and the popup menu accessed from clicking on the default discrete color table button now correctly only displays discrete color tables.</li>
+  <li>Added a color table searching feature to help users more easily find the color tables they wish to use.</li>
   <li>The x ray image query now outputs result messages in the case of failure while running in batch mode.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 3.3.1</font></b></p>
 <ul>
-  <li>feature 1</li>
+  <li>Added a patch to build_visit so that mili will build on Debian 11 systems using gcc 10.2."</li>
+  <li>Enhanced the cmake packaging logic that adds the <code>libicui18n</code>, <code>libicudata</code> and <code>libicuuc</code> system libraries used by Qt to the lib directory to look in additional directories for the libraries to work on a broader set of operating systems.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version

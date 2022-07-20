@@ -503,6 +503,12 @@
 #    Kathleen Biagas, Thu Jun 16, 2022 
 #    Changed minimum cmake version to 3.15.
 #
+#    Eric Brugger, Tue Jul  5 09:10:18 PDT 2022
+#    Added support for the Blosc library.
+#
+#    Eric Brugger, Thu Jul  7 13:07:51 PDT 2022
+#    Added other directories to look for libicui18n, libicudata and libicuuc.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
@@ -911,6 +917,7 @@ VISIT_3RDPARTY_VAR(ADIOS_DIR     "Path containing the ADIOS library's include an
 VISIT_3RDPARTY_VAR(ADIOS2_DIR     "Path containing the ADIOS library's include and lib")
 VISIT_3RDPARTY_VAR(ADIOS2_PAR_DIR "Path containing the ADIOS MPI library's include and lib")
 VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
+VISIT_3RDPARTY_VAR(BLOSC_DIR     "Path containing the Blosc library's include and lib")
 VISIT_3RDPARTY_VAR(BOOST_DIR     "Path containing the BOOST library's include and lib")
 VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include and lib")
 VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
@@ -1368,6 +1375,9 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure advio support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADVIO.cmake)
+
+    # Configure blosc support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBlosc.cmake)
 
     # Configure Boxlib support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
@@ -2071,11 +2081,32 @@ if(LINUX)
     # Install the system libraries required by Qt to the lib directory.
     # The versions of these libraries change frequently, so including
     # them means VisIt may continue to run even if the OS is upgraded.
+    # "/lib64" is for rhel7 and fedora31, "/usr/lib/x86_64-linux-gnu"
+    # is for ubuntu 18, debian 10 and debian 11, "/lib/x86_64-linux-gnu"
+    # is for ubuntu 20.
     #-------------------------------------------------------------------------
     if(EXISTS "/lib64/libicui18n.so")
         file(GLOB libicui18n_libs "/lib64/libicui18n.so*")
         file(GLOB libicudata_libs "/lib64/libicudata.so*")
         file(GLOB libicuuc_libs "/lib64/libicuuc.so*")
+        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    elseif(EXISTS "/lib/x86_64-linux-gnu/libicui18n.so")
+        file(GLOB libicui18n_libs "/lib/x86_64-linux-gnu/libicui18n.so*")
+        file(GLOB libicudata_libs "/lib/x86_64-linux-gnu/libicudata.so*")
+        file(GLOB libicuuc_libs "/lib/x86_64-linux-gnu/libicuuc.so*")
+        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    elseif(EXISTS "/usr/lib/x86_64-linux-gnu/libicui18n.so")
+        file(GLOB libicui18n_libs "/usr/lib/x86_64-linux-gnu/libicui18n.so*")
+        file(GLOB libicudata_libs "/usr/lib/x86_64-linux-gnu/libicudata.so*")
+        file(GLOB libicuuc_libs "/usr/lib/x86_64-linux-gnu/libicuuc.so*")
         install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE

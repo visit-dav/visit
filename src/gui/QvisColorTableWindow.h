@@ -87,6 +87,11 @@ class QvisNoDefaultColorTableButton;
 //   Justin Privitera, Wed Jun 29 17:50:24 PDT 2022
 //   Added new function `AddToTagTable()`.
 // 
+//   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
+//   Added search capabilities for color tables. In this file, added boolean
+//   `searchingOn`, QString `searchTerm`, QCheckBox `searchToggle`, and 
+//   functions `searchingToggled` and `searchEdited`.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -151,6 +156,8 @@ private slots:
     void showIndexHintsToggled(bool val);
     void taggingToggled(bool val);
     void tagCombiningChanged(int index);
+    void searchingToggled(bool checked);
+    void searchEdited(const QString &newSearchTerm);
     void updateNameBoxPosition(bool tagsOn);
 private:
     ColorTableAttributes     *colorAtts;
@@ -162,6 +169,8 @@ private:
     std::vector<bool>        activeTags;
     bool                     tagsVisible;
     bool                     tagsMatchAny;
+    bool                     searchingOn;
+    QString                  searchTerm;
 
     // Widgets and layouts.
     QGroupBox                *defaultGroup;
@@ -171,6 +180,7 @@ private:
     QLabel                   *defaultDiscreteLabel;
     QCheckBox                *tagFilterToggle;
     QComboBox                *tagCombiningBehaviorChoice;
+    QCheckBox                *searchToggle;
     QGridLayout              *mgLayout;
 
     QGroupBox                *colorTableWidgetGroup;
