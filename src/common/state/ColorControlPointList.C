@@ -529,6 +529,12 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("tags", tagNames));
     }
 
+    if(completeSave || !FieldsEqual(ID_builtIn, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("builtin", builtIn));
+    }
+
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -658,6 +664,8 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
         SetExternalFlag(node->AsBool());
     if((node = searchNode->GetNode("tags")) != 0)
         SetTagNames(node->AsStringVector());
+    if((node = searchNode->GetNode("builtin")) != 0)
+        SetBuiltIn(node->AsBool());
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
