@@ -209,6 +209,10 @@ QvisNoDefaultColorTableButton::sizePolicy() const
 // 
 //   Justin Privitera, Wed Jul 13 15:24:42 PDT 2022
 //   Using buttonType to index into the array vars.
+// 
+//   Justin Privitera, Wed Jul 20 14:15:34 PDT 2022
+//   Added guard to prevent rare index out of bounds error caused by using
+//   specific tags and searching simultaneously.
 //
 // ****************************************************************************
 
@@ -224,13 +228,15 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
         setToolTip(colorTable);
         setIcon(getIcon(ctName));
     }
-    else
+    else if (colorTableNames[buttonType].size() > 0)
     {
         colorTable = colorTableNames[buttonType][0];
         setText(colorTable);
         setToolTip(colorTable);
         setIcon(getIcon(colorTable));
     }
+    // If there are no available color tables, we don't want anything to
+    // change.
 debug1 << "QvisNoDefaultColorTableButton::setColorTable ... done" << endl;
 }
 
@@ -483,8 +489,8 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
         {
             buttons[i]->setIcon(getIcon(buttons[i]->text()));
         }
-        // If there are no available color tables, we don't want the 
-        // entries to change.            
+        // If there are no available color tables, we don't anything to
+        // change.            
     }
 }
 
