@@ -2369,6 +2369,23 @@ QvisColorTableWindow::redValueChanged(int r)
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
 
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[0]->blockSignals(true);
+            componentSliders[0]->blockSignals(true);
+            componentSpinBoxes[0]->setValue(c.red());
+            componentSliders[0]->setValue(c.red());
+            componentSpinBoxes[0]->blockSignals(false);
+            componentSliders[0]->blockSignals(false);
+            return;
+        }
+
         c.setRgb(r, c.green(), c.blue(), c.alpha());
         ChangeSelectedColor(c);
     }
@@ -2408,6 +2425,23 @@ QvisColorTableWindow::greenValueChanged(int g)
             c = discreteColors->selectedColor();
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[1]->blockSignals(true);
+            componentSliders[1]->blockSignals(true);
+            componentSpinBoxes[1]->setValue(c.green());
+            componentSliders[1]->setValue(c.green());
+            componentSpinBoxes[1]->blockSignals(false);
+            componentSliders[1]->blockSignals(false);
+            return;
+        }
 
         c.setRgb(c.red(), g, c.blue(), c.alpha());
         ChangeSelectedColor(c);
@@ -2449,6 +2483,23 @@ QvisColorTableWindow::blueValueChanged(int b)
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
 
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[2]->blockSignals(true);
+            componentSliders[2]->blockSignals(true);
+            componentSpinBoxes[2]->setValue(c.blue());
+            componentSliders[2]->setValue(c.blue());
+            componentSpinBoxes[2]->blockSignals(false);
+            componentSliders[2]->blockSignals(false);
+            return;
+        }
+
         c.setRgb(c.red(), c.green(), b, c.alpha());
         ChangeSelectedColor(c);
     }
@@ -2485,6 +2536,23 @@ QvisColorTableWindow::alphaValueChanged(int a)
             c = discreteColors->selectedColor();
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[3]->blockSignals(true);
+            componentSliders[3]->blockSignals(true);
+            componentSpinBoxes[3]->setValue(c.alpha());
+            componentSliders[3]->setValue(c.alpha());
+            componentSpinBoxes[3]->blockSignals(false);
+            componentSliders[3]->blockSignals(false);
+            return;
+        }
 
         c.setRgb(c.red(), c.green(), c.blue(), a);
         ChangeSelectedColor(c);
