@@ -1611,7 +1611,7 @@ function build_sphinx
     # patch
     SED_CMD="sed -i "
     if [[ "$OPSYS" == "Darwin" ]]; then
-        SED_CMD="sed -i '' "
+        SED_CMD="sed -i '' " # the intention of this sed command is foiled by shell variable expansion
     fi
     pushd $SPHINX_BUILD_DIR > /dev/null
     ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./Sphinx.egg-info/requires.txt
@@ -1826,12 +1826,20 @@ function build_sphinx
         chgrp -R ${GROUP} "$VISITDIR/python"
     fi
 
-    # fix sh-bangs...on Darwin. If python is available in Xcode,
-    # sphinx scripts may get installed with sh-bangs that are absolute
-    # paths to Xcode's python interpreter. We want VisIt's python interp.
+    # fix shebangs. On Darwin, if python is available in Xcode,
+    # Sphinx scripts may get installed with shebangs that are absolute
+    # paths to Xcode's python interpreter. We want VisIt's python.
     if [[ "$OPSYS" == "Darwin" ]]; then
-        for f in ${VISIT_PYTHON_DIR}/bin/* ; do
-            ${SED_CMD} "1s@^#\!.*\$@#\!${VISIT_PYTHON_DIR}/bin/python3@" $f
+        for f in ${VISIT_PYTHON_DIR}/bin/*; do
+            if [[ -z "$(file $f | grep -i 'ascii text')" ]]; then
+                continue # Process only scripts
+            fi
+            # -i '' means do in-place...don't create backups
+            # 1s means do substitution only on line 1
+            # @ choosen as sep char for s sed cmd to not collide w/slashes
+            # ! needs to be escaped with a backslash
+            # don't use ${SED_CMD}
+            sed -i '' -e "1s@^#\!.*\$@#\!${VISIT_PYTHON_DIR}/bin/python3@" $f
         done
     fi
 
