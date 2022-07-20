@@ -894,7 +894,7 @@ function build_pillow
     CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS="${PYEXT_CFLAGS}" \
      CXXFLAGS="${PYEXT_CXXFLAGS}" \
      LDFLAGS="${PYEXT_LDFLAGS}" \
-     ${PYTHON_COMMAND} ./setup.py build_ext --disable-jpeg install --prefix="${PYHOME}"
+     ${PYTHON_COMMAND} ./setup.py build_ext --disable-webp --disable-webpmux --disable-freetype --disable-lcms --disable-tiff --disable-xcb --disable-jpeg2000 --disable-jpeg install --prefix="${PYHOME}"
     set +x
 
     if test $? -ne 0 ; then
@@ -1236,9 +1236,15 @@ function build_numpy
     popd > /dev/null
 
     pushd $NUMPY_BUILD_DIR > /dev/null
+    cat << \EOF > site.cfg
+[openblas]
+libraries =
+library_dirs =
+include_dirs =
+EOF
     info "Installing numpy (~ 2 min) ..."
     sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
-    ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
+    BLAS=None LAPACK=None ATLAS=None ${PYTHON_COMMAND} ./setup.py install --prefix="${PYHOME}"
     if test $? -ne 0 ; then
         popd > /dev/null
         warn "Could not install numpy"
@@ -1605,7 +1611,7 @@ function build_sphinx
     # patch
     SED_CMD="sed -i "
     if [[ "$OPSYS" == "Darwin" ]]; then
-                SED_CMD="sed -i \"\" "
+        SED_CMD="sed -i '' " # the intention of this sed command is foiled by shell variable expansion
     fi
     pushd $SPHINX_BUILD_DIR > /dev/null
     ${SED_CMD} "s/docutils>=0.12/docutils<0.16,>=0.12/" ./Sphinx.egg-info/requires.txt
@@ -1818,6 +1824,23 @@ function build_sphinx
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/python"
         chgrp -R ${GROUP} "$VISITDIR/python"
+    fi
+
+    # fix shebangs. On Darwin, if python is available in Xcode,
+    # Sphinx scripts may get installed with shebangs that are absolute
+    # paths to Xcode's python interpreter. We want VisIt's python.
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        for f in ${VISIT_PYTHON_DIR}/bin/*; do
+            if [[ -z "$(file $f | grep -i 'ascii text')" ]]; then
+                continue # Process only scripts
+            fi
+            # -i '' means do in-place...don't create backups
+            # 1s means do substitution only on line 1
+            # @ choosen as sep char for s sed cmd to not collide w/slashes
+            # ! needs to be escaped with a backslash
+            # don't use ${SED_CMD}
+            sed -i '' -e "1s@^#\!.*\$@#\!${VISIT_PYTHON_DIR}/bin/python3@" $f
+        done
     fi
 
     return 0
