@@ -364,6 +364,7 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
                 // add the user defined tag if it is user defined
                 if (! ccpl2.HasTag("User Defined"))
                     ccpl2.AddTag("User Defined");
+                ccpl2.SetBuiltIn(false);
             }
             else
             {
