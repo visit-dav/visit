@@ -1756,6 +1756,17 @@ QvisColorTableWindow::apply()
 void
 QvisColorTableWindow::alignControlPoints()
 {
+    // built-in CTs should not be editable
+    if (colorAtts->GetColorControlPoints(currentColorTable.toStdString())->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        return;
+    }
+
     // Align the control points.
     spectrumBar->blockSignals(true);
     spectrumBar->alignControlPoints();
@@ -1914,6 +1925,20 @@ QvisColorTableWindow::smoothingMethodChanged(int val)
 {
     // Get a pointer to the default color table's control points.
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
+    // built-in CTs should not be editable
+    if (ccpl->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        smoothingMethod->blockSignals(true);
+        smoothingMethod->setCurrentIndex(ccpl->GetSmoothing());
+        smoothingMethod->blockSignals(false);
+        return;
+    }
 
     if(ccpl)
     {
@@ -2222,8 +2247,7 @@ QvisColorTableWindow::setColorTableType(int index)
             QString tmp;
             tmp = tr("The color table ") +
                   QString("\"") + currentColorTable + QString("\"") +
-                  tr(" is built-in. You cannot change the type of a built-in "
-                     "color table.");
+                  tr(" is built-in. You cannot edit a built-in color table.");
             Error(tmp);
             colorTableTypeGroup->blockSignals(true);
             colorTableTypeGroup->button(ccpl->GetDiscreteFlag()?1:0)->setChecked(true);
