@@ -12,9 +12,12 @@ packages:
     - spec: bison@3.0.4
       prefix: /usr
   cmake:
+    buildable: false
     externals:
-    - spec: cmake@3.17.0
-      prefix: /usr
+    - spec: cmake@3.22.2
+      prefix: /sw/crusher/spack-envs/base/opt/cray-sles15-zen3/cce-14.0.0/cmake-3.22.2-syicnmhmmkzyyf2b2mgxlpgeptau6gck/bin
+      modules:
+      - cmake/3.22.2
   cpio:
     externals:
     - spec: cpio@2.12
@@ -91,12 +94,6 @@ packages:
   pkg-config:
     externals:
     - spec: pkg-config@0.29.2
-      prefix: /usr
-  python:
-    externals:
-    - spec: python@2.7.18+bz2+ctypes~dbm~lzma+nis+pyexpat+readline+sqlite3+ssl~tix~tkinter+uuid+zlib
-      prefix: /usr
-    - spec: python@3.6.13+bz2+ctypes~dbm+lzma+nis+pyexpat+readline+sqlite3+ssl~tix~tkinter+uuid+zlib
       prefix: /usr
   rsync:
     externals:
