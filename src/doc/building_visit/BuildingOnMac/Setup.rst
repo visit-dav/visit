@@ -142,6 +142,7 @@ Apart from commonly encountered issues building each third party library built b
 * Sometimes your own certificate can expire.
   Currently, Charles Heizer is the LLNL point of contact for adding developers and updating their expired certificates.
 * You might need to *evaluate* the validity of your certificate using `Apple KeyChain Certificate Assistant <https://support.apple.com/guide/keychain-access/determine-if-a-certificate-is-valid-kyca2794/mac>`__ to confirm its all working.
+* If you are VPN'd into LLNL, codesigning and notorizing a release may fail.
 * If you have MacPorts, Homebrew, Fink or other macOS package managers, python package builds may wind up enabling (and then creating a release that is dependent upon) libraries that are available only to users with similar package managers installed.
   Worse, you won't have any idea this has happend until you give the release to another developer who has a mac that is not using said package managers and they try to use it and it doesn't work due to missing libraries.
   You can use ``otool`` combined with ``find`` to try to find any cases where the release has such dependences.
