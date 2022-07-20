@@ -1710,7 +1710,9 @@ QvisColorTableWindow::Apply(bool ignore)
         GetViewerMethods()->UpdateColorTable(currentColorTable.toStdString());
     }
     else
+    {
         colorAtts->Notify();
+    }
 }
 
 //
@@ -1989,6 +1991,20 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 {
     // Get a pointer to the default color table's control points.
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
+    // built-in CTs should not be editable
+    if (ccpl->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        equalCheckBox->blockSignals(true);
+        equalCheckBox->setChecked(ccpl->GetEqualSpacingFlag());
+        equalCheckBox->blockSignals(false);
+        return;
+    }
 
     if(ccpl)
     {

@@ -226,10 +226,15 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
     }
     else
     {
-        colorTable = colorTableNames[buttonType][0];
-        setText(colorTable);
-        setToolTip(colorTable);
-        setIcon(getIcon(colorTable));
+        if (colorTableNames[buttonType].size() > 0)
+        {
+            colorTable = colorTableNames[buttonType][0];
+            setText(colorTable);
+            setToolTip(colorTable);
+            setIcon(getIcon(colorTable));
+        }
+        // If there are no available color tables, we don't want anything to
+        // change.
     }
 debug1 << "QvisNoDefaultColorTableButton::setColorTable ... done" << endl;
 }
@@ -483,8 +488,8 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
         {
             buttons[i]->setIcon(getIcon(buttons[i]->text()));
         }
-        // If there are no available color tables, we don't want the 
-        // entries to change.            
+        // If there are no available color tables, we don't want anything to
+        // change.
     }
 }
 
