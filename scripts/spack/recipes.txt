@@ -1,4 +1,4 @@
-Here are some reciptes for using spack to build VisIt on various systems.
+Here are some recipes for using spack to build VisIt on various systems.
 
 crusher.olcf.ornl.gov:
 
