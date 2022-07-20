@@ -180,7 +180,68 @@ Apart from commonly encountered issues building each third party library built b
 
       xcrun altool --notarization-info ``uuid`` --username ``username-email`` --password @keychain:VisIt
 
-  where ``uuid`` (also called the *request identifier*) is the id you get (in email or printed by masonry on the logs) and ``username-email`` is your Apple developer ID email address.
+  where ``uuid`` (also called the *request identifier*) is the id you get (in email or printed by masonry to the logs) and ``username-email`` is your Apple developer ID email address.
+  And, this should produce output like so... ::
+
+      No errors getting notarization info.
+
+                Date: 2022-07-18 18:59:44 +0000
+                Hash: af5e1231bae06e051e5f1a0cfa37219ec4cb5ec2f76971557d9389f1d8edcadd
+          LogFileURL: https://osxapps-ssl.itunes.apple.com/itunes-assets/Enigma122/v4/d6/a7/08/d6a7083b-c6d7-6e8f-8a3c-0db0d406d3da/developer_log.json?accessKey=1658530108_1173406174696701459_H%2BzLM3o4PjKeGN8jgdqPBTVz5wUY5BMY7R7Lvh8UrBmn6kxu%2F4XVdkvSsUE5wrAlbmW%2FCCLSRzU%2FUHBGNhgOa1DZDoXQXtXOAUx3sk1ptivix7dQhzQa11SU9EnbESN6PkZ5je9g4IOrqMdibbB7hhxhTgMvQhiKEO9BXjne9xs%3D
+         RequestUUID: 1a8b8756-9c4c-4908-b6db-387a5144ce43
+              Status: invalid
+         Status Code: 2
+      Status Message: Package Invalid
+
+  Cut and paste the ``LogFileURL`` into a browser to go examine the results.
+  Doing so for the above example yielded a json page like so... ::
+
+      {
+        "logFormatVersion": 1,
+        "jobId": "1a8b8756-9c4c-4908-b6db-387a5144ce43",
+        "status": "Invalid",
+        "statusSummary": "Archive contains critical validation errors",
+        "statusCode": 4000,
+        "archiveFilename": "VisIt.dmg",
+        "uploadDate": "2022-07-18T18:59:44Z",
+        "sha256": "af5e1231bae06e051e5f1a0cfa37219ec4cb5ec2f76971557d9389f1d8edcadd",
+        "ticketContents": null,
+        "issues": [
+          {
+            "severity": "error",
+            "code": null,
+            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_webp.cpython-37m-darwin.so",
+            "message": "The binary is not signed.",
+            "docUrl": null,
+            "architecture": "x86_64"
+          },
+          {
+            "severity": "error",
+            "code": null,
+            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_webp.cpython-37m-darwin.so",
+            "message": "The signature does not include a secure timestamp.",
+            "docUrl": null,
+            "architecture": "x86_64"
+          },
+          {
+            "severity": "error",
+            "code": null,
+            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_imagingft.cpython-37m-darwin.so",
+            "message": "The binary is not signed.",
+            "docUrl": null,
+            "architecture": "x86_64"
+          },
+          {
+            "severity": "error",
+            "code": null,
+            "path": "VisIt.dmg/VisIt.app/Contents/Resources/3.3.0/darwin-x86_64/lib/python/lib/python3.7/site-packages/Pillow-7.1.2-py3.7-macosx-10.15-x86_64.egg/PIL/_imagingft.cpython-37m-darwin.so",
+            "message": "The signature does not include a secure timestamp.",
+            "docUrl": null,
+            "architecture": "x86_64"
+          }
+        ]
+      }
+
 
 Signing macOS Builds
 ~~~~~~~~~~~~~~~~~~~~
