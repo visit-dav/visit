@@ -757,6 +757,9 @@ avtXRayImageQuery::SetFamilyFiles(const bool &flag)
 //    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
 //    Validity check for output type and error message if it is invalid.
 // 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use ostringstreams for error messages.
+// 
 // ****************************************************************************
 
 void
@@ -789,6 +792,9 @@ avtXRayImageQuery::SetOutputType(int type)
 //    Output type upgrade across the entire file. Magic numbers for output
 //    types are gone, replaced with new constants. Output type indexes the 
 //    new file protocols array.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use ostringstream for error messages.
 // 
 // ****************************************************************************
 
@@ -947,6 +953,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    extensively.
 //    Blueprint output has been added, with 4 output types.
 //    The output messages has been reorganized and refactored.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams for output messages, use ostringstreams for error
+//    messages, and set result messages for error cases.
 //
 // ****************************************************************************
 
@@ -1135,20 +1145,14 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             {
                 intensity= leaves[i]->GetPointData()->GetArray("Intensity");
                 if (intensity->GetDataType() == VTK_FLOAT)
-                {
                     WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (float*) intensity->GetVoidPointer(0));
-                }
                 else if (intensity->GetDataType() == VTK_DOUBLE)
-                {
                     WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (double*) intensity->GetVoidPointer(0));
-                }
                 else if (intensity->GetDataType() == VTK_INT)
-                {
                     WriteImage(out_filename_w_path.c_str(), i, numPixels,
                         (int*) intensity->GetVoidPointer(0));
-                }
             }
         }
         else if (outputType == RAWFLOATS_OUT)
@@ -1476,6 +1480,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 //  Modifications:
 //    Kevin Griffin, Tue Sep 27 16:52:14 PDT 2016
 //    Ensured that all nodes throw an exception when at least one node does.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use ostringstreams for error messages.
 //
 // ****************************************************************************
 void
@@ -1583,6 +1590,10 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
 // 
 //    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
 //    Changed magic numbers to their new constants.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams. Fixes issue with long baseName being written
+//    to fixed length buffers.
 //
 // ****************************************************************************
 
@@ -1685,6 +1696,9 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams.
 //
 // ****************************************************************************
 
@@ -1716,6 +1730,9 @@ avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams.
 //
 // ****************************************************************************
 

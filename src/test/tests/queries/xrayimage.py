@@ -24,6 +24,9 @@
 # 
 #    Justin Privitera, Wed Jun 15 16:43:34 PDT 2022
 #    Added tests for new blueprint output.
+# 
+#    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+#    Added query output msg tests and tests for query errors.
 #
 # ----------------------------------------------------------------------------
 
