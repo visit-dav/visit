@@ -489,7 +489,7 @@ QvisNoDefaultColorTableButton::updateColorTableButtons()
         {
             buttons[i]->setIcon(getIcon(buttons[i]->text()));
         }
-        // If there are no available color tables, we don't anything to
+        // If there are no available color tables, we don't want anything to
         // change.            
     }
 }
