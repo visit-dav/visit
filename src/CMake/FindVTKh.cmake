@@ -16,8 +16,9 @@
 #   Set VTKm_INCLUDE_DIRS.
 #
 #   Eric Brugger, Thu 21 Jul 2022 06:39:36 PM EDT
-#   Modified the logic to handle the case where a RELWITHDEBINFO build of
-#   VTKh was created. Modified the logic not to install static libraries.
+#   Modified the logic to install the shared VTK-h libraries in the case
+#   where VTK-h was built with RELWITHDEBINFO, which is the case when spack
+#   builds VTK-h. Modified the logic to not install static libraries.
 #
 #****************************************************************************/
 
