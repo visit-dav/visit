@@ -847,6 +847,12 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
                 // treat the mesh as an mfem mesh, even if it lacks a basis func
 
                 m_mfem_mesh_map[var_topo_name] = true;
+
+                std::string basis = n_field["basis"].as_string();
+                if (basis.find("H1_") == std::string::npos && m_new_refine)
+                {
+                    cent = AVT_ZONECENT;
+                }
             }
 
             if (ncomps == 1)

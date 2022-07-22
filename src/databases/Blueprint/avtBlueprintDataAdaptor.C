@@ -2026,16 +2026,12 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     // create the low order grid function
     mfem::FiniteElementCollection *lo_col = new mfem::LinearFECollection;
 
-#if 0
-    /*Note: The following code is commented out because it appears that
-    MFEM's LOR always gives us back node centered data,
-    no matter if the input is H1 or L2. However,
-    this logic may be relevant if the mesh is periodic,
-    which is currently unsupported, but may be in the future.*/
+    // H1 is nodal
+    // L2 is zonal
 
     std::string basis(gf->FESpace()->FEColl()->Name());
     // we only have L2 or H1 at this point
-    bool node_centered = basis.find("H1_") == std::string::npos;
+    bool node_centered = basis.find("H1_") != std::string::npos;
     if(node_centered)
     {
         lo_col = new mfem::LinearFECollection;
@@ -2045,7 +2041,6 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
         int  p = 0; // single scalar
         lo_col = new mfem::L2_FECollection(p, mesh->Dimension(), 1);
     }
-#endif
     
     // refine the mesh and convert to vtk
     // it would be nice if this was cached somewhere but we will do it again
