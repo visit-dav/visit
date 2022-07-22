@@ -662,6 +662,9 @@ avtBlueprintFileFormat::ReadBlueprintMatset(int domain,
 //
 //    Justin Privitera, Mon 07 Mar 2022 03:08:01 PM PST
 //    Added case for implicit points topology.
+// 
+//    Justin Privitera, Fri Jul 22 16:10:43 PDT 2022
+//    Added check for mfem zone centered field.
 //
 // ****************************************************************************
 void

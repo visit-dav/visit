@@ -1990,6 +1990,10 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 //
 //  Notes: See LegacyRefineGridFunctionToVTK for the function originally 
 //   with this name.
+// 
+//  Modifications:
+//     Justin Privitera, Fri Jul 22 16:10:43 PDT 2022
+//     Added back in the L2 logic, and fixed it.
 //
 // ****************************************************************************
 vtkDataArray *
