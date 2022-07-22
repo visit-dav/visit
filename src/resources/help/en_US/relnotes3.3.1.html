@@ -42,6 +42,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Added a patch to build_visit so that mili will build on Debian 11 systems using gcc 10.2."</li>
   <li>Enhanced the cmake packaging logic that adds the <code>libicui18n</code>, <code>libicudata</code> and <code>libicuuc</code> system libraries used by Qt to the lib directory to look in additional directories for the libraries to work on a broader set of operating systems.</li>
+  <li>Fixed a bug with <code>FindVTKh.cmake</code> where it wouldn't install the shared libraries when VTK-h was built with <code>spack</code>.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
