@@ -757,6 +757,9 @@ avtXRayImageQuery::SetFamilyFiles(const bool &flag)
 //    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
 //    Validity check for output type and error message if it is invalid.
 // 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use ostringstreams for error messages.
+// 
 // ****************************************************************************
 
 void
@@ -766,9 +769,9 @@ avtXRayImageQuery::SetOutputType(int type)
         outputType = type;
     else
     {
-        char errmsg[256];
-        snprintf(errmsg, 256, "Output type %d is invalid.", type);
-        EXCEPTION1(VisItException, errmsg);
+        std::ostringstream err_oss;
+        err_oss << "Output type " << type << " is invalid.\n";
+        EXCEPTION1(VisItException, err_oss.str());
     }
 }
 
@@ -790,6 +793,9 @@ avtXRayImageQuery::SetOutputType(int type)
 //    types are gone, replaced with new constants. Output type indexes the 
 //    new file protocols array.
 // 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use ostringstream for error messages.
+// 
 // ****************************************************************************
 
 void
@@ -806,9 +812,9 @@ avtXRayImageQuery::SetOutputType(const std::string &type)
         }
         i ++;
     }
-    char errmsg[256];
-    snprintf(errmsg, 256, "Output type %s is invalid.", type.c_str());
-    EXCEPTION1(VisItException, errmsg);
+    std::ostringstream err_oss;
+    err_oss << "Output type " << type << " is invalid.\n";
+    EXCEPTION1(VisItException, err_oss.str());
 }
 
 // ****************************************************************************
@@ -947,6 +953,10 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    extensively.
 //    Blueprint output has been added, with 4 output types.
 //    The output messages has been reorganized and refactored.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams for output messages, use ostringstreams for error
+//    messages, and set result messages for error cases.
 //
 // ****************************************************************************
 
@@ -956,9 +966,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     // check validity of output type before proceeding
     if (!outputTypeValid(outputType))
     {
-        char errmsg[256];
-        snprintf(errmsg, 256, "Output type %d is invalid.", outputType);
-        EXCEPTION1(VisItException, errmsg);
+        std::ostringstream err_oss;
+        err_oss << "Output type " << outputType << " is invalid.\n";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
     }
     // It would be nice to have something that could check the validity of the 
     // output directory without needing conduit.
@@ -966,9 +977,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
     // check if output directory exists before proceeding
     if (!conduit::utils::is_directory(outputDir))
     {
-        char errmsg[256];
-        snprintf(errmsg, 256, "Directory %s does not exist.", outputDir.c_str());
-        EXCEPTION1(VisItException, errmsg);
+        std::ostringstream err_oss;
+        err_oss << "Directory " << outputDir << " does not exist.\n";
+        SetResultMessage(err_oss.str());
+        EXCEPTION1(VisItException, err_oss.str());
     }
 #endif
 
@@ -1062,6 +1074,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             delete [] leaves;
             delete filt;
 
+            SetResultMessage("There must be at least one bin.");
             EXCEPTION1(VisItException, "There must be at least one bin.");
         }
 
@@ -1276,9 +1289,10 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 WriteArrays<int>(leaves, intensity_vals, depth_vals, numBins);
             else
             {
-                char msg[256];
-                snprintf(msg, 256, "VTKDataType %d is not supported.", datatype);
-                EXCEPTION1(VisItException, msg);
+                std::ostringstream err_oss;
+                err_oss << "VTKDataType " << datatype << " is not supported.\n";
+                SetResultMessage(err_oss.str());
+                EXCEPTION1(VisItException, err_oss.str());
             }
 
             // set strides
@@ -1314,6 +1328,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
             if(!conduit::blueprint::mesh::verify(data_out, verify_info))
             {
                 verify_info.print();
+                SetResultMessage("Blueprint mesh verification failed!");
                 EXCEPTION1(VisItException, "Blueprint mesh verification failed!");
             }
 
@@ -1359,23 +1374,31 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                 err_oss <<  "Conduit Exception in X Ray Image Query "
                             << "Execute: " << endl
                             << e.message();
+                SetResultMessage(err_oss.str());
                 EXCEPTION1(VisItException, err_oss.str());
             }
             
 #else
             char errmsg[256];
             // this is safe because at the beginning of the function we check that the output type is valid
-            snprintf(errmsg, 256, "Visit was not installed with conduit, "
-                "which is needed for output type %s.", file_protocols[outputType]);
-            EXCEPTION1(VisItException, errmsg);
+            std::ostringstream err_oss;
+            err_oss << "Visit was not installed with conduit, "
+                        << "which is needed for output type "
+                        << file_protocols[outputType]
+                        << "." << std::endl;
+            SetResultMessage(err_oss.str());
+            EXCEPTION1(VisItException, err_oss.str());
 #endif
         }
         else
         {
-            char errmsg[256];
             // this is safe because at the beginning of the function we check that the output type is valid
-            snprintf(errmsg, 256, "No logic implemented for output type %s.", file_protocols[outputType]);
-            EXCEPTION1(VisItException, errmsg);
+            std::ostringstream err_oss;
+            err_oss << "No logic implemented for output type "
+                        << file_protocols[outputType]
+                        << "." << std::endl;
+            SetResultMessage(err_oss.str());
+            EXCEPTION1(VisItException, err_oss.str());
         }
 
 
@@ -1385,45 +1408,53 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
         if (outputTypeValid(outputType))
         {
             std::string msg = "";
-            char buf[512];
+            std::stringstream buf;
 
             if (outputTypeIsBmpJpegPngOrTif(outputType))
             {
                 if (numBins == 1)
-                    snprintf(buf, 512, "The x ray image query results were "
-                        "written to the file %s00.%s\n", out_filename_w_path.c_str(),
-                        file_extensions[outputType]);
+                    buf << "The x ray image query results were "
+                        << "written to the file "
+                        << out_filename_w_path << "00."
+                        << file_extensions[outputType] << "\n";
                 else
-                    snprintf(buf, 512, "The x ray image query results were "
-                        "written to the files %s00.%s - %s%02d.%s\n",
-                        out_filename_w_path.c_str(), file_extensions[outputType], out_filename_w_path.c_str(), numBins - 1,
-                        file_extensions[outputType]);
+                    buf << "The x ray image query results were "
+                        << "written to the files "
+                        << out_filename_w_path << "00."
+                        << file_extensions[outputType]
+                        << " - " << out_filename_w_path
+                        << std::setfill('0') << std::setw(2)
+                        << numBins - 1 << "."
+                        << file_extensions[outputType] << "\n";
             }
             else if (outputTypeIsRawfloatsOrBov(outputType))
-            {
-                snprintf(buf, 512, "The x ray image query results were "
-                    "written to the files %s00.%s - %s%02d.%s\n",
-                    out_filename_w_path.c_str(), file_extensions[outputType], out_filename_w_path.c_str(), 2*numBins - 1,
-                    file_extensions[outputType]);                
-            }
+                buf << "The x ray image query results were "
+                    << "written to the files "
+                    << out_filename_w_path << "00."
+                    << file_extensions[outputType]
+                    << " - " << out_filename_w_path
+                    << std::setfill('0') << std::setw(2)
+                    << 2*numBins - 1 << "."
+                    << file_extensions[outputType] << "\n";
             else if (outputTypeIsBlueprint(outputType))
-            {
 #ifdef HAVE_CONDUIT
-                snprintf(buf, 512, "The x ray image query results were "
-                    "written to the file %s.%s\n", out_filename_w_path.c_str(), 
-                    file_extensions[outputType]);
+                buf << "The x ray image query results were "
+                    << "written to the file "
+                    << out_filename_w_path << "."
+                    << file_extensions[outputType] << "\n";
 #endif
-            }
             else
             {
-                char errmsg[256];
                 // this is safe because at the beginning of the function we check that the output type is valid
-                snprintf(errmsg, 256, "No output message implemented for output type %s.", file_protocols[outputType]);
-                EXCEPTION1(VisItException, errmsg);
+                std::ostringstream err_oss;
+                err_oss << "No output message implemented for output type "
+                            << file_protocols[outputType] << "." << std::endl;
+                SetResultMessage(err_oss.str());
+                EXCEPTION1(VisItException, err_oss.str());
 
             }
 
-            msg += buf;
+            msg += buf.str();
 
             SetResultMessage(msg);
         }
@@ -1458,6 +1489,9 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
 //  Modifications:
 //    Kevin Griffin, Tue Sep 27 16:52:14 PDT 2016
 //    Ensured that all nodes throw an exception when at least one node does.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use ostringstreams for error messages.
 //
 // ****************************************************************************
 void
@@ -1466,7 +1500,7 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
     int foundError = 0;     // 0=false, 1=true
     bool isArgException = false;
     bool isAbs = false;
-    char msg[256];
+    std::ostringstream msg;
     
     for (int i = 0; i < nsets; i++)
     {
@@ -1477,10 +1511,8 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
         {
             if (dataSets[i]->GetPointData()->GetArray(absVarName.c_str()) != NULL)
             {
-                snprintf(msg,256, "Variable %s is node-centered, but "
-                         "it must be zone-centered for this query.",
-                         absVarName.c_str());
-                
+                msg << "Variable " << absVarName << " is node-centered, but "
+                    << "it must be zone-centered for this query.\n";
                 foundError = 1;
                 isAbs = true;
                 break;
@@ -1498,10 +1530,8 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
             if (dataSets[i]->GetPointData()->GetArray(emisVarName.c_str())
                 != NULL)
             {
-                snprintf(msg,256, "Variable %s is node-centered, but "
-                         "it must be zone-centered for this query.",
-                         emisVarName.c_str());
-                
+                msg << "Variable " << emisVarName << " is node-centered, but "
+                    << "it must be zone-centered for this query.\n";
                 foundError = 1;
                 break;
             }
@@ -1523,15 +1553,18 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
         {
             if(isArgException)
             {
+                SetResultMessage(isAbs ? absVarName : emisVarName);
                 EXCEPTION1(QueryArgumentException, isAbs ? absVarName.c_str() : emisVarName.c_str());
             }
             else
             {
-                EXCEPTION1(ImproperUseException, msg);
+                SetResultMessage(msg.str());
+                EXCEPTION1(ImproperUseException, msg.str());
             }
         }
         else
         {
+            SetResultMessage("Exception encountered on another node");
             EXCEPTION1(VisItException, "Exception encountered on another node");
         }
     }
@@ -1540,8 +1573,10 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
     int maxNsets = UnifyMaximumValue(nsets);
     if(maxNsets <= 0)
     {
-        snprintf(msg, 256, "Variables %s and %s resulted in no data being selected.", absVarName.c_str(), emisVarName.c_str());
-        EXCEPTION1(VisItException, msg);
+        msg << "Variables " << absVarName << " and " << emisVarName 
+            << " resulted in no data being selected.\n";
+        SetResultMessage(msg.str());
+        EXCEPTION1(VisItException, msg.str());
     }
 }
 
@@ -1564,6 +1599,10 @@ avtXRayImageQuery::CheckData(vtkDataSet **dataSets,  const int nsets)
 // 
 //    Justin Privitera, Tue Jun 14 11:30:54 PDT 2022
 //    Changed magic numbers to their new constants.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams. Fixes issue with long baseName being written
+//    to fixed length buffers.
 //
 // ****************************************************************************
 
@@ -1608,12 +1647,15 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
         ipixel++;
     }
 
+    std::stringstream fileName;
+    fileName << baseName << std::setfill('0') << std::setw(2) << iImage;
+
     if (outputType == BMP_OUT)
     {
         vtkImageWriter *writer = vtkBMPWriter::New();
-        char fileName[24];
-        sprintf(fileName, "%s%02d.bmp", baseName, iImage);
-        writer->SetFileName(fileName);
+        std::stringstream fileName;
+        fileName << ".bmp";
+        writer->SetFileName(fileName.str().c_str());
         writer->SetInputData(image);
         writer->Write();
         writer->Delete();
@@ -1621,9 +1663,8 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
     else if (outputType == JPEG_OUT)
     {
         vtkImageWriter *writer = vtkJPEGWriter::New();
-        char fileName[24];
-        sprintf(fileName, "%s%02d.jpg", baseName, iImage);
-        writer->SetFileName(fileName);
+        fileName << ".jpg";
+        writer->SetFileName(fileName.str().c_str());
         writer->SetInputData(image);
         writer->Write();
         writer->Delete();
@@ -1631,9 +1672,8 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
     else if (outputType == PNG_OUT)
     {
         vtkImageWriter *writer = vtkPNGWriter::New();
-        char fileName[24];
-        sprintf(fileName, "%s%02d.png", baseName, iImage);
-        writer->SetFileName(fileName);
+        fileName << ".png";
+        writer->SetFileName(fileName.str().c_str());
         writer->SetInputData(image);
         writer->Write();
         writer->Delete();
@@ -1641,9 +1681,8 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
     else if (outputType == TIF_OUT)
     {
         vtkImageWriter *writer = vtkTIFFWriter::New();
-        char fileName[24];
-        sprintf(fileName, "%s%02d.tif", baseName, iImage);
-        writer->SetFileName(fileName);
+        fileName << ".tif";
+        writer->SetFileName(fileName.str().c_str());
         writer->SetInputData(image);
         writer->Write();
         writer->Delete();
@@ -1666,6 +1705,9 @@ avtXRayImageQuery::WriteImage(const char *baseName, int iImage, int nPixels,
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams.
 //
 // ****************************************************************************
 
@@ -1674,9 +1716,9 @@ void
 avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
     T *fbuf)
 {
-    char fileName[512];
-    sprintf(fileName, "%s%02d.bof", baseName, iImage);
-    FILE *file = fopen(fileName, "w");
+    std::stringstream fileName;
+    fileName << baseName << std::setfill('0') << std::setw(2) << iImage << ".bof";
+    FILE *file = fopen(fileName.str().c_str(), "w");
     fwrite(fbuf, sizeof(T), nPixels, file);
     fclose(file);
 }
@@ -1697,6 +1739,9 @@ avtXRayImageQuery::WriteFloats(const char *baseName, int iImage, int nPixels,
 //
 //    Eric Brugger, Wed May 27 14:37:36 PDT 2015
 //    I added an option to family output files.
+// 
+//    Justin Privitera, Wed Jul 20 13:54:06 PDT 2022
+//    Use stringstreams.
 //
 // ****************************************************************************
 
@@ -1704,9 +1749,9 @@ void
 avtXRayImageQuery::WriteBOVHeader(const char *baseName, const char *varName,
     int iBin, int nx, int ny, const char *type)
 {
-    char fileName[24];
-    sprintf(fileName, "%s%02d.bov", baseName, iBin);
-    FILE *file = fopen(fileName, "w");
+    std::stringstream fileName;
+    fileName << baseName << std::setfill('0') << std::setw(2) << iBin << ".bov";
+    FILE *file = fopen(fileName.str().c_str(), "w");
     fprintf(file, "TIME: 0\n");
     fprintf(file, "DATA_FILE: %s%02d.bof\n", baseName, iBin);
     fprintf(file, "DATA_SIZE: %d %d 1\n", nx, ny);
