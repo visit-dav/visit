@@ -1795,21 +1795,25 @@ QvisColorTableWindow::alignControlPoints()
 // ****************************************************************************
 
 void
-QvisColorTableWindow::controlPointMoved(int, float)
+QvisColorTableWindow::controlPointMoved(int index, float position)
 {
+    // Get a pointer to the default color table's control points.
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
     // built-in CTs should not be editable
-    if (colorAtts->GetColorControlPoints(currentColorTable.toStdString())->GetBuiltIn())
+    if (ccpl->GetBuiltIn())
     {
         QString tmp;
-        tmp = tr("controlPointMoved");
-        // tmp = tr("The color table ") +
-        //       QString("\"") + currentColorTable + QString("\"") +
-        //       tr(" is built-in. You cannot edit a built-in color table.");
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
         Error(tmp);
-        // colorNumColors->blockSignals(true);
-        // colorNumColors->setValue(ccpl->GetNumControlPoints());
-        // colorNumColors->blockSignals(false);
-        // return;
+        float old_cp_pos = ccpl->GetControlPoints(index).GetPosition();
+        std::cout << index << ", " << old_cp_pos << std::endl;
+        spectrumBar->blockSignals(true);
+        spectrumBar->setControlPointPosition(index, old_cp_pos);
+        spectrumBar->blockSignals(false);
+        return;
     }
     
     // Get the current attributes.
@@ -1840,21 +1844,6 @@ QvisColorTableWindow::controlPointMoved(int, float)
 void
 QvisColorTableWindow::chooseContinuousColor(int index, const QPoint &p)
 {
-    // built-in CTs should not be editable
-    if (colorAtts->GetColorControlPoints(currentColorTable.toStdString())->GetBuiltIn())
-    {
-        QString tmp;
-        tmp = tr("chooseContinuousColor");
-        // tmp = tr("The color table ") +
-        //       QString("\"") + currentColorTable + QString("\"") +
-        //       tr(" is built-in. You cannot edit a built-in color table.");
-        Error(tmp);
-        // colorNumColors->blockSignals(true);
-        // colorNumColors->setValue(ccpl->GetNumControlPoints());
-        // colorNumColors->blockSignals(false);
-        // return;
-    }
-
     popupMode = SELECT_FOR_CONTINUOUS;
     PopupColorSelect(spectrumBar->controlPointColor(index), p);
 }
@@ -2336,21 +2325,6 @@ QvisColorTableWindow::setColorTableType(int index)
 void
 QvisColorTableWindow::activateContinuousColor(int index)
 {
-    // built-in CTs should not be editable
-    if (colorAtts->GetColorControlPoints(currentColorTable.toStdString())->GetBuiltIn())
-    {
-        QString tmp;
-        tmp = tr("activateContinuousColor");
-        // tmp = tr("The color table ") +
-        //       QString("\"") + currentColorTable + QString("\"") +
-        //       tr(" is built-in. You cannot edit a built-in color table.");
-        Error(tmp);
-        // colorNumColors->blockSignals(true);
-        // colorNumColors->setValue(ccpl->GetNumControlPoints());
-        // colorNumColors->blockSignals(false);
-        // return;
-    }
-
     ShowSelectedColor(spectrumBar->controlPointColor(index));
 }
 
