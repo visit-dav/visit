@@ -1437,12 +1437,14 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                     << 2*numBins - 1 << "."
                     << file_extensions[outputType] << "\n";
             else if (outputTypeIsBlueprint(outputType))
+            {
 #ifdef HAVE_CONDUIT
                 buf << "The x ray image query results were "
                     << "written to the file "
                     << out_filename_w_path << "."
                     << file_extensions[outputType] << "\n";
 #endif
+            }
             else
             {
                 // this is safe because at the beginning of the function we check that the output type is valid
