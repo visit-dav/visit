@@ -86,26 +86,35 @@ avtMOABFileFormat::avtMOABFileFormat(const char *filename, const DBOptionsAttrib
 //
 // ****************************************************************************
 
-avtMOABFileFormat::~avtMOABFileFormat()
-{
-	debug1 << " avtMOABFileFormat::~avtMOABFileFormat: freeing file descriptor\n";
-	if (file_descriptor)
-	{
-		free(file_descriptor);
-		file_descriptor=NULL;
-	}
-	delete mbCore;
+avtMOABFileFormat::~avtMOABFileFormat() {
+    debug1 << " avtMOABFileFormat::~avtMOABFileFormat: freeing file descriptor\n";
+    if (file_descriptor) {
+        free(file_descriptor);
+        file_descriptor = NULL;
+    }
+    if (mbCore) {
+        delete mbCore;
+        mbCore = NULL;
+    }
 }
 void
-avtMOABFileFormat::FreeUpResources(void)
-{
-	debug1 << " avtMOABFileFormat::FreeUpResources: freeing file descriptor\n";
-    free  (file_descriptor);
-    file_descriptor = NULL;
+avtMOABFileFormat::FreeUpResources(void) {
+    debug1 << " avtMOABFileFormat::FreeUpResources: freeing file descriptor\n";
+    if (file_descriptor) {
+        free(file_descriptor);
+        file_descriptor = NULL;
+    }
 #ifdef PARALLEL
-    delete pcomm;
+	if (pcomm)
+	{
+		delete pcomm;
+		pcomm = NULL;
+	}
 #endif
-    delete mbCore;
+    if (mbCore) {
+        delete mbCore;
+        mbCore = NULL;
+    }
 }
 
 void
@@ -585,7 +594,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
         //
         // Create the unstructured mesh
         //
-        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New(); 
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
 
         {
             // Get the list of vertices
@@ -607,7 +616,7 @@ avtMOABFileFormat::GetMesh(int domain, const char *meshname)
                 pts[i] = static_cast<float> (coords[i]);
             }
             coords.clear();
-            
+
             ugrid->SetPoints(points);
             points->Delete();
         }
