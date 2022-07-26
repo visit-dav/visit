@@ -202,9 +202,6 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
     // these redirect conduit info and warnings to debug 5
     conduit::utils::set_info_handler(blueprint_plugin_info_handler);
     conduit::utils::set_warning_handler(blueprint_plugin_warning_handler);
-    // this catches any uncaught conduit errors, logs them to debug 1
-    // and  converts them into a VisIt Exception
-    // conduit::utils::set_error_handler(blueprint_plugin_error_handler);
 }
 
 avtBlueprintFileFormat::~avtBlueprintFileFormat()
