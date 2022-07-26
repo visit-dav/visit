@@ -1770,6 +1770,10 @@ avtBlueprintDataAdaptor::MFEM::LowOrderMeshToVTK(mfem::Mesh *mesh)
 //
 // Notes: See LegacyRefineMeshToVTK for the function originally 
 //   with this name.
+// 
+// Modifications:
+//    Justin Privitera, Tue Jul 26 13:04:31 PDT 2022
+//    Use new makerefined constructor.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -1990,6 +1994,7 @@ avtBlueprintDataAdaptor::MFEM::LowOrderGridFunctionToVTK(mfem::GridFunction *gf)
 //  Modifications:
 //     Justin Privitera, Fri Jul 22 16:10:43 PDT 2022
 //     Added back in the L2 logic, and fixed it.
+//     Use new makerefined constructor.
 //
 // ****************************************************************************
 vtkDataArray *
