@@ -1797,13 +1797,9 @@ avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mfem::Mesh *mesh,
     BP_PLUGIN_INFO("High Order Mesh is not periodic.");
 
     // refine the mesh
-    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, 
-                                         lod, 
-                                         mfem::BasisType::GaussLobatto);
+    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
 
-    vtkDataSet *retval = LowOrderMeshToVTK(lo_mesh);
-    delete lo_mesh;
-    return retval;
+    return LowOrderMeshToVTK(&lo_mesh);
 }
 
 // ****************************************************************************
@@ -2028,7 +2024,7 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
             "RefineGridFunctionToVTK: high order gf finite element space is null");
     }
     // create the low order grid function
-    mfem::FiniteElementCollection *lo_col = new mfem::LinearFECollection;
+    mfem::FiniteElementCollection *lo_col;
 
     // H1 is nodal
     // L2 is zonal
@@ -2048,21 +2044,17 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     
     // refine the mesh and convert to vtk
     // it would be nice if this was cached somewhere but we will do it again
-    mfem::Mesh *lo_mesh = new mfem::Mesh(mesh, lod, 
-                                         mfem::BasisType::GaussLobatto);
-    mfem::FiniteElementSpace *lo_fes = new mfem::FiniteElementSpace(lo_mesh, lo_col, ho_fes->GetVDim());
-    mfem::GridFunction *lo_gf = new mfem::GridFunction(lo_fes);
+    mfem::Mesh lo_mesh = mfem::Mesh::MakeRefined(*mesh, lod, mfem::BasisType::GaussLobatto);
+    mfem::FiniteElementSpace lo_fes(&lo_mesh, lo_col, ho_fes->GetVDim());
+    mfem::GridFunction lo_gf(&lo_fes);
     // transform the higher order function to a low order function somehow
     mfem::OperatorHandle hi_to_lo;
-    lo_fes->GetTransferOperator(*ho_fes, hi_to_lo);
-    hi_to_lo.Ptr()->Mult(*gf, *lo_gf);
+    lo_fes.GetTransferOperator(*ho_fes, hi_to_lo);
+    hi_to_lo.Ptr()->Mult(*gf, lo_gf);
 
-    vtkDataArray *retval = LowOrderGridFunctionToVTK(lo_gf);
+    vtkDataArray *retval = LowOrderGridFunctionToVTK(&lo_gf);
     
-    delete lo_mesh;
     delete lo_col;
-    delete lo_fes;
-    delete lo_gf;
 
     return retval;
 }
