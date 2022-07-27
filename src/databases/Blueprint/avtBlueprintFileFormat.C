@@ -851,7 +851,11 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
                 m_mfem_mesh_map[var_topo_name] = true;
 
+                // H1 is nodal
+                // L2 is zonal
                 std::string basis = n_field["basis"].as_string();
+                // if the basis is *not* H1 (it is L2 instead) 
+                // and new LOR is turned on
                 if (basis.find("H1_") == std::string::npos && m_new_refine)
                 {
                     cent = AVT_ZONECENT;
