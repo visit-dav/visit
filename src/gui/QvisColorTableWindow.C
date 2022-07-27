@@ -1808,11 +1808,19 @@ QvisColorTableWindow::controlPointMoved(int index, float position)
               QString("\"") + currentColorTable + QString("\"") +
               tr(" is built-in. You cannot edit a built-in color table.");
         Error(tmp);
-        float old_cp_pos = ccpl->GetControlPoints(index).GetPosition();
-        std::cout << index << ", " << old_cp_pos << std::endl;
         spectrumBar->blockSignals(true);
-        spectrumBar->setControlPointPosition(index, old_cp_pos);
-        spectrumBar->blockSignals(false);
+        // this is overkill, but it gets the job done.
+        const int num_ctrl_pts = ccpl->GetNumControlPoints();
+        for (int i = 0; i < num_ctrl_pts; i ++)
+        {
+            float pos = ccpl->GetControlPoints(i).GetPosition();
+            unsigned char *colors = ccpl->GetControlPoints(i).GetColors();
+            QColor c;
+            c.setRgb(colors[0], colors[1], colors[2], colors[3]);
+            spectrumBar->setControlPointPosition(i, pos);
+            spectrumBar->setControlPointColor(i, c);
+        }
+        spectrumBar->blockSignals(false);        
         return;
     }
     
