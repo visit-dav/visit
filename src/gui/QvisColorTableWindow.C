@@ -1915,6 +1915,9 @@ QvisColorTableWindow::chooseDiscreteColor(const QColor &c, int, int,
 //   Brad Whitlock, Thu Nov 21 12:54:01 PDT 2002
 //   I modified the routine so it behaves differently if the menu was
 //   activated by choosing a discrete color table.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -1923,6 +1926,23 @@ QvisColorTableWindow::selectedColor(const QColor &color)
 {
     // Hide the popup menu.
     colorSelect->hide();
+
+    // Get a pointer to the default color table's control points.
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
+    // built-in CTs should not be editable
+    if (ccpl->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        smoothingMethod->blockSignals(true);
+        smoothingMethod->setCurrentIndex(ccpl->GetSmoothing());
+        smoothingMethod->blockSignals(false);
+        return;
+    }
 
     if(color.isValid())
     {
