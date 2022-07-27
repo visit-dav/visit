@@ -70,60 +70,6 @@ using std::string;
 using namespace conduit;
 using namespace mfem;
 
-
-//-----------------------------------------------------------------------------
-// These methods are used to re-wire conduit's default error handling
-//-----------------------------------------------------------------------------
-void
-blueprint_plugin_print_msg(const std::string &msg,
-                           const std::string &file,
-                           int line)
-{
-    // Uncomment for very verbose traces:
-    //
-    // debug5 << "File:"    << file << std::endl
-    //        << "Line:"    << line << std::endl
-    //        << "Message:" << msg  << std::endl;
-    debug5 << msg  << std::endl;
-}
-
-//-----------------------------------------------------------------------------
-void
-blueprint_plugin_info_handler(const std::string &msg,
-                              const std::string &file,
-                              int line)
-{
-    blueprint_plugin_print_msg(msg,file,line);
-}
-
-
-//-----------------------------------------------------------------------------
-void
-blueprint_plugin_warning_handler(const std::string &msg,
-                                 const std::string &file,
-                                 int line)
-{
-    blueprint_plugin_print_msg(msg,file,line);
-}
-
-//-----------------------------------------------------------------------------
-void
-blueprint_plugin_error_handler(const std::string &msg,
-                               const std::string &file,
-                               int line)
-{
-    std::ostringstream bp_err_oss;
-    bp_err_oss << "[ERROR]"
-               << "File:"    << file << std::endl
-               << "Line:"    << line << std::endl
-               << "Message:" << msg  << std::endl;
-
-    debug1 << bp_err_oss.str();
-
-    BP_PLUGIN_EXCEPTION1(InvalidVariableException, bp_err_oss.str());
-
-}
-
 // ****************************************************************************
 //  Method: avtBlueprintFileFormat::FetchMeshAndTopoNames
 //
@@ -199,9 +145,8 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
 
     m_tree_cache = new avtBlueprintTreeCache();
 
-    // these redirect conduit info and warnings to debug 5
-    conduit::utils::set_info_handler(blueprint_plugin_info_handler);
-    conduit::utils::set_warning_handler(blueprint_plugin_warning_handler);
+    // TODO this should be called in the engine at startup instead of here
+    avtConduitBlueprintDataAdaptor::SetInfoWarningHandlers();
 }
 
 avtBlueprintFileFormat::~avtBlueprintFileFormat()

@@ -83,6 +83,9 @@ public:
       static void VTKToBlueprint(conduit::Node &mesh,
                                  vtkDataSet* dataset,
                                  const int ndims);
+
+      // set warning and info handlers to redirect conduit warnings and info
+      static void SetInfoWarningHandlers();
 };
 
 #endif

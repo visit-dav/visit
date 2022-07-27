@@ -40,6 +40,7 @@
 #include <conduit.hpp>
 #include <conduit_blueprint.hpp>
 #include "avtConduitBlueprintLogging.h"
+#include "avtConduitBlueprintInfoWarningHandler.h"
 
 //-----------------------------------------------------------------------------
 // vtk includes
@@ -65,6 +66,16 @@
 
 using std::string;
 using namespace conduit;
+
+void
+avtConduitBlueprintDataAdaptor::SetInfoWarningHandlers()
+{
+    // these redirect conduit info and warnings to debug 5
+    conduit::utils::set_info_handler(
+        avtConduitBlueprintInfoWarningHandler::avt_conduit_blueprint_info_handler);
+    conduit::utils::set_warning_handler(
+        avtConduitBlueprintInfoWarningHandler::avt_conduit_blueprint_warning_handler);
+}
 
 // ****************************************************************************
 // ****************************************************************************
