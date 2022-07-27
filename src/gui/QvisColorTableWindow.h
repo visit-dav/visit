@@ -122,7 +122,7 @@ protected:
     void GetCurrentValues(int which_widget);
     const ColorControlPointList *GetDefaultColorControlPoints() const;
           ColorControlPointList *GetDefaultColorControlPoints();
-    void ShowSelectedColor(const QColor &c);
+    void ShowSelectedColor(const QColor &c, bool skip_update = false);
     void ChangeSelectedColor(const QColor &c);
     void PopupColorSelect(const QColor &, const QPoint &p);
     QColor GetNextColor();

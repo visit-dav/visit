@@ -1424,25 +1424,28 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
 // ****************************************************************************
 
 void
-QvisColorTableWindow::ShowSelectedColor(const QColor &c)
+QvisColorTableWindow::ShowSelectedColor(const QColor &c, bool skip_update)
 {
     int i;
 
-    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
-    bool updateDiscrete = (ccpl && ccpl->GetDiscreteFlag());
+    if (!skip_update)
+    {
+        const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+        bool updateDiscrete = (ccpl && ccpl->GetDiscreteFlag());
 
-    // Update the color
-    if(updateDiscrete)
-    {
-        discreteColors->blockSignals(true);
-        discreteColors->setPaletteColor(c, discreteColors->selectedIndex());
-        discreteColors->blockSignals(false);
-    }
-    else
-    {
-        spectrumBar->blockSignals(true);
-        spectrumBar->setControlPointColor(spectrumBar->activeControlPoint(), c);
-        spectrumBar->blockSignals(false);
+        // Update the color
+        if(updateDiscrete)
+        {
+            discreteColors->blockSignals(true);
+            discreteColors->setPaletteColor(c, discreteColors->selectedIndex());
+            discreteColors->blockSignals(false);
+        }
+        else
+        {
+            spectrumBar->blockSignals(true);
+            spectrumBar->setControlPointColor(spectrumBar->activeControlPoint(), c);
+            spectrumBar->blockSignals(false);
+        }
     }
 
     // Disable signals in the sliders.
@@ -1820,6 +1823,8 @@ QvisColorTableWindow::controlPointMoved(int index, float position)
             spectrumBar->setControlPointPosition(i, pos);
             spectrumBar->setControlPointColor(i, c);
         }
+        QColor selectedColor = spectrumBar->controlPointColor(index);
+        ShowSelectedColor(selectedColor, true);
         spectrumBar->blockSignals(false);        
         return;
     }
