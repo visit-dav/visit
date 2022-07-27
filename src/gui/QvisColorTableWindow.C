@@ -1420,6 +1420,10 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Added new `skip_update` argument which will prevent the current ctrl pt
+//    from having its color changed if enabled.
 //
 // ****************************************************************************
 
@@ -1612,6 +1616,9 @@ QvisColorTableWindow::GetNextColor()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added logic to preserve the tags.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Logic to preserve builtin attribute.
 //
 // ****************************************************************************
 
@@ -1713,9 +1720,7 @@ QvisColorTableWindow::Apply(bool ignore)
         GetViewerMethods()->UpdateColorTable(currentColorTable.toStdString());
     }
     else
-    {
         colorAtts->Notify();
-    }
 }
 
 //
@@ -1755,6 +1760,9 @@ QvisColorTableWindow::apply()
 // Modifications:
 //   Brad Whitlock, Mon Jul 14 15:04:07 PST 2003
 //   Added code to block signals.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table.
 //
 // ****************************************************************************
 
@@ -1794,6 +1802,8 @@ QvisColorTableWindow::alignControlPoints()
 // Creation:   Mon Jun 11 11:39:32 PDT 2001
 //
 // Modifications:
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -1812,7 +1822,7 @@ QvisColorTableWindow::controlPointMoved(int index, float position)
               tr(" is built-in. You cannot edit a built-in color table.");
         Error(tmp);
         spectrumBar->blockSignals(true);
-        // this is overkill, but it gets the job done.
+        // This is overkill, but it gets the job done.
         const int num_ctrl_pts = ccpl->GetNumControlPoints();
         for (int i = 0; i < num_ctrl_pts; i ++)
         {
@@ -1951,6 +1961,9 @@ QvisColorTableWindow::selectedColor(const QColor &color)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2015,7 +2028,10 @@ QvisColorTableWindow::showIndexHintsToggled(bool val)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-//
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
+// 
 // ****************************************************************************
 
 void
@@ -2081,6 +2097,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // 
 //   Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //   Added error if users try to add a color table while searching is enabled.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Set builtin flag to false for new color tables.
 //
 // ****************************************************************************
 
@@ -2164,6 +2183,9 @@ QvisColorTableWindow::addColorTable()
 //
 //    Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //    Error when deleting a CT while searching is enabled.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table.
 // 
 // ****************************************************************************
 
@@ -2286,6 +2308,9 @@ QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2385,6 +2410,9 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2442,6 +2470,9 @@ QvisColorTableWindow::redValueChanged(int r)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2499,6 +2530,9 @@ QvisColorTableWindow::greenValueChanged(int g)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2553,6 +2587,9 @@ QvisColorTableWindow::blueValueChanged(int b)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2708,6 +2745,9 @@ QvisColorTableWindow::setDefaultDiscrete(const QString &ct)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on resize of a builtin color table.
 //
 // ****************************************************************************
 
@@ -2828,6 +2868,9 @@ QvisColorTableWindow::resizeColorTable(int size)
 // Modifications:
 //    Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //    Error when trying to export a CT while searching is enabled.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on export of a builtin color table.
 //
 // ****************************************************************************
 

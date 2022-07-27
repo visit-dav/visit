@@ -472,6 +472,9 @@ ColorTableAttributes::CreateSubAttributeGroup(int)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tags and removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Removed logic that saved info about individual color tables.
 //
 // ****************************************************************************
 
@@ -518,6 +521,9 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tags and removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Removed logic that read info about individual color tables.
 //
 // ****************************************************************************
 

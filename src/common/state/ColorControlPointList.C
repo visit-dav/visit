@@ -484,6 +484,9 @@ ColorControlPointList::CreateSubAttributeGroup(int)
 // Modifications:
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tags and removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Added logic for "builtin" attribute.
 //
 // ****************************************************************************
 
@@ -567,6 +570,9 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tags and removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Added logic for "builtin" attribute.
 //
 // ****************************************************************************
 

@@ -92,6 +92,9 @@ class QvisNoDefaultColorTableButton;
 //   `searchingOn`, QString `searchTerm`, QCheckBox `searchToggle`, and 
 //   functions `searchingToggled` and `searchEdited`.
 // 
+//   Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//   Added `skip_update` option to `ShowSelectedColor()`.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver

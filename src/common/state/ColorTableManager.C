@@ -326,6 +326,9 @@ ColorTableManager::ImportHelper(void *data, const std::string &ctFileName,
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tags removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Set builtin flag to false for user defined CTs.
 //
 // ****************************************************************************
 
