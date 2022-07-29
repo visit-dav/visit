@@ -92,6 +92,13 @@ avtMOABFileFormat::~avtMOABFileFormat() {
         free(file_descriptor);
         file_descriptor = NULL;
     }
+#ifdef PARALLEL
+    if (pcomm)
+    {
+        delete pcomm;
+        pcomm = NULL;
+    }
+#endif
     if (mbCore) {
         delete mbCore;
         mbCore = NULL;
