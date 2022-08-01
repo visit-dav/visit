@@ -590,6 +590,9 @@ Definition:
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tags and removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Removed logic that saved info about individual color tables.
 //
 // ****************************************************************************
 
@@ -604,47 +607,6 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     node->AddNode(new DataNode("defaultContinuous", defaultContinuous));
     node->AddNode(new DataNode("defaultDiscrete", defaultDiscrete));
     node->AddNode(new DataNode("taggingFlag", taggingFlag));
-
-    // Add each color table specially.
-    char tmp[100];
-    ColorControlPointList defaultObject;
-    int index = 0;
-    for(size_t i = 0; i < colorTables.size(); ++i)
-    {
-        const ColorControlPointList &ccpl = GetColorTables(i);
-        if(!ccpl.GetExternalFlag())
-        {
-            snprintf(tmp, 100, "table%02d", index++);
-            DataNode *ctNode = new DataNode(tmp);
-            // Add the color table attributes to the ctNode.
-            ctNode->AddNode(new DataNode("ctName", names[i]));
-            if(!ccpl.FieldsEqual(ColorControlPointList::ID_equalSpacingFlag, &defaultObject))
-                ctNode->AddNode(new DataNode("equal", ccpl.GetEqualSpacingFlag()));
-            if(!ccpl.FieldsEqual(ColorControlPointList::ID_smoothing, &defaultObject))
-                ctNode->AddNode(new DataNode("smoothing", ccpl.GetSmoothing()));
-            if(!ccpl.FieldsEqual(ColorControlPointList::ID_discreteFlag, &defaultObject))
-                ctNode->AddNode(new DataNode("discrete", ccpl.GetDiscreteFlag()));
-            if(!ccpl.FieldsEqual(ColorControlPointList::ID_tagNames, &defaultObject))
-                ctNode->AddNode(new DataNode("tags", ccpl.GetTagNames()));
-
-            // Add the control points to the vector that we'll save out.
-            floatVector fvec;
-            ctNode->AddNode(new DataNode("colorsHaveOpacity", true));
-            for(int j = 0; j < ccpl.GetNumControlPoints(); ++j)
-            {
-                const ColorControlPoint &cp = ccpl.operator[](j);
-                fvec.push_back(cp.GetPosition());
-                fvec.push_back(float(cp.GetColors()[0]));
-                fvec.push_back(float(cp.GetColors()[1]));
-                fvec.push_back(float(cp.GetColors()[2]));
-                fvec.push_back(float(cp.GetColors()[3]));
-            }
-            ctNode->AddNode(new DataNode("controlPts", fvec));
-            node->AddNode(ctNode);
-        }
-    }
-
-    node->AddNode(new DataNode("Ntables", index));
 
     // Add the node to the parent node.
     parentNode->AddNode(node);
@@ -681,6 +643,9 @@ Definition:
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tags and removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Removed logic that read info about individual color tables.
 //
 // ****************************************************************************
 
@@ -694,84 +659,7 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
     if(searchNode == 0)
         return;
 
-    // Look for the number of color tables.
     DataNode *node = 0;
-    if((node = searchNode->GetNode("Ntables")) != 0)
-    {
-        char tmp[100];
-        int  ntables = node->AsInt();
-
-        // Look for ntables color table nodes.
-        for(int i = 0; i < ntables; ++i)
-        {
-            snprintf(tmp, 100, "table%02d", i);
-            if((node = searchNode->GetNode(tmp)) != 0)
-            {
-                DataNode *nameNode = node->GetNode("ctName");
-                DataNode *pointNode = node->GetNode("controlPts");
-                DataNode *colorsHaveOpacity = node->GetNode("colorsHaveOpacity");
-                bool readAlpha = false;
-                if (colorsHaveOpacity != NULL)
-                    readAlpha = true;
-
-                // If we have the name node and the pointNode, we can add a
-                // color table.
-                if(nameNode && pointNode)
-                {
-                    ColorControlPointList ccpl;
-
-                    // Try and set the equal flag.
-                    DataNode *tmpNode;
-                    if((tmpNode = node->GetNode("equal")) != 0)
-                        ccpl.SetEqualSpacingFlag(tmpNode->AsBool());
-                    // Try and set the smooth flag. (old way)
-                    if((tmpNode = node->GetNode("smooth")) != 0)
-                        ccpl.SetSmoothing(tmpNode->AsBool()?ColorControlPointList::Linear:ColorControlPointList::None);
-                    // (new way)
-                    if((tmpNode = node->GetNode("smoothing")) != 0)
-                        ccpl.SetSmoothing(static_cast<ColorControlPointList::SmoothingMethod>(tmpNode->AsInt()));
-
-                    if((tmpNode = node->GetNode("discrete")) != 0)
-                        ccpl.SetDiscreteFlag(tmpNode->AsBool());
-
-                    if((tmpNode = node->GetNode("tags")) != 0)
-                        ccpl.SetTagNames(tmpNode->AsStringVector());
-                    else
-                    {
-                        stringVector t;
-                        t.push_back("No Tags");
-                        ccpl.SetTagNames(t);
-                    }
-
-                    // Set the color control points.
-                    floatVector fvec = pointNode->AsFloatVector();
-                    int nvalsPerColor = 4;
-                    if (readAlpha)
-                        nvalsPerColor = 5;
-                    for(size_t j = 0; j < fvec.size() / nvalsPerColor; ++j)
-                    {
-                        // Create a control point based on the values
-                        // in the float vector.
-                        int index = j * nvalsPerColor;
-                        ColorControlPoint cpt(fvec[index],
-                                              (unsigned char)(fvec[index+1]),
-                                              (unsigned char)(fvec[index+2]),
-                                              (unsigned char)(fvec[index+3]),
-                                              (readAlpha
-                                                  ? (unsigned char)(fvec[index+4])
-                                                  : 255));
-                        ccpl.AddControlPoints(cpt);
-                    }
-
-                    // If the color table is already in the list, remove it.
-                    // Then add the new color table to the list.
-                    RemoveColorTable(nameNode->AsString());
-                    AddColorTable(nameNode->AsString(), ccpl);
-                }
-            }
-        } // end for i
-    }
-
     if((node = searchNode->GetNode("defaultContinuous")) != 0)
         SetDefaultContinuous(node->AsString());
 

@@ -1420,29 +1420,36 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Added new `skip_update` argument which will prevent the current ctrl pt
+//    from having its color changed if enabled.
 //
 // ****************************************************************************
 
 void
-QvisColorTableWindow::ShowSelectedColor(const QColor &c)
+QvisColorTableWindow::ShowSelectedColor(const QColor &c, bool skip_update)
 {
     int i;
 
-    const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
-    bool updateDiscrete = (ccpl && ccpl->GetDiscreteFlag());
+    if (!skip_update)
+    {
+        const ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+        bool updateDiscrete = (ccpl && ccpl->GetDiscreteFlag());
 
-    // Update the color
-    if(updateDiscrete)
-    {
-        discreteColors->blockSignals(true);
-        discreteColors->setPaletteColor(c, discreteColors->selectedIndex());
-        discreteColors->blockSignals(false);
-    }
-    else
-    {
-        spectrumBar->blockSignals(true);
-        spectrumBar->setControlPointColor(spectrumBar->activeControlPoint(), c);
-        spectrumBar->blockSignals(false);
+        // Update the color
+        if(updateDiscrete)
+        {
+            discreteColors->blockSignals(true);
+            discreteColors->setPaletteColor(c, discreteColors->selectedIndex());
+            discreteColors->blockSignals(false);
+        }
+        else
+        {
+            spectrumBar->blockSignals(true);
+            spectrumBar->setControlPointColor(spectrumBar->activeControlPoint(), c);
+            spectrumBar->blockSignals(false);
+        }
     }
 
     // Disable signals in the sliders.
@@ -1609,6 +1616,9 @@ QvisColorTableWindow::GetNextColor()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added logic to preserve the tags.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Logic to preserve builtin attribute.
 //
 // ****************************************************************************
 
@@ -1657,6 +1667,8 @@ QvisColorTableWindow::GetCurrentValues(int which_widget)
         ColorControlPointList *ccpl = GetDefaultColorControlPoints();
         // preserve the tags
         cpts.SetTagNames(ccpl->GetTagNames());
+        // preserve the `built-in` attribute
+        cpts.SetBuiltIn(ccpl->GetBuiltIn());
         if(ccpl)
         {
             ColorControlPointList &activeControlPoints = *ccpl;
@@ -1748,12 +1760,26 @@ QvisColorTableWindow::apply()
 // Modifications:
 //   Brad Whitlock, Mon Jul 14 15:04:07 PST 2003
 //   Added code to block signals.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::alignControlPoints()
 {
+    // built-in CTs should not be editable
+    if (colorAtts->GetColorControlPoints(currentColorTable.toStdString())->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        return;
+    }
+
     // Align the control points.
     spectrumBar->blockSignals(true);
     spectrumBar->alignControlPoints();
@@ -1776,12 +1802,43 @@ QvisColorTableWindow::alignControlPoints()
 // Creation:   Mon Jun 11 11:39:32 PDT 2001
 //
 // Modifications:
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
 void
-QvisColorTableWindow::controlPointMoved(int, float)
+QvisColorTableWindow::controlPointMoved(int index, float position)
 {
+    // Get a pointer to the default color table's control points.
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
+    // built-in CTs should not be editable
+    if (ccpl->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        spectrumBar->blockSignals(true);
+        // This is overkill, but it gets the job done.
+        const int num_ctrl_pts = ccpl->GetNumControlPoints();
+        for (int i = 0; i < num_ctrl_pts; i ++)
+        {
+            float pos = ccpl->GetControlPoints(i).GetPosition();
+            unsigned char *colors = ccpl->GetControlPoints(i).GetColors();
+            QColor c;
+            c.setRgb(colors[0], colors[1], colors[2], colors[3]);
+            spectrumBar->setControlPointPosition(i, pos);
+            spectrumBar->setControlPointColor(i, c);
+        }
+        QColor selectedColor = spectrumBar->controlPointColor(index);
+        ShowSelectedColor(selectedColor, true);
+        spectrumBar->blockSignals(false);        
+        return;
+    }
+    
     // Get the current attributes.
     GetCurrentValues(0);
     SetUpdate(false);
@@ -1858,6 +1915,9 @@ QvisColorTableWindow::chooseDiscreteColor(const QColor &c, int, int,
 //   Brad Whitlock, Thu Nov 21 12:54:01 PDT 2002
 //   I modified the routine so it behaves differently if the menu was
 //   activated by choosing a discrete color table.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -1866,6 +1926,23 @@ QvisColorTableWindow::selectedColor(const QColor &color)
 {
     // Hide the popup menu.
     colorSelect->hide();
+
+    // Get a pointer to the default color table's control points.
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
+    // built-in CTs should not be editable
+    if (ccpl->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        smoothingMethod->blockSignals(true);
+        smoothingMethod->setCurrentIndex(ccpl->GetSmoothing());
+        smoothingMethod->blockSignals(false);
+        return;
+    }
 
     if(color.isValid())
     {
@@ -1904,6 +1981,9 @@ QvisColorTableWindow::selectedColor(const QColor &color)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -1912,6 +1992,20 @@ QvisColorTableWindow::smoothingMethodChanged(int val)
 {
     // Get a pointer to the default color table's control points.
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
+    // built-in CTs should not be editable
+    if (ccpl->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        smoothingMethod->blockSignals(true);
+        smoothingMethod->setCurrentIndex(ccpl->GetSmoothing());
+        smoothingMethod->blockSignals(false);
+        return;
+    }
 
     if(ccpl)
     {
@@ -1954,7 +2048,10 @@ QvisColorTableWindow::showIndexHintsToggled(bool val)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
-//
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
+// 
 // ****************************************************************************
 
 void
@@ -1962,6 +2059,20 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 {
     // Get a pointer to the default color table's control points.
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+
+    // built-in CTs should not be editable
+    if (ccpl->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot edit a built-in color table.");
+        Error(tmp);
+        equalCheckBox->blockSignals(true);
+        equalCheckBox->setChecked(ccpl->GetEqualSpacingFlag());
+        equalCheckBox->blockSignals(false);
+        return;
+    }
 
     if(ccpl)
     {
@@ -2006,6 +2117,9 @@ QvisColorTableWindow::equalSpacingToggled(bool)
 // 
 //   Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //   Added error if users try to add a color table while searching is enabled.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Set builtin flag to false for new color tables.
 //
 // ****************************************************************************
 
@@ -2036,6 +2150,7 @@ QvisColorTableWindow::addColorTable()
             ColorControlPointList cpts(*ccpl);
             cpts.AddTag("User Defined");
             cpts.SetTagChangesMade(true); // need to set manually b/c orig val was copied
+            cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
         else
@@ -2052,6 +2167,7 @@ QvisColorTableWindow::addColorTable()
             cpts.SetEqualSpacingFlag(false);
             cpts.SetDiscreteFlag(false);
             cpts.AddTag("User Defined");
+            cpts.SetBuiltIn(false);
             colorAtts->AddColorTable(currentColorTable.toStdString(), cpts);
         }
 
@@ -2088,6 +2204,9 @@ QvisColorTableWindow::addColorTable()
 //    Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //    Error when deleting a CT while searching is enabled.
 // 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table.
+// 
 // ****************************************************************************
 
 void
@@ -2106,7 +2225,17 @@ QvisColorTableWindow::deleteColorTable()
     // to remove it from the list of color tables.
     std::string ctName = nameListBox->currentItem()->text(0).toStdString();
 
-    GetViewerMethods()->DeleteColorTable(ctName.c_str());
+    if (colorAtts->GetColorControlPoints(ctName)->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot delete a built-in color table.");
+        Error(tmp);
+        return;
+    }
+    else
+        GetViewerMethods()->DeleteColorTable(ctName.c_str());
 }
 
 // ****************************************************************************
@@ -2199,6 +2328,9 @@ QvisColorTableWindow::tagTableItemSelected(QTreeWidgetItem *item, int column)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2208,6 +2340,19 @@ QvisColorTableWindow::setColorTableType(int index)
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            colorTableTypeGroup->blockSignals(true);
+            colorTableTypeGroup->button(ccpl->GetDiscreteFlag()?1:0)->setChecked(true);
+            colorTableTypeGroup->blockSignals(false);
+            return;
+        }
         ccpl->SetDiscreteFlag(index == 1);
         colorAtts->SelectColorTables();
         // When discrete set the smoothing to none so the legend is correct.
@@ -2285,6 +2430,9 @@ QvisColorTableWindow::activateDiscreteColor(const QColor &c, int)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2300,6 +2448,23 @@ QvisColorTableWindow::redValueChanged(int r)
             c = discreteColors->selectedColor();
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[0]->blockSignals(true);
+            componentSliders[0]->blockSignals(true);
+            componentSpinBoxes[0]->setValue(c.red());
+            componentSliders[0]->setValue(c.red());
+            componentSpinBoxes[0]->blockSignals(false);
+            componentSliders[0]->blockSignals(false);
+            return;
+        }
 
         c.setRgb(r, c.green(), c.blue(), c.alpha());
         ChangeSelectedColor(c);
@@ -2325,6 +2490,9 @@ QvisColorTableWindow::redValueChanged(int r)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2340,6 +2508,23 @@ QvisColorTableWindow::greenValueChanged(int g)
             c = discreteColors->selectedColor();
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[1]->blockSignals(true);
+            componentSliders[1]->blockSignals(true);
+            componentSpinBoxes[1]->setValue(c.green());
+            componentSliders[1]->setValue(c.green());
+            componentSpinBoxes[1]->blockSignals(false);
+            componentSliders[1]->blockSignals(false);
+            return;
+        }
 
         c.setRgb(c.red(), g, c.blue(), c.alpha());
         ChangeSelectedColor(c);
@@ -2365,6 +2550,9 @@ QvisColorTableWindow::greenValueChanged(int g)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2380,6 +2568,23 @@ QvisColorTableWindow::blueValueChanged(int b)
             c = discreteColors->selectedColor();
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[2]->blockSignals(true);
+            componentSliders[2]->blockSignals(true);
+            componentSpinBoxes[2]->setValue(c.blue());
+            componentSliders[2]->setValue(c.blue());
+            componentSpinBoxes[2]->blockSignals(false);
+            componentSliders[2]->blockSignals(false);
+            return;
+        }
 
         c.setRgb(c.red(), c.green(), b, c.alpha());
         ChangeSelectedColor(c);
@@ -2402,6 +2607,9 @@ QvisColorTableWindow::blueValueChanged(int b)
 // Modifications:
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on edit of a builtin color table and reset original values.
 //
 // ****************************************************************************
 
@@ -2417,6 +2625,23 @@ QvisColorTableWindow::alphaValueChanged(int a)
             c = discreteColors->selectedColor();
         else
             c = spectrumBar->controlPointColor(spectrumBar->activeControlPoint());
+
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            componentSpinBoxes[3]->blockSignals(true);
+            componentSliders[3]->blockSignals(true);
+            componentSpinBoxes[3]->setValue(c.alpha());
+            componentSliders[3]->setValue(c.alpha());
+            componentSpinBoxes[3]->blockSignals(false);
+            componentSliders[3]->blockSignals(false);
+            return;
+        }
 
         c.setRgb(c.red(), c.green(), c.blue(), a);
         ChangeSelectedColor(c);
@@ -2540,6 +2765,9 @@ QvisColorTableWindow::setDefaultDiscrete(const QString &ct)
 // 
 //   Justin Privitera, Wed May 18 11:25:46 PDT 2022
 //   Changed *active* to *default* for everything related to color tables.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on resize of a builtin color table.
 //
 // ****************************************************************************
 
@@ -2549,6 +2777,20 @@ QvisColorTableWindow::resizeColorTable(int size)
     ColorControlPointList *ccpl = GetDefaultColorControlPoints();
     if(ccpl)
     {
+        // built-in CTs should not be editable
+        if (ccpl->GetBuiltIn())
+        {
+            QString tmp;
+            tmp = tr("The color table ") +
+                  QString("\"") + currentColorTable + QString("\"") +
+                  tr(" is built-in. You cannot edit a built-in color table.");
+            Error(tmp);
+            colorNumColors->blockSignals(true);
+            colorNumColors->setValue(ccpl->GetNumControlPoints());
+            colorNumColors->blockSignals(false);
+            return;
+        }
+
         int i;
 
         if(ccpl->GetDiscreteFlag())
@@ -2646,6 +2888,9 @@ QvisColorTableWindow::resizeColorTable(int size)
 // Modifications:
 //    Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //    Error when trying to export a CT while searching is enabled.
+// 
+//    Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
+//    Error on export of a builtin color table.
 //
 // ****************************************************************************
 
@@ -2660,8 +2905,18 @@ QvisColorTableWindow::exportColorTable()
         Error(tmp);
         return;
     }
-
-    GetViewerMethods()->ExportColorTable(currentColorTable.toStdString());
+    else if (colorAtts->GetColorControlPoints(
+        currentColorTable.toStdString())->GetBuiltIn())
+    {
+        QString tmp;
+        tmp = tr("The color table ") +
+              QString("\"") + currentColorTable + QString("\"") +
+              tr(" is built-in. You cannot export a built-in color table.");
+        Error(tmp);
+        return;
+    }
+    else
+        GetViewerMethods()->ExportColorTable(currentColorTable.toStdString());
 }
 
 
