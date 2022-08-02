@@ -1359,7 +1359,7 @@ endif()
 
 
 # Configure PySide Support
-if(VTK_VERSION VERSION_LESS_EQUAL "8.1.0")
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
   if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
                           AND NOT VISIT_DBIO_ONLY
                           AND NOT VISIT_ENGINE_ONLY
