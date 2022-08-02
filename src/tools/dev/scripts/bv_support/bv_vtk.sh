@@ -107,6 +107,7 @@ function bv_vtk_print
 function bv_vtk_print_usage
 {
     printf "%-20s %s\n" "--vtk" "Build VTK"
+    printf "%-20s %s [%s]\n" "--vtk9" "Build VTK9 (must also use --vtk)" "$DO_VTK9"
     printf "%-20s %s [%s]\n" "--system-vtk" "Use the system installed VTK"
     printf "%-20s %s [%s]\n" "--alt-vtk-dir" "Use VTK from an alternative directory"
 }
