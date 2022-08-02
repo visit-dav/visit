@@ -32,7 +32,7 @@ Opening files
 
 The first thing to do is to open files.
 
-1. `Download <https://visit-dav.github.io/largedata/datarchives/potential_flow>`_ the tutorial data folder.
+1. `Download <https://visit-dav.github.io/largedata/datarchives/visit_tutorial>`_ the tutorial data folder.
 2. Go to the *GUI* and click on the *Open* icon.
 3. This brings up the File open window.
 
