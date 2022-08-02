@@ -198,8 +198,8 @@ Changing global options
 Built-in queries
 ----------------
 
-VisIt_ provides a wide variety of :ref:`built-in_queries`.
-See explanations of these here.
+VisIt_ provides a wide variety of built-in queries.
+See explanations of these here: :ref:`built-in_queries`
 
 Expressions
 -----------
