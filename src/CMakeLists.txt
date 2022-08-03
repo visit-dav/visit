@@ -503,6 +503,11 @@
 #    Kathleen Biagas, Thu Jun 16, 2022 
 #    Changed minimum cmake version to 3.15.
 #
+#    Kathleen Biagas, Fri July 1, 2022 
+#    For Windows package creation: added custom command to 7zip the install
+#    dir for use by installer creation script. Changed default install
+#    prefix to remove the space between 'VisIt' and '<verison>'. 
+#
 #    Eric Brugger, Tue Jul  5 09:10:18 PDT 2022
 #    Added support for the Blosc library.
 #
@@ -1005,7 +1010,7 @@ IF(WIN32)
     # if it wasn't specified via command line,
     IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
       IF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
-        SET(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt ${VISIT_VERSION}"
+        SET(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt${VISIT_VERSION}"
             CACHE PATH "Install path prefix, prepended onto install directories" FORCE)
         SET(APPENDED_VISIT_VERSION_TO_INSTALL_PATH TRUE CACHE INTERNAL "")
       ENDIF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
@@ -2360,6 +2365,7 @@ ELSE () # on windows
            set(codesign "/DCODESIGN_HASH=${CODESIGN_HASH}")
         endif()
         ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
+            COMMAND "${VISIT_WINDOWS_DIR}/MSVC2017/p7zip/18.05/7z.exe" a -t7z -m0=lzma2 -mx9  visit${VISIT_VERSION}.7z VisIt${VISIT_VERSION}
             COMMAND ${MAKENSIS}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DVISIT_WINDOWS_DIR=${VWD_NATIVE}
