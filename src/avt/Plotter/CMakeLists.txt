@@ -98,15 +98,11 @@ vtk/vtkVisItTextActor.C
 vtk/vtkVisItFullFrameMapper2D.C
 )
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-    if(VISIT_OSPRAY)
-        list(APPEND AVTPLOTTER_VTK_SOURCES
-             vtk/vtkOSPRayVisItCubeAxesActorNode.C
-             vtk/vtkOSPRayVisItAxisActorNode.C
-             vtk/vtkVisItViewNodeFactory.C
-            )
-    endif()
-        )
+if(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
+    list(APPEND AVTPLOTTER_VTK_SOURCES
+         vtk/vtkOSPRayVisItCubeAxesActorNode.C
+         vtk/vtkOSPRayVisItAxisActorNode.C
+         vtk/vtkVisItViewNodeFactory.C)
 endif()
 
 SET(AVTPLOTTER_SOURCES
@@ -190,7 +186,7 @@ TARGET_LINK_LIBRARIES(avtplotter_ser
     visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk 
     lightweight_visit_vtk ${vtklibs} ${OPENGL_LIBRARIES})
 
-if((VTK_VERSION VERSION_EQUAL "8.1.0") AND VISIT_OSPRAY)
+if(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
     target_link_libraries(avtplotter_ser vtkRenderingOSPRay)
 endif()
 VISIT_INSTALL_TARGETS(avtplotter_ser)
@@ -201,7 +197,7 @@ IF(VISIT_PARALLEL)
     TARGET_LINK_LIBRARIES(avtplotter_par
         visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk
         lightweight_visit_vtk ${vtklibs} ${OPENGL_LIBRARIES})
-    if((VTK_VERSION VERSION_EQUAL "8.1.0") AND VISIT_OSPRAY)
+    if(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
         target_link_libraries(avtplotter_par vtkRenderingOSPRay)
     endif()
     VISIT_INSTALL_TARGETS(avtplotter_par)

@@ -124,8 +124,7 @@ IF(VISIT_SLIVR)
     ADD_DEFINITIONS(-DVISIT_SLIVR)
 ENDIF()
 
-if(VTK_VERSION VERSION_EQUAL "8.1.0")
-  IF(VISIT_OSPRAY)
+if(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
     LIST(APPEND AVTFILTERS_SOURCES
          avtOSPRayCommon.C
          avtOSPRayImageCompositor.C
@@ -149,7 +148,6 @@ if(VTK_VERSION VERSION_EQUAL "8.1.0")
         LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
         ADD_DEFINITIONS(-DVISIT_OSPRAY_ICET)
     ENDIF()
-  ENDIF()
 endif() # VTK VERSION == 8.1.0
 
 INCLUDE_DIRECTORIES(
@@ -194,7 +192,7 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtfilters_ser ${AVTFILTERS_SOURCES})
 TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts ${vtklibs})
-IF((VTK_VERSION VERSION_EQUAL "8.1.0") AND VISIT_OSPRAY)
+IF(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
     TARGET_LINK_LIBRARIES(avtfilters_ser ${OSPRAY_LIBRARIES})
     IF(ICET_FOUND)
         TARGET_LINK_LIBRARIES(avtfilters_ser ${ICET_FULLPATH_LIB})
@@ -206,7 +204,7 @@ VISIT_INSTALL_TARGETS(avtfilters_ser)
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtfilters_par ${AVTFILTERS_SOURCES})
     TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts ${vtklibs})
-    IF((VTK_VERSION VERSION_EQUAL "8.1.0") AND VISIT_OSPRAY)
+    IF(VTK_VERSION VERSION_EQUAL "8.1.0" AND VISIT_OSPRAY)
         TARGET_LINK_LIBRARIES(avtfilters_par ${OSPRAY_LIBRARIES})
         IF(ICET_FOUND)
             TARGET_LINK_LIBRARIES(avtfilters_par ${ICET_FULLPATH_LIB})
