@@ -69,7 +69,7 @@ Variable related queries provide information about variables.
 2. Change the start point to "-5 -5 0" and the end point to "5 5 0".
 3. Click *Query*.
 
-  * The Lineout query samples data values along a line, producing a 1D database from databases of greater dimension. It creates a new instance of the highlighted plot in the Plot list and copies the plot to another vis window.
+  * The Lineout query samples data values along a line, producing a 1D dataset from datasets of greater dimension. It creates a new instance of the highlighted plot in the Plot list and copies the plot to another vis window.
 
 4. This is a way to get exact lineouts.
 5. You can also take 3D lineouts this way.
