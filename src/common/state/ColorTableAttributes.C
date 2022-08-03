@@ -1263,7 +1263,12 @@ ColorTableAttributes::AddColorTable(const std::string &name,
     // Remove the color table if it already exists in the list.
     int index = GetColorTableIndex(name);
     if(index != -1)
+    {
+        // but do nothing if the color table is built-in
+        if (GetColorControlPoints(index)->GetBuiltIn())
+            return;
         RemoveColorTable(index);
+    }
 
     // Append the color table to the list.
     names.push_back(name);
@@ -1345,6 +1350,9 @@ ColorTableAttributes::RemoveColorTable(int index)
 {
     if(index >= 0 && (size_t)index < names.size())
     {
+        if (GetColorControlPoints(index)->GetBuiltIn())
+            return;
+
         // Determine if the color table is default.
         bool isDefaultContinuous, isDefaultDiscrete;
         isDefaultContinuous = (names[index] == defaultContinuous);
