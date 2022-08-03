@@ -169,6 +169,13 @@
 //    Consolidate engine target creation into one method.
 //    Add support for component-specific CXXFLAGS, LDFLAGS and DEFINES.
 //
+//    Kathleen Biagas, Wed Aug 3, 2022
+//    Modify FilterVTKLibs to add support for VTK9's new library naming
+//    convention. Filter now creates separate vtk8 and vtk9 versions of the
+//    libs for each component.  Both are written to the CMakeLists.txt file
+//    with a VTK_VERSION check that specifies which should be used.
+//    Filter happens all the time now, not just when not using dev.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
