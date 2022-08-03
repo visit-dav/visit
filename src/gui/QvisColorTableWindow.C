@@ -679,8 +679,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             tagFilterToggle->blockSignals(true);
             tagFilterToggle->setChecked(colorAtts->GetTaggingFlag());
             tagsVisible = colorAtts->GetTaggingFlag();
-            tagLabel->setVisible(tagsVisible);
-            tagLineEdit->setVisible(tagsVisible);
+            // tagLabel->setVisible(tagsVisible);
+            // tagLineEdit->setVisible(tagsVisible);
             tagTable->setVisible(tagsVisible);
             updateNameBoxPosition(tagsVisible);
             tagCombiningBehaviorChoice->setVisible(tagsVisible);
