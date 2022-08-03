@@ -679,8 +679,6 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             tagFilterToggle->blockSignals(true);
             tagFilterToggle->setChecked(colorAtts->GetTaggingFlag());
             tagsVisible = colorAtts->GetTaggingFlag();
-            // tagLabel->setVisible(tagsVisible);
-            // tagLineEdit->setVisible(tagsVisible);
             tagTable->setVisible(tagsVisible);
             updateNameBoxPosition(tagsVisible);
             tagCombiningBehaviorChoice->setVisible(tagsVisible);
@@ -1062,8 +1060,10 @@ QvisColorTableWindow::UpdateNames()
         }
         // Set the text of the default color table into the name line edit.
         if (!searchingOn)
+        {
             nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
-        tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
+            tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
+        }
     }
 
     tagTable->blockSignals(false);
@@ -2279,8 +2279,7 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
         currentColorTable = current->text(0);
         nameLineEdit->setText(currentColorTable);
         int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
-        if (tagFilterToggle->isChecked())
-            tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
+        tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
         UpdateEditor();
     }
 }
@@ -2993,7 +2992,11 @@ QvisColorTableWindow::searchingToggled(bool checked)
     searchingOn = checked;
     if (!searchingOn)
         searchTerm = QString("");
-    nameLineEdit->setText(searchTerm);
+    else
+    {
+        nameLineEdit->setText(searchTerm);
+        tagLineEdit->setText(QString(""));
+    }
     Apply(true);
 }
 
@@ -3019,6 +3022,7 @@ QvisColorTableWindow::searchEdited(const QString &newSearchTerm)
     if (searchingOn)
     {
         searchTerm = newSearchTerm;
+        tagLineEdit->setText(QString(""));
         Apply(true);
     }
 }
