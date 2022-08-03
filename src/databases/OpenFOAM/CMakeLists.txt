@@ -37,6 +37,12 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtk_libs vtkCommonSystem vtksys )
+else()
+    set(vtk_libs VTK::CommonSystem VTK::vtksys )
+endif()
+
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IOpenFOAMDatabase ${LIBI_SOURCES})
@@ -45,19 +51,19 @@ SET(INSTALLTARGETS IOpenFOAMDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MOpenFOAMDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MOpenFOAMDatabase visitcommon avtdbatts avtdatabase_ser ${ZLIB_LIBRARY} vtkCommonSystem vtksys )
+    TARGET_LINK_LIBRARIES(MOpenFOAMDatabase visitcommon avtdbatts avtdatabase_ser ${ZLIB_LIBRARY} ${vtk_libs} )
     ADD_TARGET_DEFINITIONS(MOpenFOAMDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MOpenFOAMDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EOpenFOAMDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EOpenFOAMDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${ZLIB_LIBRARY} vtkCommonSystem vtksys )
+TARGET_LINK_LIBRARIES(EOpenFOAMDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${ZLIB_LIBRARY} ${vtk_libs} )
 ADD_TARGET_DEFINITIONS(EOpenFOAMDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EOpenFOAMDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EOpenFOAMDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EOpenFOAMDatabase_par visitcommon avtpipeline_par avtdatabase_par ${ZLIB_LIBRARY} vtkCommonSystem vtksys )
+    TARGET_LINK_LIBRARIES(EOpenFOAMDatabase_par visitcommon avtpipeline_par avtdatabase_par ${ZLIB_LIBRARY} ${vtk_libs} )
     ADD_TARGET_DEFINITIONS(EOpenFOAMDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EOpenFOAMDatabase_par)
 ENDIF(VISIT_PARALLEL)

@@ -256,14 +256,36 @@ class CMakeGeneratorPlugin : public Plugin
     }
 
     void
-    FilterVTKLibs(std::vector<QString> &libs)
+    FilterVTKLibs(std::vector<QString> &libs,
+                  std::vector<QString> &libs8,
+                  std::vector<QString> &libs9)
     {
         QString vtkversion = QString("-%1.%2").arg(VTK_MAJ).arg(VTK_MIN);
+        std::vector<QString> libs_sans_vtk;
         for(size_t i = 0; i < libs.size(); ++i)
         {
             if(libs[i].startsWith("vtk"))
-                libs[i].append(vtkversion);
+            {
+                QString tmp(libs[i]);
+                if (!using_dev)
+                    // append the vtk version for VTK-8
+                    tmp.append(vtkversion);
+                libs8.push_back(tmp);
+
+                // convert to VTK:: form for VTK-9
+                QString tmp2(libs[i]);
+                if (tmp2 == "vtksys")
+                    tmp2.prepend("VTK::");
+                else
+                    tmp2.replace(0,3,"VTK::");
+                libs9.push_back(tmp2);
+            }
+            else
+            {
+                libs_sans_vtk.push_back(libs[i]);
+            }
         }
+        libs = libs_sans_vtk;
     }
 
     QString
@@ -526,6 +548,14 @@ class CMakeGeneratorPlugin : public Plugin
         {
             CMakeWrite_TargetLinkDirs(out, "", "E", "_ser", eldflagsSer);
         }
+        if (!vtk8_elibsSer.empty())
+        {
+            out << "\nif(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "    set(vtk_elibsSer " << ToString(vtk8_elibsSer) << ")" << endl;
+            out << "else()" << endl;
+            out << "    set(vtk_elibsSer " << ToString(vtk9_elibsSer) << ")" << endl;
+            out << "endif()\n" << endl;
+        }
         out << "TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_ser visitcommon avtpipeline_ser";
         if(type == "plot")
             out << " avtplotter_ser ";
@@ -533,7 +563,12 @@ class CMakeGeneratorPlugin : public Plugin
             out << " avtexpressions_ser avtfilters_ser ";
         else
             out << " avtdatabase_ser ";
-        out << ToString(libs) << ToString(elibsSer) << ")" << endl;
+        out << ToString(libs) << ToString(elibsSer);
+        if (!vtk8_libs.empty())
+            out << "${vtk_libs} ";
+        if (!vtk8_elibsSer.empty())
+            out << "${vtk_elibsSer} ";
+        out << ")" << endl;
         WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_ser"), "");
         if (type != "operator" || hasEngineSpecificCode)
             out << "ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_ser ENGINE)" << endl;
@@ -553,6 +588,14 @@ class CMakeGeneratorPlugin : public Plugin
         {
             CMakeWrite_TargetLinkDirs(out, "    ", "E", "_par", eldflagsPar);
         }
+        if (!vtk8_elibsPar.empty())
+        {
+            out << "\n    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "        set(vtk_elibsPar " << ToString(vtk8_elibsPar) << ")" << endl;
+            out << "    else()" << endl;
+            out << "        set(vtk_elibsPar " << ToString(vtk9_elibsPar) << ")" << endl;
+            out << "    endif()\n" << endl;
+        }
         out << "    TARGET_LINK_LIBRARIES(E"<<name<<ptype<<"_par visitcommon avtpipeline_par";
         if(type == "plot")
             out << " avtplotter_par ";
@@ -560,7 +603,12 @@ class CMakeGeneratorPlugin : public Plugin
             out << " avtexpressions_par avtfilters_par ";
         else
             out << " avtdatabase_par ";
-        out << ToString(libs) << ToString(elibsPar) << ")" << endl;
+        out << ToString(libs) << ToString(elibsPar);
+        if (!vtk8_libs.empty())
+            out << "${vtk_libs} ";
+        if (!vtk8_elibsPar.empty())
+            out << "${vtk_elibsPar} ";
+        out << ")" << endl;
         WriteCMake_ConditionalTargetLinks(out, name, "E", (ptype+"_par"), "    ");
         if (type != "operator" || hasEngineSpecificCode)
             out << "    ADD_TARGET_DEFINITIONS(E"<<name<<ptype<<"_par ENGINE)" << endl;
@@ -722,6 +770,15 @@ class CMakeGeneratorPlugin : public Plugin
 
         WriteCMake_ConditionalDefinitions(out);
 
+        if (!vtk8_libs.empty())
+        {
+            out << "if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "    set(vtk_libs " << ToString(vtk8_libs) << ")" << endl;
+            out << "else()" << endl;
+            out << "    set(vtk_libs " << ToString(vtk9_libs) << ")" << endl;
+            out << "endif()\n" << endl;
+        }
+
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
         if (!using_dev)
@@ -752,20 +809,44 @@ class CMakeGeneratorPlugin : public Plugin
 
         out << "IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)" << endl;
         out << "    QT_WRAP_CPP(G" << name << ptype << " LIBG_SOURCES ${LIBG_MOC_SOURCES})" << endl;
+        if (!vtk8_glibs.empty())
+        {
+            out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "        set(vtk_glibs " << ToString(vtk8_glibs) << ")" << endl;
+			out << "    else()" << endl;
+            out << "        set(vtk_glibs " << ToString(vtk9_glibs) << ")" << endl;
+            out << "    endif()" << endl;
+        }
         out << "    ADD_LIBRARY(G"<<name<<ptype<<" ${LIBG_SOURCES})" << endl;
         out << "    TARGET_LINK_LIBRARIES(G" << name << ptype <<" visitcommon "
-            << guilibname << " " << ToString(libs) << ToString(glibs)
-            << ")" << endl;
+            << guilibname << " " << ToString(libs) << ToString(glibs);
+        if (!vtk8_libs.empty())
+            out << "${vtk_libs} ";
+        if (!vtk8_glibs.empty())
+            out << "${vtk_glibs} ";
+        out << ")" << endl;
         WriteCMake_ConditionalTargetLinks(out, name, "G", ptype, "    ");
         out << endl;
 
         if (customvwfiles)
             out << "    QT_WRAP_CPP(V" << name << ptype << " LIBV_SOURCES ${LIBV_MOC_SOURCES})" << endl;
+        if (!vtk8_vlibs.empty())
+        {
+            out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "        set(vtk_vlibs " << ToString(vtk8_vlibs) << ")" << endl;
+            out << "    else()" << endl;
+            out << "        set(vtk_vlibs " << ToString(vtk9_vlibs) << ")" << endl;
+            out << "    endif()" << endl;
+        }
         out << "    ADD_LIBRARY(V"<<name<<ptype<<" ${LIBV_SOURCES})" << endl;
         out << "    ADD_TARGET_DEFINITIONS(V"<<name<<ptype<<" VIEWER)" << endl;
         out << "    TARGET_LINK_LIBRARIES(V" << name << ptype << " visitcommon "
-            << viewerlibname << " " << ToString(libs) << ToString(vlibs)
-            << ")" << endl;
+            << viewerlibname << " " << ToString(libs) << ToString(vlibs);
+        if (!vtk8_libs.empty())
+            out << "${vtk_libs} ";
+        if (!vtk8_vlibs.empty())
+            out << "${vtk_vlibs} ";
+        out << ")" << endl;
         WriteCMake_ConditionalTargetLinks(out, name, "V", ptype, "    ");
         out << endl;
         out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} G"<<name<<ptype<<" V"<<name<<ptype<<")" << endl;
@@ -983,6 +1064,15 @@ class CMakeGeneratorPlugin : public Plugin
 
         WriteCMake_ConditionalDefinitions(out);
 
+        if (!vtk8_libs.empty())
+        {
+            out << "if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+            out << "    set(vtk_libs " << ToString(vtk8_libs) << ")" << endl;
+            out << "else()" << endl;
+            out << "    set(vtk_libs " << ToString(vtk9_libs) << ")" << endl;
+            out << "endif()\n" << endl;
+        }
+
         if(useFortran)
         {
             out << "ENABLE_LANGUAGE(Fortran)" << endl;
@@ -1026,7 +1116,20 @@ class CMakeGeneratorPlugin : public Plugin
             {
                 CMakeWrite_TargetLinkDirs(out, "    ", "M", "", mldflags);
             }
-            out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser " << ToString(libs) << ToString(mlibs) << ")" << endl;
+            if (!vtk8_mlibs.empty())
+            {
+                out << "    if(VTK_VERSION VERSION_EQUAL \"8.1.0\")" << endl;
+                out << "        set(vtk_mlibs " << ToString(vtk8_mlibs) << ")" << endl;
+                out << "    else()" << endl;
+                out << "        set(vtk_mlibs " << ToString(vtk9_mlibs) << ")" << endl;
+                out << "    endif()\n" << endl;
+            }
+            out << "    TARGET_LINK_LIBRARIES(M"<<name<<"Database visitcommon avtdbatts avtdatabase_ser " << ToString(libs) << ToString(mlibs);
+            if (!vtk8_libs.empty())
+                out << "${vtk_libs} ";
+            if (!vtk8_mlibs.empty())
+                out << "${vtk_mlibs} ";
+            out << ")" << endl;
             WriteCMake_ConditionalTargetLinks(out, name, "M", "Database", "    ");
             out << "    ADD_TARGET_DEFINITIONS(M"<<name<<"Database MDSERVER)" << endl;
             out << "    SET(INSTALLTARGETS ${INSTALLTARGETS} M"<<name<<"Database)" << endl;
@@ -1082,16 +1185,17 @@ class CMakeGeneratorPlugin : public Plugin
         qvisitplugdirpub = ToCMakePath(qvisitplugdirpub);
         qvisitplugdirpri = ToCMakePath(qvisitplugdirpri);
 #endif
+        FilterVTKLibs(libs,    vtk8_libs,     vtk9_libs);
+        FilterVTKLibs(mlibs,   vtk8_mlibs,    vtk9_mlibs);
+        FilterVTKLibs(glibs,   vtk8_glibs,    vtk9_glibs);
+        FilterVTKLibs(vlibs,   vtk8_vlibs,    vtk9_vlibs);
+        FilterVTKLibs(elibsSer,vtk8_elibsSer,vtk9_elibsSer);
+        FilterVTKLibs(elibsPar,vtk8_elibsPar,vtk9_elibsPar);
+
         // If we're not using a development version then we need to always
         // include something in the generated output.
         if(!using_dev)
         {
-            FilterVTKLibs(libs);
-            FilterVTKLibs(glibs);
-            FilterVTKLibs(vlibs);
-            FilterVTKLibs(elibsSer);
-            FilterVTKLibs(elibsPar);
-
             out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)" << endl;
             if(installpublic)
             {
@@ -1145,6 +1249,17 @@ class CMakeGeneratorPlugin : public Plugin
 
         WriteCMake_AdditionalCode(out);
     }
+
+private:
+    // couldn't think of a way to support both VTK8 and VTK9 via codegen
+    // without also requiring re-generation when switching between 8 and 9.
+    // so creating extra storage for them here.
+    std::vector<QString> vtk8_libs,     vtk9_libs;
+    std::vector<QString> vtk8_glibs,    vtk9_glibs;
+    std::vector<QString> vtk8_mlibs,    vtk9_mlibs;
+    std::vector<QString> vtk8_vlibs,    vtk9_vlibs;
+    std::vector<QString> vtk8_elibsSer, vtk9_elibsSer;
+    std::vector<QString> vtk8_elibsPar, vtk9_elibsPar;
 };
 
 

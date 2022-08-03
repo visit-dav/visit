@@ -142,23 +142,29 @@ ${VTK_INCLUDE_DIRS}
 ${OPENGL_INCLUDE_DIR}
 )
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtklibs vtkFiltersModeling vtkImagingCore vtkInteractionStyle)
+else()
+    set(vtklibs VTK::FiltersModeling VTK::ImagingCore VTK::InteractionStyle)
+endif()
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtviswindow_ser ${AVTVISWINDOW_SOURCES})
-TARGET_LINK_LIBRARIES(avtviswindow_ser visitcommon avtview avtmath avtplotter_ser visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkImagingCore vtkInteractionStyle ${OBJC_LIBS})
-IF(VISIT_OSPRAY)
+TARGET_LINK_LIBRARIES(avtviswindow_ser visitcommon avtview avtmath avtplotter_ser visit_vtk lightweight_visit_vtk ${vtklibs} ${OBJC_LIBS})
+if((VTK_VERSION VERSION_EQUAL "8.1.0") AND VISIT_OSPRAY)
     TARGET_LINK_LIBRARIES(avtviswindow_ser vtkRenderingOSPRay)
-ENDIF(VISIT_OSPRAY)
+
+endif()
 VISIT_INSTALL_TARGETS(avtviswindow_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtviswindow_par ${AVTVISWINDOW_SOURCES})
-    TARGET_LINK_LIBRARIES(avtviswindow_par visitcommon avtview avtmath avtplotter_par visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkImagingCore vtkInteractionStyle ${OBJC_LIBS})
-    IF(VISIT_OSPRAY)
+    TARGET_LINK_LIBRARIES(avtviswindow_par visitcommon avtview avtmath avtplotter_par visit_vtk lightweight_visit_vtk ${vtklibs} ${OBJC_LIBS})
+    if((VTK_VERSION VERSION_EQUAL "8.1.0") AND VISIT_OSPRAY)
         TARGET_LINK_LIBRARIES(avtviswindow_par vtkRenderingOSPRay)
-    ENDIF(VISIT_OSPRAY)
+    endif()
     VISIT_INSTALL_TARGETS(avtviswindow_par)
 ENDIF(VISIT_PARALLEL)
