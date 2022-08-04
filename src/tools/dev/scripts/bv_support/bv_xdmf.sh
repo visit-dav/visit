@@ -54,9 +54,15 @@ function bv_xdmf_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_XDMF_DIR \${VISITHOME}/Xdmf/$XDMF_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
-        echo \
-            "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} VTK_LIBRARY_DIRS vtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
-            >> $HOSTCONF
+        if [[ "$DO_VTK9" == "yes" ]] ; then
+            echo \
+                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} \${VISIT_VTK_DIR}/lib64 vtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
+                >> $HOSTCONF
+        else
+            echo \
+                "VISIT_OPTION_DEFAULT(VISIT_XDMF_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} VTK_LIBRARY_DIRS vtklibxml2-\${VTK_MAJOR_VERSION}.\${VTK_MINOR_VERSION} ${VISIT_VTK_LIBDEP} TYPE STRING)"\
+                >> $HOSTCONF
+        fi
     fi
 }
 
@@ -291,6 +297,14 @@ function build_xdmf
         LIBEXT="${SO_EXT}"
     fi
 
+    if [[ "$DO_VTK9" == "yes" ]] ; then
+        xmlinc=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2/include
+        xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib64/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}
+    else
+        xmlinc=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2
+        xmllib=$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}
+    fi
+
     ${CMAKE_BIN} -DCMAKE_INSTALL_PREFIX:PATH="$VISITDIR/Xdmf/${XDMF_VERSION}/${VISITARCH}"\
                  -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
                  -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
@@ -310,8 +324,8 @@ function build_xdmf
                  -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR} \
                  -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY} \
                  -DXDMF_SYSTEM_LIBXML2:BOOL=ON \
-                 -DLIBXML2_INCLUDE_PATH:PATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtklibxml2" \
-                 -DLIBXML2_LIBRARY:FILEPATH="$VISITDIR/${VTK_INSTALL_DIR}/$VTK_VERSION/$VISITARCH/lib/libvtklibxml2-${VTK_SHORT_VERSION}.${SO_EXT}" \
+                 -DLIBXML2_INCLUDE_PATH:PATH="${xmlinc}" \
+                 -DLIBXML2_LIBRARY:FILEPATH="${xmllib}" \
                  .
 
     if [[ $? != 0 ]] ; then
