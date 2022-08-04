@@ -602,6 +602,10 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added tags.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag label and tag line edit are now always visible so they do not
+//   need to have their visibility set in this function.
 //
 // ****************************************************************************
 
@@ -679,8 +683,6 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
             tagFilterToggle->blockSignals(true);
             tagFilterToggle->setChecked(colorAtts->GetTaggingFlag());
             tagsVisible = colorAtts->GetTaggingFlag();
-            tagLabel->setVisible(tagsVisible);
-            tagLineEdit->setVisible(tagsVisible);
             tagTable->setVisible(tagsVisible);
             updateNameBoxPosition(tagsVisible);
             tagCombiningBehaviorChoice->setVisible(tagsVisible);
@@ -955,6 +957,9 @@ QvisColorTableWindow::UpdateTags()
 //   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
 //   Added logic for searching for color tables. Now there is a search filter
 //   applied at the end of the function.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag line edit only needs to be populated if searching is disabled.
 //
 // ****************************************************************************
 
@@ -1062,8 +1067,10 @@ QvisColorTableWindow::UpdateNames()
         }
         // Set the text of the default color table into the name line edit.
         if (!searchingOn)
+        {
             nameLineEdit->setText(QString(colorAtts->GetNames()[index].c_str()));
-        tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
+            tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
+        }
     }
 
     tagTable->blockSignals(false);
@@ -2266,6 +2273,10 @@ QvisColorTableWindow::deleteColorTable()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added tags.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag line edit is always visible now so it must be updated even if
+//   tagging is disabled.
 //
 // ****************************************************************************
 
@@ -2279,8 +2290,7 @@ QvisColorTableWindow::highlightColorTable(QTreeWidgetItem *current,
         currentColorTable = current->text(0);
         nameLineEdit->setText(currentColorTable);
         int index = colorAtts->GetColorTableIndex(currentColorTable.toStdString());
-        if (tagFilterToggle->isChecked())
-            tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
+        tagLineEdit->setText(QString(colorAtts->GetColorTables(index).GetTagsAsString().c_str()));
         UpdateEditor();
     }
 }
@@ -2984,6 +2994,8 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 // Creation:   Thu Jul  7 10:22:58 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    The tag line edit is cleared when searching is enabled.
 //
 // ****************************************************************************
 
@@ -2993,7 +3005,11 @@ QvisColorTableWindow::searchingToggled(bool checked)
     searchingOn = checked;
     if (!searchingOn)
         searchTerm = QString("");
-    nameLineEdit->setText(searchTerm);
+    else
+    {
+        nameLineEdit->setText(searchTerm);
+        tagLineEdit->setText(QString(""));
+    }
     Apply(true);
 }
 
@@ -3010,6 +3026,9 @@ QvisColorTableWindow::searchingToggled(bool checked)
 // Modifications:
 //   Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //   Added guard to prevent Apply() from being called when searching is off.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag line edit is cleared when searching is ongoing.
 //
 // ****************************************************************************
 
@@ -3019,6 +3038,7 @@ QvisColorTableWindow::searchEdited(const QString &newSearchTerm)
     if (searchingOn)
     {
         searchTerm = newSearchTerm;
+        tagLineEdit->setText(QString(""));
         Apply(true);
     }
 }
