@@ -1246,6 +1246,9 @@ ColorTableAttributes::GetColorControlPoints(const std::string &name) const
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added logic for `active` parallel to `names`.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   Do nothing if the color table is built-in.
 //
 // ****************************************************************************
 
@@ -1342,6 +1345,9 @@ ColorTableAttributes::RemoveColorTable(const std::string &name)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added logic for `active` array parallel to `names`.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   Do nothing if color table is built in.
 //
 // ****************************************************************************
 
@@ -1350,6 +1356,7 @@ ColorTableAttributes::RemoveColorTable(int index)
 {
     if(index >= 0 && (size_t)index < names.size())
     {
+        // do nothing if the color table is built-in.
         if (GetColorControlPoints(index)->GetBuiltIn())
             return;
 

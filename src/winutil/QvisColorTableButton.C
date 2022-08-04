@@ -231,6 +231,10 @@ QvisColorTableButton::useDefaultColorTable()
 //
 //   Brad Whitlock, Tue Jan 17 11:41:44 PDT 2006
 //   Added a tooltip so long color table names can be put in a tooltip.
+// 
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    Added logic to prevent CT from being changed when CT passed out of the 
+//    tag filtering selection.
 //
 // ****************************************************************************
 
@@ -449,6 +453,9 @@ QvisColorTableButton::addColorTable(const QString &ctName)
 // Creation:   Sat Jun 16 20:13:46 PST 2001
 //
 // Modifications:
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    Added logic to prevent CT from being changed when CT passed out of the 
+//    tag filtering selection.
 //   
 // ****************************************************************************
 

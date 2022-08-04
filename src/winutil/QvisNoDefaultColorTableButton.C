@@ -213,6 +213,10 @@ QvisNoDefaultColorTableButton::sizePolicy() const
 //   Justin Privitera, Wed Jul 20 14:15:34 PDT 2022
 //   Added guard to prevent rare index out of bounds error caused by using
 //   specific tags and searching simultaneously.
+// 
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    Added logic to prevent CT from being changed when CT passed out of the 
+//    tag filtering selection.
 //
 // ****************************************************************************
 

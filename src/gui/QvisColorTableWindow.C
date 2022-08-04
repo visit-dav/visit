@@ -602,6 +602,10 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added tags.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag label and tag line edit are now always visible so they do not
+//   need to have their visibility set in this function.
 //
 // ****************************************************************************
 
@@ -953,6 +957,9 @@ QvisColorTableWindow::UpdateTags()
 //   Justin Privitera, Thu Jul 14 16:57:42 PDT 2022
 //   Added logic for searching for color tables. Now there is a search filter
 //   applied at the end of the function.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag line edit only needs to be populated if searching is disabled.
 //
 // ****************************************************************************
 
@@ -2266,6 +2273,10 @@ QvisColorTableWindow::deleteColorTable()
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Removed categories and added tags.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag line edit is always visible now so it must be updated even if
+//   tagging is disabled.
 //
 // ****************************************************************************
 
@@ -2983,6 +2994,8 @@ QvisColorTableWindow::tagCombiningChanged(int index)
 // Creation:   Thu Jul  7 10:22:58 PDT 2022
 //
 // Modifications:
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    The tag line edit is cleared when searching is enabled.
 //
 // ****************************************************************************
 
@@ -3013,6 +3026,9 @@ QvisColorTableWindow::searchingToggled(bool checked)
 // Modifications:
 //   Justin Privitera, Wed Jul 20 14:18:20 PDT 2022
 //   Added guard to prevent Apply() from being called when searching is off.
+// 
+//   Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//   The tag line edit is cleared when searching is ongoing.
 //
 // ****************************************************************************
 

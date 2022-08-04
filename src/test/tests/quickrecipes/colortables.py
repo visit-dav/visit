@@ -7,6 +7,8 @@
 #  Date:       March 30, 2022
 #
 #  Modificatons:
+#    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+#    Made changes to reflect the fact that built-in tables cannot be edited.
 #
 # ----------------------------------------------------------------------------
 

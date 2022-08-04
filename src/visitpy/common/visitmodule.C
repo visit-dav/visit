@@ -10490,6 +10490,9 @@ visit_GetActiveDiscreteColorTable(PyObject *self, PyObject *args)
 // Modifications:
 //    Justin Privitera, Wed Aug  3 14:12:07 PDT 2022
 //    Error is thrown for editing built-in color tables.
+// 
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    New CT's are correctly marked as NOT built-in.
 //
 // ****************************************************************************
 
