@@ -923,7 +923,7 @@ Once you have the plot's name, you can obtain a reference to its legend annotati
 Working with Color Tables
 -------------------------
 
-Sometimes it is helpful to create a new color table or manipulate an existing one.
+Sometimes it is helpful to create a new color table or manipulate an existing user defined color table.
 Color tables consist of ``ControlPoints`` which specify color and position in the color spectrum as well as a few other standard options.
 
 Existing color tables can be retreived by name via ``GetColorTable`` as in: ::
@@ -961,7 +961,7 @@ The ``position`` field of the ``ControlPoint`` is in the range (0, 1) and should
 General information on VisIt's color tables can be found in the :ref:`Color Tables <Color_tables>` section of `Using VisIt`.
 
 In all the examples below, ``silo_data_path()`` refers to a function specific to VisIt_ testing that returns the path to silo example data.  
-When copying the examples don't forget to modify that reference according you your needs.
+When copying the examples don't forget to modify that reference according to your needs.
 
 Modifying existing color tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
