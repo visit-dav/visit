@@ -22,9 +22,10 @@ def modifyExistingColorTable():
     # modifyTable1 {
     OpenDatabase(silo_data_path("rect2d.silo"))
     AddPlot("Pseudocolor", "d")
+
     pc = PseudocolorAttributes()
     pc.centering=pc.Nodal 
-    # set color table name so changes to it will be reflected in plot
+    # set color table name
     pc.colorTableName = "hot"
     SetPlotOptions(pc)
     
@@ -46,8 +47,12 @@ def modifyExistingColorTable():
     hotCT.RemoveControlPoints(4)
     hotCT.RemoveControlPoints(3)
 
-    # using the same name replaces the current ColorTable of that name
-    SetColorTable("hot", hotCT)
+    # We must use a different name, as VisIt will not allow overwriting of built-in color tables
+    SetColorTable("hot_edited", hotCT)
+
+    # set color table name so changes to it will be reflected in plot
+    pc.colorTableName = "hot_edited"
+    SetPlotOptions(pc)
     # modifyTable2 }
 
     Test("modified_hot_table_1")
@@ -56,7 +61,7 @@ def modifyExistingColorTable():
     # Change colors
     hotCT.GetControlPoints(0).colors = (255,0,0,255)
     hotCT.GetControlPoints(1).colors = (255, 0, 255, 255)
-    SetColorTable("hot", hotCT)
+    SetColorTable("hot_edited", hotCT)
     # modifyTable3 }
 
     Test("modified_hot_table_2")
@@ -88,10 +93,8 @@ def modifyExistingColorTable():
 
     Test("hot3")
 
-    # restore the original hot color table
-    SetColorTable("hot", hotCTorig)
-
     # remove the added color tables
+    RemoveColorTable("hot_edited")
     RemoveColorTable("hot2")
     RemoveColorTable("hot3")
     DeleteAllPlots()

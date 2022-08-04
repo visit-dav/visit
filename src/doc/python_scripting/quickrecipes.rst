@@ -926,7 +926,7 @@ Working with Color Tables
 Sometimes it is helpful to create a new color table or manipulate an existing one.
 Color tables consist of ``ControlPoints`` which specify color and position in the color spectrum as well as a few other standard options.
 
-Existing color tables can retreived by name via ``GetColorTable`` as in: ::
+Existing color tables can be retreived by name via ``GetColorTable`` as in: ::
 
     hotCT = GetColorTable("hot")
     print(hotCT)
@@ -966,7 +966,7 @@ When copying the examples don't forget to modify that reference according you yo
 Modifying existing color tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Color tables can be modified by Adding or Removing ControlPoints, and by changing ControlPoint colors and position:
+User-defined color tables can be modified by Adding or Removing ControlPoints, and by changing ControlPoint colors and position:
 
 .. literalinclude:: ../../test/tests/quickrecipes/colortables.py
     :language: Python

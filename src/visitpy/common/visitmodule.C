@@ -10506,14 +10506,20 @@ visit_AddColorTable(PyObject *self, PyObject *args)
 
     if(PyColorControlPointList_Check(ccpl))
     {
-        if (PyColorControlPointList_FromPyObject(ccpl)->GetBuiltIn())
+        if (GetViewerState()->GetColorTableAttributes()->GetColorControlPoints(ctName) != 0)
         {
-            std::ostringstream err_oss;
-            err_oss << "The color table " << ctName << " is built-in, and cannot be overwritten.";
-            VisItErrorFunc(err_oss.str().c_str());
-            return NULL;
+            if (GetViewerState()->GetColorTableAttributes()->GetColorControlPoints(ctName)->GetBuiltIn())
+            {
+                std::ostringstream err_oss;
+                err_oss << "The color table " << ctName << " is built-in, and cannot be overwritten.";
+                VisItErrorFunc(err_oss.str().c_str());
+                return NULL;
+            }
         }
         MUTEX_LOCK();
+            // mark the color table as NOT built-in
+            PyColorControlPointList_FromPyObject(ccpl)->SetBuiltIn(false);
+
             // Remove the color table in case it already exists.
             GetViewerState()->GetColorTableAttributes()->RemoveColorTable(ctName);
 
