@@ -924,47 +924,9 @@ avtMFEMFileFormat::GetRefinedElementAttribute(const std::string &mesh_name,
     // fetch the base mfem mesh
     //
     Mesh *mesh = FetchMesh(mesh_name,domain);
-    int npts=0;
-    int neles=0;
-    
-    RefinedGeometry *refined_geo;
-    Array<int>       coloring;
-    
-    //
-    // find the # of output points and cells at the selected level of 
-    // refinement (we may want to cache this...)
-    //
-    for (int i = 0; i < mesh->GetNE(); i++)
-    {
-        int geom = mesh->GetElementBaseGeometry(i);
-        int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
-        npts  += refined_geo->RefPts.GetNPoints();
-        neles += refined_geo->RefGeoms.Size() / ele_nverts;
-    }
-
-    vtkFloatArray *rv = vtkFloatArray::New();
-    rv->SetNumberOfComponents(1);
-    rv->SetNumberOfTuples(neles);
-
-    // set output array value from the mfem mesh's "Attribue" field
-    int ref_idx=0;
-    for (int i = 0; i < mesh->GetNE(); i++)
-    {
-        int geom = mesh->GetElementBaseGeometry(i);
-        int nv = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo= GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
-        int attr = mesh->GetAttribute(i);
-        for (int j = 0; j < refined_geo->RefGeoms.Size(); j += nv)
-        {
-             rv->SetTuple1(ref_idx,attr);
-             ref_idx++;
-        }
-   }
-   
-   delete mesh;
-   
-   return rv;
+    vtkDataArray *rv = avtMFEMDataAdaptor::RefineElementAttributeToVTK(mesh, lod);
+    delete mesh;
+    return rv;
 }
 
 
