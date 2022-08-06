@@ -447,7 +447,9 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
 vtkDataArray *
 avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                   mfem::GridFunction *gf,
-                                                  int lod)
+                                                  int lod,
+                                                  int ncomps,
+                                                  bool var_is_nodal)
 {
     int npts=0;
     int neles=0;
@@ -472,14 +474,21 @@ avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 
     vtkFloatArray *rv = vtkFloatArray::New();
 
-    int ncomps =gf->VectorDim();
+    int gf_ncomps =gf->VectorDim();
+    if (ncomps && gf_ncomps != ncomps)
+    {
+        AVT_MFEM_EXCEPTION1(InvalidVariableException, 
+            "Expected equality of number of components.");
+    }
 
-    if(ncomps == 2)
+    if(gf_ncomps == 2)
         rv->SetNumberOfComponents(3);
     else
-        rv->SetNumberOfComponents(ncomps);
-
-    rv->SetNumberOfTuples(npts);
+        rv->SetNumberOfComponents(gf_ncomps);
+    if(var_is_nodal)
+        rv->SetNumberOfTuples(npts);
+    else
+        rv->SetNumberOfTuples(neles);
 
     double tuple_vals[9];
     int ref_idx=0;
@@ -487,7 +496,7 @@ avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
     {
         int geom       = mesh->GetElementBaseGeometry(i);
         refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
-        if(ncomps == 1)
+        if(gf_ncomps == 1)
         {
             gf->GetValues(i, refined_geo->RefPts, scalar_vals, pmat);
             for (int j = 0; j < scalar_vals.Size();j++)
@@ -609,14 +618,16 @@ vtkDataArray *
 avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
                                             mfem::GridFunction *gf,
                                             int lod,
-                                            bool new_refine)
+                                            bool new_refine,
+                                            int ncomps,
+                                            bool var_is_nodal)
 {
     AVT_MFEM_INFO("Creating Refined MFEM Field with lod:" << lod);
 
     if (!new_refine)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine grid function.");
-        return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
+        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, ncomps, var_is_nodal);
     }
 
     // Check if the mesh is periodic.
@@ -625,7 +636,7 @@ avtMFEMDataAdaptor::RefineGridFunctionToVTK(mfem::Mesh *mesh,
     if (L2_coll)
     {
         AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
-        return LegacyRefineGridFunctionToVTK(mesh, gf, lod);
+        return LegacyRefineGridFunctionToVTK(mesh, gf, lod, ncomps, var_is_nodal);
     }
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");

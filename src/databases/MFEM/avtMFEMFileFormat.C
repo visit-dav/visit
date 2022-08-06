@@ -784,68 +784,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
         gf = new GridFunction(mesh,igf());   
     }
 
-    int npts=0;
-    int neles=0;
-    
-    RefinedGeometry *refined_geo;
-    Vector           scalar_vals;
-    DenseMatrix      vec_vals;
-    DenseMatrix      pmat;
-
-    //
-    // find the # of output points and cells at the selected level of 
-    // refinement (we may want to cache this...)
-    //
-    for (int i = 0; i < mesh->GetNE(); i++)
-    {
-        int geom = mesh->GetElementBaseGeometry(i);
-        int ele_nverts = Geometries.GetVertices(geom)->GetNPoints();
-        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
-        npts  += refined_geo->RefPts.GetNPoints();
-        neles += refined_geo->RefGeoms.Size() / ele_nverts;
-    }
-    
-    vtkFloatArray *rv = vtkFloatArray::New();
-    if(ncomps == 2)
-        rv->SetNumberOfComponents(3);
-    else
-        rv->SetNumberOfComponents(ncomps);
-    if(var_is_nodal)
-        rv->SetNumberOfTuples(npts);
-    else
-        rv->SetNumberOfTuples(neles);
-
-    double tuple_vals[9];
-    int ref_idx=0;
-    for (int i = 0; i <  mesh->GetNE(); i++)
-    {
-        int geom       = mesh->GetElementBaseGeometry(i);
-        refined_geo    = GlobGeometryRefiner.Refine((Geometry::Type)geom, lod, 1);
-        if(ncomps == 1)
-        {
-            gf->GetValues(i, refined_geo->RefPts, scalar_vals, pmat);
-            for (int j = 0; j < scalar_vals.Size();j++)
-            {
-                tuple_vals[0] = scalar_vals(j);
-                rv->SetTuple(ref_idx, tuple_vals); 
-                ref_idx++;
-            }
-        }
-        else
-        {
-            gf->GetVectorValues(i, refined_geo->RefPts, vec_vals, pmat);
-            for (int j = 0; j < vec_vals.Width(); j++)
-            {
-                tuple_vals[2] = 0.0;
-                tuple_vals[0] = vec_vals(0,j);
-                tuple_vals[1] = vec_vals(1,j);
-                if (vec_vals.Height() > 2)
-                    tuple_vals[2] = vec_vals(2,j);
-                rv->SetTuple(ref_idx, tuple_vals); 
-                ref_idx++;
-            }
-        }
-    }
+    vtkDataArray *rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, gf, lod, ncomps, var_is_nodal);
     
     delete gf;
     delete mesh;
