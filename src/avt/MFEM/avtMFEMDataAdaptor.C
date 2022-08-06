@@ -43,9 +43,11 @@
 // vtk includes
 //-----------------------------------------------------------------------------
 #include <vtkDoubleArray.h>
+#include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
 #include "vtkFloatArray.h"
 #include "vtkCellArray.h"
+#include <vtkCellData.h>
 #include "vtkIdTypeArray.h"
 #include <vtkLine.h>
 #include <vtkTriangle.h>
@@ -162,6 +164,7 @@ VTKCellTypeSize(int cell_type)
 
 vtkDataSet *
 avtMFEMDataAdaptor::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
+                                          int domain,
                                           int lod)
 {
     // create output objects
@@ -214,6 +217,13 @@ avtMFEMDataAdaptor::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
     res_pts->Delete();
     // create the cells for the refined topology
     res_ds->Allocate(neles);
+
+    // Make some original cell ids so we can try to eliminate the mesh lines.
+    std::vector<unsigned int> originalCells;
+    originalCells.reserve(neles * 2);
+    unsigned int udomain = static_cast<unsigned int>(domain);
+    bool doOriginalCells = true;
+    
     pt_idx=0;
 
     for (int i = 0; i <  mesh->GetNE(); i++)
@@ -228,7 +238,10 @@ avtMFEMDataAdaptor::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
         {
             switch (geom)
             {
-                case Geometry::SEGMENT:      ele_cell = vtkLine::New();       break;
+                case Geometry::SEGMENT:
+                    ele_cell = vtkLine::New();
+                    doOriginalCells = false;
+                    break;
                 case Geometry::TRIANGLE:     ele_cell = vtkTriangle::New();   break;
                 case Geometry::SQUARE:       ele_cell = vtkQuad::New();       break;
                 case Geometry::TETRAHEDRON:  ele_cell = vtkTetra::New();      break;
@@ -240,9 +253,21 @@ avtMFEMDataAdaptor::LegacyRefineMeshToVTK(mfem::Mesh *mesh,
             res_ds->InsertNextCell(ele_cell->GetCellType(),
                                    ele_cell->GetPointIds());
             ele_cell->Delete();
+
+            originalCells.push_back(udomain);
+            originalCells.push_back(static_cast<unsigned int>(i));
         }
         pt_idx += refined_geo->RefPts.GetNPoints();
     }
+
+    vtkUnsignedIntArray *ocn = vtkUnsignedIntArray::New();
+    ocn->SetName("avtOriginalCellNumbers");
+    ocn->SetNumberOfComponents(2);
+    ocn->SetNumberOfTuples(originalCells.size()/2);
+    memcpy(ocn->GetVoidPointer(0), &originalCells[0],
+           sizeof(unsigned int) * originalCells.size());
+    res_ds->GetCellData()->AddArray(ocn);
+    ocn->Delete();
 
     return res_ds;
 }
@@ -361,6 +386,7 @@ avtMFEMDataAdaptor::LowOrderMeshToVTK(mfem::Mesh *mesh)
 // ****************************************************************************
 vtkDataSet *
 avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
+                                    int domain,
                                     int lod,
                                     bool new_refine)
 {
@@ -369,7 +395,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     if (!new_refine)
     {
         AVT_MFEM_INFO("Using Legacy LOR to refine mesh.");
-        return LegacyRefineMeshToVTK(mesh, lod);
+        return LegacyRefineMeshToVTK(mesh, domain, lod);
     }
 
     // Check if the mesh is periodic.
@@ -378,7 +404,7 @@ avtMFEMDataAdaptor::RefineMeshToVTK(mfem::Mesh *mesh,
     if (L2_coll)
     {
         AVT_MFEM_INFO("High Order Mesh is periodic; falling back to Legacy LOR.");
-        return LegacyRefineMeshToVTK(mesh, lod);
+        return LegacyRefineMeshToVTK(mesh, domain, lod);
     }
 
     AVT_MFEM_INFO("High Order Mesh is not periodic.");

@@ -1552,7 +1552,8 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
             BP_PLUGIN_INFO("mesh  " << topo_name << " is a mfem mesh");
             // use mfem to refine and create a vtk dataset
             mfem::Mesh *mesh = avtBlueprintDataAdaptor::MFEM::MeshToMFEM(data);
-            res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh, 
+            res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
+                                                      domain,
                                                       m_selected_lod+1,
                                                       m_new_refine);
 

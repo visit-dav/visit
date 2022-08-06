@@ -65,11 +65,13 @@ class AVTMFEM_API avtMFEMDataAdaptor
 {
 public:
       static vtkDataSet   *LegacyRefineMeshToVTK(mfem::Mesh *mesh,
+                                                 int domain,
                                                  int lod);
 
       static vtkDataSet   *LowOrderMeshToVTK(mfem::Mesh *mesh);
 
       static vtkDataSet   *RefineMeshToVTK(mfem::Mesh *mesh,
+                                           int domain,
                                            int lod,
                                            bool new_refine);
 
