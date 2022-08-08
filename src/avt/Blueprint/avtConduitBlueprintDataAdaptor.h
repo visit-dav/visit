@@ -42,6 +42,11 @@
 #include <conduit.hpp>
 
 //-----------------------------------------------------------------------------
+// mfem includes
+//-----------------------------------------------------------------------------
+#include <mfem.hpp>
+
+//-----------------------------------------------------------------------------
 // vtk forward decls
 //-----------------------------------------------------------------------------
 class vtkDataSet;
@@ -86,6 +91,12 @@ public:
 
       // set warning and info handlers to redirect conduit warnings and info
       static void SetInfoWarningHandlers();
+
+      static mfem::Mesh         *MeshToMFEM(const conduit::Node &mesh,
+                                            const std::string &topo_name = "");
+
+      static mfem::GridFunction *FieldToMFEM(mfem::Mesh *mesh,
+                                             const conduit::Node &field);
 };
 
 #endif

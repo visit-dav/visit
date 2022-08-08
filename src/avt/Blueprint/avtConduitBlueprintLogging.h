@@ -27,6 +27,11 @@
     debug5 << msg;                                                  \
 }                                                                   \
 
+#define AVT_CONDUIT_BP_WARNING(  msg  )                             \
+{                                                                   \
+    debug5 << "[blueprint warning] " << msg;                        \
+}                                                                   \
+
 #define AVT_CONDUIT_BP_EXCEPTION1(  etype , msg )                   \
 {                                                                   \
     std::ostringstream err_oss;                                     \

@@ -1551,7 +1551,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
         {
             BP_PLUGIN_INFO("mesh  " << topo_name << " is a mfem mesh");
             // use mfem to refine and create a vtk dataset
-            mfem::Mesh *mesh = avtBlueprintDataAdaptor::MFEM::MeshToMFEM(data);
+            mfem::Mesh *mesh = avtConduitBlueprintDataAdaptor::MeshToMFEM(data);
             res = avtMFEMDataAdaptor::RefineMeshToVTK(mesh,
                                                       domain,
                                                       m_selected_lod+1,
@@ -1658,7 +1658,7 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             }
 
             // create an mfem mesh
-            mfem::Mesh *mesh = avtBlueprintDataAdaptor::MFEM::MeshToMFEM(n_mesh);
+            mfem::Mesh *mesh = avtConduitBlueprintDataAdaptor::MeshToMFEM(n_mesh);
             // refine the coloring to a vtk data array
             res = avtMFEMDataAdaptor::RefineElementColoringToVTK(mesh,
                                                                  domain,
@@ -1808,10 +1808,10 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
             }
 
             // create an mfem mesh
-            mfem::Mesh *mesh = avtBlueprintDataAdaptor::MFEM::MeshToMFEM(n_mesh);
+            mfem::Mesh *mesh = avtConduitBlueprintDataAdaptor::MeshToMFEM(n_mesh);
 
             // create the grid fuction
-            mfem::GridFunction *gf =  avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mesh,
+            mfem::GridFunction *gf =  avtConduitBlueprintDataAdaptor::FieldToMFEM(mesh,
                                                                                  *field_ptr);
             // refine the grid function into a vtk data array
             res = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh,

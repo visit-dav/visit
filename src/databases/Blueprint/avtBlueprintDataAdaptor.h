@@ -69,21 +69,6 @@ public:
       static avtMaterial *MatsetToMaterial(const conduit::Node &matset);
       // static avtMixedVar *MatsetVarToMixedVar(const conduit::Node &matset_var);
   };
-
-  /// Helpers for converting Mesh and Field Blueprint conforming data
-  /// to mfem instances + helpers for refining mfem data to vtk.
-  class MFEM
-  {
-    public:
-    //-------------------------------------------------------------------------
-    // blueprint to mfem
-    //-------------------------------------------------------------------------
-    static mfem::Mesh         *MeshToMFEM(const conduit::Node &mesh,
-                                          const std::string &topo_name = "");
-
-    static mfem::GridFunction *FieldToMFEM(mfem::Mesh *mesh,
-                                           const conduit::Node &field);
-  };
 };
 
 
