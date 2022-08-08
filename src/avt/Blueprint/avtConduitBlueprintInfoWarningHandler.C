@@ -8,8 +8,6 @@
 
 #include "avtConduitBlueprintInfoWarningHandler.h"
 #include "avtConduitBlueprintLogging.h"
-#include "InvalidVariableException.h"
-#include "DebugStream.h"
 
 //-----------------------------------------------------------------------------
 // These methods are used to re-wire conduit's default error handling

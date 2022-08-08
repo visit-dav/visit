@@ -7,7 +7,6 @@
 // ************************************************************************* //
 
 #include <string>
-#include "avtConduitBlueprintLogging.h"
 
 class avtConduitBlueprintInfoWarningHandler
 {
