@@ -474,6 +474,7 @@ avtMFEMDataAdaptor::LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
 
     vtkFloatArray *rv = vtkFloatArray::New();
 
+    // TODO help! is this a good idea?
     int gf_ncomps =gf->VectorDim();
     if (ncomps && gf_ncomps != ncomps)
     {

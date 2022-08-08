@@ -75,23 +75,11 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
 
     mfem::Mesh                     *FetchMesh(const std::string &mesh_name,
                                               int chunk);
-                                              
-    vtkDataSet                      *GetRefinedMesh(const std::string &mesh_name,
-                                                    int chunk,
-                                                    int lod);
-                                                    
+                                                                                                  
     vtkDataArray                    *GetRefinedVar(const std::string &mesh_name,
                                                    int chunk,
                                                    int lod);
                                                    
-    vtkDataArray                    *GetRefinedElementColoring(const std::string &mesh_name, 
-                                                                int domain, 
-                                                                int lod);
-                                                                
-    vtkDataArray                    *GetRefinedElementAttribute(const std::string &mesh_name, 
-                                                                int domain, 
-                                                                int lod);
-                                             
     JSONRoot                        *root;  
 
     // For handling .mfem_cat files

@@ -532,7 +532,11 @@ avtMFEMFileFormat::GetTime()
 vtkDataSet *
 avtMFEMFileFormat::GetMesh(int domain, const char *meshname)
 {
-    return GetRefinedMesh(string(meshname),domain,selectedLOD+1);
+    // get base mesh
+    Mesh *mesh = FetchMesh(string(meshname),domain);
+    vtkDataSet *res_ds = avtMFEMDataAdaptor::RefineMeshToVTK(mesh, domain, selectedLOD+1, false);
+    delete mesh;
+    return res_ds;
 }
 
 
@@ -676,15 +680,6 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
 //    upgrade to mfem 4.0.
 //
 // ****************************************************************************
-vtkDataSet *
-avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int lod)
-{
-     // get base mesh
-    Mesh *mesh = FetchMesh(mesh_name,domain);
-    vtkDataSet *res_ds = avtMFEMDataAdaptor::RefineMeshToVTK(mesh, domain, lod, false);
-    delete mesh;
-    return res_ds;
-}
 
 // ****************************************************************************
 //  Method: avtMFEMFileFormat::GetRefinedVar
@@ -740,14 +735,24 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
         }
     }
 
-    // check for special vars
-    if(var_name == "element_coloring")
-        return GetRefinedElementColoring(mesh_name,domain,lod);
-    else if(var_name == "element_attribute") // handle with materials in the future?
-        return GetRefinedElementAttribute(mesh_name,domain,lod);
+    vtkDataArray *rv;
 
     // get base mesh
     Mesh *mesh = FetchMesh(mesh_name,domain);
+
+    // check for special vars
+    if(var_name == "element_coloring")
+    {
+        rv = avtMFEMDataAdaptor::RefineElementColoringToVTK(mesh, domain, lod);
+        delete mesh;
+        return rv;
+    }
+    else if(var_name == "element_attribute") // handle with materials in the future?
+    {
+        rv = avtMFEMDataAdaptor::RefineElementAttributeToVTK(mesh, lod);
+        delete mesh;
+        return rv;
+    }
 
     JSONRootEntry &field = root->DataSet(mesh_name).Field(var_name);
     string field_path = field.Path().Expand(domain);
@@ -784,7 +789,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
         gf = new GridFunction(mesh,igf());   
     }
 
-    vtkDataArray *rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, gf, lod, ncomps, var_is_nodal);
+    rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, gf, lod, ncomps, var_is_nodal);
     
     delete gf;
     delete mesh;
@@ -817,19 +822,6 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 //   upgrade to mfem 4.0.
 //
 // ****************************************************************************
-vtkDataArray *
-avtMFEMFileFormat::GetRefinedElementColoring(const std::string &mesh_name,
-                                             int domain,
-                                             int lod)
-{
-    //
-    // fetch the base mfem mesh
-    //
-    Mesh *mesh = FetchMesh(mesh_name,domain);
-    vtkDataArray *rv = avtMFEMDataAdaptor::RefineElementColoringToVTK(mesh, domain, lod);
-    delete mesh;
-    return rv;
-}
 
 
 // ****************************************************************************
@@ -852,21 +844,8 @@ avtMFEMFileFormat::GetRefinedElementColoring(const std::string &mesh_name,
 //    Alister Maguire, Thu Jan  2 15:23:13 MST 2020
 //    Casting int to Geom::Type where appropriate. This is required after the
 //    upgrade to mfem 4.0.
-//
+// 
 // ****************************************************************************
-vtkDataArray *
-avtMFEMFileFormat::GetRefinedElementAttribute(const std::string &mesh_name, 
-                                              int domain, 
-                                              int lod)
-{
-    //
-    // fetch the base mfem mesh
-    //
-    Mesh *mesh = FetchMesh(mesh_name,domain);
-    vtkDataArray *rv = avtMFEMDataAdaptor::RefineElementAttributeToVTK(mesh, lod);
-    delete mesh;
-    return rv;
-}
 
 
 // ****************************************************************************
