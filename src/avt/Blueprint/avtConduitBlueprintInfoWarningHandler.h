@@ -6,6 +6,9 @@
 // avtConduitBlueprintInfoWarningHandler.h
 // ************************************************************************* //
 
+#include <string>
+#include "avtConduitBlueprintLogging.h"
+
 class avtConduitBlueprintInfoWarningHandler
 {
 public:

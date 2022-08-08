@@ -6,6 +6,11 @@
 // avtConduitBlueprintInfoWarningHandler.C
 // ************************************************************************* //
 
+#include "avtConduitBlueprintInfoWarningHandler.h"
+#include "avtConduitBlueprintLogging.h"
+#include "InvalidVariableException.h"
+#include "DebugStream.h"
+
 //-----------------------------------------------------------------------------
 // These methods are used to re-wire conduit's default error handling
 //-----------------------------------------------------------------------------
@@ -59,7 +64,7 @@ avtConduitBlueprintInfoWarningHandler::avt_conduit_blueprint_error_handler(
 
     debug1 << bp_err_oss.str();
 
-    BP_PLUGIN_EXCEPTION1(InvalidVariableException, bp_err_oss.str());
+    AVT_CONDUIT_BP_EXCEPTION1(InvalidVariableException, bp_err_oss.str());
 
 }
 

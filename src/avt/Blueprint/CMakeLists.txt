@@ -40,6 +40,7 @@
 
 set(AVTBLUEPRINT_SOURCES
     avtConduitBlueprintDataAdaptor.C
+    avtConduitBlueprintInfoWarningHandler.C
     )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
