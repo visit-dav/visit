@@ -9,8 +9,7 @@ VisIt's Source Code
 For a released version
 """"""""""""""""""""""
 
-For building a released version of VisIt version 3.2.1 or earlier, you can download a windows installer that contains all that is necessary from the `downloads 
-page <https://visit-dav.github.io/visit-website/releases-as-tables>`_.
+For building a released version of VisIt version 3.2.1 or earlier, you can download a windows installer that contains all that is necessary from the `downloads page <https://visit-dav.github.io/visit-website/releases-as-tables>`_.
 Look for the *Win 10/8/7 development*  link for the particular version you want.
 The file will be named *visitdev3.2.1.exe* (or similar, based on version chosen).
 
