@@ -95,7 +95,7 @@ Configuring
 ~~~~~~~~~~~
 Before configuring, you may want to suppress warnings.  
 From the **Options** menu, choose *Warnings*.  
-Check the *Developer Warnings* and *Deprecated Warnings* in the *Supress Warnings* section. 
+Check the *Developer Warnings* and *Deprecated Warnings* in the *Suppress Warnings* section. 
 Click **OK**.
 :numref:`Figure %s<suppress_cmake_warnings_image>`
 
@@ -112,9 +112,10 @@ If the build directory does not exist, you will be prompted to allow its creatio
 You will also be prompted to choose a *generator*. 
 On Windows, this corresponds to the version of Visual Studio for which you plan to generate a solution and projects.
 
-Currently, only Visual Studio version 2017 64-bit is supported by the prebuilt 
-thirdparty libraries.  
-Choose *Visual Studio 15 2017 Win64* from the dropdown and add *host=x64* to use the full 64-bit toolset.
+Currently, only Visual Studio version 2017 64-bit is supported by the prebuilt thirdparty libraries.
+Choose *Visual Studio 15 2017 Win64* from the generator dropdown.
+Choose *x64* from the dropdown for the *Optional platform*.
+Then enter *host=x64* in the *Optional toolset* to use the full 64-bit toolset.
 :numref:`Figure %s<choose_generator_popup_image>`
 
 .. _choose_generator_popup_image:
@@ -161,7 +162,7 @@ Suppressing Regeneration
 The solution file that CMake creates has a project called *ZERO_CHECK* that is 
 occasionally invoked to regenerate the projects. 
 This can be highly undesirable during development, since it may be triggered during a build and can cause numerous projects to be reloaded into the VS IDE, wasting time unnecessarily. 
-To avoid this behavior, you can create a new CMake cache entry named *CMAKE_SUPRESS_REGENERATION*,  with type *BOOL* and make sure that it is checked. 
+To avoid this behavior, you can create a new CMake cache entry named *CMAKE_SUPPRESS_REGENERATION*,  with type *BOOL* and make sure that it is checked. 
 If you made this change click **Configure** again.
 
 You can automate this step in your host.cmake file by adding this line to your host.cmake file:

@@ -16,13 +16,13 @@ The :ref:`Animation` chapter explains some auxiliary methods that can be used to
 
 
 The **Save movie wizard** (see :numref:`Figure %s<save_movie_wizard_1>`) is available in the **Main Window's Files** menu.
-The **Save movie wizard's** purpose is to lead you through a set of simple questions that allow VisIt_ to gather the information required to create movies of your visualizations. 
+The **Save movie wizard's** purpose is to lead you through a set of simple questions that allow VisIt_ to gather the information required to create movies of your visualizations.
 For example, the **Save movie wizard** asks which image and movie formats you want to generate, where you want to store the movies, what you want to call the movies, etc.
-Each of these questions appears on a separate screen in the **Save movie wizard** and once you answer the question on the current screen, clicking the **Next (Continue for OSX)** button advances you to the next screen.
+Each of these questions appears on a separate screen in the **Save movie wizard** and once you answer the question on the current screen, clicking the **Next (Continue for macOS)** button advances you to the next screen.
 You can cancel saving a movie at any time by clicking on the **Cancel** button.
 If you advance to the last screen in the **Save movie wizard** then you have successfully provided all of the required information that VisIt_ needs to make your movie.
 Clicking the **Finish** button at that point invokes VisIt_'s movie-making script to make the movie.
-If you want to make subsequent movies, you can choose to use the settings for the movies that you just made or you can choose to create a new movie and provide new information.  
+If you want to make subsequent movies, you can choose to use the settings for the movies that you just made or you can choose to create a new movie and provide new information.
 
 Choosing movie formats
 ~~~~~~~~~~~~~~~~~~~~~~

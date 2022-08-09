@@ -3,13 +3,13 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 // ************************************************************************* //
-//                              VisWinUserInfo.h                             //
+//                              avtText2DColleague.h                         //
 // ************************************************************************* //
 
-#ifndef VIS_WIN_USER_INFO_H
-#define VIS_WIN_USER_INFO_H
+#ifndef AVT_TEXT_2D_COLLEAGUE_H 
+#define AVT_TEXT_2D_COLLEAGUE_H 
 #include <viswindow_exports.h>
-#include <avtAnnotationColleague.h>
+#include <avtAnnotationWithTextColleague.h>
 #include <ColorAttribute.h>
 
 class vtkVisItTextActor;
@@ -34,7 +34,7 @@ class vtkVisItTextActor;
 //
 // ****************************************************************************
 
-class VISWINDOW_API avtText2DColleague : public avtAnnotationColleague
+class VISWINDOW_API avtText2DColleague : public avtAnnotationWithTextColleague
 {
 public:
     avtText2DColleague(VisWindowColleagueProxy &);
@@ -59,21 +59,10 @@ protected:
     bool ShouldBeAddedToRenderer() const;
     void SetText(const char *text);
 
-    static double initialTime;
-    static int    initialCycle;
-
     vtkVisItTextActor *textActor;
-    char           *textFormatString;
-    char           *textString;
-    double          currentTime;
-    int             currentCycle;
-
-    bool            useForegroundForTextColor;
-    bool            addedToRenderer;
-    ColorAttribute  textColor;
+    bool               useForegroundForTextColor;
+    bool               addedToRenderer;
+    ColorAttribute     textColor;
 };
 
-
 #endif
-
-

@@ -164,6 +164,9 @@ ColorTableManager::ImportColorTables(ColorTableAttributes *cta)
 //
 //   Kathleen Biagas, Fri Aug 8 08:34:29 PDT 2014
 //   Set default category name to 'UserDefined'.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags removed categories.
 //
 // ****************************************************************************
 bool
@@ -177,21 +180,25 @@ ColorTableManager::WriteConfigFile(std::ostream& out)
 
     // Let the color table create and add its information to the node.
     ccpl.CreateNode(ctNode, false, true);
-    // This is an export, set the categoryName to UserDefined, adding the node
-    // if necessary.
-    if (ctNode->GetNode("ColorControlPointList")->GetNode("category"))
+    // add the user-defined tag
+    if (ctNode->GetNode("ColorControlPointList")->GetNode("tags"))
     {
-        // if the category is Standard
-        std::string category =
-            ctNode->GetNode("ColorControlPointList")->GetNode("category")->AsString();
-        if (category == std::string("Standard"))
-        {
-            ctNode->GetNode("ColorControlPointList")->GetNode("category")->SetString("UserDefined");
-        }
+        stringVector tags = ctNode->GetNode("ColorControlPointList")->GetNode("tags")->AsStringVector();
+        // make sure it's not already here!
+        bool found = false;
+        for (int i = 0; i < tags.size(); i ++)
+            if (tags[i] == "User Defined")
+                found = true;
+        if (!found)
+            tags.push_back("User Defined");
+        ctNode->GetNode("ColorControlPointList")->GetNode("tags")->SetStringVector(tags);
     }
     else
-    {
-        ctNode->GetNode("ColorControlPointList")->AddNode(new DataNode("category",std::string("UserDefined")));
+    {        
+        ctNode->GetNode("ColorControlPointList")->AddNode(new DataNode("tags"));
+        stringVector tags;
+        tags.push_back("User Defined");
+        ctNode->GetNode("ColorControlPointList")->GetNode("tags")->SetStringVector(tags);
     }
 
     // Write the output file.
@@ -316,6 +323,12 @@ ColorTableManager::ImportHelper(void *data, const std::string &ctFileName,
 //
 //   Kathleen Biagas, Fri Aug 8 08:35:43 PDT 2014
 //   Set default category name if needed.
+// 
+//   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
+//   Added tags removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Set builtin flag to false for user defined CTs.
 //
 // ****************************************************************************
 
@@ -347,12 +360,20 @@ ColorTableManager::ImportColorTable(const std::string &ctFileName)
             ColorControlPointList ccpl2;
             ccpl2.SetFromNode(node2);
             ccpl2.SetExternalFlag(true);
-            if (ccpl2.GetCategoryName() == std::string(""))
+
+            // add tags to imported color tables
+            if (importingPersonal)
             {
-                if (importingPersonal)
-                    ccpl2.SetCategoryName("UserDefined");
-                else
-                    ccpl2.SetCategoryName("Standard");
+                // add the user defined tag if it is user defined
+                if (! ccpl2.HasTag("User Defined"))
+                    ccpl2.AddTag("User Defined");
+                ccpl2.SetBuiltIn(false);
+            }
+            else
+            {
+                // add the "No Tags" tag if there are no tags
+                if (ccpl2.GetNumTags() == 0)
+                    ccpl2.AddTag("No Tags");
             }
 
             // Check for errors that would break code down the line

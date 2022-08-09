@@ -72,10 +72,10 @@ function bv_mili_ensure
 
 function apply_mili_151_darwin_patch1
 {
-    info "Applying Mili 15.1 darwin patch 1.
+    info "Applying Mili 15.1 darwin patch 1."
     patch -p0 << \EOF
-diff -c mili/src/mesh_u.c mili.patched/src/mesh_u.c
-*** mili/src/mesh_u.c   2015-09-22 13:20:42.000000000 -0700
+diff -c mili-22.1/src/mesh_u.c mili.patched/src/mesh_u.c
+*** mili-22.1/src/mesh_u.c   2015-09-22 13:20:42.000000000 -0700
 --- mili.patched/src/mesh_u.c   2015-10-19 12:44:52.000000000 -0700
 ***************
 *** 14,20 ****
@@ -105,9 +105,9 @@ EOF
 
 function apply_mili_151_darwin_patch2
 {
-    info "Applying Mili 15.1 darwin patch 2.
+    info "Applying Mili 15.1 darwin patch 2."
     patch -p0 << \EOF
-*** mili/Makefile.Library       2013-12-10 12:55:55.000000000 -0800
+*** mili-22.1/Makefile.Library       2013-12-10 12:55:55.000000000 -0800
 --- mili.patched/Makefile.Library       2015-10-20 13:37:27.000000000 -0700
 ***************
 *** 386,393 ****
@@ -131,9 +131,10 @@ EOF
 
 function apply_mili_151_darwin_patch3
 {
-    info "Applying Mili 15.1 darwin patch 3.
+    return 0
+    info "Applying Mili 15.1 darwin patch 3."
     patch -p0 << \EOF
-*** mili/src/mili_internal.h    2015-09-17 13:26:32.000000000 -0700
+*** mili-22.1/src/mili_internal.h    2015-09-17 13:26:32.000000000 -0700
 --- mili.patched/src/mili_internal.h    2015-10-20 16:57:21.000000000 -0700
 ***************
 *** 534,542 ****
@@ -218,7 +219,7 @@ EOF
 
 function apply_mili_221_cflags_patch
 {
-    info "Applying Mili 22.1 CFLAGS patch.
+    info "Applying Mili 22.1 CFLAGS patch."
     patch -p0 << \EOF
 diff -c mili-22.1/configure.orig mili-22.1/configure
 *** mili-22.1/configure.orig    2022-06-16 13:45:39.195734000 -0700
@@ -371,6 +372,35 @@ EOF
     return 0
 }
 
+function apply_mili_221_write_funcs_patch
+{
+    #
+    # write_funcs is not needed and having it in the header leads to
+    # multiple definitions, which gcc 10.2 on Debian 11 doesn't like.
+    #
+    patch -p0 << \EOF
+diff -c mili-22.1/src/mili_internal.h.orig mili-22.1/src/mili_internal.h
+*** mili-22.1/src/mili_internal.h.orig  Tue Jul 12 10:49:05 2022
+--- mili-22.1/src/mili_internal.h       Tue Jul 12 10:49:29 2022
+***************
+*** 674,680 ****
+  /* dep.c - routines for handling architecture dependencies. */
+  Return_value set_default_io_routines( Mili_family *fam );
+  Return_value set_state_data_io_routines( Mili_family *fam );
+- void (*write_funcs[QTY_PD_ENTRY_TYPES + 1])();
+  
+  /* svar.c - routines for managing state variables. */
+  Bool_type valid_svar_data( Aggregate_type atype, char *name,
+--- 674,679 ----
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Unable to apply write funcs patch to Mili 22.1"
+        return 1
+    fi
+
+    return 0
+}
+
 function apply_mili_patch
 {
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -394,6 +424,10 @@ function apply_mili_patch
             return 1
         fi
         apply_mili_221_blueos_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+        apply_mili_221_write_funcs_patch
         if [[ $? != 0 ]] ; then
             return 1
         fi
@@ -445,18 +479,29 @@ function build_mili
          extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
     fi
 
-    # The 19.2 configure script does not play well with our fortran mac patch.
-    # We can use an older configure script that includes this patch already.
+    F77_ARG=""
+    TYPEDEFS_ARG=""
     config_script=configure
-    if [[ "$OPSYS" == "Darwin" ]]; then
+    if [[ ${MILI_VERSION} == 19.2 && "$OPSYS" == "Darwin" ]]; then
         config_script=configure_15_1
+    elif [[ ${MILI_VERSION} == 22.1 && "$OPSYS" == "Darwin" ]] ; then
+        # Mili 22.1 configure expects fortran compiler even if no intention to use it.
+        # We spoof fortran compiler here to fool configure.
+       cat << \EOF > spoof_f77.sh
+#!/bin/sh
+echo "#!/bin/sh" > conftest.out
+chmod 755 conftest.out
+EOF
+        chmod 755 spoof_f77.sh
+        F77_ARG="F77=./spoof_f77.sh"
+        TYPEDEFS_ARG="ac_cv_type_mode_t=yes ac_cv_type_off_t=yes ac_cv_type_size_t=yes"
     fi
 
     info "Invoking command to configure Mili"
     set -x
     ./${config_script} CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-                ac_cv_prog_FOUND_GMAKE=make $extra_ac_flags \
+                ac_cv_prog_FOUND_GMAKE=make $extra_ac_flags $F77_ARG $TYPEDEFS_ARG \
                 --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     set +x
     if [[ $? != 0 ]] ; then
@@ -468,35 +513,8 @@ function build_mili
     # Build Mili
     #
     info "Building Mili . . . (~2 minutes)"
-
-    if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
-        cd MILI-$OPSYS-*
-        cd src
-        $C_COMPILER $CFLAGS $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c \
-                    mili.c direc.c param.c io.c util.c dep.c svar.c \
-                    srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c \
-                    sarray.c gahl.c util.c partition.c ti.c tidirc.c
-        if [[ $? != 0 ]] ; then
-            warn "Mili build failed.  Giving up"
-            return 1
-        fi
-    elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
-        cd MILI-*-*
-        cd src
-        $C_COMPILER $CFLAGS $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c \
-                    mili.c dep.c direc.c eprtf.c gahl.c io_mem.c \
-                    mesh_u.c mr_funcs.c param.c partition.c read_db.c sarray.c \
-                    srec.c svar.c taurus_db.c taurus_mesh_u.c taurus_srec.c \
-                    taurus_svars.c taurus_util.c ti.c tidirc.c util.c wrap_c.c \
-                    write_db.c
-        if [[ $? != 0 ]] ; then
-            warn "Mili build failed.  Giving up"
-            return 1
-        fi
-    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2 || ${MILI_VERSION} == 22.1 ]] ; then
-        cd MILI-*-*
-        make opt fortran=false
-    fi
+    cd MILI-*-*
+    $MAKE opt fortran=false
 
     #
     # Install into the VisIt third party location.
@@ -508,13 +526,7 @@ function build_mili
     mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
-        cp mili.h mili_enum.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    elif [[ ${MILI_VERSION} == 1.11.1 ]] ; then
-        cp mili.h mili_enum.h misc.h  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    elif [[ ${MILI_VERSION} == 13.1.1-patch || ${MILI_VERSION} == 15.1 || ${MILI_VERSION} == 19.2 || ${MILI_VERSION} == 22.1 ]] ; then
-        cp src/{mili.h,mili_enum.h,misc.h}  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
-    fi
+    cp src/{mili.h,mili_enum.h,misc.h}  "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/include"
     if [[ "$DO_STATIC_BUILD" == "no" && "$OPSYS" == "Darwin" ]]; then
         INSTALLNAMEPATH="$VISITDIR/mili/${MILI_VERSION}/$VISITARCH/lib"
 
@@ -537,16 +549,7 @@ function build_mili
         fi
         cp libmili.$SO_EXT "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     else
-        if [[ ${MILI_VERSION} != 13.1.1-patch && ${MILI_VERSION} != 15.1 && ${MILI_VERSION} != 19.2 && ${MILI_VERSION} != 22.1 ]] ; then
-            ar -rc libmili.a *.o 
-            if [[ $? != 0 ]] ; then
-                warn "Mili install failed.  Giving up"
-                return 1
-            fi
-            cp libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
-        else
-            cp lib_opt/libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
-        fi
+        cp lib_opt/libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH/lib"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then

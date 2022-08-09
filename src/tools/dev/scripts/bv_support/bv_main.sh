@@ -597,6 +597,7 @@ function initialize_build_visit()
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
     export DO_QT510="no"
+    export DO_VTK9="no"
     DOWNLOAD_ONLY="no"
 
 
@@ -634,6 +635,9 @@ function initialize_build_visit()
     for arg in "$@" ; do
         case $arg in
             --qt510) DO_QT510="yes";;
+        esac
+        case $arg in
+            --vtk9) DO_VTK9="yes";;
         esac
     done
 
@@ -1238,7 +1242,9 @@ function run_build_visit()
             # "--qt510" is actually handled elsewhere, but it is also here
             # to prevent it triggering an "Urecognized option" error.
             --qt510) ;;
-            --console) ;;
+            # "--vtk9" is actually handled elsewhere, but it is also here
+            # to prevent it triggering an "Urecognized option" error.
+            --vtk9) ;;
             --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
             *)
                 echo "Unrecognized option '${arg}'."
@@ -1253,7 +1259,7 @@ function run_build_visit()
     fi
 
     if [[ "$ANY_ERRORS" == "yes" ]] ; then
-        echo "command line arguments are used incorrectly. unrecognized options..."
+        echo "command line arguments are used incorrectly. see above..."
         exit 1
     fi
 

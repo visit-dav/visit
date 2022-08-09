@@ -6,5 +6,5 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(BLOSC lib include blosc)
+SET_UP_THIRD_PARTY(BLOSC LIBS blosc)
 

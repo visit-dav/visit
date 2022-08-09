@@ -503,6 +503,23 @@
 #    Kathleen Biagas, Thu Jun 16, 2022 
 #    Changed minimum cmake version to 3.15.
 #
+#    Kathleen Biagas, Fri July 1, 2022 
+#    For Windows package creation: added custom command to 7zip the install
+#    dir for use by installer creation script. Changed default install
+#    prefix to remove the space between 'VisIt' and '<verison>'. 
+#
+#    Eric Brugger, Tue Jul  5 09:10:18 PDT 2022
+#    Added support for the Blosc library.
+#
+#    Eric Brugger, Thu Jul  7 13:07:51 PDT 2022
+#    Added other directories to look for libicui18n, libicudata and libicuuc.
+#
+#    Kathleen Biagas, Sat July 16, 2022 
+#    Prep for VTK 9: reorder calling of Find module so that libraries that
+#    VTK depends on are found first.
+#    Consolidated some python scripting logic.
+#    Disable pyside temporarily.
+#
 #****************************************************************************
 
 cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
@@ -618,9 +635,9 @@ FUNCTION(SETUP_APP_VERSION name ver_ascii )
   IF(${ver_ascii} VERSION_LESS ${${name}_MINIMUM_VERSION}})
       MESSAGE(FATAL_ERROR "${name} version must be at least ${${name}_MINIMUM_VERSION}}")
   ENDIF()
-  STRING( REGEX REPLACE "([0-9]+).[0-9]+.[0-9]+[.0-9]*" "\\1" ver_major ${ver_ascii} )
-  STRING( REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+[.0-9]*" "\\1" ver_minor ${ver_ascii} )
-  STRING( REGEX REPLACE "[0-9]+.[0-9]+.([0-9]+)[.0-9]*" "\\1" ver_patch ${ver_ascii} )
+  STRING( REGEX REPLACE "([0-9]+).[0-9]+.[0-9]+[.0-9]*.*" "\\1" ver_major ${ver_ascii} )
+  STRING( REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+[.0-9]*.*" "\\1" ver_minor ${ver_ascii} )
+  STRING( REGEX REPLACE "[0-9]+.[0-9]+.([0-9]+)[.0-9]*.*" "\\1" ver_patch ${ver_ascii} )
   SET(${name}_VERSION "${ver_ascii}"  CACHE INTERNAL "")
   SET(${name}_MAJOR_VERSION "${ver_major}" CACHE INTERNAL "")
   SET(${name}_MINOR_VERSION "${ver_minor}" CACHE INTERNAL "")
@@ -651,7 +668,7 @@ ENDIF (NOT WIN32)
 
 #-----------------------------------------------------------------------------
 # If the config-site file above has not set a VTK version set a
-# default VTK version of 8.1.0.
+# default VTK version of the minimum required.
 #-----------------------------------------------------------------------------
 IF(NOT VTK_VERSION)
   IF(VISIT_VTK_VERSION)
@@ -660,15 +677,15 @@ IF(NOT VTK_VERSION)
       ENDIF()
       SETUP_APP_VERSION(VTK ${VISIT_VTK_VERSION})
   ELSE()
-      MESSAGE(STATUS "VISIT_VTK_VERSION NOT FOUND assuming 8.1.0")
-      SETUP_APP_VERSION(VTK 8.1.0)
+      MESSAGE(STATUS "VISIT_VTK_VERSION NOT FOUND assuming ${VTK_MINIMUM_VERSION}")
+      SETUP_APP_VERSION(VTK ${VTK_MINIMUM_VERSION})
   ENDIF()
 ENDIF()
 
 
 #-----------------------------------------------------------------------------
 # If the config-site file above has not set a NEKTAR++ version set a
-# default NEKTAR++ version of 4.0.0.
+# default NEKTAR++ version of the minimum required.
 #-----------------------------------------------------------------------------
 IF(EXISTS ${VISIT_NEKTAR++_DIR})
   IF(NOT NEKTAR++_VERSION)
@@ -678,8 +695,8 @@ IF(EXISTS ${VISIT_NEKTAR++_DIR})
       ENDIF()
       SETUP_APP_VERSION(NEKTAR++ ${VISIT_NEKTAR++_VERSION})
     ELSE()
-      MESSAGE(STATUS "VISIT_NEKTAR++_VERSION NOT FOUND assuming 4.0.0")
-      SETUP_APP_VERSION(NEKTAR++ 4.0.0)
+      MESSAGE(STATUS "VISIT_NEKTAR++_VERSION NOT FOUND assuming ${NEKTAR++_MINIMUM_VERSION}")
+      SETUP_APP_VERSION(NEKTAR++ ${NEKTAR++_MINIMUM_VERSION})
     ENDIF()
   ENDIF()
 ENDIF()
@@ -911,6 +928,7 @@ VISIT_3RDPARTY_VAR(ADIOS_DIR     "Path containing the ADIOS library's include an
 VISIT_3RDPARTY_VAR(ADIOS2_DIR     "Path containing the ADIOS library's include and lib")
 VISIT_3RDPARTY_VAR(ADIOS2_PAR_DIR "Path containing the ADIOS MPI library's include and lib")
 VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
+VISIT_3RDPARTY_VAR(BLOSC_DIR     "Path containing the Blosc library's include and lib")
 VISIT_3RDPARTY_VAR(BOOST_DIR     "Path containing the BOOST library's include and lib")
 VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include and lib")
 VISIT_3RDPARTY_VAR(CFITSIO_DIR   "Path containing the CFITSIO library's include and lib")
@@ -998,7 +1016,7 @@ IF(WIN32)
     # if it wasn't specified via command line,
     IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
       IF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
-        SET(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt ${VISIT_VERSION}"
+        SET(CMAKE_INSTALL_PREFIX "${VISIT_BINARY_DIR}/VisIt${VISIT_VERSION}"
             CACHE PATH "Install path prefix, prepended onto install directories" FORCE)
         SET(APPENDED_VISIT_VERSION_TO_INSTALL_PATH TRUE CACHE INTERNAL "")
       ENDIF( NOT APPENDED_VISIT_VERSION_TO_INSTALL_PATH)
@@ -1251,6 +1269,28 @@ CHECK_INCLUDE_FILES (sys/stat.h  HAVE_SYS_STAT_H)
 CHECK_INCLUDE_FILES (unistd.h    HAVE_UNISTD_H)
 CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 
+# These need to come before VTK/Qt because they depend on it.
+
+# zlib
+INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
+
+#ospray
+IF(EXISTS ${VISIT_OSPRAY_DIR})
+    include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
+endif()
+
+# szip and jpeg
+IF(WIN32)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
+ENDIF(WIN32)
+
+# Configure Qt and Qwt support.
+IF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt.cmake)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindQwt.cmake)
+ENDIF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
+
 # Configure VTK support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
 
@@ -1269,7 +1309,6 @@ ELSE(VISIT_THREAD)
 ENDIF(VISIT_THREAD)
 
 
-include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
 
 
 #-----------------------------------------------------------------------------
@@ -1277,77 +1316,67 @@ include(${VISIT_SOURCE_DIR}/CMake/FindOSPRay.cmake)
 #   Disable python filters.
 #-----------------------------------------------------------------------------
 
-# If we did not find Python then turn off VISIT_PYTHON_SCRIPTING
-IF(VISIT_PYTHON_SCRIPTING AND NOT PYTHONLIBS_FOUND)
-    SET(VISIT_PYTHON_SCRIPTING OFF)
-    MESSAGE(STATUS "Python scripting disabled because Python was not found.")
-ENDIF(VISIT_PYTHON_SCRIPTING AND NOT PYTHONLIBS_FOUND)
-
-# Disable Python scripting if we're doing a static build for engine-only or server-components-only.
-IF(VISIT_PYTHON_SCRIPTING AND VISIT_STATIC)
-    IF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-        SET(VISIT_PYTHON_SCRIPTING OFF)
-        MESSAGE(STATUS "Python scripting disabled because an engine-only or server-components-only build was selected.")
-    ENDIF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-ENDIF(VISIT_PYTHON_SCRIPTING AND VISIT_STATIC)
+if(VISIT_PYTHON_SCRIPTING)
+    set(msg "Python scripting disabled because ")
+    if (NOT PYTHONLIBS_FOUND)
+        # If we did not find Python then turn off VISIT_PYTHON_SCRIPTING
+        set(VISIT_PYTHON_SCRIPTING OFF)
+        string(APPEND msg "Python was not found.")
+    elseif(VISIT_STATIC AND (VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY))
+        # Disable Python scripting if we're doing a static build for engine-only
+        # or server-components-only.
+        set(VISIT_PYTHON_SCRIPTING OFF)
+        string(APPEND msg "an engine-only or server-components-only build was selected.")
+    endif()
+    if(NOT VISIT_PYTHON_SCRIPTING)
+        message(STATUS ${msg})
+    endif()
+    unset(msg)
+endif(VISIT_PYTHON_SCRIPTING)
 
 # Disable Python filters if we don't have Python.
-IF(VISIT_PYTHON_FILTERS AND NOT PYTHONLIBS_FOUND)
-    SET(VISIT_PYTHON_FILTERS OFF)
-    MESSAGE(STATUS "Python Engine Filters disabled because Python was not found.")
-ENDIF(VISIT_PYTHON_FILTERS AND NOT PYTHONLIBS_FOUND)
+if(VISIT_PYTHON_FILTERS)
+  set(msg "Python Engine Filters disabled because")
+  if ( NOT PYTHONLIBS_FOUND)
+    set(VISIT_PYTHON_FILTERS OFF)
+    set(msg "${msg} Python was not found.")
+  elseif (VISIT_STATIC)
+    set(VISIT_PYTHON_FILTERS OFF)
+    set(msg "${msg} a static build of VisIt was selected.")
+  elseif (NOT VTK_PYTHON_WRAPPERS_FOUND)
+    set(VISIT_PYTHON_FILTERS OFF)
+    set(msg "${msg} VTK python wrappers are not installed.")
+  elseif (VISIT_NOLINK_MPI_WITH_LIBRARIES)
+    # Disable python filters if 'VISIT_NOLINK_MPI_WITH_LIBRARIES' is true.
+    # The mpicom python module (a shared lib) must be linked to mpi.
+    set(VISIT_PYTHON_FILTERS OFF)
+    set(msg "${msg} VISIT_NOLINK_MPI_WITH_LIBRARIES was selected.")
+  elseif (VISIT_DBIO_ONLY)
+    set(VISIT_PYTHON_FILTERS OFF)
+    set(msg "${msg} VISIT_DBIO_ONLY was selected.")
+  endif()
+  if (NOT VISIT_PYTHON_FILTERS)
+      message(STATUS ${msg})
+  endif()
+  unset(msg)
+endif()
 
-# VTK Python's wrappers are not available with a static build of VTK.
-IF(VISIT_PYTHON_FILTERS AND VISIT_STATIC)
-    SET(VISIT_PYTHON_FILTERS OFF)
-    MESSAGE(STATUS "Python Engine Filters disabled because a static build of VisIt was selected.")
-ENDIF(VISIT_PYTHON_FILTERS AND VISIT_STATIC)
 
-# Disable python filters if the VTK Python's wrappers are not found.
-IF(VISIT_PYTHON_FILTERS AND NOT VTK_PYTHON_WRAPPERS_FOUND)
-    SET(VISIT_PYTHON_FILTERS OFF)
-    MESSAGE(STATUS "Python Engine Filters disabled because VTK python wrappers are not installed.")
-ENDIF(VISIT_PYTHON_FILTERS AND NOT VTK_PYTHON_WRAPPERS_FOUND)
-
-# Disable python filters if 'VISIT_NOLINK_MPI_WITH_LIBRARIES' is true.
-# The mpicom python module (a shared lib) must be linked to mpi.
-IF(VISIT_PYTHON_FILTERS AND VISIT_NOLINK_MPI_WITH_LIBRARIES)
-    SET(VISIT_PYTHON_FILTERS OFF)
-    MESSAGE(STATUS "Python Engine Filters disabled because VISIT_NOLINK_MPI_WITH_LIBRARIES was selected.")
-ENDIF(VISIT_PYTHON_FILTERS AND VISIT_NOLINK_MPI_WITH_LIBRARIES)
-
-IF(VISIT_PYTHON_FILTERS AND VISIT_DBIO_ONLY)
-    SET(VISIT_PYTHON_FILTERS OFF)
-    MESSAGE(STATUS "Python Engine Filters disabled because VISIT_DBIO_ONLY was selected.")
-ENDIF(VISIT_PYTHON_FILTERS AND VISIT_DBIO_ONLY)
-
-# Configure Qt and Qwt support.
-IF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItQt.cmake)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindQwt.cmake)
-ENDIF(NOT VISIT_DBIO_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
 # Configure PySide Support
-if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+  if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
                           AND NOT VISIT_DBIO_ONLY
                           AND NOT VISIT_ENGINE_ONLY
                           AND NOT VISIT_SERVER_COMPONENTS_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
+  endif()
 endif()
 
 # Include Ice-T support if we can.
 IF(VISIT_PARALLEL)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindIceT.cmake)
 ENDIF(VISIT_PARALLEL)
-
-# zlib
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindZlib.cmake)
-
-# szip and jpeg
-IF(WIN32)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindJPEG.cmake)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSzip.cmake)
-ENDIF(WIN32)
 
 # dl and large file support.
 IF(CMAKE_HOST_UNIX)
@@ -1368,6 +1397,9 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure advio support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADVIO.cmake)
+
+    # Configure blosc support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBlosc.cmake)
 
     # Configure Boxlib support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindBoxlib.cmake)
@@ -2071,11 +2103,32 @@ if(LINUX)
     # Install the system libraries required by Qt to the lib directory.
     # The versions of these libraries change frequently, so including
     # them means VisIt may continue to run even if the OS is upgraded.
+    # "/lib64" is for rhel7 and fedora31, "/usr/lib/x86_64-linux-gnu"
+    # is for ubuntu 18, debian 10 and debian 11, "/lib/x86_64-linux-gnu"
+    # is for ubuntu 20.
     #-------------------------------------------------------------------------
     if(EXISTS "/lib64/libicui18n.so")
         file(GLOB libicui18n_libs "/lib64/libicui18n.so*")
         file(GLOB libicudata_libs "/lib64/libicudata.so*")
         file(GLOB libicuuc_libs "/lib64/libicuuc.so*")
+        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    elseif(EXISTS "/lib/x86_64-linux-gnu/libicui18n.so")
+        file(GLOB libicui18n_libs "/lib/x86_64-linux-gnu/libicui18n.so*")
+        file(GLOB libicudata_libs "/lib/x86_64-linux-gnu/libicudata.so*")
+        file(GLOB libicuuc_libs "/lib/x86_64-linux-gnu/libicuuc.so*")
+        install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
+                DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                            GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                            WORLD_READ             WORLD_EXECUTE)
+    elseif(EXISTS "/usr/lib/x86_64-linux-gnu/libicui18n.so")
+        file(GLOB libicui18n_libs "/usr/lib/x86_64-linux-gnu/libicui18n.so*")
+        file(GLOB libicudata_libs "/usr/lib/x86_64-linux-gnu/libicudata.so*")
+        file(GLOB libicuuc_libs "/usr/lib/x86_64-linux-gnu/libicuuc.so*")
         install(FILES ${libicui18n_libs} ${libicudata_libs} ${libicuuc_libs}
                 DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
@@ -2329,6 +2382,7 @@ ELSE () # on windows
            set(codesign "/DCODESIGN_HASH=${CODESIGN_HASH}")
         endif()
         ADD_CUSTOM_COMMAND(OUTPUT visit${VISIT_VERSION}.exe
+            COMMAND "${VISIT_WINDOWS_DIR}/MSVC2017/p7zip/18.05/7z.exe" a -t7z -m0=lzma2 -mx9  visit${VISIT_VERSION}.7z VisIt${VISIT_VERSION}
             COMMAND ${MAKENSIS}
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DVISIT_WINDOWS_DIR=${VWD_NATIVE}

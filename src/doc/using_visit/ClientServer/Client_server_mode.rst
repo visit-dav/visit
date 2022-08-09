@@ -160,7 +160,7 @@ When VisIt launches a compute engine or metadata server, it opens the
 **Launch Progress Window** when the component cannot be launched in under four
 seconds. An exception to this rule is that VisIt will always show the
 **Launch Progress Window** when launching a parallel compute engine or any
-compute engine on OSX. VisIt's components frequently launch fast enough
+compute engine on macOS. VisIt's components frequently launch fast enough
 that it is not necessary to show the **Launch Progress Window** but you will
 often see it if you launch compute engines using a batch system.
 

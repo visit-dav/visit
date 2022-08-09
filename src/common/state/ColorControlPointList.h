@@ -61,24 +61,28 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectControlPoints();
-    void SelectCategoryName();
+    void SelectTagNames();
 
     // Property setting methods
     void SetSmoothing(SmoothingMethod smoothing_);
     void SetEqualSpacingFlag(bool equalSpacingFlag_);
     void SetDiscreteFlag(bool discreteFlag_);
     void SetExternalFlag(bool externalFlag_);
-    void SetCategoryName(const std::string &categoryName_);
+    void SetTagNames(const stringVector &tagNames_);
+    void SetTagChangesMade(bool tagChangesMade_);
+    void SetBuiltIn(bool builtIn_);
 
     // Property getting methods
     const AttributeGroupVector &GetControlPoints() const;
           AttributeGroupVector &GetControlPoints();
-    SmoothingMethod   GetSmoothing() const;
-    bool              GetEqualSpacingFlag() const;
-    bool              GetDiscreteFlag() const;
-    bool              GetExternalFlag() const;
-    const std::string &GetCategoryName() const;
-          std::string &GetCategoryName();
+    SmoothingMethod    GetSmoothing() const;
+    bool               GetEqualSpacingFlag() const;
+    bool               GetDiscreteFlag() const;
+    bool               GetExternalFlag() const;
+    const stringVector &GetTagNames() const;
+          stringVector &GetTagNames();
+    bool               GetTagChangesMade() const;
+    bool               GetBuiltIn() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -114,7 +118,14 @@ public:
     void GetColorsCubicSpline(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     void GetColors(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     bool CompactCreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
+    void AddTag(std::string newtag);
+    void ClearTags();
+    std::string GetTag(int index);
+    int GetNumTags();
+    std::string GetTagsAsString();
+    bool HasTag(std::string tag);
     void SetNumControlPoints(const int n);
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -123,7 +134,9 @@ public:
         ID_equalSpacingFlag,
         ID_discreteFlag,
         ID_externalFlag,
-        ID_categoryName,
+        ID_tagNames,
+        ID_tagChangesMade,
+        ID_builtIn,
         ID__LAST
     };
 
@@ -135,12 +148,14 @@ private:
     bool                 equalSpacingFlag;
     bool                 discreteFlag;
     bool                 externalFlag;
-    std::string          categoryName;
+    stringVector         tagNames;
+    bool                 tagChangesMade;
+    bool                 builtIn;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define COLORCONTROLPOINTLIST_TMFS "a*ibbbs"
+#define COLORCONTROLPOINTLIST_TMFS "a*ibbbs*bb"
 
 #endif
