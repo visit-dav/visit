@@ -159,7 +159,7 @@ FUNCTION(THIRD_PARTY_INSTALL_LIBRARY LIBFILE)
                 SET(curNAME "${curPATH}/${inptNAME}")
                 # Come up with all of the possible library and symlink names
                 SET(allNAMES "${curNAME}${LIBEXT}")
-                SET(allNAMES "${curNAME}${LIBEXT}.1") # seems to be a standard linux-ism that isn't always covered by the foreach-loop on ${extList}
+                SET(allNAMES ${allNAMES} "${curNAME}${LIBEXT}.1") # seems to be a standard linux-ism that isn't always covered by the foreach-loop on ${extList}
                 SET(allNAMES ${allNAMES} "${curNAME}.a")
                 FOREACH(X ${extList})
                     SET(curNAME "${curNAME}.${X}")
