@@ -68,35 +68,46 @@ class vtkDataArray;
 class AVTBLUEPRINT_API avtConduitBlueprintDataAdaptor
 {
 public:
-      /// Helpers for converting Mesh and Field Blueprint conforming data
-      /// to vtk instances.
-      static vtkDataSet*    MeshToVTK(int domain, 
-                                      const conduit::Node &mesh);
-      static vtkDataArray*  FieldToVTK(const conduit::Node &field);
+    // set warning and info handlers to redirect conduit warnings and info
+    static void SetInfoWarningHandlers();
 
+    class Blueprint2VTK
+    {
+    public:
+        /// Helpers for converting Mesh and Field Blueprint conforming data
+        /// to vtk instances.
+        static vtkDataSet*    MeshToVTK(int domain, 
+                                        const conduit::Node &mesh);
+        static vtkDataArray*  FieldToVTK(const conduit::Node &field);
+    };
 
-      /// Helpers for converting vtk datasets to Mesh and Field Blueprint
-      /// conforming data
-      static void VTKFieldNameToBlueprint(const std::string &vtk_name,
-                                          const std::string &topo_name,
-                                          std::string &bp_name);
+    class VTK2Blueprint
+    {
+    public:
+        /// Helpers for converting vtk datasets to Mesh and Field Blueprint
+        /// conforming data
+        static void VTKFieldNameToBlueprint(const std::string &vtk_name,
+                                            const std::string &topo_name,
+                                            std::string &bp_name);
 
-      static void VTKFieldsToBlueprint(conduit::Node &node,
-                                       const std::string topo_name,
-                                       vtkDataSet* dataset);
+        static void VTKFieldsToBlueprint(conduit::Node &node,
+                                         const std::string topo_name,
+                                         vtkDataSet* dataset);
 
-      static void VTKToBlueprint(conduit::Node &mesh,
-                                 vtkDataSet* dataset,
-                                 const int ndims);
+        static void VTKToBlueprint(conduit::Node &mesh,
+                                   vtkDataSet* dataset,
+                                   const int ndims);
+    };
 
-      // set warning and info handlers to redirect conduit warnings and info
-      static void SetInfoWarningHandlers();
+    class Blueprint2MFEM
+    {
+    public:
+        static mfem::Mesh         *MeshToMFEM(const conduit::Node &mesh,
+                                              const std::string &topo_name = "");
 
-      static mfem::Mesh         *MeshToMFEM(const conduit::Node &mesh,
-                                            const std::string &topo_name = "");
-
-      static mfem::GridFunction *FieldToMFEM(mfem::Mesh *mesh,
-                                             const conduit::Node &field);
+        static mfem::GridFunction *FieldToMFEM(mfem::Mesh *mesh,
+                                               const conduit::Node &field);
+    };
 };
 
 #endif

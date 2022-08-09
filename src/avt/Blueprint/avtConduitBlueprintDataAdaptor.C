@@ -829,7 +829,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
 }
 
 // ****************************************************************************
-//  Method: MeshToVTK
+//  Method: avtConduitBlueprintDataAdaptor::Blueprint2VTK::MeshToVTK
 //
 //  Modifications:
 //    Justin Privitera, Fri 04 Mar 2022 05:57:49 PM PST
@@ -842,7 +842,7 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
 //
 // ****************************************************************************
 vtkDataSet *
-avtConduitBlueprintDataAdaptor::MeshToVTK(int domain,
+avtConduitBlueprintDataAdaptor::Blueprint2VTK::MeshToVTK(int domain,
                                         const Node &n_mesh)
 {
     //NOTE: this assumes one coordset and one topo
@@ -897,7 +897,7 @@ avtConduitBlueprintDataAdaptor::MeshToVTK(int domain,
 
 // ****************************************************************************
 vtkDataArray *
-avtConduitBlueprintDataAdaptor::FieldToVTK(const conduit::Node &field)
+avtConduitBlueprintDataAdaptor::Blueprint2VTK::FieldToVTK(const conduit::Node &field)
 {
     return ConduitArrayToVTKDataArray(field["values"]);
 }
@@ -1108,7 +1108,7 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 }
 
 // ****************************************************************************
-//  Method: avtConduitBlueprintDataAdaptor::VTKFieldNameToBlueprint
+//  Method: avtConduitBlueprintDataAdaptor::VTK2Blueprint::VTKFieldNameToBlueprint
 //
 //  Purpose:
 //      Replaces '/''s in input vtk_name with '_''s and stores the output in
@@ -1121,7 +1121,7 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 //  Modifications:
 //
 // ****************************************************************************
-void avtConduitBlueprintDataAdaptor::VTKFieldNameToBlueprint(const std::string &vtk_name,
+void avtConduitBlueprintDataAdaptor::VTK2Blueprint::VTKFieldNameToBlueprint(const std::string &vtk_name,
                                                              const std::string &topo_name,
                                                              std::string &bp_name)
 {
@@ -1148,7 +1148,7 @@ void avtConduitBlueprintDataAdaptor::VTKFieldNameToBlueprint(const std::string &
 }
 
 // ****************************************************************************
-//  Method: avtConduitBlueprintDataAdaptor::VTKFieldsToBlueprint
+//  Method: avtConduitBlueprintDataAdaptor::VTK2Blueprint::VTKFieldsToBlueprint
 //
 //  Purpose:
 //      Takes a vtk data set and converts all the fields into blueprint nodes.
@@ -1162,7 +1162,7 @@ void avtConduitBlueprintDataAdaptor::VTKFieldNameToBlueprint(const std::string &
 //  Chris Laganella Fri Nov  5 16:51:15 EDT 2021
 //  Updated to use VTKFieldNameToBlueprint
 // ****************************************************************************
-void avtConduitBlueprintDataAdaptor::VTKFieldsToBlueprint(conduit::Node &node,
+void avtConduitBlueprintDataAdaptor::VTK2Blueprint::VTKFieldsToBlueprint(conduit::Node &node,
                                                           const std::string topo_name,
                                                           vtkDataSet* dataset)
 {
@@ -1212,7 +1212,7 @@ void avtConduitBlueprintDataAdaptor::VTKFieldsToBlueprint(conduit::Node &node,
 }
 
 // ****************************************************************************
-//  Method: avtConduitBlueprintDataAdaptor::VTKToBlueprint
+//  Method: avtConduitBlueprintDataAdaptor::VTK2Blueprint::VTKToBlueprint
 //
 //  Purpose:
 //      Takes a vtk data set and converts into a  blueprint mesh.
@@ -1224,7 +1224,7 @@ void avtConduitBlueprintDataAdaptor::VTKFieldsToBlueprint(conduit::Node &node,
 //
 // ****************************************************************************
 void
-avtConduitBlueprintDataAdaptor::VTKToBlueprint(conduit::Node &mesh,
+avtConduitBlueprintDataAdaptor::VTK2Blueprint::VTKToBlueprint(conduit::Node &mesh,
                                                vtkDataSet* dataset,
                                                const int ndims)
 {
@@ -1300,7 +1300,7 @@ avtConduitBlueprintDataAdaptor::VTKToBlueprint(conduit::Node &mesh,
      vtkUnstructuredToNode(mesh[topo_path + "/elements"], grid, ndims);
    }
 
-   avtConduitBlueprintDataAdaptor::VTKFieldsToBlueprint(mesh, topo_name, dataset);
+   avtConduitBlueprintDataAdaptor::VTK2Blueprint::VTKFieldsToBlueprint(mesh, topo_name, dataset);
 
 }
 
@@ -1401,7 +1401,7 @@ ShapeNameToGeomType(const std::string &shape_name)
 // we will those, instead of VisIt's own implementation.
 //---------------------------------------------------------------------------//
 mfem::Mesh *
-avtConduitBlueprintDataAdaptor::MeshToMFEM(const Node &n_mesh,
+avtConduitBlueprintDataAdaptor::Blueprint2MFEM::MeshToMFEM(const Node &n_mesh,
                                           const std::string &topology_name)
 {
    bool zero_copy = true;
@@ -1754,7 +1754,7 @@ avtConduitBlueprintDataAdaptor::MeshToMFEM(const Node &n_mesh,
 
 //---------------------------------------------------------------------------//
 mfem::GridFunction *
-avtConduitBlueprintDataAdaptor::FieldToMFEM(mfem::Mesh *mesh,
+avtConduitBlueprintDataAdaptor::Blueprint2MFEM::FieldToMFEM(mfem::Mesh *mesh,
                                            const Node &n_field)
 {
     bool zero_copy = true;
