@@ -119,11 +119,13 @@ public:
     void GetColors(unsigned char *rgb, int ncolors, unsigned char *alpha=NULL) const;
     bool CompactCreateNode(DataNode *parentNode, bool completeSave, bool forceAdd);
     void AddTag(std::string newtag);
+    void RemoveTag(std::string tag);
     void ClearTags();
     std::string GetTag(int index);
     int GetNumTags();
     std::string GetTagsAsString();
     bool HasTag(std::string tag);
+    int GetTagIndex(std::string tag);
     void SetNumControlPoints(const int n);
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 

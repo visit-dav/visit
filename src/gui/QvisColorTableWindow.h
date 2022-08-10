@@ -165,6 +165,8 @@ private slots:
     void tagCombiningChanged(int index);
     void searchingToggled(bool checked);
     void searchEdited(const QString &newSearchTerm);
+    void tagEdited();
+    void addRemoveTag();
     void updateNameBoxPosition(bool tagsOn);
 private:
     ColorTableAttributes     *colorAtts;
@@ -178,6 +180,7 @@ private:
     bool                     tagsMatchAny;
     bool                     searchingOn;
     QString                  searchTerm;
+    QString                  tagEdit;
 
     // This object also observes the color table attributes.
     ColorTableObserver       ctObserver;

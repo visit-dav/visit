@@ -1804,6 +1804,33 @@ ColorControlPointList::AddTag(std::string newtag)
 }
 
 // ****************************************************************************
+// Method: ColorControlPointList::RemoveTag
+//
+// Purpose:
+//   Remove the tag from the list of local tags.
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Aug 10 15:35:58 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ColorControlPointList::RemoveTag(std::string tag)
+{
+    // If the tag is not in the tag list then we will do nothing.
+    int index = GetTagIndex(tag);
+    if (index != -1)
+    {
+        stringVector::iterator pos = tagNames.begin();
+        for (int i = 0; i < index; i ++) pos ++;
+        if(pos != tagNames.end()) tagNames.erase(pos);
+        tagChangesMade = true;
+    }
+}
+
+// ****************************************************************************
 // Method: ColorControlPointList::ClearTags
 //
 // Purpose:
@@ -1915,6 +1942,28 @@ ColorControlPointList::HasTag(std::string tag)
         if (tagNames[i] == tag)
             return true;
     return false;
+}
+
+// ****************************************************************************
+// Method: ColorControlPointList::GetTagIndex
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Aug 10 15:35:58 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+ColorControlPointList::GetTagIndex(std::string tag)
+{
+    for (int i = 0; i < tagNames.size(); i ++)
+        if (tagNames[i] == tag)
+            return i;
+    return -1;
 }
 
 // ****************************************************************************

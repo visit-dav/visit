@@ -92,6 +92,7 @@ QvisColorTableWindow::QvisColorTableWindow(
     tagsMatchAny = true;
     searchingOn = false;
     searchTerm = QString("");
+    tagEdit = QString("");
 }
 
 // ****************************************************************************
@@ -300,8 +301,11 @@ QvisColorTableWindow::CreateWindowContents()
     tagEditorLabel = new QLabel(tr("Tag Editor"), colorTableWidgetGroup);
     mgLayout->addWidget(tagEditorLabel, 6, 0, 1, 1, Qt::AlignLeft);
     tagEditorLineEdit = new QLineEdit(colorTableWidgetGroup);
+    connect(tagEditorLineEdit, SIGNAL(editingFinished()),
+            this, SLOT(tagEdited()));
     mgLayout->addWidget(tagEditorLineEdit, 6, 1, 1, 3);
     tagAddRemoveButton = new QPushButton(tr("Add/Remove Tag"), colorTableWidgetGroup);
+    connect(tagAddRemoveButton, SIGNAL(clicked()), this, SLOT(addRemoveTag()));
     mgLayout->addWidget(tagAddRemoveButton, 6, 4, 1, 2);
 
     // Add the group box that will contain the color-related widgets.
@@ -3049,6 +3053,55 @@ QvisColorTableWindow::searchEdited(const QString &newSearchTerm)
         tagLineEdit->setText(QString(""));
         Apply(true);
     }
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::tagEdited
+//
+// Purpose:
+//   TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Aug 10 15:35:58 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::tagEdited()
+{
+    tagEdit = tagEditorLineEdit->text();
+}
+
+
+// ****************************************************************************
+// Method: QvisColorTableWindow::addRemoveTag
+//
+// Purpose:
+//    TODO
+//
+// Programmer: Justin Privitera
+// Creation:   Wed Aug 10 15:35:58 PDT 2022
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisColorTableWindow::addRemoveTag()
+{
+    std::string newtag = tagEdit.toStdString();
+    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+    if (newtag != "" && ccpl)
+    {
+        if (ccpl->HasTag(newtag))
+            ccpl->RemoveTag(newtag);
+        else
+            ccpl->AddTag(newtag);
+    }
+    Apply();
 }
 
 

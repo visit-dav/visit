@@ -41,6 +41,8 @@
     </Function>
     <Function name="AddTag" user="true" member="true">
     </Function>
+    <Function name="RemoveTag" user="true" member="true">
+    </Function>
     <Function name="ClearTags" user="true" member="true">
     </Function>
     <Function name="GetTag" user="true" member="true">
@@ -50,6 +52,8 @@
     <Function name="GetTagsAsString" user="true" member="true">
     </Function>
     <Function name="HasTag" user="true" member="true">
+    </Function>
+    <Function name="GetTagIndex" user="true" member="true">
     </Function>
     <Function name="SetNumControlPoints" user="true" member="true">
     </Function>
