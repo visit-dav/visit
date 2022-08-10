@@ -179,7 +179,7 @@ Curve Overlay Movie Template
 
 The **Curve Overlay** template lets you create regular plots and in a separate viewport, create a curve plot that completes as the movie advances in time.
 
-You will need: A 2D or 3D time-varying dataset and a Curve file containing the curve that will be animated
+You will need: A 2D or 3D time-varying dataset and a Curve file containing the curve that will be animated.
 
 If you use a 3D dataset, you will want to make sure that you set the view to something appropriate and that you position the 3D plot in the upper portion of the vis window.
 The 2D curve plot will be composited into the bottom part of the window.
