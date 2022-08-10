@@ -279,7 +279,7 @@ QvisColorTableWindow::CreateWindowContents()
     tagTable->setColumnCount(2);
     mgLayout->addWidget(tagTable, 3, 0, 1, 3);
 
-    QLabel *colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
+    colorTableName = new QLabel(tr("Name"), colorTableWidgetGroup);
     mgLayout->addWidget(colorTableName, 4, 0, 1, 1, Qt::AlignLeft);
     nameLineEdit = new QLineEdit(colorTableWidgetGroup);
     connect(nameLineEdit, SIGNAL(textEdited(const QString &)),

@@ -95,6 +95,10 @@ class QvisNoDefaultColorTableButton;
 //   Justin Privitera, Wed Jul 27 12:23:56 PDT 2022
 //   Added `skip_update` option to `ShowSelectedColor()`.
 // 
+//   Justin Privitera, Wed Aug 10 13:24:26 PDT 2022
+//   Reorganized gui elements so they appear in the header file in the same 
+//   order they appear in the gui.
+// 
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -175,47 +179,63 @@ private:
     bool                     searchingOn;
     QString                  searchTerm;
 
+    // This object also observes the color table attributes.
+    ColorTableObserver       ctObserver;
+
+    // 
     // Widgets and layouts.
+    // 
+
+    // Default Color Table
     QGroupBox                *defaultGroup;
     QvisNoDefaultColorTableButton *defaultContinuous;
     QLabel                   *defaultContinuousLabel;
     QvisNoDefaultColorTableButton *defaultDiscrete;
     QLabel                   *defaultDiscreteLabel;
-    QCheckBox                *tagFilterToggle;
-    QComboBox                *tagCombiningBehaviorChoice;
-    QCheckBox                *searchToggle;
+    // End Default Color Table
+
+    // Manager
+    QGroupBox                *colorTableWidgetGroup;
     QGridLayout              *mgLayout;
 
-    QGroupBox                *colorTableWidgetGroup;
     QPushButton              *newButton;
     QPushButton              *deleteButton;
     QPushButton              *exportButton;
-    QLineEdit                *nameLineEdit;
+
+    QCheckBox                *tagFilterToggle;
+    QComboBox                *tagCombiningBehaviorChoice;
+
+    QTreeWidget              *tagTable;
     QTreeWidget              *nameListBox;
+
+    QLabel                   *colorTableName;
+    QLineEdit                *nameLineEdit;
+    QCheckBox                *searchToggle;
+    
     QLabel                   *tagLabel;
     QLineEdit                *tagLineEdit;
-    QTreeWidget              *tagTable;
+    // End Manager
 
+    // Editor
     QGroupBox                *colorWidgetGroup;
 
     QSpinBox                 *colorNumColors;
     QButtonGroup             *colorTableTypeGroup;
 
+    QPushButton              *alignPointButton;
     QLabel                   *smoothLabel;
     QComboBox                *smoothingMethod;
     QCheckBox                *equalCheckBox;
+    
     QvisSpectrumBar          *spectrumBar;
     QvisColorSelectionWidget *colorSelect;
-    QPushButton              *alignPointButton;
     QCheckBox                *showIndexHintsCheckBox;
 
     QvisColorGridWidget      *discreteColors;
     QLabel                   *componentLabels[4];
     QSlider                  *componentSliders[4];
     QSpinBox                 *componentSpinBoxes[4];
-
-    // This object also observes the color table attributes.
-    ColorTableObserver       ctObserver;
+    // End Editor
 };
 
 #endif
