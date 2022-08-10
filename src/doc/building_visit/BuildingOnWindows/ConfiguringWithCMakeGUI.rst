@@ -112,9 +112,10 @@ If the build directory does not exist, you will be prompted to allow its creatio
 You will also be prompted to choose a *generator*. 
 On Windows, this corresponds to the version of Visual Studio for which you plan to generate a solution and projects.
 
-Currently, only Visual Studio version 2017 64-bit is supported by the prebuilt 
-thirdparty libraries.  
-Choose *Visual Studio 15 2017 Win64* from the dropdown and add *host=x64* to use the full 64-bit toolset.
+Currently, only Visual Studio version 2017 64-bit is supported by the prebuilt thirdparty libraries.
+Choose *Visual Studio 15 2017 Win64* from the generator dropdown.
+Choose *x64* from the dropdown for the *Optional platform*.
+Then enter *host=x64* in the *Optional toolset* to use the full 64-bit toolset.
 :numref:`Figure %s<choose_generator_popup_image>`
 
 .. _choose_generator_popup_image:
