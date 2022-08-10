@@ -192,6 +192,7 @@ The 2D curve plot will be composited into the bottom part of the window.
    Curve Overlay preview.
 
 :numref:`Figure %s<curveoverlay_options>` shows the options for the 2D/3D plots:
+
 * Select your time varying database.
 * Select the plot and variable that you want to plot.
 * Adjust title and colors.
