@@ -22,15 +22,15 @@
     <LDFLAGS components="EPar">
       $(ADIOS2_PAR_LIBRARY_DIR)
     </LDFLAGS>
-    <LIBS components="M,ESer">
-      ${ADIOS2_LIB}
+    <LIBS> 
       vtkFiltersHybrid
       vtksys
     </LIBS>
+    <LIBS components="M,ESer">
+      ${ADIOS2_LIB}
+    </LIBS>
     <LIBS components="EPar">
       ${ADIOS2_PAR_LIB}
-      vtkFiltersHybrid
-      vtksys
     </LIBS>
     <Files components="M,E">
       avtADIOS2FileFormat.C

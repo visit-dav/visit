@@ -71,12 +71,11 @@ ${VISIT_SOURCE_DIR}/vtkqt
 ${VTK_INCLUDE_DIRS}
 )
 
-SET(VTK_EXTRA_LIBS
-vtktiff
-vtkjpeg
-vtkpng
-${VTK_FREETYPE_LIBRARIES}
-)
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(VTK_EXTRA_LIBS vtktiff vtkjpeg vtkpng)
+else()
+    set(VTK_EXTRA_LIBS VTK::tiff VTK::jpeg VTK::png)
+endif()
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 

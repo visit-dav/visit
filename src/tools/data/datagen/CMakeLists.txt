@@ -289,10 +289,15 @@ ENDFOREACH(BASIC_TARGET ${BASIC_TARGETS_PAR})
 # Build all VTK Targets
 #-----------------------------------------------------------------------------
 FOREACH(VTK_TARGET ${VTK_TARGETS})
-    BUILD_DATA_TARGET(${VTK_TARGET}
-        INCLUDE_DIRS ${VTK_INCLUDE_DIRS}
-        LIB_DIRS ${VTK_LIBRARY_DIRS}
-        LIBS vtkIOLegacy)
+    if(VTK_VERSION VERSION_EQUAL "8.1.0")
+        BUILD_DATA_TARGET(${VTK_TARGET}
+            INCLUDE_DIRS ${VTK_INCLUDE_DIRS}
+            LIB_DIRS ${VTK_LIBRARY_DIRS}
+            LIBS vtkIOLegacy)
+    else()
+        BUILD_DATA_TARGET(${VTK_TARGET}
+            LIBS VTK::IOLegacy)
+    endif()
 ENDFOREACH(VTK_TARGET ${VTK_TARGETS})
 
 #-----------------------------------------------------------------------------
