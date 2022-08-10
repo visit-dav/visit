@@ -32,6 +32,12 @@ ${ENSIGHT_FLAGS}
 ${VISIT_DATABASE_INCLUDES}
 )
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtk_libs vtkIOEnSight )
+else()
+    set(vtk_libs VTK::IOEnSight )
+endif()
+
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} )
 
 ADD_LIBRARY(IEnSightDatabase ${LIBI_SOURCES})
@@ -40,19 +46,19 @@ SET(INSTALLTARGETS IEnSightDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MEnSightDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MEnSightDatabase visitcommon avtdbatts avtdatabase_ser vtkIOEnSight )
+    TARGET_LINK_LIBRARIES(MEnSightDatabase visitcommon avtdbatts avtdatabase_ser ${vtk_libs} )
     ADD_TARGET_DEFINITIONS(MEnSightDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MEnSightDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EEnSightDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EEnSightDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser vtkIOEnSight )
+TARGET_LINK_LIBRARIES(EEnSightDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${vtk_libs} )
 ADD_TARGET_DEFINITIONS(EEnSightDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EEnSightDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EEnSightDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EEnSightDatabase_par visitcommon avtpipeline_par avtdatabase_par vtkIOEnSight )
+    TARGET_LINK_LIBRARIES(EEnSightDatabase_par visitcommon avtpipeline_par avtdatabase_par ${vtk_libs} )
     ADD_TARGET_DEFINITIONS(EEnSightDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EEnSightDatabase_par)
 ENDIF(VISIT_PARALLEL)

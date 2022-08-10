@@ -232,6 +232,14 @@ ${VTK_INCLUDE_DIRS}
 ${ZLIB_INCLUDE_DIR}
 )
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtklibs vtkCommonCore vtkCommonDataModel vtkCommonMath
+                vtkCommonTransforms vtkFiltersGeometry)
+else()
+    set(vtklibs VTK::CommonCore VTK::CommonDataModel VTK::CommonMath
+                VTK::CommonTransforms VTK::FiltersGeometry)
+endif()
+
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
@@ -244,9 +252,7 @@ ENDIF(NOT VISIT_DBIO_ONLY)
 ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
 TARGET_LINK_LIBRARIES(avtpipeline_ser
                       visitcommon ${AVTMATH} avtdbatts
-                      visit_vtk lightweight_visit_vtk vtkCommonCore
-                      vtkCommonDataModel vtkCommonMath vtkCommonTransforms
-                      vtkFiltersGeometry
+                      visit_vtk lightweight_visit_vtk ${vtklibs}
                       ${ZLIB_LIBRARY})
 if(VTKH_FOUND)
     target_link_libraries(avtpipeline_ser vtkh)
@@ -260,9 +266,7 @@ IF(VISIT_PARALLEL)
 
     TARGET_LINK_LIBRARIES(avtpipeline_par
                           visitcommon ${AVTMATH} avtdbatts
-                          visit_vtk lightweight_visit_vtk vtkCommonCore
-                          vtkCommonDataModel vtkCommonMath vtkCommonTransforms
-                          vtkFiltersGeometry
+                          visit_vtk lightweight_visit_vtk ${vtklibs}
                           ${ZLIB_LIBRARY})
     if(VTKH_FOUND)
         target_link_libraries(avtpipeline_par vtkh)
