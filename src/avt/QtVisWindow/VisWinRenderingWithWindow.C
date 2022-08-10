@@ -14,7 +14,7 @@
 #include <vtkRubberBandMapper2D.h>
 #include <vtkDashedXorGridMapper2D.h>
 #include <vtkOpenGLRenderWindow.h>
-#include <vtkOpenGL.h>
+#include <vtk_glew.h>
 
 #if defined(Q_OS_LINUX)
 // We only need WindowMetrics here if we're on X11.
