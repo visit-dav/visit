@@ -151,7 +151,7 @@ Movie templates enable you to create a set of viewports and map the contents of 
 
 To create a movie template, you can open the Save movie wizard as you normally would.
 Instead of choosing New simple movie, choose New template movie.
-VisIt will load custom user interfaces pages for the chosen movie template.
+VisIt will load custom user interface pages for the chosen movie template.
 
 .. _savemovietemplate1:
 
