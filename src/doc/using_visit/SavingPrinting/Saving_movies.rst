@@ -351,7 +351,7 @@ Select the **Side by Side** layout and VisIt will create 2 viewports next to one
    The Side by Side viewports.
 
 After you create movie viewports, you must map sequences of images to the viewports.
-Sequences are series of images and they can be produced from the plots in your vis windows or transitions such as fades, etc.
+These can be produced from the plots in your vis windows or transitions such as fades, etc.
 For a side by side movie, you will want to map the image sequence produced from vis window 1 to movie viewport 1.
 You will also map the image sequence from vis window 2 to movie viewport 2.
 If you had more vis windows, you could map more than one vis window to a movie viewport.
