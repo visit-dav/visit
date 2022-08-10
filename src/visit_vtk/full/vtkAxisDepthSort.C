@@ -8,6 +8,7 @@
 
 #include <vtkAxisDepthSort.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
 #include <stdlib.h>
 
 #include <vtkCellData.h>
@@ -152,7 +153,11 @@ vtkAxisDepthSort::RequestData(
     vtkPointData *outPD      = NULL;
     vtkCellData  *outCD      = NULL;
     vtkIdType     npts       = 0;
+#if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType    *cellPts    = 0;
+#else
+    const vtkIdType *cellPts = nullptr;
+#endif
     input->BuildCells();
  
     //

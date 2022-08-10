@@ -104,7 +104,12 @@ int vtkVisItTubeFilter::RequestData(
     vtkIdType i;
     double range[2], maxSpeed=0;
     vtkCellArray *newStrips;
-    vtkIdType npts=0, *pts=NULL;
+    vtkIdType npts=0;
+#if LIB_VERSION_LE(VTK, 8,1,0)
+    vtkIdType *pts=NULL;
+#else
+    const vtkIdType *pts=nullptr;
+#endif
     vtkIdType offset=0;
     vtkFloatArray *newTCoords=NULL;
     int abort=0;
@@ -314,7 +319,11 @@ int vtkVisItTubeFilter::RequestData(
 //   Fix dead code that read past the end of an array.
 //
 int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
+#if LIB_VERSION_LE(VTK, 8,1,0)
                                        vtkIdType npts, vtkIdType *pts,
+#else
+                                       vtkIdType npts, const vtkIdType *pts,
+#endif
                                        vtkPoints *inPts, vtkPoints *newPts, 
                                        vtkPointData *pd, vtkPointData *outPD,
                                        vtkFloatArray *newNormals,
@@ -552,7 +561,11 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
 }
 
 void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts, 
+#if LIB_VERSION_LE(VTK, 8,1,0)
                                         vtkIdType* vtkNotUsed(pts), 
+#else
+                                        const vtkIdType* vtkNotUsed(pts), 
+#endif
                                         vtkIdType inCellId,
                                         vtkCellData *cd, vtkCellData *outCD,
                                         vtkCellArray *newStrips)
@@ -660,7 +673,11 @@ void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts,
 //   should ignore them.
 //
 void vtkVisItTubeFilter::GenerateTextureCoords(vtkIdType offset,
+#if LIB_VERSION_LE(VTK, 8,1,0)
                                                vtkIdType npts, vtkIdType *pts, 
+#else
+                                               vtkIdType npts, const vtkIdType *pts,
+#endif
                                                vtkPoints *inPts, 
                                                vtkDataArray *inScalars_,
                                                bool cellScalars,

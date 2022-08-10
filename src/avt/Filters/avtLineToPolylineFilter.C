@@ -8,6 +8,8 @@
 
 #include <avtLineToPolylineFilter.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -157,28 +159,33 @@ avtLineToPolylineFilter::ExecuteData(avtDataRepresentation *inDR)
     // straight away.
     //
     input->GetLines()->InitTraversal();
-    vtkIdType n, *pts = 0;
+    vtkIdType n = 0;
+#if LIB_VERSION_LE(VTK,8,1,0)
+    vtkIdType *cellPts = nullptr;
+#else
+    const vtkIdType *cellPts = nullptr;
+#endif
     std::set<edge> freeEdges;
     vtkIdType toCellId = input->GetVerts()->GetNumberOfCells();
-    for(vtkIdType cellid = 0; input->GetLines()->GetNextCell(n, pts); ++cellid)
+    for(vtkIdType cellid = 0; input->GetLines()->GetNextCell(n, cellPts); ++cellid)
     {
         vtkIdType fromCellId = cellid + input->GetVerts()->GetNumberOfCells();
         if(n == 2)
         {
-            edge e01(pts[0], pts[1], fromCellId);
+            edge e01(cellPts[0], cellPts[1], fromCellId);
             freeEdges.insert(e01);
         }
         else
         {
             // Copy in the polyline
             outCD->CopyData(inCD, fromCellId, toCellId++);
-            output->InsertNextCell(VTK_POLY_LINE, n, pts);
+            output->InsertNextCell(VTK_POLY_LINE, n, cellPts);
         }
     }
 
     int grouping = visitTimer->StartTimer();
     int ptsBufSize = 200;
-    pts = new vtkIdType[ptsBufSize];
+    vtkIdType *pts = new vtkIdType[ptsBufSize];
     while(!freeEdges.empty())
     {
         std::deque<vtkIdType> shape;

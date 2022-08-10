@@ -4,6 +4,8 @@
 
 #include "vtkVectorGlyph.h"
 
+#include <visit-config.h> // for LIB_VERSION_LE
+
 #include <math.h>
 
 #include <vtkCellArray.h>
@@ -251,18 +253,23 @@ vtkVectorGlyph::RequestData(
         xform->SetInputConnection(sphere->GetOutputPort());
         xform->Update();
         vtkPolyData *spoly = (vtkPolyData *)xform->GetOutput();
-        int np = spoly->GetPoints()->GetNumberOfPoints();
+        vtkIdType np = spoly->GetPoints()->GetNumberOfPoints();
         pts->SetNumberOfPoints(np);
         
         //set points.
-        for (int i = 0; i < np; i++)
+        for (vtkIdType i = 0; i < np; i++)
             pts->SetPoint(i, spoly->GetPoints()->GetPoint(i));
         
         //set polys.
         np = spoly->GetPolys()->GetNumberOfCells();
-        for (int i = 0; i < np; i++)
+        for (vtkIdType i = 0; i < np; i++)
         {
-            vtkIdType n, *p;
+            vtkIdType n;
+#if LIB_VERSION_LE(VTK, 8,1,0)
+            vtkIdType *p;
+#else
+            const vtkIdType *p;
+#endif
             spoly->GetPolys()->GetNextCell(n, p);
             polys->InsertNextCell(n, p);
         }
