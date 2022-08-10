@@ -91,6 +91,7 @@ IF(VISIT_PYTHON_FILTERS)
 # We need to be able to locate the vtk python wrapper lib at run time.
 # Place symlinks to its components in lib/site-packages/
     MESSAGE(STATUS "Adding VTK python wrappers to lib/site-packages/")
+  if(VTK_VERSION VERSION_EQUAL "8.1.0")
     IF (NOT WIN32)
         FILE(GLOB VTK_PYTHON_MODULE_ITEMS "${VISIT_VTK_DIR}/lib/python${PYTHON_VERSION}/site-packages/*")
         IF(NOT VTK_PYTHON_MODULE_ITEMS)
@@ -126,6 +127,14 @@ IF(VISIT_PYTHON_FILTERS)
             add_dependencies(visit_special_builds vtk_python_modules)
         endif()
     ENDIF (NOT WIN32)
+  else()
+      add_custom_target(vtk_python_modules ALL
+                COMMAND ${CMAKE_COMMAND} -E copy_directory
+                        ${VTK_PY_WRAPPERS_DIR}
+                        ${VISIT_LIBRARY_DIR}/site-packages
+                COMMENT "Copying ${VTK_PY_WRAPPERS_DIR}/vtkmodules to ${VISIT_LIBRARY_DIR}/site-packages/vtkmodules"
+      )
+  endif()
 ENDIF(VISIT_PYTHON_FILTERS)
 
 if(VISIT_PYTHON_SCRIPTING AND HAVE_LIBPYSIDE AND NOT PYSIDE_IN_PYTHON)

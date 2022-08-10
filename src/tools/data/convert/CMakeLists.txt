@@ -69,11 +69,11 @@ ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 ${ICET_LIBRARY_DIR}
 )
 
-SET(VTK_EXTRA_LIBS
-vtkjpeg
-vtkpng
-${VTK_FREETYPE_LIBRARIES}
-)
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(VTK_EXTRA_LIBS vtkjpeg vtkpng)
+else()
+    set(VTK_EXTRA_LIBS VTK::jpeg VTK::png)
+endif()
 
 IF(VISIT_STATIC)
     SET(CONVERT_STATIC_SOURCES ConvertStaticSymbolLocator.C)

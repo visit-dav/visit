@@ -33,6 +33,12 @@ ${HDF5_INCLUDE_DIR}
 ${VISIT_DATABASE_INCLUDES}
 )
 
+if(VTK_VERSION VERSION_EQUAL "8.1.0")
+    set(vtk_libs vtksys )
+else()
+    set(vtk_libs VTK::vtksys )
+endif()
+
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${XDMF_LIBRARY_DIR} ${HDF5_LIBRARY_DIR} )
 
 ADD_LIBRARY(IXdmfDatabase ${LIBI_SOURCES})
@@ -41,19 +47,19 @@ SET(INSTALLTARGETS IXdmfDatabase)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MXdmfDatabase ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MXdmfDatabase visitcommon avtdbatts avtdatabase_ser ${XDMF_LIB} ${HDF5_LIB} vtksys )
+    TARGET_LINK_LIBRARIES(MXdmfDatabase visitcommon avtdbatts avtdatabase_ser ${XDMF_LIB} ${HDF5_LIB} ${vtk_libs} )
     ADD_TARGET_DEFINITIONS(MXdmfDatabase MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MXdmfDatabase)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EXdmfDatabase_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EXdmfDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${XDMF_LIB} ${HDF5_LIB} vtksys )
+TARGET_LINK_LIBRARIES(EXdmfDatabase_ser visitcommon avtpipeline_ser avtdatabase_ser ${XDMF_LIB} ${HDF5_LIB} ${vtk_libs} )
 ADD_TARGET_DEFINITIONS(EXdmfDatabase_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EXdmfDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EXdmfDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EXdmfDatabase_par visitcommon avtpipeline_par avtdatabase_par ${XDMF_LIB} ${HDF5_LIB} vtksys )
+    TARGET_LINK_LIBRARIES(EXdmfDatabase_par visitcommon avtpipeline_par avtdatabase_par ${XDMF_LIB} ${HDF5_LIB} ${vtk_libs} )
     ADD_TARGET_DEFINITIONS(EXdmfDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EXdmfDatabase_par)
 ENDIF(VISIT_PARALLEL)
