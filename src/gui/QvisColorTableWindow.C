@@ -296,6 +296,14 @@ QvisColorTableWindow::CreateWindowContents()
     tagLineEdit = new QLineEdit(colorTableWidgetGroup);
     mgLayout->addWidget(tagLineEdit, 5, 1, 1, 5);
 
+    // Tag editor
+    tagEditorLabel = new QLabel(tr("Tag Editor"), colorTableWidgetGroup);
+    mgLayout->addWidget(tagEditorLabel, 6, 0, 1, 1, Qt::AlignLeft);
+    tagEditorLineEdit = new QLineEdit(colorTableWidgetGroup);
+    mgLayout->addWidget(tagEditorLineEdit, 6, 1, 1, 3);
+    tagAddRemoveButton = new QPushButton(tr("Add/Remove Tag"), colorTableWidgetGroup);
+    mgLayout->addWidget(tagAddRemoveButton, 6, 4, 1, 2);
+
     // Add the group box that will contain the color-related widgets.
     colorWidgetGroup = new QGroupBox(central);
     colorWidgetGroup->setTitle(tr("Editor"));

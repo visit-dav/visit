@@ -214,6 +214,10 @@ private:
     
     QLabel                   *tagLabel;
     QLineEdit                *tagLineEdit;
+
+    QLabel                   *tagEditorLabel;
+    QLineEdit                *tagEditorLineEdit;
+    QPushButton              *tagAddRemoveButton;
     // End Manager
 
     // Editor
