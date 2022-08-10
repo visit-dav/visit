@@ -355,7 +355,7 @@ These can be produced from the plots in your vis windows or transitions such as 
 For a side by side movie, you will want to map the image sequence produced from vis window 1 to movie viewport 1.
 You will also map the image sequence from vis window 2 to movie viewport 2.
 If you had more vis windows, you could map more than one vis window to a movie viewport.
-That has the effect that all images from a particular vis window are used as inputs for the movie viewport and then the next vis window that was mapped to the movie viewport, and so on.
+When more than one vis window is mapped to a single viewport, the movie will have the animation form the first vis window followed by the animation from the second vis window and so on for all the vis windows mapped to that viewport.
 It is possible to add transition effects in between sequences or after sequences so that you can include some simple animation effects in your movies.
 
 **Tip**: If you wanted to show side by side plots that advance through time and then switch to another plot and do the animation over again, you could set up 4 vis windows and then map 2 vis windows to each movie viewport.
