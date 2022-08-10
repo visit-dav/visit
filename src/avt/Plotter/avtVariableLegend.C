@@ -1023,13 +1023,16 @@ avtVariableLegend::GetCalculatedLabels(doubleVector &v)
 // Creation:   December 26, 2018
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon July 18, 2022
+//   Test for lut before setting.
+//
 // ****************************************************************************
 
 void
 avtVariableLegend::SetBelowRangeColor(double r, double g, double b, double a)
 {
-    lut->SetBelowRangeColor(r,g,b,a);
+    if(lut)
+        lut->SetBelowRangeColor(r,g,b,a);
 }
 
 
@@ -1040,13 +1043,16 @@ avtVariableLegend::SetBelowRangeColor(double r, double g, double b, double a)
 // Creation:   December 26, 2018
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon July 18, 2022
+//   Test for lut before setting.
+//
 // ****************************************************************************
 
 void
 avtVariableLegend::SetAboveRangeColor(double r, double g, double b, double a)
 {
-    lut->SetAboveRangeColor(r,g,b,a);
+    if (lut)
+        lut->SetAboveRangeColor(r,g,b,a);
 }
 
 
@@ -1057,13 +1063,16 @@ avtVariableLegend::SetAboveRangeColor(double r, double g, double b, double a)
 // Creation:   December 26, 2018
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon July 18, 2022
+//   Test for lut before setting.
+//
 // ****************************************************************************
 
 void
 avtVariableLegend::UseBelowRangeColor(bool v)
 {
-    lut->SetUseBelowRangeColor(v);
+    if(lut)
+        lut->SetUseBelowRangeColor(v);
 }
 
 
@@ -1074,13 +1083,16 @@ avtVariableLegend::UseBelowRangeColor(bool v)
 // Creation:   December 26, 2018
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon July 18, 2022
+//   Test for lut before setting.
+//
 // ****************************************************************************
 
 void
 avtVariableLegend::UseAboveRangeColor(bool v)
 {
-    lut->SetUseAboveRangeColor(v);
+    if(lut)
+        lut->SetUseAboveRangeColor(v);
 }
 
 
@@ -1091,7 +1103,9 @@ avtVariableLegend::UseAboveRangeColor(bool v)
 // Creation:   January 23, 2019
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Mon July 18, 2022
+//   Test for lut before setting.
+//
 // ****************************************************************************
 
 void
@@ -1101,5 +1115,6 @@ avtVariableLegend::SetNanColor(double r, double g, double b, double a)
     nanColor[1] = g;
     nanColor[2] = b;
     nanColor[3] = a;
-    lut->SetNanColor(nanColor);
+    if (lut)
+        lut->SetNanColor(nanColor);
 }
