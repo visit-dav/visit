@@ -24,6 +24,7 @@
 #include <vtkTextProperty.h>
 #include <vtkTransform.h>
 #include <vtkTransformPolyDataFilter.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkViewport.h>
 #include <vtkWindow.h>
 #include <limits.h>
