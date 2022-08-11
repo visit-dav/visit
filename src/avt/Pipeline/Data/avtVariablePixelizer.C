@@ -111,7 +111,7 @@ void
 avtVariablePixelizer::GetColor(double val, double intensity,
                                unsigned char rgb[3])
 {
-    unsigned char *lutsrgb = lut->MapValue(val);
+    const unsigned char *lutsrgb = lut->MapValue(val);
     rgb[0] = (unsigned char)(lutsrgb[0] * intensity);
     rgb[1] = (unsigned char)(lutsrgb[1] * intensity);
     rgb[2] = (unsigned char)(lutsrgb[2] * intensity);

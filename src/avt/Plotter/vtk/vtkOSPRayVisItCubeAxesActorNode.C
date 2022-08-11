@@ -4,7 +4,6 @@
 
 #include "vtkOSPRayVisItCubeAxesActorNode.h"
 #include "vtkVisItCubeAxesActor.h"
-#include "vtkVisItAxisActor.h"
 #include "vtkOSPRayRendererNode.h"
 #include "vtkRenderer.h"
 
