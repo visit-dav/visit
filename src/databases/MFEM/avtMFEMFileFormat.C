@@ -789,7 +789,15 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
         gf = new GridFunction(mesh,igf());   
     }
 
-    rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, gf, lod, ncomps, var_is_nodal);
+    // TODO check ncomps here instead of in avtlib
+    int gf_ncomps = gf->VectorDim();
+    // if (gf_ncomps != ncomps)
+    // {
+    //     AVT_MFEM_EXCEPTION1(InvalidVariableException, 
+    //         "Expected equality of number of components.");
+    // }
+
+    rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     
     delete gf;
     delete mesh;

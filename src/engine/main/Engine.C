@@ -82,6 +82,10 @@
 #include <avtStructuredDomainBoundaries.h>
 #include <avtExecutionManager.h>
 
+#ifdef HAVE_CONDUIT
+#include <avtConduitBlueprintDataAdaptor.h>
+#endif
+
 #include <visit-config.h>
 #if defined(HAVE_OSMESA) || defined(HAVE_EGL)
 #  include <vtkOffScreenRenderingFactory.h>
@@ -783,6 +787,9 @@ Engine::InitializeCompute()
     int setupTimer = visitTimer->StartTimer();
     InitVTK::Initialize();
     InitVTKRendering::Initialize();
+#ifdef HAVE_CONDUIT
+    avtConduitBlueprintDataAdaptor::Initialize();
+#endif
     if (avtCallback::GetSoftwareRendering())
     {
         // Install factory for  VisIt's OffScreen Render Window overrides

@@ -69,6 +69,12 @@ using namespace conduit;
 using namespace mfem;
 
 void
+avtConduitBlueprintDataAdaptor::Initialize()
+{
+    SetInfoWarningHandlers();
+}
+
+void
 avtConduitBlueprintDataAdaptor::SetInfoWarningHandlers()
 {
     // these redirect conduit info and warnings to debug 5

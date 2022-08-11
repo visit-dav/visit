@@ -15,6 +15,10 @@
 #include <avtDatabaseFactory.h>
 #include <DatabasePluginManager.h>
 
+#ifdef HAVE_CONDUIT
+#include <avtConduitBlueprintDataAdaptor.h>
+#endif
+
 #include <cstring>
 
 // Prototypes.
@@ -127,6 +131,9 @@ MDServerMain(int argc, char *argv[])
     VisItInit::Initialize(argc, argv);
     InitVTKLite::Initialize();
     avtDatabase::SetOnlyServeUpMetaData(true);
+#ifdef HAVE_CONDUIT
+    avtConduitBlueprintDataAdaptor::Initialize();
+#endif
 
     bool runApp = ProcessCommandLine(argc, argv);
 

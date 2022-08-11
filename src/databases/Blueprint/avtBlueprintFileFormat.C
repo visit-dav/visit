@@ -144,9 +144,6 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename, DBOptionsAt
     }    
 
     m_tree_cache = new avtBlueprintTreeCache();
-
-    // TODO this should be called in the engine at startup instead of here
-    avtConduitBlueprintDataAdaptor::SetInfoWarningHandlers();
 }
 
 avtBlueprintFileFormat::~avtBlueprintFileFormat()

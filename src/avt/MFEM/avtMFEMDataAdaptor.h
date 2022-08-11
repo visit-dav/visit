@@ -78,7 +78,6 @@ public:
       static vtkDataArray *LegacyRefineGridFunctionToVTK(mfem::Mesh *mesh,
                                                          mfem::GridFunction *gf,
                                                          int lod,
-                                                         int ncomps,
                                                          bool var_is_nodal);
 
       static vtkDataArray *LowOrderGridFunctionToVTK(mfem::GridFunction *gf);
@@ -87,7 +86,6 @@ public:
                                                    mfem::GridFunction *gf,
                                                    int lod,
                                                    bool new_refine,
-                                                   int ncomps = 0,
                                                    bool var_is_nodal = true);
 
       static vtkDataArray *RefineElementColoringToVTK(mfem::Mesh *mesh,

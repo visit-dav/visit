@@ -68,6 +68,8 @@ class vtkDataArray;
 class AVTBLUEPRINT_API avtConduitBlueprintDataAdaptor
 {
 public:
+    static void Initialize();
+    
     // set warning and info handlers to redirect conduit warnings and info
     static void SetInfoWarningHandlers();
 
