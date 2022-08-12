@@ -20,14 +20,17 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 18, 2005
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 11 2022
+//    Removed MIRConnectivity from constructor, as it isn't used.
+//
 // ****************************************************************************
 IsovolumeCellReconstructor::IsovolumeCellReconstructor(vtkDataSet *d,
                                                        avtMaterial *m,
                                                        ResampledMat &r,
                                                        int np, int nc,
-                                                       MIRConnectivity &mc,
                                                        ZooMIR &z)
-    : CellReconstructor(d,m,r,np,nc,false,mc,z)
+    : CellReconstructor(d,m,r,np,nc,false,z)
 {
 }
 
