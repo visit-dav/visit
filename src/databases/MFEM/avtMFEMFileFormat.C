@@ -791,11 +791,11 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 
     // TODO check ncomps here instead of in avtlib
     int gf_ncomps = gf->VectorDim();
-    // if (gf_ncomps != ncomps)
-    // {
-    //     AVT_MFEM_EXCEPTION1(InvalidVariableException, 
-    //         "Expected equality of number of components.");
-    // }
+    if (gf_ncomps != ncomps)
+    {
+        EXCEPTION1(InvalidVariableException, 
+            "Expected equality of number of components.");
+    }
 
     rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
     
