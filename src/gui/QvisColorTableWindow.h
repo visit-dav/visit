@@ -8,6 +8,7 @@
 #include <QvisPostableWindowObserver.h>
 #include <AttributeSubject.h>
 #include <ColorTableObserver.h>
+#include <set>
 
 // Forward declarations
 class ColorControlPointList;
@@ -184,6 +185,20 @@ private:
 
     // This object also observes the color table attributes.
     ColorTableObserver       ctObserver;
+
+    // data object to store tag changes
+    std::map<std::string, std::set<std::pair<int, std::string>>> tagChanges;
+    // We are mapping color table names (std::string)
+    // to sets (std::set) of representations of tag changes.
+    // These representations consist of pairs (std::pair), where the first element in each
+    // is a constant equal to either ADDTAG (0) or REMOVETAG (1) and the
+    // second element is the name of the tag (std::string) being added or removed.
+    // 
+    // This data structure will be updated on the fly to reflect the latest 
+    // tag changes. It will be used to determine if a tag change is legal
+    // (particularly if a color table is built in), and it will be saved out
+    // to state files.
+
 
     // 
     // Widgets and layouts.
