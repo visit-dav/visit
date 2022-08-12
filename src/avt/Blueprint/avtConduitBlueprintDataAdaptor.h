@@ -69,11 +69,11 @@ class AVTBLUEPRINT_API avtConduitBlueprintDataAdaptor
 {
 public:
     static void Initialize();
-    
+
     // set warning and info handlers to redirect conduit warnings and info
     static void SetInfoWarningHandlers();
 
-    class Blueprint2VTK
+    class BlueprintToVTK
     {
     public:
         /// Helpers for converting Mesh and Field Blueprint conforming data
@@ -83,7 +83,7 @@ public:
         static vtkDataArray*  FieldToVTK(const conduit::Node &field);
     };
 
-    class VTK2Blueprint
+    class VTKToBlueprint
     {
     public:
         /// Helpers for converting vtk datasets to Mesh and Field Blueprint
@@ -96,12 +96,12 @@ public:
                                          const std::string topo_name,
                                          vtkDataSet* dataset);
 
-        static void VTKToBlueprint(conduit::Node &mesh,
+        static void VTKToBlueprintMesh(conduit::Node &mesh,
                                    vtkDataSet* dataset,
                                    const int ndims);
     };
 
-    class Blueprint2MFEM
+    class BlueprintToMFEM
     {
     public:
         static mfem::Mesh         *MeshToMFEM(const conduit::Node &mesh,

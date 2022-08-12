@@ -471,7 +471,7 @@ avtBlueprintWriter::ChunkToBpMesh(vtkDataSet *ds, int chunk, int ndims,
         mesh["state/time"] = m_time;
     }
 
-    avtConduitBlueprintDataAdaptor::VTK2Blueprint::VTKToBlueprint(mesh, ds, ndims);
+    avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKToBlueprintMesh(mesh, ds, ndims);
 
     Node verify_info;
     if(!blueprint::mesh::verify(mesh,verify_info))
