@@ -9,6 +9,9 @@
 #include <math.h>
 
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
@@ -252,25 +255,28 @@ vtkVectorGlyph::RequestData(
         
         xform->SetInputConnection(sphere->GetOutputPort());
         xform->Update();
-        vtkPolyData *spoly = (vtkPolyData *)xform->GetOutput();
-        vtkIdType np = spoly->GetPoints()->GetNumberOfPoints();
+        vtkPolyData *spherePolyData = (vtkPolyData *)xform->GetOutput();
+        vtkIdType np = spherePolyData->GetPoints()->GetNumberOfPoints();
         pts->SetNumberOfPoints(np);
         
         //set points.
         for (vtkIdType i = 0; i < np; i++)
-            pts->SetPoint(i, spoly->GetPoints()->GetPoint(i));
+            pts->SetPoint(i, spherePolyData->GetPoints()->GetPoint(i));
         
         //set polys.
-        np = spoly->GetPolys()->GetNumberOfCells();
-        for (vtkIdType i = 0; i < np; i++)
-        {
-            vtkIdType n;
+        vtkIdType n;
+        vtkCellArray *spolys = spherePolyData->GetPolys();
 #if LIB_VERSION_LE(VTK, 8,1,0)
-            vtkIdType *p;
+        vtkIdType *p = nullptr;
+        for (spolys->InitTraversal(); spolys->GetNextCell(n, p); )
+        {
 #else
-            const vtkIdType *p;
+        auto iter = vtk::TakeSmartPointer(spolys->NewIterator());
+        const vtkIdType *p = nullptr;
+        for (iter->GotToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
+        {
+            iter->GetCurrentCell(n, p);
 #endif
-            spoly->GetPolys()->GetNextCell(n, p);
             polys->InsertNextCell(n, p);
         }
         sphere->Delete();

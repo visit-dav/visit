@@ -137,8 +137,6 @@ vtkAxisDepthSort::RequestData(
     vtkPolyData *input = vtkPolyData::SafeDownCast(
         inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-    int   i;
-
     int ncells = input->GetNumberOfCells();
 
     coord_cell_id_pair *pairs = new coord_cell_id_pair[ncells];
@@ -154,7 +152,7 @@ vtkAxisDepthSort::RequestData(
     vtkCellData  *outCD      = NULL;
     vtkIdType     npts       = 0;
 #if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType    *cellPts    = 0;
+    vtkIdType    *cellPts    = nullptr;
 #else
     const vtkIdType *cellPts = nullptr;
 #endif
@@ -164,22 +162,19 @@ vtkAxisDepthSort::RequestData(
     // Start off by getting the center of the cell for each cell.
     //
     float *loc = new float[ncells*3];
-    double   *bnds = NULL;
-    vtkGenericCell *cell = vtkGenericCell::New();
-    for (i = 0 ; i < ncells ; i++)
+    double bnds[6];
+    for (int i = 0 ; i < ncells ; i++)
     {
-        input->GetCell(i, cell);
-        bnds = cell->GetBounds();
+        input->GetCellBounds(i, bnds);
         loc[3*i]   = (bnds[0]+bnds[1])/2.;
         loc[3*i+1] = (bnds[2]+bnds[3])/2.;
         loc[3*i+2] = (bnds[4]+bnds[5])/2.;
     }
-    cell->Delete();
 
     //
     // Create an array to sort in X and use qsort to sort it.
     //
-    for (i = 0 ; i < ncells ; i++)
+    for (int i = 0 ; i < ncells ; i++)
     {
         pairs[i].coord   = loc[3*i];
         pairs[i].cell_id = i;
@@ -197,7 +192,7 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (i = 0 ; i < ncells ; i++)
+    for (int i = 0 ; i < ncells ; i++)
     {
         int cell = pairs[i].cell_id;
         input->GetCellPoints(cell, npts, cellPts);
@@ -214,7 +209,7 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (i = ncells-1 ; i >= 0 ; i--)
+    for (int i = ncells-1 ; i >= 0 ; i--)
     {
         int cell = pairs[i].cell_id;
         input->GetCellPoints(cell, npts, cellPts);
@@ -226,7 +221,7 @@ vtkAxisDepthSort::RequestData(
     //
     // Create an array to sort in Y and use qsort to sort it.
     //
-    for (i = 0 ; i < ncells ; i++)
+    for (int i = 0 ; i < ncells ; i++)
     {
         pairs[i].coord   = loc[3*i+1];
         pairs[i].cell_id = i;
@@ -244,7 +239,7 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (i = 0 ; i < ncells ; i++)
+    for (int i = 0 ; i < ncells ; i++)
     {
         int cell = pairs[i].cell_id;
         input->GetCellPoints(cell, npts, cellPts);
@@ -261,7 +256,7 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (i = ncells-1 ; i >= 0 ; i--)
+    for (int i = ncells-1 ; i >= 0 ; i--)
     {
         int cell = pairs[i].cell_id;
         input->GetCellPoints(cell, npts, cellPts);
@@ -273,7 +268,7 @@ vtkAxisDepthSort::RequestData(
     //
     // Create an array to sort in Z and use qsort to sort it.
     //
-    for (i = 0 ; i < ncells ; i++)
+    for (int i = 0 ; i < ncells ; i++)
     {
         pairs[i].coord   = loc[3*i+2];
         pairs[i].cell_id = i;
@@ -291,7 +286,7 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (i = 0 ; i < ncells ; i++)
+    for (int i = 0 ; i < ncells ; i++)
     {
         int cell = pairs[i].cell_id;
         input->GetCellPoints(cell, npts, cellPts);
@@ -308,7 +303,7 @@ vtkAxisDepthSort::RequestData(
     outPD->PassData(inPD);
     if (doCellData)
         outCD->CopyAllocate(inCD);
-    for (i = ncells-1 ; i >= 0 ; i--)
+    for (int i = ncells-1 ; i >= 0 ; i--)
     {
         int cell = pairs[i].cell_id;
         input->GetCellPoints(cell, npts, cellPts);

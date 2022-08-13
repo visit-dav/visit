@@ -12,6 +12,9 @@
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkDataSet.h>
 #include <vtkPolyData.h>
 
@@ -158,18 +161,25 @@ avtLineToPolylineFilter::ExecuteData(avtDataRepresentation *inDR)
     // and add them to the free edges list. We just add the polylines
     // straight away.
     //
-    input->GetLines()->InitTraversal();
+    vtkCellArray *inlines = input->GetLines();
     vtkIdType n = 0;
+    std::set<edge> freeEdges;
+    const vtkIdType numVerts = input->GetVerts()->GetNumberOfCells();
+    vtkIdType toCellId = numVerts;
 #if LIB_VERSION_LE(VTK,8,1,0)
+    inlines->InitTraversal();
     vtkIdType *cellPts = nullptr;
+    for(vtkIdType cellid = 0; inlines->GetNextCell(n, cellPts); ++cellid)
+    {
 #else
     const vtkIdType *cellPts = nullptr;
-#endif
-    std::set<edge> freeEdges;
-    vtkIdType toCellId = input->GetVerts()->GetNumberOfCells();
-    for(vtkIdType cellid = 0; input->GetLines()->GetNextCell(n, cellPts); ++cellid)
+    vtkIdType cellId = 0;
+    auto iter = vtk::TakeSmartPointer(inlines->NewIterator());
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell(), cellId++)
     {
-        vtkIdType fromCellId = cellid + input->GetVerts()->GetNumberOfCells();
+        iter->GetCurrentCell(n, cellPts);
+#endif
+        vtkIdType fromCellId = cellid + numVerts;
         if(n == 2)
         {
             edge e01(cellPts[0], cellPts[1], fromCellId);
