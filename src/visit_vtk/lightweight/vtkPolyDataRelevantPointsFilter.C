@@ -225,7 +225,7 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   int nIdStoreSize = 1024;
   vtkIdType *pts = new vtkIdType[nIdStoreSize];
 #if LIB_VERSION_LE(VTK, 8,1,0)
-  vtkIdType *oldPts = NULL;
+  vtkIdType *oldPts = nullptr;
 #else
   const vtkIdType *oldPts = nullptr;
 #endif

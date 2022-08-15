@@ -49,19 +49,19 @@ vtkVisItTubeFilter::vtkVisItTubeFilter()
 
     this->GenerateTCoords = VTK_TCOORDS_OFF;
     this->TextureLength = 1.0;
-    this->ScalarsForRadius = NULL;
+    this->ScalarsForRadius = nullptr;
 }
 
 vtkVisItTubeFilter::~vtkVisItTubeFilter()
 {
-    this->SetScalarsForRadius(NULL);
+    this->SetScalarsForRadius(nullptr);
 }
 
 //   Jeremy Meredith, Wed May 26 14:52:29 EDT 2010
 //   Allow cell scalars for tube radius.
 //
 //    Kathleen Biagas, Tue Aug  7 10:58:16 PDT 2012
-//    Use ScalarsForRadius to retrieve the scalars, if it is NULL, then
+//    Use ScalarsForRadius to retrieve the scalars, if it is nullptr, then
 //    GetScalars will retrieve the active scalar array.
 //
 //    Kathleen Biagas, Thu Aug 11, 2022
@@ -111,12 +111,12 @@ int vtkVisItTubeFilter::RequestData(
     vtkCellArray *newStrips;
     vtkIdType npts=0;
 #if LIB_VERSION_LE(VTK, 8,1,0)
-    vtkIdType *pts=NULL;
+    vtkIdType *pts=nullptr;
 #else
     const vtkIdType *pts=nullptr;
 #endif
     vtkIdType offset=0;
-    vtkFloatArray *newTCoords=NULL;
+    vtkFloatArray *newTCoords=nullptr;
     int abort=0;
     vtkIdType inCellId;
     double oldRadius=1.0;
@@ -713,7 +713,7 @@ void vtkVisItTubeFilter::GenerateTextureCoords(vtkIdType offset,
     double tc=0.0;
 
     // We only handle point-centered scalars
-    vtkDataArray *inScalars = cellScalars ? NULL : inScalars_;
+    vtkDataArray *inScalars = cellScalars ? nullptr : inScalars_;
 
     int numSides = this->NumberOfSides;
     if ( ! this->SidesShareVertices )
