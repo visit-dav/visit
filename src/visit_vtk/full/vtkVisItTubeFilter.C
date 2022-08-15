@@ -47,19 +47,19 @@ vtkVisItTubeFilter::vtkVisItTubeFilter()
 
     this->GenerateTCoords = VTK_TCOORDS_OFF;
     this->TextureLength = 1.0;
-    this->ScalarsForRadius = NULL;
+    this->ScalarsForRadius = nullptr;
 }
 
 vtkVisItTubeFilter::~vtkVisItTubeFilter()
 {
-    this->SetScalarsForRadius(NULL);
+    this->SetScalarsForRadius(nullptr);
 }
 
 //   Jeremy Meredith, Wed May 26 14:52:29 EDT 2010
 //   Allow cell scalars for tube radius.
 //
 //    Kathleen Biagas, Tue Aug  7 10:58:16 PDT 2012
-//    Use ScalarsForRadius to retrieve the scalars, if it is NULL, then
+//    Use ScalarsForRadius to retrieve the scalars, if it is nullptr, then
 //    GetScalars will retrieve the active scalar array.
 //
 
@@ -104,9 +104,14 @@ int vtkVisItTubeFilter::RequestData(
     vtkIdType i;
     double range[2], maxSpeed=0;
     vtkCellArray *newStrips;
-    vtkIdType npts=0, *pts=NULL;
+    vtkIdType npts=0;
+#if LIB_VERSION_LE(VTK, 8,1,0)
+    vtkIdType *pts=nullptr;
+#else
+    const vtkIdType *pts=nullptr;
+#endif
     vtkIdType offset=0;
-    vtkFloatArray *newTCoords=NULL;
+    vtkFloatArray *newTCoords=nullptr;
     int abort=0;
     vtkIdType inCellId;
     double oldRadius=1.0;
@@ -314,7 +319,11 @@ int vtkVisItTubeFilter::RequestData(
 //   Fix dead code that read past the end of an array.
 //
 int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
+#if LIB_VERSION_LE(VTK, 8,1,0)
                                        vtkIdType npts, vtkIdType *pts,
+#else
+                                       vtkIdType npts, const vtkIdType *pts,
+#endif
                                        vtkPoints *inPts, vtkPoints *newPts, 
                                        vtkPointData *pd, vtkPointData *outPD,
                                        vtkFloatArray *newNormals,
@@ -552,7 +561,11 @@ int vtkVisItTubeFilter::GeneratePoints(vtkIdType offset, vtkIdType inCellId,
 }
 
 void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts, 
+#if LIB_VERSION_LE(VTK, 8,1,0)
                                         vtkIdType* vtkNotUsed(pts), 
+#else
+                                        const vtkIdType* vtkNotUsed(pts), 
+#endif
                                         vtkIdType inCellId,
                                         vtkCellData *cd, vtkCellData *outCD,
                                         vtkCellArray *newStrips)
@@ -660,7 +673,11 @@ void vtkVisItTubeFilter::GenerateStrips(vtkIdType offset, vtkIdType npts,
 //   should ignore them.
 //
 void vtkVisItTubeFilter::GenerateTextureCoords(vtkIdType offset,
+#if LIB_VERSION_LE(VTK, 8,1,0)
                                                vtkIdType npts, vtkIdType *pts, 
+#else
+                                               vtkIdType npts, const vtkIdType *pts,
+#endif
                                                vtkPoints *inPts, 
                                                vtkDataArray *inScalars_,
                                                bool cellScalars,
@@ -671,7 +688,7 @@ void vtkVisItTubeFilter::GenerateTextureCoords(vtkIdType offset,
     double tc=0.0;
 
     // We only handle point-centered scalars
-    vtkDataArray *inScalars = cellScalars ? NULL : inScalars_;
+    vtkDataArray *inScalars = cellScalars ? nullptr : inScalars_;
 
     int numSides = this->NumberOfSides;
     if ( ! this->SidesShareVertices )

@@ -4,6 +4,8 @@
 
 #include "vtkVertexFilter.h"
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkInformation.h>
@@ -156,7 +158,11 @@ vtkVertexFilter::RequestData(
       if (ugrid != NULL && ugrid->GetCellType(i) == VTK_CONVEX_POINT_SET)
       {
           vtkIdType npts;
+#if LIB_VERSION_LE(VTK, 8,1,0)
           vtkIdType *pts;
+#else
+          const vtkIdType *pts;
+#endif
           ugrid->GetCellPoints(i, npts, pts);
           point[0] = 0.;
           point[1] = 0.;
