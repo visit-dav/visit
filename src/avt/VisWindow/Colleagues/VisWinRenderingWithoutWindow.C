@@ -17,7 +17,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkOpenGLRenderWindow.h>
-#include <vtkOpenGL.h>
+#include <vtk_glew.h>
 #include <vtkRenderer.h>
 
 #define DS_NOT_CHECKED    0

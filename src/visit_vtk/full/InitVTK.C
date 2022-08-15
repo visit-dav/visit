@@ -10,7 +10,6 @@
 #include <InitVTKLite.h>
 
 #include <vtkObjectFactory.h>
-#include <vtkToolkits.h>
 #include <vtkVersion.h>
 #include <vtkVisItCellDataToPointData.h>
 #include <vtkVisItRectilinearGrid.h>

@@ -10,6 +10,7 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper2D.h>
 #include <vtkProperty2D.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkViewport.h>
 
 #define DEFAULT_X_OFFSET 0.0
