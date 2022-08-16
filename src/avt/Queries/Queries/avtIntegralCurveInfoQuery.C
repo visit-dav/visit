@@ -7,13 +7,20 @@
 // ************************************************************************* //
 
 #include <avtIntegralCurveInfoQuery.h>
+
+#include <visit-config.h> // For LIB_VERSION_GE
 #include <avtDatasetExaminer.h>
 #include <avtParallel.h>
-#include <vtkDoubleArray.h>
-#include <vtkPolyData.h>
-#include <vtkPoints.h>
-#include <vtkPointData.h>
+
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#include <vtkPolyData.h>
+
 #include <NonQueryableInputException.h>
 #ifdef PARALLEL
 #include <mpi.h>
@@ -32,7 +39,7 @@
 //  Modifications:
 //
 // ****************************************************************************
-avtIntegralCurveInfoQuery::avtIntegralCurveInfoQuery() : avtDatasetQuery() 
+avtIntegralCurveInfoQuery::avtIntegralCurveInfoQuery() : avtDatasetQuery()
 {
     dumpIndex = false;
     dumpCoordinates = false;
@@ -49,19 +56,19 @@ avtIntegralCurveInfoQuery::avtIntegralCurveInfoQuery() : avtDatasetQuery()
 //  Modifications:
 //
 // ****************************************************************************
-avtIntegralCurveInfoQuery::~avtIntegralCurveInfoQuery() 
+avtIntegralCurveInfoQuery::~avtIntegralCurveInfoQuery()
 {
 }
 
 // ****************************************************************************
 // Method:  avtIntegralCurveInfoQuery::SetInputParams
 //
-// Programmer:  Kathleen Biagas 
+// Programmer:  Kathleen Biagas
 // Creation:    June 17, 2011
 //
 //  Modifications:
 //    Kathleen Biagas, Thu Jan 10 08:12:47 PST 2013
-//    Use newer MapNode methods that check for numeric entries and retrieves 
+//    Use newer MapNode methods that check for numeric entries and retrieves
 //    to specific type.
 //
 // ****************************************************************************
@@ -84,7 +91,7 @@ avtIntegralCurveInfoQuery::SetInputParams(const MapNode &params)
 // ****************************************************************************
 // Method:  avtIntegralCurveInfoQuery::GetDefaultInputParams
 //
-// Programmer:  Kathleen Biagas 
+// Programmer:  Kathleen Biagas
 // Creation:    July 15, 2011
 //
 // ****************************************************************************
@@ -142,13 +149,13 @@ avtIntegralCurveInfoQuery::PostExecute()
 #ifdef PARALLEL
     int nProcs = PAR_Size();
     int *counts = new int[nProcs];
-    
+
     for (unsigned int i = 0; i < nProcs; i++)
         counts[i] = 0;
-    
+
     counts[PAR_Rank()] = slData.size();
     Collect(counts, nProcs);
-    
+
     int tag = GetUniqueMessageTag();
     MPI_Status stat;
 
@@ -165,7 +172,7 @@ avtIntegralCurveInfoQuery::PostExecute()
 
                 for (int j=0; j<counts[i]; ++j)
                     slData.push_back(vals[j]);
-                
+
                 delete [] vals;
             }
         }
@@ -181,7 +188,7 @@ avtIntegralCurveInfoQuery::PostExecute()
 
     delete [] counts;
 #endif
-    
+
     std::string msg;
     char str[128];
     unsigned int i = 0, sz = slData.size();
@@ -212,13 +219,13 @@ avtIntegralCurveInfoQuery::PostExecute()
 
             sprintf(str, ", Steps %d\n", numSteps);
             msg += str;
-            
+
             doubleVector sl_steps;
 
             for (unsigned int j = 0; j < numSteps; j++)
             {
               str[0] = '\0';
-              
+
               if (dumpIndex) // Index
               {
                 sl_steps.push_back(j);
@@ -242,7 +249,7 @@ avtIntegralCurveInfoQuery::PostExecute()
                 sl_steps.push_back(arcLength);
                 sprintf(str, "%s  %lf", str, arcLength);
               }
-                
+
               if (dumpValues) // Value
               {
                 value = slData[i++];
@@ -250,7 +257,7 @@ avtIntegralCurveInfoQuery::PostExecute()
                 sl_steps.push_back(value);
                 sprintf(str, "%s  %lf", str, value);
               }
-              
+
               sprintf(str, "%s\n", str);
               msg += str;
             }
@@ -265,7 +272,7 @@ avtIntegralCurveInfoQuery::PostExecute()
           sprintf(str, "\n");
           msg += str;
         }
-        
+
         sprintf(str, "IntegralCurve %d", slIdx);
         result_node[str] = sl_res_node;
         ++slIdx;
@@ -282,6 +289,8 @@ avtIntegralCurveInfoQuery::PostExecute()
 // Creation:    November  9, 2010
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9: use vtkCellArrayIterator.
 //
 // ****************************************************************************
 void
@@ -296,29 +305,37 @@ avtIntegralCurveInfoQuery::Execute(vtkDataSet *data, const int chunk)
 
     vtkPolyData *ds = (vtkPolyData *) data;
     vtkPoints *points   = ds->GetPoints();
-    vtkCellArray *lines = ds->GetLines();
-    vtkIdType *segptr = lines->GetPointer();
     vtkDoubleArray *scalar =
       (vtkDoubleArray *) data->GetPointData()->GetArray("colorVar");
-
-    unsigned int nLines = ds->GetNumberOfLines();
     double pt0[3], pt1[3];
-    
-    for (unsigned int i=0; i<nLines; ++i)
+    if (ds->GetNumberOfLines() > 0)
     {
-        unsigned int nPts = *segptr;
+      vtkIdType nLines = ds->GetNumberOfLines();
+      vtkIdType nPts;
+#if LIB_VERSION_LE(VTK,8,1,0)
+      vtkCellArray *lines = ds->GetLines();
+      vtkIdType *segptr = lines->GetPointer();
+      for (unsigned int i=0; i<nLines; ++i)
+      {
+        nPts = *segptr;
         ++segptr;  // Segptr now points to the first vertex index.
-
+#else
+      auto lines = vtk::TakeSmartPointer(ds->GetLines()->NewIterator());
+      for (lines->GoToFirstCell(); !lines->IsDoneWithTraversal(); lines->GoToNextCell())
+      {
+        const vtkIdType *segptr;
+        lines->GetCurrentCell(nPts, segptr);
+#endif
         double arcLength = 0.0;
         std::vector<double> steps;
-        
+
         // Push the seed point on to the stack.
         points->GetPoint(segptr[0], pt0);
         slData.push_back(pt0[0]);
         slData.push_back(pt0[1]);
         slData.push_back(pt0[2]);
 
-        for (unsigned int j=0; j<nPts; ++j)
+        for (vtkIdType j=0; j<nPts; ++j)
         {
             points->GetPoint(segptr[j], pt1);
             arcLength += (avtVector( pt1 ) - avtVector( pt0 )).length();
@@ -355,7 +372,9 @@ avtIntegralCurveInfoQuery::Execute(vtkDataSet *data, const int chunk)
             slData.push_back((double)(nPts));
             slData.insert(slData.end(), steps.begin(), steps.end());
         }
-
+#if LIB_VERSION_LE(VTK,8,1,0)
         segptr += nPts;
+#endif
+      }
     }
 }
