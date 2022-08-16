@@ -532,12 +532,13 @@ vtkVisItCutter::UnstructuredGridCutter()
           abortExecute = this->GetAbortExecute();
           }
 #if LIB_VERSION_LE(VTK, 8,1,0)
-        vtkIdType numCellPts = cellArrayPtr[cellArrayIt++];
+        vtkIdType numCellPts = cellArrayPtr[cellArrayIt];
+        cellArrayIt++;
 
         //find min and max values in scalar data
         range[0] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-        range[1] = scalarArrayPtr[cellArrayPtr[cellArrayIt++]];
-
+        range[1] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
+        cellArrayIt++;
 
         for (vtkIdType i = 1; i < numCellPts; i++)
           {
@@ -607,15 +608,18 @@ vtkVisItCutter::UnstructuredGridCutter()
 #if LIB_VERSION_LE(VTK, 8,1,0)
     for (vtkIdType cellId=0, cellArrayIt=0; cellId < numCells && !abortExecute; cellId++)
       {
-      vtkIdType numCellPts = cellArrayPtr[cellArrayIt++];
+      vtkIdType numCellPts = cellArrayPtr[cellArrayIt];
+      cellArrayIt++;
 
       //find min and max values in scalar data
       range[0] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
-      range[1] = scalarArrayPtr[cellArrayPtr[cellArrayIt++]];
+      range[1] = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
+      cellArrayIt++;
 
       for (vtkIdType i = 1; i < numCellPts; i++)
         {
-        tempScalar = scalarArrayPtr[cellArrayPtr[cellArrayIt++]];
+        tempScalar = scalarArrayPtr[cellArrayPtr[cellArrayIt]];
+        cellArrayIt++;
 #else
     for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal() && !abortExecute; cellIter->GoToNextCell())
       {
