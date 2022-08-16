@@ -161,7 +161,12 @@ vtkUnstructuredGridRelevantPointsFilter::RequestData(
     newIds->SetNumberOfIds(npts);
     for (vtkIdType j = 0; j < npts ; j++)
       {
+#if LIB_VERSION_LE(VTK,8,1,0)
+      //vtkIdType id = *ptr++;
+      newIds->SetId(j, pointMap[*ptr++]);
+#else
       newIds->SetId(j, pointMap[ptr[j]]);
+#endif
       }
       output->InsertNextCell(cellType, newIds);
     }
