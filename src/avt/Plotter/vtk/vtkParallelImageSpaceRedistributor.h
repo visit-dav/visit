@@ -8,7 +8,10 @@
 
 #ifndef __vtkParallelImageSpaceRedistributor_h
 #define __vtkParallelImageSpaceRedistributor_h
+
 #include <plotter_exports.h>
+
+#include <visit-config.h> // For LIB_VERSION_LE
 
 #include <vector>
 
@@ -54,6 +57,9 @@
 //    Eric Brugger, Wed Jan  9 10:32:26 PST 2013
 //    Modified to inherit from vtkPolyDataAlgorithm.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    New signatures for VTK9 support, requiring const for cellPts.
+//
 // ****************************************************************************
 
 class PLOTTER_API vtkParallelImageSpaceRedistributor :
@@ -93,11 +99,19 @@ class PLOTTER_API vtkParallelImageSpaceRedistributor :
     unsigned char   *GetDataString(int &length, vtkPolyData *asVTK);
     vtkPolyData     *GetDataVTK(unsigned char *asChar,
                                 unsigned int asCharLength);
+#if LIB_VERSION_LE(VTK,8,1,0)
     int              WhichProcessorsForCell(double *pts, vtkIdType npts,
                                      vtkIdType *cellPts, std::vector<int>&);
     void             IncrementOutgoingCellCounts(double *pts, vtkIdType npts,
                                      vtkIdType *cellPts, std::vector<int>&,
                                      std::vector<int>&);
+#else
+    int              WhichProcessorsForCell(double *pts, vtkIdType npts,
+                                     const vtkIdType *cellPts, std::vector<int>&);
+    void             IncrementOutgoingCellCounts(double *pts, vtkIdType npts,
+                                     const vtkIdType *cellPts, std::vector<int>&,
+                                     std::vector<int>&);
+#endif
     vtkMatrix4x4    *CreateWorldToDisplayMatrix();
 };
 

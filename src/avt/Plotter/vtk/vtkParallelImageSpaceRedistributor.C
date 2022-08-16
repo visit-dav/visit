@@ -13,6 +13,9 @@
 #include <vtkAppendPolyData.h>
 #include <vtkCamera.h>
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK,9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkCharArray.h>
@@ -29,6 +32,7 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
 #include <vtkPolyDataRelevantPointsFilter.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <avtParallel.h>
 
@@ -123,7 +127,7 @@ vtkParallelImageSpaceRedistributor::~vtkParallelImageSpaceRedistributor()
 // ****************************************************************************
 // Method: vtkParallelImageSpaceRedistributor::SetCommunicator
 //
-// Purpose: 
+// Purpose:
 //   Set the communicator that this object will use.
 //
 // Arguments:
@@ -133,7 +137,7 @@ vtkParallelImageSpaceRedistributor::~vtkParallelImageSpaceRedistributor()
 // Creation:   Fri Jan 23 15:23:28 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -146,7 +150,7 @@ vtkParallelImageSpaceRedistributor::SetCommunicator(const MPI_Comm &c)
 // ****************************************************************************
 // Method: vtkParallelImageSpaceRedistributor::SetRankAndSize
 //
-// Purpose: 
+// Purpose:
 //   Sets the number of processors and the processor rank so that we don't
 //   rely on external symbols for doing so.
 //
@@ -158,7 +162,7 @@ vtkParallelImageSpaceRedistributor::SetCommunicator(const MPI_Comm &c)
 // Creation:   Mon Nov 1 15:12:33 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -235,6 +239,9 @@ vtkParallelImageSpaceRedistributor::GetOutput()
 //    Fix an error reported by VTK thrown when a pipeline requiring
 //    an input is run without one
 //
+//    Kathleen Biags, Thu Aug 11, 2022
+//    Support VTK9: use vtkCellArrayIterator.
+//
 // ****************************************************************************
 
 int
@@ -264,7 +271,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
         EXCEPTION0(ImproperUseException)
     }
 
-    int TH_total = visitTimer->StartTimer(); 
+    int TH_total = visitTimer->StartTimer();
 
     width  = ren->GetSize()[0];
     height = ren->GetSize()[1];
@@ -274,13 +281,10 @@ vtkParallelImageSpaceRedistributor::RequestData(
         AreaOwned(i, size, width, height, x1[i],y1[i],x2[i],y2[i]);
     }
 
-    int   i, j;
 
     vtkPoints    *inPts      = input->GetPoints();
     vtkPointData *inPD       = input->GetPointData();
     vtkCellData  *inCD       = input->GetCellData();
-    vtkIdType     npts       = 0;
-    vtkIdType    *cellPts    = 0;
 
     //
     // Initialize outgoing datasets
@@ -295,11 +299,11 @@ vtkParallelImageSpaceRedistributor::RequestData(
     //
     // Transform the points
     //
-    int TH_transform = visitTimer->StartTimer(); 
+    int TH_transform = visitTimer->StartTimer();
     vtkMatrix4x4 *worldToView = CreateWorldToDisplayMatrix();
     double *xformedpts = new double[3 * input->GetNumberOfPoints()];
     double pt[3], p2[4];
-    for (j=0; j < input->GetNumberOfPoints(); j++)
+    for (vtkIdType j=0; j < input->GetNumberOfPoints(); j++)
     {
         inPts->GetPoint(j, pt);
 
@@ -328,28 +332,36 @@ vtkParallelImageSpaceRedistributor::RequestData(
     cellArrays[3] = input->GetStrips();
 
     int numSkipped = 0;
-    vtkUnsignedCharArray *colorsArray = 
+    vtkUnsignedCharArray *colorsArray =
             (vtkUnsignedCharArray *) input->GetPointData()->GetArray("Colors");
     unsigned char *colors = NULL;
     if (colorsArray != NULL)
         colors = colorsArray->GetPointer(0);
 
-    int TH_countdestinations = visitTimer->StartTimer(); 
-    for (j = 0 ; j < 4 ; j++)
+    int TH_countdestinations = visitTimer->StartTimer();
+    for (int j = 0 ; j < 4 ; j++)
     {
+#if LIB_VERSION_LE(VTK,8,1,0)
         int ncells = cellArrays[j]->GetNumberOfCells();
-        cellPts = cellArrays[j]->GetPointer();
-        for (i=0; i<ncells; i++)
+        vtkIdType *cellPts = cellArrays[j]->GetPointer();
+        for (int i=0; i<ncells; i++)
         {
-            npts = *cellPts;
+            vtkIdType npts = *cellPts;
             cellPts++;
             vtkIdType *ptsForThisCell = cellPts;
             cellPts += npts;
-
+#else
+        auto cellIter = vtk::TakeSmartPointer(cellArrays[j]->NewIterator());
+        for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal(); cellIter->GoToNextCell())
+        {
+            vtkIdType npts;
+            const vtkIdType *ptsForThisCell;
+            cellIter->GetCurrentCell(npts, ptsForThisCell);
+#endif
             if (colors != NULL)
             {
                 bool allPointsAreFullyTransparent = true;
-                for (int k = 0 ; k < npts ; k++)
+                for (vtkIdType k = 0 ; k < npts ; k++)
                     if (colors[4*ptsForThisCell[k]+3] != 0)
                     {
                         allPointsAreFullyTransparent = false;
@@ -372,8 +384,8 @@ vtkParallelImageSpaceRedistributor::RequestData(
     //
     // Allocate the space for any outgoing polydata
     //
-    int TH_allocate = visitTimer->StartTimer(); 
-    for (i=0; i<size; i++)
+    int TH_allocate = visitTimer->StartTimer();
+    for (int i=0; i<size; i++)
     {
         if (outgoingCellCount[i] > 0)
         {
@@ -388,24 +400,33 @@ vtkParallelImageSpaceRedistributor::RequestData(
     //
     // Do the actual stuffing into the output data sets
     //
-    int TH_finddestinations = visitTimer->StartTimer(); 
+    int TH_finddestinations = visitTimer->StartTimer();
     vector<int> dests;
-    
-    for (j = 0 ; j < 4 ; j++)
+
+    for (int j = 0 ; j < 4 ; j++)
     {
+#if LIB_VERSION_LE(VTK,8,1,0)
         int ncells = cellArrays[j]->GetNumberOfCells();
-        cellPts = cellArrays[j]->GetPointer();
-        for (i=0; i<ncells; i++)
+        vtkIdType *cellPts = cellArrays[j]->GetPointer();
+        for (int i=0; i<ncells; i++)
         {
-            npts = *cellPts;
+            vtkIdType npts = *cellPts;
             cellPts++;
             vtkIdType *ptsForThisCell = cellPts;
             cellPts += npts;
- 
+#else
+        auto cellIter = vtk::TakeSmartPointer(cellArrays[j]->NewIterator());
+        for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal(); cellIter->GoToNextCell())
+        {
+            vtkIdType npts;
+            const vtkIdType *ptsForThisCell;
+            cellIter->GetCurrentCell(npts, ptsForThisCell);
+#endif
+
             if (colors != NULL && numSkipped > 0)
             {
                 bool allPointsAreFullyTransparent = true;
-                for (int k = 0 ; k < npts ; k++)
+                for (vtkIdType k = 0 ; k < npts ; k++)
                     if (colors[4*ptsForThisCell[k]+3] != 0)
                     {
                         allPointsAreFullyTransparent = false;
@@ -426,7 +447,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
                case 2: cellType = (npts == 3 ? VTK_TRIANGLE : (npts == 4 ? VTK_QUAD : VTK_POLYGON)); break;
                case 3: cellType = VTK_TRIANGLE_STRIP; break;
             }
-    
+
             // code: dest > 0 means single destination
             //       dest==-1 means multiple destinations
             //       dest==-2 means no destinations
@@ -434,23 +455,34 @@ vtkParallelImageSpaceRedistributor::RequestData(
             {
                 int cnt = outgoingPolyData[dest]->InsertNextCell(cellType,
                                                        npts, ptsForThisCell);
+#if LIB_VERSION_LE(VTK,8,1,0)
                 outgoingPolyData[dest]->GetCellData()->CopyData(inCD, i, cnt);
+#else
+                outgoingPolyData[dest]->GetCellData()->CopyData(inCD, cellIter->GetCurrentCellId(), cnt);
+#endif
             }
             else if (dest == -1)
             {
                 for (size_t k=0; k<dests.size(); k++)
                 {
-                    int cnt;
-                    cnt = outgoingPolyData[dests[k]]->InsertNextCell(cellType,
+                    int cnt = outgoingPolyData[dests[k]]->InsertNextCell(cellType,
                                                            npts, ptsForThisCell);
+#if LIB_VERSION_LE(VTK,8,1,0)
                     outgoingPolyData[dests[k]]->GetCellData()->CopyData(inCD, i, cnt);
+#else
+                    outgoingPolyData[dests[k]]->GetCellData()->CopyData(inCD, cellIter->GetCurrentCellId(), cnt);
+#endif
                 }
                 dests.clear();
             }
             // else dest==-2 and thus no one owned it.
             else
             {
+#if LIB_VERSION_LE(VTK,8,1,0)
                 debug1 << "no owner for cell " << i << endl;
+#else
+                debug1 << "no owner for cell " << cellIter->GetCurrentCellId() << endl;
+#endif
             }
         }
     }
@@ -462,19 +494,19 @@ vtkParallelImageSpaceRedistributor::RequestData(
     delete[] xformedpts;
 
     //
-    // We have to figure out which points we need.  We don't want to 
-    // send all of the points, since we don't need them all and that 
+    // We have to figure out which points we need.  We don't want to
+    // send all of the points, since we don't need them all and that
     // will just slow things down.
     //
     int TH_removeUnusedPoints = visitTimer->StartTimer();
-    for (i = 0 ; i < size ; i++)
+    for (int i = 0 ; i < size ; i++)
     {
         if (outgoingCellCount[i] <= 0)
             continue;
 
         if (outgoingCellCount[i] > 10000)  // need industrial grade algorithm
         {
-            vtkPolyDataRelevantPointsFilter *rpf = 
+            vtkPolyDataRelevantPointsFilter *rpf =
                                      vtkPolyDataRelevantPointsFilter::New();
             outgoingPolyData[i]->SetPoints(inPts);
             outgoingPolyData[i]->GetPointData()->ShallowCopy(inPD);
@@ -496,24 +528,39 @@ vtkParallelImageSpaceRedistributor::RequestData(
             cellArrays[1] = opd->GetLines();
             cellArrays[2] = opd->GetPolys();
             cellArrays[3] = opd->GetStrips();
-            int curPt = 0;
-            for (j = 0 ; j < 4 ; j++)
+#if LIB_VERSION_LE(VTK,8,1,0)
+            vtkIdType curPt = 0;
+            for (int j = 0 ; j < 4 ; j++)
             {
-                int ncells = cellArrays[j]->GetNumberOfCells();
-                cellPts = cellArrays[j]->GetPointer();
-                for (int c=0; c<ncells; c++)
+                vtkIdType ncells = cellArrays[j]->GetNumberOfCells();
+                vtkIdType *cellPts = cellArrays[j]->GetPointer();
+                for (vtkIdType c=0; c<ncells; c++)
                 {
-                    npts = *cellPts;
+                    vtkIdType npts = *cellPts;
                     cellPts++;
-                    for (int k = 0 ; k < npts ; k++)
+                    for (vtkIdType k = 0 ; k < npts ; k++)
                     {
-                        int oldPt = *cellPts;
+                        vtkIdType oldPt = *cellPts;
                         *cellPts = curPt;
+#else
+            vtkIdType curPt = 0;
+            for (int j = 0 ; j < 4 ; j++)
+            {
+                auto cellIter = vtk::TakeSmartPointer(cellArrays[j]->NewIterator());
+                for (cellIter->GoToFirstCell(); !cellIter->IsDoneWithTraversal(); cellIter->GoToNextCell())
+                {
+                    vtkIdType npts;
+                    const vtkIdType *cellPts;
+                    cellIter->GetCurrentCell(npts, cellPts);
+                    for (vtkIdType k = 0 ; k < npts ; k++)
+                    {
+                        vtkIdType oldPt = *cellPts;
+#endif
                         newPts->SetPoint(curPt, inPts->GetPoint(oldPt));
                         outPD->CopyData(inPD, oldPt, curPt);
                         cellPts++;
                         curPt++;
-                    }    
+                    }
                 }
             }
             opd->SetPoints(newPts);
@@ -521,17 +568,17 @@ vtkParallelImageSpaceRedistributor::RequestData(
         }
     }
     visitTimer->StopTimer(TH_removeUnusedPoints, "Removing unused points");
-   
+
     //
     // Convert data to strings so we can send them to other processors
     //
-    int TH_stringize = visitTimer->StartTimer(); 
+    int TH_stringize = visitTimer->StartTimer();
     int totalSend = 0;
     vector<int> sendCount;
     vector<unsigned char*> sendString;
     sendString.resize(size, NULL);
     sendCount.resize(size, 0);
-    for (i=0; i<size; i++)
+    for (int i=0; i<size; i++)
     {
         // Note that we don't want to bother stringizing and all-to-all'ing
         // the polygons that we know are going to stay on this processor,
@@ -557,11 +604,11 @@ vtkParallelImageSpaceRedistributor::RequestData(
                  &recvCount[0], 1, MPI_INT, comm);
 
     int totalRecv = 0;
-    for (i = 0 ; i < size ; i++)
+    for (int i = 0 ; i < size ; i++)
     {
         totalRecv += recvCount[i];
     }
-    
+
     //
     // Build the displacements for Alltoallv from the known sizes
     //
@@ -569,7 +616,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
     vector<int> recvDisp(size);
     sendDisp[0] = 0;
     recvDisp[0] = 0;
-    for (i = 1 ; i < size ; i++)
+    for (int i = 1 ; i < size ; i++)
     {
         sendDisp[i] = sendDisp[i-1] + sendCount[i-1];
         recvDisp[i] = recvDisp[i-1] + recvCount[i-1];
@@ -579,7 +626,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
     // Copy data to a single big buffer for the Alltoallv
     //
     unsigned char *big_send_buffer = new unsigned char[totalSend];
-    for (i = 0 ; i < size ; i++)
+    for (int i = 0 ; i < size ; i++)
     {
         memcpy(&big_send_buffer[sendDisp[i]], sendString[i], sendCount[i]);
     }
@@ -588,7 +635,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
     //
     // Transfer the actual data
     //
-    int TH_communicate = visitTimer->StartTimer(); 
+    int TH_communicate = visitTimer->StartTimer();
     unsigned char *big_recv_buffer = new unsigned char[totalRecv];
     MPI_Alltoallv(big_send_buffer, &sendCount[0], &sendDisp[0], MPI_UNSIGNED_CHAR,
                   big_recv_buffer, &recvCount[0], &recvDisp[0], MPI_UNSIGNED_CHAR,
@@ -602,15 +649,15 @@ vtkParallelImageSpaceRedistributor::RequestData(
     //
     delete[] big_send_buffer;
 
-    for (i=0; i< (int)sendString.size(); i++)
+    for (int i=0; i< (int)sendString.size(); i++)
     {
         delete[] sendString[i];
     }
-    
+
     //
     // Now convert the received data to polydata
     //
-    int TH_appending = visitTimer->StartTimer(); 
+    int TH_appending = visitTimer->StartTimer();
     vtkAppendPolyData *appender = vtkAppendPolyData::New();
 
     // remember we explicitly didn't convert our own data to a string, so
@@ -622,7 +669,7 @@ vtkParallelImageSpaceRedistributor::RequestData(
         update = true;
     }
 
-    for (i=0; i<size; i++)
+    for (int i=0; i<size; i++)
     {
         if (recvCount[i] > 0)
         {
@@ -676,9 +723,9 @@ vtkParallelImageSpaceRedistributor::RequestData(
 //    Jeremy Meredith, Thu Oct 21 18:21:50 PDT 2004
 //    Cleaned up a little.
 //
-//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006 
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006
 //    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
-//    necessary information from the dataset. 
+//    necessary information from the dataset.
 //
 //    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
 //    Call Update on the reader, not the data object.
@@ -698,7 +745,7 @@ vtkParallelImageSpaceRedistributor::GetDataVTK(unsigned char *asChar,
     reader->SetInputArray(charArray);
     reader->Update();
     vtkPolyData *asVTK = reader->GetOutput();
-    
+
     asVTK->Register(NULL);
     //asVTK->SetSource(NULL);
     reader->Delete();
@@ -733,9 +780,9 @@ vtkParallelImageSpaceRedistributor::GetDataVTK(unsigned char *asChar,
 unsigned char *
 vtkParallelImageSpaceRedistributor::GetDataString(int &length,
                                                   vtkPolyData *asVTK)
-{     
+{
     unsigned char *asChar = NULL;
-    
+
     if (asVTK == NULL)
     {
         EXCEPTION0(NoInputException);
@@ -796,11 +843,20 @@ vtkParallelImageSpaceRedistributor::GetDataString(int &length,
 //    Jeremy Meredith, Tue Oct 26 22:36:29 PDT 2004
 //    Renamed and added some more comments.
 //
+//    Kathleen Biags, Thu Aug 11, 2022
+//    New signature for VTK9: const for cellPts.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK,8,1,0)
 int
 vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(double *pts,
     vtkIdType npts, vtkIdType *cellPts, vector<int> &procs)
+#else
+int
+vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(double *pts,
+    vtkIdType npts, const vtkIdType *cellPts, vector<int> &procs)
+#endif
 {
     // dest has some special values: If it is -2, then no processor
     // contained this cell.  If it is -1, then the client should walk
@@ -878,12 +934,22 @@ vtkParallelImageSpaceRedistributor::WhichProcessorsForCell(double *pts,
 //    Hank Childs, Sun May 23 16:12:11 CDT 2010
 //    Calculate the number of VTK points in the cells as well.
 //
+//    Kathleen Biags, Thu Aug 11, 2022
+//    New signature for VTK9: const for cellPts.
+//
 // ****************************************************************************
 
+#if LIB_VERSION_LE(VTK,8,1,0)
 void
 vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts(double *pts,
     vtkIdType npts, vtkIdType *cellPts, vector<int> &outgoingCellCount,
     vector<int> &outgoingPointCount)
+#else
+void
+vtkParallelImageSpaceRedistributor::IncrementOutgoingCellCounts(double *pts,
+    vtkIdType npts, const vtkIdType *cellPts, vector<int> &outgoingCellCount,
+    vector<int> &outgoingPointCount)
+#endif
 {
     //
     // See WhichProcessorsForCell for more notes
