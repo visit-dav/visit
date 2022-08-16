@@ -218,9 +218,9 @@ vtkVisItPolyDataNormals2D::ExecutePoint(
         {
             vtkIdType p = connPtrL[j];
 #else
-        for (int j = 0 ; j < nPtIds ; j++)
+        for (vtkIdType j = 0 ; j < nPtIds ; j++)
         {
-            int p = ptIds[j];
+            vtkIdType p = ptIds[j];
 #endif
             dnormals[p*3+0] += normal[0];
             dnormals[p*3+1] += normal[1];
@@ -301,7 +301,7 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
 
     vtkPoints    *inPts = input->GetPoints();
 
-    int nCells  = input->GetNumberOfCells();
+    vtkIdType nCells  = input->GetNumberOfCells();
 
     // Create the normals array
     vtkFloatArray *newNormals;
@@ -312,9 +312,9 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     float *newNormalPtr = (float*)newNormals->GetPointer(0);
 
     // The verts come before the polys.  So add normals for them.
-    int numPrimitivesWithoutNormals = 0;
+    vtkIdType numPrimitivesWithoutNormals = 0;
     numPrimitivesWithoutNormals += input->GetVerts()->GetNumberOfCells();
-    for (int i = 0 ; i < numPrimitivesWithoutNormals ; i++)
+    for (vtkIdType i = 0 ; i < numPrimitivesWithoutNormals ; i++)
     {
         newNormalPtr[0] = 0.;
         newNormalPtr[1] = 0.;
@@ -325,10 +325,10 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     vtkCellArray *inCL  = input->GetLines();
 #if LIB_VERSION_LE(VTK, 8,1,0)
     vtkIdType *connPtrL = inCL->GetPointer();
-    int nLines = inCL->GetNumberOfCells();
-    for (int i = 0 ; i < nLines ; i++)
+    vtkIdType nLines = inCL->GetNumberOfCells();
+    for (vtkIdType i = 0 ; i < nLines ; i++)
     {
-        int nVerts = *connPtrL++;
+        vtkIdType nVerts = *connPtrL++;
         vtkIdType *cell = connPtrL;
 #else
     auto  connPtrL = vtk::TakeSmartPointer(inCL->NewIterator());
@@ -370,7 +370,7 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     // The triangle strips come after the polys.  So add normals for them.
     numPrimitivesWithoutNormals = 0;
     numPrimitivesWithoutNormals += input->GetPolys()->GetNumberOfCells();
-    for (int i = 0 ; i < numPrimitivesWithoutNormals ; i++)
+    for (vtkIdType i = 0 ; i < numPrimitivesWithoutNormals ; i++)
     {
         newNormalPtr[0] = 0.f;
         newNormalPtr[1] = 0.f;
@@ -381,7 +381,7 @@ vtkVisItPolyDataNormals2D::ExecuteCell(vtkPolyData *input, vtkPolyData *output)
     // The triangle strips come after the polys.  So add normals for them.
     numPrimitivesWithoutNormals = 0;
     numPrimitivesWithoutNormals += input->GetStrips()->GetNumberOfCells();
-    for (int i = 0 ; i < numPrimitivesWithoutNormals ; i++)
+    for (vtkIdType i = 0 ; i < numPrimitivesWithoutNormals ; i++)
     {
         newNormalPtr[0] = 0.f;
         newNormalPtr[1] = 0.f;
