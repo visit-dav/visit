@@ -3,7 +3,7 @@
 // details.  No copyright assignment is required to contribute to VisIt.
 
 #include "vtkPolyDataRelevantPointsFilter.h"
-
+#include <visit-config.h> // For LIB_VERSION_LE
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkInformation.h>
@@ -95,9 +95,9 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   // First set up some of the constructs that will be used to create a mapping
   // between the old point indices and the new point indices.
   //
-  int numNewPts = 0;
-  int *oldToNew = new int[numPts];
-  int *newToOld = new int[numPts];
+  vtkIdType numNewPts = 0;
+  vtkIdType *oldToNew = new vtkIdType[numPts];
+  vtkIdType *newToOld = new vtkIdType[numPts];
   for (vtkIdType i = 0; i < numPts; i++)
     {
     oldToNew[i] = -1;
@@ -203,7 +203,11 @@ int vtkPolyDataRelevantPointsFilter::RequestData(
   //
   int nIdStoreSize = 1024;
   vtkIdType *pts = new vtkIdType[nIdStoreSize];
-  vtkIdType *oldPts = NULL;
+#if LIB_VERSION_LE(VTK, 8,1,0)
+  vtkIdType *oldPts = nullptr;
+#else
+  const vtkIdType *oldPts = nullptr;
+#endif
   vtkIdType nids = 0;
   input->BuildCells();
   for (vtkIdType i = 0; i < numCells; i++) 

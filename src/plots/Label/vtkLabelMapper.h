@@ -88,8 +88,8 @@ protected:
     static bool            zBufferWarningIssued;
 
 private:
-    vtkLabelMapper(const vtkLabelMapper&) VTK_DELETE_FUNCTION;
-    void operator=(const vtkLabelMapper&) VTK_DELETE_FUNCTION;
+    vtkLabelMapper(const vtkLabelMapper&) = delete;
+    void operator=(const vtkLabelMapper&) = delete;
 };
 
 #endif
