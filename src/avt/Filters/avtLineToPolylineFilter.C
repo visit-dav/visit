@@ -173,9 +173,9 @@ avtLineToPolylineFilter::ExecuteData(avtDataRepresentation *inDR)
     {
 #else
     const vtkIdType *cellPts = nullptr;
-    vtkIdType cellId = 0;
+    vtkIdType cellid = 0;
     auto iter = vtk::TakeSmartPointer(inlines->NewIterator());
-    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell(), cellId++)
+    for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell(), cellid++)
     {
         iter->GetCurrentCell(n, cellPts);
 #endif

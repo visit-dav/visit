@@ -7,6 +7,9 @@
 #include <visit-config.h> // For LIB_VERSION_LE
 
 #include <vtkCellArray.h>
+#if LIB_VERSION_GE(VTK, 9,1,0)
+#include <vtkCellArrayIterator.h>
+#endif
 #include <vtkCellData.h>
 #include <vtkFieldData.h>
 #include <vtkFloatArray.h>
