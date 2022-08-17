@@ -405,6 +405,10 @@ QvisRenderingWindow::CreateBasicPage()
 //   Garrett Morrison, Fri May 11 17:57:47 PDT 2018
 //   Added OSPRay option default values
 //
+//   Kathleen Biagas, Wed Aug 17, 2022
+//   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//   (bracketed by #elif defined(HAVE_OSPRAY).
+//
 // ****************************************************************************
 
 QWidget *
@@ -604,6 +608,67 @@ QvisRenderingWindow::CreateAdvancedPage()
     connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
             osprayShadowsToggle, SLOT(setEnabled(bool)));
     row++;
+#elif defined(HAVE_OSPRAY)
+    QFrame *line = new QFrame(advancedOptions);
+    line->setFrameShape(QFrame::HLine);
+    line->setFrameShadow(QFrame::Sunken);
+    line->setFixedHeight(2);
+    line->setLineWidth(1);
+    advLayout->addWidget(line, row, 0, 2, 4);
+    row += 2;
+
+    // Create the OSPRay group box.
+    osprayGroup = new QGroupBox(tr("OSPRay Rendering"), advancedOptions);
+    osprayGroup->setCheckable(true);
+    osprayGroup->setChecked(false);
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            this, SLOT(osprayRenderingToggled(bool)));
+    advLayout->addWidget(osprayGroup, row, 0, 3, 4);
+    row++;
+
+    QGridLayout *osprayLayout = new QGridLayout(osprayGroup);
+    osprayLayout->setMargin(5);
+    osprayLayout->setSpacing(10);
+
+    int orow  = 0;
+    ospraySPPLabel = new QLabel(tr("Samples per pixel"), advancedOptions);
+    ospraySPPLabel->setEnabled(false);
+    osprayLayout->addWidget(ospraySPPLabel, orow, 0, 1, 2);
+    ospraySPP = new QSpinBox(advancedOptions);
+    ospraySPP->setMinimum(1);
+    ospraySPP->setEnabled(false);
+    connect(ospraySPP, SIGNAL(valueChanged(int)),
+            this, SLOT(ospraySPPChanged(int)));
+    osprayLayout->addWidget(ospraySPP, orow, 2);
+    orow++;
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            ospraySPPLabel, SLOT(setEnabled(bool)));
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            ospraySPP, SLOT(setEnabled(bool)));
+
+    osprayAOLabel = new QLabel(tr("Ambient occlusion samples"), advancedOptions);
+    osprayAOLabel->setEnabled(false);
+    osprayLayout->addWidget(osprayAOLabel, orow, 0, 1, 2);
+    osprayAO = new QSpinBox(advancedOptions);
+    osprayAO->setMinimum(0);
+    osprayAO->setEnabled(false);
+    connect(osprayAO, SIGNAL(valueChanged(int)),
+            this, SLOT(osprayAOChanged(int)));
+    osprayLayout->addWidget(osprayAO, orow, 2);
+    orow++;
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            osprayAOLabel, SLOT(setEnabled(bool)));
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            osprayAO, SLOT(setEnabled(bool)));
+
+    osprayShadowsToggle = new QCheckBox(tr("Shadows"), advancedOptions);
+    osprayShadowsToggle->setEnabled(false);
+    connect(osprayShadowsToggle, SIGNAL(toggled(bool)),
+            this, SLOT(osprayShadowsToggled(bool)));
+    osprayLayout->addWidget(osprayShadowsToggle, orow, 0, 1, 2);
+    orow++;
+    connect(osprayGroup, SIGNAL(toggled(bool)),
+            osprayShadowsToggle, SLOT(setEnabled(bool)));
 #endif
 
     return advancedOptions;
@@ -826,12 +891,17 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Modified OSPRay rendering toggle to disable other OSPRay options
 //   when it is disabled
 //
+//   Kathleen Biagas, Wed Aug 17, 2022
+//   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//   (bracketed by #elif defined(HAVE_OSPRAY).
+//
 // ****************************************************************************
 
 void
 QvisRenderingWindow::UpdateOptions(bool doAll)
 {
     QString tmp;
+    bool enabled;
     int itmp, itmp2;
 
     // Loop through all the attributes and do something for
@@ -884,11 +954,60 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->setChecked(renderAtts->GetNotifyForEachRender());
             renderNotifyToggle->blockSignals(false);
             break;
+        case RenderingAttributes::ID_depthPeeling:
+            enabled = renderAtts->GetDepthPeeling();
+            depthPeeling->blockSignals(true);
+            depthPeeling->setChecked(enabled);
+            depthPeeling->blockSignals(false);
+            occlusionRatioLabel->setEnabled(enabled);
+            occlusionRatio->setEnabled(enabled);
+            numberOfPeelsLabel->setEnabled(enabled);
+            numberOfPeels->setEnabled(enabled);
+            break;
+        case RenderingAttributes::ID_occlusionRatio:
+            tmp = DoubleToQString(renderAtts->GetOcclusionRatio());
+            occlusionRatio->blockSignals(true);
+            occlusionRatio->setText(tmp);
+            occlusionRatio->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_numberOfPeels:
+            tmp = IntToQString(renderAtts->GetNumberOfPeels());
+            numberOfPeels->blockSignals(true);
+            numberOfPeels->setText(tmp);
+            numberOfPeels->blockSignals(false);
+            break;
 #ifdef VISIT_OSPRAY
         case RenderingAttributes::ID_osprayRendering:
             osprayRenderingToggle->blockSignals(true);
             osprayRenderingToggle->setChecked(renderAtts->GetOsprayRendering());
             osprayRenderingToggle->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_ospraySPP:
+            ospraySPP->blockSignals(true);
+            ospraySPP->setValue(int(renderAtts->GetOspraySPP()));
+            ospraySPP->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_osprayAO:
+            osprayAO->blockSignals(true);
+            osprayAO->setValue(int(renderAtts->GetOsprayAO()));
+            osprayAO->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_osprayShadows:
+            osprayShadowsToggle->blockSignals(true);
+            osprayShadowsToggle->setChecked(renderAtts->GetOsprayShadows());
+            osprayShadowsToggle->blockSignals(false);
+            break;
+#elif defined(HAVE_OSPRAY)
+        case RenderingAttributes::ID_osprayRendering:
+            enabled = renderAtts->GetOsprayRendering();
+            osprayGroup->blockSignals(true);
+            osprayGroup->setChecked(enabled);
+            ospraySPPLabel->setEnabled(enabled);
+            ospraySPP->setEnabled(enabled);
+            osprayAOLabel->setEnabled(enabled);
+            osprayAO->setEnabled(enabled);
+            osprayShadowsToggle->setEnabled(enabled);
+            osprayGroup->blockSignals(false);
             break;
         case RenderingAttributes::ID_ospraySPP:
             ospraySPP->blockSignals(true);

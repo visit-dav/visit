@@ -70,9 +70,9 @@ class VisitInteractor;
 //  Class: VisWindow
 //
 //  Purpose:
-//    VisWindow creates and manages a visualization window.  It follows the 
+//    VisWindow creates and manages a visualization window.  It follows the
 //    mediator/colleague model outlined in "Design Patterns".  VisWindow
-//    is the mediator and it has three primary colleagues, for the 
+//    is the mediator and it has three primary colleagues, for the
 //    interactors, plots, and rendering.  In addition, more colleagues
 //    can be added like a triad, updating axes, or user information.
 //
@@ -108,7 +108,7 @@ class VisitInteractor;
 //
 //    Hank Childs, Fri Nov 10 10:10:30 PST 2000
 //    Added perspective on/off.
-// 
+//
 //    Hank Childs, Thu Dec 28 10:23:53 PST 2000
 //    Replaced avtPlot with avtActor.  Removed hooks for vtkActors.
 //
@@ -118,7 +118,7 @@ class VisitInteractor;
 //    Brad Whitlock, Thu Apr 19 11:33:04 PDT 2001
 //    Added methods for window iconification.
 //
-//    Kathleen Bonnell, 
+//    Kathleen Bonnell,
 //    Added axes3D, annotationAtts, UpdateAxes2D, UpdateAxes3D,
 //    and SetAnnotatationAttributes.
 //
@@ -146,13 +146,13 @@ class VisitInteractor;
 //    Brad Whitlock, Wed Sep 19 16:10:18 PST 2001
 //    Added a method to query the enabled state.
 //
-//    Kathleen Bonnell, Fri Nov 9 14:54:20 PST 2001 
-//    Added Pick. 
+//    Kathleen Bonnell, Fri Nov 9 14:54:20 PST 2001
+//    Added Pick.
 //
 //    Brad Whitlock, Thu Jan 10 08:18:59 PDT 2002
 //    Added an update method for text annotations.
 //
-//    Hank Childs, Fri Feb  1 09:57:52 PST 2002  
+//    Hank Childs, Fri Feb  1 09:57:52 PST 2002
 //    Added support for nowin mode.
 //
 //    Brad Whitlock, Mon Feb 11 14:30:14 PST 2002
@@ -164,8 +164,8 @@ class VisitInteractor;
 //    Kathleen Bonnell, Fri Mar 15 14:16:28 PST 2002
 //    Added VisWinQuery.
 //
-//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002 
-//    Added support for Lineout, avtViewCurve.. 
+//    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002
+//    Added support for Lineout, avtViewCurve..
 //
 //    Sean Ahern, Mon May 20 13:29:13 PDT 2002
 //    Added ability to raise/lower window.
@@ -173,14 +173,14 @@ class VisitInteractor;
 //    Hank Childs, Wed May 29 09:09:45 PDT 2002
 //    Added Get/SetSpin.
 //
-//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002 
-//    Added UpdateQuery, DeleteQuery. 
+//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002
+//    Added UpdateQuery, DeleteQuery.
 //
 //    Hank Childs, Thu Jul 11 17:49:36 PDT 2002
 //    Add support for tracking when motion begins and ends.
 //
-//    Kathleen Bonnell, Fri Jul 12 18:42:11 PDT 2002  
-//    Add ScalePlots. 
+//    Kathleen Bonnell, Fri Jul 12 18:42:11 PDT 2002
+//    Add ScalePlots.
 //
 //    Hank Childs, Mon Jul 15 11:03:29 PDT 2002
 //    Added support for setting view based on different flavors of spatial
@@ -188,7 +188,7 @@ class VisitInteractor;
 //
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
 //    Added lighting colleague and methods to retrieve lighting coefficients.
-//    Change Set/GetLightList to use LightList instead of avtLightList.  
+//    Change Set/GetLightList to use LightList instead of avtLightList.
 //
 //    Brad Whitlock, Thu Sep 19 14:06:13 PST 2002
 //    I added methods to get/set rendering properties.
@@ -196,38 +196,38 @@ class VisitInteractor;
 //    Brad Whitlock, Mon Sep 9 14:47:36 PST 2002
 //    I made the pick and lineout methods public.
 //
-//    Kathleen Bonnell, Tue Oct  1 16:25:50 PDT 2002  
+//    Kathleen Bonnell, Tue Oct  1 16:25:50 PDT 2002
 //    Changed argument of QueryIsValid to Line*, to convey more information
-//    than just color. 
+//    than just color.
 //
-//    Kathleen Bonnell, Wed Dec  4 17:29:34 PST 2002   
-//    Removed GetAntialiasingFrames, no longer needed. 
-//    
-//    Kathleen Bonnell, Thu Dec 19 13:32:47 PST 2002  
-//    Added 'designator' argument to QueryIsValid. 
-// 
+//    Kathleen Bonnell, Wed Dec  4 17:29:34 PST 2002
+//    Removed GetAntialiasingFrames, no longer needed.
+//
+//    Kathleen Bonnell, Thu Dec 19 13:32:47 PST 2002
+//    Added 'designator' argument to QueryIsValid.
+//
 //    Brad Whitlock, Wed Jan 29 14:32:10 PST 2003
 //    I added a method to create and return a pointer to a toolbar.
 //
 //    Mark C. Miller, Mon Jan 13 22:15:26 PST 2003
 //    Added support for external rendering callback
 //
-//    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003  
-//    Replaced 'designator' argument from QueryIsValid with PickAttributes. 
+//    Kathleen Bonnell, Fri Jan 31 09:36:54 PST 2003
+//    Replaced 'designator' argument from QueryIsValid with PickAttributes.
 //
 //    Brad Whitlock, Wed Mar 12 08:43:59 PDT 2003
 //    I added the IsVisible method.
 //
-//    Kathleen Bonnell, Thu May 15 10:00:02 PDT 2003  
+//    Kathleen Bonnell, Thu May 15 10:00:02 PDT 2003
 //    Replaced GetCurveYScale with more generic GetScaleFactorAndType.
 //
-//    Kathleen Bonnell, Wed May 28 16:25:37 PDT 2003 
+//    Kathleen Bonnell, Wed May 28 16:25:37 PDT 2003
 //    Added method ReAddColleaguesToRenderWindow.
 //
-//    Kathleen Bonnell,  Fri Jun  6 15:51:07 PDT 2003 
-//    Added FullFrameOn/Off and GetFullFrameMode methods. 
+//    Kathleen Bonnell,  Fri Jun  6 15:51:07 PDT 2003
+//    Added FullFrameOn/Off and GetFullFrameMode methods.
 //
-//    Kathleen Bonnell,  Fri Jun 27 16:25:01 PDT 2003 
+//    Kathleen Bonnell,  Fri Jun 27 16:25:01 PDT 2003
 //    Removed 'GetQueryType'.
 //
 //    Mark C. Miller, 07Jul03
@@ -265,7 +265,7 @@ class VisitInteractor;
 //
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Added methods to Set/Get scalable activation mode and scalable auto
-//    theshold. Eliminated SetScalableThreshold method 
+//    theshold. Eliminated SetScalableThreshold method
 //
 //    Mark C. Miller Wed Jun  9 17:44:38 PDT 2004
 //    Added GetVisualCues and changes interface to QueryIsValid, UpdateQuery,
@@ -274,11 +274,11 @@ class VisitInteractor;
 //    Mark C. Miller, Mon Jul 26 15:08:39 PDT 2004
 //    Added PostProcessScreenCapture
 //
-//    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004 
+//    Kathleen Bonnell, Wed Aug 18 10:10:35 PDT 2004
 //    Added InteractorAttributes and Set/Get methods.
 //
-//    Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004 
-//    Added FindIntersection, SetPickTypeToNormal, SetPickTypeToIntersection. 
+//    Kathleen Bonnell, Thu Sep  2 13:40:25 PDT 2004
+//    Added FindIntersection, SetPickTypeToNormal, SetPickTypeToIntersection.
 //
 //    Mark C. Miller, Wed Oct  6 17:50:23 PDT 2004
 //    Made GetBounds public and const qualified it
@@ -300,10 +300,10 @@ class VisitInteractor;
 //    Made TransparenciesExist public so we could avoid two-stage rendering
 //    if there was no transparent geometry.
 //
-//    Kathleen Bonnell, Mon Oct 11 16:08:18 PDT 2004 
+//    Kathleen Bonnell, Mon Oct 11 16:08:18 PDT 2004
 //    Added GlyphPick method.
 //
-//    Kathleen Bonnell, Tue Nov  9 10:44:44 PST 2004 
+//    Kathleen Bonnell, Tue Nov  9 10:44:44 PST 2004
 //    Added another GlyphPick method.
 //
 //    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
@@ -317,7 +317,7 @@ class VisitInteractor;
 //    Mark C. Miller, Thu Mar  3 17:38:36 PST 2005
 //    Changed name of GetNumTriangles to GetNumPrimitives
 //
-//    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005 
+//    Kathleen Bonnell, Mon Jun 27 14:54:36 PDT 2005
 //    Added GetMaxPlotZShift.
 //
 //    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
@@ -381,7 +381,7 @@ class VisitInteractor;
 //    Added new tool update mode.
 //
 //    Hank Childs, Sat Mar 13 18:00:59 PST 2010
-//    Add "auto" setting to bounding box mode.  Remove call to 
+//    Add "auto" setting to bounding box mode.  Remove call to
 //    SetBoundingBoxMode, since that is now done through the interactor atts.
 //
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
@@ -436,6 +436,10 @@ class VisitInteractor;
 //
 //    Kathleen Biagas, Thu Aug  2 13:03:41 MST 2018
 //    Removed ResetView, an ancient code path.
+//
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9:
+//    add initialization of nullptr to pointer ivars.
 //
 // ****************************************************************************
 
@@ -565,7 +569,7 @@ public:
     bool                 GetSpinMode() const;
     void                 SetSpinModeSuspended(bool);
     bool                 GetSpinModeSuspended() const;
-    void                 SetViewExtentsType(avtExtentType, 
+    void                 SetViewExtentsType(avtExtentType,
                              const double *const bnds = 0);
 
     void                 SetView2D(const avtView2D &);
@@ -633,7 +637,7 @@ public:
     std::string          RemovePicks(std::vector< std::string >);
     void                 ClearRefLines();
 
-    void                 QueryIsValid(const VisualCueInfo *, 
+    void                 QueryIsValid(const VisualCueInfo *,
                                       const VisualCueInfo *);
     void                 UpdateQuery(const std::string &, const VisualCueInfo *);
     void                 DeleteQuery(const VisualCueInfo *);
@@ -707,7 +711,7 @@ public:
     int                  GetCompactDomainsActivationMode() const;
     void                 SetCompactDomainsAutoThreshold(int val);
     int                  GetCompactDomainsAutoThreshold() const;
-#ifdef VISIT_OSPRAY
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
     void                 SetOsprayRendering(bool enabled);
     bool                 GetOsprayRendering() const;
     void                 SetOspraySPP(int val);
@@ -739,9 +743,9 @@ public:
     avtTransparencyActor* GetTransparencyActor();
     vtkCamera*           GetCamera();
 
-    void                 GlyphPick(const double*, const double*, int&, int&, 
+    void                 GlyphPick(const double*, const double*, int&, int&,
                                    bool&, const bool = false);
-    void                 GlyphPick(const double*, const double*, int&, int&, 
+    void                 GlyphPick(const double*, const double*, int&, int&,
                                    bool&, double &, const bool = false);
 
     virtual void UpdateMouseActions(std::string action,
@@ -760,23 +764,23 @@ protected:
 
     std::vector< VisWinColleague * >   colleagues;
 
-    VisWinBackground                  *windowBackground;
-    VisWinAxes                        *axes;
-    VisWinAxes3D                      *axes3D;
-    VisWinFrame                       *frame;
-    VisWinAxesArray                   *axesArray;
-    VisWinParallelAxes                *parallelAxes;
-    VisWinInteractions                *interactions;
-    VisWinLegends                     *legends;
-    VisWinLighting                    *lighting;
-    VisWinPlots                       *plots;
-    VisWinQuery                       *queries;
-    VisWinRendering                   *rendering;
-    VisWinTools                       *tools;
-    VisWinTriad                       *triad;
-    VisWinUserInfo                    *userInfo;
-    VisWinView                        *view;
-    VisWinAnnotations                 *annotations;
+    VisWinBackground                  *windowBackground {nullptr};
+    VisWinAxes                        *axes {nullptr};
+    VisWinAxes3D                      *axes3D {nullptr};
+    VisWinFrame                       *frame {nullptr};
+    VisWinAxesArray                   *axesArray {nullptr};
+    VisWinParallelAxes                *parallelAxes {nullptr};
+    VisWinInteractions                *interactions {nullptr};
+    VisWinLegends                     *legends {nullptr};
+    VisWinLighting                    *lighting {nullptr};
+    VisWinPlots                       *plots {nullptr};
+    VisWinQuery                       *queries {nullptr};
+    VisWinRendering                   *rendering {nullptr};
+    VisWinTools                       *tools {nullptr};
+    VisWinTriad                       *triad {nullptr};
+    VisWinUserInfo                    *userInfo {nullptr};
+    VisWinView                        *view {nullptr};
+    VisWinAnnotations                 *annotations {nullptr};
 
     AnnotationAttributes               annotationAtts;
     InteractorAttributes               interactorAtts;
@@ -810,21 +814,21 @@ protected:
     bool                               doAxisScaling;
     double                             axisScaling[3];
 
-    VisCallback                       *showMenuCallback;
-    void                              *showMenuCallbackData;
-    VisCallback                       *hideMenuCallback;
-    void                              *hideMenuCallbackData;
+    VisCallback                       *showMenuCallback {nullptr};
+    void                              *showMenuCallbackData {nullptr};
+    VisCallback                       *hideMenuCallback {nullptr};
+    void                              *hideMenuCallbackData {nullptr};
 
-    VisCallback                       *performPickCallback;
-    PICK_POINT_INFO                   *ppInfo;
+    VisCallback                       *performPickCallback {nullptr};
+    PICK_POINT_INFO                   *ppInfo {nullptr};
 
-    VisCallback                       *performLineoutCallback;
-    LINE_OUT_INFO                     *loInfo;
+    VisCallback                       *performLineoutCallback {nullptr};
+    LINE_OUT_INFO                     *loInfo {nullptr};
 
-    VisCallback                       *performViewChangedCallback;
-    void                              *performViewChangedCallbackData;
+    VisCallback                       *performViewChangedCallback {nullptr};
+    void                              *performViewChangedCallbackData {nullptr};
 
-    vtkCallbackCommand                *startRenderCallback;
+    vtkCallbackCommand                *startRenderCallback {nullptr};
 
                          VisWindow(bool);
     void                 Initialize(VisWinRendering *);
@@ -879,7 +883,7 @@ protected:
     void                 UpdateLightPositions();
 
     double               ComputeVectorTextScaleFactor(const double *pos,
-                                                      const double *vp = NULL); 
+                                                      const double *vp = NULL);
 
     static void          ProcessResizeEvent(void *);
     void                 ReAddColleaguesToRenderWindow(void);

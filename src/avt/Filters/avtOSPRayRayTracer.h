@@ -64,6 +64,10 @@ class   vtkMatrix4x4;
 //    Qi Wu, Sun Jul 1 2018
 //    Added support for ospray volume rendering.
 //
+//    Kathleen Biagas, Wed Aug 17, 2022
+//    Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9: add
+//    SetBackgroundMode and SetGradientBackgroundColors from avtRayTracerBase.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtOSPRayRayTracer : public avtRayTracerBase
@@ -73,7 +77,7 @@ public:
     virtual              ~avtOSPRayRayTracer();
 
     virtual const char   *GetType(void)      { return "avtOSPRayRayTracer"; };
-    virtual const char   *GetDescription(void) 
+    virtual const char   *GetDescription(void)
                                              { return "OSPRay Ray tracing"; };
 
     void SetActiveVariable(const char* s)             { activeVariable = s; };
@@ -90,15 +94,22 @@ public:
 
     void SetAoSamples(int v)                               { aoSamples = v; };
     void SetSpp(int v)                                           { spp = v; };
-    
+
     void SetAoDistance(double v)                          { aoDistance = v; };
     void SetSamplingRate(double v)                      { samplingRate = v; };
     void SetMinContribution(double v)                { minContribution = v; };
-    
-    void SetMatProperties(double v[4]) 
+
+    void SetMatProperties(double v[4])
                     { for (int i=0; i<4; i++) materialProperties[i] = v[i]; };
     void SetViewDirection(double v[3])
                          { for (int i=0; i<3; i++) viewDirection[i] = v[i]; };
+
+    // avtRayTracerBase
+    void SetBackgroundMode(int mode) override {};
+    void SetGradientBackgroundColors(const double [3],
+                                     const double [3]) override {};
+
+
 protected:
     virtual void             Execute(void);
 
@@ -118,7 +129,7 @@ protected:
     double                   aoDistance;
     double                   samplingRate;
     double                   minContribution;
-    
+
     double                   materialProperties[4];
     double                   viewDirection[3];
 
