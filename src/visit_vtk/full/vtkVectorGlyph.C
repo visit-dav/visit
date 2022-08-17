@@ -273,7 +273,7 @@ vtkVectorGlyph::RequestData(
 #else
         auto iter = vtk::TakeSmartPointer(spolys->NewIterator());
         const vtkIdType *p = nullptr;
-        for (iter->GotToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
+        for (iter->GoToFirstCell(); !iter->IsDoneWithTraversal(); iter->GoToNextCell())
         {
             iter->GetCurrentCell(n, p);
 #endif
