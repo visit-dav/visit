@@ -47,7 +47,7 @@ static void LogGlxAndXdpyInfo();
 // ****************************************************************************
 // Method: VisItViewer::Initialize
 //
-// Purpose: 
+// Purpose:
 //   Initializes the viewer library, etc.
 //
 // Arguments:
@@ -70,6 +70,9 @@ static void LogGlxAndXdpyInfo();
 //   Alok Hota, Tue Feb 23 19:10:32 PST 2016
 //   Add OSPRay support.
 //
+//   Kathleen Biagas, Wed Aug 17, 2022
+//   Incorporate ARSanderson's OSPRAY 2.8.0 work for VTK 9.
+//
 // ****************************************************************************
 
 void
@@ -84,11 +87,17 @@ VisItViewer::Initialize(int *argc, char ***argv)
         {
             nowin = true;
         }
-#ifdef VISIT_OSPRAY
+#ifdef VISIT_OSPRAY // ospray 1.6.1, vtk 8
         else if (strcmp((*argv)[i], "-ospray") == 0)
         {
             debug5 << "Viewer launching with OSPRay" << endl;
             avtCallback::SetOSPRayMode(true);
+        }
+#elif defined(HAVE_OSPRAY) // ospray 2.8, vtk 9
+        else if (strcmp((*argv)[i], "-ospray") == 0)
+        {
+            debug5 << "Viewer launching with OSPRay" << endl;
+            avtCallback::SetUseOSPRay(true);
         }
 #endif
     }
@@ -108,7 +117,7 @@ VisItViewer::Initialize(int *argc, char ***argv)
 // ****************************************************************************
 // Method: VisItViewer::Finalize
 //
-// Purpose: 
+// Purpose:
 //   Finalizes the viewer library.
 //
 // Note:       No viewer calls should be made after calling this function.
@@ -117,7 +126,7 @@ VisItViewer::Initialize(int *argc, char ***argv)
 // Creation:   Mon Aug 18 16:32:17 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -133,14 +142,14 @@ VisItViewer::Finalize()
 // ****************************************************************************
 // Method: VisItViewer::VisItViewer
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the VisItViewer class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 18 16:32:59 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 VisItViewer::VisItViewer() : visitHome()
@@ -154,21 +163,21 @@ VisItViewer::VisItViewer() : visitHome()
     VisItInit::ComponentRegisterErrorFunction(ViewerErrorCallback, (void*)viewer);
     InitVTK::Initialize();
     InitVTKRendering::Initialize();
-    avtCallback::RegisterWarningCallback(ViewerWarningCallback, 
+    avtCallback::RegisterWarningCallback(ViewerWarningCallback,
                                          (void*)viewer);
 }
 
 // ****************************************************************************
 // Method: VisItViewer::~VisItViewer
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the VisItViewer class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 18 16:33:31 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 VisItViewer::~VisItViewer()
@@ -179,13 +188,13 @@ VisItViewer::~VisItViewer()
 // ****************************************************************************
 // Method: VisItViewer::SetVISITHOMEMethod
 //
-// Purpose: 
+// Purpose:
 //   Set the method used for determining VISITHOME.
 //
 // Arguments:
 //   m : The method to use for determining VISITHOME.
 //
-// Returns:    
+// Returns:
 //
 // Note:       Must be called before ProcessCommandLine.
 //
@@ -193,7 +202,7 @@ VisItViewer::~VisItViewer()
 // Creation:   Tue Aug 19 11:23:29 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -207,21 +216,21 @@ VisItViewer::SetVISITHOMEMethod(VISITHOME_METHOD m)
 // ****************************************************************************
 // Method: VisItViewer::SetVISITHOME
 //
-// Purpose: 
+// Purpose:
 //   Set the path to VISITHOME. Implicitly selects UserDefined method for
 //   for determining VISITHOME.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 19 11:24:19 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 VisItViewer::SetVISITHOME(const std::string &path)
@@ -233,14 +242,14 @@ VisItViewer::SetVISITHOME(const std::string &path)
 // ****************************************************************************
 // Method: VisItViewer::GetVisItHome
 //
-// Purpose: 
+// Purpose:
 //   Return VisItHome based on the method that we've selected.
 //
 // Arguments:
 //
 // Returns:    The value that we'll use for VISITHOME
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 19 11:34:23 PDT 2008
@@ -289,7 +298,7 @@ VisItViewer::GetVisItHome() const
 // ****************************************************************************
 // Method: VisItViewer::ProcessCommandLine
 //
-// Purpose: 
+// Purpose:
 //   Sets various viewer options by examining the command line.
 //
 // Arguments:
@@ -297,7 +306,7 @@ VisItViewer::GetVisItHome() const
 //   argv   : The command line args.
 //   addDir : Whether the application's startup dir should be added.
 //
-// Returns:    
+// Returns:
 //
 // Note:       Calling this method is optional but it is encouraged so you
 //             can pass options to the viewer. In addition, if you are not
@@ -310,10 +319,10 @@ VisItViewer::GetVisItHome() const
 //
 // Modifications:
 //    Jeremy Meredith, Thu Oct 16 19:29:12 EDT 2008
-//    Added a flag for whether or not ProcessCommandLine should force 
+//    Added a flag for whether or not ProcessCommandLine should force
 //    the identical version.  It's necessary for new viewer-apps but
 //    might confuse VisIt-proper's smart versioning.
-//   
+//
 // ****************************************************************************
 
 void
@@ -376,14 +385,14 @@ VisItViewer::ProcessCommandLine(int argc, char **argv, bool addForceVersion)
 // ****************************************************************************
 // Method: VisItViewer::Connect
 //
-// Purpose: 
+// Purpose:
 //   Connects the viewer to the VisIt client that launched it.
 //
 // Arguments:
 //   argc : The number of command line args.
 //   argv : The command line args.
 //
-// Returns:    
+// Returns:
 //
 // Note:       Calling this method is optional unless you want your viewer
 //             application to be driven by a client application.
@@ -392,7 +401,7 @@ VisItViewer::ProcessCommandLine(int argc, char **argv, bool addForceVersion)
 // Creation:   Mon Aug 18 16:34:48 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -404,7 +413,7 @@ VisItViewer::Connect(int *argc, char ***argv)
 // ****************************************************************************
 // Method: VisItViewer::SetWindowCreationCallback
 //
-// Purpose: 
+// Purpose:
 //   This method installs a window creation function so that you have more
 //   control over how your vtkQtRenderWindow objects are created.
 //
@@ -412,7 +421,7 @@ VisItViewer::Connect(int *argc, char ***argv)
 //   wcc : The window creation callback function.
 //   wccdata : Data to be passed to the window creation callback function.
 //
-// Returns:    
+// Returns:
 //
 // Note:       This method must be called before Setup() to have any effect
 //             on the first vis window.
@@ -441,12 +450,12 @@ VisItViewer::SetWindowCreationCallback(vtkQtRenderWindow* (*wcc)(void *),
 // ****************************************************************************
 // Method: VisItViewer::Setup
 //
-// Purpose: 
+// Purpose:
 //   Sets up most of the viewer objects.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
 // Note:       This method should be called after Connect, ProcessCommandLine
 //             but before any
@@ -455,7 +464,7 @@ VisItViewer::SetWindowCreationCallback(vtkQtRenderWindow* (*wcc)(void *),
 // Creation:   Mon Aug 18 16:36:04 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -481,7 +490,7 @@ VisItViewer::Setup()
 // ****************************************************************************
 // Method: VisItViewer::RemoveCrashRecoveryFile
 //
-// Purpose: 
+// Purpose:
 //   Removes the crash recovery file.
 //
 // Note:       This method should be called on exit.
@@ -490,7 +499,7 @@ VisItViewer::Setup()
 // Creation:   Mon Aug 18 16:38:34 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -502,18 +511,18 @@ VisItViewer::RemoveCrashRecoveryFile() const
 // ****************************************************************************
 // Method: VisItViewer::GetNowinMode
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the viewer has been told to run -nowin.
 //
 // Returns:    True if the viewer is running -nowin, false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 18 16:38:59 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -525,20 +534,20 @@ VisItViewer::GetNowinMode() const
 // ****************************************************************************
 // Method: VisItViewer::Methods
 //
-// Purpose: 
+// Purpose:
 //   Returns the methods object that lets you control the viewer.
 //
 // Arguments:
 //
 // Returns:    The methods object for controlling the viewer.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 18 16:39:33 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerMethods *
@@ -556,20 +565,20 @@ VisItViewer::DelayedMethods() const
 // ****************************************************************************
 // Method: VisItViewer::State
 //
-// Purpose: 
+// Purpose:
 //   Returns the viewer state so you can access various state objects.
 //
 // Arguments:
 //
 // Returns:    The viewer state.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 18 16:40:03 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerState *
@@ -587,7 +596,7 @@ VisItViewer::DelayedState() const
 // ****************************************************************************
 // Method: VisItViewer::Properties
 //
-// Purpose: 
+// Purpose:
 //   Return the viewer properties.
 //
 // Returns:    The viewer properties.
@@ -596,7 +605,7 @@ VisItViewer::DelayedState() const
 // Creation:   Tue Apr 14 14:25:26 PDT 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerProperties *
@@ -608,7 +617,7 @@ VisItViewer::Properties() const
 // ****************************************************************************
 // Method: VisItViewer::GetMetaData
 //
-// Purpose: 
+// Purpose:
 //   Returns a file's metadata.
 //
 // Arguments:
@@ -617,13 +626,13 @@ VisItViewer::Properties() const
 //
 // Returns:    The metadata for the file.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 19 16:37:55 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -642,21 +651,21 @@ VisItViewer::GetMetaData(const std::string &hostDB, int ts)
 // ****************************************************************************
 // Method: VisItViewer::Error
 //
-// Purpose: 
+// Purpose:
 //   Lets you issue an error message to VisIt clients.
 //
 // Arguments:
 //   msg : The message to issue.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 18 16:40:26 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -668,21 +677,21 @@ VisItViewer::Error(const QString &msg)
 // ****************************************************************************
 // Method: VisItViewer::Warning
 //
-// Purpose: 
+// Purpose:
 //   Lets you issue a warning message to VisIt clients.
 //
 // Arguments:
 //   msg : The message to issue.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Aug 18 16:40:26 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -694,20 +703,20 @@ VisItViewer::Warning(const QString &msg)
 // ****************************************************************************
 // Method: VisItViewer::GetNumPlotPlugins
 //
-// Purpose: 
+// Purpose:
 //   Return the number of plot plugins.
 //
 // Arguments:
 //
 // Returns:    The number of plot plugins.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 19 15:42:39 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -719,7 +728,7 @@ VisItViewer::GetNumPlotPlugins() const
 // ****************************************************************************
 // Method: VisItViewer::GetPlotName
 //
-// Purpose: 
+// Purpose:
 //   Returns the name of the i'th plot plugin.
 //
 // Arguments:
@@ -727,19 +736,19 @@ VisItViewer::GetNumPlotPlugins() const
 //
 // Returns:    The name of the index'th plot plugin.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 19 15:42:59 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
 VisItViewer::GetPlotName(int index) const
 {
-    std::string name; 
+    std::string name;
     if(index >= 0 && index < GetNumPlotPlugins())
     {
         std::string id = viewer->GetPlotPluginManager()->GetEnabledID(index);
@@ -752,7 +761,7 @@ VisItViewer::GetPlotName(int index) const
 // ****************************************************************************
 // Method: VisItViewer::GetPlotIndex
 //
-// Purpose: 
+// Purpose:
 //   Returns the index of the plot having the specified name.
 //
 // Arguments:
@@ -760,13 +769,13 @@ VisItViewer::GetPlotName(int index) const
 //
 // Returns:    The index of the plot or -1 on failure.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 19 15:43:41 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -783,20 +792,20 @@ VisItViewer::GetPlotIndex(const std::string &plotName) const
 // ****************************************************************************
 // Method: VisItViewer::GetNumOperatorPlugins
 //
-// Purpose: 
+// Purpose:
 //   Get the number of operator plugins.
 //
 // Arguments:
-// 
+//
 // Returns:    The number of operator plugins.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 19 15:44:25 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -808,7 +817,7 @@ VisItViewer::GetNumOperatorPlugins() const
 // ****************************************************************************
 // Method: VisItViewer::GetOperatorName
 //
-// Purpose: 
+// Purpose:
 //   Get the name of the i'th operator.
 //
 // Arguments:
@@ -816,19 +825,19 @@ VisItViewer::GetNumOperatorPlugins() const
 //
 // Returns:    The name of the operator.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 19 15:45:04 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
 VisItViewer::GetOperatorName(int index) const
 {
-    std::string name; 
+    std::string name;
     if(index >= 0 && index < GetNumOperatorPlugins())
     {
         std::string id = viewer->GetOperatorPluginManager()->GetEnabledID(index);
@@ -841,7 +850,7 @@ VisItViewer::GetOperatorName(int index) const
 // ****************************************************************************
 // Method: VisItViewer::GetOperatorIndex
 //
-// Purpose: 
+// Purpose:
 //   Gets the index of the operator, given its name.
 //
 // Arguments:
@@ -849,13 +858,13 @@ VisItViewer::GetOperatorName(int index) const
 //
 // Returns:    The index of the operator or -1 on failure.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Aug 19 15:45:52 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -872,14 +881,14 @@ VisItViewer::GetOperatorIndex(const std::string &operatorName) const
 // ****************************************************************************
 // Method: VisItViewer::GetVisItCommand
 //
-// Purpose: 
+// Purpose:
 //   Returns the VisIt command used by VISITHOME.
 //
 // Arguments:
 //
 // Returns:    The VisIt command used by VISITHOME.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 21 15:20:06 PDT 2008
@@ -887,7 +896,7 @@ VisItViewer::GetOperatorIndex(const std::string &operatorName) const
 // Modifications:
 //   Kathleen Bonnell, Fri Oct 8 08:57:19 PDT 2010
 //   Remove extra leading underscore from _WIN32.
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -990,7 +999,7 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
 }
 #endif
 // ****************************************************************************
-//  Function: Log output from xdpyinfo and glxinfo commands w/truncation 
+//  Function: Log output from xdpyinfo and glxinfo commands w/truncation
 //
 //  Programmer: Mark C. Miller
 //  Created:    April 9, 2008
@@ -1002,14 +1011,14 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
 //    Sean Ahern, Thu Apr 24 18:17:33 EDT 2008
 //    Avoided this if we're on the Mac.
 //
-//    Kathleen Bonnell, Wed Apr 30 10:59:18 PDT 2008 
-//    Windows compiler doesn't like 'and', use '&&' instead. 
+//    Kathleen Bonnell, Wed Apr 30 10:59:18 PDT 2008
+//    Windows compiler doesn't like 'and', use '&&' instead.
 //
 //    Mark C. Miller, Wed Apr 22 13:48:13 PDT 2009
 //    Changed interface to DebugStream to obtain current debug level.
 //
 //    Mark C. Miller, Mon Aug 26 16:57:27 PDT 2013
-//    Adjusted strings to LogCommand to ensure we get stderr output too. 
+//    Adjusted strings to LogCommand to ensure we get stderr output too.
 //
 //    Mark C. Miller, Wed Aug 28 09:53:15 PDT 2013
 //    Don't attempt to log this information in nowin mode.

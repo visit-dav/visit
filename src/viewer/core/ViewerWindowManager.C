@@ -124,8 +124,8 @@ AnnotationObjectList *ViewerWindowManager::defaultAnnotationObjectList = 0;
 //    Eric Brugger, Tue Aug 21 10:17:24 PDT 2001
 //    I added the registration of a callback for the view changing.
 //
-//    Kathleen Bonnell, Fri Sep 28 17:12:11 PDT 2001 
-//    Initialize shiftX, shiftY, preshiftX, preshiftY to eliminate UMR. 
+//    Kathleen Bonnell, Fri Sep 28 17:12:11 PDT 2001
+//    Initialize shiftX, shiftY, preshiftX, preshiftY to eliminate UMR.
 //
 //    Brad Whitlock, Tue Oct 9 17:23:16 PST 2001
 //    Added code to set the tool callback.
@@ -137,8 +137,8 @@ AnnotationObjectList *ViewerWindowManager::defaultAnnotationObjectList = 0;
 //    I added a data member to keep track of whether the window has been
 //    referenced before.
 //
-//    Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002 
-//    Added data member to keep track of the designated lineout window. 
+//    Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002
+//    Added data member to keep track of the designated lineout window.
 //
 //    Hank Childs, Fri May 24 11:20:34 PDT 2002
 //    Replaced image writer with more general file writer.
@@ -152,8 +152,8 @@ AnnotationObjectList *ViewerWindowManager::defaultAnnotationObjectList = 0;
 //    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
 //    I added undoing of curve views.
 //
-//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
-//    Added timeQueryWindow. 
+//    Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
+//    Added timeQueryWindow.
 //
 //    Eric Brugger, Thu Jun 30 11:43:22 PDT 2005
 //    Added a 2 x 3 layout and removed the 4 x 4 layout.
@@ -461,7 +461,7 @@ ViewerWindowManager::SetGeometry(const char *windowGeometry)
 //    I added animation attributes.
 //
 //    Kathleen Bonnell, Tue Nov 27 16:03:00 PST 2001
-//    Added pick attributes. 
+//    Added pick attributes.
 //
 //    Brad Whitlock, Mon Feb 4 10:27:29 PDT 2002
 //    Moved the update code into UpdateAllAtts.
@@ -550,7 +550,7 @@ ViewerWindowManager::AddWindow(bool copyAtts)
         }
         else
         {
-            // We always want to copy the active sources -- but not 
+            // We always want to copy the active sources -- but not
             // the plots themselves.
             dest->GetPlotList()->CopyFrom(src->GetPlotList(), false);
         }
@@ -584,7 +584,7 @@ ViewerWindowManager::AddWindow(bool copyAtts)
 // ****************************************************************************
 // Method: ViewerWindowManager::CloneWindow
 //
-// Purpose: 
+// Purpose:
 //   Creates a new window and copies the current window's attributes to it
 //   before making it active.
 //
@@ -592,7 +592,7 @@ ViewerWindowManager::AddWindow(bool copyAtts)
 // Creation:   Tue Oct 15 16:43:45 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -630,7 +630,7 @@ ViewerWindowManager::ClearAllWindows()
 // ****************************************************************************
 // Method: ViewerWindowManager::ClearWindow
 //
-// Purpose: 
+// Purpose:
 //   Clears the window with the specified index.
 //
 // Arguments:
@@ -642,7 +642,7 @@ ViewerWindowManager::ClearAllWindows()
 // Creation:   Tue Nov 7 09:50:31 PDT 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -659,7 +659,7 @@ ViewerWindowManager::ClearWindow(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::CopyAnnotationsToWindow
 //
-// Purpose: 
+// Purpose:
 //   Copies the annotation attributes from one window to another window.
 //
 // Arguments:
@@ -702,7 +702,7 @@ ViewerWindowManager::CopyAnnotationsToWindow(int from, int to)
 // ****************************************************************************
 // Method: ViewerWindowManager::CopyLightingToWindow
 //
-// Purpose: 
+// Purpose:
 //   Copies the lighting attributes from one window to another window.
 //
 // Arguments:
@@ -713,7 +713,7 @@ ViewerWindowManager::CopyAnnotationsToWindow(int from, int to)
 // Creation:   Thu Jun 27 16:47:26 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -736,7 +736,7 @@ ViewerWindowManager::CopyLightingToWindow(int from, int to)
 // ****************************************************************************
 // Method: ViewerWindowManager::CopyViewToWindow
 //
-// Purpose: 
+// Purpose:
 //   Copies the view attributes from one window to another window.
 //
 // Arguments:
@@ -747,7 +747,7 @@ ViewerWindowManager::CopyLightingToWindow(int from, int to)
 // Creation:   Thu Jun 27 16:47:26 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -770,7 +770,7 @@ ViewerWindowManager::CopyViewToWindow(int from, int to)
 // ****************************************************************************
 // Method: ViewerWindowManager::CopyPlotListToWindow
 //
-// Purpose: 
+// Purpose:
 //   Copies the plots from one window to another window.
 //
 // Arguments:
@@ -841,7 +841,7 @@ ViewerWindowManager::DeleteWindow()
 // ****************************************************************************
 //  Method: ViewerWindowManager::DeleteWindow
 //
-//  Purpose: 
+//  Purpose:
 //    Deletes the specified viewer window.
 //
 //  Arguments:
@@ -858,22 +858,22 @@ ViewerWindowManager::DeleteWindow()
 //    Added code to update the client's light list.
 //
 //    Kathleen Bonnell, Tue Nov 27 16:03:00 PST 2001
-//    Added pick attributes. 
+//    Added pick attributes.
 //
 //    Brad Whitlock, Mon Feb 4 10:26:48 PDT 2002
 //    Moved the update code into UpdateAllAtts.
 //
-//    Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002 
-//    Added call to ResetLineoutDesignation. 
-//    
+//    Kathleen Bonnell, Fri May 10 16:27:40 PDT 2002
+//    Added call to ResetLineoutDesignation.
+//
 //    Hank Childs, Wed Jul 10 21:46:55 PDT 2002
 //    Unlock a window before deleting it.
 //
-//    Kathleen Bonnell, Wed Jul 31 16:43:43 PDT 2002  
-//    Notify ViewerQueryManager that a window is being deleted. 
+//    Kathleen Bonnell, Wed Jul 31 16:43:43 PDT 2002
+//    Notify ViewerQueryManager that a window is being deleted.
 //
-//    Kathleen Bonnell, Wed Apr 14 16:19:18 PDT 2004 
-//    Added call to ResetTimeQueryDesignation. 
+//    Kathleen Bonnell, Wed Apr 14 16:19:18 PDT 2004
+//    Added call to ResetTimeQueryDesignation.
 //
 //    Brad Whitlock, Wed Apr 30 09:44:37 PDT 2008
 //    Added tr().
@@ -909,7 +909,7 @@ ViewerWindowManager::DeleteWindow(ViewerWindow *win)
         }
     }
 
-    // 
+    //
     // If we could not find a window index for the specified window, return.
     //
     if(windowIndex >= maxWindows)
@@ -974,14 +974,14 @@ ViewerWindowManager::DeleteWindow(ViewerWindow *win)
 // ****************************************************************************
 // Method: ViewerWindowManager::DisableRedraw
 //
-// Purpose: 
+// Purpose:
 //   Disallows redraws in the specified window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Sep 19 15:14:41 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -991,13 +991,13 @@ ViewerWindowManager::DisableRedraw(int windowIndex)
     if(windows[index] != 0)
     {
         windows[index]->DisableUpdates();
-    }    
+    }
 }
 
 // ****************************************************************************
 // Method: ViewerWindowManager::FileInUse
 //
-// Purpose: 
+// Purpose:
 //   Determines if a file is in use in plots across all windows.
 //
 // Arguments:
@@ -1023,7 +1023,7 @@ ViewerWindowManager::FileInUse(const std::string &host,
         {
             if(windows[i]->GetPlotList()->FileInUse(host, dbName))
                 return true;
-        } 
+        }
     }
 
     return false;
@@ -1032,7 +1032,7 @@ ViewerWindowManager::FileInUse(const std::string &host,
 // ****************************************************************************
 // Method: ViewerWindowManager::IconifyAllWindows
 //
-// Purpose: 
+// Purpose:
 //   Iconifies all viewer windows.
 //
 // Programmer: Brad Whitlock
@@ -1071,7 +1071,7 @@ ViewerWindowManager::IconifyAllWindows()
 // ****************************************************************************
 // Method: ViewerWindowManager::DeIconifyAllWindows
 //
-// Purpose: 
+// Purpose:
 //   De-iconifies all viewer windows.
 //
 // Programmer: Brad Whitlock
@@ -1110,7 +1110,7 @@ ViewerWindowManager::DeIconifyAllWindows()
 // ****************************************************************************
 // Method: ViewerWindowManager::ShowAllWindows
 //
-// Purpose: 
+// Purpose:
 //   Shows all viewer windows.
 //
 // Programmer: Sean Ahern
@@ -1151,13 +1151,13 @@ ViewerWindowManager::ShowAllWindows()
         }
     }
 
-    
+
 }
 
 // ****************************************************************************
 // Method: ViewerWindowManager::HideAllWindows
 //
-// Purpose: 
+// Purpose:
 //   Hides all viewer windows.
 //
 // Programmer: Sean Ahern
@@ -1225,14 +1225,14 @@ ViewerWindowManager::InvertBackgroundColor(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::RedrawWindow
 //
-// Purpose: 
+// Purpose:
 //   Redraws the specified window.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Sep 19 15:14:41 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1242,13 +1242,13 @@ ViewerWindowManager::RedrawWindow(int windowIndex)
     if(windows[index] != 0)
     {
         windows[index]->RedrawWindow();
-    }    
+    }
 }
 
 // ****************************************************************************
 // Method: ViewerWindowManager::MoveWindow
 //
-// Purpose: 
+// Purpose:
 //   Moves the specified window.
 //
 // Programmer: Brad Whitlock
@@ -1282,7 +1282,7 @@ ViewerWindowManager::MoveWindow(int windowIndex, int x, int y)
 // ****************************************************************************
 // Method: ViewerWindowManager::MoveAndResizeWindow
 //
-// Purpose: 
+// Purpose:
 //   Moves and resizes the specified window.
 //
 // Programmer: Brad Whitlock
@@ -1291,7 +1291,7 @@ ViewerWindowManager::MoveWindow(int windowIndex, int x, int y)
 // Modifications:
 //   Brad Whitlock, Wed Apr 30 09:45:50 PDT 2008
 //   Support for internationalization.
-//   
+//
 // ****************************************************************************
 
 void
@@ -1323,7 +1323,7 @@ ViewerWindowManager::MoveAndResizeWindow(int windowIndex, int x, int y,
 // ****************************************************************************
 // Method: ViewerWindowManager::ResizeWindow
 //
-// Purpose: 
+// Purpose:
 //   Resizes the specified window.
 //
 // Programmer: Brad Whitlock
@@ -1332,7 +1332,7 @@ ViewerWindowManager::MoveAndResizeWindow(int windowIndex, int x, int y,
 // Modifications:
 //   Brad Whitlock, Wed Apr 30 09:45:50 PDT 2008
 //   Support for internationalization.
-//   
+//
 // ****************************************************************************
 
 void
@@ -1361,7 +1361,7 @@ ViewerWindowManager::ResizeWindow(int windowIndex, int w, int h)
 // ****************************************************************************
 //  Method: ViewerWindowManager::ResetView
 //
-//  Purpose: 
+//  Purpose:
 //    This method resets the view for the specified window.
 //
 //  Arguments:
@@ -1402,7 +1402,7 @@ ViewerWindowManager::ResetView(int windowIndex)
 // ****************************************************************************
 //  Method: ViewerWindowManager::RecenterView
 //
-//  Purpose: 
+//  Purpose:
 //    This method recenters the view for the specified window.
 //
 //  Arguments:
@@ -1443,7 +1443,7 @@ ViewerWindowManager::RecenterView(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::SetCenterOfRotation
 //
-// Purpose: 
+// Purpose:
 //   Sets the center of rotation using a world space coordinate.
 //
 // Arguments:
@@ -1454,7 +1454,7 @@ ViewerWindowManager::RecenterView(int windowIndex)
 // Creation:   Wed Jan 7 09:59:50 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1478,7 +1478,7 @@ ViewerWindowManager::SetCenterOfRotation(int windowIndex,
 // ****************************************************************************
 // Method: ViewerWindowManager::ChooseCenterOfRotation
 //
-// Purpose: 
+// Purpose:
 //   Chooses the center of rotation using the surface that lies at point
 //   sx,sy in the vis window's screen.
 //
@@ -1489,7 +1489,7 @@ ViewerWindowManager::SetCenterOfRotation(int windowIndex,
 // Creation:   Wed Jan 7 09:58:54 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1513,7 +1513,7 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 // ****************************************************************************
 //  Method: ViewerWindowManager::SaveWindow
 //
-//  Purpose: 
+//  Purpose:
 //    Saves the screen captured contents of the window with the specified index
 //
 //  Arguments:
@@ -1545,7 +1545,7 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Hank Childs, Thu May 23 18:47:33 PDT 2002
 //    Added support for writing datasets to files, as well as images.
 //
-//    Hank Childs, Mon May 27 11:56:02 PDT 2002 
+//    Hank Childs, Mon May 27 11:56:02 PDT 2002
 //    Added binary argument to writing a file.  Also add exception handling.
 //
 //    Jeremy Meredith, Thu Jul 25 11:52:24 PDT 2002
@@ -1624,7 +1624,7 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    the size of the window.
 //
 //    Kathleen Biagas, Tue Sep 18 13:32:27 MST 2012
-//    On Windows, don't append fileBase and filename if filename already 
+//    On Windows, don't append fileBase and filename if filename already
 //    contains a path.  Occurs with test-suite saves.
 //
 //    Brad Whitlock, Fri Sep 19 10:41:47 PDT 2014
@@ -1651,7 +1651,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 {
     if(windowIndex < -1 || windowIndex >= maxWindows)
     {
-        debug1 << "Invalid window index " << windowIndex << " of " 
+        debug1 << "Invalid window index " << windowIndex << " of "
                << maxWindows << " was specified." << endl;
         return;
     }
@@ -1684,7 +1684,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
         if(fileBase.size() > 0)
         {
             std::string f(GetViewerState()->GetSaveWindowAttributes()->GetFileName());
-            if(f.size() == 0) 
+            if(f.size() == 0)
             {
                 f = "visit";
                 GetViewerMessaging()->Warning(
@@ -1775,7 +1775,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             {
                 strcpy(stem, fname);
             }
-            
+
             //
             // Construct the string depending on whether or not there is a dir.
             //
@@ -1856,7 +1856,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                 w = GetViewerState()->GetSaveWindowAttributes()->GetWidth();
                 h = GetViewerState()->GetSaveWindowAttributes()->GetHeight();
 
-                if (GetViewerState()->GetSaveWindowAttributes()->GetResConstraint() == 
+                if (GetViewerState()->GetSaveWindowAttributes()->GetResConstraint() ==
                     SaveWindowAttributes::ScreenProportions)
                 {
                     int winx, winy;
@@ -1871,7 +1871,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                 }
             }
 
-            // if w or h are greated than the max window size, 
+            // if w or h are greated than the max window size,
             // reduce them proportionally
             if (w >= h && w > VISIT_RENDERING_SIZE_LIMIT)
             {
@@ -1983,7 +1983,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     {
         message = TR("Saving window %1...").
                   arg((windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1));
-        GetViewerMessaging()->Status(message, 6000000);    
+        GetViewerMessaging()->Status(message, 6000000);
         GetViewerMessaging()->Message(message);
     }
 
@@ -2004,12 +2004,12 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                         GetViewerState()->GetSaveWindowAttributes()->GetProgressive(),
                         GetViewerState()->GetSaveWindowAttributes()->GetCompression(),
                         GetViewerState()->GetSaveWindowAttributes()->GetBinary());
-    
+
                     if (*dob2 != NULL)
                     {
                         // Tell the writer to save the window on the viewer.
                         std::vector<std::string> rFileNames;
-                        rFileNames = fileWriter->Write(filename2, 
+                        rFileNames = fileWriter->Write(filename2,
                             dob2,GetViewerState()->GetSaveWindowAttributes()->GetQuality(),
                             GetViewerState()->GetSaveWindowAttributes()->GetProgressive(),
                             GetViewerState()->GetSaveWindowAttributes()->GetCompression(),
@@ -2085,7 +2085,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 // ****************************************************************************
 //  Method: ViewerWindowManager::CreateSingleImage
 //
-//  Purpose: 
+//  Purpose:
 //    Returns an avtImage representation of the VisWindow. The image may have
 //    resulted from multiple renders.
 //
@@ -2172,7 +2172,7 @@ ViewerWindowManager::CreateSingleImage(int pixelData, int windowIndex,
         debug5 << "Request Luminance image. doZBuffer=" << doZBuffer << endl;
 
         avtImage_p luminance = CreateSingleImageType(
-            LuminanceImage, doZBuffer, 
+            LuminanceImage, doZBuffer,
             windowIndex, width, height, doScreenCapture, leftEye);
 
 #ifdef CREATE_SINGLE_IMAGE_DEBUG
@@ -2298,7 +2298,7 @@ ViewerWindowManager::CreateSingleImage(int pixelData, int windowIndex,
 // ****************************************************************************
 //  Method: ViewerWindowManager::CreateSingleImageType
 //
-//  Purpose: 
+//  Purpose:
 //    Returns an avtImage representation of the VisWindow.
 //
 //  Arguments:
@@ -2351,7 +2351,7 @@ ViewerWindowManager::CreateSingleImage(int pixelData, int windowIndex,
 // ****************************************************************************
 
 avtImage_p
-ViewerWindowManager::CreateSingleImageType(avtImageType imgT, bool doZBuffer, 
+ViewerWindowManager::CreateSingleImageType(avtImageType imgT, bool doZBuffer,
     int windowIndex,  int width, int height, bool screenCapture, bool leftEye)
 {
     int        index = (windowIndex == -1) ? activeWindow : windowIndex;
@@ -2418,7 +2418,7 @@ ViewerWindowManager::CreateSingleImageType(avtImageType imgT, bool doZBuffer,
 // ****************************************************************************
 //  Method: ViewerWindowManager::CreateTiledImage
 //
-//  Purpose: 
+//  Purpose:
 //    This method returns a tiled image of all of the open ViewerWindows.
 //
 //  Arguments:
@@ -2445,7 +2445,7 @@ avtImage_p
 ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye, bool doAlpha)
 {
     bool doZBuffer = false;
-    avtImageType imgT = doAlpha ? ColorRGBAImage : ColorRGBImage; 
+    avtImageType imgT = doAlpha ? ColorRGBAImage : ColorRGBImage;
 
     //
     // Determine how many windows actually have plots to save in the
@@ -2472,7 +2472,7 @@ ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye, bool 
         }
     }
 
-    // 
+    //
     // Return early if none of the windows have plots.
     //
     if(windowsWithPlots == 0)
@@ -2533,7 +2533,7 @@ ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye, bool 
 // ****************************************************************************
 //  Method: ViewerWindowManager::AdvancedMultiWindowSave
 //
-//  Purpose: 
+//  Purpose:
 //    This method does an advanced multi-window save.
 //
 //  Arguments:
@@ -2549,7 +2549,7 @@ ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye, bool 
 // ****************************************************************************
 
 avtImage_p
-ViewerWindowManager::AdvancedMultiWindowSave(int width, int height, 
+ViewerWindowManager::AdvancedMultiWindowSave(int width, int height,
                                              bool leftEye)
 {
     //
@@ -2577,7 +2577,7 @@ ViewerWindowManager::AdvancedMultiWindowSave(int width, int height,
         }
     }
 
-    // 
+    //
     // Return early if none of the windows have plots.
     //
     if(windowsWithPlots == 0)
@@ -2608,7 +2608,7 @@ ViewerWindowManager::AdvancedMultiWindowSave(int width, int height,
             bool doZBuffer = false;
             avtImageType imgT = ColorRGBImage;
             int  winId = sortedWindows[index]->GetWindowId();
-            SaveSubWindowsAttributes &atts = 
+            SaveSubWindowsAttributes &atts =
                                       GetViewerState()->GetSaveWindowAttributes()->GetSubWindowAtts();
             SaveSubWindowAttributes winAtts = atts.GetAttsForWindow(winId+1);
             if (winAtts.GetOmitWindow())
@@ -2665,7 +2665,7 @@ ViewerWindowManager::GetDataset(int windowIndex,
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetInteractionMode
 //
-//  Purpose: 
+//  Purpose:
 //    This method sets the interaction mode for the specified window.
 //
 //  Arguments:
@@ -2701,7 +2701,7 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetToolUpdateMode
 //
-//  Purpose: 
+//  Purpose:
 //    This method sets the tool updte mode for the specified window.
 //
 //  Arguments:
@@ -2734,7 +2734,7 @@ ViewerWindowManager::SetToolUpdateMode(TOOLUPDATE_MODE m, int windowIndex)
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetViewCurveFromClient
 //
-//  Purpose: 
+//  Purpose:
 //    Sets the view for the active window using the client view attributes.
 //
 //  Programmer: Eric Brugger
@@ -2744,7 +2744,7 @@ ViewerWindowManager::SetToolUpdateMode(TOOLUPDATE_MODE m, int windowIndex)
 //    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007
 //    Added support for log scaling.
 //
-//    Kathleen Bonnell, Wed May  9 17:40:35 PDT 2007 
+//    Kathleen Bonnell, Wed May  9 17:40:35 PDT 2007
 //    Added error message for non-positive values when log scaling.  Only
 //    attempt to take the log of the domain/range coords if there are plots.
 //
@@ -2781,7 +2781,7 @@ ViewerWindowManager::SetViewCurveFromClient()
     bool updateScaleMode = ((viewCurve.domainScale != newDomainScale) ||
                             (viewCurve.rangeScale != newRangeScale));
 
-    if (windows[activeWindow]->GetWindowMode() == WINMODE_CURVE) 
+    if (windows[activeWindow]->GetWindowMode() == WINMODE_CURVE)
     {
         ViewerPlotList *vpl = windows[activeWindow]->GetPlotList();
         if ((newDomainScale == LOG || newRangeScale == LOG) &&
@@ -2793,10 +2793,10 @@ ViewerWindowManager::SetViewCurveFromClient()
                    "support log-scaling.  It will not be done."));
             return;
         }
-        if (updateScaleMode && newDomainScale == LOG && 
+        if (updateScaleMode && newDomainScale == LOG &&
             newDomainScale != viewCurve.domainScale)
         {
-            if (domain[0] <= 0 || domain[1] <= 0) 
+            if (domain[0] <= 0 || domain[1] <= 0)
             {
                 double lims[4];
                 vpl->GetPlotLimits(2, lims);
@@ -2819,10 +2819,10 @@ ViewerWindowManager::SetViewCurveFromClient()
                 }
             }
         }
-        if (updateScaleMode && newRangeScale == LOG && 
+        if (updateScaleMode && newRangeScale == LOG &&
             newRangeScale != viewCurve.rangeScale)
         {
-            if (range[0] <= 0 || range[1] <= 0) 
+            if (range[0] <= 0 || range[1] <= 0)
             {
                 double lims[4];
                 vpl->GetPlotLimits(2, lims);
@@ -2906,7 +2906,7 @@ ViewerWindowManager::SetViewCurveFromClient()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetView2DFromClient
 //
-//  Purpose: 
+//  Purpose:
 //    Sets the view for the active window using the client view attributes.
 //
 //  Programmer: Brad Whitlock
@@ -2915,7 +2915,7 @@ ViewerWindowManager::SetViewCurveFromClient()
 //  Modifications:
 //    Eric Brugger, Mon Aug 20 12:05:46 PDT 2001
 //    Modify the routine to use an avtView2D to set the 2D view.
-//   
+//
 //    Hank Childs, Fri Oct 18 15:00:33 PDT 2002
 //    Call UpdateViewAtts so that locked windows also update.
 //
@@ -2924,7 +2924,7 @@ ViewerWindowManager::SetViewCurveFromClient()
 //
 //    Kathleen Bonnell, Tue Jul 15 08:30:52 PDT 2003
 //    Retrieve active window's 2d view, instead of instantiating a new one,
-//    so that scale factor for full-frame mode is not lost during update. 
+//    so that scale factor for full-frame mode is not lost during update.
 //
 //    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
 //    I changed the call to UpdateViewAtts.
@@ -2941,7 +2941,7 @@ ViewerWindowManager::SetViewCurveFromClient()
 //    Mark C. Miller, Thu Apr  6 01:45:57 PDT 2006
 //    Moved code to check axes' units to ViewerWindow.
 //
-//    Kathleen Bonnell, Wed May  9 17:40:35 PDT 2007 
+//    Kathleen Bonnell, Wed May  9 17:40:35 PDT 2007
 //    Added support for log scaling.
 //
 //    Jeremy Meredith, Mon Feb  4 13:32:04 EST 2008
@@ -2980,22 +2980,22 @@ ViewerWindowManager::SetView2DFromClient()
         view2d.window[i] = GetViewerState()->GetView2DAttributes()->GetWindowCoords()[i];
     }
 
-    if (windows[activeWindow]->GetWindowMode() == WINMODE_2D) 
+    if (windows[activeWindow]->GetWindowMode() == WINMODE_2D)
     {
         ViewerPlotList *vpl = windows[activeWindow]->GetPlotList();
-        if ((newXScale == LOG || newYScale == LOG) && 
+        if ((newXScale == LOG || newYScale == LOG) &&
             (vpl->GetNumPlots() > 0 && !vpl->PermitsLogViewScaling(WINMODE_2D)))
         {
             UpdateViewAtts(activeWindow, false, true, false, false);
             GetViewerMessaging()->Error(
-                 TR("There are plots in the window that do not\n" 
+                 TR("There are plots in the window that do not\n"
                     "support log-scaling.  It will not be done."));
             return;
         }
         if (updateScaleMode && newXScale == LOG &&
             newXScale != view2d.xScale)
         {
-            if (view2d.window[0] <= 0 || view2d.window[1] <= 0) 
+            if (view2d.window[0] <= 0 || view2d.window[1] <= 0)
             {
                 double lims[4];
                 vpl->GetPlotLimits(2, lims);
@@ -3016,13 +3016,13 @@ ViewerWindowManager::SetView2DFromClient()
                     view2d.window[0] = lims[0];
                     view2d.window[1] = lims[1];
                 }
- 
+
             }
         }
         if (updateScaleMode && newYScale == LOG &&
             newYScale != view2d.yScale)
         {
-            if (view2d.window[2] <= 0 || view2d.window[3] <= 0) 
+            if (view2d.window[2] <= 0 || view2d.window[3] <= 0)
             {
                 double lims[4];
                 vpl->GetPlotLimits(2, lims);
@@ -3097,7 +3097,7 @@ ViewerWindowManager::SetView2DFromClient()
         bool newFullFrameMode = GetViewerState()->GetView2DAttributes()->GetUseFullFrame(extents);
         if (!windows[activeWindow]->DoAllPlotsAxesHaveSameUnits())
             newFullFrameMode = true;
-        view2d.fullFrame = newFullFrameMode; 
+        view2d.fullFrame = newFullFrameMode;
     }
 
     //
@@ -3115,7 +3115,7 @@ ViewerWindowManager::SetView2DFromClient()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetView3DFromClient
 //
-//  Purpose: 
+//  Purpose:
 //    Sets the view for the active window using the client view attributes.
 //
 //  Programmer: Brad Whitlock
@@ -3124,7 +3124,7 @@ ViewerWindowManager::SetView2DFromClient()
 //  Modifications:
 //    Eric Brugger, Mon Aug 20 12:05:46 PDT 2001
 //    Modify the routine to use an avtView3D to set the 2D view.
-//   
+//
 //    Hank Childs, Fri Oct 18 15:00:33 PDT 2002
 //    Call UpdateViewAtts so that locked windows also update.
 //
@@ -3207,7 +3207,7 @@ ViewerWindowManager::SetView3DFromClient()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetViewAxisArrayFromClient
 //
-//  Purpose: 
+//  Purpose:
 //    Sets the view for the active window using the client view attributes.
 //
 //  Programmer: Jeremy Meredith
@@ -3248,7 +3248,7 @@ ViewerWindowManager::SetViewAxisArrayFromClient()
 // ****************************************************************************
 //  Method: ViewerWindowManager::ClearViewKeyframes
 //
-//  Purpose: 
+//  Purpose:
 //    Clears the view keyframes for the active window.
 //
 //  Programmer: Eric Brugger
@@ -3262,7 +3262,7 @@ ViewerWindowManager::SetViewAxisArrayFromClient()
 
 void
 ViewerWindowManager::ClearViewKeyframes()
-{ 
+{
     windows[activeWindow]->ClearViewKeyframes();
     UpdateViewKeyframeInformation();
 }
@@ -3270,7 +3270,7 @@ ViewerWindowManager::ClearViewKeyframes()
 // ****************************************************************************
 //  Method: ViewerWindowManager::DeleteViewKeyframe
 //
-//  Purpose: 
+//  Purpose:
 //    Deletes a view keyframe from the active window.
 //
 //  Arguments:
@@ -3287,7 +3287,7 @@ ViewerWindowManager::ClearViewKeyframes()
 
 void
 ViewerWindowManager::DeleteViewKeyframe(const int frame)
-{ 
+{
     windows[activeWindow]->DeleteViewKeyframe(frame);
     UpdateViewKeyframeInformation();
 }
@@ -3295,7 +3295,7 @@ ViewerWindowManager::DeleteViewKeyframe(const int frame)
 // ****************************************************************************
 //  Method: ViewerWindowManager::MoveViewKeyframe
 //
-//  Purpose: 
+//  Purpose:
 //    Moves the position of a view keyframe.
 //
 //  Arguments:
@@ -3313,7 +3313,7 @@ ViewerWindowManager::DeleteViewKeyframe(const int frame)
 
 void
 ViewerWindowManager::MoveViewKeyframe(int oldFrame, int newFrame)
-{ 
+{
     windows[activeWindow]->MoveViewKeyframe(oldFrame, newFrame);
     UpdateViewKeyframeInformation();
 }
@@ -3321,7 +3321,7 @@ ViewerWindowManager::MoveViewKeyframe(int oldFrame, int newFrame)
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetViewKeyframe
 //
-//  Purpose: 
+//  Purpose:
 //    Sets a view keyframe for the active window.
 //
 //  Programmer: Eric Brugger
@@ -3335,7 +3335,7 @@ ViewerWindowManager::MoveViewKeyframe(int oldFrame, int newFrame)
 
 void
 ViewerWindowManager::SetViewKeyframe()
-{ 
+{
     windows[activeWindow]->SetViewKeyframe();
     UpdateViewKeyframeInformation();
 }
@@ -3343,7 +3343,7 @@ ViewerWindowManager::SetViewKeyframe()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetViewExtentsType
 //
-//  Purpose: 
+//  Purpose:
 //    This method specifies which flavor of view extents to use to determine
 //    the view.
 //
@@ -3361,7 +3361,7 @@ ViewerWindowManager::SetViewKeyframe()
 //   I made it update the WindowInformation. I also made it recenter the
 //   view if the window's autocentering flag is on.
 //
-//   Eric Brugger, Fri Apr 18 12:38:05 PDT 2003 
+//   Eric Brugger, Fri Apr 18 12:38:05 PDT 2003
 //   I replaced auto center mode with maintain view mode.
 //
 //   Brad Whitlock, Tue Feb 3 16:03:19 PST 2004
@@ -3370,7 +3370,7 @@ ViewerWindowManager::SetViewKeyframe()
 // ****************************************************************************
 
 void
-ViewerWindowManager::SetViewExtentsType(avtExtentType viewType, 
+ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
                                         int windowIndex)
 {
     if(windowIndex < -1 || windowIndex >= maxWindows)
@@ -3382,7 +3382,7 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
         windows[index]->SetViewExtentsType(viewType);
         if(!windows[index]->GetMaintainViewMode())
             RecenterView(index);
-        
+
         UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
 }
@@ -3390,7 +3390,7 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 // ****************************************************************************
 // Method: ViewerWindowManager::SetRenderingAttributes
 //
-// Purpose: 
+// Purpose:
 //   Tells the specified window to use the current rendering attributes.
 //
 // Arguments:
@@ -3414,7 +3414,7 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //
 //   Mark C. Miller, Mon Nov  3 15:29:57 PST 2003
 //   I made it so only those parts of rendereing attributes that actually
-//   were changed are changed on the window 
+//   were changed are changed on the window
 //
 //   Jeremy Meredith, Fri Nov 14 12:23:19 PST 2003
 //   Added specular properties.
@@ -3464,6 +3464,11 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 void
 ViewerWindowManager::SetRenderingAttributes(int windowIndex)
 {
+    // Note: rendering attributes are percolated via the follwing path:
+    // ViewerWindowManager->ViewerWindow->VisWindow->VisWinRendering
+    // If new rendering attributes are introduced ALL of the above
+    // classes (in multiple places) must be updated.
+
     int index = (windowIndex == -1) ? activeWindow : windowIndex;
     if(windows[index] != 0)
     {
@@ -3521,7 +3526,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
             windows[index]->SetStereoRendering(ratts->GetStereoRendering(),
                 (int)ratts->GetStereoType());
 
-        if (windows[index]->GetNotifyForEachRender() != 
+        if (windows[index]->GetNotifyForEachRender() !=
             ratts->GetNotifyForEachRender())
             windows[index]->SetNotifyForEachRender(ratts->GetNotifyForEachRender());
 
@@ -3532,7 +3537,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         if (windows[index]->GetScalableActivationMode() !=
             ratts->GetScalableActivationMode())
             windows[index]->SetScalableActivationMode(ratts->GetScalableActivationMode());
-        
+
         if (windows[index]->GetCompactDomainsActivationMode() !=
             ratts->GetCompactDomainsActivationMode())
             windows[index]->SetCompactDomainsActivationMode(ratts->GetCompactDomainsActivationMode());
@@ -3556,7 +3561,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         }
 
         if (windows[index]->GetDoShading() != ratts->GetDoShadowing() ||
-            windows[index]->GetShadingStrength() != 
+            windows[index]->GetShadingStrength() !=
                                               ratts->GetShadowStrength())
         {
             windows[index]->SetShadingProperties(ratts->GetDoShadowing(),
@@ -3579,14 +3584,14 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
                                                ratts->GetEndCuePoint());
         }
 
-        if (windows[index]->GetColorTexturingFlag() != 
+        if (windows[index]->GetColorTexturingFlag() !=
             ratts->GetColorTexturingFlag())
         {
             windows[index]->SetColorTexturingFlag(
                 ratts->GetColorTexturingFlag());
         }
 
-#ifdef VISIT_OSPRAY
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
         if (windows[index]->GetOsprayRendering() != ratts->GetOsprayRendering())
             windows[index]->SetOsprayRendering(ratts->GetOsprayRendering());
         if (windows[index]->GetOspraySPP() != ratts->GetOspraySPP())
@@ -3616,7 +3621,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
 // ****************************************************************************
 //  Method: ViewerWindowManager::ToggleSpinMode
 //
-//  Purpose: 
+//  Purpose:
 //    This method toggles the spin mode for the specified window.
 //
 //  Arguments:
@@ -3651,7 +3656,7 @@ ViewerWindowManager::ToggleSpinMode(int windowIndex)
 // ****************************************************************************
 //  Method: ViewerWindowManager::ToggleCameraViewMode
 //
-//  Purpose: 
+//  Purpose:
 //    This method toggles the camera view mode for the specified window.
 //
 //  Programmer: Eric Brugger
@@ -3691,7 +3696,7 @@ ViewerWindowManager::ToggleCameraViewMode(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::AskForCorrelationPermission
 //
-// Purpose: 
+// Purpose:
 //   Asks the user if a correlation should be created.
 //
 // Arguments:
@@ -3735,7 +3740,7 @@ ViewerWindowManager::AskForCorrelationPermission(const ViewerText &msg,
 // ****************************************************************************
 // Method: ViewerWindowManager::CreateMultiWindowCorrelationHelper
 //
-// Purpose: 
+// Purpose:
 //   Creates a new multiwindow database correlation or alters an existing
 //   database correlation so it supports all of the specified databases.
 //
@@ -3745,7 +3750,7 @@ ViewerWindowManager::AskForCorrelationPermission(const ViewerText &msg,
 // Returns:    A pointer to the database correlation that we'll use or 0
 //             if there is no correlation to use.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 29 09:54:27 PDT 2004
@@ -3824,7 +3829,7 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
                 // Add the new correlation to the correlation list.
                 cL->AddCorrelations(*correlation);
                 cL->Notify();
-                delete correlation; 
+                delete correlation;
                 correlation = cL->FindCorrelation(newName);
 
                 debug3 << "Created a new correlation called: "
@@ -3858,7 +3863,7 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
 // ****************************************************************************
 // Method: ViewerWindowManager::CreateMultiWindowCorrelation
 //
-// Purpose: 
+// Purpose:
 //   Creates a database correlation that involves multiple windows.
 //
 // Arguments:
@@ -3908,9 +3913,9 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
         //
         // If we had to create or edit a correlation, set the active time
         // slider for each time-locked window to be that correlation if the
-        // time-locked window has an active time slider. We don't want to 
+        // time-locked window has an active time slider. We don't want to
         // change windows that don't have an active time slider. Use the
-        // old time slider in each window to set the state for the new 
+        // old time slider in each window to set the state for the new
         // time slider.
         //
         for(size_t i = 0; i < windowIds.size(); ++i)
@@ -3921,7 +3926,7 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
                 std::string ts(pl->GetActiveTimeSlider());
 
                 //
-                // If the window's current time slider is the same as 
+                // If the window's current time slider is the same as
                 // the new correlation, then don't change the time slider.
                 //
                 if(ts != correlation->GetName())
@@ -3947,7 +3952,7 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
                                << " and making it the active time slider.\n";
                         pl->CreateTimeSlider(correlation->GetName(), cts);
                     }
- 
+
                     //
                     // Make the new time slider be the active time slider.
                     //
@@ -3963,7 +3968,7 @@ ViewerWindowManager::CreateMultiWindowCorrelation(const intVector &windowIds)
 // ****************************************************************************
 // Method: ViewerWindowManager::ToggleLockTime
 //
-// Purpose: 
+// Purpose:
 //   This method toggles the lock time mode for the specified window.
 //
 // Arguments:
@@ -4062,7 +4067,7 @@ ViewerWindowManager::ToggleLockTime(int windowIndex)
                     // just locked.
                     windows[index]->GetPlotList()->SetTimeSliderState(tsState);
                 }
-                
+
                 windows[index]->SetMergeViewLimits(true);
                 // Copy the animation atts.
                 windows[index]->GetPlotList()->SetAnimationAttributes(
@@ -4081,7 +4086,7 @@ ViewerWindowManager::ToggleLockTime(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::ToggleLockTools
 //
-// Purpose: 
+// Purpose:
 //   This method toggles the lock tools mode for the specified window.
 //
 // Arguments:
@@ -4116,7 +4121,7 @@ ViewerWindowManager::ToggleLockTools(int windowIndex)
 // ****************************************************************************
 //  Method: ViewerWindowManager::ToggleLockViewMode
 //
-//  Purpose: 
+//  Purpose:
 //    This method toggles whether or not the view is locked for the specified
 //    window.
 //
@@ -4187,14 +4192,14 @@ ViewerWindowManager::ToggleLockViewMode(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::TurnOffAllLocks
 //
-// Purpose: 
+// Purpose:
 //   Turns off all locks in all windows.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 23 10:43:36 PST 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4217,7 +4222,7 @@ ViewerWindowManager::TurnOffAllLocks()
 // ****************************************************************************
 //  Method: ViewerWindowManager::TogglePerspective
 //
-//  Purpose: 
+//  Purpose:
 //    This method toggles the perspective mode for the specified window.
 //
 //  Arguments:
@@ -4270,7 +4275,7 @@ ViewerWindowManager::TogglePerspective(int windowIndex)
 // ****************************************************************************
 //  Method: ViewerWindowManager::ToggleFullFrameMode
 //
-//  Purpose: 
+//  Purpose:
 //    This method toggles the full frame mode for the specified window.
 //
 //  Arguments:
@@ -4278,8 +4283,8 @@ ViewerWindowManager::TogglePerspective(int windowIndex)
 //                 of the window we want to change. If the value is -1, use
 //                 use the active window.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 13, 2003 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 13, 2003
 //
 //  Modifications:
 //    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
@@ -4289,7 +4294,7 @@ ViewerWindowManager::TogglePerspective(int windowIndex)
 //    I changed the call to UpdateWindowInformation.
 //
 //    Dave Bremer, Mon Mar 26 18:36:04 PDT 2007
-//    When this gets full frame mode gets toggled on or off, disable auto full 
+//    When this gets full frame mode gets toggled on or off, disable auto full
 //    frame mode in both the viewer and the gui.
 // ****************************************************************************
 
@@ -4304,7 +4309,7 @@ ViewerWindowManager::ToggleFullFrameMode(int windowIndex)
     {
         bool mode = !(windows[index]->GetFullFrameMode());
         windows[index]->SetFullFrameMode(mode);
-        windows[index]->SetFullFrameActivationMode(mode?View2DAttributes::On 
+        windows[index]->SetFullFrameActivationMode(mode?View2DAttributes::On
                                                        :View2DAttributes::Off);
         //
         // Send the new view info to the client.
@@ -4394,7 +4399,7 @@ ViewerWindowManager::UndoView(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::RedoView
 //
-// Purpose: 
+// Purpose:
 //   Re-applies a view that has been previously undone.
 //
 // Arguments:
@@ -4404,7 +4409,7 @@ ViewerWindowManager::UndoView(int windowIndex)
 // Creation:   Tue Mar 7 17:31:44 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4430,7 +4435,7 @@ ViewerWindowManager::RedoView(int windowIndex)
 // ****************************************************************************
 //  Method: ViewerWindowManager::UpdateColorTable
 //
-//  Purpose: 
+//  Purpose:
 //    Loops through all windows and tells each one to update for the color
 //    table ctName.
 //
@@ -4519,7 +4524,7 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
     if(layoutIndex == 0)
     {
         for (int iWindow = 0; iWindow < maxWindows; iWindow++)
-        {  
+        {
             if(windows[iWindow] != 0 && windows[iWindow] != GetActiveWindow())
                 windows[iWindow]->Iconify();
         }
@@ -4630,16 +4635,16 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 //    I added animation attributes.
 //
 //    Kathleen Bonnell, Tue Nov 27 16:03:00 PST 2001
-//    Added pick attributes. 
-// 
+//    Added pick attributes.
+//
 //    Brad Whitlock, Mon Feb 4 14:58:05 PST 2002
 //    Moved some code out into UpdateAllAtts.
 //
 //    Sean Ahern, Mon May 20 14:15:16 PDT 2002
 //    Made windows raise when they are activated.
 //
-//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
-//    Removed call to CopyPickAttributes. 
+//    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
+//    Removed call to CopyPickAttributes.
 //
 //    Brad Whitlock, Wed Feb 12 11:05:38 PDT 2003
 //    I added CopyAnimation.
@@ -4748,7 +4753,7 @@ ViewerWindowManager::SetActiveWindow(const int windowId, const bool raiseWindow)
 
     // Deiconify the activated window.
     windows[activeWindow]->DeIconify();
- 
+
 
     if (raiseWindow)
     {
@@ -4799,7 +4804,7 @@ ViewerWindowManager::GetActiveWindow() const
     return windows[activeWindow];
 }
 
-// **************************************************************************** 
+// ****************************************************************************
 //  Method: ViewerWindowManager::UpdateGlobalAtts
 //
 //  Purpose:
@@ -4831,7 +4836,7 @@ ViewerWindowManager::GetActiveWindow() const
 //    I removed some code to update the plot list and the plot attributes
 //    since that should NEVER happen inside this routine.
 //
-//    Eric Brugger, Fri Apr 18 12:38:05 PDT 2003 
+//    Eric Brugger, Fri Apr 18 12:38:05 PDT 2003
 //    I added maintain view mode.
 //
 //    Brad Whitlock, Fri Jan 23 15:39:53 PST 2004
@@ -4886,7 +4891,7 @@ ViewerWindowManager::UpdateGlobalAtts() const
 // ****************************************************************************
 //  Method: ViewerWindowManager::UpdateViewAtts
 //
-//  Purpose: 
+//  Purpose:
 //    Causes the view attributes to be sent to the viewer's client.
 //
 //  Arguments:
@@ -5002,7 +5007,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
         if(haveNotified)
             UpdateWindowInformation(WINDOWINFO_WINMODEONLY, index);
     }
-     
+
     //
     // Update the other windows if their views are locked.
     //
@@ -5039,7 +5044,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
 // ****************************************************************************
 //  Method: ViewerWindowManager::UpdateAnimationAtts
 //
-//  Purpose: 
+//  Purpose:
 //    Sends the animation attributes for the active window to the client.
 //
 //  Programmer: Eric Brugger
@@ -5067,7 +5072,7 @@ ViewerWindowManager::UpdateAnimationAtts()
 // ****************************************************************************
 //  Method: ViewerWindowManager::UpdateAnnotationAtts
 //
-//  Purpose: 
+//  Purpose:
 //    Sends the annotation attributes for the active window to the client.
 //
 //  Programmer: Brad Whitlock
@@ -5097,7 +5102,7 @@ ViewerWindowManager::UpdateAnnotationAtts()
 // ****************************************************************************
 //  Method: ViewerWindowManager::UpdateLightListAtts
 //
-//  Purpose: 
+//  Purpose:
 //    Sends the light list for the active window to the client.
 //
 //  Programmer: Brad Whitlock
@@ -5107,7 +5112,7 @@ ViewerWindowManager::UpdateAnnotationAtts()
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
 //    The viewer window now stores LightList attributes, not avtLightList, so
 //    there is no need for the call to MakeAttributes.
-//   
+//
 // ****************************************************************************
 
 void
@@ -5126,7 +5131,7 @@ ViewerWindowManager::UpdateLightListAtts()
 // ****************************************************************************
 // Method: ViewerWindowManager::UpdateRenderingAtts
 //
-// Purpose: 
+// Purpose:
 //   Sends the rendering attributes to the client.
 //
 // Arguments:
@@ -5138,7 +5143,7 @@ ViewerWindowManager::UpdateLightListAtts()
 // Modifications:
 //   Kathleen Bonnell, Wed Dec  4 17:38:27 PST 2002
 //   Removed antialiasing frames, no longer needed.
-//   
+//
 //   Jeremy Meredith, Fri Nov 14 17:44:22 PST 2003
 //   Added updates for specular.
 //
@@ -5181,6 +5186,12 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         // Copy the window's rendering attributes to the client rendering
         // attributes and notify the client.
         //
+
+        // Note: rendering attributes are percolated via the follwing path:
+        // ViewerWindowManager->ViewerWindow->VisWindow->VisWinRendering
+        // If new rendering attributes are introduced ALL of the above
+        // classes (in multiple places) must be updated.
+
         GetViewerState()->GetRenderingAttributes()->SetAntialiasing(win->GetAntialiasing());
         GetViewerState()->GetRenderingAttributes()->SetMultiresolutionMode(win->GetMultiresolutionMode());
         GetViewerState()->GetRenderingAttributes()->SetMultiresolutionCellSize(win->GetMultiresolutionCellSize());
@@ -5203,8 +5214,11 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         GetViewerState()->GetRenderingAttributes()->SetDepthCueingAutomatic(win->GetDepthCueingAutomatic());
         GetViewerState()->GetRenderingAttributes()->SetStartCuePoint(win->GetStartCuePoint());
         GetViewerState()->GetRenderingAttributes()->SetEndCuePoint(win->GetEndCuePoint());
+        GetViewerState()->GetRenderingAttributes()->SetDepthPeeling(win->GetDepthPeeling());
+        GetViewerState()->GetRenderingAttributes()->SetOcclusionRatio(win->GetOcclusionRatio());
+        GetViewerState()->GetRenderingAttributes()->SetNumberOfPeels(win->GetNumberOfPeels());
         GetViewerState()->GetRenderingAttributes()->SetColorTexturingFlag(win->GetColorTexturingFlag());
-#ifdef VISIT_OSPRAY
+#if defined(VISIT_OSPRAY) || defined(HAVE_OSPRAY)
 //NOTE: win->GetOsprayRendering is returning 0 here which means that ospray is immediately getting turned off after the config setup turns it on
         GetViewerState()->GetRenderingAttributes()->SetOsprayRendering(win->GetOsprayRendering());
         GetViewerState()->GetRenderingAttributes()->SetOspraySPP(win->GetOspraySPP());
@@ -5220,7 +5234,7 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::RenderInformationCallback
 //
-// Purpose: 
+// Purpose:
 //   This callback sends rendering information back to the client.
 //
 // Arguments:
@@ -5248,7 +5262,7 @@ ViewerWindowManager::RenderInformationCallback(void *data)
 // ****************************************************************************
 // Method: ViewerWindowManager::UpdateAllAtts
 //
-// Purpose: 
+// Purpose:
 //   Updates all of the attributes for the window. This means that all the
 //   window attributes are sent to the client.
 //
@@ -5260,11 +5274,11 @@ ViewerWindowManager::RenderInformationCallback(void *data)
 //   I made the WindowInformation and the Rendering attributes update.
 //
 //   Brad Whitlock, Mon Nov 11 17:40:12 PST 2002
-//   I added code to update the SIL restriction so the client gets the 
+//   I added code to update the SIL restriction so the client gets the
 //   right one when we change the active window.
 //
-//   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002  
-//   Removed UpdatePickAttributes. 
+//   Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002
+//   Removed UpdatePickAttributes.
 //
 //   Brad Whitlock, Mon Apr 14 17:26:24 PST 2003
 //   Factored some updates out of UpdateGlobalAtts.
@@ -5282,8 +5296,8 @@ ViewerWindowManager::RenderInformationCallback(void *data)
 //   Brad Whitlock, Fri Jan 23 15:55:55 PST 2004
 //   I split up UpdateWindowInformation into three methods.
 //
-//   Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004 
-//   Added call to update interactor atts. 
+//   Kathleen Bonnell, Wed Aug 18 09:28:51 PDT 2004
+//   Added call to update interactor atts.
 //
 // ****************************************************************************
 
@@ -5353,14 +5367,14 @@ ViewerWindowManager::UpdateAllAtts()
 // ****************************************************************************
 // Method: ViewerWindowManager::UpdateKeyframeAttributes
 //
-// Purpose: 
+// Purpose:
 //   Sends the keyframing attributes back to the client.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Apr 7 00:33:10 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5376,7 +5390,7 @@ ViewerWindowManager::UpdateKeyframeAttributes()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetAnimationAttsFromClient
 //
-//  Purpose: 
+//  Purpose:
 //    Sets the animation attributes for the active window based on the
 //    client's animation attributes.
 //
@@ -5408,7 +5422,7 @@ ViewerWindowManager::SetAnimationAttsFromClient()
 // ****************************************************************************
 //  Method: ViewerWindowManager::GetAnnotationDefaultAtts
 //
-//  Purpose: 
+//  Purpose:
 //    Returns a pointer to the default annotation attributes.
 //
 //  Returns:    A pointer to the default annotation attributes.
@@ -5435,7 +5449,7 @@ ViewerWindowManager::GetAnnotationDefaultAtts()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetClientAnnotationAttsFromDefault
 //
-//  Purpose: 
+//  Purpose:
 //    This method copies the default annotation attributes into the client
 //    annotation attributes.
 //
@@ -5456,7 +5470,7 @@ ViewerWindowManager::SetClientAnnotationAttsFromDefault()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetDefaultAnnotationAttsFromClient
 //
-//  Purpose: 
+//  Purpose:
 //    This method copies the client's annotation attributes into the default
 //    annotation attributes.
 //
@@ -5477,7 +5491,7 @@ ViewerWindowManager::SetDefaultAnnotationAttsFromClient()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetAnnotationAttsFromClient
 //
-//  Purpose: 
+//  Purpose:
 //    Sets the annotation attributes for the active window based on the
 //    client's annotation attributes.
 //
@@ -5487,7 +5501,7 @@ ViewerWindowManager::SetDefaultAnnotationAttsFromClient()
 //  Modifications:
 //    Kathleen Bonnell, Wed Sep 26 11:49:18 PDT 2001
 //    Added call to SetPlotColors.
-//   
+//
 // ****************************************************************************
 
 void
@@ -5500,7 +5514,7 @@ ViewerWindowManager::SetAnnotationAttsFromClient()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetAnnotationAttsFromDefault
 //
-//  Purpose: 
+//  Purpose:
 //    Sets the annotation attributes for the active window based on the
 //    default annotation attributes.
 //
@@ -5526,7 +5540,7 @@ ViewerWindowManager::SetAnnotationAttsFromDefault()
 // ****************************************************************************
 // Method: ViewerWindowManager::AddAnnotationObject
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer window to add a new annotation object.
 //
 // Arguments:
@@ -5537,7 +5551,7 @@ ViewerWindowManager::SetAnnotationAttsFromDefault()
 // Creation:   Wed Oct 29 11:33:04 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5553,14 +5567,14 @@ ViewerWindowManager::AddAnnotationObject(int annotType, const std::string &annot
 // ****************************************************************************
 // Method: ViewerWindowManager::HideActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Hides the active annotation objects.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 29 11:34:33 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5576,14 +5590,14 @@ ViewerWindowManager::HideActiveAnnotationObjects()
 // ****************************************************************************
 // Method: ViewerWindowManager::DeleteActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Deletes the active annotation objects.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 29 11:34:33 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5599,14 +5613,14 @@ ViewerWindowManager::DeleteActiveAnnotationObjects()
 // ****************************************************************************
 // Method: ViewerWindowManager::RaiseActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Raises the active annotation objects.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 29 11:34:33 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5622,14 +5636,14 @@ ViewerWindowManager::RaiseActiveAnnotationObjects()
 // ****************************************************************************
 // Method: ViewerWindowManager::LowerActiveAnnotationObjects
 //
-// Purpose: 
+// Purpose:
 //   Lowers the active annotation objects.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 29 11:34:33 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5645,14 +5659,14 @@ ViewerWindowManager::LowerActiveAnnotationObjects()
 // ****************************************************************************
 // Method: ViewerWindowManager::SetAnnotationObjectOptions
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer window to set the annotation object options.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 29 11:34:33 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5665,7 +5679,7 @@ ViewerWindowManager::SetAnnotationObjectOptions()
 // ****************************************************************************
 // Method: ViewerWindowManager::UpdateAnnotationList
 //
-// Purpose: 
+// Purpose:
 //   Sends the annotation object list for the active window back to the client.
 //
 // Programmer: Brad Whitlock
@@ -5712,7 +5726,7 @@ ViewerWindowManager::UpdateAnnotationObjectList(bool delay)
 //    into the plot list.
 //
 // ****************************************************************************
- 
+
 void
 ViewerWindowManager::SetKeyframeAttsFromClient()
 {
@@ -5725,7 +5739,7 @@ ViewerWindowManager::SetKeyframeAttsFromClient()
 // ****************************************************************************
 // Method: ViewerWindowManager::SetFrameIndex
 //
-// Purpose: 
+// Purpose:
 //   Sets the frame index for the active window and all windows that have
 //   their locktime flag set to true.
 //
@@ -5784,7 +5798,7 @@ ViewerWindowManager::SetFrameIndex(int state, int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::SynchronizeTimeLockedWindows
 //
-// Purpose: 
+// Purpose:
 //     Makes sure all of the time locked windows have a consistent state.
 //
 // Arguments:
@@ -5895,7 +5909,7 @@ ViewerWindowManager::SynchronizeTimeLockedWindows(int windowIndex, int state)
 // ****************************************************************************
 // Method: ViewerWindowManager::NextFrame
 //
-// Purpose: 
+// Purpose:
 //   Advances one frame for the active window and all windows that have
 //   their locktime flag set to true.
 //
@@ -5911,7 +5925,7 @@ ViewerWindowManager::SynchronizeTimeLockedWindows(int windowIndex, int state)
 //
 //   Hank Childs, Thu Feb  7 11:12:47 PST 2008
 //   Offload work of synchronizing time locked windows to the new method
-//   SynchronizeTimeLockedWindows.  
+//   SynchronizeTimeLockedWindows.
 //
 //   Brad Whitlock, Wed Dec 10 15:37:01 PST 2008
 //   Use AnimationAttributes.
@@ -5940,7 +5954,7 @@ ViewerWindowManager::NextFrame(int windowIndex)
         if(windows[index]->GetTimeLock() && activePL->HasActiveTimeSlider())
         {
             int state = 0, nstates = 1;
-            activePL->GetTimeSliderStates(activePL->GetActiveTimeSlider(), 
+            activePL->GetTimeSliderStates(activePL->GetActiveTimeSlider(),
                                           state, nstates);
             SynchronizeTimeLockedWindows(windowIndex,state);
         }
@@ -5957,7 +5971,7 @@ ViewerWindowManager::NextFrame(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::PrevFrame
 //
-// Purpose: 
+// Purpose:
 //   Advances one frame for the active window and all windows that have
 //   their locktime flag set to true.
 //
@@ -5976,7 +5990,7 @@ ViewerWindowManager::NextFrame(int windowIndex)
 //
 //   Hank Childs, Thu Feb  7 11:12:47 PST 2008
 //   Offload work of synchronizing time locked windows to the new method
-//   SynchronizeTimeLockedWindows.  
+//   SynchronizeTimeLockedWindows.
 //
 //   Brad Whitlock, Wed Dec 10 15:37:01 PST 2008
 //   Use AnimationAttributes.
@@ -6005,7 +6019,7 @@ ViewerWindowManager::PrevFrame(int windowIndex)
         if(windows[index]->GetTimeLock() && activePL->HasActiveTimeSlider())
         {
             int state = 0, nstates = 1;
-            activePL->GetTimeSliderStates(activePL->GetActiveTimeSlider(), 
+            activePL->GetTimeSliderStates(activePL->GetActiveTimeSlider(),
                                           state, nstates);
             SynchronizeTimeLockedWindows(windowIndex,state);
         }
@@ -6022,7 +6036,7 @@ ViewerWindowManager::PrevFrame(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::Stop
 //
-// Purpose: 
+// Purpose:
 //   Stops animation for the active window and all windows that have
 //   their locktime flag set to true.
 //
@@ -6100,7 +6114,7 @@ ViewerWindowManager::Stop(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::Play
 //
-// Purpose: 
+// Purpose:
 //   Sets animation to forward play for the active window and all windows
 //   that have their locktime flag set to true.
 //
@@ -6167,7 +6181,7 @@ ViewerWindowManager::Play(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::ReversePlay
 //
-// Purpose: 
+// Purpose:
 //   Sets animation to reverse play for the active window and all windows
 //   that have their locktime flag set to true.
 //
@@ -6235,7 +6249,7 @@ ViewerWindowManager::ReversePlay(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::SetActiveTimeSlider
 //
-// Purpose: 
+// Purpose:
 //   Sets the active time slider for the specified window.
 //
 // Arguments:
@@ -6247,7 +6261,7 @@ ViewerWindowManager::ReversePlay(int windowIndex)
 //
 // Modifications:
 //   Brad Whitlock, Wed Apr 7 00:48:43 PDT 2004
-//   I changed the code so it allows the time slider to be set to the 
+//   I changed the code so it allows the time slider to be set to the
 //   keyframe animation time slider. There was some difficulty because it
 //   is a special time slider in that it does not have a database correlation.
 //
@@ -6298,7 +6312,7 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
         {
             //
             // We're making the keyframing time slider be active return early
-            // since I don't think we want to make other windows use the 
+            // since I don't think we want to make other windows use the
             // keyframe time slider since other windows are likely to have
             // very different keyframes.
             //
@@ -6389,7 +6403,7 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::AlterTimeSlider
 //
-// Purpose: 
+// Purpose:
 //   Forces the named time slider to be within the bounds of its database
 //   correlation.
 //
@@ -6400,7 +6414,7 @@ ViewerWindowManager::SetActiveTimeSlider(const std::string &ts, int windowIndex)
 // Creation:   Thu Feb 3 14:30:15 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6425,7 +6439,7 @@ ViewerWindowManager::AlterTimeSlider(const std::string &ts)
 // ****************************************************************************
 // Method: ViewerWindowManager::CreateDatabaseCorrelation
 //
-// Purpose: 
+// Purpose:
 //   Creates a new database correlation.
 //
 // Arguments:
@@ -6433,7 +6447,7 @@ ViewerWindowManager::AlterTimeSlider(const std::string &ts)
 //   dbs          : The databases to include in the new database correlation.
 //   method       : The correlation method.
 //   initialState : The initial state for the time slider that will get
-//                  created to 
+//                  created to
 //   nStates      : The number of states in the correlation (currently ignored).
 //
 // Programmer: Brad Whitlock
@@ -6534,7 +6548,7 @@ ViewerWindowManager::CreateDatabaseCorrelation(const std::string &name,
 // ****************************************************************************
 // Method: ViewerWindowManager::AlterDatabaseCorrelation
 //
-// Purpose: 
+// Purpose:
 //   Alters the named database correlation.
 //
 // Arguments:
@@ -6542,10 +6556,10 @@ ViewerWindowManager::CreateDatabaseCorrelation(const std::string &name,
 //   dbs          : The databases to include in the new database correlation.
 //   method       : The correlation method.
 //   initialState : The initial state for the time slider that will get
-//                  created to 
+//                  created to
 //   nStates      : The number of states in the correlation (currently ignored).
 //
-// Returns:    
+// Returns:
 //
 // Note:       Trivial correlations can't be modified.
 //
@@ -6625,7 +6639,7 @@ ViewerWindowManager::AlterDatabaseCorrelation(const std::string &name,
 // ****************************************************************************
 // Method: ViewerWindowManager::DeleteDatabaseCorrelation
 //
-// Purpose: 
+// Purpose:
 //   Deletes the named database correlation.
 //
 // Arguments:
@@ -6697,7 +6711,7 @@ ViewerWindowManager::DeleteDatabaseCorrelation(const std::string &name)
 // ****************************************************************************
 // Method: ViewerWindowManager::GetDatabasesForWindows
 //
-// Purpose: 
+// Purpose:
 //   Returns a list of databases for the specified windows.
 //
 // Arguments:
@@ -6709,7 +6723,7 @@ ViewerWindowManager::DeleteDatabaseCorrelation(const std::string &name)
 // Creation:   Tue Mar 16 09:01:45 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6717,7 +6731,7 @@ ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
     stringVector &dbs, bool addAllDatabases) const
 {
     DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
- 
+
     for(size_t i = 0; i < windowIds.size(); ++i)
     {
         int index = windowIds[i];
@@ -6750,7 +6764,7 @@ ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
 // ****************************************************************************
 // Method: ViewerWindowManager::CloseDatabase
 //
-// Purpose: 
+// Purpose:
 //   This method closes a database in all plot lists that have that database
 //   as their open database. It also removes the time slider for that database
 //   from all windows and clears the metadata for the database in the file
@@ -6779,7 +6793,7 @@ ViewerWindowManager::GetDatabasesForWindows(const intVector &windowIds,
 //    Support for internationalization.
 //
 //   Jeremy Meredith, Fri Jan 29 10:25:16 EST 2010
-//   Added extra flag to tell ClearFile whether or not we want to 
+//   Added extra flag to tell ClearFile whether or not we want to
 //   forget which plugin was used to open it.  In this case, we DO.
 //
 // ****************************************************************************
@@ -6858,14 +6872,14 @@ ViewerWindowManager::CloseDatabase(const std::string &dbName)
         //
         GetViewerEngineManager()->ClearCache(EngineKey(host, sim), db);
 
-        GetViewerMessaging()->Message(TR("VisIt closed \"%1\".").arg(expandedDB));        
+        GetViewerMessaging()->Message(TR("VisIt closed \"%1\".").arg(expandedDB));
     }
 }
 
 // ****************************************************************************
 // Method: ViewerWindowManager::ReplaceDatabase
 //
-// Purpose: 
+// Purpose:
 //   Replaces the database in all windows.
 //
 // Arguments:
@@ -6930,7 +6944,7 @@ ViewerWindowManager::ReplaceDatabase(const EngineKey &key,
 // ****************************************************************************
 // Method: ViewerWindowManager::CheckForNewStates
 //
-// Purpose: 
+// Purpose:
 //   Updates the correlations involving the specified database, updates any
 //   time sliders, and finally resizes any actor caches if we added states.
 //
@@ -6946,7 +6960,7 @@ ViewerWindowManager::ReplaceDatabase(const EngineKey &key,
 //   on the mdserver so the database gets re-read.
 //
 //   Jeremy Meredith, Fri Jan 29 10:25:16 EST 2010
-//   Added extra flag to tell ClearFile whether or not we want to 
+//   Added extra flag to tell ClearFile whether or not we want to
 //   forget which plugin was used to open it.  In this case, we do not.
 //
 // ****************************************************************************
@@ -7096,7 +7110,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
                    newTSNames.size() == (size_t)newNStates);
                 if(oneTSPerFile)
                 {
-                    int n = static_cast<int>((originalTSNames.size() < newTSNames.size()) ? 
+                    int n = static_cast<int>((originalTSNames.size() < newTSNames.size()) ?
                     originalTSNames.size() : newTSNames.size());
                     bool same = true;
                     for(int i = 0; i < n && same; ++i)
@@ -7135,7 +7149,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
                 for(int i = 0; i < maxWindows; ++i)
                 {
                     if(windows[i] != 0)
-                    { 
+                    {
                         ViewerPlotList *pl = windows[i]->GetPlotList();
                         int flag = pl->ResizeTimeSliders(alteredCorrelations, clearCache);
                         bool tsSizeChanged = (flag & 1) > 0;
@@ -7187,7 +7201,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
 // ****************************************************************************
 // Method: ViewerWindowManager::ResetNetworkIds
 //
-// Purpose: 
+// Purpose:
 //   Resets the network ids for all plots that use the specified engine key.
 //
 // Arguments:
@@ -7197,7 +7211,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
 // Creation:   Mon May 3 14:12:42 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -7207,20 +7221,20 @@ ViewerWindowManager::ResetNetworkIds(const EngineKey &key)
     {
         if(windows[i] != 0)
             windows[i]->GetPlotList()->ResetNetworkIds(key);
-    }    
+    }
 }
 
 // ****************************************************************************
 //  Method: ViewerWindowManager::GetLightListDefaultAtts
 //
-//  Purpose: 
+//  Purpose:
 //    Returns a pointer to the default light list.
 //
 //  Returns:    A pointer to the default light list.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Fri Sep 14 15:18:09 PST 2001
-//   
+//
 // ****************************************************************************
 
 LightList *
@@ -7240,7 +7254,7 @@ ViewerWindowManager::GetLightListDefaultAtts()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetClientLightListFromDefault
 //
-//  Purpose: 
+//  Purpose:
 //    This method copies the default light list into the client light list.
 //
 //  Programmer: Brad Whitlock
@@ -7260,7 +7274,7 @@ ViewerWindowManager::SetClientLightListFromDefault()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetDefaultLightListFromClient
 //
-//  Purpose: 
+//  Purpose:
 //    This method copies the client's light list into the default light list.
 //
 //  Programmer: Brad Whitlock
@@ -7280,7 +7294,7 @@ ViewerWindowManager::SetDefaultLightListFromClient()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetLightListFromClient
 //
-//  Purpose: 
+//  Purpose:
 //    Sets the light list for the active window based on the client's
 //    light list.
 //
@@ -7290,7 +7304,7 @@ ViewerWindowManager::SetDefaultLightListFromClient()
 //  Modifications:
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
 //    The viewer window now stores LightList attributes, not avtLightList, so
-//    there is no need for a conversion here. 
+//    there is no need for a conversion here.
 //
 //    Jeremy Meredith, Thu Oct  2 12:34:00 PDT 2003
 //    Copy the light list to avtCallback.
@@ -7310,7 +7324,7 @@ ViewerWindowManager::SetLightListFromClient()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetLightListFromDefault
 //
-//  Purpose: 
+//  Purpose:
 //    Sets the light list for the active window based on the default
 //    light list.
 //
@@ -7323,8 +7337,8 @@ ViewerWindowManager::SetLightListFromClient()
 //  Modifications:
 //    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
 //    The viewer window now stores LightList attributes, not avtLightList, so
-//    there is no need for a conversion here. 
-//   
+//    there is no need for a conversion here.
+//
 // ****************************************************************************
 
 void
@@ -7341,7 +7355,7 @@ ViewerWindowManager::SetLightListFromDefault()
 // ****************************************************************************
 // Method: ViewerWindowManager::GetWindowAtts
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer the ViewerWindowManagerAttributes object.
 //
 // Returns:    A pointer the ViewerWindowManagerAttributes object.
@@ -7350,7 +7364,7 @@ ViewerWindowManager::SetLightListFromDefault()
 // Creation:   Fri Nov 2 10:35:49 PDT 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerWindowManagerAttributes *
@@ -7367,7 +7381,7 @@ ViewerWindowManager::GetWindowAtts()
 // ****************************************************************************
 // Method: ViewerWindowManager::UpdateWindowAtts
 //
-// Purpose: 
+// Purpose:
 //   Stores the current viewer window locations, sizes into the
 //   ViewerWindowManagerAttributes object so that information can be saved to
 //   the configuration file.
@@ -7405,7 +7419,7 @@ ViewerWindowManager::UpdateWindowAtts()
 // ****************************************************************************
 // Method: ViewerWindowManager::UpdateWindowInformation
 //
-// Purpose: 
+// Purpose:
 //   Sends the window information (button state, etc.) to the client.
 //
 // Arguments:
@@ -7428,7 +7442,7 @@ ViewerWindowManager::UpdateWindowAtts()
 //   Jeremy Meredith, Tue Feb  4 17:44:20 PST 2003
 //   I added the camera view mode info to the WindowInformation.
 //
-//   Eric Brugger, Fri Apr 18 12:38:05 PDT 2003 
+//   Eric Brugger, Fri Apr 18 12:38:05 PDT 2003
 //   I removed auto center view.
 //
 //   Brad Whitlock, Wed May 21 07:50:49 PDT 2003
@@ -7646,7 +7660,7 @@ ViewerWindowManager::SetUpdateWindowInformationCallback(
 // ****************************************************************************
 // Method: ViewerWindowManager::UpdateWindowRenderingInformation
 //
-// Purpose: 
+// Purpose:
 //   Sends information about rendering such as render time and primitve count
 //   to the client.
 //
@@ -7695,7 +7709,7 @@ ViewerWindowManager::UpdateWindowRenderingInformation(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::UpdateViewKeyframeInformation
 //
-// Purpose: 
+// Purpose:
 //   Updates the view keyframes in the window info and notifies the client.
 //
 // Arguments:
@@ -7705,7 +7719,7 @@ ViewerWindowManager::UpdateWindowRenderingInformation(int windowIndex)
 // Creation:   Fri Jan 23 15:37:06 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -8079,10 +8093,10 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Brad Whitlock, Tue Nov 12 14:50:16 PST 2002
 //    I added code to copy the locktime and locktool modes.
 //
-//    Kathleen Bonnell, Wed Dec  4 17:38:27 PST 2002 
-//    Removed antialiasing frames, no longer needed.  
+//    Kathleen Bonnell, Wed Dec  4 17:38:27 PST 2002
+//    Removed antialiasing frames, no longer needed.
 //
-//    Eric Brugger, Fri Apr 18 12:38:05 PDT 2003 
+//    Eric Brugger, Fri Apr 18 12:38:05 PDT 2003
 //    I removed auto center view.
 //
 //    Brad Whitlock, Wed May 21 07:52:21 PDT 2003
@@ -8158,7 +8172,19 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
                                 GetViewerState()->GetRenderingAttributes()->GetDepthCueingAutomatic(),
                                 GetViewerState()->GetRenderingAttributes()->GetStartCuePoint(),
                                 GetViewerState()->GetRenderingAttributes()->GetEndCuePoint());
+
+    w->SetDepthPeeling(GetViewerState()->GetRenderingAttributes()->GetDepthPeeling());
+    w->SetOcclusionRatio(GetViewerState()->GetRenderingAttributes()->GetOcclusionRatio());
+    w->SetNumberOfPeels(GetViewerState()->GetRenderingAttributes()->GetNumberOfPeels());
     w->SetColorTexturingFlag(GetViewerState()->GetRenderingAttributes()->GetColorTexturingFlag());
+
+#ifdef HAVE_OSPRAY
+    w->SetOsprayRendering(GetViewerState()->GetRenderingAttributes()->GetOsprayRendering());
+    w->SetOspraySPP(GetViewerState()->GetRenderingAttributes()->GetOspraySPP());
+    w->SetOsprayAO(GetViewerState()->GetRenderingAttributes()->GetOsprayAO());
+    w->SetOsprayShadows(GetViewerState()->GetRenderingAttributes()->GetOsprayShadows());
+#endif
+
 }
 
 // ****************************************************************************
@@ -8184,7 +8210,7 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
 //    in so that the volume renderer could determine if it could use the last
 //    image or if it must be recalculated.
 //
-//    Eric Brugger, Fri Apr 18 12:38:05 PDT 2003 
+//    Eric Brugger, Fri Apr 18 12:38:05 PDT 2003
 //    I added code to set the 2d view as modified if the view dimension is 2.
 //
 //    Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
@@ -8249,7 +8275,7 @@ ViewerWindowManager::ViewCallback(VisWindow *vw)
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetToolEnabled
 //
-//  Purpose: 
+//  Purpose:
 //    This is a Qt slot function that sets the enabled state for the tool in
 //    the specified window.
 //
@@ -8281,7 +8307,7 @@ ViewerWindowManager::SetToolEnabled(int toolId, bool enabled, int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::DisableAllTools
 //
-// Purpose: 
+// Purpose:
 //   Disables all of the interactive tools for the specified window.
 //
 // Arguments:
@@ -8291,7 +8317,7 @@ ViewerWindowManager::SetToolEnabled(int toolId, bool enabled, int windowIndex)
 // Creation:   Tue Jul 23 16:16:51 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -8316,10 +8342,10 @@ ViewerWindowManager::DisableAllTools(int windowIndex)
 //    atts, then the average of the two gradient colors is used.
 //
 //  Arguments:
-//    atts      The annotation attributes containing background color info. 
+//    atts      The annotation attributes containing background color info.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 26, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 26, 2001
 //
 //  Modifications:
 //    Brad Whitlock, Tue Nov 6 17:12:06 PST 2001
@@ -8331,7 +8357,7 @@ ViewerWindowManager::DisableAllTools(int windowIndex)
 //
 //    Mark C. Miller, Wed May 26 12:49:52 PDT 2004
 //    Modified to use GetDiscernibleBackground color
-//   
+//
 // ****************************************************************************
 
 void
@@ -8342,13 +8368,13 @@ ViewerWindowManager::SetPlotColors(const AnnotationAttributes *atts)
 
     atts->GetForegroundColor().GetRgba(fg);
     atts->GetDiscernibleBackgroundColor().GetRgba(bg);
-    windows[activeWindow]->SetPlotColors(bg, fg);  
+    windows[activeWindow]->SetPlotColors(bg, fg);
 }
 
 // ****************************************************************************
 //  Method: ViewerWindowManager::ToolCallback
 //
-//  Purpose: 
+//  Purpose:
 //    This is a static callback function that handles new information coming
 //    from tools.
 //
@@ -8427,9 +8453,9 @@ ViewerWindowManager::ToolCallback(const avtToolInterface &ti)
 //   cb     : the animation callback.
 //   cbdata : The animation callback data.
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Sep  2 15:34:38 PDT 2014
@@ -8448,7 +8474,7 @@ ViewerWindowManager::SetAnimationCallback(void (*cb)(int,void*),void *cbdata)
 // ****************************************************************************
 //  Method: ViewerWindowManager::UpdateAnimationTimer
 //
-//  Purpose: 
+//  Purpose:
 //    This routine determines if the timer for performing animations should
 //    be changed (either turned on or off) based on the current state of the
 //    timer and the state of all the animations.
@@ -8470,7 +8496,7 @@ ViewerWindowManager::UpdateAnimationTimer()
 // ****************************************************************************
 // Method: ViewerWindowManager::StopTimer
 //
-// Purpose: 
+// Purpose:
 //   Turns off the animation timer and makes all animations stop.
 //
 // Note:       This method is only called when a window is deleted using
@@ -8493,7 +8519,7 @@ ViewerWindowManager::StopTimer()
 // ****************************************************************************
 // Method: ViewerWindowManager::GetDefaultAnnotationObjectList
 //
-// Purpose: 
+// Purpose:
 //   Returns a pointer to the default annotation object list.
 //
 // Returns:    A pointer to the annotation object list.
@@ -8502,7 +8528,7 @@ ViewerWindowManager::StopTimer()
 // Creation:   Wed Oct 29 11:20:07 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 AnnotationObjectList *
@@ -8517,7 +8543,7 @@ ViewerWindowManager::GetDefaultAnnotationObjectList()
 // ****************************************************************************
 // Method: ViewerWindowManager::SetDefaultAnnotationObjectListFromClient
 //
-// Purpose: 
+// Purpose:
 //   Copies the client annotation object list into the default annotation
 //   object list.
 //
@@ -8525,7 +8551,7 @@ ViewerWindowManager::GetDefaultAnnotationObjectList()
 // Creation:   Fri Nov 7 14:04:10 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -8537,18 +8563,18 @@ ViewerWindowManager::SetDefaultAnnotationObjectListFromClient()
 // ****************************************************************************
 // Method: ViewerWindowManager::GetLineoutWindow
 //
-// Purpose:    
-//   Returns a pointer to a window that can be used for lineout. 
+// Purpose:
+//   Returns a pointer to a window that can be used for lineout.
 //   Adds a new window if necessary.
 //
 // Returns:
-//   The lineout window, null if it couldn't be created.. 
+//   The lineout window, null if it couldn't be created..
 //
 // Programmer: Kathleen Bonnell
-// Creation:   June 10, 2002 
+// Creation:   June 10, 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Tue Jul 23 15:25:22 PDT 2002  
+//   Kathleen Bonnell, Tue Jul 23 15:25:22 PDT 2002
 //   Initialize the lineout window as a curve.
 //
 //   Eric Brugger, Wed Apr  9 09:48:25 PDT 2003
@@ -8571,11 +8597,11 @@ ViewerWindowManager::SetDefaultAnnotationObjectListFromClient()
 //   Added optional bool to immediately return NULL if the window doesn't
 //   already exist
 //
-//   Kathleen Bonnell, Thu Jul 22 15:20:29 PDT 2004 
+//   Kathleen Bonnell, Thu Jul 22 15:20:29 PDT 2004
 //   Removed bool arg (no longer needed due to changes from ViewerQueryManager)
-//   added int arg to specify a particular window to return (or create). 
+//   added int arg to specify a particular window to return (or create).
 //   Added logic to return specified window (if useThisId not -1).
-//   
+//
 //   Brad Whitlock, Wed Apr 30 10:14:36 PDT 2008
 //   Support for internationalization.
 //
@@ -8587,9 +8613,9 @@ ViewerWindowManager::GetLineoutWindow(int useThisId)
     int returnId = lineoutWindow;
     if (useThisId != -1)
     {
-        // 
+        //
         // Use or create the requested window.
-        // 
+        //
         if (useThisId >= maxWindows || windows[useThisId] == 0)
         {
             int newWin = SimpleAddWindow();
@@ -8662,7 +8688,7 @@ ViewerWindowManager::GetLineoutWindow(int useThisId)
 //             have been removed from the window, or the window has been deleted.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   May 7, 2002 
+// Creation:   May 7, 2002
 //
 // Modifications:
 //   Eric Brugger, Wed Aug 20 13:22:14 PDT 2003
@@ -8687,7 +8713,7 @@ void ViewerWindowManager::ResetLineoutDesignation(int winIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::GetWindowIndices
 //
-// Purpose: 
+// Purpose:
 //   Returns an array that contains the list of valid window indices. The
 //   caller is responsible for freeing the memory.
 //
@@ -8696,13 +8722,13 @@ void ViewerWindowManager::ResetLineoutDesignation(int winIndex)
 //
 // Returns:    An array of window indices.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 27 17:23:55 PST 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int *
@@ -8736,7 +8762,7 @@ ViewerWindowManager::GetWindows() const
 // ****************************************************************************
 // Method: ViewerWindowManager::GetTimeLockedWindowIndices
 //
-// Purpose: 
+// Purpose:
 //   Gets the indices of the locked windows.
 //
 // Arguments:
@@ -8746,7 +8772,7 @@ ViewerWindowManager::GetWindows() const
 // Creation:   Wed Mar 16 17:35:53 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -8763,7 +8789,7 @@ ViewerWindowManager::GetTimeLockedWindowIndices(intVector &windowIds) const
 // ****************************************************************************
 // Method: ViewerWindowManager::GetNumWindows
 //
-// Purpose: 
+// Purpose:
 //   Returns the number of windows.
 //
 // Returns:    The number of windows.
@@ -8772,7 +8798,7 @@ ViewerWindowManager::GetTimeLockedWindowIndices(intVector &windowIds) const
 // Creation:   Fri Jan 31 12:47:37 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -8784,14 +8810,14 @@ ViewerWindowManager::GetNumWindows() const
 // ****************************************************************************
 // Method: ViewerWindowManager::UpdateActions
 //
-// Purpose: 
+// Purpose:
 //   Updates the actions in all windows.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Jan 31 13:13:51 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -8807,7 +8833,7 @@ ViewerWindowManager::UpdateActions()
 // ****************************************************************************
 // Method: ViewerWindowManager::BeginEngineExecute
 //
-// Purpose: 
+// Purpose:
 //   Tells the client that an engine is executing.
 //
 // Programmer: Brad Whitlock
@@ -8833,7 +8859,7 @@ ViewerWindowManager::BeginEngineExecute()
 // ****************************************************************************
 // Method: ViewerWindowManager::EndEngineExecute
 //
-// Purpose: 
+// Purpose:
 //   Tells the client that an engine is done executing.
 //
 // Programmer: Brad Whitlock
@@ -8842,7 +8868,7 @@ ViewerWindowManager::BeginEngineExecute()
 // Modifications:
 //   Brad Whitlock, Fri Apr 15 16:23:02 PST 2005
 //   Removed code to enable popup menus.
-//   
+//
 // ****************************************************************************
 
 void
@@ -8867,7 +8893,7 @@ ViewerWindowManager::EndEngineExecute()
 //
 // Programmer: Mark C. Miller
 // Creation:   November 11, 2003
-//   
+//
 // ****************************************************************************
 
 void
@@ -8894,7 +8920,7 @@ ViewerWindowManager::DisableExternalRenderRequestsAllWindows(
 //
 // Programmer: Mark C. Miller
 // Creation:   November 11, 2003
-//   
+//
 // ****************************************************************************
 
 void
@@ -8914,7 +8940,7 @@ ViewerWindowManager::EnableExternalRenderRequestsAllWindows(
 // ****************************************************************************
 // Method: ViewerWindowManager::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   Lets the ViewerWindowManager save itself to a config file.
 //
 // Arguments:
@@ -8942,8 +8968,8 @@ ViewerWindowManager::EnableExternalRenderRequestsAllWindows(
 //   Eric Brugger, Mon Mar 29 15:21:11 PST 2004
 //   Added writing of maintainData.
 //
-//   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
-//   Added timeQueryWindow. 
+//   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
+//   Added timeQueryWindow.
 //
 //   Brad Whitlock, Thu Nov 9 16:43:00 PST 2006
 //   Added dbToSource argument.
@@ -8958,7 +8984,7 @@ ViewerWindowManager::EnableExternalRenderRequestsAllWindows(
 // ****************************************************************************
 
 void
-ViewerWindowManager::CreateNode(DataNode *parentNode, 
+ViewerWindowManager::CreateNode(DataNode *parentNode,
     const std::map<std::string, std::string> &dbToSource, bool detailed)
 {
     if(parentNode == 0)
@@ -8967,7 +8993,7 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
     DataNode *mgrNode = new DataNode("ViewerWindowManager");
     parentNode->AddNode(mgrNode);
 
-    GetViewerState()->GetSelectionList()->CreateNode(mgrNode, detailed, true);    
+    GetViewerState()->GetSelectionList()->CreateNode(mgrNode, detailed, true);
 
     //
     // Add information about the ViewerWindowManager.
@@ -9003,7 +9029,7 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 // ****************************************************************************
 // Method: ViewerWindowManager::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Lets the ViewerWindowManager initialize itself from the information stored
 //   in a config file's DataNode.
 //
@@ -9041,8 +9067,8 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 //   Eric Brugger, Mon Mar 29 15:21:11 PST 2004
 //   Added loading of maintainData.
 //
-//   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004 
-//   Added timeQueryWindow. 
+//   Kathleen Bonnell, Thu Apr  1 19:13:59 PST 2004
+//   Added timeQueryWindow.
 //
 //   Brad Whitlock, Tue Aug 3 11:42:48 PDT 2004
 //   I added code to override the window sizes in the session file if the
@@ -9079,7 +9105,7 @@ ViewerWindowManager::CreateNode(DataNode *parentNode,
 
 void
 ViewerWindowManager::SetFromNode(DataNode *parentNode,
-    const std::map<std::string,std::string> &sourceToDB, 
+    const std::map<std::string,std::string> &sourceToDB,
     const std::string &configVersion)
 {
     if(parentNode == 0)
@@ -9131,7 +9157,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
 
     //
     // Get the number of viewer windows that we've found in the Windows node.
-    // Print to the debug logs if we get an object that is *not* a 
+    // Print to the debug logs if we get an object that is *not* a
     // ViewerWindow.
     //
     int newNWindows = 0;
@@ -9255,7 +9281,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
         bool tmpApply = GetViewerState()->GetSelectionList()->GetAutoApplyUpdates();
         GetViewerState()->GetSelectionList()->SetAutoApplyUpdates(false);
 
-        // Look over the plots in all windows and save the indices of the 
+        // Look over the plots in all windows and save the indices of the
         // originating plots for a selection. Save the name too.
         intVector *originatingPlots = new intVector[maxWindows];
         std::vector<SelectionProperties> *selProps = new std::vector<SelectionProperties>[maxWindows];
@@ -9271,7 +9297,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
                     continue;
                 for(int j = 0; j < windows[i]->GetPlotList()->GetNumPlots() && notFound; ++j)
                 {
-                    if(props.GetSource() == 
+                    if(props.GetSource() ==
                        windows[i]->GetPlotList()->GetPlot(j)->GetPlotName())
                     {
                         selProps[i].push_back(props);
@@ -9306,7 +9332,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
                     // created any plots.
                     ExpressionList exprList;
                     GetViewerStateManager()->GetVariableMethods()->
-                        GetAllExpressions(exprList, host, db, 
+                        GetAllExpressions(exprList, host, db,
                                           ViewerFileServerInterface::ANY_STATE);
                     GetViewerEngineManager()->UpdateExpressions(engineKey, exprList);
 
@@ -9383,7 +9409,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
     }
 
     //
-    // For windows that need it, send an update message so the window gets its 
+    // For windows that need it, send an update message so the window gets its
     // plots realized.
     //
     for(i = 0; i < maxWindows; ++i)
@@ -9444,7 +9470,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
 // ****************************************************************************
 // Method: ViewerWindowManager::SessionContainsErrors
 //
-// Purpose: 
+// Purpose:
 //   Detects whether the session file contains errors.
 //
 // Arguments:
@@ -9452,7 +9478,7 @@ ViewerWindowManager::SetFromNode(DataNode *parentNode,
 //
 // Returns:    True if there are errors; false if otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jan 11 15:10:44 PST 2006
@@ -9496,14 +9522,14 @@ ViewerWindowManager::SessionContainsErrors(DataNode *parentNode)
 // ****************************************************************************
 // Method: ViewerWindowManager::GetEmptyWindow
 //
-// Purpose:    
-//   Returns a pointer to an empy window. 
+// Purpose:
+//   Returns a pointer to an empy window.
 //
 // Returns:
-//   The empty window, null if it couldn't be created.. 
+//   The empty window, null if it couldn't be created..
 //
 // Programmer: Kathleen Bonnell
-// Creation:   March 19, 2004 
+// Creation:   March 19, 2004
 //
 // Modifications:
 //   Brad Whitlock, Wed Apr 30 10:16:27 PDT 2008
@@ -9512,7 +9538,7 @@ ViewerWindowManager::SessionContainsErrors(DataNode *parentNode)
 // ****************************************************************************
 
 ViewerWindow *
-ViewerWindowManager::GetEmptyWindow() 
+ViewerWindowManager::GetEmptyWindow()
 {
     //
     //  Search for an open, empty window.  If none exists,
@@ -9556,8 +9582,8 @@ ViewerWindowManager::GetEmptyWindow()
 // ****************************************************************************
 // Method: ViewerWindowManager::GetWindow
 //
-// Purpose:    
-//   Returns a pointer to the window specified by windowIndex. 
+// Purpose:
+//   Returns a pointer to the window specified by windowIndex.
 //
 // Arguments:
 //   windowIndex  The index of the window to return.
@@ -9566,7 +9592,7 @@ ViewerWindowManager::GetEmptyWindow()
 //   The specified window, null if the index is invalid.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   March 19, 2004 
+// Creation:   March 19, 2004
 //
 // Modifications:
 //
@@ -9585,15 +9611,15 @@ ViewerWindowManager::GetWindow(int windowIndex)
 // ****************************************************************************
 // Method: ViewerWindowManager::GetTimeQueryWindow
 //
-// Purpose:    
-//   Returns a pointer to a window that can be used for queries-through-time. 
+// Purpose:
+//   Returns a pointer to a window that can be used for queries-through-time.
 //   Adds a new window if necessary.
 //
 // Returns:
-//   The timequery window, null if it couldn't be created.. 
+//   The timequery window, null if it couldn't be created..
 //
 // Programmer: Kathleen Bonnell
-// Creation:   April 1, 2004 
+// Creation:   April 1, 2004
 //
 // Modifications:
 //   Kathleen Bonnell, Tue Jul 20 10:47:26 PDT 2004
@@ -9605,7 +9631,7 @@ ViewerWindowManager::GetWindow(int windowIndex)
 // ****************************************************************************
 
 ViewerWindow *
-ViewerWindowManager::GetTimeQueryWindow(int useThisId) 
+ViewerWindowManager::GetTimeQueryWindow(int useThisId)
 {
     ViewerText msg(TR("VisIt could not open a window for TimeQuery because "
                       "the maximum number of windows was exceeded."));
@@ -9620,15 +9646,15 @@ ViewerWindowManager::GetTimeQueryWindow(int useThisId)
             {
                 GetViewerMessaging()->Error(msg);
                 return NULL;
-            } 
+            }
             SetWindowAttributes(newWin, false);
             returnId = newWin;
             windows[returnId]->SetInteractionMode(NAVIGATE);
             referenced[returnId] = true;
         }
-        else 
+        else
         {
-            returnId = useThisId; 
+            returnId = useThisId;
         }
     }
     else if (timeQueryWindow == -1)
@@ -9680,7 +9706,7 @@ ViewerWindowManager::GetTimeQueryWindow(int useThisId)
 //             have been removed from the window, or the window has been deleted.
 //
 // Programmer: Kathleen Bonnell
-// Creation:   April 1, 2004 
+// Creation:   April 1, 2004
 //
 // Modifications:
 //
@@ -9703,7 +9729,7 @@ void ViewerWindowManager::ResetTimeQueryDesignation(int winIndex)
 // ****************************************************************************
 //  Method: ViewerWindowManager::GetInteractorDefaultAtts
 //
-//  Purpose: 
+//  Purpose:
 //    Returns a pointer to the default interactor attributes.
 //
 //  Returns:    A pointer to the default interactor attributes.
@@ -9730,12 +9756,12 @@ ViewerWindowManager::GetInteractorDefaultAtts()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetClientInteractorAttsFromDefault
 //
-//  Purpose: 
+//  Purpose:
 //    This method copies the default interactor attributes into the client
 //    interactor attributes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   August 16, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 16, 2004
 //
 // ****************************************************************************
 
@@ -9751,12 +9777,12 @@ ViewerWindowManager::SetClientInteractorAttsFromDefault()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetDefaultInteractorAttsFromClient
 //
-//  Purpose: 
+//  Purpose:
 //    This method copies the client's interactor attributes into the default
 //    interactor attributes.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   August 16, 2004 
+//  Creation:   August 16, 2004
 //
 // ****************************************************************************
 
@@ -9772,15 +9798,15 @@ ViewerWindowManager::SetDefaultInteractorAttsFromClient()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetInteractorAttsFromClient
 //
-//  Purpose: 
+//  Purpose:
 //    Sets the interactor attributes for the active window based on the
 //    client's interactor attributes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   August 16, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 16, 2004
 //
 //  Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -9796,13 +9822,13 @@ ViewerWindowManager::SetInteractorAttsFromClient()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetInteractorAttsFromDefault
 //
-//  Purpose: 
+//  Purpose:
 //    Sets the interactor attributes for the active window based on the
 //    default interactor attributes.
 //
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   August 16, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 16, 2004
 //
 // ****************************************************************************
 
@@ -9824,11 +9850,11 @@ ViewerWindowManager::SetInteractorAttsFromDefault()
 // ****************************************************************************
 //  Method: ViewerWindowManager::UpdateInteractorAtts
 //
-//  Purpose: 
+//  Purpose:
 //    Sends the interactor attributes for the active window to the client.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   August 16, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   August 16, 2004
 //
 //  Modifications:
 //
@@ -9851,8 +9877,8 @@ ViewerWindowManager::UpdateInteractorAtts()
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetTryHarderCyclesTimes
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   August 22, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   August 22, 2007
 //
 // ****************************************************************************
 
@@ -9870,8 +9896,8 @@ bool ViewerWindowManager::SetTryHarderCyclesTimes(bool newVal)
 // ****************************************************************************
 //  Method: ViewerWindowManager::SetTreatAllDBsAsTimeVarying
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   August 22, 2007 
+//  Programmer: Mark C. Miller
+//  Creation:   August 22, 2007
 //
 // ****************************************************************************
 
@@ -9891,7 +9917,7 @@ bool ViewerWindowManager::SetTreatAllDBsAsTimeVarying(bool newVal)
 //  Method: ViewerWindowManager::SetCreateMeshQualityExpressions
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   October 9, 2007 
+//  Creation:   October 9, 2007
 //
 // ****************************************************************************
 
@@ -9911,7 +9937,7 @@ bool ViewerWindowManager::SetCreateMeshQualityExpressions(bool newVal)
 //  Method: ViewerWindowManager::SetCreateExpressions
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   October 9, 2007 
+//  Creation:   October 9, 2007
 //
 // ****************************************************************************
 
@@ -9930,7 +9956,7 @@ bool ViewerWindowManager::SetCreateTimeDerivativeExpressions(bool newVal)
 //  Method: ViewerWindowManager::SetCreateVectorMagnitudeExpressions
 //
 //  Programmer: Cyrus Harrison
-//  Creation:   November 28, 2007 
+//  Creation:   November 28, 2007
 //
 // ****************************************************************************
 
@@ -9997,5 +10023,38 @@ void ViewerWindowManager::SetRemoveDuplicateNodes(bool newVal)
         GetViewerEngineManager()->UpdateRemoveDuplicateNodes(newVal);
         GetViewerState()->GetGlobalAttributes()->Notify();
     }
+}
+
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::CheckForOSPRayRendering
+//
+//  Purpose: Checks if ospray was enabled from the command line via avtCallback
+//           and sets the RenderingAtts and ViewerWindow states accordingly.
+//
+//  Note:    Should be called after session files are processed, so that the
+//           session file settings for rendering atts don't override the
+//           command line
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   Aug 17, 2022
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::CheckForOSPRayRendering() const
+{
+#ifdef HAVE_OSPRAY
+    if(avtCallback::GetUseOSPRay())
+    {
+        GetViewerState()->GetRenderingAttributes()->SetOsprayRendering(true);
+        GetViewerState()->GetRenderingAttributes()->Notify();
+        for (int i = 0; i < maxWindows; i++)
+        {
+            if (windows[i] != 0)
+                windows[i]->SetOsprayRendering(true);
+        }
+    }
+#endif
 }
 
