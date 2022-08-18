@@ -584,20 +584,11 @@ Vector and Color Expressions
 .. _Vector_Compose_Expression_Operator:
 
 Vector Compose Operator (``{}``) : ``{expr0, expr1, ... , exprN-1}``
-    Curly braces, *{}* are used to create a new expression of higher tensor rank
-    from 2 or more expression of lower tensor rank.  A common use is to compose 
-    several tensor rank 0 expressions (e.g. scalar expressions) into a tensor
-    rank 1 expression (e.g. a vector expression). The component expressions,
-    ``expr0``, ``expr1``, etc.  must all be the same tensor rank and expression
-    type. For example, they must all be rank 0 (e.g. *scalar* expressions) or
-    they must all be rank 1 (e.g. *vector*) expressions of the same number of
-    components. If they are all scalars, the result is a tensor of rank 1 (e.g.
-    a vector). If they are all vectors, the result is a tensor of rank 2 (e.g.
-    a tensor). The vector compose operator is also used to compose array
-    expressions.
-
-    For example, the expression ``{u, v, w}`` takes three scalar mesh variables
-    named ``u``, ``v`` and ``w`` and creates a vector mesh variable.
+    Curly braces, ``{}``, are used to create a vector from scalars or a tensor from vectors.
+    A common use is to compose 3 scalar expressions to form a vector expression as in ``{a, b, c}``.
+    For 2D data, the 3rd component must still be provided and must be zero as in ``{a,b,0}``.
+    The component expressions, ``expr0``, ``expr1``, etc.  must all be the same type (e.g. scalar, vector) and must all be the same centering.
+    Scalars compose into (row) vectors and (row) vectors compose into tensors, row-by-row.
     
 .. _Vector_Component_Expression_Operator:
 
@@ -751,6 +742,14 @@ Cell Edge Normal Function: ``cell_edge_normal()`` :  ``cell_edge_normal(expr0)``
 
 Tensor Expressions
 """"""""""""""""""
+
+Tensor expressions can be constructed either by direct *composition* (e.g. using the compose operator, ``{}``) or by using a tensor expression function.
+When *composing* tensors with the compose operator, ``{}``, 9 scalar (e.g. ``{{xx,xy,xz},{yx,yy,yz},{zx,zy,zz}}`` or 3 vector expressions (e.g. ``{r1,r2,r3}`` are typically used.
+However, tensors can be composed from combinations of these as well (e.g. ``{r1,{a,b,c},r3}``).
+Note that in the preceding example expressions, the compose operator is used in a nested manner twice.
+The inner instances compose sets of scalars into row vectors and the outer instance composes the row vectors into the final tensor.
+Tensor expressions in 2D still require 9 scalar components but those in the 3rd row and column must be all zeros.
+Symmetric tensor expressions also still require 9 scalar components but must also exhibit symmetry.
 
 Often, using the tensor expression functions described here necessitates a detailed understanding of the actual numerical calculations VisIt_ uses in evaluating the expressions.
 Therefore, in many cases here, we provide collapsible sections that can be expanded to show the actual C++ source code VisIt_ is compiled with to compute a given tensor expression.
