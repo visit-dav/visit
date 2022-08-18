@@ -590,6 +590,9 @@ Vector Compose Operator (``{}``) : ``{expr0, expr1, ... , exprN-1}``
     The component expressions, ``expr0``, ``expr1``, etc.  must all be the same type (e.g. scalar, vector) and must all be the same centering.
     Scalars compose into (row) vectors and (row) vectors compose into tensors, row-by-row.
     
+    If constant values (e.g. ``1`` or ``0``) are needed in composing a vector expression, then use the expression functions designed to create constant expressions such as ``nodal_constant(<mesh>,value)`` (for node-centered constant expressions) or ``zonal_constant(<mesh>,value)`` (for zone-centered consntant expressions).
+Using the constant values themselves (e.g. ``0`` or ``1``) directly in the compose operator does not always work as expected depending on VisIt_'s ability to infer the intended *mesh* and/or *centering*.
+    
 .. _Vector_Component_Expression_Operator:
 
 Vector Component Operator (``[]``) : ``expr[I]``
@@ -751,6 +754,9 @@ Note that in the preceding example expressions, the compose operator is used in 
 The inner instances compose sets of scalars into row vectors and the outer instance composes the row vectors into the final tensor.
 Tensor expressions in 2D still require 9 scalar components but those in the 3rd row and column must be all zeros.
 Symmetric tensor expressions also still require 9 scalar components but must also exhibit symmetry.
+
+If constant values (e.g. ``1`` or ``0``) are needed in composing a tensor expression, then use the expression functions designed to create constant expressions such as ``nodal_constant(<mesh>,value)`` (for node-centered constant expressions) or ``zonal_constant(<mesh>,value)`` (for zone-centered consntant expressions).
+Using the constant values themselves (e.g. ``0`` or ``1``) directly in the compose operator does not always work as expected depending on VisIt_'s ability to infer the intended *mesh* and/or *centering*.
 
 Often, using the tensor expression functions described here necessitates a detailed understanding of the actual numerical calculations VisIt_ uses in evaluating the expressions.
 Therefore, in many cases here, we provide collapsible sections that can be expanded to show the actual C++ source code VisIt_ is compiled with to compute a given tensor expression.
