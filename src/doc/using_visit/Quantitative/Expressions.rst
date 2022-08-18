@@ -744,6 +744,7 @@ Tensor Expressions
 """"""""""""""""""
 
 Tensor expressions can be constructed either by direct *composition* (e.g. using the compose operator, ``{}``) or by using a tensor expression function.
+
 When *composing* tensors with the compose operator, ``{}``, 9 scalar (e.g. ``{{xx,xy,xz},{yx,yy,yz},{zx,zy,zz}}`` or 3 vector expressions (e.g. ``{r1,r2,r3}`` are typically used.
 However, tensors can be composed from combinations of these as well (e.g. ``{r1,{a,b,c},r3}``).
 Note that in the preceding example expressions, the compose operator is used in a nested manner twice.
