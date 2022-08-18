@@ -591,7 +591,7 @@ Vector Compose Operator (``{}``) : ``{expr0, expr1, ... , exprN-1}``
     Scalars compose into (row) vectors and (row) vectors compose into tensors, row-by-row.
     
     If constant values (e.g. ``1`` or ``0``) are needed in composing a vector expression, then use the expression functions designed to create constant expressions such as ``nodal_constant(<mesh>,value)`` (for node-centered constant expressions) or ``zonal_constant(<mesh>,value)`` (for zone-centered consntant expressions).
-Using the constant values themselves (e.g. ``0`` or ``1``) directly in the compose operator does not always work as expected depending on VisIt_'s ability to infer the intended *mesh* and/or *centering*.
+    Using the constant values themselves (e.g. ``0`` or ``1``) directly in the compose operator does not always work as expected depending on VisIt_'s ability to infer the intended *mesh* and/or *centering*.
     
 .. _Vector_Component_Expression_Operator:
 
