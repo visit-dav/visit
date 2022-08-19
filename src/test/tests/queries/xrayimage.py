@@ -408,4 +408,26 @@ CloseDatabase(silo_data_path("curv3d.silo"))
 # DeleteAllPlots()
 # CloseDatabase(silo_data_path("curv3d.silo"))
 
+#
+# Test that we get decent error messages for common cases
+#
+import numpy
+
+nporig = numpy.array([0.0, 2.5, 10.0])
+
+params = dict(output_type=2, output_dir=".", divide_emis_by_absorb=1, \
+    origin=nporig, up_vector=(0, 1, 0), theta=0, phi=0, \
+    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+try:
+    Query("XRay Image", params)
+except (visit.VisItException, VisItException) as e:
+    if '"origin"' in e.args[0] and "position 4" in e.args[0] and "type numpy.ndarray" in e.args[0]:
+        TestPOA('detect and warn numpy array as query param')
+    else:
+        TestFOA('detect and warn numpy array as query param', LINE())
+    pass
+except:
+    TestFOA('detect and warn numpy array as query param', LINE())
+    pass
+
 Exit()
