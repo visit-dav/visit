@@ -199,6 +199,8 @@ private:
     // (particularly if a color table is built in), and it will be saved out
     // to state files.
 
+    // TODO change to map of maps????
+
 
     // 
     // Widgets and layouts.

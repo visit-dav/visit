@@ -40,6 +40,9 @@
 #define SELECT_FOR_CONTINUOUS 0
 #define SELECT_FOR_DISCRETE   1
 
+#define ADDTAG    0
+#define REMOVETAG 1
+
 // ****************************************************************************
 // Method: QvisColorTableWindow::QvisColorTableWindow
 //
@@ -3092,31 +3095,55 @@ QvisColorTableWindow::tagEdited()
 void
 QvisColorTableWindow::addRemoveTag()
 {
-    std::string newtag = tagEdit.toStdString();
-    ColorControlPointList *ccpl = GetDefaultColorControlPoints();
+    auto newtag{tagEdit.toStdString()};
+    auto *ccpl{GetDefaultColorControlPoints()};
     if (newtag != "" && ccpl)
     {
+        auto index{colorAtts->GetColorTableIndex(currentColorTable.toStdString())};
+        auto ctName(static_cast<std::string>(colorAtts->GetNames()[index]));
+
+        // if we are trying to remove the tag
         if (ccpl->HasTag(newtag))
         {
-            // TODO this doesn't work as I want it to
-            // the issue is this: I want ppl to only be able to delete tags that were not there to begin with
-            // how can I know if a tag was there to begin with? Do I need another parallel list to the tagnames
-            // that says if it is builtin or not? Some kind of registry that says which tags I added to which CTs
-            // so I can undo it if it shows up there?
-
-            // if (ccpl->GetBuiltIn())
-            // {
-            //     QString tmp;
-            //     tmp = tr("The color table ") +
-            //           QString("\"") + currentColorTable + QString("\"") +
-            //           tr(" is built-in. You cannot delete a tag from a built-in color table.");
-            //     Error(tmp);
-            //     return;
-            // }
-            ccpl->RemoveTag(newtag);
+            auto tagChangeReverseAction{std::make_pair(ADDTAG, newtag)};
+            if (tagChanges[ctName].find(tagChangeReverseAction) != 
+                tagChanges[ctName].end())
+            {
+                tagChanges[ctName].erase(tagChangeReverseAction);
+                ccpl->RemoveTag(newtag);
+            }
+            else
+            {
+                // if this is a built in color table, you can only remove a 
+                // tag if the add tag action is already there
+                if (ccpl->GetBuiltIn())
+                {
+                    QString tmp;
+                    tmp = tr("The color table ") +
+                          QString("\"") + currentColorTable + QString("\"") +
+                          tr(" is built-in. You cannot delete a default tag "
+                             "from a built-in color table.");
+                    Error(tmp);
+                    return;
+                }
+                else
+                {
+                    tagChanges[ctName].insert(std::make_pair(REMOVETAG, newtag));
+                    ccpl->RemoveTag(newtag);
+                }
+            }
         }
+        // if we are trying to add a new tag
         else
+        {
+            auto tagChangeReverseAction{std::make_pair(REMOVETAG, newtag)};
+            if (tagChanges[ctName].find(tagChangeReverseAction) != 
+                tagChanges[ctName].end())
+                tagChanges[ctName].erase(tagChangeReverseAction);
+            else
+                tagChanges[ctName].insert(std::make_pair(ADDTAG, newtag));
             ccpl->AddTag(newtag);
+        }
     }
     Apply();
 }
