@@ -1306,23 +1306,27 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
             PyDict_SetItemString(dict,name,PyString_FromString(opts.GetString(name).c_str()));
             break;
           case DBOptionsAttributes::Enum:
-            // If you modify this section, also check the Enum case in
-            // FillDBOptionsFromDictionary
-            int enumIndex = opts.GetEnum(name);
-            stringVector enumStrings = opts.GetEnumStrings(name);
-            std::string itemString(enumStrings[enumIndex]);
-            if (enumStrings.size() > 1)
             {
-                itemString += " # Options are: ";
-                for (size_t i = 0; i < enumStrings.size(); ++i)
+                // If you modify this section, also check the Enum case in
+                // FillDBOptionsFromDictionary
+                int enumIndex = opts.GetEnum(name);
+                stringVector enumStrings = opts.GetEnumStrings(name);
+                std::string itemString(enumStrings[enumIndex]);
+                if (enumStrings.size() > 1)
                 {
-                    itemString += enumStrings[i];
-                    if (i != enumStrings.size()-1)
-                        itemString += ", ";
+                    itemString += " # Options are: ";
+                    for (size_t i = 0; i < enumStrings.size(); ++i)
+                    {
+                        itemString += enumStrings[i];
+                        if (i != enumStrings.size()-1)
+                            itemString += ", ";
+                    }
                 }
+                PyDict_SetItemString(dict,name,PyString_FromString(itemString.c_str()));
             }
-            PyDict_SetItemString(dict,name,PyString_FromString(itemString.c_str()));
             break;
+          default:
+            PyDict_SetItemString(dict,name,PyString_FromString("**ERROR**:Unknown Option Type"));
         }
         delete[] name;
     }
@@ -12186,19 +12190,21 @@ visit_Query(PyObject *self, PyObject *args, PyObject *kwargs)
             debug3 << "  attempting old parsing methodology." << endl;
             return visit_Query_deprecated(self, args);
         }
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,1), queryParams); 
+	std::string errmsg = "Query: ";
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,1), queryParams, errmsg); 
         if (!parse_success)
         {
-           VisItErrorFunc("Query:  could not parse dictionary argument.");
+           VisItErrorFunc(errmsg.c_str());
            return NULL;
         }
     }
     else if (kwargs != NULL)
     {
-        parse_success = PyDict_To_MapNode(kwargs, queryParams); 
+	std::string errmsg = "Query: ";
+        parse_success = PyDict_To_MapNode(kwargs, queryParams, errmsg); 
         if (!parse_success)
         {
-            VisItErrorFunc(" Query:  could not parse keyword args.");
+            VisItErrorFunc(errmsg.c_str());
             return NULL;
         }
     }
@@ -12914,19 +12920,21 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
             debug3<< "     attempting old parsing methodology." << endl;
             return visit_QueryOverTime_deprecated(self, args);
         }
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,1), queryParams); 
+        std::string errmsg = "QueryOverTime: ";
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,1), queryParams, errmsg); 
         if (!parse_success)
         {
-          VisItErrorFunc("QueryOverTime: could not parse dictionary argument.");
+          VisItErrorFunc(errmsg.c_str());
           return NULL;
         }
     }
     else if (kwargs != NULL)
     {
-        parse_success = PyDict_To_MapNode(kwargs, queryParams); 
+        std::string errmsg = "QueryOverTime: ";
+        parse_success = PyDict_To_MapNode(kwargs, queryParams, errmsg); 
         if (!parse_success)
         {
-          VisItErrorFunc("QueryOverTime:  could not parse keyword arguments.");
+          VisItErrorFunc(errmsg.c_str());
           return NULL;
         }
     }
@@ -13110,19 +13118,21 @@ visit_ZonePick(PyObject *self, PyObject *args, PyObject *kwargs)
             debug3 << "  attempting old parsing methodology." << endl;
             return visit_ZonePick_deprecated(self, args);
         }
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        std::string errmsg = "ZonePick: ";
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
         if (!parse_success)
         {
-           VisItErrorFunc("ZonePick: could not parse dictionary argument.");
+           VisItErrorFunc(errmsg.c_str());
            return NULL;
         }
     }
     else if (kwargs != NULL)
     {
-        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        std::string errmsg = "ZonePick: ";
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
         if (!parse_success)
         {
-            VisItErrorFunc("ZonePick: could not parse keyword arguments.");
+            VisItErrorFunc(errmsg.c_str());
             return NULL;
         }
     }
@@ -13315,19 +13325,21 @@ visit_NodePick(PyObject *self, PyObject *args, PyObject *kwargs)
             debug3 << "  attempting old parsing methodology." << endl;
             return visit_NodePick_deprecated(self, args);
         }
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        std::string errmsg = "NodePick: ";
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
         if (!parse_success)
         {
-           VisItErrorFunc("NodePick:  could not parse dictionary argument.");
+           VisItErrorFunc(errmsg.c_str());
            return NULL;
         }
     }
     else if (kwargs != NULL)
     {
-        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        std::string errmsg = "NodePick: ";
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
         if (!parse_success)
         {
-            VisItErrorFunc("NodePick: could not parse keyword arguments.");
+            VisItErrorFunc(errmsg.c_str());
             return NULL;
         }
     }
@@ -14110,19 +14122,21 @@ visit_PickByZone(PyObject *self, PyObject *args, PyObject *kwargs)
             debug3 << "  attempting old parsing methodology." << endl;
             return visit_PickByZone_deprecated(self, args);
         }
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        std::string errmsg = "PickByZone: ";
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
         if (!parse_success)
         {
-           VisItErrorFunc("PickByZone:  could not parse dictionary argument.");
+           VisItErrorFunc(errmsg.c_str());
            return NULL;
         }
     }
     else if (kwargs != NULL)
     {
-        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        std::string errmsg = "PickByZone: ";
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
         if (!parse_success)
         {
-            VisItErrorFunc("PickByZone:  could not parse keyword arguments.");
+            VisItErrorFunc(errmsg.c_str());
             return NULL;
         }
     }
@@ -14181,19 +14195,21 @@ visit_PickByZoneLabel(PyObject *self, PyObject *args, PyObject *kwargs)
     // If not, check for named args (kwargs).
     if (PyTuple_Size(args) > 0)
     {
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        std::string errmsg = "PickByZoneLabel: ";
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
         if (!parse_success)
         {
-           VisItErrorFunc("PickByZoneLabel:  could not parse dictionary argument.");
+           VisItErrorFunc(errmsg.c_str());
            return NULL;
         }
     }
     else if (kwargs != NULL)
     {
-        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        std::string errmsg = "PickByZoneLabel: ";
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
         if (!parse_success)
         {
-            VisItErrorFunc("PickByZoneLabel:  could not parse keyword arguments.");
+            VisItErrorFunc(errmsg.c_str());
             return NULL;
         }
     }
@@ -14251,19 +14267,21 @@ visit_PickByNodeLabel(PyObject *self, PyObject *args, PyObject *kwargs)
     // If not, check for named args (kwargs).
     if (PyTuple_Size(args) > 0)
     {
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        std::string errmsg = "PickByNodeLabel: ";
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
         if (!parse_success)
         {
-           VisItErrorFunc("PickByNodeLabel:  could not parse dictionary argument.");
+           VisItErrorFunc(errmsg.c_str());
            return NULL;
         }
     }
     else if (kwargs != NULL)
     {
-        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        std::string errmsg = "PickByNodeLabel: ";
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
         if (!parse_success)
         {
-            VisItErrorFunc("PickByNodeLabel:  could not parse keyword arguments.");
+            VisItErrorFunc(errmsg.c_str());
             return NULL;
         }
     }
@@ -14407,19 +14425,21 @@ visit_PickByGlobalZone(PyObject *self, PyObject *args, PyObject *kwargs)
             debug3 << "  attempting old parsing methodology." << endl;
             return visit_PickByGlobalZone_deprecated(self, args);
         }
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        std::string errmsg = "PickByGlobalZone: ";
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
         if (!parse_success)
         {
-           VisItErrorFunc("PickByGlobalZone:  could not parse dictionary argument.");
+           VisItErrorFunc(errmsg.c_str());
            return NULL;
         }
     }
     else if (kwargs != NULL)
     {
-        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        std::string errmsg = "PickByGlobalZone: ";
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
         if (!parse_success)
         {
-            VisItErrorFunc("PickByGlobalZone:  could not parse keyword arguments.");
+            VisItErrorFunc(errmsg.c_str());
             return NULL;
         }
     }
@@ -14572,19 +14592,21 @@ visit_PickByNode(PyObject *self, PyObject *args, PyObject *kwargs)
             debug3 << "  attempting old parsing methodology." << endl;
             return visit_PickByNode_deprecated(self, args);
         }
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        std::string errmsg = "PickByNode: ";
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
         if (!parse_success)
         {
-           VisItErrorFunc("PickByNode: could not parse dictionary argument.");
+           VisItErrorFunc(errmsg.c_str());
            return NULL;
         }
     }
     else if (kwargs != NULL)
     {
-        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        std::string errmsg = "PickByNode: ";
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
         if (!parse_success)
         {
-            VisItErrorFunc("PickByNode:  could not parse keyword arguments.");
+            VisItErrorFunc(errmsg.c_str());
             return NULL;
         }
     }
@@ -14729,19 +14751,21 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args, PyObject *kwargs)
             debug3 << "  attempting old parsing methodology." << endl;
             return visit_PickByGlobalNode_deprecated(self, args);
         }
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        std::string errmsg = "PickByGlobalNode: ";
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams, errmsg); 
         if (!parse_success)
         {
-           VisItErrorFunc("PickByGlobalNode:  could not parse dictionary argument.");
+           VisItErrorFunc(errmsg.c_str());
            return NULL;
         }
     }
     else if (kwargs != NULL)
     {
-        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        std::string errmsg = "PickByGlobalNode: ";
+        parse_success = PyDict_To_MapNode(kwargs, pickParams, errmsg); 
         if (!parse_success)
         {
-            VisItErrorFunc("PickByGlobalNode: could not parse keyword arguments.");
+            VisItErrorFunc(errmsg.c_str());
             return NULL;
         }
     }
@@ -14951,20 +14975,22 @@ visit_Lineout(PyObject *self, PyObject *args, PyObject *kwargs)
             debug3 << "  attempting old parsing methodology." << endl;
             return visit_Lineout_deprecated(self, args);
         }
-        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), queryParams); 
+        std::string errmsg = "Lineout: ";
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), queryParams, errmsg); 
         if (!parse_success)
         {
-           VisItErrorFunc("Lineout:  could not parse dictionary argument.");
+           VisItErrorFunc(errmsg.c_str());
            return NULL;
         }
         repr = PyObject_Repr(args);
     }
     else if (kwargs != NULL)
     {
-        parse_success = PyDict_To_MapNode(kwargs, queryParams); 
+        std::string errmsg = "Lineout: ";
+        parse_success = PyDict_To_MapNode(kwargs, queryParams, errmsg); 
         if (!parse_success)
         {
-            VisItErrorFunc(" Lineout:  could not parse keyword args.");
+            VisItErrorFunc(errmsg.c_str());
             return NULL;
         }
         repr = PyObject_Repr(kwargs);
