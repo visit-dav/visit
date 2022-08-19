@@ -265,7 +265,7 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn, std::string& errmsg)
                    << " not currently implemented." << endl;
             debug3 << ss.str();
 
-            if (errmsg != "__void__")
+            if (errmsg != PyMapNode_VoidString)
                 errmsg += ss.str();
 
             return false;
