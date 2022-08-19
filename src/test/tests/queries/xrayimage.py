@@ -430,4 +430,14 @@ except:
     TestFOA('detect and warn numpy array as query param', LINE())
     pass
 
+params = dict(output_type=2, output_dir=".", divide_emis_by_absorb=1, \
+    origin=nporig.tolist(), up_vector=(0, 1, 0), theta=0, phi=0, \
+    width = 10., height=10., image_size=(300, 300), vars=("da", "pa"))
+try:
+    Query("XRay Image", params)
+    TestPOA('numpy array converted to list works as query param')
+except:
+    TestFOA('numpy array converted to list works as query param', LINE())
+    pass
+
 Exit()
