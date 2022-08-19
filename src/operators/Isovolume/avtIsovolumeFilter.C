@@ -8,22 +8,26 @@
 
 #include <avtIsovolumeFilter.h>
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #ifdef HAVE_LIBVTKH
 #include <vtkh/vtkh.hpp>
 #include <vtkh/DataSet.hpp>
 #include <vtkh/filters/IsoVolume.hpp>
 #endif
 
-#include <vtkVisItClipper.h>
-#include <vtkDataSet.h>
-#include <vtkDataArray.h>
-#include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkCellDataToPointData.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkUnstructuredGrid.h>
 #include <vtkStructuredGrid.h>
-#include <vtkCellDataToPointData.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
+
+#include <vtkVisItClipper.h>
 
 #include <avtAccessor.h>
 #include <avtIntervalTree.h>
@@ -600,7 +604,12 @@ avtIsovolumeFilter::ExecuteData_VTK(avtDataRepresentation *in_dr, std::vector<do
         for (vtkIdType i = 0 ; i < ncells ; i++)
         {
             int celltype = ugrid->GetCellType(i);
-            vtkIdType *pts, npts;
+#if LIB_VERSION_LE(VTK,8,1,0)
+            vtkIdType *pts;
+#else
+            const vtkIdType *pts;
+#endif
+            vtkIdType npts;
             ugrid->GetCellPoints(i, npts, pts);
             out_pd->InsertNextCell(celltype, npts, pts);
         }

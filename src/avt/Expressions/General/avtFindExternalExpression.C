@@ -129,7 +129,7 @@ avtFindExternalExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsI
     vtkDataSet *ds = tree->GetSingleLeaf();
 
     vtkPolyDataRelevantPointsFilter *pdrpf = NULL;
-    if (!doCells)
+    if (!doCells && ds->GetNumberOfPoints() > 0)
     {
         // If we have an unstructured grid, then the facelist filter sent
         // back the same point list.  Reduce the point list to just those

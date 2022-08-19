@@ -24,6 +24,9 @@
     <Field name="tagChangesMade" label="tagChangesMade" type="bool" internal="true" persistent="false">
       true
     </Field>
+    <Field name="builtIn" label="builtIn" type="bool" internal="true" persistent="true">
+      true
+    </Field>
     <Function name="EvalCubicSpline" user="true" member="true" access="private">
     </Function>
     <Function name="GetColorsCubicSpline" user="true" member="true" access="private">

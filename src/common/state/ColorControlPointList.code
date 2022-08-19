@@ -563,6 +563,9 @@ Definition:
 // 
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tags and removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Added logic for "builtin" attribute.
 //
 // ****************************************************************************
 
@@ -660,6 +663,8 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
         SetExternalFlag(node->AsBool());
     if((node = searchNode->GetNode("tags")) != 0)
         SetTagNames(node->AsStringVector());
+    if((node = searchNode->GetNode("builtin")) != 0)
+        SetBuiltIn(node->AsBool());
 }
 
 Function: CreateNode
@@ -681,6 +686,9 @@ Definition:
 // Modifications:
 //   Justin Privitera, Thu Jun 16 18:01:49 PDT 2022
 //   Added tags and removed categories.
+// 
+//   Justin Privitera, Wed Jul 27 12:16:06 PDT 2022
+//   Added logic for "builtin" attribute.
 //
 // ****************************************************************************
 
@@ -724,6 +732,12 @@ ColorControlPointList::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("tags", tagNames));
+    }
+
+    if(completeSave || !FieldsEqual(ID_builtIn, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("builtin", builtIn));
     }
 
     // Add the node to the parent node.

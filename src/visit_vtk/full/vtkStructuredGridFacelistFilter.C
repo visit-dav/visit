@@ -4,8 +4,11 @@
 
 #include "vtkStructuredGridFacelistFilter.h"
 
+#include <visit-config.h> // for LIB_VERSION_LE
+
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
@@ -89,6 +92,9 @@ CellIndex(int x, int y, int z, int nX, int nY, int nZ)
 //    Hank Childs, Wed Aug 25 16:32:08 PDT 2004
 //    Do a better job of assessing the output cell count.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK9: connectivity and offsets now stored in separate arrays.
+//
 // ****************************************************************************
 
 int
@@ -145,10 +151,29 @@ vtkStructuredGridFacelistFilter::RequestData(
   outCellData->CopyAllocate(inCellData);
 
   vtkCellArray *polys = vtkCellArray::New();
+
+#if LIB_VERSION_LE(VTK, 8,1,0)
   vtkIdTypeArray *list = vtkIdTypeArray::New();
   list->SetNumberOfValues(numOutCells*(4+1));
   vtkIdType *nl = list->GetPointer(0);
-  
+
+#else
+  vtkIdTypeArray *connectivity = vtkIdTypeArray::New();
+  connectivity->SetNumberOfValues(numOutCells*4);
+  vtkIdType *cl = connectivity->GetPointer(0);
+
+  vtkIdTypeArray *offsets = vtkIdTypeArray::New();
+  // size of offsets array always numCells + 1
+  // last value holds size of connectivity array
+  offsets->SetNumberOfValues(numOutCells+1);
+  vtkIdType *ol = offsets->GetPointer(0);
+  // set up first offset
+  *ol++ = 0;
+  // subsequent offsets are incremented from previous by num pts in cell
+  // set up a holder for the increment
+  vtkIdType currentOffset = 0;
+#endif
+
   //
   // Left face
   //
@@ -157,17 +182,27 @@ vtkStructuredGridFacelistFilter::RequestData(
   {
     for (j = 0 ; j < nZ-1 ; j++)
     {
+#if LIB_VERSION_LE(VTK, 8,1,0)
       *nl++ = 4;
       *nl++ = PointIndex(0, i, j, nX, nY, nZ);
       *nl++ = PointIndex(0, i, j+1, nX, nY, nZ);
       *nl++ = PointIndex(0, i+1, j+1, nX, nY, nZ);
       *nl++ = PointIndex(0, i+1, j, nX, nY, nZ);
       int cId = CellIndex(0, i, j, nX, nY, nZ);
+#else
+      currentOffset += 4;
+      *ol++ = currentOffset;
+      *cl++ = PointIndex(0, i, j, nX, nY, nZ);
+      *cl++ = PointIndex(0, i, j+1, nX, nY, nZ);
+      *cl++ = PointIndex(0, i+1, j+1, nX, nY, nZ);
+      *cl++ = PointIndex(0, i+1, j, nX, nY, nZ);
+      int cId = CellIndex(0, i, j, nX, nY, nZ);
+#endif
       outCellData->CopyData(inCellData, cId, cellId);
       cellId++;
     }
   }
-  
+
   //
   // Right face
   //
@@ -177,18 +212,27 @@ vtkStructuredGridFacelistFilter::RequestData(
     {
       for (j = 0 ; j < nZ-1 ; j++)
       {
+#if LIB_VERSION_LE(VTK, 8,1,0)
         *nl++ = 4;
         *nl++ = PointIndex(nX-1, i, j, nX, nY, nZ);
         *nl++ = PointIndex(nX-1, i+1, j, nX, nY, nZ);
         *nl++ = PointIndex(nX-1, i+1, j+1, nX, nY, nZ);
         *nl++ = PointIndex(nX-1, i, j+1, nX, nY, nZ);
+#else
+        currentOffset += 4;
+        *ol++ = currentOffset;
+        *cl++ = PointIndex(nX-1, i, j, nX, nY, nZ);
+        *cl++ = PointIndex(nX-1, i+1, j, nX, nY, nZ);
+        *cl++ = PointIndex(nX-1, i+1, j+1, nX, nY, nZ);
+        *cl++ = PointIndex(nX-1, i, j+1, nX, nY, nZ);
+#endif
         int cId = CellIndex(nX-2, i, j, nX, nY, nZ);
         outCellData->CopyData(inCellData, cId, cellId);
         cellId++;
       }
     }
   }
-  
+
   //
   // Bottom face
   //
@@ -196,17 +240,26 @@ vtkStructuredGridFacelistFilter::RequestData(
   {
     for (j = 0 ; j < nZ-1 ; j++)
     {
+#if LIB_VERSION_LE(VTK, 8,1,0)
       *nl++ = 4;
       *nl++ = PointIndex(i, 0, j, nX, nY, nZ);
       *nl++ = PointIndex(i+1, 0, j, nX, nY, nZ);
       *nl++ = PointIndex(i+1, 0, j+1, nX, nY, nZ);
       *nl++ = PointIndex(i, 0, j+1, nX, nY, nZ);
+#else
+      currentOffset += 4;
+      *ol++ = currentOffset;
+      *cl++ = PointIndex(i, 0, j, nX, nY, nZ);
+      *cl++ = PointIndex(i+1, 0, j, nX, nY, nZ);
+      *cl++ = PointIndex(i+1, 0, j+1, nX, nY, nZ);
+      *cl++ = PointIndex(i, 0, j+1, nX, nY, nZ);
+#endif
       int cId = CellIndex(i, 0, j, nX, nY, nZ);
       outCellData->CopyData(inCellData, cId, cellId);
       cellId++;
     }
   }
-  
+
   //
   // Top face
   //
@@ -216,18 +269,27 @@ vtkStructuredGridFacelistFilter::RequestData(
     {
       for (j = 0 ; j < nZ-1 ; j++)
       {
+#if LIB_VERSION_LE(VTK, 8,1,0)
         *nl++ = 4;
         *nl++ = PointIndex(i, nY-1, j, nX, nY, nZ);
         *nl++ = PointIndex(i, nY-1, j+1, nX, nY, nZ);
         *nl++ = PointIndex(i+1, nY-1, j+1, nX, nY, nZ);
         *nl++ = PointIndex(i+1, nY-1, j, nX, nY, nZ);
+#else
+        currentOffset += 4;
+        *ol++ = currentOffset;
+        *cl++ = PointIndex(i, nY-1, j, nX, nY, nZ);
+        *cl++ = PointIndex(i, nY-1, j+1, nX, nY, nZ);
+        *cl++ = PointIndex(i+1, nY-1, j+1, nX, nY, nZ);
+        *cl++ = PointIndex(i+1, nY-1, j, nX, nY, nZ);
+#endif
         int cId = CellIndex(i, nY-2, j, nX, nY, nZ);
         outCellData->CopyData(inCellData, cId, cellId);
         cellId++;
       }
     }
   }
-  
+
   //
   // Back face
   //
@@ -235,17 +297,26 @@ vtkStructuredGridFacelistFilter::RequestData(
   {
     for (j = 0 ; j < nY-1 ; j++)
     {
+#if LIB_VERSION_LE(VTK, 8,1,0)
       *nl++ = 4;
       *nl++ = PointIndex(i, j, 0, nX, nY, nZ);
       *nl++ = PointIndex(i, j+1, 0, nX, nY, nZ);
       *nl++ = PointIndex(i+1, j+1, 0, nX, nY, nZ);
       *nl++ = PointIndex(i+1, j, 0, nX, nY, nZ);
+#else
+      currentOffset += 4;
+      *ol++ = currentOffset;
+      *cl++ = PointIndex(i, j, 0, nX, nY, nZ);
+      *cl++ = PointIndex(i, j+1, 0, nX, nY, nZ);
+      *cl++ = PointIndex(i+1, j+1, 0, nX, nY, nZ);
+      *cl++ = PointIndex(i+1, j, 0, nX, nY, nZ);
+#endif
       int cId = CellIndex(i, j, 0, nX, nY, nZ);
       outCellData->CopyData(inCellData, cId, cellId);
       cellId++;
     }
   }
-  
+
   //
   // Front face
   //
@@ -255,20 +326,34 @@ vtkStructuredGridFacelistFilter::RequestData(
     {
       for (j = 0 ; j < nY-1 ; j++)
       {
+#if LIB_VERSION_LE(VTK, 8,1,0)
         *nl++ = 4;
         *nl++ = PointIndex(i, j, nZ-1, nX, nY, nZ);
         *nl++ = PointIndex(i+1, j, nZ-1, nX, nY, nZ);
         *nl++ = PointIndex(i+1, j+1, nZ-1, nX, nY, nZ);
         *nl++ = PointIndex(i, j+1, nZ-1, nX, nY, nZ);
+#else
+        currentOffset += 4;
+        *ol++ = currentOffset;
+        *cl++ = PointIndex(i, j, nZ-1, nX, nY, nZ);
+        *cl++ = PointIndex(i+1, j, nZ-1, nX, nY, nZ);
+        *cl++ = PointIndex(i+1, j+1, nZ-1, nX, nY, nZ);
+        *cl++ = PointIndex(i, j+1, nZ-1, nX, nY, nZ);
+#endif
         int cId = CellIndex(i, j, nZ-2, nX, nY, nZ);
         outCellData->CopyData(inCellData, cId, cellId);
         cellId++;
       }
     }
   }
-  
+#if LIB_VERSION_LE(VTK, 8,1,0)
   polys->SetCells(numOutCells, list);
   list->Delete();
+#else
+  polys->SetData(offsets, connectivity);
+  offsets->Delete();
+  connectivity->Delete();
+#endif
 
   outCellData->Squeeze();
   output->SetPolys(polys);

@@ -231,6 +231,10 @@ QvisColorTableButton::useDefaultColorTable()
 //
 //   Brad Whitlock, Tue Jan 17 11:41:44 PDT 2006
 //   Added a tooltip so long color table names can be put in a tooltip.
+// 
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    Added logic to prevent CT from being changed when CT passed out of the 
+//    tag filtering selection.
 //
 // ****************************************************************************
 
@@ -246,10 +250,15 @@ QvisColorTableButton::setColorTable(const QString &ctName)
     }
     else
     {
-        QString def("Default");
-        setText(def);
-        setToolTip(def);
-        setIcon(QIcon());
+        // if this color table was deleted
+        if (colorTableAtts->GetColorTableIndex(ctName.toStdString()) == -1)
+        {
+            QString def("Default");
+            setText(def);
+            setToolTip(def);
+            setIcon(QIcon());
+        }
+        // but if it was filtered, we don't want to do anything
     }
 }
 
@@ -444,6 +453,9 @@ QvisColorTableButton::addColorTable(const QString &ctName)
 // Creation:   Sat Jun 16 20:13:46 PST 2001
 //
 // Modifications:
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    Added logic to prevent CT from being changed when CT passed out of the 
+//    tag filtering selection.
 //   
 // ****************************************************************************
 
@@ -452,12 +464,18 @@ QvisColorTableButton::updateColorTableButtons()
 {
     for(size_t i = 0; i < buttons.size(); ++i)
     {
-        // If the color table that was being used by the button is no
-        // longer in the list, make it use the default.
+        // the CT that was being used by the button is no longer in the list
         if(getColorTableIndex(buttons[i]->getColorTable()) == -1)
         {
-            buttons[i]->setText("Default");
-            buttons[i]->setColorTable("Default");
+            // if deleted
+            if (colorTableAtts->GetColorTableIndex(
+                buttons[i]->getColorTable().toStdString()) == -1)
+            {
+                // then use the default
+                buttons[i]->setText("Default");
+                buttons[i]->setColorTable("Default");
+            }
+            // but if it was filtered, we do nothing
         }
         else
             buttons[i]->setIcon(getIcon(buttons[i]->text()));

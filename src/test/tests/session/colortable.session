@@ -6341,7 +6341,7 @@
                                             </Object>
                                         </Object>
                                         <Field name="centering" type="string">Natural</Field>
-                                        <Field name="colorTableName" type="string">magma</Field>
+                                        <Field name="colorTableName" type="string">orangehot</Field>
                                         <Field name="invertColorTable" type="bool">false</Field>
                                         <Field name="opacityType" type="string">FullyOpaque</Field>
                                         <Field name="opacityVariable" type="string"></Field>
@@ -6416,7 +6416,7 @@
                                                         </Object>
                                                     </Object>
                                                     <Field name="centering" type="string">Natural</Field>
-                                                    <Field name="colorTableName" type="string">magma</Field>
+                                                    <Field name="colorTableName" type="string">orangehot</Field>
                                                     <Field name="invertColorTable" type="bool">false</Field>
                                                     <Field name="opacityType" type="string">FullyOpaque</Field>
                                                     <Field name="opacityVariable" type="string"></Field>

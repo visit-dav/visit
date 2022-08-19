@@ -10492,6 +10492,11 @@ visit_GetActiveDiscreteColorTable(PyObject *self, PyObject *args)
 // Creation:   Tue Mar 13 16:15:25 PST 2007
 //
 // Modifications:
+//    Justin Privitera, Wed Aug  3 14:12:07 PDT 2022
+//    Error is thrown for editing built-in color tables.
+// 
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    New CT's are correctly marked as NOT built-in.
 //
 // ****************************************************************************
 
@@ -10508,7 +10513,20 @@ visit_AddColorTable(PyObject *self, PyObject *args)
 
     if(PyColorControlPointList_Check(ccpl))
     {
+        if (GetViewerState()->GetColorTableAttributes()->GetColorControlPoints(ctName) != 0)
+        {
+            if (GetViewerState()->GetColorTableAttributes()->GetColorControlPoints(ctName)->GetBuiltIn())
+            {
+                std::ostringstream err_oss;
+                err_oss << "The color table " << ctName << " is built-in, and cannot be overwritten.";
+                VisItErrorFunc(err_oss.str().c_str());
+                return NULL;
+            }
+        }
         MUTEX_LOCK();
+            // mark the color table as NOT built-in
+            PyColorControlPointList_FromPyObject(ccpl)->SetBuiltIn(false);
+
             // Remove the color table in case it already exists.
             GetViewerState()->GetColorTableAttributes()->RemoveColorTable(ctName);
 
@@ -10540,6 +10558,8 @@ visit_AddColorTable(PyObject *self, PyObject *args)
 // Creation:   Tue Mar 13 16:17:33 PST 2007
 //
 // Modifications:
+//    Justin Privitera, Wed Aug  3 14:12:07 PDT 2022
+//    Error is thrown for editing built-in color tables.
 //
 // ****************************************************************************
 
@@ -10552,6 +10572,15 @@ visit_RemoveColorTable(PyObject *self, PyObject *args)
         VisItErrorFunc("The arguments must be a color table name.");
         return NULL;
     }
+
+    if (GetViewerState()->GetColorTableAttributes()->GetColorControlPoints(ctName)->GetBuiltIn())
+    {
+        std::ostringstream err_oss;
+        err_oss << "The color table " << ctName << " is built-in, and cannot be removed.";
+        VisItErrorFunc(err_oss.str().c_str());
+        return NULL;
+    }
+
 
     MUTEX_LOCK();
         // Remove the color table in case it already exists.

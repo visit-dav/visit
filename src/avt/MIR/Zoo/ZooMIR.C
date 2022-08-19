@@ -4,6 +4,8 @@
 
 #include "ZooMIR.h"
 
+#include <visit-config.h> // For LIB_VERSION_LE
+
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <TimingsManager.h>
@@ -141,6 +143,11 @@ ZooMIR::Reconstruct2DMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig)
 //    Jeremy Meredith, Thu Aug 18 17:59:13 PDT 2005
 //    Added a new isovolume algorithm, with adjustable VF cutoff.
 //
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Don't send MIRConnectivity to reconstructor classes, it isn't used.
+//    Support VTK 9's change in storage for vtkCellArray class:
+//    separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 bool
 ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
@@ -220,15 +227,14 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
         if (options.algorithm == 1) // Recursive Clipping
         {
             cr = new RecursiveCellReconstructor(mesh, mat, rm, nPoints,
-                                                nCells, conn, *this);
+                                                nCells, *this);
         }
         else // algorithm == 2 // Isovolume
         {
             cr = new IsovolumeCellReconstructor(mesh, mat, rm, nPoints,
-                                                nCells, conn, *this);
+                                                nCells, *this);
         }
 
-        vtkIdType *conn_ptr = conn.connectivity;
         // actualVols contains reconstructed volume/areas per material
         double *actualVolStorage = new double[nMaterials];
         double *actualVols = (options.numIterations>0) ? actualVolStorage : NULL;
@@ -237,11 +243,20 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
         double *tmpVols = (options.numIterations>0) ? tmpVolStorage : NULL;
 
         double maxdiff = 0;
+#if LIB_VERSION_LE(VTK,8,1,0)
+        vtkIdType *conn_ptr = conn.connectivity;
         for (int c = 0 ; c < nCells ; c++, conn_ptr += (*conn_ptr) + 1)
         {
             int  celltype = conn.celltype[c];
             vtkIdType *ids = conn_ptr+1;
             int nids       = (int)*conn_ptr;
+#else
+        for (int c = 0 ; c < nCells ; c++)
+        {
+            int  celltype = conn.celltype[c];
+            vtkIdType nids = conn.offsets[c+1] - conn.offsets[c];
+            vtkIdType *ids = &conn.connectivity[conn.offsets[c]];
+#endif
 
             double totalvolume = 0;
             if (nids > MAX_NODES_PER_ZONE)
@@ -288,7 +303,7 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
                     float tried  = triedVFs[m];
                     float got    = actualVols[m] / totalvolume;
                     float diff   = wanted - got;
-                
+
                     if (diff != 0)
                     {
                         float newval = tried + options.iterationDamping * diff;
@@ -363,8 +378,13 @@ ZooMIR::ReconstructMesh(vtkDataSet *mesh_orig, avtMaterial *mat_orig, int dim)
 //    the output to be a rectilinear, or other non-unstructured, data set.
 //
 //    Mark C. Miller, Tue Jan 15 13:22:29 PST 2013
-//    Adjusted logic to overwrite mix values to use SetTuple instead of 
+//    Adjusted logic to overwrite mix values to use SetTuple instead of
 //    assuming a float* array.
+//
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK 9's change in storage for vtkCellArray class:
+//    separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 vtkDataSet *
 ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
@@ -413,7 +433,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         {
             // Since if we make a copy, we get corrupt ->Links
             // for an unstructured grid, we're just going to add
-            // avtSubsets to the input mesh and 
+            // avtSubsets to the input mesh and
             vtkDataSet *outmesh = ds;
 
             // (this was the other option: ----->>>
@@ -558,6 +578,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     }
     rv->SetPoints(outPts);
 
+#if LIB_VERSION_LE(VTK,8,1,0)
     //
     // Now insert the connectivity array.
     //
@@ -565,15 +586,39 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     nlist->SetNumberOfValues(totalsize + ncells);
     vtkIdType *nl = nlist->GetPointer(0);
 
+#else
+    //
+    // Now insert the connectivity and offsets array.
+    //
+
+    // holds the connectivity
+    vtkIdTypeArray *nlist = vtkIdTypeArray::New();
+    nlist->SetNumberOfValues(totalsize);
+    vtkIdType *nl = nlist->GetPointer(0);
+
+    // holds the offsets
+    vtkIdTypeArray *olist = vtkIdTypeArray::New();
+    olist->SetNumberOfValues(ncells+1);
+    vtkIdType *ol = olist->GetPointer(0);
+    // first entry is always 0
+    *ol++ = 0;
+    // Subsequent offsets are incremented by the number of ids in
+    // the current cell, so set up a holder for that increment.
+    vtkIdType offset = 0;
+    // The last entry in offsets will hold the size of connectivity
+#endif
+
     vtkUnsignedCharArray *cellTypes = vtkUnsignedCharArray::New();
     cellTypes->SetNumberOfValues(ncells);
     unsigned char *ct = cellTypes->GetPointer(0);
 
+#if LIB_VERSION_LE(VTK,8,1,0)
     vtkIdTypeArray *cellLocations = vtkIdTypeArray::New();
     cellLocations->SetNumberOfValues(ncells);
     vtkIdType *cl = cellLocations->GetPointer(0);
 
     int offset = 0;
+#endif
     for (int i=0; i<ncells; i++)
     {
         int c = cellList[i];
@@ -581,16 +626,23 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         *ct++ = zonesList[c].celltype;
 
         const int nnodes = zonesList[c].nnodes;
+#if LIB_VERSION_LE(VTK,8,1,0)
         *nl++ = nnodes;
+#endif
         const vtkIdType *indices = &indexList[zonesList[c].startindex];
         for (int j=0; j<nnodes; j++)
             *nl++ = indices[j];
-        
+#if LIB_VERSION_LE(VTK,8,1,0)
         *cl++ = offset;
         offset += nnodes+1;
+#else
+        offset += nnodes;
+        *ol++ = offset;
+#endif
     }
 
     vtkCellArray *cells = vtkCellArray::New();
+#if LIB_VERSION_LE(VTK,8,1,0)
     cells->SetCells(ncells, nlist);
     nlist->Delete();
 
@@ -598,6 +650,15 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
     cellTypes->Delete();
     cellLocations->Delete();
     cells->Delete();
+#else
+    cells->SetData(olist, nlist);
+    nlist->Delete();
+    olist->Delete();
+
+    rv->SetCells(cellTypes, cells);
+    cellTypes->Delete();
+    cells->Delete();
+#endif
 
     //
     // Copy over all node-centered data.
@@ -631,7 +692,7 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
         //
         // The original node numbers should *not* be interpolated!
         // Throw a -1 in there for new nodes as a flag.
-        // 
+        //
         vtkDataArray *origNodes = outpd->GetArray("avtOriginalNodeNumbers");
         if (origNodes)
         {
@@ -764,6 +825,11 @@ ZooMIR::GetDataset(std::vector<int> mats, vtkDataSet *ds,
 //    Mark C. Miller, Tue Oct 21 23:11:24 PDT 2008
 //    Fixed bug where singleMat would get assigned matlist[0] even if matlist
 //    was never allocated (ncells == 0).
+//
+//    Kathleen Biagas, Thu Aug 11, 2022
+//    Support VTK 9's change in storage for vtkCellArray Class:
+//    separate connectivity and offsets arrays.
+//
 // ****************************************************************************
 bool
 ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
@@ -814,12 +880,19 @@ ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
     // extract cells
     int        nCells  = conn.ncells;
     const int *matlist = mat->GetMatlist();
+#if LIB_VERSION_LE(VTK,8,1,0)
     vtkIdType *conn_ptr = conn.connectivity;
+#endif
     zonesList.resize(nCells);
     for (int c=0; c<nCells; c++)
     {
+#if LIB_VERSION_LE(VTK,8,1,0)
         int              nIds = (int)*conn_ptr;
         const vtkIdType *ids  = conn_ptr+1;
+#else
+        // using c+1 for offsets is safe because offsets size is nCells+1
+        vtkIdType nIds = conn.offsets[c+1]-conn.offsets[c];
+#endif
 
         ReconstructedZone &zone = zonesList[c];
         zone.origzone   = c;
@@ -829,9 +902,14 @@ ZooMIR::ReconstructCleanMesh(vtkDataSet *mesh, avtMaterial *mat)
         zone.startindex = indexList.size();
         zone.mix_index  = -1;
 
+#if LIB_VERSION_GE(VTK,9,1,0)
+        const vtkIdType *ids  = &conn.connectivity[conn.offsets[c]];
+#endif
         for (int n=0; n<nIds; n++)
             indexList.push_back(ids[n]);
+#if LIB_VERSION_LE(VTK,8,1,0)
         conn_ptr += nIds+1;
+#endif
     }
 
     visitTimer->StopTimer(timerHandle, "MIR: Reconstructing clean mesh");
@@ -869,7 +947,7 @@ ZooMIR::SetUpCoords()
     origXCoords.resize(nPoints);
     origYCoords.resize(nPoints);
     origZCoords.resize(nPoints);
-    
+
     int dstype = mesh->GetDataObjectType();
     if (dstype == VTK_RECTILINEAR_GRID)
     {
@@ -972,8 +1050,8 @@ ZooMIR::EdgeHashEntryMemoryManager::EdgeHashEntryMemoryManager()
 {
     freeEntryindex = 0;
 }
- 
- 
+
+
 ZooMIR::EdgeHashEntryMemoryManager::~EdgeHashEntryMemoryManager()
 {
     int npools = edgeHashEntrypool.size();
@@ -983,8 +1061,8 @@ ZooMIR::EdgeHashEntryMemoryManager::~EdgeHashEntryMemoryManager()
         delete [] pool;
     }
 }
- 
- 
+
+
 void
 ZooMIR::EdgeHashEntryMemoryManager::AllocateEdgeHashEntryPool(void)
 {
@@ -1008,23 +1086,23 @@ ZooMIR::EdgeHashTable::EdgeHashTable(int nh)
     for (int i = 0 ; i < nHashes ; i++)
         hashes[i] = NULL;
 }
- 
- 
+
+
 ZooMIR::EdgeHashTable::~EdgeHashTable()
 {
     delete [] hashes;
 }
- 
- 
+
+
 int
 ZooMIR::EdgeHashTable::GetKey(int p1, int p2, int m)
 {
     int rv = ((m*521 + p1*18457 + p2*234749) % nHashes);
- 
+
     // In case of overflows and modulo with negative numbers.
     if (rv < 0)
        rv += nHashes;
- 
+
     return rv;
 }
 
@@ -1045,7 +1123,7 @@ ZooMIR::EdgeHashTable::GetEdge(int ap1, int ap2, int m)
     }
 
     int key = GetKey(p1, p2, m);
- 
+
     //
     // See if we have any matches in the current hashes.
     //
@@ -1061,16 +1139,16 @@ ZooMIR::EdgeHashTable::GetEdge(int ap1, int ap2, int m)
         }
         cur = cur->GetNext();
     }
- 
+
     //
     // There was no match.  We will have to add a new entry.
     //
     EdgeHashEntry *new_one = emm.GetFreeEdgeHashEntry();
- 
+
     new_one->SetNext(hashes[key]);
     new_one->SetEndpoints(p1, p2);
     new_one->SetMatNo(m);
     hashes[key] = new_one;
- 
+
     return new_one;
 }

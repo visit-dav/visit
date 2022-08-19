@@ -102,6 +102,10 @@
 #   Added VISIT_ROOT_INCLUDE_DIR for ThirdParty and .cmake includes, so that
 #   VISIT_INCLUDE_DIR can be used for visit includes.
 #
+#   Kathleen Biagas, Wed Aug 10 15:41:22 PDT 2022
+#   VTK_VERSION is needed for version comparisons so that both VTK 9 and
+#   VTK 8 can be supported.
+#
 #****************************************************************************/
 
 ##
@@ -178,6 +182,7 @@ set(VISIT_SLIVR                  @VISIT_SLIVR@)
 set(VISIT_OSPRAY                 @VISIT_OSPRAY@)
 
 # Set up VTK
+set(VTK_VERSION @VTK_VERSION@)
 set(VTK_INCLUDE_DIRS ${VISIT_ROOT_INCLUDE_DIR}@vtk_include_relative_path@)
 set(VTK_LIBRARY_DIRS ${VISIT_LIBRARY_DIR})
 

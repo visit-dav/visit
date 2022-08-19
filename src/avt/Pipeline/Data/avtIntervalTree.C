@@ -7,6 +7,7 @@
 // ************************************************************************* //
 
 #include <stdlib.h>
+#include <cmath>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -1123,7 +1124,7 @@ Intersects(const double *params, double solution, int block, int nDims,
 
     double  valAtMin  = EquationsValueAtPoint(params, block, 0, nDims,
                                              nodeExtents);
-    if (fabs(valAtMin-solution) < 1e-12)
+    if (std::fabs(valAtMin-solution) < 1e-12)
     {
         //
         // It happens to be that at the minimum extents the value of the
@@ -1282,7 +1283,7 @@ AxiallySymmetricLineIntersection(const double *P1, const double *D1,
     }
     else
     {
-        double root = sqrt(discriminant);
+        double root = std::sqrt(discriminant);
         double soln1 = (-B + root) / (2*A);
         double soln2 = (-B - root) / (2*A);
         if (soln1 == soln2)
@@ -1349,7 +1350,7 @@ AxiallySymmetricLineIntersection(const double *P1, const double *D1,
     }
     else
     {
-        double root = sqrt(discriminant);
+        double root = std::sqrt(discriminant);
         double soln1 = (-B + root) / (2*A);
         double soln2 = (-B - root) / (2*A);
         if (soln1 == soln2)
