@@ -40,6 +40,8 @@
 #define SELECT_FOR_CONTINUOUS 0
 #define SELECT_FOR_DISCRETE   1
 
+constexpr int MAX_ALLOWED_TAGS{9999};
+
 // ****************************************************************************
 // Method: QvisColorTableWindow::QvisColorTableWindow
 //
@@ -804,8 +806,9 @@ QvisColorTableWindow::AddToTagTable(std::string currtag, int index)
     item->setCheckState(0, activeTags[index] ? Qt::Checked : Qt::Unchecked);
     item->setText(1, currtag.c_str());
     // this next column is secret and is for passing around the tag index
-    // should allow you to have up to 10^10 tags
-    char buf[10];
+    // should allow you to have up to 9999 tags
+    // hence why MAX_ALLOWED_TAGS is defined as 9999 at the top of the file.
+    char buf[4];
     sprintf(buf, "%d", index);
     item->setText(2, buf);
 }
@@ -824,12 +827,26 @@ QvisColorTableWindow::AddToTagTable(std::string currtag, int index)
 //    Justin Privitera, Mon Jun 27 17:33:23 PDT 2022
 //    Added call to AddToTagTable() to reduce code bloat.
 //    Renamed `run_before` to `first_time`.
+// 
+//    Justin Privitera, Fri Aug 19 20:57:38 PDT 2022
+//    We now throw an error if there are too many tags.
 //
 // ****************************************************************************
 
 void
 QvisColorTableWindow::AddGlobalTag(std::string currtag, bool first_time)
 {
+    if (tagList.size() >= MAX_ALLOWED_TAGS)
+    {
+        QString tmp;
+        std::stringstream err_msg;
+        err_msg << "You have too many tags. VisIt can only support up to "
+            << MAX_ALLOWED_TAGS << " tags.";
+        tmp = QString(err_msg.str().c_str());
+        Error(tmp);
+        return;
+    }
+
     // if the given tag is NOT in the global tag list
     if (std::find(tagList.begin(), tagList.end(), currtag) == tagList.end())
     {
