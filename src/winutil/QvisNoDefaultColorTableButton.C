@@ -213,6 +213,10 @@ QvisNoDefaultColorTableButton::sizePolicy() const
 //   Justin Privitera, Wed Jul 20 14:15:34 PDT 2022
 //   Added guard to prevent rare index out of bounds error caused by using
 //   specific tags and searching simultaneously.
+// 
+//    Justin Privitera, Wed Aug  3 19:46:13 PDT 2022
+//    Added logic to prevent CT from being changed when CT passed out of the 
+//    tag filtering selection.
 //
 // ****************************************************************************
 
@@ -230,10 +234,15 @@ debug1 <<"    ctName: " << ctName.toStdString() << endl;
     }
     else if (colorTableNames[buttonType].size() > 0)
     {
-        colorTable = colorTableNames[buttonType][0];
-        setText(colorTable);
-        setToolTip(colorTable);
-        setIcon(getIcon(colorTable));
+        // if this color table was deleted
+        if (colorTableAtts->GetColorTableIndex(ctName.toStdString()) == -1)
+        {
+            colorTable = colorTableNames[buttonType][0];
+            setText(colorTable);
+            setToolTip(colorTable);
+            setIcon(getIcon(colorTable));
+        }
+        // but if it was filtered, we don't want to do anything
     }
     // If there are no available color tables, we don't want anything to
     // change.
