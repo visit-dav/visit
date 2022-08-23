@@ -125,7 +125,7 @@ ElementShapeNameToVTKCellType(const std::string &shape_name)
     if (shape_name == "quad")  return VTK_QUAD;
     if (shape_name == "hex")   return VTK_HEXAHEDRON;
     if (shape_name == "tet")   return VTK_TETRA;
-    AVT_CONDUIT_BP_INFO("Warning: Unsupported Element Shape: " << shape_name);
+    AVT_CONDUIT_BP_WARNING("Unsupported Element Shape: " << shape_name);
     return 0;
 }
 
@@ -154,7 +154,7 @@ VTKCellTypeToElementShapeName(const int vtk_cell_type)
     if (vtk_cell_type == VTK_VOXEL)      return "hex";
     if (vtk_cell_type == VTK_TETRA)      return "tet";
 
-    AVT_CONDUIT_BP_INFO("Warning: Unsupported vtkCellType : " << vtk_cell_type);
+    AVT_CONDUIT_BP_WARNING("Unsupported vtkCellType : " << vtk_cell_type);
     return "";
 }
 
@@ -232,6 +232,9 @@ Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
 //  Modifications:
 //    Cyrus Harrison, Thu Jan 13 11:14:20 PST 2022
 //    Add support for unsigned long and unsigned long long.
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to conduit blueprint data adaptor.
 //
 // ****************************************************************************
 vtkDataArray *
@@ -484,6 +487,9 @@ ExplicitCoordsToVTKPoints(const Node &n_coords)
 //    
 //    Chris Laganella, Thu Jan 13 11:07:26 PST 2022
 //    Fix bug where index array could be copied in interloop
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to conduit blueprint data adaptor.
 //
 // ****************************************************************************
 
@@ -777,6 +783,9 @@ PointsTopologyToVTKUnstructuredGrid(const Node &n_coords,
 // 
 //    Justin Privitera, Mon May 23 20:28:42 PDT 2022
 //    Moved the deletion of points to lower in the function.
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to conduit blueprint data adaptor.
 //
 // ****************************************************************************
 vtkDataSet *
@@ -867,11 +876,14 @@ UnstructuredTopologyToVTKUnstructuredGrid(int domain,
 //    Justin Privitera, Wed Mar 23 12:26:31 PDT 2022
 //    Added "domain" as first arg of MeshToVTK and passed it to
 //    UnstructuredTopologyToVTKUnstructuredGrid.
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to conduit blueprint data adaptor.
 //
 // ****************************************************************************
 vtkDataSet *
 avtConduitBlueprintDataAdaptor::BlueprintToVTK::MeshToVTK(int domain,
-                                        const Node &n_mesh)
+                                                          const Node &n_mesh)
 {
     //NOTE: this assumes one coordset and one topo
     // that is the case for the blueprint plugin, but may not be the case
@@ -925,7 +937,8 @@ avtConduitBlueprintDataAdaptor::BlueprintToVTK::MeshToVTK(int domain,
 
 // ****************************************************************************
 vtkDataArray *
-avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(const conduit::Node &field)
+avtConduitBlueprintDataAdaptor::BlueprintToVTK::FieldToVTK(
+    const conduit::Node &field)
 {
     return ConduitArrayToVTKDataArray(field["values"]);
 }
@@ -976,6 +989,9 @@ CopyComponent32(Node &node, vtkDataArray *da, int component)
 //
 //  Brad Whitlock, Fri Apr  1 13:41:32 PDT 2022
 //  Treat scalars specially so we do not make mcarrays out of them.
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to conduit blueprint data adaptor.
 //
 // ****************************************************************************
 
@@ -1147,11 +1163,14 @@ void vtkUnstructuredToNode(Node &node, vtkUnstructuredGrid *grid, const int dims
 //  Creation:   Fri Nov  5 16:35:09 EDT 2021
 //
 //  Modifications:
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to conduit blueprint data adaptor.
 //
 // ****************************************************************************
-void avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKFieldNameToBlueprint(const std::string &vtk_name,
-                                                             const std::string &topo_name,
-                                                             std::string &bp_name)
+void avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKFieldNameToBlueprint(
+    const std::string &vtk_name,
+    const std::string &topo_name,
+    std::string &bp_name)
 {
     bp_name = vtk_name;
     int first = bp_name.find('/');
@@ -1189,10 +1208,14 @@ void avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKFieldNameToBlueprint(con
 //
 //  Chris Laganella Fri Nov  5 16:51:15 EDT 2021
 //  Updated to use VTKFieldNameToBlueprint
+// 
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to conduit blueprint data adaptor.
 // ****************************************************************************
-void avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKFieldsToBlueprint(conduit::Node &node,
-                                                          const std::string topo_name,
-                                                          vtkDataSet* dataset)
+void avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKFieldsToBlueprint(
+    conduit::Node &node,
+    const std::string topo_name,
+    vtkDataSet* dataset)
 {
   vtkPointData *pd = dataset->GetPointData();
   vtkCellData *cd  = dataset->GetCellData();
@@ -1249,12 +1272,15 @@ void avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKFieldsToBlueprint(condui
 //  Creation:   Feb 15, 2019
 //
 //  Modifications:
+//    Justin Privitera, Mon Aug 22 17:15:06 PDT 2022
+//    Moved from blueprint plugin to conduit blueprint data adaptor.
 //
 // ****************************************************************************
 void
-avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKToBlueprintMesh(conduit::Node &mesh,
-                                               vtkDataSet* dataset,
-                                               const int ndims)
+avtConduitBlueprintDataAdaptor::VTKToBlueprint::VTKToBlueprintMesh(
+    conduit::Node &mesh,
+    vtkDataSet* dataset,
+    const int ndims)
 {
    std::string coord_path = "coordsets/coords";
    std::string topo_name = "topo";
@@ -1390,33 +1416,19 @@ ShapeNameToGeomType(const std::string &shape_name)
    mfem::Geometry::Type res = mfem::Geometry::POINT;
 
    if (shape_name == "point")
-   {
       res = mfem::Geometry::POINT;
-   }
    else if (shape_name == "line")
-   {
       res =  mfem::Geometry::SEGMENT;
-   }
    else if (shape_name == "tri")
-   {
       res =  mfem::Geometry::TRIANGLE;
-   }
    else if (shape_name == "quad")
-   {
       res =  mfem::Geometry::SQUARE;
-   }
    else if (shape_name == "tet")
-   {
       res =  mfem::Geometry::TETRAHEDRON;
-   }
    else if (shape_name == "hex")
-   {
       res =  mfem::Geometry::CUBE;
-   }
    else
-   {
        AVT_CONDUIT_BP_WARNING("Unsupported Element Shape: " << shape_name);
-   }
 
    return res;
 }
@@ -1429,8 +1441,9 @@ ShapeNameToGeomType(const std::string &shape_name)
 // we will those, instead of VisIt's own implementation.
 //---------------------------------------------------------------------------//
 mfem::Mesh *
-avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(const Node &n_mesh,
-                                          const std::string &topology_name)
+avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(
+    const Node &n_mesh,
+    const std::string &topology_name)
 {
    bool zero_copy = true;
    // n_conv holds converted data (when necessary for mfem api)
@@ -1782,8 +1795,9 @@ avtConduitBlueprintDataAdaptor::BlueprintToMFEM::MeshToMFEM(const Node &n_mesh,
 
 //---------------------------------------------------------------------------//
 mfem::GridFunction *
-avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(mfem::Mesh *mesh,
-                                           const Node &n_field)
+avtConduitBlueprintDataAdaptor::BlueprintToMFEM::FieldToMFEM(
+    mfem::Mesh *mesh,
+    const Node &n_field)
 {
     bool zero_copy = true;
 

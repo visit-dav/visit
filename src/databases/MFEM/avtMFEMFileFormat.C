@@ -797,7 +797,8 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
             "Expected equality of number of components.");
     }
 
-    rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, gf, lod, var_is_nodal);
+    // TODO hmmmm I shouldn't have to flip the nodal var...
+    rv = avtMFEMDataAdaptor::RefineGridFunctionToVTK(mesh, gf, lod, !var_is_nodal);
     
     delete gf;
     delete mesh;
