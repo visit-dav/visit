@@ -301,12 +301,10 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
 
     if (atts.GetScaling() == VolumeAttributes::Log)
     {
-        if (artificialMin)
-            if (range[0] > 0)
-                range[0] = log10(range[0]);
-        if (artificialMax)
-            if (range[1] > 0)
-                range[1] = log10(range[1]);
+        if (artificialMin && range[0] > 0)
+            range[0] = log10(range[0]);
+        if (artificialMax && range[1] > 0)
+            range[1] = log10(range[1]);
     }
     else if (atts.GetScaling() == VolumeAttributes::Skew)
     {
