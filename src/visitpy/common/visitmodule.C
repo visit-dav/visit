@@ -1277,6 +1277,9 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
 //    Kathleen Biagas, Fri Feb 17 2017
 //    Allow Enums to be represented by string.
 //
+//    Mark C. Miller, Mon Aug 22 19:39:54 PDT 2022
+//    Properly scope Enum case. Add MultiLineString case. Add a default with
+//    some indication of an error too.
 // ****************************************************************************
 PyObject *
 CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
