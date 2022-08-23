@@ -60,7 +60,6 @@
 //-----------------------------------------------------------------------------
 #include "avtBlueprintLogging.h"
 #include "avtBlueprintTreeCache.h"
-#include "avtBlueprintDataAdaptor.h"
 
 #ifdef _WIN32
 #define strcasecmp stricmp

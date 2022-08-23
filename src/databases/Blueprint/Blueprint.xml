@@ -27,13 +27,11 @@
     </FilePatterns>
     <Files components="M">
       avtBlueprintFileFormat.C
-      avtBlueprintDataAdaptor.C
       avtBlueprintTreeCache.C
       avtBlueprintOptions.C
     </Files>
     <Files components="E">
       avtBlueprintFileFormat.C
-      avtBlueprintDataAdaptor.C
       avtBlueprintTreeCache.C
       avtBlueprintWriter.C
       avtBlueprintOptions.C

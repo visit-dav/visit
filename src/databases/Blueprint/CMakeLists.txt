@@ -18,7 +18,6 @@ SET(LIBM_SOURCES
 BlueprintMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtBlueprintFileFormat.C
-avtBlueprintDataAdaptor.C
 avtBlueprintTreeCache.C
 avtBlueprintOptions.C
 )
@@ -27,7 +26,6 @@ SET(LIBE_SOURCES
 BlueprintEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtBlueprintFileFormat.C
-avtBlueprintDataAdaptor.C
 avtBlueprintTreeCache.C
 avtBlueprintWriter.C
 avtBlueprintOptions.C
